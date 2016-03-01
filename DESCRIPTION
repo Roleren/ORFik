@@ -1,0 +1,22 @@
+Package: ORFik
+Type: Package
+Title: Open Reading Frames
+Version: 0.1.0
+Author: person("Kornel", "Labun", email = "kornellabun@gmail.com",
+    role = c("aut", "cre"))
+Maintainer: <kornellabun@gmail.com>
+Description: Class ORF for convenient storage of open reading frames and couple
+    usefull functions.
+License: MIT + file LICENSE
+LazyData: TRUE
+BugReports: https://github.com/JokingHero/ORFik/issues
+URL: https://github.com/JokingHero/ORFik
+Depends:
+    methods,
+    IRanges,
+    GenomicRanges
+Imports:
+    S4Vectors,
+    GenomeInfoDb
+RoxygenNote: 5.0.1
+Suggests: testthat
