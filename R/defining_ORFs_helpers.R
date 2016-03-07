@@ -10,7 +10,7 @@
 #' @examples
 #' #' #defineTrailer()
 
-defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 10) {
+define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 10) {
   if (runValue(strand(ORFranges) == "+")) {
       ORFranges <- ORFranges[1]
   } else {
