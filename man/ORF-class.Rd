@@ -14,7 +14,7 @@ An S4 class to represent a bank account.
 
 \item{\code{trailerRanges}}{A GRanges of trailer}
 
-\item{\code{family}}{character. Family of ORF e.g. "lincRNA"}
+\item{\code{family}}{character. Family of ORF e.g. 'lincRNA'}
 
 \item{\code{ORFLength}}{numeric. Length of ORF.}
 
@@ -22,6 +22,6 @@ An S4 class to represent a bank account.
 
 \item{\code{transcript}}{character. Name of the transcript.}
 
-\item{\code{start}}{character. Defined start of the ORF. e.g. "ATG"}
+\item{\code{start}}{character. Defined start of the ORF. e.g. 'ATG'}
 }}
 

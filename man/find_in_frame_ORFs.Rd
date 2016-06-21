@@ -10,9 +10,9 @@ find_in_frame_ORFs(fastaSeq, startCodon = c("ATG"), stopCodon = c("TAA",
 \arguments{
 \item{fastaSeq}{DNA sequence to search for Open Reading Frames.}
 
-\item{startCodon}{Default is "ATG".}
+\item{startCodon}{Default is 'ATG'.}
 
-\item{stopCodon}{Default is c("TAA", "TAG", "TGA").}
+\item{stopCodon}{Default is c('TAA', 'TAG', 'TGA').}
 
 \item{longestORF}{bolean. Default TRUE. Defines whether pick longest ORF only.
 When FALSE will report all open reaidng frames, even overlapping small ones.}

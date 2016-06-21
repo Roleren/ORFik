@@ -22,7 +22,7 @@ A GRanges object of shifted footprints.
 Function shifts footprints from bam file and loads them to memory as GRanges.
 Resizes them to single base in 5' end fashion,
 treated as p site. Takes account for junctions in cigars. Length of footprint is saved in
-"size" parameter of GRanges output. Footprints are also sorted according to their genomic
+'size' parameter of GRanges output. Footprints are also sorted according to their genomic
 position, ready for saving e.g. as bed file.
 }
 \examples{

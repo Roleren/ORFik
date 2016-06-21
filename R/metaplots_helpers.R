@@ -9,14 +9,14 @@
 #' @export
 #' @import GenomicRanges
 #' @examples
-#' window_resize(GRanges(Rle(c("1"), c(4)),
+#' window_resize(GRanges(Rle(c('1'), c(4)),
 #'                       IRanges(c(100, 200, 200, 100), width=c(1, 1, 1, 1)),
-#'                       Rle(strand(c("+", "+", "-", "-")))),
+#'                       Rle(strand(c('+', '+', '-', '-')))),
 #'              window_size = 50)
 
 window_resize <- function(GRanges_obj, window_size = 30) {
-  GRanges_obj <- promoters(GRanges_obj, upstream = window_size, downstream = window_size  + 1)
-  return(GRanges_obj)
+    GRanges_obj <- promoters(GRanges_obj, upstream = window_size, downstream = window_size + 1)
+    return(GRanges_obj)
 }
 
 #' Calculate metaplot coverage of reads around input GRanges object.
@@ -34,38 +34,38 @@ window_resize <- function(GRanges_obj, window_size = 30) {
 #' @examples
 #' #metaPosition()
 
-meta_position <- function(cdsRanges, AllRiboReadsRangesResized){
-
-  window_size <- unique(width(cdsRanges))
-  if(length(window_size) != 1){
-    stop("All input GRanges should have the same window i.e. same width()")
-  }
-  window_size <- (window_size - 1)/2
-
-  #disable warnings
-  oldw <- getOption("warn")
-  options(warn = -1)
-
-  hits <- findOverlaps(cdsRanges, AllRiboReadsRangesResized)
-
-  #enable warnings
-  options(warn = oldw)
-
-  RiboHitsStarts <- start(ranges(AllRiboReadsRangesResized[subjectHits(hits)]))
-  CDSHitsStarts <- start(ranges(cdsRanges[queryHits(hits)]))
-
-  position <- RiboHitsStarts - CDSHitsStarts
-
-  #change sign for minus strands
-  minusStrands <- as.vector(strand(AllRiboReadsRangesResized[subjectHits(hits)]) == "-")
-  position[minusStrands] <- window_size * 2 - position[minusStrands]
-
-  position <- table(as.numeric(position))
-
-  hitMap <- data.frame(rep(0, window_size*2 + 1), -window_size:window_size)
-  names(hitMap) <- c("Freq", "Position")
-  hitMap$Freq[as.numeric(names(position)) + 1] <- as.numeric(position)
-  hitMap$Frame <- rep(1:3, window_size)[1:(window_size*2 + 1)]
-
-  return(hitMap)
+meta_position <- function(cdsRanges, AllRiboReadsRangesResized) {
+    
+    window_size <- unique(width(cdsRanges))
+    if (length(window_size) != 1) {
+        stop("All input GRanges should have the same window i.e. same width()")
+    }
+    window_size <- (window_size - 1)/2
+    
+    # disable warnings
+    oldw <- getOption("warn")
+    options(warn = -1)
+    
+    hits <- findOverlaps(cdsRanges, AllRiboReadsRangesResized)
+    
+    # enable warnings
+    options(warn = oldw)
+    
+    RiboHitsStarts <- start(ranges(AllRiboReadsRangesResized[subjectHits(hits)]))
+    CDSHitsStarts <- start(ranges(cdsRanges[queryHits(hits)]))
+    
+    position <- RiboHitsStarts - CDSHitsStarts
+    
+    # change sign for minus strands
+    minusStrands <- as.vector(strand(AllRiboReadsRangesResized[subjectHits(hits)]) == "-")
+    position[minusStrands] <- window_size * 2 - position[minusStrands]
+    
+    position <- table(as.numeric(position))
+    
+    hitMap <- data.frame(rep(0, window_size * 2 + 1), -window_size:window_size)
+    names(hitMap) <- c("Freq", "Position")
+    hitMap$Freq[as.numeric(names(position)) + 1] <- as.numeric(position)
+    hitMap$Frame <- rep(1:3, window_size)[1:(window_size * 2 + 1)]
+    
+    return(hitMap)
 }

@@ -18,6 +18,9 @@ Depends:
     GenomicAlignments
 Imports:
     S4Vectors,
-    GenomeInfoDb
+    seqinr,
+    GenomeInfoDb,
+    GenomicFeatures,
+    rtracklayer
 RoxygenNote: 5.0.1
 Suggests: testthat

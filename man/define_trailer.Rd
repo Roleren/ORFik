@@ -9,7 +9,7 @@ define_trailer(ORFranges, transcriptRanges, lengthOftrailer = 10)
 \arguments{
 \item{ORFranges}{GRanges object of your Open Reading Frame.}
 
-\item{transcriptRanges}{GRanges object of trainstript.}
+\item{transcriptRanges}{GRanges object of transtript.}
 
 \item{lengthOftrailer}{Numeric. Default is 10.}
 }

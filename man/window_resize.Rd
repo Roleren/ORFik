@@ -20,9 +20,9 @@ for GRanges starting at 100-100 and window_size of 3 will give
 97-103
 }
 \examples{
-window_resize(GRanges(Rle(c("1"), c(4)),
+window_resize(GRanges(Rle(c('1'), c(4)),
                       IRanges(c(100, 200, 200, 100), width=c(1, 1, 1, 1)),
-                      Rle(strand(c("+", "+", "-", "-")))),
+                      Rle(strand(c('+', '+', '-', '-')))),
              window_size = 50)
 }
 
