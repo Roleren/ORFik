@@ -3,9 +3,9 @@
 \docType{class}
 \name{ORF-class}
 \alias{ORF-class}
-\title{An S4 class to represent a bank account.}
+\title{An S4 class to represent an ORF.}
 \description{
-An S4 class to represent a bank account.
+An S4 class to represent an ORF.
 }
 \section{Fields}{
 
@@ -16,6 +16,10 @@ An S4 class to represent a bank account.
 
 \item{\code{family}}{character. Family of ORF e.g. 'lincRNA'}
 
+\item{\code{isoform}}{character. What is isoform of this ORF toward the transcript}
+
+\item{\code{frame}}{numeric.}
+
 \item{\code{ORFLength}}{numeric. Length of ORF.}
 
 \item{\code{trailerLength}}{numeric. Length of trailer.}
@@ -23,5 +27,7 @@ An S4 class to represent a bank account.
 \item{\code{transcript}}{character. Name of the transcript.}
 
 \item{\code{start}}{character. Defined start of the ORF. e.g. 'ATG'}
+
+\item{\code{identifier}}{character. Unique identifier of this ORF.}
 }}
 
