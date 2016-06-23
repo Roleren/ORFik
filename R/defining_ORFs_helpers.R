@@ -134,10 +134,10 @@ map_to_GRanges <- function(ORFdef, grangesObj) {
 
 #' Resizes down ORF to the desired length, removing inside. Preserves exons.
 #'
-#'  @export
-#'  @param grangesObj A GRanges object of ORF.
-#'  @param orf_goal_length numeric. Desired length of ORF.
-#'  @return GRanges object of resized ORF
+#' @export
+#' @param grangesObj A GRanges object of ORF.
+#' @param orf_goal_length numeric. Desired length of ORF.
+#' @return GRanges object of resized ORF
 resize_ORF <- function(grangesObj, orf_goal_length){
   length_diff <- (sum(width(grangesObj))/3 - orf_goal_length) * 3
   is_even <- (length_diff %% 2) == 0

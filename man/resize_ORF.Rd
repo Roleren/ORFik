@@ -6,10 +6,15 @@
 \usage{
 resize_ORF(grangesObj, orf_goal_length)
 }
+\arguments{
+\item{grangesObj}{A GRanges object of ORF.}
+
+\item{orf_goal_length}{numeric. Desired length of ORF.}
+}
+\value{
+GRanges object of resized ORF
+}
 \description{
-@export
- @param grangesObj A GRanges object of ORF.
- @param orf_goal_length numeric. Desired length of ORF.
- @return GRanges object of resized ORF
+Resizes down ORF to the desired length, removing inside. Preserves exons.
 }
 

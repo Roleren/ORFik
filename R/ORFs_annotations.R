@@ -18,11 +18,21 @@
 #' 'none' - when none of the above options is true
 #' @return A string object of defined isoform towards transcript.
 #' @import GenomicRanges
+#' @export
 #' @examples
 #' #define_isoform()
-define_isoform <- function(rel_orf, tran, isoform_names = c("perfect_match", "elong_START_match", "trunc_START_match", "elong_STOP_match", 
-    "trunc_STOP_match", "overlap_inside", "overlap_both", "overlap_upstream", "overlap_downstream", "upstream", "downstram", 
-    "none")) {
+define_isoform <- function(rel_orf, tran, isoform_names = c("perfect_match", 
+                                                            "elong_START_match", 
+                                                            "trunc_START_match", 
+                                                            "elong_STOP_match", 
+                                                            "trunc_STOP_match", 
+                                                            "overlap_inside", 
+                                                            "overlap_both", 
+                                                            "overlap_upstream", 
+                                                            "overlap_downstream", 
+                                                            "upstream", 
+                                                            "downstram", 
+                                                            "none")) {
     stran <- as.vector(strand(rel_orf))[1]
     if (stran == "+") {
         
