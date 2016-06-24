@@ -21,5 +21,6 @@ Creates GRanges object as trailer in ORF.
 }
 \examples{
 #' #defineTrailer()
+
 }
 

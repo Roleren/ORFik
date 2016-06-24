@@ -9,7 +9,7 @@
 #' @import GenomicRanges
 #' @examples
 #' #' #defineTrailer()
-
+#'
 define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 10) {
     if (runValue(strand(ORFranges) == "+")) {
         ORFranges <- ORFranges[1]
@@ -26,11 +26,24 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 10) {
 }
 
 
+#' Replaces string at pos with N.
+#'
+#' @param string string.
+#' @param pos numeric vector.
+#' @return string with swapped N at pos
+subchar <- function(string, pos) {
+  for (i in pos) {
+    string <- sub(paste("^(.{", i - 1, "}).", sep = ""), "\\1N", string, perl = TRUE)
+  }
+  string
+}
+
+
 #' Creates list of IRanges with Open Reading Frames.
 #'
 #' @param fastaSeq DNA sequence to search for Open Reading Frames.
-#' @param startCodon Default is 'ATG'.
-#' @param stopCodon Default is c('TAA', 'TAG', 'TGA').
+#' @param startCodon string. Default is "ATG".
+#' @param stopCodon string. Default is "TAA|TAG|TGA".
 #' @param longestORF bolean. Default TRUE. Defines whether pick longest ORF only.
 #' When FALSE will report all open reaidng frames, even overlapping small ones.
 #' @param minimumLength numeric. Default is 0.
@@ -40,19 +53,11 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 10) {
 #' @import IRanges
 #' @examples
 #' #find_in_frame_ORFs()
+#'
+find_in_frame_ORFs <- function(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
+                               longestORF = T, minimumLength = 0) {
 
-find_in_frame_ORFs <- function(fastaSeq, startCodon = c("ATG"), stopCodon = c("TAA", "TAG", "TGA"), longestORF = T, minimumLength = 0) {
-    # for specified startCodon it finds all in frame open reading frames on the input sequence
-    subchar <- function(string, pos) {
-        for (i in pos) {
-            string <- sub(paste("^(.{", i - 1, "}).", sep = ""), "\\1N", string, perl = TRUE)
-        }
-        string
-    }
-    stop_cod <- paste(stopCodon, collapse = "|")
-    start_cod <- paste(startCodon, collapse = "|")
-
-    codpos <- paste("(?:", start_cod, ")(?:[ATGCN]{3}(?<!", stop_cod, ")){", minimumLength, ",}(?:", stop_cod, ")", sep = "")
+    codpos <- paste0("(?:", startCodon, ")(?:[ATGCN]{3}(?<!", stopCodon, ")){", minimumLength, ",}(?:", stopCodon, ")")
 
     frame <- gregexpr(codpos, fastaSeq, perl = T)
     frmat <- lapply(frame, function(x) if (x[1] != -1)
@@ -77,8 +82,8 @@ find_in_frame_ORFs <- function(fastaSeq, startCodon = c("ATG"), stopCodon = c("T
 
 #' Creates list of IRanges with Open Reading Frames.
 #'
-#' @param ORFdef - list of IRanges objects representing found ORFs.
-#' @param grangesObj - GRanges object to map coordinates back from each IRanges ORF.
+#' @param ORFdef List of IRanges objects representing found ORFs.
+#' @param grangesObj GRanges object to map coordinates back from each IRanges ORF.
 #' @return A List of GRanges objects of ORFs mapped to grangesObj.
 #' @export
 #' @import S4Vectors
@@ -86,8 +91,9 @@ find_in_frame_ORFs <- function(fastaSeq, startCodon = c("ATG"), stopCodon = c("T
 #' @import GenomicRanges
 #' @examples
 #' #map_to_GRanges()
-
+#'
 map_to_GRanges <- function(ORFdef, grangesObj) {
+
     returnList <- c()
 
     if (length(ORFdef) == 0) {
@@ -107,12 +113,14 @@ map_to_GRanges <- function(ORFdef, grangesObj) {
         }
 
         while (endingPos > width(grangesObj)[j]) {
-            ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j] + startingPos, end = end(grangesObj)[j]))
+            ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j] + startingPos,
+                                              end = end(grangesObj)[j]))
             startingPos <- 0
             endingPos <- endingPos - width(grangesObj)[j]
             j = j + 1
         }
-        ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j] + startingPos, end = start(grangesObj)[j] + endingPos))
+        ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j] + startingPos,
+                                          end = start(grangesObj)[j] + endingPos))
 
         chrom <- unique(as.character(seqnames(grangesObj)))
         strands <- unique(as.character(strand(grangesObj)))
@@ -123,13 +131,14 @@ map_to_GRanges <- function(ORFdef, grangesObj) {
             stop("Different strands in GRanges object")
         }
 
-        ORFranges <- GRanges(seqnames = Rle(rep(chrom, length(ORFranges))), ranges = ORFranges, strand = Rle(strand(rep(strands,
-            length(ORFranges)))))
+        ORFranges <- GRanges(seqnames = Rle(rep(chrom, length(ORFranges))),
+                             ranges = ORFranges,
+                             strand = Rle(strand(rep(strands, length(ORFranges)))))
         GenomeInfoDb::seqlevels(ORFranges) <- GenomeInfoDb::seqlevels(grangesObj)
         returnList <- c(returnList, ORFranges)
     }
 
-    returnList
+    return(returnList)
 }
 
 #' Resizes down ORF to the desired length, removing inside. Preserves exons.
@@ -138,14 +147,20 @@ map_to_GRanges <- function(ORFdef, grangesObj) {
 #' @param grangesObj A GRanges object of ORF.
 #' @param orf_goal_length numeric. Desired length of ORF.
 #' @return GRanges object of resized ORF
-resize_ORF <- function(grangesObj, orf_goal_length){
+#'
+resize_ORF <- function(grangesObj, orf_goal_length) {
+
+  if (!requireNamespace("biovizBase", quietly = TRUE)) {
+    stop("biovizBase needed for this function to work. Please install it.", call. = FALSE)
+  }
+
   length_diff <- (sum(width(grangesObj))/3 - orf_goal_length) * 3
   is_even <- (length_diff %% 2) == 0
   left_diff <- ifelse(is_even, length_diff/2, (length_diff - 1)/2)
   right_diff <- ifelse(is_even, length_diff/2, (length_diff + 1)/2)
 
   tiled <- tile(grangesObj, width = 1)
-  tiled <- flatGrl(tiled)
+  tiled <- biovizBase::flatGrl(tiled)
   middle <- floor(length(tiled)/2)
 
   tiled <- tiled[-c((middle - left_diff):(middle + right_diff - 1))]

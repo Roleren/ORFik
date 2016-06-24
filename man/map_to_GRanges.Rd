@@ -7,9 +7,9 @@
 map_to_GRanges(ORFdef, grangesObj)
 }
 \arguments{
-\item{ORFdef}{- list of IRanges objects representing found ORFs.}
+\item{ORFdef}{List of IRanges objects representing found ORFs.}
 
-\item{grangesObj}{- GRanges object to map coordinates back from each IRanges ORF.}
+\item{grangesObj}{GRanges object to map coordinates back from each IRanges ORF.}
 }
 \value{
 A List of GRanges objects of ORFs mapped to grangesObj.
@@ -19,5 +19,6 @@ Creates list of IRanges with Open Reading Frames.
 }
 \examples{
 #map_to_GRanges()
+
 }
 

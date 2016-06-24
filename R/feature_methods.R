@@ -7,6 +7,7 @@
 #' @return GRanges object reduced to only first frame
 #' @examples
 #' #subset_to_frame(x, 1)
+#'
 subset_to_frame <- function(x, frame){
   if(as.vector(strand(x) == "+")[1]){
     x[seq(frame, length(x), 3)]
@@ -19,11 +20,12 @@ subset_to_frame <- function(x, frame){
 #' Subset GRanges to get stop codons. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
-#’ @export
 #' @param x A tiled to size of 1 GRanges object
 #' @return GRanges object reduced to only stop codon
+#' @export
 #' @examples
 #' #subset_to_stop(x)
+#'
 subset_to_stop <- function(x){
   if(as.vector(strand(x))[1] == "+"){
     x[c(length(x) - 3, length(x) - 4, length(x) - 5)]
@@ -36,10 +38,11 @@ subset_to_stop <- function(x){
 #' Subset GRanges to get stop codons. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
-#’ @export
+#’
 #' @param cov A coverage object from coverage()
 #' @param y GRanges object for which coverage should be extracted
 #' @return numeric vector of coverage of input GRanges object
+#' @export
 #' @examples
 #' #subset_coverage(x)
 subset_coverage <- function(cov, y) {
