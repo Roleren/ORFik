@@ -18,10 +18,11 @@ Depends:
     GenomicAlignments
 Imports:
     S4Vectors,
-    seqinr,
     GenomeInfoDb,
     GenomicFeatures,
     rtracklayer
 RoxygenNote: 5.0.1
-Suggests: testthat,
-    biovizBase
+Suggests:
+    testthat,
+    biovizBase,
+    stringr

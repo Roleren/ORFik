@@ -32,10 +32,15 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 10) {
 #' @param pos numeric vector.
 #' @return string with swapped N at pos
 subchar <- function(string, pos) {
-  for (i in pos) {
-    string <- sub(paste("^(.{", i - 1, "}).", sep = ""), "\\1N", string, perl = TRUE)
+  if (!requireNamespace("stringr", quietly = TRUE)) {
+    stop("stringr needed for this function to work. Please install it.", call. = FALSE)
   }
-  string
+
+  for (i in pos) {
+    stringr::str_sub(string, i, i) <- "N"
+    # string <- sub(paste("^(.{", i - 1, "}).", sep = ""), "\\1N", string, perl = TRUE)
+  }
+  return(string)
 }
 
 
@@ -54,29 +59,30 @@ subchar <- function(string, pos) {
 #' @examples
 #' #find_in_frame_ORFs()
 #'
-find_in_frame_ORFs <- function(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
-                               longestORF = T, minimumLength = 0) {
+find_in_frame_ORFs <- function(fastaSeq,
+                               startCodon = "ATG",
+                               stopCodon = "TAA|TAG|TGA",
+                               longestORF = T,
+                               minimumLength = 0) {
+  if (!requireNamespace("stringr", quietly = TRUE)) {
+    stop("stringr needed for this function to work. Please install it.", call. = FALSE)
+  }
 
-    codpos <- paste0("(?:", startCodon, ")(?:[ATGCN]{3}(?<!", stopCodon, ")){", minimumLength, ",}(?:", stopCodon, ")")
+  codpos <- paste0("(?:", startCodon, ")(?:[ATGCN]{3}(?<!", stopCodon, ")){", minimumLength, ",}(?:", stopCodon, ")")
 
-    frame <- gregexpr(codpos, fastaSeq, perl = T)
-    frmat <- lapply(frame, function(x) if (x[1] != -1)
-        cbind((as.integer(x)), (attr(x, "match.length"))) else matrix(NA, ncol = 2, nrow = 0))
-    gr <- IRanges(start = do.call("rbind", frmat)[, 1], width = do.call("rbind", frmat)[, 2])
+  frame <- stringr::str_locate_all(fastaSeq, codpos)[[1]]
+  gr <- IRanges(start = frame[, 1], end = frame[, 2])
 
-    while (frame[[1]][1] != -1 && !longestORF) {
-        starts <- c(sapply(frame, as.integer))
-        fastaSeq <- subchar(fastaSeq, starts)
-        frame <- gregexpr(codpos, fastaSeq, perl = T)
-        frmat <- lapply(frame, function(x) if (x[1] != -1)
-            cbind((as.integer(x)), (attr(x, "match.length"))) else matrix(NA, ncol = 2, nrow = 0))
-        frGR <- IRanges(start = do.call("rbind", frmat)[, 1], width = do.call("rbind", frmat)[, 2])
+  while (dim(frame)[1] != 0 && !longestORF) {
+      starts <- c(sapply(frame, as.integer))
+      fastaSeq <- subchar(fastaSeq, starts)
+      frame <- stringr::str_locate_all(fastaSeq, codpos)[[1]]
 
-        gr <- c(gr, frGR)
-    }
+      frGR <- IRanges(start = frame[, 1], end = frame[, 2])
+      gr <- c(gr, frGR)
+  }
 
-    gr <- gr[order(start(gr), end(gr))]
-    gr
+  return(gr[order(start(gr), end(gr))])
 }
 
 

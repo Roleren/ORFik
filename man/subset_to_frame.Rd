@@ -21,5 +21,6 @@ tiled to size of 1. This subsetting takes account for strand.
 }
 \examples{
 #subset_to_frame(x, 1)
+
 }
 
