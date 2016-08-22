@@ -16,12 +16,12 @@
 #'                                                          width=c(32, 103, 88, 109)),
 #'                                                  Rle(strand(c('-', '-', '-', '-')))))
 #' extract_START_sites_from_CDSs(cds)
-
+#'
 extract_START_sites_from_CDSs <- function(cds) {
     cdsStarts <- start(cds)
     cdsEnds <- end(cds)
     isPlusStrand <- unlist(runValue(strand(cds)) == "+")
-    
+
     cdsFixedStarts <- mapply(function(starts, ends, isPlusStrand) {
         if (isPlusStrand) {
             starts[1]
@@ -29,8 +29,8 @@ extract_START_sites_from_CDSs <- function(cds) {
             ends[1]
         }
     }, cdsStarts, cdsEnds, isPlusStrand)
-    
-    cdsStarts <- GRanges(seqnames = Rle(as.vector(unlist(runValue(seqnames(cds))))), ranges = IRanges(cdsFixedStarts, width = 1), 
+
+    cdsStarts <- GRanges(seqnames = Rle(as.vector(unlist(runValue(seqnames(cds))))), ranges = IRanges(cdsFixedStarts, width = 1),
         strand = strand(as.vector(unlist(runValue(strand(cds))))))
     return(cdsStarts)
 }
@@ -54,12 +54,12 @@ extract_START_sites_from_CDSs <- function(cds) {
 #'                                                          width=c(32, 103, 88, 109)),
 #'                                                  Rle(strand(c('-', '-', '-', '-')))))
 #' extract_STOP_sites_from_CDSs(cds)
-
+#'
 extract_STOP_sites_from_CDSs <- function(cds) {
     cdsStarts <- start(cds)
     cdsEnds <- end(cds)
     isPlusStrand <- unlist(runValue(strand(cds)) == "+")
-    
+
     cdsFixedEnds <- mapply(function(starts, ends, isPlusStrand) {
         if (isPlusStrand) {
             ends[length(ends)]
@@ -67,8 +67,8 @@ extract_STOP_sites_from_CDSs <- function(cds) {
             starts[length(starts)]
         }
     }, cdsStarts, cdsEnds, isPlusStrand)
-    
-    cdsEnds <- GRanges(seqnames = Rle(as.vector(unlist(runValue(seqnames(cds))))), ranges = IRanges(cdsFixedEnds, width = 1), 
+
+    cdsEnds <- GRanges(seqnames = Rle(as.vector(unlist(runValue(seqnames(cds))))), ranges = IRanges(cdsFixedEnds, width = 1),
         strand = strand(as.vector(unlist(runValue(strand(cds))))))
     return(cdsEnds)
 }

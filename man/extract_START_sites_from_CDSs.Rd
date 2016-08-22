@@ -26,5 +26,6 @@ cds <- GRangesList('gene_plus_strand' = GRanges(Rle(c('1'), c(4)),
                                                          width=c(32, 103, 88, 109)),
                                                  Rle(strand(c('-', '-', '-', '-')))))
 extract_START_sites_from_CDSs(cds)
+
 }
 

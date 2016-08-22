@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{subset_coverage}
 \alias{subset_coverage}
-\title{Subset GRanges to get stop codons. GRanges object should be beforehand
+\title{Subset GRanges to get coverage. GRanges object should be beforehand
 tiled to size of 1. This subsetting takes account for strand.}
 \usage{
 subset_coverage(cov, y)
@@ -16,10 +16,11 @@ subset_coverage(cov, y)
 numeric vector of coverage of input GRanges object
 }
 \description{
-Subset GRanges to get stop codons. GRanges object should be beforehand
+Subset GRanges to get coverage. GRanges object should be beforehand
 tiled to size of 1. This subsetting takes account for strand.
 }
 \examples{
 #subset_coverage(x)
+
 }
 

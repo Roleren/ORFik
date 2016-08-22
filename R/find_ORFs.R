@@ -74,3 +74,64 @@ stop_definition <- function(transl_table) {
                "TAA|TAG") #26 Pachysolen tannophilus Nuclear Code
   return(STOPdef[transl_table])
 }
+
+
+#' Replaces string at pos with N.
+#'
+#' @param string string.
+#' @param pos numeric vector.
+#' @return string with swapped N at pos
+#'
+subchar <- function(string, pos) {
+  if (!requireNamespace("stringr", quietly = TRUE)) {
+    stop("stringr needed for this function to work. Please install it.", call. = FALSE)
+  }
+
+  for (i in pos) {
+    stringr::str_sub(string, i, i) <- "N"
+    # string <- sub(paste("^(.{", i - 1, "}).", sep = ""), "\\1N", string, perl = TRUE)
+  }
+  return(string)
+}
+
+
+#' Creates list of IRanges with Open Reading Frames.
+#'
+#' @param fastaSeq DNA sequence to search for Open Reading Frames.
+#' @param startCodon string. Default is "ATG".
+#' @param stopCodon string. Default is "TAA|TAG|TGA".
+#' @param longestORF bolean. Default TRUE. Defines whether pick longest ORF only.
+#' When FALSE will report all open reaidng frames, even overlapping small ones.
+#' @param minimumLength numeric. Default is 0.
+#' For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+#' @return A List of IRanges objects of ORFs.
+#' @export
+#' @import IRanges
+#' @examples
+#' #find_in_frame_ORFs()
+#'
+find_in_frame_ORFs <- function(fastaSeq,
+                               startCodon = "ATG",
+                               stopCodon = "TAA|TAG|TGA",
+                               longestORF = T,
+                               minimumLength = 0) {
+  if (!requireNamespace("stringr", quietly = TRUE)) {
+    stop("stringr needed for this function to work. Please install it.", call. = FALSE)
+  }
+
+  codpos <- paste0("(?:", startCodon, ")(?:[ATGCN]{3}(?<!", stopCodon, ")){", minimumLength, ",}(?:", stopCodon, ")")
+
+  frame <- stringr::str_locate_all(fastaSeq, codpos)[[1]]
+  gr <- IRanges(start = frame[, 1], end = frame[, 2])
+
+  while (dim(frame)[1] != 0 && !longestORF) {
+    starts <- c(sapply(frame, as.integer))
+    fastaSeq <- subchar(fastaSeq, starts)
+    frame <- stringr::str_locate_all(fastaSeq, codpos)[[1]]
+
+    frGR <- IRanges(start = frame[, 1], end = frame[, 2])
+    gr <- c(gr, frGR)
+  }
+
+  return(gr[order(start(gr), end(gr))])
+}

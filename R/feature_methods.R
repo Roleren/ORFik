@@ -35,7 +35,7 @@ subset_to_stop <- function(x){
 }
 
 
-#' Subset GRanges to get stop codons. GRanges object should be beforehand
+#' Subset GRanges to get coverage. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
 #’
@@ -45,10 +45,12 @@ subset_to_stop <- function(x){
 #' @export
 #' @examples
 #' #subset_coverage(x)
+#'
 subset_coverage <- function(cov, y) {
   cov1 <- cov[[as.vector(seqnames(y)[1])]]
   return(as.vector(cov1[ranges(y)]))
 }
+
 
 #' Calucalte Entropy value of input reads. Based on ...
 #'
@@ -57,6 +59,7 @@ subset_coverage <- function(cov, y) {
 #' @return numeric value of entropy
 #' @examples
 #' calculateEntropy(c(30,15,5,45,23,4,23,4,1,14,7,3,24,6,2,10,6,2))
+#'
 calculateEntropy <- function(countsOver) {
   reg_count <- 0
   reg_len <- 3
@@ -84,6 +87,7 @@ calculateEntropy <- function(countsOver) {
 #' @export
 #' @param countsOver A numerc vector
 #' @return numeric value in between 0 and 1
+#'
 calculateCoverage <- function(countsOver) {
   return(sum(countsOver >= 1)/length(countsOver))
 }

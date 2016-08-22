@@ -24,5 +24,6 @@ window_resize(GRanges(Rle(c('1'), c(4)),
                       IRanges(c(100, 200, 200, 100), width=c(1, 1, 1, 1)),
                       Rle(strand(c('+', '+', '-', '-')))),
              window_size = 50)
+
 }
 
