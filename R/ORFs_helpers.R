@@ -163,8 +163,8 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 
   length_diff <- (sum(width(grangesObj))/3 - orf_goal_length) * 3
   is_even <- (length_diff %% 2) == 0
-  left_diff <- ifelse(is_even, length_diff/2, (length_diff - 1)/2)
-  right_diff <- ifelse(is_even, length_diff/2, (length_diff + 1)/2)
+  left_diff <- if (is_even) { length_diff/2 } else { (length_diff - 1)/2 }
+  right_diff <- if (is_even) { length_diff/2 } else { (length_diff + 1)/2 }
 
   tiled <- tile(grangesObj, width = 1)
   tiled <- biovizBase::flatGrl(tiled)
