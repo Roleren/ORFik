@@ -15,8 +15,7 @@ find_in_frame_ORFs(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
 \item{stopCodon}{string. Default is "TAA|TAG|TGA".}
 
 \item{longestORF}{bolean. Default FALSE. Defines whether pick longest ORF only.
-When FALSE will report all open reaidng frames, even overlapping small ones.
-Currently not working - in preparation!}
+When FALSE will report all open reaidng frames, even overlapping small ones.}
 
 \item{minimumLength}{numeric. Default is 0.
 For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.}

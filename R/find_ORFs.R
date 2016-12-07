@@ -83,7 +83,6 @@ stop_definition <- function(transl_table) {
 #' @param stopCodon string. Default is "TAA|TAG|TGA".
 #' @param longestORF bolean. Default FALSE. Defines whether pick longest ORF only.
 #' When FALSE will report all open reaidng frames, even overlapping small ones.
-#' Currently not working - in preparation!
 #' @param minimumLength numeric. Default is 0.
 #' For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.
 #' @return A List of IRanges objects of ORFs.
@@ -98,7 +97,7 @@ find_in_frame_ORFs <- function(fastaSeq,
                                longestORF = F,
                                minimumLength = 0) {
 
-  codpos <- paste0("(?=(", startCodon, "))(?=([ATGCN]{3})*?(", stopCodon, "))")
+  codpos <- paste0(if(longestORF) "(?:(" else "(?=(", startCodon, "))(?=([ATGCN]{3})*?(", stopCodon, "))")
   a <- gregexpr(codpos, fastaSeq, perl = TRUE)[[1]]
   gr <- IRanges(start = as.vector(a), end = attr(a,"capture.start")[,3] + 2)
 
