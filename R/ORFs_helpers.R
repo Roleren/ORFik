@@ -79,7 +79,7 @@ map_to_GRanges <- function(ORFdef, grangesObj, transcriptName = "") {
 
   returnRanges <- GRanges()
   if (length(ORFdef) == 0) {
-    return(returnList)
+    return(returnRanges)
   }
 
   if (strands == "+") {

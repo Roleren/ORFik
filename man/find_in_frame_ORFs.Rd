@@ -5,7 +5,7 @@
 \title{Creates list of IRanges with Open Reading Frames.}
 \usage{
 find_in_frame_ORFs(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
-  longestORF = T, minimumLength = 0)
+  longestORF = F, minimumLength = 0)
 }
 \arguments{
 \item{fastaSeq}{DNA sequence to search for Open Reading Frames.}
@@ -14,8 +14,9 @@ find_in_frame_ORFs(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
 
 \item{stopCodon}{string. Default is "TAA|TAG|TGA".}
 
-\item{longestORF}{bolean. Default TRUE. Defines whether pick longest ORF only.
-When FALSE will report all open reaidng frames, even overlapping small ones.}
+\item{longestORF}{bolean. Default FALSE. Defines whether pick longest ORF only.
+When FALSE will report all open reaidng frames, even overlapping small ones.
+Currently not working - in preparation!}
 
 \item{minimumLength}{numeric. Default is 0.
 For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.}
