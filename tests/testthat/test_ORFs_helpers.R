@@ -113,3 +113,57 @@ test_that("map_to_GRanges works as intended for plus strand", {
   expect_equal(start(mapback[mapback$names == "_3"]), c(41))
   expect_equal(end(mapback[mapback$names == "_3"]), c(44))
 })
+
+
+test_that("find_in_frame_ORFs works as intended for plus strand", {
+
+  #longestORF F with different frames
+  test_ranges <- find_in_frame_ORFs("ATGGGTAATA",
+                                  "ATG|TGG|GGG",
+                                  "TAA|AAT|ATA",
+                                  longestORF = FALSE,
+                                  minimumLength = 0)
+  expect_is(test_ranges, "IRanges")
+  expect_equal(start(test_ranges), c(1, 2, 3))
+  expect_equal(end(test_ranges), c(9, 10, 8))
+
+  #longestORF T
+  test_ranges <- find_in_frame_ORFs("ATGATGTAATAA",
+                                  "ATG|TGA|GGG",
+                                  "TAA|AAT|ATA",
+                                  longestORF = T,
+                                  minimumLength = 0)
+  expect_is(test_ranges, "IRanges")
+  expect_equal(start(test_ranges), c(1, 2))
+  expect_equal(end(test_ranges), c(9, 10))
+
+  #longestORF F with minimum size 12 -> 6 + 3*2
+  test_ranges <- find_in_frame_ORFs("ATGTGGAATATGATGATGATGTAATAA",
+                                    "ATG|TGA|GGG",
+                                    "TAA|AAT|ATA",
+                                    longestORF = F,
+                                    minimumLength = 2)
+  expect_is(test_ranges, "IRanges")
+  expect_equal(start(test_ranges), c(10, 11, 13, 14))
+  expect_equal(end(test_ranges), c(24, 25, 24, 25))
+
+  #longestORF T with minimum size 12 -> 6 + 3*2
+  test_ranges <- find_in_frame_ORFs("ATGTGGAATATGATGATGATGTAATAA",
+                                  "ATG|TGA|GGG",
+                                  "TAA|AAT|ATA",
+                                  longestORF = T,
+                                  minimumLength = 2)
+  expect_is(test_ranges, "IRanges")
+  expect_equal(start(test_ranges), c(10, 11))
+  expect_equal(end(test_ranges), c(24, 25))
+
+  #find nothing
+  test_ranges <- find_in_frame_ORFs("B",
+                                  "ATG|TGA|GGG",
+                                  "TAA|AAT|ATA",
+                                  longestORF = T,
+                                  minimumLength = 2)
+  expect_is(test_ranges, "IRanges")
+  expect_equal(length(test_ranges), 0)
+
+})
