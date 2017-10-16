@@ -97,12 +97,7 @@ find_in_frame_ORFs <- function(fastaSeq,
                                longestORF = F,
                                minimumLength = 0) {
 
-  codpos <- paste0(if (longestORF) paste0("(?<!(", startCodon, "))"), "(?=(", startCodon, "))(?=(?:([ATGCN]{3}))*?(", stopCodon, "))")
-  a <- gregexpr(codpos, fastaSeq, perl = TRUE)[[1]]
-  gr <- IRanges(start = as.vector(a), end = attr(a,"capture.start")[, if (longestORF) 4 else 3] + 2)
-
-  gr <- gr[width(gr) >=  6 + minimumLength*3]
-  return(gr[order(start(gr), end(gr))])
+  get_all_orfs_as_IRanges(fastaSeq,startCodon,stopCodon,longestORF,minimumLength)
 }
 
 

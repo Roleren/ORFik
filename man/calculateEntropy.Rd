@@ -19,4 +19,3 @@ Calucalte Entropy value of input reads. Based on ...
 calculateEntropy(c(30,15,5,45,23,4,23,4,1,14,7,3,24,6,2,10,6,2))
 
 }
-

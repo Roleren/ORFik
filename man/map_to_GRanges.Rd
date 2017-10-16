@@ -23,4 +23,3 @@ Creates list of IRanges with Open Reading Frames.
 #map_to_GRanges() #rewrite into C++
 
 }
-

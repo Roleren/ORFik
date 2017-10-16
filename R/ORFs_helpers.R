@@ -67,84 +67,10 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' #map_to_GRanges() #rewrite into C++
 #'
 map_to_GRanges <- function(ORFdef, grangesObj, transcriptName = "") {
-
-  chrom <- unique(as.character(seqnames(grangesObj)))
-  strands <- unique(as.character(strand(grangesObj)))
-  if (length(chrom) != 1) {
-    stop("Different chromosomes in GRanges object")
-  }
-  if (length(strands) != 1) {
-    stop("Different strands in GRanges object")
-  }
-
-  returnRanges <- GRanges()
-  if (length(ORFdef) == 0) {
-    return(returnRanges)
-  }
-
-  if (strands == "+") {
-
-    for (i in 1:length(ORFdef)) {
-      ORFranges <- IRanges()
-      startingPos <- start(ORFdef[i]) - 1
-      endingPos <- end(ORFdef[i]) - 1
-
-      j = 1
-      while (startingPos > width(grangesObj)[j]) {
-        startingPos <- startingPos - width(grangesObj)[j]
-        endingPos <- endingPos - width(grangesObj)[j]
-        j = j + 1
-      }
-
-      while (endingPos > width(grangesObj)[j]) {
-        ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j] + startingPos,
-                                          end = end(grangesObj)[j]))
-        startingPos <- 0
-        endingPos <- endingPos - width(grangesObj)[j]
-        j = j + 1
-      }
-      ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j] + startingPos,
-                                        end = start(grangesObj)[j] + endingPos))
-      ORFranges <- GRanges(seqnames = Rle(rep(chrom, length(ORFranges))),
-                           ranges = ORFranges,
-                           strand = Rle(strand(rep(strands, length(ORFranges)))),
-                           names = rep(paste0(transcriptName, "_", i), length(ORFranges)))
-      GenomeInfoDb::seqlevels(ORFranges) <- GenomeInfoDb::seqlevels(grangesObj)
-      returnRanges <- c(returnRanges, ORFranges)
-    }
-
-  } else {
-
-    for (i in 1:length(ORFdef)) {
-      ORFranges <- IRanges()
-      startingPos <- start(ORFdef[i]) - 1
-      endingPos <- end(ORFdef[i]) - 1
-
-      j = 1
-      while (startingPos > width(grangesObj)[j]) {
-        startingPos <- startingPos - width(grangesObj)[j]
-        endingPos <- endingPos - width(grangesObj)[j]
-        j = j + 1
-      }
-
-      while (endingPos > width(grangesObj)[j]) {
-        ORFranges <- c(ORFranges, IRanges(start = start(grangesObj)[j],
-                                          end = end(grangesObj)[j] - startingPos))
-        startingPos <- 0
-        endingPos <- endingPos - width(grangesObj)[j]
-        j = j + 1
-      }
-      ORFranges <- c(ORFranges, IRanges(start = end(grangesObj)[j] - endingPos,
-                                        end = end(grangesObj)[j] - startingPos))
-      ORFranges <- GRanges(seqnames = Rle(rep(chrom, length(ORFranges))),
-                           ranges = ORFranges,
-                           strand = Rle(strand(rep(strands, length(ORFranges)))),
-                           names = rep(paste0(transcriptName, "_", i), length(ORFranges)))
-      GenomeInfoDb::seqlevels(ORFranges) <- GenomeInfoDb::seqlevels(grangesObj)
-      returnRanges <- c(returnRanges, ORFranges)
-    }
-  }
-  return(returnRanges)
+  iranges = matrix(data = c(start(ORFdef),end(ORFdef)),ncol = 2)
+  txranges = matrix(data = c(start(grangesObj),end(grangesObj)),ncol = 2)
+  txstrings = matrix(data = c(seqnames(grangesObj),strand(grangesObj)),ncol = 2)
+  map_to_GRangesC(GRanges,IRanges,iranges,txranges,txstrings,transcriptName)
 }
 
 

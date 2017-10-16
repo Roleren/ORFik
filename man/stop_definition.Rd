@@ -19,4 +19,3 @@ Returns stop definition according to
 \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
 ncbi genetic code number for translation.
 }
-

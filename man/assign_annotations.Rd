@@ -25,4 +25,3 @@ for non-coding transcripts alignment in relation to the transcript.
 \examples{
 #assign_annotations()
 }
-

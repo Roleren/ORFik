@@ -28,4 +28,3 @@ position, ready for saving e.g. as bed file.
 \examples{
 #shift_footprints()
 }
-

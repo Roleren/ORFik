@@ -19,9 +19,11 @@ Imports:
     S4Vectors,
     GenomeInfoDb,
     GenomicFeatures,
-    rtracklayer
-RoxygenNote: 5.0.1
+    rtracklayer,
+    Rcpp
+RoxygenNote: 6.0.1
 Suggests:
     testthat,
     biovizBase,
     stringr
+LinkingTo: Rcpp
