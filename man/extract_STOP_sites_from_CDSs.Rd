@@ -29,4 +29,3 @@ cds <- GRangesList('gene_plus_strand' = GRanges(Rle(c('1'), c(4)),
 extract_STOP_sites_from_CDSs(cds)
 
 }
-

@@ -17,4 +17,3 @@ GRanges object of resized ORF
 \description{
 Resizes down ORF to the desired length, removing inside. Preserves exons.
 }
-

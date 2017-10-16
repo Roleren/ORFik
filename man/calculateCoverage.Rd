@@ -17,4 +17,3 @@ numeric value in between 0 and 1
 Calculate Coverage of the input reads.
 What is percent of the vector covered by the values higher than zero?
 }
-

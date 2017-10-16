@@ -26,4 +26,3 @@ window_resize(GRanges(Rle(c('1'), c(4)),
              window_size = 50)
 
 }
-

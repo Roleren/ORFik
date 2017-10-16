@@ -33,4 +33,3 @@ metadata column 'frame'.
 #find_ORFs_fa()
 
 }
-

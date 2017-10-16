@@ -25,4 +25,3 @@ for granges starting at 100-100: and window_size = 3
 #metaPosition()
 
 }
-

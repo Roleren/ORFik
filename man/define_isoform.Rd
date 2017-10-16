@@ -38,4 +38,3 @@ Overlaps GRanges object with provided annotations.
 \examples{
 #define_isoform()
 }
-

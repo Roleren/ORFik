@@ -30,4 +30,3 @@ Creates list of IRanges with Open Reading Frames.
 #find_in_frame_ORFs()
 
 }
-

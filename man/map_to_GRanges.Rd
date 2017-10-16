@@ -20,7 +20,6 @@ A GRanges objects of ORFs mapped to grangesObj.
 Creates list of IRanges with Open Reading Frames.
 }
 \examples{
-#map_to_GRanges() #rewrite into C++
+#map_to_GRanges() #now rewritten into C++
 
 }
-

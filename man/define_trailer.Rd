@@ -40,4 +40,3 @@ transcriptRanges <- GRanges(seqnames = Rle(rep("1", 5)),
 define_trailer(ORFranges, transcriptRanges)
 
 }
-

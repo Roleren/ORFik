@@ -144,8 +144,8 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
                                     longestORF = F,
                                     minimumLength = 2)
   expect_is(test_ranges, "IRanges")
-  expect_equal(start(test_ranges), c(10, 11, 13, 14))
-  expect_equal(end(test_ranges), c(24, 25, 24, 25))
+  expect_equal(start(test_ranges), c(10, 13, 11, 14))
+  expect_equal(end(test_ranges), c(24, 24, 25, 25))
 
   #longestORF T with minimum size 12 -> 6 + 3*2
   test_ranges <- find_in_frame_ORFs("ATGTGGAATATGATGATGATGTAATAA",
