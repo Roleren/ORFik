@@ -5,16 +5,16 @@ get_all_orfs_as_matrix <- function(main_string, s, e, longestORF, minimumLength)
     .Call('_ORFik_get_all_orfs_as_matrix', PACKAGE = 'ORFik', main_string, s, e, longestORF, minimumLength)
 }
 
-get_all_orfs_as_IRanges <- function(main_string, s, e, longestORF, minimumLength) {
-    .Call('_ORFik_get_all_orfs_as_IRanges', PACKAGE = 'ORFik', main_string, s, e, longestORF, minimumLength)
+get_all_orfs_as_IRanges <- function(main_string, s, e, longestORF, minimumLength, IRanges) {
+    .Call('_ORFik_get_all_orfs_as_IRanges', PACKAGE = 'ORFik', main_string, s, e, longestORF, minimumLength, IRanges)
 }
 
 read_fasta <- function(file) {
     .Call('_ORFik_read_fasta', PACKAGE = 'ORFik', file)
 }
 
-GRangesC <- function(GRanges, IRanges, seqnames, iranges, strands) {
-    .Call('_ORFik_GRangesC', PACKAGE = 'ORFik', GRanges, IRanges, seqnames, iranges, strands)
+GRangesC <- function(GRanges, seqnames, iranges, strands) {
+    .Call('_ORFik_GRangesC', PACKAGE = 'ORFik', GRanges, seqnames, iranges, strands)
 }
 
 map_to_GRangesC <- function(GRanges, IRanges, ORFdef, grangesObj, grangesObjStrings, transcriptName) {

@@ -97,7 +97,7 @@ find_in_frame_ORFs <- function(fastaSeq,
                                longestORF = F,
                                minimumLength = 0) {
 
-  get_all_orfs_as_IRanges(fastaSeq,startCodon,stopCodon,longestORF,minimumLength)
+  get_all_orfs_as_IRanges(fastaSeq, startCodon, stopCodon, longestORF, minimumLength, IRanges)
 }
 
 

@@ -64,13 +64,13 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' @import IRanges
 #' @import GenomicRanges
 #' @examples
-#' #map_to_GRanges() #rewrite into C++
+#' #map_to_GRanges() #now rewritten into C++
 #'
 map_to_GRanges <- function(ORFdef, grangesObj, transcriptName = "") {
-  iranges = matrix(data = c(start(ORFdef),end(ORFdef)),ncol = 2)
-  txranges = matrix(data = c(start(grangesObj),end(grangesObj)),ncol = 2)
-  txstrings = matrix(data = c(seqnames(grangesObj),strand(grangesObj)),ncol = 2)
-  map_to_GRangesC(GRanges,IRanges,iranges,txranges,txstrings,transcriptName)
+  iranges = matrix(data = c(start(ORFdef), end(ORFdef)), ncol = 2)
+  txranges = matrix(data = c(start(grangesObj), end(grangesObj)), ncol = 2)
+  txstrings = matrix(data = c(seqnames(grangesObj), strand(grangesObj)), ncol = 2)
+  map_to_GRangesC(GRanges, IRanges, iranges, txranges, txstrings, transcriptName)
 }
 
 
