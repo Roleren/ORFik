@@ -87,7 +87,6 @@ stop_definition <- function(transl_table) {
 #' For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.
 #' @return A List of IRanges objects of ORFs.
 #' @export
-#' @import IRanges
 #' @examples
 #' #find_in_frame_ORFs()
 #'
@@ -97,7 +96,7 @@ find_in_frame_ORFs <- function(fastaSeq,
                                longestORF = F,
                                minimumLength = 0) {
 
-  get_all_orfs_as_IRanges(fastaSeq, startCodon, stopCodon, longestORF, minimumLength, IRanges)
+  get_all_orfs_as_IRanges(fastaSeq, startCodon, stopCodon, longestORF, minimumLength)
 }
 
 
