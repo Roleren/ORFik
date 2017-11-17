@@ -8,6 +8,7 @@
 #' }
 #'
 #' @useDynLib ORFik
+#' @import GenomicRanges
 #' @importFrom Rcpp sourceCpp
 #'
 "_PACKAGE"

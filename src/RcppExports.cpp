@@ -5,85 +5,40 @@
 
 using namespace Rcpp;
 
-// get_all_orfs_as_matrix
-IntegerMatrix get_all_orfs_as_matrix(std::string main_string, std::string s, std::string e, bool longestORF, int minimumLength);
-RcppExport SEXP _ORFik_get_all_orfs_as_matrix(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
+// get_all_ORFs_as_List
+List get_all_ORFs_as_List(CharacterVector fastaSeqs, std::string startCodon, std::string stopCodon, bool longestORF, int minimumLength);
+RcppExport SEXP _ORFik_get_all_ORFs_as_List(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type main_string(main_stringSEXP);
-    Rcpp::traits::input_parameter< std::string >::type s(sSEXP);
-    Rcpp::traits::input_parameter< std::string >::type e(eSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type fastaSeqs(fastaSeqsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type startCodon(startCodonSEXP);
+    Rcpp::traits::input_parameter< std::string >::type stopCodon(stopCodonSEXP);
     Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_all_orfs_as_matrix(main_string, s, e, longestORF, minimumLength));
+    rcpp_result_gen = Rcpp::wrap(get_all_ORFs_as_List(fastaSeqs, startCodon, stopCodon, longestORF, minimumLength));
     return rcpp_result_gen;
 END_RCPP
 }
 // get_all_orfs_as_IRanges
-S4 get_all_orfs_as_IRanges(std::string main_string, std::string s, std::string e, bool longestORF, int minimumLength, Function IRanges);
-RcppExport SEXP _ORFik_get_all_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP, SEXP IRangesSEXP) {
+S4 get_all_orfs_as_IRanges(std::string& main_string, std::string s, std::string e, bool longestORF, int minimumLength);
+RcppExport SEXP _ORFik_get_all_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type main_string(main_stringSEXP);
+    Rcpp::traits::input_parameter< std::string& >::type main_string(main_stringSEXP);
     Rcpp::traits::input_parameter< std::string >::type s(sSEXP);
     Rcpp::traits::input_parameter< std::string >::type e(eSEXP);
     Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    Rcpp::traits::input_parameter< Function >::type IRanges(IRangesSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_all_orfs_as_IRanges(main_string, s, e, longestORF, minimumLength, IRanges));
-    return rcpp_result_gen;
-END_RCPP
-}
-// read_fasta
-CharacterVector read_fasta(std::string file);
-RcppExport SEXP _ORFik_read_fasta(SEXP fileSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
-    rcpp_result_gen = Rcpp::wrap(read_fasta(file));
-    return rcpp_result_gen;
-END_RCPP
-}
-// GRangesC
-S4 GRangesC(Function GRanges, CharacterVector seqnames, S4 iranges, CharacterVector strands);
-RcppExport SEXP _ORFik_GRangesC(SEXP GRangesSEXP, SEXP seqnamesSEXP, SEXP irangesSEXP, SEXP strandsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Function >::type GRanges(GRangesSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type seqnames(seqnamesSEXP);
-    Rcpp::traits::input_parameter< S4 >::type iranges(irangesSEXP);
-    Rcpp::traits::input_parameter< CharacterVector >::type strands(strandsSEXP);
-    rcpp_result_gen = Rcpp::wrap(GRangesC(GRanges, seqnames, iranges, strands));
-    return rcpp_result_gen;
-END_RCPP
-}
-// map_to_GRangesC
-S4 map_to_GRangesC(Function GRanges, Function IRanges, IntegerMatrix ORFdef, IntegerMatrix grangesObj, CharacterMatrix grangesObjStrings, std::string transcriptName);
-RcppExport SEXP _ORFik_map_to_GRangesC(SEXP GRangesSEXP, SEXP IRangesSEXP, SEXP ORFdefSEXP, SEXP grangesObjSEXP, SEXP grangesObjStringsSEXP, SEXP transcriptNameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Function >::type GRanges(GRangesSEXP);
-    Rcpp::traits::input_parameter< Function >::type IRanges(IRangesSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type ORFdef(ORFdefSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type grangesObj(grangesObjSEXP);
-    Rcpp::traits::input_parameter< CharacterMatrix >::type grangesObjStrings(grangesObjStringsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type transcriptName(transcriptNameSEXP);
-    rcpp_result_gen = Rcpp::wrap(map_to_GRangesC(GRanges, IRanges, ORFdef, grangesObj, grangesObjStrings, transcriptName));
+    rcpp_result_gen = Rcpp::wrap(get_all_orfs_as_IRanges(main_string, s, e, longestORF, minimumLength));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ORFik_get_all_orfs_as_matrix", (DL_FUNC) &_ORFik_get_all_orfs_as_matrix, 5},
-    {"_ORFik_get_all_orfs_as_IRanges", (DL_FUNC) &_ORFik_get_all_orfs_as_IRanges, 6},
-    {"_ORFik_read_fasta", (DL_FUNC) &_ORFik_read_fasta, 1},
-    {"_ORFik_GRangesC", (DL_FUNC) &_ORFik_GRangesC, 4},
-    {"_ORFik_map_to_GRangesC", (DL_FUNC) &_ORFik_map_to_GRangesC, 6},
+    {"_ORFik_get_all_ORFs_as_List", (DL_FUNC) &_ORFik_get_all_ORFs_as_List, 5},
+    {"_ORFik_get_all_orfs_as_IRanges", (DL_FUNC) &_ORFik_get_all_orfs_as_IRanges, 5},
     {NULL, NULL, 0}
 };
 
