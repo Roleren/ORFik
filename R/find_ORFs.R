@@ -76,28 +76,32 @@ stop_definition <- function(transl_table) {
 }
 
 
-#' Creates list of IRanges with Open Reading Frames.
-#'
-#' @param fastaSeq DNA sequence to search for Open Reading Frames.
+#' Creates GRangesList of Open Reading Frames mapped to genomic coordinates
+#' Input is a Grangeslist of regions to search, together with a DNAStringSet with
+#' fastaSequence in same order as the grl.
+#' @param grl GRangesList of sequences to search for orfs, in Genomic coordinates
+#' @param fastaSeqs DNA sequences to search for Open Reading Frames, must be DNAStringSet.
 #' @param startCodon string. Default is "ATG".
 #' @param stopCodon string. Default is "TAA|TAG|TGA".
 #' @param longestORF bolean. Default FALSE. Defines whether pick longest ORF only.
 #' When FALSE will report all open reaidng frames, even overlapping small ones.
 #' @param minimumLength numeric. Default is 0.
-#' For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.
-#' @return A List of IRanges objects of ORFs.
+#' For example minimumLength = 8 will result in size of ORFs to be at least
+#'  START + 8*3 [bp] + STOP.
+#' @return A GRangesList of ORFs.
 #' @export
-#' @import IRanges
-#' @examples
-#' #find_in_frame_ORFs()
-#'
-find_in_frame_ORFs <- function(fastaSeq,
-                               startCodon = "ATG",
-                               stopCodon = "TAA|TAG|TGA",
-                               longestORF = F,
-                               minimumLength = 0) {
+find_in_frame_ORFs <- function(grl, fastaSeqs,
+                                        startCodon =  "ATG",stopCodon = "TAA|TAG|TGA",
+                                        longestORF = F,minimumLength = 0 ){
 
-  get_all_orfs_as_IRanges(fastaSeq, startCodon, stopCodon, longestORF, minimumLength, IRanges)
+  if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
+
+  result = get_all_ORFs_as_List( fastaSeqs = as.matrix( as.character( fastaSeqs)),
+                                 startCodon = startCodon,stopCodon = stopCodon,
+                                 longestORF = longestORF,
+                                 minimumLength = minimumLength)
+  newGRL = map_to_GRanges( grl, result)
+  return(newGRL)
 }
 
 
@@ -119,7 +123,6 @@ find_in_frame_ORFs <- function(fastaSeq,
 #' @import S4Vectors
 #' @import seqinr
 #' @import IRanges
-#' @import GenomicRanges
 #' @examples
 #' #find_ORFs_fa()
 #'

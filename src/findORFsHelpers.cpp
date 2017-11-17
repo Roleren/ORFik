@@ -16,8 +16,8 @@ using namespace Rcpp;
 
 
 Function IRangesA("IRanges", Environment::namespace_env("IRanges"));
-////////////--Functions--/////////////
 
+////////////--Functions--/////////////
 vi get_index_list(vi z, string& working_string, string& substring)
 {
   int counter = 0;
@@ -155,6 +155,7 @@ vi get_all_hits(string& main_string, string s)
 
   return tempS;
 }
+
 // Return ranges as vector, only for internal c++ use!!
 std::vector<int> get_all_orfs_as_vector(std::string &main_string, std::string s,
                                      std::string e, bool longestORF, int minimumLength)
@@ -211,7 +212,6 @@ std::vector<int> get_all_orfs_as_vector(std::string &main_string, std::string s,
 }
 
 // Now used in the fast version of orf finding, use _as_IRanges for direct use in R.
-// [[Rcpp::export]]
 IntegerMatrix get_all_orfs_as_matrix(std::string &main_string, std::string s,
                             std::string e, bool longestORF, int minimumLength)
 {

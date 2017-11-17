@@ -80,45 +80,12 @@ transcriptRanges <- GRanges(seqnames = Rle(rep("1", 4)),
                             ranges = IRanges(start = rev(c(10, 20, 30, 40)), end = rev(c(15, 25, 35, 45))),
                             strand = Rle(strand(rep("-", 4))))
 
-test_that("map_to_GRanges works as intended for minus strand", {
-  mapback <- map_to_GRanges(IRanges(start = c(1, 10, 20), width = c(17, 5, 4)), transcriptRanges)
-  #first ORF
-  expect_equal(sum(width(mapback[mapback$names == "_1"])), 17)
-  expect_equal(start(mapback[mapback$names == "_1"]), c(40, 30, 21))
-  expect_equal(end(mapback[mapback$names == "_1"]), c(45, 35, 25))
-  #second ORF
-  expect_equal(sum(width(mapback[mapback$names == "_2"])), 5)
-  expect_equal(start(mapback[mapback$names == "_2"]), c(30, 24))
-  expect_equal(end(mapback[mapback$names == "_2"]), c(32, 25))
-  #third ORF
-  expect_equal(sum(width(mapback[mapback$names == "_3"])), 4)
-  expect_equal(start(mapback[mapback$names == "_3"]), c(11))
-  expect_equal(end(mapback[mapback$names == "_3"]), c(14))
-})
-
-strand(transcriptRanges) <- "+"
-transcriptRanges <- sort(transcriptRanges)
-test_that("map_to_GRanges works as intended for plus strand", {
-  mapback <- map_to_GRanges(IRanges(start = c(1, 10, 20), width = c(17, 5, 4)), transcriptRanges)
-  #first ORF
-  expect_equal(sum(width(mapback[mapback$names == "_1"])), 17)
-  expect_equal(start(mapback[mapback$names == "_1"]), c(10, 20, 30))
-  expect_equal(end(mapback[mapback$names == "_1"]), c(15, 25, 34))
-  #second ORF
-  expect_equal(sum(width(mapback[mapback$names == "_2"])), 5)
-  expect_equal(start(mapback[mapback$names == "_2"]), c(23, 30))
-  expect_equal(end(mapback[mapback$names == "_2"]), c(25, 31))
-  #third ORF
-  expect_equal(sum(width(mapback[mapback$names == "_3"])), 4)
-  expect_equal(start(mapback[mapback$names == "_3"]), c(41))
-  expect_equal(end(mapback[mapback$names == "_3"]), c(44))
-})
 
 
 test_that("find_in_frame_ORFs works as intended for plus strand", {
 
   #longestORF F with different frames
-  test_ranges <- find_in_frame_ORFs("ATGGGTAATA",
+  test_ranges <- get_all_orfs_as_IRanges("ATGGGTAATA",
                                   "ATG|TGG|GGG",
                                   "TAA|AAT|ATA",
                                   longestORF = FALSE,
@@ -128,7 +95,7 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
   expect_equal(end(test_ranges), c(9, 10, 8))
 
   #longestORF T
-  test_ranges <- find_in_frame_ORFs("ATGATGTAATAA",
+  test_ranges <- get_all_orfs_as_IRanges("ATGATGTAATAA",
                                   "ATG|TGA|GGG",
                                   "TAA|AAT|ATA",
                                   longestORF = T,
@@ -138,7 +105,7 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
   expect_equal(end(test_ranges), c(9, 10))
 
   #longestORF F with minimum size 12 -> 6 + 3*2
-  test_ranges <- find_in_frame_ORFs("ATGTGGAATATGATGATGATGTAATAA",
+  test_ranges <- get_all_orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
                                     "ATG|TGA|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,
@@ -148,7 +115,7 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
   expect_equal(end(test_ranges), c(24, 24, 25, 25))
 
   #longestORF T with minimum size 12 -> 6 + 3*2
-  test_ranges <- find_in_frame_ORFs("ATGTGGAATATGATGATGATGTAATAA",
+  test_ranges <- get_all_orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
                                   "ATG|TGA|GGG",
                                   "TAA|AAT|ATA",
                                   longestORF = T,
@@ -158,7 +125,7 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
   expect_equal(end(test_ranges), c(24, 25))
 
   #find nothing
-  test_ranges <- find_in_frame_ORFs("B",
+  test_ranges <- get_all_orfs_as_IRanges("B",
                                   "ATG|TGA|GGG",
                                   "TAA|AAT|ATA",
                                   longestORF = T,
@@ -167,3 +134,72 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
   expect_equal(length(test_ranges), 0)
 
 })
+
+
+
+# Create data for get_all_ORFs_as_GRangesList test_that#1
+seqname = c("tx1","tx2","tx3","tx4")
+seqs = c("ATGGGTATTTATA","ATGGGTAATA","ATGGG", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+grIn1 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(10, 20), end = c(19, 22)),
+                 strand = rep("-", 2), names = rep(seqname[1],2))
+grIn2 <- GRanges(seqnames = rep("1", 1),
+                 ranges = IRanges(start = c(1010), end = c(1019)),
+                 strand = rep("-", 1), names = rep(seqname[2],1))
+
+grIn3 <- GRanges(seqnames = rep("1", 1),
+                 ranges = IRanges(start = c(2000), end = c(2004)),
+                 strand = rep("-", 1), names = rep(seqname[3],1))
+
+grIn4 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(3000,3030), end = c(3029,3036)),
+                 strand = rep("-", 2), names = rep(seqname[4],2))
+
+grl = GRangesList(grIn1,grIn2,grIn3,grIn4)
+names(grl) = seqname
+
+test_that("get_all_ORFs_as_GRangesList works as intended", {
+
+  #longestORF F with different frames
+  test_ranges <-find_in_frame_ORFs(grl,seqs,
+                                    "ATG|TGG|GGG",
+                                    "TAA|AAT|ATA",
+                                    longestORF = F,
+                                    minimumLength = 0)
+
+  expect_is(test_ranges, "GRangesList")
+  expect_is(strand(test_ranges),"CompressedRleList")
+  expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(10, 20, 1011, 1010,1012))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(19, 21, 1019, 1018,1017))
+
+
+})
+
+# Create data for get_all_ORFs_as_GRangesList test_that#2
+seqname = c("tx1","tx1")
+seqs = c("ATGATGTAATAA")
+grIn1 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(1, 2), end = c(1, 12)),
+                 strand = rep("+", 2), names = rep(seqname[1],2))
+
+grl = GRangesList(grIn1)
+names(grl) = "tx1"
+test_that("map_to_GRanges works as intended for strange exons", {
+
+  #longestORF F with different frames
+  test_ranges <- find_in_frame_ORFs(grl,seqs,
+                                             "ATG|TGG|GGG",
+                                             "TAA|AAT|ATA",
+                                             longestORF = F,
+                                             minimumLength = 0)
+
+  expect_is(test_ranges, "GRangesList")
+  expect_is(strand(test_ranges),"CompressedRleList")
+  expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(1, 2, 4))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(1, 9, 9))
+
+})
+
+
