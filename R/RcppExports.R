@@ -5,15 +5,7 @@ get_all_ORFs_as_List <- function(fastaSeqs, startCodon, stopCodon, longestORF, m
     .Call('_ORFik_get_all_ORFs_as_List', PACKAGE = 'ORFik', fastaSeqs, startCodon, stopCodon, longestORF, minimumLength)
 }
 
-get_all_orfs_as_matrix <- function(main_string, s, e, longestORF, minimumLength) {
-    .Call('_ORFik_get_all_orfs_as_matrix', PACKAGE = 'ORFik', main_string, s, e, longestORF, minimumLength)
-}
-
 get_all_orfs_as_IRanges <- function(main_string, s, e, longestORF, minimumLength) {
     .Call('_ORFik_get_all_orfs_as_IRanges', PACKAGE = 'ORFik', main_string, s, e, longestORF, minimumLength)
-}
-
-map_to_GRangesC <- function(ORFdef, grangesObj, grangesObjStrings, transcriptName) {
-    .Call('_ORFik_map_to_GRangesC', PACKAGE = 'ORFik', ORFdef, grangesObj, grangesObjStrings, transcriptName)
 }
 

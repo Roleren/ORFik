@@ -20,21 +20,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// get_all_orfs_as_matrix
-IntegerMatrix get_all_orfs_as_matrix(std::string& main_string, std::string s, std::string e, bool longestORF, int minimumLength);
-RcppExport SEXP _ORFik_get_all_orfs_as_matrix(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string& >::type main_string(main_stringSEXP);
-    Rcpp::traits::input_parameter< std::string >::type s(sSEXP);
-    Rcpp::traits::input_parameter< std::string >::type e(eSEXP);
-    Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
-    Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(get_all_orfs_as_matrix(main_string, s, e, longestORF, minimumLength));
-    return rcpp_result_gen;
-END_RCPP
-}
 // get_all_orfs_as_IRanges
 S4 get_all_orfs_as_IRanges(std::string& main_string, std::string s, std::string e, bool longestORF, int minimumLength);
 RcppExport SEXP _ORFik_get_all_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
@@ -50,26 +35,10 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// map_to_GRangesC
-S4 map_to_GRangesC(IntegerMatrix ORFdef, IntegerMatrix grangesObj, CharacterMatrix grangesObjStrings, std::string transcriptName);
-RcppExport SEXP _ORFik_map_to_GRangesC(SEXP ORFdefSEXP, SEXP grangesObjSEXP, SEXP grangesObjStringsSEXP, SEXP transcriptNameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type ORFdef(ORFdefSEXP);
-    Rcpp::traits::input_parameter< IntegerMatrix >::type grangesObj(grangesObjSEXP);
-    Rcpp::traits::input_parameter< CharacterMatrix >::type grangesObjStrings(grangesObjStringsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type transcriptName(transcriptNameSEXP);
-    rcpp_result_gen = Rcpp::wrap(map_to_GRangesC(ORFdef, grangesObj, grangesObjStrings, transcriptName));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_get_all_ORFs_as_List", (DL_FUNC) &_ORFik_get_all_ORFs_as_List, 5},
-    {"_ORFik_get_all_orfs_as_matrix", (DL_FUNC) &_ORFik_get_all_orfs_as_matrix, 5},
     {"_ORFik_get_all_orfs_as_IRanges", (DL_FUNC) &_ORFik_get_all_orfs_as_IRanges, 5},
-    {"_ORFik_map_to_GRangesC", (DL_FUNC) &_ORFik_map_to_GRangesC, 4},
     {NULL, NULL, 0}
 };
 

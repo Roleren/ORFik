@@ -2,24 +2,22 @@
 % Please edit documentation in R/ORFs_helpers.R
 \name{map_to_GRanges}
 \alias{map_to_GRanges}
-\title{Creates list of IRanges with Open Reading Frames.}
+\title{Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
+ a list of group indeces}
 \usage{
-map_to_GRanges(ORFdef, grangesObj, transcriptName = "")
+map_to_GRanges(grl, result)
 }
 \arguments{
-\item{ORFdef}{List of IRanges objects representing found ORFs.}
+\item{grl}{GRangesList. A GRangesList of the original sequences that gave the orfs}
 
-\item{grangesObj}{GRanges object to map coordinates back from each IRanges ORF.}
-
-\item{transcriptName}{String of name that will be added as metadata name column.}
+\item{result}{List. A List of the results of finding uorfs
+List syntax is: result[1] contain grouping indeces,
+result[2] countains two columns of start and stops}
 }
 \value{
-A GRanges objects of ORFs mapped to grangesObj.
+A GRangesList of ORFs.
 }
 \description{
-Creates list of IRanges with Open Reading Frames.
-}
-\examples{
-#map_to_GRanges() # Calls c Function
-
+Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
+ a list of group indeces
 }

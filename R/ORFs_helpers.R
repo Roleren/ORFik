@@ -52,25 +52,84 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
   }
 }
 
-
-#' Creates list of IRanges with Open Reading Frames.
+#' Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
+#'  a list of group indeces
 #'
-#' @param ORFdef List of IRanges objects representing found ORFs.
-#' @param grangesObj GRanges object to map coordinates back from each IRanges ORF.
-#' @param transcriptName String of name that will be added as metadata name column.
-#' @return A GRanges objects of ORFs mapped to grangesObj.
+#' @param grl GRangesList. A GRangesList of the original sequences that gave the orfs
+#' @param result List. A List of the results of finding uorfs
+#' List syntax is: result[1] contain grouping indeces,
+#' result[2] countains two columns of start and stops
+#' @return A GRangesList of ORFs.
 #' @export
-#' @import GenomicRanges
-#' @examples
-#' #map_to_GRanges() # Calls c Function
-#'
-map_to_GRanges <- function(ORFdef, grangesObj, transcriptName = "") {
-  iranges = matrix(data = c(start(ORFdef), end(ORFdef)), ncol = 2)
-  txranges = matrix(data = c(start(grangesObj), end(grangesObj)), ncol = 2)
-  txstrings = matrix(data = c(seqnames(grangesObj), strand(grangesObj)), ncol = 2)
-  map_to_GRangesC(iranges, txranges, txstrings, transcriptName)
-}
+#' @importFrom GenomicFeatures mapFromTranscripts
+map_to_GRanges <- function(grl, result) {
 
+  if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
+
+  # Create GRanges object from result tx ranges
+  gr = GRanges(seqnames = as.character(names(grl[result$index])),
+               ranges = IRanges(start = unlist(result$orf[1]),
+                                end = unlist(result$orf[2])),
+               strand =as.character(phead(strand(grl[result$index]),1L )))
+  names(gr) = names(grl[result$index])
+
+  # map from transcript, remove duplicates, remove hit columns
+  # syntax for mapping:-> Seqnames(gr) == names(grl),
+  genomicCoordinates = mapFromTranscripts(x =  gr, transcripts =  grl)
+  genomicCoordinates = genomicCoordinates[names(gr[genomicCoordinates$xHits]) == names(genomicCoordinates)]
+  rm(gr)
+
+  genomicCoordinates$xHits = NULL
+  genomicCoordinates$transcriptsHits = NULL
+  names(genomicCoordinates) = names(grl[result$index])
+
+  newGRL = split(genomicCoordinates,result$index )
+  names(newGRL) = unique(names(genomicCoordinates))
+
+  # Split by exons and create new exon names
+  unlNEW = unlist(newGRL, use.names = F)
+  unlGRL = unlist(grl[names(newGRL)])
+  ol = findOverlaps(query = unlNEW, subject = unlGRL)
+  c = ol[names(unlNEW[from(ol)]) == names(unlGRL[to(ol)])]
+  # resize n to c size
+  N = unlNEW[from(c)]
+  ff = unlGRL[to(c)]
+
+  # add end of first to first, start of second to second copy
+  dups = duplicated(from(c))
+  start(N[dups]) = start(ff[dups])
+  dupsR = duplicated(rev(from(c)))
+  rN = rev(N)
+  end(rN[dupsR]) = end(rev(ff)[dupsR])
+  N = rev(rN)
+
+  # Relist last time !!!CHECK IF +/- is correct
+  # Get grouping t by names
+  l = Rle(names(N))
+  t = unlist(lapply(1:nrun(l),function(x){ rep(x,runLength(l)[x])}))
+  froms = from(c)
+
+  # Fast pre initialized for loop for uorf exon names
+  Inds =  rep(1, length(N))
+  for(x in 2:length(N)){
+    if(t[x] != t[x-1]){
+      Inds[x] = 1
+    }else{
+      if(froms[x] != froms[x-1]){
+        Inds[x] = Inds[x-1]+1
+      }else{
+        Inds[x] = Inds[x-1]
+      }
+    }
+  }
+  # create orf names and return as grl
+  N$names = paste0(names(N),"_",Inds)
+
+  newGRL = split(N,t)
+  names(newGRL) = unique(names(N))
+
+  return(newGRL)
+}
 
 #' Resizes down ORF to the desired length, removing inside. Preserves exons.
 #'

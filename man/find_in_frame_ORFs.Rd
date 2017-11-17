@@ -2,13 +2,17 @@
 % Please edit documentation in R/find_ORFs.R
 \name{find_in_frame_ORFs}
 \alias{find_in_frame_ORFs}
-\title{Creates list of IRanges with Open Reading Frames.}
+\title{Creates GRangesList of Open Reading Frames mapped to genomic coordinates
+Input is a Grangeslist of regions to search, together with a DNAStringSet with
+fastaSequence in same order as the grl.}
 \usage{
-find_in_frame_ORFs(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
-  longestORF = F, minimumLength = 0)
+find_in_frame_ORFs(grl, fastaSeqs, startCodon = "ATG",
+  stopCodon = "TAA|TAG|TGA", longestORF = F, minimumLength = 0)
 }
 \arguments{
-\item{fastaSeq}{DNA sequence to search for Open Reading Frames.}
+\item{grl}{GRangesList of sequences to search for orfs, in Genomic coordinates}
+
+\item{fastaSeqs}{DNA sequences to search for Open Reading Frames, must be DNAStringSet.}
 
 \item{startCodon}{string. Default is "ATG".}
 
@@ -18,15 +22,14 @@ find_in_frame_ORFs(fastaSeq, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
 When FALSE will report all open reaidng frames, even overlapping small ones.}
 
 \item{minimumLength}{numeric. Default is 0.
-For example minimumLength = 8 will result in size of ORFs to be at least START + 8*3 [bp] + STOP.}
+For example minimumLength = 8 will result in size of ORFs to be at least
+ START + 8*3 [bp] + STOP.}
 }
 \value{
-A List of IRanges objects of ORFs.
+A GRangesList of ORFs.
 }
 \description{
-Creates list of IRanges with Open Reading Frames.
-}
-\examples{
-#find_in_frame_ORFs()
-
+Creates GRangesList of Open Reading Frames mapped to genomic coordinates
+Input is a Grangeslist of regions to search, together with a DNAStringSet with
+fastaSequence in same order as the grl.
 }
