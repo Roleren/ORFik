@@ -67,50 +67,49 @@ map_to_GRanges <- function(grl, result) {
   if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
 
   # Create GRanges object from result tx ranges
-  gr = GRanges(seqnames = as.character(names(grl[result$index])),
+  gr <- GRanges(seqnames = as.character(names(grl[result$index])),
                ranges = IRanges(start = unlist(result$orf[1]),
                                 end = unlist(result$orf[2])),
                strand =as.character(phead(strand(grl[result$index]),1L )))
-  names(gr) = names(grl[result$index])
+  names(gr) <- names(grl[result$index])
 
   # map from transcript, remove duplicates, remove hit columns
   # syntax for mapping:-> Seqnames(gr) == names(grl),
-  genomicCoordinates = mapFromTranscripts(x =  gr, transcripts =  grl)
-  genomicCoordinates = genomicCoordinates[names(gr[genomicCoordinates$xHits]) == names(genomicCoordinates)]
+  genomicCoordinates <- mapFromTranscripts(x =  gr, transcripts =  grl)
+  genomicCoordinates <- genomicCoordinates[names(gr[genomicCoordinates$xHits]) == names(genomicCoordinates)]
   rm(gr)
 
-  genomicCoordinates$xHits = NULL
-  genomicCoordinates$transcriptsHits = NULL
-  names(genomicCoordinates) = names(grl[result$index])
+  genomicCoordinates$xHits <- NULL
+  genomicCoordinates$transcriptsHits <- NULL
+  names(genomicCoordinates) <- names(grl[result$index])
 
-  newGRL = split(genomicCoordinates,result$index )
-  names(newGRL) = unique(names(genomicCoordinates))
+  newGRL <- split(genomicCoordinates,result$index )
+  names(newGRL) <- unique(names(genomicCoordinates))
 
   # Split by exons and create new exon names
-  unlNEW = unlist(newGRL, use.names = F)
-  unlGRL = unlist(grl[names(newGRL)])
-  ol = findOverlaps(query = unlNEW, subject = unlGRL)
-  c = ol[names(unlNEW[from(ol)]) == names(unlGRL[to(ol)])]
+  unlNEW <- unlist(newGRL, use.names = F)
+  unlGRL <- unlist(grl[names(newGRL)])
+  ol <- findOverlaps(query = unlNEW, subject = unlGRL)
+  c <- ol[names(unlNEW[from(ol)]) == names(unlGRL[to(ol)])]
   # resize n to c size
-  N = unlNEW[from(c)]
-  ff = unlGRL[to(c)]
+  N <- unlNEW[from(c)]
+  ff <- unlGRL[to(c)]
 
   # add end of first to first, start of second to second copy
-  dups = duplicated(from(c))
+  dups <- duplicated(from(c))
   start(N[dups]) = start(ff[dups])
-  dupsR = duplicated(rev(from(c)))
-  rN = rev(N)
+  dupsR <- duplicated(rev(from(c)))
+  rN <- rev(N)
   end(rN[dupsR]) = end(rev(ff)[dupsR])
-  N = rev(rN)
+  N <- rev(rN)
 
-  # Relist last time !!!CHECK IF +/- is correct
   # Get grouping t by names
-  l = Rle(names(N))
-  t = unlist(lapply(1:nrun(l),function(x){ rep(x,runLength(l)[x])}))
-  froms = from(c)
+  l <- Rle(names(N))
+  t <- unlist(lapply(1:nrun(l),function(x){ rep(x,runLength(l)[x])}))
+  froms <- from(c)
 
   # Fast pre initialized for loop for uorf exon names
-  Inds =  rep(1, length(N))
+  Inds <-  rep(1, length(N))
   for(x in 2:length(N)){
     if(t[x] != t[x-1]){
       Inds[x] = 1
@@ -125,8 +124,8 @@ map_to_GRanges <- function(grl, result) {
   # create orf names and return as grl
   N$names = paste0(names(N),"_",Inds)
 
-  newGRL = split(N,t)
-  names(newGRL) = unique(names(N))
+  newGRL <- split(N,t)
+  names(newGRL) <- unique(names(N))
 
   return(newGRL)
 }

@@ -90,18 +90,18 @@ stop_definition <- function(transl_table) {
 #'  START + 8*3 [bp] + STOP.
 #' @return A GRangesList of ORFs.
 #' @export
-find_in_frame_ORFs <- function(grl, fastaSeqs,
-                                        startCodon =  "ATG",stopCodon = "TAA|TAG|TGA",
-                                        longestORF = F,minimumLength = 0 ){
+find_in_frame_ORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
+                               stopCodon = "TAA|TAG|TGA", longestORF = F,
+                               minimumLength = 0 ){
 
   if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
 
-  result = get_all_ORFs_as_List( fastaSeqs = as.matrix( as.character( fastaSeqs)),
+  result <- ORFs_as_List(fastaSeqs = as.matrix(as.character( fastaSeqs)),
                                  startCodon = startCodon,stopCodon = stopCodon,
                                  longestORF = longestORF,
                                  minimumLength = minimumLength)
-  newGRL = map_to_GRanges( grl, result)
-  return(newGRL)
+
+  return(map_to_GRanges(grl, result) )
 }
 
 
