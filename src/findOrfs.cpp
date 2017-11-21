@@ -20,7 +20,7 @@ using namespace Rcpp;
 // Instead of passing back and forth from r, do it all in C
 
 // [[Rcpp::export]]
-List get_all_ORFs_as_List(
+List ORFs_as_List(
     CharacterVector fastaSeqs,
     std::string startCodon,
     std::string stopCodon,
@@ -32,7 +32,7 @@ List get_all_ORFs_as_List(
 
   for (size_t i = 0; i < fastaSeqs.size(); i++) {
     std::string fastaSeq = static_cast<std::string>(fastaSeqs[i]);
-    std::vector<int> ORFdef = get_all_orfs_as_vector(fastaSeq, startCodon,
+    std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
                                                      stopCodon,longestORF,
                                                      minimumLength);
 

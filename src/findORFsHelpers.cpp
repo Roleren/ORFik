@@ -157,7 +157,7 @@ vi get_all_hits(string& main_string, string s)
 }
 
 // Return ranges as vector, only for internal c++ use!!
-std::vector<int> get_all_orfs_as_vector(std::string &main_string, std::string s,
+std::vector<int> orfs_as_vector(std::string &main_string, std::string s,
                                      std::string e, bool longestORF, int minimumLength)
 {
 
@@ -212,11 +212,11 @@ std::vector<int> get_all_orfs_as_vector(std::string &main_string, std::string s,
 }
 
 // Now used in the fast version of orf finding, use _as_IRanges for direct use in R.
-IntegerMatrix get_all_orfs_as_matrix(std::string &main_string, std::string s,
+IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
                             std::string e, bool longestORF, int minimumLength)
 {
 
-  vi maxUORF =  get_all_orfs_as_vector(main_string, s,
+  vi maxUORF =  orfs_as_vector(main_string, s,
                                        e, longestORF, minimumLength);
   int uorfSize = maxUORF.size();
 
@@ -242,7 +242,7 @@ IntegerMatrix get_all_orfs_as_matrix(std::string &main_string, std::string s,
 //Minimum length filters the list to only contain orfs longer...
 //or equal to this number of triplets
 // [[Rcpp::export]]
-S4 get_all_orfs_as_IRanges(std::string &main_string, std::string s,
+S4 orfs_as_IRanges(std::string &main_string, std::string s,
                            std::string e, bool longestORF,
                            int minimumLength)
 {
@@ -251,7 +251,7 @@ S4 get_all_orfs_as_IRanges(std::string &main_string, std::string s,
     S4 I("IRanges");
     return I;
   }
-  IntegerMatrix mat = get_all_orfs_as_matrix(main_string, s, e,
+  IntegerMatrix mat = orfs_as_matrix(main_string, s, e,
                                              longestORF, minimumLength);
 
   if (mat.ncol() == 0) {
