@@ -56,15 +56,18 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #'  a list of group indeces
 #'
 #' @param grl GRangesList. A GRangesList of the original sequences that gave the orfs
-#' @param result List. A List of the results of finding uorfs
-#' List syntax is: result[1] contain grouping indeces,
-#' result[2] countains two columns of start and stops
+#' @param result List. A list of the results of finding uorfs
+#' list syntax is: result[1] contain grouping indeces, named index
+#' result[2] countains two columns of start and stops,  named orf
 #' @return A GRangesList of ORFs.
 #' @export
 #' @importFrom GenomicFeatures mapFromTranscripts
 map_to_GRanges <- function(grl, result) {
 
   if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
+  if(is.null(names(grl))) stop("grl contains no names")
+  if(class(result) != "list") stop("Invalid type of result, must be list.")
+  if(length(result) != 2) stop("Invalid structure of result, must be list with 2 elements, read info for structure")
 
   # Create GRanges object from result tx ranges
   gr <- GRanges(seqnames = as.character(names(grl[result$index])),
@@ -88,8 +91,11 @@ map_to_GRanges <- function(grl, result) {
 
   # Split by exons and create new exon names
   unlNEW <- unlist(newGRL, use.names = F)
-  unlGRL <- unlist(grl[names(newGRL)])
+  unlGRL <- unlist(grl[names(newGRL)], use.names = F)
   ol <- findOverlaps(query = unlNEW, subject = unlGRL)
+
+  # check for naming, differs between samples
+  if(is.null(names(unlGRL))) unlGRL <- unlist(grl[names(newGRL)], use.names = T)
   c <- ol[names(unlNEW[from(ol)]) == names(unlGRL[to(ol)])]
   # resize n to c size
   N <- unlNEW[from(c)]

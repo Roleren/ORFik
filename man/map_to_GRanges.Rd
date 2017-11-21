@@ -10,9 +10,9 @@ map_to_GRanges(grl, result)
 \arguments{
 \item{grl}{GRangesList. A GRangesList of the original sequences that gave the orfs}
 
-\item{result}{List. A List of the results of finding uorfs
-List syntax is: result[1] contain grouping indeces,
-result[2] countains two columns of start and stops}
+\item{result}{List. A list of the results of finding uorfs
+list syntax is: result[1] contain grouping indeces, named index
+result[2] countains two columns of start and stops,  named orf}
 }
 \value{
 A GRangesList of ORFs.
