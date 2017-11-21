@@ -1,0 +1,83 @@
+---
+title: "ORFik Overview"
+author: "Håkon Tjeldnes"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ORFik Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Welcome to the `ORFik` package. This vignette will walk you through our main 
+package usage with two examples, one easy and one real world example.  You will learn how to interpret 
+results, make features, and plot results.
+This package, `ORFik`, is created for fast and analysis of Open Reading frames, and to make less people reinvent the wheel.
+
+# Introduction
+
+`ORFik` main usage is to get Open reading frames from a fasta file and a gtf file describing the sequences, what you do with them, make features, plots etc, is up to you.
+
+# Easy example
+
+```r
+library(ORFik)
+
+# Make easy example data, here we dont use fasta file, but just a character vector:
+seqname <- c("tx1","tx1") # <- a two exon transcript
+seqs <- c("ATGATGTAATAA") # <- simple sequence
+grIn1 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(1, 2), end = c(1, 12)),
+                 strand = rep("+", 2), names = rep(seqname[1],2))
+
+grl <- GRangesList(grIn1) # <- make it GRangesList
+names(grl) <- "tx1"
+
+# Then we are ready to find the ORFs, they will be returned as GRangesList, grouped by which transcript they came from
+
+test_ranges <- find_in_frame_ORFs(grl,seqs) # <- ORFs are now in test_ranges
+
+```
+
+# Real World example
+
+```r
+library(ORFik)
+library(GenomicFeatures)
+
+# Make real example with fasta file and gtf file
+
+# First the gtf file, we will extract the 5' leaders to find all upstream open reading frames.
+
+# here we use example data from GenomicFeatures, usually you have your own txdb object, a gtf file etc.
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",package="GenomicFeatures")
+fiveUTRs = fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+
+# Now get the Fasta file, we of course choose the fasta file for hg19, that is version 19 of human genome
+source("https://bioconductor.org/biocLite.R")
+biocLite("BSgenome")
+biocLite("BSgenome.Hsapiens.UCSC.hg19")
+# Warning: this file is of size 656 MB, takes around 10 minutes to complete on modern computer
+
+# When finished, do:
+library(BSgenome.Hsapiens.UCSC.hg19)
+tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTR fastasequences
+
+test_ranges <- find_in_frame_ORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
+
+View(test_ranges)
+
+```
+
+You will see that test_ranges are grouped by transcript, the first group is from transcript 3.
+There are 7 exons in this group, named 3_* where star is the orf number.
+You will also see that the second orf named 3_2 is twice, because that single orf is split on two exons.
+
+
