@@ -29,5 +29,11 @@ RoxygenNote: 6.0.1
 Suggests:
     testthat,
     biovizBase,
-    stringr
+    stringr,
+    knitr,
+    rmarkdown,
+    BiocStyle,
+    BSgenome,
+    BSgenome.Hsapiens.UCSC.hg19
 LinkingTo: Rcpp
+VignetteBuilder: knitr
