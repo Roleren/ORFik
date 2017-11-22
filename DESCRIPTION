@@ -31,6 +31,9 @@ Suggests:
     biovizBase,
     stringr,
     knitr,
-    rmarkdown
+    rmarkdown,
+    BiocStyle,
+    BSgenome,
+    BSgenome.Hsapiens.UCSC.hg19
 LinkingTo: Rcpp
 VignetteBuilder: knitr
