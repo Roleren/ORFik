@@ -4,7 +4,6 @@
 #' @param cds GRanges List object of your CDSs.
 #' @return A GRanges object of TSS sites.
 #' @export
-#' @import GenomicRanges
 #' @examples
 #' cds <- GRangesList('gene_plus_strand' = GRanges(Rle(c('1'), c(4)),
 #'                                                 IRanges(c(925942, 930155, 939040, 939275),
@@ -41,7 +40,6 @@ extract_START_sites_from_CDSs <- function(cds) {
 #' @param cds GRanges List object of your CDSs.
 #' @return A GRanges object of last STOP nucletodie.
 #' @export
-#' @import GenomicRanges
 #' @examples
 #' #will return G postions as in TAG stop codon
 #' cds <- GRangesList('gene_plus_strand' = GRanges(Rle(c('1'), c(4)),
