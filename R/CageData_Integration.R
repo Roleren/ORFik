@@ -2,8 +2,7 @@
 #' Only Accepts bed files for now
 #' @param x A file containing column-based counts
 #' @param bed6 If bed6, no meta column is added
-toGR=function(x,bed6=TRUE){
-  require(GenomicRanges)
+toGR=function(x, bed6 = TRUE){
   if(!bed6){
     gr<- GRanges(x[, 1],IRanges(x[, 2]-1, x[, 3]))
     return(gr)
@@ -32,7 +31,7 @@ getFilteredCageData = function(dataName, filterValue = 1){
       }else{stop("Only bed and gzip formats are supported for filePath")}
     }else{stop("Filepath specified does not name existing file.") }
   }else{stop("Only unix operating-systems currently support filePath,use cage as GRanges argument instead.") }
-
+  if(is.null(rawCageData$score)) stop("Found no score column in the cageData-file, bed standard is column 5")
   message("Loaded cage-file successfully")
   filteredrawCageData <- rawCageData[rawCageData$score > filterValue,] #filter on score
 
@@ -80,6 +79,8 @@ addFirstCdsOnLeaderEnds = function(fiveUTRs, cds){
 #' @param extension The number of basses upstream to add on transcripts
 extendsTSSExons = function(fiveUTRs, extension = 1000){
   fiveAsgr <- unlist(fiveUTRs)
+
+  if(is.null(fiveAsgr$exon_rank)) stop("fiveUTRs need column called exon_rank, see ?makeTranscriptDbFromGFF")
   firstExons <- fiveAsgr[fiveAsgr$exon_rank == 1]
 
   posIDs <- firstExons[strand(firstExons) == "+"]

@@ -155,8 +155,8 @@ grIn4 <- GRanges(seqnames = rep("1", 2),
                  ranges = IRanges(start = c(3000,3030), end = c(3029,3036)),
                  strand = rep("-", 2), names = rep(seqname[4],2))
 
-grl = GRangesList(grIn1,grIn2,grIn3,grIn4)
-names(grl) = seqname
+grl <- GRangesList(grIn1,grIn2,grIn3,grIn4)
+names(grl) <- seqname
 
 test_that("get_all_ORFs_as_GRangesList works as intended", {
 
