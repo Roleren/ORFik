@@ -5,15 +5,15 @@
 toGR=function(x,bed6=TRUE){
   require(GenomicRanges)
   if(!bed6){
-    gr<- GRanges(x[,1],IRanges(x[,2]-1,x[,3]))
+    gr<- GRanges(x[, 1],IRanges(x[, 2]-1, x[, 3]))
     return(gr)
   }
-  starts<- ifelse(x[,6]=="+",x[,2]-1,x[,2])
-  ends<- ifelse(x[,6]=="-",x[,3],x[,3]-1)
-  gr<- GRanges(x[,1],IRanges(starts,ends))
-  strand(gr)<-x[,6]
-  score(gr)<-x[,5]
-  if(ncol(x)>6)  mcols(gr)=x[,7:ncol(x)]
+  starts<- ifelse(x[, 6]=="+",x[, 2]-1, x[, 2])
+  ends<- ifelse(x[, 6]=="-",x[, 3], x[, 3]-1)
+  gr<- GRanges(x[, 1],IRanges(starts,ends))
+  strand(gr)<-x[, 6]
+  score(gr)<-x[, 5]
+  if(ncol(x) > 6)  mcols(gr)=x[, 7:ncol(x)]
   return(gr)
 }
 
@@ -21,9 +21,18 @@ toGR=function(x,bed6=TRUE){
 #' Get CageData as granges
 #' @param dataName The location of the cage-file
 #' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
-#' @import data.table
+#' @importFrom data.table fread
 getFilteredCageData = function(dataName, filterValue = 1){
-  rawCageData <- toGR(as.data.frame(fread(paste("gunzip -c",dataName),sep = "\t")))
+  if (.Platform$OS.type == "unix") {
+    if (file.exists(dataName)) {
+      if(gsub(pattern = ".*\\.","",dataName) == "gzip"){
+      rawCageData <- toGR(as.data.frame(fread(paste("gunzip -c",dataName), sep = "\t")))
+      }else if(gsub(pattern = ".*\\.","",dataName) == "bed"){
+        rawCageData <- toGR(as.data.frame(fread(dataName, sep = "\t")))
+      }else{stop("Only bed and gzip formats are supported for filePath")}
+    }else{stop("Filepath specified does not name existing file.") }
+  }else{stop("Only unix operating-systems currently support filePath,use cage as GRanges argument instead.") }
+
   message("Loaded cage-file successfully")
   filteredrawCageData <- rawCageData[rawCageData$score > filterValue,] #filter on score
 
@@ -38,7 +47,6 @@ getFilteredCageData = function(dataName, filterValue = 1){
 #' This is a simple way to do that
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param cds If you want to extend 5' leaders downstream, to catch uorfs going into cds, include it.
-#'
 addFirstCdsOnLeaderEnds = function(fiveUTRs, cds){
 
   if(length(cds) == 0){
@@ -62,7 +70,7 @@ addFirstCdsOnLeaderEnds = function(fiveUTRs, cds){
   gr$cds_id <- NULL; gr$cds_name <- NULL; gr$exon_rank <- NULL
   gr$exon_id <- NA;  gr$exon_name <- NA;  gr$exon_rank <- NA
   grl = relist(gr,firstExons)
-  fiveUTRsWithCdsExons <- pc(fiveUTRs, grl) # ask gunnar why length != fiveUTRs
+  fiveUTRsWithCdsExons <- pc(fiveUTRs, grl) #  why length != fiveUTRs
 
   return( reduce(fiveUTRsWithCdsExons) )
 }
@@ -88,7 +96,7 @@ extendsTSSExons = function(fiveUTRs, extension = 1000){
 #' returns as data.table, without names, but with index
 #' @param cageOverlaps The cageOverlaps between cage and extended 5' leaders
 #' @param filteredrawCageData The filtered raw cage-data used to reassign 5' leaders
-#' @import data.table
+#' @importFrom data.table as.data.table
 findMaxPeaks = function(cageOverlaps, filteredrawCageData){
   dt <- as.data.table(filteredrawCageData)
   dt <- dt[from(cageOverlaps)]
@@ -117,8 +125,8 @@ findNewTSS = function(fiveUTRs, filePath = NULL, extension, filterValue, cageAsG
   }else{ stop("Either filePath or cageAsGR must be specified!")}
 
   shiftedfiveUTRs <- extendsTSSExons(fiveUTRs, extension)
-  cageOverlaps <- findOverlaps(query = filteredrawCageData,subject = shiftedfiveUTRs)
-  maxPeakPosition <- findMaxPeaks(cageOverlaps,filteredrawCageData)
+  cageOverlaps <- findOverlaps(query = filteredrawCageData, subject = shiftedfiveUTRs)
+  maxPeakPosition <- findMaxPeaks(cageOverlaps, filteredrawCageData)
   return(maxPeakPosition)
 }
 
@@ -128,7 +136,7 @@ findNewTSS = function(fiveUTRs, filePath = NULL, extension, filterValue, cageAsG
 makeGrlAndFilter = function(firstExons, fiveUTRs){
   fiveAsgr <- unlist(fiveUTRs)
   fiveAsgr[fiveAsgr$exon_rank == 1] <- firstExons
-  return(relist(fiveAsgr,fiveUTRs))
+  return(relist(fiveAsgr, fiveUTRs))
 }
 
 #' add cage max peaks as new transcript start sites for each 5' leader
