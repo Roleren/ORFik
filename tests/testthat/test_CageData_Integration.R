@@ -1,5 +1,4 @@
 library(ORFik)
-library(DBI)
 context("CageData Integration")
 
 library(GenomicFeatures)
@@ -7,8 +6,6 @@ samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "
 txdb <- loadDb(samplefile)
 fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
 cds <- cdsBy(txdb)
-
-# dbDisconnect(txdb) #<- should I disconnect? not dangerous, but can give warnings
 
 cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]), ranges =  IRanges(as.integer(start(fiveUTRs)[1:2]-500) ,
                 as.integer(start(fiveUTRs)[1:2])), strand = as.character(strand(fiveUTRs)[1:2]), score = c(5,10))

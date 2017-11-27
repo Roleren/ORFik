@@ -31,8 +31,8 @@ Suggests:
     testthat,
     biovizBase,
     stringr,
-    knitr,
     rmarkdown,
+    knitr,
     BiocStyle,
     BSgenome,
     BSgenome.Hsapiens.UCSC.hg19
