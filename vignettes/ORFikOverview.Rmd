@@ -1,6 +1,6 @@
 ---
 title: "ORFik Overview"
-author: "Håkon Tjeldnes"
+author: "Haakon Tjeldnes"
 date: "`r BiocStyle::doc_date()`"
 package: "r pkg_ver('ORFik')"
 output: BiocStyle::html_document

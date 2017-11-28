@@ -24,14 +24,15 @@ Imports:
     GenomeInfoDb,
     GenomicFeatures,
     rtracklayer,
-    Rcpp
+    Rcpp,
+    data.table
 RoxygenNote: 6.0.1
 Suggests:
     testthat,
     biovizBase,
     stringr,
-    knitr,
     rmarkdown,
+    knitr,
     BiocStyle,
     BSgenome,
     BSgenome.Hsapiens.UCSC.hg19
