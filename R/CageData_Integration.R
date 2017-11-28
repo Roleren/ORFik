@@ -8,12 +8,12 @@ bedToGR <- function(x, bed6 = TRUE){
     gr <- GRanges(x[, 1], IRanges(x[, 2] - 1, x[, 3]))
     return(gr)
   }
-  starts <- ifelse(x[, 6] == "+", x[, 2]-1, x[, 2])
+  starts <- ifelse(x[, 6] == "+", x[, 2] - 1, x[, 2])
   ends <- ifelse(x[, 6] == "-", x[, 3], x[, 3] - 1)
   gr <- GRanges(x[, 1], IRanges(starts, ends))
   strand(gr) <- x[, 6]
   score(gr) <- x[, 5]
-  if (ncol(x) > 6) mcols(gr) <- x[, 7 : ncol(x)]
+  if (ncol(x) > 6) mcols(gr) <- x[, 7:ncol(x)]
   return(gr)
 }
 
@@ -26,15 +26,15 @@ cageFromFile <- function(filePath){
   if (.Platform$OS.type == "unix") {
     if (file.exists(filePath)) {
       if (gsub(pattern = ".*\\.", "", filePath) == "gzip"){
-      rawCage <- bedToGR(as.data.frame(fread(paste("gunzip -c",
-        filePath), sep = "\t")))
+        rawCage <- bedToGR(as.data.frame(
+          fread(paste("gunzip -c", filePath), sep = "\t")))
       } else if (gsub(pattern = ".*\\.", "", filePath) == "bed"){
         rawCage <- bedToGR(as.data.frame(fread(filePath, sep = "\t")))
       } else {stop("Only bed and gzip formats are supported for filePath")}
-    } else {stop("Filepath specified does not name existing file.") }
+    } else {stop("Filepath specified does not name existing file.")}
   } else {
     stop("Only unix operating-systems currently support filePath,
-         use cage as GRanges argument instead.") }
+         use cage as GRanges argument instead.")}
 
   message("Loaded cage-file successfully")
   return(rawCage)
@@ -45,22 +45,22 @@ cageFromFile <- function(filePath){
 #' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
 filterCage <- function(rawCage, filterValue = 1){
 
-  if (is.null(rawCage$score)) stop("Found no score column in the cageData-file, bed standard is column 5")
-  filteredCage <- rawCage[rawCage$score > filterValue,] #filter on score
-
+  if (is.null(rawCage$score)) stop("Found no score column in the cageData-file,",
+                                   " bed standard is column 5.")
+  filteredCage <- rawCage[rawCage$score > filterValue, ] #filter on score
   return(filteredCage)
 }
 
 #' Check that seqnames of fiveUTRs and cage uses same standard, i.g chr1 vs 1.
-#' @param filteredrawCageData Cage-data to check seqnames in
+#' @param filteredCage Cage-data to check seqnames in
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 matchSeqnames <- function(filteredCage, fiveUTRs){
   fiveSeqlevels <- seqlevels(unlist(fiveUTRs, use.names = FALSE))
   cageSeqlevels <- seqlevels(filteredCage)
   if (length(grep(pattern = "chr", fiveSeqlevels)) > 0 &&
      length(grep(pattern = "chr", cageSeqlevels)) == 0){
-    warning("seqnames use different chromosome naming conventions,
-            trying to fix them")
+    warning("seqnames use different chromosome naming conventions,",
+            " trying to fix them")
     regexNormalChr <- '(^[a-zA-Z])*([0-9]+)' # <- chr1, chr2, not chrX, chrY etc.
     normalChr <- paste0("chr", grep(regexNormalChr,
                                     cageSeqlevels, value = TRUE))
@@ -100,7 +100,6 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
   }
 
   cdsForUTRs <- cds[names(fiveUTRs)] # get only the ones we need
-
   firstExons <- phead(cdsForUTRs, 1L) #select first in every, they must be sorted!
   gr <- unlist(firstExons, use.names = FALSE)
   mcols(gr) <- NULL # <- remove all mcols
@@ -190,14 +189,18 @@ addNewTSSOnLeaders = function(fiveUTRs, maxPeakPosition){
   minIDs <- maxPeakPosition$to[maxPeakPosition$strand == "-"]
 
   firstExons[posIDs] <- resize(
-    firstExons[posIDs], width = end(firstExons[posIDs]) -
-      maxPeakPosition$start[maxPeakPosition$strand == "+"] + 1, fix = "end")
+    firstExons[posIDs],
+    width = end(firstExons[posIDs]) - maxPeakPosition$start[
+      maxPeakPosition$strand == "+"] + 1,
+    fix = "end")
   firstExons[minIDs] <- resize(
-    firstExons[minIDs], width = maxPeakPosition$end[maxPeakPosition$strand == "-"] -
-      start(firstExons[minIDs]) + 1, fix = "end")
+    firstExons[minIDs],
+    width = maxPeakPosition$end[
+      maxPeakPosition$strand == "-"] - start(firstExons[minIDs]) + 1,
+    fix = "end")
   # Might need an chromosome boundary here? current test show no need.
 
-  return( firstExons )
+  return(firstExons)
 }
 
 
