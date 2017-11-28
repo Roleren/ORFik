@@ -6,21 +6,19 @@
 A max peak is defined as new tss if it is within boundary of 5'leader range, specified by extension
 A max peak must also be greater that the cage peak cutoff specified in filterValue}
 \usage{
-reassignTSSbyCage(fiveUTRs, filePath = NULL, extension = 1000,
-  filterValue = 1, cds = NULL, cageAsGR = NULL)
+reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
+  cds = NULL)
 }
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
-\item{filePath}{The location of the cage-file}
+\item{cage}{Either a  filePath for cage-file, or already loaded R-object as GRanges}
 
 \item{extension}{The maximum number of basses upstream the cage-peak can be from original tss}
 
 \item{filterValue}{The number of counts(score) to filter on for a tss to pass as hit}
 
 \item{cds}{If you want to extend 5' leaders downstream, to catch upstream ORFs going into cds, include it.}
-
-\item{cageAsGR}{Alternative for filePath, if you have cage-data already loaded in R as GRanges}
 }
 \description{
 Reassign all Transcript start sites(tss's) in 5' leaders, that are found by given cage-file

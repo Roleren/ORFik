@@ -8,7 +8,7 @@ Only Accepts bed files for now, standard format from Fantom5}
 bedToGR(x, bed6 = TRUE)
 }
 \arguments{
-\item{x}{A file containing column-based counts}
+\item{x}{An imported bed-file, to convert to GRanges}
 
 \item{bed6}{If bed6, no meta column is added}
 }

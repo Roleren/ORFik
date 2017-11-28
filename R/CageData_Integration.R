@@ -1,9 +1,10 @@
 #' Converts different type of files to Granges
 #' Only Accepts bed files for now, standard format from Fantom5
-#' @param x A file containing column-based counts
+#' @param x An imported bed-file, to convert to GRanges
 #' @param bed6 If bed6, no meta column is added
 bedToGR <- function(x, bed6 = TRUE){
-  if( !bed6){
+
+  if (!bed6){
     gr <- GRanges(x[, 1],IRanges(x[, 2]-1, x[, 3]))
     return(gr)
   }
@@ -17,29 +18,40 @@ bedToGR <- function(x, bed6 = TRUE){
 }
 
 
-#' Get CageData as granges
-#' @param dataName The location of the cage-file
-#' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
+#' Get Cage-Data From a file-path
+#' @param filePath The location of the cage-file
 #' @importFrom data.table fread
-getFilteredCageData <- function(dataName, filterValue = 1){
-  if ( .Platform$OS.type == "unix") {
-    if ( file.exists(dataName)) {
-      if( gsub(pattern = ".*\\.","",dataName) == "gzip"){
-      rawCageData <- bedToGR(as.data.frame(fread(paste("gunzip -c",dataName), sep = "\t")))
-      }else if( gsub(pattern = ".*\\.","",dataName) == "bed"){
-        rawCageData <- bedToGR(as.data.frame(fread(dataName, sep = "\t")))
-      }else{ stop("Only bed and gzip formats are supported for filePath")}
-    }else{ stop("Filepath specified does not name existing file.") }
-  }else{ stop("Only unix operating-systems currently support filePath,use cage as GRanges argument instead.") }
-  if( is.null(rawCageData$score)) stop("Found no score column in the cageData-file, bed standard is column 5")
+cageFromFile <- function(filePath){
+
+  if (.Platform$OS.type == "unix") {
+    if (file.exists(filePath)) {
+      if (gsub(pattern = ".*\\.","",filePath) == "gzip"){
+      rawCage <- bedToGR(as.data.frame(fread(paste("gunzip -c",filePath), sep = "\t")))
+      } else if (gsub(pattern = ".*\\.","",filePath) == "bed"){
+        rawCage <- bedToGR(as.data.frame(fread(filePath, sep = "\t")))
+      } else {stop("Only bed and gzip formats are supported for filePath")}
+    } else {stop("Filepath specified does not name existing file.") }
+  } else {
+    stop("Only unix operating-systems currently support filePath,
+         use cage as GRanges argument instead.") }
+
   message("Loaded cage-file successfully")
-  filteredrawCageData <- rawCageData[rawCageData$score > filterValue,] #filter on score
+  return(rawCage)
+}
+
+#' Filter peak of cage-data by value
+#' @param rawCage The raw cage-data
+#' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
+filterCage <- function(rawCage, filterValue = 1){
+
+  if (is.null(rawCage$score)) stop("Found no score column in the cageData-file, bed standard is column 5")
+  filteredCage <- rawCage[rawCage$score > filterValue,] #filter on score
 
   #chromosome nameing, need to find a smart way for this, it wont work for all
-  seqlevels(filteredrawCageData) <- sub("chrY","Y",seqlevels(filteredrawCageData))
-  seqlevels(filteredrawCageData) <- sub("chrX","X",seqlevels(filteredrawCageData))
-  seqlevels(filteredrawCageData) <- sub("chrM","MT",seqlevels(filteredrawCageData))
-  return(filteredrawCageData)
+  seqlevels(filteredCage) <- sub("chrY","Y",seqlevels(filteredCage))
+  seqlevels(filteredCage) <- sub("chrX","X",seqlevels(filteredCage))
+  seqlevels(filteredCage) <- sub("chrM","MT",seqlevels(filteredCage))
+  return(filteredCage)
 }
 
 #' When reassigning Transcript start site, often you want to add downstream too.
@@ -48,16 +60,16 @@ getFilteredCageData <- function(dataName, filterValue = 1){
 #' @param cds If you want to extend 5' leaders downstream, to catch uorfs going into cds, include it.
 addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
 
-  if( length(cds) == 0){
+  if (length(cds) == 0){
     warning("cds is empty, returning without using it.")
     return(fiveUTRs)
   }
-  if( is.null(names(cds))){
+  if (is.null(names(cds))){
     warning("cds have no names, returning without using it.")
     return(fiveUTRs)
   }
   matchingNames = names(fiveUTRs) %in% names(cds)
-  if( sum(matchingNames) - length(names(fiveUTRs)) != 0){ # <- check valid names
+  if (sum(matchingNames) - length(names(fiveUTRs)) != 0){ # <- check valid names
     warning("not all cds names matches fiveUTRs names, returning without using cds.")
     return(fiveUTRs)
   }
@@ -65,15 +77,13 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
   cdsForUTRs <- cds[names(fiveUTRs)] # get only the ones we need
 
   firstExons <- phead(cdsForUTRs, 1L) #select first in every, they must be sorted!
-  gr <- unlist(firstExons,use.names = FALSE)
-  gr$cds_id <- NULL # <- remove cds metacols
-  gr$cds_name <- NULL
-  gr$exon_rank <- NULL
-  gr$exon_id <- NA
+  gr <- unlist(firstExons, use.names = FALSE)
+  mcols(gr) <- NULL # <- remove all mcols
+  gr$exon_id <- NA # <- assign the ones we need
   gr$exon_name <- NA
   gr$exon_rank <- NA
 
-  grl <- relist(gr,firstExons)
+  grl <- relist(gr, firstExons)
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)
 
   return(reduce(fiveUTRsWithCdsExons))
@@ -83,14 +93,15 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param extension The number of basses upstream to add on transcripts
 extendsTSSexons <- function(fiveUTRs, extension = 1000){
-  fiveAsgr <- unlist(fiveUTRs)
 
-  if( is.null(fiveAsgr$exon_rank)) stop("fiveUTRs need column called exon_rank, see ?makeTranscriptDbFromGFF")
+  fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
+  if (is.null(fiveAsgr$exon_rank))
+    stop("fiveUTRs need column called exon_rank, see ?makeTranscriptDbFromGFF")
   firstExons <- fiveAsgr[fiveAsgr$exon_rank == 1]
 
   posIDs <- firstExons[strand(firstExons) == "+"]
-  minIDs <- firstExons[strand(firstExons)  == "-"]
-  promo <- promoters(firstExons, upstream=extension)
+  minIDs <- firstExons[strand(firstExons) == "-"]
+  promo <- promoters(firstExons, upstream = extension)
 
   start(firstExons[names(posIDs)]) <- start(promo[names(posIDs)])
   end(firstExons[names(minIDs)]) <- end(promo[names(minIDs)])
@@ -104,13 +115,14 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000){
 #' @param filteredrawCageData The filtered raw cage-data used to reassign 5' leaders
 #' @importFrom data.table as.data.table
 findMaxPeaks = function(cageOverlaps, filteredrawCageData){
+
   dt <- as.data.table(filteredrawCageData)
   dt <- dt[from(cageOverlaps)]
   dt$to <- to(cageOverlaps)
 
-  maxPeaks <- dt[,max(score), by = to]
-  names(maxPeaks) <- c("to","score")
-  maxPeaks <-  merge(  maxPeaks, dt)
+  maxPeaks <- dt[, max(score), by = to]
+  names(maxPeaks) <- c("to", "score")
+  maxPeaks <-  merge(maxPeaks, dt)
 
   return(maxPeaks[!duplicated(maxPeaks$to)])
 }
@@ -121,18 +133,11 @@ findMaxPeaks = function(cageOverlaps, filteredrawCageData){
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param filePath The location of the cage-file
 #' @param extension The number of basses upstream to add on transcripts
-#' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
-#' @param cageAsGR Alternative for filePath, if you have cage-data already loaded in R as GRanges
-findNewTSS = function(fiveUTRs, filePath = NULL, extension, filterValue, cageAsGR = NULL){
-  if( !is.null(filePath)){
-    filteredrawCageData <- getFilteredCageData(filePath, filterValue) # get the cage data
-  }else if( !is.null(cageAsGR)){
-    filteredrawCageData = cageAsGR
-  }else{ stop("Either filePath or cageAsGR must be specified!")}
+findNewTSS = function(fiveUTRs, cageData, extension){
 
   shiftedfiveUTRs <- extendsTSSexons(fiveUTRs, extension)
-  cageOverlaps <- findOverlaps(query = filteredrawCageData, subject = shiftedfiveUTRs)
-  maxPeakPosition <- findMaxPeaks(cageOverlaps, filteredrawCageData)
+  cageOverlaps <- findOverlaps(query = cageData, subject = shiftedfiveUTRs)
+  maxPeakPosition <- findMaxPeaks(cageOverlaps, cageData)
   return(maxPeakPosition)
 }
 
@@ -140,29 +145,31 @@ findNewTSS = function(fiveUTRs, filePath = NULL, extension, filterValue, cageAsG
 #' @param firstExons The first exon of every transcript from 5' leaders
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 makeGrlAndFilter = function(firstExons, fiveUTRs){
-  fiveAsgr <- unlist(fiveUTRs)
+
+  fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
   fiveAsgr[fiveAsgr$exon_rank == 1] <- firstExons
   return(relist(fiveAsgr, fiveUTRs))
 }
 
 #' add cage max peaks as new transcript start sites for each 5' leader
+#' (*) strands are not supported, for safety reasons
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param maxPeakPosition The max peak for each 5' leader found by cage
 addNewTSSOnLeaders = function(fiveUTRs, maxPeakPosition){
-  fiveAsgr <- unlist(fiveUTRs)
+
+  fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
   firstExons <- fiveAsgr[fiveAsgr$exon_rank == 1]
 
   maxPeakPosition$names <- names(firstExons[maxPeakPosition$to])
-  posIDs <- maxPeakPosition$to[maxPeakPosition$strand == "+"] # <- * strands are not supported
+  posIDs <- maxPeakPosition$to[maxPeakPosition$strand == "+"]
   minIDs <- maxPeakPosition$to[maxPeakPosition$strand == "-"]
 
-  firstExons[posIDs] <- resize(firstExons[posIDs],
-                               width = end(firstExons[posIDs]) -
-                                 maxPeakPosition$start[maxPeakPosition$strand == "+"] + 1,
-                                  fix = "end")
-  firstExons[minIDs] <- resize(firstExons[minIDs],
-                               width = maxPeakPosition$end[maxPeakPosition$strand == "-"]
-                                -start(firstExons[minIDs]) + 1, fix = "end")
+  firstExons[posIDs] <- resize(
+    firstExons[posIDs], width = end(firstExons[posIDs]) -
+      maxPeakPosition$start[maxPeakPosition$strand == "+"] + 1, fix = "end")
+  firstExons[minIDs] <- resize(
+    firstExons[minIDs], width = maxPeakPosition$end[maxPeakPosition$strand == "-"] -
+      start(firstExons[minIDs]) + 1, fix = "end")
   # Might need an chromosome boundary here? current test show no need.
 
   return( firstExons )
@@ -173,27 +180,27 @@ addNewTSSOnLeaders = function(fiveUTRs, maxPeakPosition){
 #' A max peak is defined as new tss if it is within boundary of 5'leader range, specified by extension
 #' A max peak must also be greater that the cage peak cutoff specified in filterValue
 #' @param fiveUTRs The 5' leader sequences as GRangesList
-#' @param filePath The location of the cage-file
+#' @param cage Either a  filePath for cage-file, or already loaded R-object as GRanges
 #' @param extension The maximum number of basses upstream the cage-peak can be from original tss
 #' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
 #' @param cds If you want to extend 5' leaders downstream, to catch upstream ORFs going into cds, include it.
-#' @param cageAsGR Alternative for filePath, if you have cage-data already loaded in R as GRanges
 #' @export
-reassignTSSbyCage = function(fiveUTRs,filePath = NULL, extension = 1000, filterValue = 1, cds = NULL, cageAsGR = NULL){
+reassignTSSbyCage = function(fiveUTRs, cage, extension = 1000, filterValue = 1, cds = NULL){
+
   ###Read in cage files
-  if( class(fiveUTRs) != "GRangesList") stop("fiveUTRs must be type GRangesList!")
-  if( !is.null(cds) & class(cds) != "GRangesList") stop("cds must be type GRangesList!")
-  if( class(extension) != "numeric") stop("extension must be numeric!")
-  if( class(filterValue) != "numeric") stop("filterValue must be numeric!")
-  if( !is.null(cageAsGR) & class(cageAsGR) != "GRanges") stop("cageAsGR must be GRanges!")
-  if( is.null(filePath) && is.null(cageAsGR)) stop("Either filePath or cageAsGR must be specified!")
-  if( !is.null(filePath) & class(filePath) != "character"){ stop("filePath must be character!")
-  }else if( is.null(cageAsGR)){
-    message(cat("Using cage file:",filePath))
-  }
+  if (class(fiveUTRs) != "GRangesList") stop("fiveUTRs must be type GRangesList!")
+  if (!is.null(cds) & class(cds) != "GRangesList") stop("cds must be type GRangesList!")
+  if (class(extension) != "numeric") stop("extension must be numeric!")
+  if (class(filterValue) != "numeric") stop("filterValue must be numeric!")
+  if (is.null(cage)) stop("Cage can not be NULL")
 
+  if (class(cage) == "character"){ # <- get cage file
+    filteredrawCageData <- filterCage(cageFromFile(cage), filterValue) # get the cage data
+  } else if (class(cage) == "GRanges"){
+    filteredrawCageData <- filterCage(cage, filterValue)
+  } else {stop("Cage-file must be either a valid character filepath or GRanges object")}
 
-  maxPeakPosition <- findNewTSS(fiveUTRs, filePath, extension, filterValue, cageAsGR)
+  maxPeakPosition <- findNewTSS(fiveUTRs, filteredrawCageData, extension)
   fiveUTRs <- makeGrlAndFilter(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition), fiveUTRs)
   if(!is.null(cds)) fiveUTRs <- addFirstCdsOnLeaderEnds(fiveUTRs, cds)
 

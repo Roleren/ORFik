@@ -2,7 +2,8 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{addNewTSSOnLeaders}
 \alias{addNewTSSOnLeaders}
-\title{add cage max peaks as new transcript start sites for each 5' leader}
+\title{add cage max peaks as new transcript start sites for each 5' leader
+(*) strands are not supported, for safety reasons}
 \usage{
 addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
 }
@@ -13,4 +14,5 @@ addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
 }
 \description{
 add cage max peaks as new transcript start sites for each 5' leader
+(*) strands are not supported, for safety reasons
 }

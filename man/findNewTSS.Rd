@@ -4,19 +4,14 @@
 \alias{findNewTSS}
 \title{Finds max peaks per trancsript from reads in the cagefile}
 \usage{
-findNewTSS(fiveUTRs, filePath = NULL, extension, filterValue,
-  cageAsGR = NULL)
+findNewTSS(fiveUTRs, cageData, extension)
 }
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
-\item{filePath}{The location of the cage-file}
-
 \item{extension}{The number of basses upstream to add on transcripts}
 
-\item{filterValue}{The number of counts(score) to filter on for a tss to pass as hit}
-
-\item{cageAsGR}{Alternative for filePath, if you have cage-data already loaded in R as GRanges}
+\item{filePath}{The location of the cage-file}
 }
 \description{
 Finds max peaks per trancsript from reads in the cagefile
