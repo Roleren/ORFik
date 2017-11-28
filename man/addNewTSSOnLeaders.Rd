@@ -3,7 +3,7 @@
 \name{addNewTSSOnLeaders}
 \alias{addNewTSSOnLeaders}
 \title{add cage max peaks as new transcript start sites for each 5' leader
-(*) strands are not supported, for safety reasons}
+(*) strands are not supported, since direction must be known.}
 \usage{
 addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
 }
@@ -14,5 +14,5 @@ addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
 }
 \description{
 add cage max peaks as new transcript start sites for each 5' leader
-(*) strands are not supported, for safety reasons
+(*) strands are not supported, since direction must be known.
 }

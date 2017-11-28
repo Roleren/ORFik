@@ -9,9 +9,9 @@ findNewTSS(fiveUTRs, cageData, extension)
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
-\item{extension}{The number of basses upstream to add on transcripts}
+\item{cageData}{The location of the cage-file}
 
-\item{filePath}{The location of the cage-file}
+\item{extension}{The number of basses upstream to add on transcripts}
 }
 \description{
 Finds max peaks per trancsript from reads in the cagefile
