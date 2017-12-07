@@ -7,9 +7,9 @@
 matchSeqnames(filteredCage, fiveUTRs)
 }
 \arguments{
-\item{fiveUTRs}{The 5' leader sequences as GRangesList}
+\item{filteredCage}{Cage-data to check seqnames in}
 
-\item{filteredrawCageData}{Cage-data to check seqnames in}
+\item{fiveUTRs}{The 5' leader sequences as GRangesList}
 }
 \description{
 Check that seqnames of fiveUTRs and cage uses same standard, i.g chr1 vs 1.

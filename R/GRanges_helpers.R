@@ -1,0 +1,195 @@
+#' make GRangesList from GRanges, grouped by names
+#' @param gr a GRanges object
+GroupGRangesByNames <- function(gr){
+  if (class(gr) != "GRanges") stop("gr must be GRanges Object")
+  if (is.null(names(gr))) stop("gr object have no names")
+  l <- Rle(names(gr))
+  t <- unlist(lapply(1:nrun(l),function(x){ rep(x,runLength(l)[x])}))
+  grl <- split(gr,t)
+  names(grl) <- unique(names(gr))
+  return(grl)
+}
+
+#' make GRangesList from GRanges, grouped by other
+#' @param gr a GRanges object
+#' @param other a vector of names to group by
+GroupGRangesByOther <- function(gr, other){
+  if (class(gr) != "GRanges") stop("gr must be GRanges Object")
+  if (length(gr) != length(other))
+    stop(" in GroupGRangesByOther: lengths of gr and other does not match")
+  l <- Rle(other)
+  t <- unlist(lapply(1:nrun(l),function(x){ rep(x,runLength(l)[x])}))
+  grl <- split(gr,t)
+  names(grl) <- unique(other)
+  return(grl)
+}
+
+#' get list of widths per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+widthPerGroup = function(grl, keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return(sum(width(grl)))
+  }else{
+    return(as.integer(sum(width(grl))))
+  }
+}
+
+#' get list of seqnames per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+seqnamesPerGroup <- function(grl, keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return(seqnames(phead(grl,1L)))
+  }else{
+    return(as.character(seqnames(phead(grl,1L))))
+  }
+}
+
+#' get list of strands per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+strandPerGroup <- function(grl, keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return(strand(phead(grl,1L)))
+  }else{
+    return(as.character(strand(phead(grl,1L))))
+  }
+}
+
+#' get first exon per granges group
+#' @param grl a GRangesList
+firstExonPerGroup <- function(grl){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  return(phead(grl,1L))
+}
+
+#' get last exon per granges group
+#' @param grl a GRangesList
+lastExonPerGroup <- function(grl){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  return(ptail(grl,1L))
+}
+
+#' get first start per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+firstStartPerGroup <- function(grl, keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return( start(GroupGRangesFirstExon(grl)))
+  }else{
+    return( as.integer(start(GroupGRangesFirstExon(grl))))
+  }
+}
+
+#' get last end per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+lastExonEndPerGroup = function(grl,keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return(end(ptail(grl,1L)))
+  }else{
+    return( as.integer(end(ptail(grl,1L))))
+  }
+}
+
+#' get list of the number of exons per group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+numExonsPerGroup <- function(grl, keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+
+  if (!is.null(names(unlist(grl, use.names = F)))){
+    exonsPerGroup <- Rle(names(unlist(grl, use.names = F)))
+    return(runLength(exonsPerGroup))
+  } else if (!is.null(names(unlist(grl)))){
+    exonsPerGroup <- Rle(names(unlist(grl)))
+    return(runLength(exonsPerGroup))
+  } else stop("no names to group exons")
+}
+
+#' seqnames cleanup
+#' @param grl a GRangesList
+fixSeqnames <- function(grl){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  temp <- unlist(grl)
+  seqnamesTransformed <- as.character(seqnames(temp))
+  indexes <- which(nchar(seqnamesTransformed) < 6)
+  temp <- temp[indexes]
+  seqlevels(temp) <- sub(replacement = "chrY",pattern = "Y",seqlevels(temp))
+  seqlevels(temp) <- sub(replacement = "chrX",pattern = "X",seqlevels(temp))
+  seqlevels(temp) <- as.character(unique(seqnames(unlist(temp))))
+  return(GroupGRangesByNames(temp))
+}
+
+#' Helperfunction for map_to_GRanges
+#' split a GRangesList on the exon boundaries of the skeleton
+#' if you have a grl without the exon splits, but a reference(skeleton),
+#' then use this function
+#' @param grl The GRangesList found so far by the orf-scanner
+#' @param skeleton the reference skeleton to find exon splits
+GrangesSplitByExonSkeleton <- function(grl, skeleton){
+  # Split by exons and create new exon names
+  unlNEW <- unlist(grl, use.names = F)
+
+  # check for naming, differs between samples
+  if (!is.null(names(grl))){
+    unlSkel <- unlist(skeleton[names(grl)], use.names = F)
+  } else{
+    unlSkel <- unlist(skeleton, use.names = F)
+  }
+  ol <- findOverlaps(query = unlNEW, subject = unlSkel, type = "any")
+
+  if (is.null(names(unlSkel))){
+    if (!is.null(names(grl))){
+      unlSkel <- unlist(skeleton[names(grl)], use.names = T)
+    } else{
+      unlSkel <- unlist(skeleton, use.names = T)
+    }
+  }
+  if(is.null(names(unlNEW)))
+    unlNEW <- unlist(grl, use.names = T)
+
+  # add end of first to first, start of second to second copy
+  c <- ol[names(unlNEW[from(ol)]) == names(unlSkel[to(ol)])]
+  N <- unlNEW[from(c)]
+  ff <- unlSkel[to(c)]
+  dups <- duplicated(from(c))
+  start(N[dups]) <- start(ff[dups])
+  dupsR <- duplicated(rev(from(c)))
+  rN <- rev(N)
+  end(rN[dupsR]) <- end(rev(ff)[dupsR])
+  N <- rev(rN)
+
+  # Get grouping t by names
+  l <- Rle(names(N))
+  t <- unlist(lapply(1:nrun(l), function(x) {
+    rep(x, runLength(l)[x])
+  }))
+  froms <- from(c)
+  # make orf exon names 1,2,3,4 for 4 exon transcript etc
+  Inds <- rep(1, length(N))
+  for (x in 2:length(N)) {
+    if (t[x] != t[x - 1]) {
+      Inds[x] <- 1
+    }
+    else {
+      if (froms[x] != froms[x - 1]) {
+        Inds[x] <- Inds[x - 1] + 1
+      }
+      else {
+        Inds[x] <- Inds[x - 1]
+      }
+    }
+  }
+  # create orf names and return as grl
+  N$names <- paste0(names(N), "_", Inds)
+  newGRL <- split(N, t)
+  names(newGRL) <- unique(names(N))
+  return(newGRL)
+}

@@ -141,7 +141,7 @@ test_that("find_in_frame_ORFs works as intended for plus strand", {
 seqname <- c("tx1","tx2","tx3","tx4")
 seqs <- c("ATGGGTATTTATA","ATGGGTAATA","ATGGG", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 grIn1 <- GRanges(seqnames = rep("1", 2),
-                 ranges = IRanges(start = c(10, 20), end = c(19, 22)),
+                 ranges = IRanges(start = c(20, 10), end = c(22, 19)),
                  strand = rep("-", 2), names = rep(seqname[1],2))
 grIn2 <- GRanges(seqnames = rep("1", 1),
                  ranges = IRanges(start = c(1010), end = c(1019)),
@@ -152,13 +152,13 @@ grIn3 <- GRanges(seqnames = rep("1", 1),
                  strand = rep("-", 1), names = rep(seqname[3],1))
 
 grIn4 <- GRanges(seqnames = rep("1", 2),
-                 ranges = IRanges(start = c(3000,3030), end = c(3029,3036)),
+                 ranges = IRanges(start = c(3030,3000), end = c(3036,3029)),
                  strand = rep("-", 2), names = rep(seqname[4],2))
 
 grl <- GRangesList(grIn1,grIn2,grIn3,grIn4)
 names(grl) <- seqname
 
-test_that("get_all_ORFs_as_GRangesList works as intended", {
+test_that("get_all_ORFs works as intended for minus strand", {
 
   #longestORF F with different frames
   test_ranges <-find_in_frame_ORFs(grl,seqs,
@@ -172,8 +172,8 @@ test_that("get_all_ORFs_as_GRangesList works as intended", {
   expect_is(seqnames(test_ranges),"CompressedRleList")
   expect_equal(as.integer(unlist(start(test_ranges))), c(10, 20, 1011, 1010,1012))
   expect_equal(as.integer(unlist(end(test_ranges))), c(19, 21, 1019, 1018,1017))
-
-
+  expect_equal(as.integer(unlist(width(test_ranges))), c(10, 2, 9, 9, 6))
+  expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
 })
 
 # Create data for get_all_ORFs_as_GRangesList test_that#2

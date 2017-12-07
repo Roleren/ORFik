@@ -94,9 +94,9 @@ find_in_frame_ORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
                                stopCodon = "TAA|TAG|TGA", longestORF = F,
                                minimumLength = 0 ){
 
-  if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
-  if(length(fastaSeqs) == 0) stop("Fasta sequences had length 0")
-
+  if (class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
+  if (length(fastaSeqs) == 0) stop("Fasta sequences had length 0")
+  if (length(fastaSeqs) != length(grl)) stop("Fasta seqs and grl must have same length!")
   result <- ORFs_as_List(fastaSeqs = as.matrix(as.character( fastaSeqs)),
                                  startCodon = startCodon,stopCodon = stopCodon,
                                  longestORF = longestORF,
