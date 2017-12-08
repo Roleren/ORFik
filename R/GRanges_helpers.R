@@ -48,6 +48,23 @@ seqnamesPerGroup <- function(grl, keep.names = T){
   }
 }
 
+#' sorts the GRangesList object grl
+#' @param grl a GRangesList
+#' @param equalSort a boolean, should minus strands be sorted from highest to lowest(T)
+sortPerGroup <- function(grl, equalSort = T){
+  if (equalSort){
+    indexesPos <- which(ORFik:::strandPerGroup(grl,F) == "+")
+    indexesMin <- which(ORFik:::strandPerGroup(grl,F) == "-")
+
+    grl[indexesPos] <- sort(grl[indexesPos], decreasing = F)
+    grl[indexesMin] <- sort(grl[indexesMin], decreasing = T)
+
+    return(grl)
+  } else {
+    return(sort(grl, decreasing = F))
+  }
+}
+
 #' get list of strands per granges group
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
@@ -80,9 +97,9 @@ lastExonPerGroup <- function(grl){
 firstStartPerGroup <- function(grl, keep.names = T){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (keep.names){
-    return( start(GroupGRangesFirstExon(grl)))
+    return( start(firstExonPerGroup(grl)))
   }else{
-    return( as.integer(start(GroupGRangesFirstExon(grl))))
+    return( as.integer(start(firstExonPerGroup(grl))))
   }
 }
 

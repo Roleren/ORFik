@@ -70,7 +70,8 @@ map_to_GRanges <- function(grl, result) {
   if(length(result) != 2)
     stop("Invalid structure of result, must be list with 2 elements",
          "read info for structure")
-
+  # Check that grl is sorted
+  grl <- sortPerGroup(grl, equalSort = F)
   # Create GRanges object from result tx ranges
   gr <- GRanges(seqnames = as.character(names(grl[result$index])),
                ranges = IRanges(start = unlist(result$orf[1]),

@@ -170,22 +170,27 @@ test_that("get_all_ORFs works as intended for minus strand", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "-")
   expect_equal(as.integer(unlist(start(test_ranges))), c(10, 20, 1011, 1010,1012))
   expect_equal(as.integer(unlist(end(test_ranges))), c(19, 21, 1019, 1018,1017))
   expect_equal(as.integer(unlist(width(test_ranges))), c(10, 2, 9, 9, 6))
   expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
 })
 
+
 # Create data for get_all_ORFs_as_GRangesList test_that#2
-seqname <- c("tx1","tx1")
-seqs <- c("ATGATGTAATAA")
+namesTx <- c("tx1","tx2")
+seqs <- c("ATGATGTAATAA","ATGTAA")
 grIn1 <- GRanges(seqnames = rep("1", 2),
                  ranges = IRanges(start = c(1, 2), end = c(1, 12)),
-                 strand = rep("+", 2), names = rep(seqname[1],2))
-
-grl <- GRangesList(grIn1)
-names(grl) <- "tx1"
-test_that("map_to_GRanges works as intended for strange exons", {
+                 strand = rep("+", 2), names = rep(namesTx[1],2))
+grIn2<- GRanges(seqnames = rep("1", 6),
+                 ranges = IRanges(start = c(1, 1000,2000,3000,4000,5000),
+                                  end = c(1, 1000,2000,3000,4000,5000)),
+                 strand = rep("+", 6), names = rep(namesTx[2],6))
+grl <- GRangesList(grIn1, grIn2)
+names(grl) <- namesTx
+test_that("map_to_GRanges works as intended for strange exons positive strand", {
 
   #longestORF F with different frames
   test_ranges <- find_in_frame_ORFs(grl,seqs,
@@ -197,9 +202,78 @@ test_that("map_to_GRanges works as intended for strange exons", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(as.integer(unlist(start(test_ranges))), c(1, 2, 4))
-  expect_equal(as.integer(unlist(end(test_ranges))), c(1, 9, 9))
-
+  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(1, 2, 4,1,1000,2000,3000,4000,5000))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(1, 9, 9,1,1000,2000,3000,4000,5000))
+  expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
+  expect_equal(unlist(grl)$names,c("tx1", "tx1", "tx2", "tx2", "tx2", "tx2", "tx2", "tx2"))
+  expect_equal(unlist(test_ranges)$names,c("tx1_1", "tx1_1", "tx1_2", "tx2_1", "tx2_1",
+                                   "tx2_1", "tx2_1", "tx2_1", "tx2_1"))
 })
 
+# Create data for get_all_ORFs_as_GRangesList test_that#3
+ranges(grIn1) <- rev(ranges(grIn1))
+strand(grIn1) <- rep("-", length(grIn1))
+ranges(grIn2) <- rev(ranges(grIn2))
+strand(grIn2) <- rep("-", length(grIn2))
 
+grl <- GRangesList(grIn1, grIn2)
+names(grl) <- namesTx
+
+test_that("map_to_GRanges works as intended for strange exons negative strand", {
+
+  #longestORF F with different frames
+  test_ranges <- find_in_frame_ORFs(grl,seqs,
+                                    "ATG|TGG|GGG",
+                                    "TAA|AAT|ATA",
+                                    longestORF = F,
+                                    minimumLength = 0)
+
+  test_ranges <- ORFik:::sortPerGroup(test_ranges)
+  expect_is(test_ranges, "GRangesList")
+  expect_is(strand(test_ranges),"CompressedRleList")
+  expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "-")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(4, 4, 5000,4000,3000,2000,1000,1))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(12, 9, 5000,4000,3000,2000,1000,1))
+  expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
+  expect_equal(unlist(grl)$names,c("tx1", "tx1", "tx2", "tx2", "tx2", "tx2", "tx2", "tx2"))
+  expect_equal(unlist(test_ranges)$names,c("tx1_1","tx1_2", "tx2_1", "tx2_1",
+                                   "tx2_1", "tx2_1", "tx2_1", "tx2_1"))
+})
+
+namesTx <- c("tx1","tx2", "tx3", "tx4")
+seqs <- c("ATGATGTAATAA","ATGTAA", "AAAATGAAATAAA","AAAATGAAATAA")
+
+
+grIn3 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(2000,2008), end = c(2004,2015)),
+                 strand = rep("+", 2), names = rep(namesTx[3],2))
+grIn4 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(3030,3000), end = c(3036,3004)),
+                 strand = rep("-", 2), names = rep(namesTx[4],2))
+grl <- GRangesList(grIn1, grIn2,grIn3, grIn4)
+names(grl) <- namesTx
+
+test_that("map_to_GRanges works as intended for strange exons both strands", {
+
+  #longestORF F with different frames
+  test_ranges <- find_in_frame_ORFs(grl,seqs,
+                                    "ATG|TGG|GGG",
+                                    "TAA|AAT|ATA",
+                                    longestORF = F,
+                                    minimumLength = 0)
+
+  test_ranges <- ORFik:::sortPerGroup(test_ranges)
+  expect_is(test_ranges, "GRangesList")
+  expect_is(strand(test_ranges),"CompressedRleList")
+  expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "-")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(4, 4, 5000, 4000,
+                                                         3000, 2000, 1000, 1, 2003,
+                                                         2008, 3030, 3000))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(12, 9, 5000, 4000,
+                                                       3000, 2000, 1000, 1, 2004,
+                                                       2014, 3033, 3004))
+  expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
+})
