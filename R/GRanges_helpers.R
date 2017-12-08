@@ -48,28 +48,42 @@ seqnamesPerGroup <- function(grl, keep.names = T){
   }
 }
 
-#' sorts the GRangesList object grl
+#' A faster reimplementation of GenomicRanges::sort() for GRangesList
 #' @param grl a GRangesList
-#' @param equalSort a boolean, should minus strands be sorted from highest to lowest(T)
-#' @importFrom data.table as.data.table
-sortPerGroup <- function(grl, equalSort = T){
-  if (equalSort){
-    warning("equalSort == T is very slow on big lists!")
-    indexesPos <- which(ORFik:::strandPerGroup(grl,F) == "+")
-    indexesMin <- which(ORFik:::strandPerGroup(grl,F) == "-")
-
-    grl[indexesPos] <- sort(grl[indexesPos], decreasing = F)
-    grl[indexesMin] <- sort(grl[indexesMin], decreasing = T)
-
-    return(grl)
+#' @param decreasing should the first in each group have max(start(group))
+#'   ->T or min-> default(F) ?
+gSort <- function(grl, decreasing = F){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  DT <- as.data.table(grl)
+  if (decreasing){
+    asgrl <- makeGRangesListFromDataFrame(
+      DT[order(group, -start)],split.field = "group",
+      names.field = "group_name", keep.extra.columns = T)
   } else {
-    DT <- as.data.table(grl)
     asgrl <- makeGRangesListFromDataFrame(
       DT[order(group, start)],split.field = "group",
       names.field = "group_name", keep.extra.columns = T)
-    names(asgrl) <- names(grl)
-    return(asgrl)
   }
+  names(asgrl) <- names(grl)
+  return(asgrl)
+}
+#' sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
+#' which works poorly for > 10k groups
+#' @param grl a GRangesList
+#' @param equalSort a boolean, should minus strands be sorted from highest
+#'  to lowest(T)
+#' @importFrom data.table as.data.table
+sortPerGroup <- function(grl, equalSort = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (equalSort){
+    indexesPos <- which(strandPerGroup(grl,F) == "+")
+    indexesMin <- which(strandPerGroup(grl,F) == "-")
+
+    grl[indexesPos] <- gSort(grl[indexesPos])
+    grl[indexesMin] <- gSort(grl[indexesMin], decreasing = T)
+
+    return(grl)
+  } else return(gSort(grl))
 }
 
 #' get list of strands per granges group
@@ -151,6 +165,24 @@ fixSeqnames <- function(grl){
   return(GroupGRangesByNames(temp))
 }
 
+#' make a meta column with exon ranks
+#' @param grl a GRangesList
+makeExonRanks <- function(grl){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  l <- Rle(names(unlist(grl)))
+  t <- unlist(lapply(1:nrun(l), function(x) {
+    rep(x, runLength(l)[x])
+  }))
+
+  Inds <- rep(1, length(t))
+  for (x in 2:length(t)) {
+    if (t[x] == t[x - 1]) {
+      Inds[x] <- Inds[x-1] + 1
+    }
+  }
+  return(Inds)
+}
+
 #' Helperfunction for map_to_GRanges
 #' split a GRangesList on the exon boundaries of the skeleton
 #' if you have a grl without the exon splits, but a reference(skeleton),
@@ -180,6 +212,7 @@ GrangesSplitByExonSkeleton <- function(grl, skeleton){
     unlNEW <- unlist(grl, use.names = T)
 
   # add end of first to first, start of second to second copy
+  # this must be done for correct starts and ends
   c <- ol[names(unlNEW[from(ol)]) == names(unlSkel[to(ol)])]
   N <- unlNEW[from(c)]
   ff <- unlSkel[to(c)]
@@ -199,14 +232,11 @@ GrangesSplitByExonSkeleton <- function(grl, skeleton){
   # make orf exon names 1,2,3,4 for 4 exon transcript etc
   Inds <- rep(1, length(N))
   for (x in 2:length(N)) {
-    if (t[x] != t[x - 1]) {
-      Inds[x] <- 1
-    }
-    else {
-      if (froms[x] != froms[x - 1]) {
+    if (t[x] == t[x - 1]) {
+
+      if (froms[x] != froms[x - 1]){
         Inds[x] <- Inds[x - 1] + 1
-      }
-      else {
+      }else {
         Inds[x] <- Inds[x - 1]
       }
     }
