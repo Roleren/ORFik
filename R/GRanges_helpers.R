@@ -51,8 +51,10 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #' sorts the GRangesList object grl
 #' @param grl a GRangesList
 #' @param equalSort a boolean, should minus strands be sorted from highest to lowest(T)
+#' @importFrom data.table as.data.table
 sortPerGroup <- function(grl, equalSort = T){
   if (equalSort){
+    warning("equalSort == T is very slow on big lists!")
     indexesPos <- which(ORFik:::strandPerGroup(grl,F) == "+")
     indexesMin <- which(ORFik:::strandPerGroup(grl,F) == "-")
 
@@ -61,7 +63,12 @@ sortPerGroup <- function(grl, equalSort = T){
 
     return(grl)
   } else {
-    return(sort(grl, decreasing = F))
+    DT <- as.data.table(grl)
+    asgrl <- makeGRangesListFromDataFrame(
+      DT[order(group, start)],split.field = "group",
+      names.field = "group_name", keep.extra.columns = T)
+    names(asgrl) <- names(grl)
+    return(asgrl)
   }
 }
 
