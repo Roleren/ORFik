@@ -61,42 +61,28 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' result[2] countains two columns of start and stops,  named orf
 #' @return A GRangesList of ORFs.
 #' @export
-#' @importFrom GenomicFeatures mapFromTranscripts
+#' @importFrom GenomicFeatures pmapFromTranscripts
 map_to_GRanges <- function(grl, result) {
 
-  if(class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
-  if(is.null(names(grl))) stop("grl contains no names")
-  if(class(result) != "list") stop("Invalid type of result, must be list.")
-  if(length(result) != 2)
+  if (class(grl) != "GRangesList") stop("Invalid type of grl,",
+                                        "must be GRangesList.")
+  if (is.null(names(grl))) stop("grl contains no names")
+  if (class(result) != "list") stop("Invalid type of result, must be list.")
+  if (length(result) != 2)
     stop("Invalid structure of result, must be list with 2 elements",
          "read info for structure")
   # Check that grl is sorted
   grl <- sortPerGroup(grl, equalSort = F)
-  # Create GRanges object from result tx ranges
-  gr <- GRanges(seqnames = as.character(names(grl[result$index])),
-               ranges = IRanges(start = unlist(result$orf[1]),
-                                end = unlist(result$orf[2])),
-               strand =as.character(phead(strand(grl[result$index]),1L )))
-  names(gr) <- names(grl[result$index])
+  # Create Ranges object from orf scanner result
+  ranges = IRanges(start = unlist(result$orf[1]),
+                   end = unlist(result$orf[2]))
 
-  # map from transcript, remove duplicates, remove hit columns
-  # syntax for mapping:-> Seqnames(gr) == names(grl),
-  genomicCoordinates <- mapFromTranscripts(x =  gr, transcripts =  grl)
-  genomicCoordinates <-
-    genomicCoordinates[names(gr[genomicCoordinates$xHits]) == names(genomicCoordinates)]
-  rm(gr)
+  # map transcripts to genomic coordinates, reduce away false hits
+  genomicCoordinates <- pmapFromTranscripts(x =  ranges,
+                                            transcripts =  grl[result$index])
+  genomicCoordinates <- reduce(genomicCoordinates,drop.empty.ranges = T)
 
-  genomicCoordinates$xHits <- NULL
-  genomicCoordinates$transcriptsHits <- NULL
-  names(genomicCoordinates) <- names(grl[result$index])
-
-  newGRL <- split(genomicCoordinates,result$index )
-  names(newGRL) <- unique(names(genomicCoordinates))
-
-  # Split by exons and create new exon names
-  newGRL <- GrangesSplitByExonSkeleton(newGRL, grl)
-
-  return(newGRL)
+  return(makeORFNames(genomicCoordinates))
 }
 
 #' Resizes down ORF to the desired length, removing inside. Preserves exons.

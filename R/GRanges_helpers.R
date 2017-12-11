@@ -52,6 +52,7 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #' @param grl a GRangesList
 #' @param decreasing should the first in each group have max(start(group))
 #'   ->T or min-> default(F) ?
+#' @importFrom data.table as.data.table
 gSort <- function(grl, decreasing = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   DT <- as.data.table(grl)
@@ -72,7 +73,6 @@ gSort <- function(grl, decreasing = F){
 #' @param grl a GRangesList
 #' @param equalSort a boolean, should minus strands be sorted from highest
 #'  to lowest(T)
-#' @importFrom data.table as.data.table
 sortPerGroup <- function(grl, equalSort = T){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (equalSort){
@@ -167,83 +167,45 @@ fixSeqnames <- function(grl){
 
 #' make a meta column with exon ranks
 #' @param grl a GRangesList
-makeExonRanks <- function(grl){
+#' @param byTranscript if ORfs are by transcript, check duplicates
+makeExonRanks <- function(grl, byTranscript = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+
+  if (byTranscript){
+    oldNames <- names(grl)
+    names(grl) <- 1:length(grl)
+  }
   l <- Rle(names(unlist(grl)))
   t <- unlist(lapply(1:nrun(l), function(x) {
     rep(x, runLength(l)[x])
   }))
 
   Inds <- rep(1, length(t))
-  for (x in 2:length(t)) {
-    if (t[x] == t[x - 1]) {
-      Inds[x] <- Inds[x-1] + 1
+  if (!byTranscript){
+    for (x in 2:length(t)) {
+      if (t[x] == t[x - 1]) {
+        Inds[x] <- Inds[x-1] + 1
+      }
+    }
+  } else {
+    for (x in 2:length(t)) {
+      if (t[x] != t[x - 1]) {
+        if (oldNames[t[x]] == oldNames[t[x] - 1])
+          Inds[x] <- Inds[x-1] + 1
+      }
     }
   }
   return(Inds)
 }
 
-#' Helperfunction for map_to_GRanges
-#' split a GRangesList on the exon boundaries of the skeleton
-#' if you have a grl without the exon splits, but a reference(skeleton),
-#' then use this function
-#' @param grl The GRangesList found so far by the orf-scanner
-#' @param skeleton the reference skeleton to find exon splits
-GrangesSplitByExonSkeleton <- function(grl, skeleton){
-  # Split by exons and create new exon names
-  unlNEW <- unlist(grl, use.names = F)
+#' Make ORF names per orf, grl must be grouped by transcript
+#' @param grl a GRangesList
+makeORFNames <- function(grl){
 
-  # check for naming, differs between samples
-  if (!is.null(names(grl))){
-    unlSkel <- unlist(skeleton[names(grl)], use.names = F)
-  } else{
-    unlSkel <- unlist(skeleton, use.names = F)
-  }
-  ol <- findOverlaps(query = unlNEW, subject = unlSkel, type = "any")
+  ranks <- makeExonRanks(grl, byTranscript = T)
 
-  if (is.null(names(unlSkel))){
-    if (!is.null(names(grl))){
-      unlSkel <- unlist(skeleton[names(grl)], use.names = T)
-    } else{
-      unlSkel <- unlist(skeleton, use.names = T)
-    }
-  }
-  if(is.null(names(unlNEW)))
-    unlNEW <- unlist(grl, use.names = T)
-
-  # add end of first to first, start of second to second copy
-  # this must be done for correct starts and ends
-  c <- ol[names(unlNEW[from(ol)]) == names(unlSkel[to(ol)])]
-  N <- unlNEW[from(c)]
-  ff <- unlSkel[to(c)]
-  dups <- duplicated(from(c))
-  start(N[dups]) <- start(ff[dups])
-  dupsR <- duplicated(rev(from(c)))
-  rN <- rev(N)
-  end(rN[dupsR]) <- end(rev(ff)[dupsR])
-  N <- rev(rN)
-
-  # Get grouping t by names
-  l <- Rle(names(N))
-  t <- unlist(lapply(1:nrun(l), function(x) {
-    rep(x, runLength(l)[x])
-  }))
-  froms <- from(c)
-  # make orf exon names 1,2,3,4 for 4 exon transcript etc
-  Inds <- rep(1, length(N))
-  for (x in 2:length(N)) {
-    if (t[x] == t[x - 1]) {
-
-      if (froms[x] != froms[x - 1]){
-        Inds[x] <- Inds[x - 1] + 1
-      }else {
-        Inds[x] <- Inds[x - 1]
-      }
-    }
-  }
-  # create orf names and return as grl
-  N$names <- paste0(names(N), "_", Inds)
-  newGRL <- split(N, t)
-  names(newGRL) <- unique(names(N))
-  return(newGRL)
+  asGR <- unlist(grl, use.names = F)
+  if (is.null(names(asGR))) asGR <- unlist(grl, use.names = T)
+   asGR$names <- paste0(names(asGR), "_", ranks)
+  return(GroupGRangesByNames(asGR))
 }

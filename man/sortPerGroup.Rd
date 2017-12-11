@@ -2,15 +2,18 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{sortPerGroup}
 \alias{sortPerGroup}
-\title{sorts the GRangesList object grl}
+\title{sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
+which works poorly for > 10k groups}
 \usage{
 sortPerGroup(grl, equalSort = T)
 }
 \arguments{
 \item{grl}{a GRangesList}
 
-\item{equalSort}{a boolean, should minus strands be sorted from highest to lowest(T)}
+\item{equalSort}{a boolean, should minus strands be sorted from highest
+to lowest(T)}
 }
 \description{
-sorts the GRangesList object grl
+sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
+which works poorly for > 10k groups
 }

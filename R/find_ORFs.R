@@ -102,7 +102,7 @@ find_in_frame_ORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
                                  longestORF = longestORF,
                                  minimumLength = minimumLength)
 
-  return(map_to_GRanges(grl, result) )
+  return(map_to_GRanges(grl, result))
 }
 
 
