@@ -2,7 +2,10 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{fixSeqnames}
 \alias{fixSeqnames}
-\title{seqnames cleanup}
+\title{seqnames cleanup
+For many datasets, the fa file and the gtf file have different naming
+This functions tries to fix the naming to the GRanges standard
+chrX instead of X chr1 instead of 1 etc..}
 \usage{
 fixSeqnames(grl)
 }
@@ -11,4 +14,7 @@ fixSeqnames(grl)
 }
 \description{
 seqnames cleanup
+For many datasets, the fa file and the gtf file have different naming
+This functions tries to fix the naming to the GRanges standard
+chrX instead of X chr1 instead of 1 etc..
 }
