@@ -8,6 +8,7 @@ txdb <- loadDb(samplefile)
 fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
 cds <- cdsBy(txdb)
 rm(txdb)
+
 cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),
   ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500) ,
     as.integer(start(fiveUTRs)[1 : 2])),

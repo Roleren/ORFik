@@ -5,12 +5,12 @@
 \title{sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
 which works poorly for > 10k groups}
 \usage{
-sortPerGroup(grl, equalSort = T)
+sortPerGroup(grl, ignore.strand = F)
 }
 \arguments{
 \item{grl}{a GRangesList}
 
-\item{equalSort}{a boolean, should minus strands be sorted from highest
+\item{ignore.strand}{a boolean, should minus strands be sorted from highest
 to lowest(T)}
 }
 \description{
