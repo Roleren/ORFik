@@ -71,11 +71,12 @@ gSort <- function(grl, decreasing = F){
 #' sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
 #' which works poorly for > 10k groups
 #' @param grl a GRangesList
-#' @param equalSort a boolean, should minus strands be sorted from highest
+#' @param ignore.strand a boolean, should minus strands be sorted from highest
 #'  to lowest(T)
-sortPerGroup <- function(grl, equalSort = T){
+#' @export
+sortPerGroup <- function(grl, ignore.strand = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (equalSort){
+  if (!ignore.strand){
     indexesPos <- which(strandPerGroup(grl,F) == "+")
     indexesMin <- which(strandPerGroup(grl,F) == "-")
 

@@ -264,7 +264,7 @@ test_that("map_to_GRanges works as intended for strange exons both strands", {
                                     longestORF = F,
                                     minimumLength = 0)
 
-  test_ranges <- ORFik:::sortPerGroup(test_ranges)
+  test_ranges <- sortPerGroup(test_ranges)
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
@@ -276,4 +276,26 @@ test_that("map_to_GRanges works as intended for strange exons both strands", {
                                                        3000, 2000, 1000, 1, 2004,
                                                        2014, 3033, 3004))
   expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
+})
+
+
+test_that("GRangesList sorting works as intended", {
+
+  test_ranges <- grl[3:4]
+
+  test_ranges <- sortPerGroup(test_ranges)
+  expect_is(test_ranges, "GRangesList")
+  expect_is(strand(test_ranges),"CompressedRleList")
+  expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(2000,
+                                                         2008, 3030, 3000))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(2004,
+                                                       2015, 3036, 3004))
+
+  test_ranges <- sortPerGroup(test_ranges, ignore.strand = T)
+  expect_equal(as.integer(unlist(start(test_ranges))), c(2000,
+                                                         2008, 3000, 3030))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(2004,
+                                                       2015, 3004, 3036))
 })

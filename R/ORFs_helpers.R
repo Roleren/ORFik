@@ -72,7 +72,7 @@ map_to_GRanges <- function(grl, result) {
     stop("Invalid structure of result, must be list with 2 elements",
          "read info for structure")
   # Check that grl is sorted
-  grl <- sortPerGroup(grl, equalSort = F)
+  grl <- sortPerGroup(grl, ignore.strand = T)
   # Create Ranges object from orf scanner result
   ranges = IRanges(start = unlist(result$orf[1]),
                    end = unlist(result$orf[2]))
