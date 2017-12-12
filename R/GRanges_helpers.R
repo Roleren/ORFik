@@ -190,9 +190,10 @@ makeExonRanks <- function(grl, byTranscript = F){
   } else {
     for (x in 2:length(t)) {
       if (t[x] != t[x - 1]) {
-        if (oldNames[t[x]] == oldNames[t[x] - 1])
-          Inds[x] <- Inds[x-1] + 1
-      }
+        if (oldNames[t[x]] == oldNames[t[x] - 1]){
+          Inds[x] <- Inds[x - 1] + 1
+        }
+      } else Inds[x] = Inds[x - 1]
     }
   }
   return(Inds)
