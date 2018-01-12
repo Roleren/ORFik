@@ -216,3 +216,66 @@ makeORFNames <- function(grl){
     asGR$names <- paste0(names(asGR), "_", ranks)
   return(groupGRangesBy(asGR))
 }
+
+#' Tile a GRangeslist by 1
+#' This is not supported originally by GenomicRanges
+#' @param grl a GRangesList object
+#' @return a GRangesList grouped by original group, tiled to 1
+tile1 <- function(grl){
+  ORFs <- unlist(grl, use.names = F)
+  if(sum(duplicated(names(ORFs)))){
+    if(!is.null(ORFs$names)){
+      names(ORFs) <- ORFs$names
+    } else stop("duplicated ORF names,\n
+                need a column called 'names' to fix this")
+  }
+
+  tilex <- tile(ORFs,width =  1L)
+
+  names(tilex) <- ORFs$names
+  unl <- unlist(tilex, use.names = T)
+  tilex <- ORFik:::groupGRangesBy(unl)
+  return(ORFik:::sortPerGroup(tilex))
+}
+
+#' map genomic to transcript coordinates by reference
+#'
+#' @param grl a GRangesList of ranges within the reference,
+#'  grl must have column called names
+#' @param reference ranges that include and are bigger then grl
+asTX = function(grl, reference){
+  gr = unlist(grl, use.names = F)
+
+  txCoord = mapToTranscripts(gr,fiveUTRs)
+  txCoord = txCoord[names(
+    gr[txCoord$xHits]) == seqnames(txCoord)]
+  txCoord$xHits = NULL;txCoord$transcriptsHits = NULL
+  #sort them by column called names
+  txCoord$names = gr$names
+  return(groupGRangesBy(txCoord, txCoord$names))
+}
+
+#' map genomic to transcript coordinates by reference
+#' @param grl a GRangesList of ranges within the reference,
+#'  grl must have column called names that gives grouping for result
+#' @param reference ranges that include and are bigger then grl
+asTX = function(grl, reference){
+  gr = unlist(grl, use.names = F)
+
+  txCoord = mapToTranscripts(gr,fiveUTRs)
+  txCoord = txCoord[names(
+    gr[txCoord$xHits]) == seqnames(txCoord)]
+  txCoord$xHits = NULL;txCoord$transcriptsHits = NULL
+  #sort them by column called names
+  txCoord$names = gr$names
+  return(groupGRangesBy(txCoord, txCoord$names))
+}
+
+#' get transcript sequence from a GrangesList and a faFile
+#' @param grl a GRangesList object
+#' @param faFile a faFile used to find the transcripts
+#' @param is.sorted a speedup, if you know the ranges are sorted
+txSeqsFromFa <- function(grl,faFile, is.sorted = F){
+  if(!isSorted) grl <- sortPerGroup(grl)
+  return(extractTranscriptSeqs(fa, transcripts = grl))
+}

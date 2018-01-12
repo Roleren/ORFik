@@ -1,3 +1,56 @@
+#' Get ORF score for given GRangesList object grouped by orfs
+#' That is, of the 3 possible frame in an ORF
+#' Is the first one most important, by how much ?
+#' NB! Only support + and - strand, not *
+#' @param grl a GRangesList object with ORFs
+#' @param RFP ribozomal footprints, given as Galignment object
+#' @return a matrix with 4 columns, the orfscore and score of
+#' each of the 3 tiles
+ORFScores <- function(grl, RFP){
+
+  sortedTilex <- tile1(grl)
+
+  dt <- as.data.table(sortedTilex)
+
+  group <- NULL
+  # seperate the three tiles, by the 3 frames
+  tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
+  grl1 <- makeGRangesListFromDataFrame(tilex1,
+    split.field = "group", names.field = "group_name")
+  tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
+  grl2 <- makeGRangesListFromDataFrame(tilex2,
+    split.field = "group", names.field = "group_name")
+  tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
+  grl3 <- makeGRangesListFromDataFrame(tilex2,
+    split.field = "group", names.field = "group_name")
+
+
+  countsTile1 <- countOverlaps(grl1, RFP)
+  countsTile2 <- countOverlaps(grl2, RFP)
+  countsTile3 <- countOverlaps(grl3, RFP)
+
+  RP = countsTile1 + countsTile2 + countsTile3
+
+  Ftotal <- RP/3
+
+  tile1 <- (countsTile1 - Ftotal)^2 / Ftotal
+  tile2 <- (countsTile2 - Ftotal)^2 / Ftotal
+  tile3 <- (countsTile3 - Ftotal)^2 / Ftotal
+
+  dfORFs <- NULL
+  dfORFs$frame_zero_RP <- countsTile1
+  dfORFs$frame_one_RP <- countsTile2
+  dfORFs$frame_two_RP <- countsTile3
+
+  ORFscore <- log2(tile1 + tile2 + tile3 + 1)
+  revORFscore <-  which(tile1 < tile2 | tile1 < tile3)
+  ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
+  ORFscore[is.na(ORFscore)] <- 0
+  dfORFs$ORFscore <- ORFscore
+
+  return(dfORFs)
+}
+
 #' Subset GRanges to get desired frame. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
@@ -34,7 +87,6 @@ subset_to_stop <- function(x){
   }
 }
 
-
 #' Subset GRanges to get coverage. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
@@ -51,33 +103,132 @@ subset_coverage <- function(cov, y) {
   return(as.vector(cov1[ranges(y)]))
 }
 
-
-#' Calucalte Entropy value of input reads. Based on ...
-#'
+#' Calucalte Entropy value of input reads overlapping per ORF
+#' The interval per orf is real number in the interval (0:1)
+#' Where 0 is no variance.
 #' @export
-#' @param countsOver A numeric vector containing reads over given ORF
-#' @return numeric value of entropy
-#' @examples
-#' calculateEntropy(c(30,15,5,45,23,4,23,4,1,14,7,3,24,6,2,10,6,2))
+#' @param grl a GRangesList that the reads can map to
+#' @param reads a GAlignment object, ig. from ribo seq, or rna seq
+#' @return A numeric vector containing entropy per ORF
 #'
-calculateEntropy <- function(countsOver) {
-  reg_count <- 0
-  reg_len <- 3
-  N <- sum(countsOver)
-  L <- length(countsOver)
-  if(N <= L){
-    reg_len <- floor(L/N)
+entropy <- function(grl, reads) {
+  # Get count list of overlaps
+  tileBy1 <- tile1(grl)
+  countsTile <- countOverlaps(unlist(tileBy1, use.names = F), reads)
+  names <- names(countsTile)
+  names(countsTile) <- NULL
+  countList <- split(countsTile, names)
+  names(countList) <- NULL
+  countList <- IRanges::RleList(countList)
+
+  # generate the entropy variables
+  sums <- sum(countList)
+  if(sum(sums) == 0){ # no variance in countList, 0 entropy
+    return(rep(0, length(tileBy1)))
   }
-  reg_count <- L/reg_len
-  Hx <- 0
-  MHx <- 0
-  for(h in 0:(reg_count-1)){
-    which_reads <- (1 + h * reg_len):(h * reg_len + reg_len)
-    Xi <- sum(countsOver[which_reads]) / N
-    Hx <- Hx + ifelse(is.nan(Xi * log2(Xi)), 0, Xi * log2(Xi))
-    MHx <- MHx + 1/reg_count * log2(1/reg_count)
+  N <- unlist(sums)
+  # get indeces where entropy is not 0
+  validIndeces <- N > 0
+  N <- N[validIndeces] # <- sums not 0
+  countList <- countList[validIndeces]
+
+  lengths <- lengths(countList)
+  reg_len <- rep(3, length(lengths)) # tuplets per orf
+  L <- unlist(lengths)
+  # which ORFs should not have tuplet length of 3
+  bool <- N <= L
+  floors <- floor(L / N)
+  reg_len[bool] <- floors[bool]
+  reg_counts <- as.integer(L / reg_len) # number of tuplets per orf
+
+
+  # Need to reassign variables to equal length,
+  # to be able to vectorize
+  # h: The sequences we make the tuplets per orf,
+  # if h[1] is: c(1,2,3,4,5,6) and reg_len[1] is: c(3,3)
+  # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
+  h <- lapply(reg_counts,function(x){
+    0:(x-1)
+  })
+
+  runLengths <- lengths(IRanges::RleList(h))
+  # get sequence from valid indeces
+  indeces <- 1:length(runLengths)
+  reg_len <- lapply(indeces, function(x){
+    rep(reg_len[x], runLengths[x])
+  })
+  unlh <- unlist(h, use.names = F)
+  unlreg_len <- unlist(reg_len, use.names = F)
+
+  # make sequences for reads, start -> stop
+  # gives a triplet reading, 1:3, 3,6
+  acums <- L
+  for(i in 2:length(L)){
+    acums[i] <-acums[i-1] + acums[i]
   }
-  return(Hx/MHx)
+  unlacums <- unlist(lapply(1:(length(runLengths)-1), function(x){
+    rep(acums[x], runLengths[x+1])
+  }), use.names = F)
+  unlacums <- unlist(c(rep(1,runLengths[1]),unlacums))
+
+  which_reads_start <- (unlacums + unlh * unlreg_len)
+  which_reads_end <- (unlh * unlreg_len + (unlreg_len + unlacums -1))
+  # the actual triplets ->
+  int_seqs <- lapply(1:length(which_reads_start), function(x){
+    which_reads_start[x]:which_reads_end[x]
+  })
+  # group int_seqs
+  int_grouping <- unlist(lapply(1:length(reg_counts), function(x){
+    rep(x, reg_counts[x])
+  }), use.names = F)
+  int_seqs <- split(int_seqs, int_grouping)
+  names(int_seqs) <- NULL
+  N <- unlist(lapply(indeces, function(x){
+    rep(N[x], reg_counts[x])
+  }), use.names = F)
+
+  intcountList <- IntegerList(countList)
+  unlintcount <- unlist(unlist(intcountList, use.names = F),
+                        use.names = F)
+
+
+  # get the assigned tuplets per orf, usually triplets
+  triplets <- lapply(1:length(int_seqs), function(x){
+    unlintcount[int_seqs[[x]]]
+  })
+  tripletSums <- unlist(lapply(trip, function(x){
+    sum(x)
+  }), use.names = F)
+
+  # entropy function, interval 0:1 real number
+  Xi <-  tripletSums / N
+  validXi <- !is.nan(Xi * log2(Xi))
+  Hx <- rep(0, length(validXi))
+  Hx[validXi] <- Xi[validXi] * log2(Xi[validXi])
+
+  MHx <-rep(0, length(validXi))
+
+  reg_counts<- lapply(indeces, function(x){
+    rep(reg_counts[x], runLengths[x])
+  })
+  unlrg_counts <- unlist(reg_counts, use.names = F)
+  MHx <- 1/unlrg_counts * log2(1 / unlrg_counts)
+
+  # sum the mhx to groups
+
+  grouping <- unlist(lapply(indeces, function(x){
+    rep(x, runLengths[x])
+  }), use.names = F)
+
+  Hx <- sum(NumericList(split(Hx, grouping)))
+  MHx <- sum(NumericList(split(MHx, grouping)))
+
+  entropy <- rep(0.0, length(tileBy1))
+
+  # non 0 entropy values set to HX / MHX
+  entropy[validIndeces] <- Hx / MHx
+  entropy[is.na(entropy)] <- 0
+  return(entropy)
 }
 
 
@@ -90,4 +241,69 @@ calculateEntropy <- function(countsOver) {
 #'
 calculateCoverage <- function(countsOver) {
   return(sum(countsOver >= 1)/length(countsOver))
+}
+
+#' Make a score for each ORFs start region
+#' The closer the sequence is to the kozak sequence
+#' The higher the score, based on simplification of PWM
+#' score system: 4 upstream, 5 downstream of start
+#' CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
+#' CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
+#' Inspired by experimental bit values for each position
+#' @param grl a GRangesList grouped by ORF
+#' @param faFile a faFile from the fasta file
+#' @param species which species to use, currently only support human
+kozacSequenceScore <- function(grl, faFile  = NULL, species = "human"){
+  firstExons <- firstExonPerGroup(grl)
+  kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
+
+  sequences <- as.character(txSeqsFromFa(grl, faFile))
+  names(sequences) <- NULL
+  scores <- rep(0, length(sequences))
+  if(species == "human"){
+    # split strings and relist as letters of 9 rows
+    subSplit <- strsplit(sequences, split = "")
+    mat <- matrix(unlist(subSplit), nrow = 9) #this will not when ATG is on start of chr
+    pos1 <- as.character(mat[1,])
+    pos2 <- as.character(mat[2,])
+    pos3 <- as.character(mat[2,])
+    pos4 <- as.character(mat[2,])
+    pos8 <- as.character(mat[8,])
+    pos9 <- as.character(mat[9,])
+
+
+    match <- grepl(x = pos1, pattern = "C|G|A")
+    scores[match] <- scores[match] + 1
+
+    match <- pos2 == "A"
+    scores[match] <- scores[match] + 5
+    match <- pos2 == "G"
+    scores[match] <- scores[match] + 2
+    match <- pos2 == "C"
+    scores[match] <- scores[match] + 1
+
+    match <- grepl(x = pos3, pattern = "C|A")
+    scores[match] <- scores[match] + 1
+
+    match <- pos4 == "C"
+    scores[match] <- scores[match] + 2
+    match <- pos4 == "G"
+    scores[match] <- scores[match] + 1
+    match <- pos4 == "A"
+    scores[match] <- scores[match] + 1
+
+    match <- pos8 == "G"
+    scores[match] <- scores[match] + 2
+    match <- pos8 == "A"
+    scores[match] <- scores[match] + 1
+    match <- pos8 == "T"
+    scores[match] <- scores[match] + 1
+
+    match <- grepl(x = pos9, pattern = "C|A")
+    scores[match] <- scores[match] + 1
+
+
+    return(scores)
+  }
+  else stop("other species are not supported")
 }
