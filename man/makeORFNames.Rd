@@ -2,13 +2,20 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{makeORFNames}
 \alias{makeORFNames}
-\title{Make ORF names per orf, grl must be grouped by transcript}
+\title{Make ORF names per orf, grl must be grouped by transcript
+If a list of orfs are grouped by transcripts, but does not have
+ORF names, then create them and return the new GRangesList}
 \usage{
 makeORFNames(grl)
 }
 \arguments{
 \item{grl}{a GRangesList}
 }
+\value{
+a GRangesList now with ORF names
+}
 \description{
 Make ORF names per orf, grl must be grouped by transcript
+If a list of orfs are grouped by transcripts, but does not have
+ORF names, then create them and return the new GRangesList
 }

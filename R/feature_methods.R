@@ -1,55 +1,4 @@
-#' Get ORF score for given GRangesList object grouped by orfs
-#' That is, of the 3 possible frame in an ORF
-#' Is the first one most important, by how much ?
-#' NB! Only support + and - strand, not *
-#' @param grl a GRangesList object with ORFs
-#' @param RFP ribozomal footprints, given as Galignment object
-#' @return a matrix with 4 columns, the orfscore and score of
-#' each of the 3 tiles
-ORFScores <- function(grl, RFP){
 
-  sortedTilex <- tile1(grl)
-
-  dt <- as.data.table(sortedTilex)
-
-  group <- NULL
-  # seperate the three tiles, by the 3 frames
-  tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
-  grl1 <- makeGRangesListFromDataFrame(tilex1,
-    split.field = "group", names.field = "group_name")
-  tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
-  grl2 <- makeGRangesListFromDataFrame(tilex2,
-    split.field = "group", names.field = "group_name")
-  tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
-  grl3 <- makeGRangesListFromDataFrame(tilex2,
-    split.field = "group", names.field = "group_name")
-
-
-  countsTile1 <- countOverlaps(grl1, RFP)
-  countsTile2 <- countOverlaps(grl2, RFP)
-  countsTile3 <- countOverlaps(grl3, RFP)
-
-  RP = countsTile1 + countsTile2 + countsTile3
-
-  Ftotal <- RP/3
-
-  tile1 <- (countsTile1 - Ftotal)^2 / Ftotal
-  tile2 <- (countsTile2 - Ftotal)^2 / Ftotal
-  tile3 <- (countsTile3 - Ftotal)^2 / Ftotal
-
-  dfORFs <- NULL
-  dfORFs$frame_zero_RP <- countsTile1
-  dfORFs$frame_one_RP <- countsTile2
-  dfORFs$frame_two_RP <- countsTile3
-
-  ORFscore <- log2(tile1 + tile2 + tile3 + 1)
-  revORFscore <-  which(tile1 < tile2 | tile1 < tile3)
-  ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
-  ORFscore[is.na(ORFscore)] <- 0
-  dfORFs$ORFscore <- ORFscore
-
-  return(dfORFs)
-}
 
 #' Subset GRanges to get desired frame. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
@@ -103,9 +52,10 @@ subset_coverage <- function(cov, y) {
   return(as.vector(cov1[ranges(y)]))
 }
 
-#' Calucalte Entropy value of input reads overlapping per ORF
-#' The interval per orf is real number in the interval (0:1)
-#' Where 0 is no variance.
+#' Calucalte Entropy value of input reads overlapping per group in grl
+#' For example reads per orf.
+#' The entropy interval per group is a real number in the interval (0:1)
+#' Where 0 is no variance in reads over group.
 #' @export
 #' @param grl a GRangesList that the reads can map to
 #' @param reads a GAlignment object, ig. from ribo seq, or rna seq

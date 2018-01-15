@@ -112,3 +112,87 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 
   return(tiled)
 }
+
+#' Get transcript names from orf names
+#' names must either be a column called names, or the names of the
+#' grl object must be orf names
+#' @param grl a GRangeslist grouped by ORF
+OrfToTxNames = function(grl){
+  if (class(grl) != "GRangesList") stop("gr must be GRangesList Object")
+  if (is.null(names(grl))){
+    if(is.null(unlist(grl, use.names = F)$names)){
+      stop("grl have no valid orf names to convert")
+    } else {
+      return(gsub("_[0-9]*","", unique(unlist(grl, use.names = F))))
+    }
+  }
+  gsub("_[0-9]*","", names(grlByORF))
+}
+
+#' get the start sites from a GRangesList of orfs grouped by orfs
+#' In ATGTTTTGG, get the position of the A.
+#' @param grl a GRangesList object
+#' @param asGR a boolean, return as GRanges object
+#' @param is.sorted a speedup, if you know the ranges are sorted
+#' @return if asGR is False, a vector, if True a GRanges object
+ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
+  if(!is.sorted){
+    grl <- ORFik:::sortPerGroup(grl)
+  }
+  posIds <- ORFik:::strandPerGroup(grl, F) == "+"
+  minIds <- ORFik:::strandPerGroup(grl, F) == "-"
+
+  startSites <- rep(NA, length(grl))
+  startSites[posIds] <- ORFik:::firstStartPerGroup(grl[posIds], F)
+
+  startSites[minIds] <- ORFik:::firstEndPerGroup(grl[minIds], F)
+
+  if(asGR){
+    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl),
+                  ranges = IRanges(startSites,startSites),
+                  strand = ORFik:::strandPerGroup(grl))
+    names(gr) <- names(grl)
+    return(gr)
+  }
+
+  if(keep.names){
+    names(startSites) <- names(firstExons)
+    return(startSites)
+  }
+  return(startSites)
+}
+
+#' get the Stop sites from a GRangesList of orfs grouped by orfs
+#' In ATGTTTTGC, get the position of the C.
+#' @param grl a GRangesList object
+#' @param asGR a boolean, return as GRanges object
+#' @param keep.names if asGR is False, do you still want
+#'  to keep a named vector
+#' @param is.sorted a speedup, if you know the ranges are sorted
+#' @return if asGR is False, a vector, if True a GRanges object
+ORFStopSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
+  if(!is.sorted){
+    grl <- ORFik:::sortPerGroup(grl)
+  }
+  posIds <- ORFik:::strandPerGroup(grl, F) == "+"
+  minIds <- ORFik:::strandPerGroup(grl, F) == "-"
+
+  stopSites <- rep(NA, length(grl))
+  stopSites[posIds] <- ORFik:::lastExonEndPerGroup(grl[posIds], F)
+
+  stopSites[minIds] <- ORFik:::lastExonStartPerGroup(grl[minIds], F)
+
+  if(asGR){
+    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl),
+                  ranges = IRanges(stopSites,stopSites),
+                  strand = ORFik:::strandPerGroup(grl))
+    names(gr) <- names(grl)
+    return(gr)
+  }
+
+  if(keep.names){
+    names(stopSites) <- names(grl)
+    return(stopSites)
+  }
+  return(stopSites)
+}

@@ -1,7 +1,9 @@
 #' make GRangesList from GRanges, grouped by names or another column(other)
 #' ig. if GRanges should be grouped by gene, give gene column as other
 #' @param gr a GRanges object
-#' @param other a vector of names to group by
+#' @param other a vector of names to group, no 2 groups can have same name
+#' @return a GRangesList named after names(Granges) if other is NULL, else
+#' names are from unique(other)
 groupGRangesBy <- function(gr,other = NULL){
   if (class(gr) != "GRanges") stop("gr must be GRanges Object")
   if(is.null(other)){ # if not using other
@@ -14,7 +16,12 @@ groupGRangesBy <- function(gr,other = NULL){
   }
   grouping <- unlist(lapply(1:nrun(l), function(x){ rep(x, runLength(l)[x])}))
   grl <- split(gr, grouping)
-  names(grl) <- unique(names(gr))
+  if(is.null(other)){
+    names(grl) <- unique(names(gr))
+  } else{
+    names(grl) <- unique(other)
+  }
+
   return(grl)
 }
 
@@ -95,6 +102,7 @@ strandPerGroup <- function(grl, keep.names = T){
 }
 
 #' get first exon per granges group
+#' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a GRangesList
 firstExonPerGroup <- function(grl){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
@@ -120,6 +128,18 @@ firstStartPerGroup <- function(grl, keep.names = T){
   }
 }
 
+#' get first end per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+firstEndPerGroup <- function(grl, keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return(end(firstExonPerGroup(grl)))
+  }else{
+    return(as.integer(end(firstExonPerGroup(grl))))
+  }
+}
+
 #' get last end per granges group
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
@@ -129,6 +149,18 @@ lastExonEndPerGroup = function(grl,keep.names = T){
     return(end(ptail(grl, 1L))) # S4Vectors::ptail() wrapper
   }else{
     return(as.integer(end(ptail(grl, 1L))))
+  }
+}
+
+#' get last end per granges group
+#' @param grl a GRangesList
+#' @param keep.names a boolean, keep names or not
+lastExonStartPerGroup = function(grl,keep.names = T){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (keep.names){
+    return(start(ptail(grl, 1L))) # S4Vectors::ptail() wrapper
+  }else{
+    return(as.integer(start(ptail(grl, 1L))))
   }
 }
 
@@ -206,7 +238,10 @@ makeExonRanks <- function(grl, byTranscript = F){
 }
 
 #' Make ORF names per orf, grl must be grouped by transcript
+#' If a list of orfs are grouped by transcripts, but does not have
+#' ORF names, then create them and return the new GRangesList
 #' @param grl a GRangesList
+#' @return a GRangesList now with ORF names
 makeORFNames <- function(grl){
 
   ranks <- makeExonRanks(grl, byTranscript = T)
@@ -235,7 +270,7 @@ tile1 <- function(grl){
   names(tilex) <- ORFs$names
   unl <- unlist(tilex, use.names = T)
   tilex <- ORFik:::groupGRangesBy(unl)
-  return(ORFik:::sortPerGroup(tilex))
+  return(sortPerGroup(tilex))
 }
 
 #' map genomic to transcript coordinates by reference
@@ -262,7 +297,7 @@ asTX = function(grl, reference){
 asTX = function(grl, reference){
   gr = unlist(grl, use.names = F)
 
-  txCoord = mapToTranscripts(gr,fiveUTRs)
+  txCoord = mapToTranscripts(gr,reference)
   txCoord = txCoord[names(
     gr[txCoord$xHits]) == seqnames(txCoord)]
   txCoord$xHits = NULL;txCoord$transcriptsHits = NULL
@@ -278,4 +313,11 @@ asTX = function(grl, reference){
 txSeqsFromFa <- function(grl,faFile, is.sorted = F){
   if(!isSorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(fa, transcripts = grl))
+}
+
+#' get the start sites from a GRangesList of orfs grouped by orfs
+#' @param grl a GRangesList object
+#' @param is.sorted a speedup, if you know the ranges are sorted
+ORFStartSites <- function(grl, is.sorted = F){
+
 }
