@@ -2,26 +2,18 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{asTX}
 \alias{asTX}
-\alias{asTX}
 \title{map genomic to transcript coordinates by reference}
 \usage{
-asTX(grl, reference)
-
 asTX(grl, reference)
 }
 \arguments{
 \item{grl}{a GRangesList of ranges within the reference,
-grl must have column called names}
-
-\item{reference}{ranges that include and are bigger then grl}
-
-\item{grl}{a GRangesList of ranges within the reference,
 grl must have column called names that gives grouping for result}
 
-\item{reference}{ranges that include and are bigger then grl}
+\item{reference}{a GrangesList of ranges
+that include and are bigger or equal to grl
+ig. cds is grl and gene can be reference}
 }
 \description{
-map genomic to transcript coordinates by reference
-
 map genomic to transcript coordinates by reference
 }

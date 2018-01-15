@@ -16,13 +16,13 @@ ORFScores <- function(grl, RFP){
   # seperate the three tiles, by the 3 frames
   tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
   grl1 <- makeGRangesListFromDataFrame(tilex1,
-                                       split.field = "group", names.field = "group_name")
+    split.field = "group", names.field = "group_name")
   tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
   grl2 <- makeGRangesListFromDataFrame(tilex2,
-                                       split.field = "group", names.field = "group_name")
+    split.field = "group", names.field = "group_name")
   tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
   grl3 <- makeGRangesListFromDataFrame(tilex2,
-                                       split.field = "group", names.field = "group_name")
+    split.field = "group", names.field = "group_name")
 
 
   countsTile1 <- countOverlaps(grl1, RFP)
@@ -51,28 +51,49 @@ ORFScores <- function(grl, RFP){
   return(dfORFs)
 }
 
-#' get distances between orf ends and starts of transcripts cds' belonging to orfs.
-#' matching is done by transcript names, so they must match.
-#' @param ORFs orfs as GRangesList
-#' @param cds cds as GRangesList
-#' @param fiveUTRs fiveUTRs as GRangesList
-distOrfToCds = function(ORFs, cds, fiveUTRs){
-  stop("not working!")
-  cdsFirstExons = firstExonPerGroup(cds)
-  namesToUse = as.character(unlist(unique(seqnames(ORFs))))
-  cdsToUse = cdsFirstExons[namesToUse]
-  c = unlist(cdsToUse, use.names = F)
-  cdsToTranscript = mapToTranscripts(c,fiveUTRs)
-  c = unlist(cdsToUse)
-  cdsToUse = cdsToTranscript[names(c[cdsToTranscript$xHits]) == seqnames(cdsToTranscript)]
+#' Get distances between orf ends and starts of transcripts cds' belonging to orfs.
+#' matching is done by transcript names.
+#' fiveUTRs must be used to make transcript positions possible.
+#' The cds start site, will be presumed to be on + 1 of end of fiveUTRs
+#' @param ORFs orfs as GRangesList, names of orfs must be transcript names
+#' @param fiveUTRs fiveUTRs as GRangesList, must be original unchanged fiveUTRs
+#' @param cds cds' as GRangesList
+#' @param extension if you changed the extension of tss when finding the orfs
+distOrfToCds <- function(ORFs, fiveUTRs, cds, extension = 1000){
+  if (class(ORFs) != "GRangesList") stop("grl must be GRangesList Object")
 
-  ORFsPos = ORFs[as.character(strand(ORFs)) == "+"]
-  ORFsMin = ORFs[as.character(strand(ORFs)) == "-"]
+  extendedLeadersWithoutCds <- makeGrlAndFilter(
+    extendsTSSexons(fiveUTRs, extension = extension), fiveUTRs)
+  extendedLeaders <- addFirstCdsOnLeaderEnds(
+    extendedLeadersWithoutCds, cds)
+  lastExons <-  lastExonPerGroup(ORFs)
+  orfsTX <- asTX(lastExons, extendedLeaders)
+  orfEnds <- lastExonEndPerGroup(orfsTX, F)
+  cdsStarts <- widthPerGroup(extendedLeadersWithoutCds[
+    OrfToTxNames(lastExons)], F) + 1
+  dists <- cdsStarts - orfEnds
 
-  distPos = start(cdsToUse[as.character(strand(cdsToUse)) == "+"]) - as.integer(end(endsPos))
-  distMin = as.integer(start(endsMin)) - end(cdsToUse[as.character(strand(cdsToUse)) == "-"])
-  dists = rep(NA,length(names(unlist(ends, use.names = F))))
-  dists[as.character(strand(unlist(ends))) == "+"] = distPos
-  dists[as.character(strand(unlist(ends))) == "-"] = distMin
   return(dists)
+}
+
+#' find frame for each orf relative to cds
+#' @param dists a vector of distances between ORF and cds
+#' Input of this function, is the output of the function distOrfToCds
+inFrameWithCDS <- function(dists){
+  return(dists %% 3)
+}
+
+#' find for each orf if it overlaps cds range
+#' @param dists a vector of distances between ORF and cds
+#' Input of this function, is the output of the function distOrfToCds
+isOverlappingCds <- function(dists){
+  return(dists < 0)
+}
+
+#' Get the orf number in transcripts, ig. second orf _1 -> 2
+#' @param grl a GRangesList object with ORFs
+OrfRankOrder <- function(grl){
+  orfName <- unlist(grl, use.names = F)$names
+  if(is.null(orfName)) stop("grl must have column called names, with orf names")
+  return(as.integer(gsub(".*_", "", orfName)))
 }

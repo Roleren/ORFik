@@ -76,7 +76,7 @@ entropy <- function(grl, reads) {
   if(sum(sums) == 0){ # no variance in countList, 0 entropy
     return(rep(0, length(tileBy1)))
   }
-  N <- unlist(sums)
+  N <- unlist(sums, use.names = F)
   # get indeces where entropy is not 0
   validIndeces <- N > 0
   N <- N[validIndeces] # <- sums not 0
@@ -90,7 +90,6 @@ entropy <- function(grl, reads) {
   floors <- floor(L / N)
   reg_len[bool] <- floors[bool]
   reg_counts <- as.integer(L / reg_len) # number of tuplets per orf
-
 
   # Need to reassign variables to equal length,
   # to be able to vectorize
@@ -119,7 +118,7 @@ entropy <- function(grl, reads) {
   unlacums <- unlist(lapply(1:(length(runLengths)-1), function(x){
     rep(acums[x], runLengths[x+1])
   }), use.names = F)
-  unlacums <- unlist(c(rep(1,runLengths[1]),unlacums))
+  unlacums <- unlist(c(rep(1,runLengths[1]), unlacums))
 
   which_reads_start <- (unlacums + unlh * unlreg_len)
   which_reads_end <- (unlh * unlreg_len + (unlreg_len + unlacums -1))
@@ -140,7 +139,6 @@ entropy <- function(grl, reads) {
   intcountList <- IntegerList(countList)
   unlintcount <- unlist(unlist(intcountList, use.names = F),
                         use.names = F)
-
 
   # get the assigned tuplets per orf, usually triplets
   triplets <- lapply(1:length(int_seqs), function(x){
@@ -203,7 +201,7 @@ calculateCoverage <- function(countsOver) {
 #' @param grl a GRangesList grouped by ORF
 #' @param faFile a faFile from the fasta file
 #' @param species which species to use, currently only support human
-kozacSequenceScore <- function(grl, faFile  = NULL, species = "human"){
+kozacSequenceScore <- function(grl, faFile, species = "human"){
   firstExons <- firstExonPerGroup(grl)
   kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
 
@@ -251,7 +249,6 @@ kozacSequenceScore <- function(grl, faFile  = NULL, species = "human"){
 
     match <- grepl(x = pos9, pattern = "C|A")
     scores[match] <- scores[match] + 1
-
 
     return(scores)
   }

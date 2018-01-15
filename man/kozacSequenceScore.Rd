@@ -10,7 +10,7 @@ CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
 CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
 Inspired by experimental bit values for each position}
 \usage{
-kozacSequenceScore(grl, faFile = NULL, species = "human")
+kozacSequenceScore(grl, faFile, species = "human")
 }
 \arguments{
 \item{grl}{a GRangesList grouped by ORF}

@@ -115,18 +115,28 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 
 #' Get transcript names from orf names
 #' names must either be a column called names, or the names of the
-#' grl object must be orf names
+#' grl object
 #' @param grl a GRangeslist grouped by ORF
-OrfToTxNames = function(grl){
-  if (class(grl) != "GRangesList") stop("gr must be GRangesList Object")
+#' @param unique a boolean, if true unique the names,
+#'  used if several orfs map to same transcript and you only
+#'  want the unique groups
+OrfToTxNames <- function(grl, unique = F){
+  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (is.null(names(grl))){
-    if(is.null(unlist(grl, use.names = F)$names)){
+    otherPossibility <- unlist(grl, use.names = F)$names
+    if(is.null(otherPossibility)){
       stop("grl have no valid orf names to convert")
     } else {
-      return(gsub("_[0-9]*","", unique(unlist(grl, use.names = F))))
+      if(unique){
+        return(gsub("_[0-9]*", "", unique(otherPossibility)))
+      }
+      return(gsub("_[0-9]*", "", otherPossibility))
     }
   }
-  gsub("_[0-9]*","", names(grlByORF))
+  if(unique){
+    return(gsub("_[0-9]*", "", unique(names(grl))))
+  }
+  return(gsub("_[0-9]*", "", names(grl)))
 }
 
 #' get the start sites from a GRangesList of orfs grouped by orfs
@@ -144,13 +154,12 @@ ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
 
   startSites <- rep(NA, length(grl))
   startSites[posIds] <- ORFik:::firstStartPerGroup(grl[posIds], F)
-
   startSites[minIds] <- ORFik:::firstEndPerGroup(grl[minIds], F)
 
   if(asGR){
-    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl),
+    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, F),
                   ranges = IRanges(startSites,startSites),
-                  strand = ORFik:::strandPerGroup(grl))
+                  strand = ORFik:::strandPerGroup(grl, F))
     names(gr) <- names(grl)
     return(gr)
   }
@@ -179,13 +188,12 @@ ORFStopSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
 
   stopSites <- rep(NA, length(grl))
   stopSites[posIds] <- ORFik:::lastExonEndPerGroup(grl[posIds], F)
-
   stopSites[minIds] <- ORFik:::lastExonStartPerGroup(grl[minIds], F)
 
   if(asGR){
-    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl),
-                  ranges = IRanges(stopSites,stopSites),
-                  strand = ORFik:::strandPerGroup(grl))
+    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, F),
+                ranges = IRanges(stopSites,stopSites),
+                  strand = ORFik:::strandPerGroup(grl, F))
     names(gr) <- names(grl)
     return(gr)
   }

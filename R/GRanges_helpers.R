@@ -146,9 +146,9 @@ firstEndPerGroup <- function(grl, keep.names = T){
 lastExonEndPerGroup = function(grl,keep.names = T){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (keep.names){
-    return(end(ptail(grl, 1L))) # S4Vectors::ptail() wrapper
+    return(end(lastExonPerGroup(grl)))
   }else{
-    return(as.integer(end(ptail(grl, 1L))))
+    return(as.integer(end(lastExonPerGroup(grl))))
   }
 }
 
@@ -158,9 +158,9 @@ lastExonEndPerGroup = function(grl,keep.names = T){
 lastExonStartPerGroup = function(grl,keep.names = T){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (keep.names){
-    return(start(ptail(grl, 1L))) # S4Vectors::ptail() wrapper
+    return(start(lastExonPerGroup(grl)))
   }else{
-    return(as.integer(start(ptail(grl, 1L))))
+    return(as.integer(start(lastExonPerGroup(grl))))
   }
 }
 
@@ -243,7 +243,6 @@ makeExonRanks <- function(grl, byTranscript = F){
 #' @param grl a GRangesList
 #' @return a GRangesList now with ORF names
 makeORFNames <- function(grl){
-
   ranks <- makeExonRanks(grl, byTranscript = T)
 
   asGR <- unlist(grl, use.names = F)
@@ -274,36 +273,17 @@ tile1 <- function(grl){
 }
 
 #' map genomic to transcript coordinates by reference
-#'
-#' @param grl a GRangesList of ranges within the reference,
-#'  grl must have column called names
-#' @param reference ranges that include and are bigger then grl
-asTX = function(grl, reference){
-  gr = unlist(grl, use.names = F)
-
-  txCoord = mapToTranscripts(gr,fiveUTRs)
-  txCoord = txCoord[names(
-    gr[txCoord$xHits]) == seqnames(txCoord)]
-  txCoord$xHits = NULL;txCoord$transcriptsHits = NULL
-  #sort them by column called names
-  txCoord$names = gr$names
-  return(groupGRangesBy(txCoord, txCoord$names))
-}
-
-#' map genomic to transcript coordinates by reference
 #' @param grl a GRangesList of ranges within the reference,
 #'  grl must have column called names that gives grouping for result
-#' @param reference ranges that include and are bigger then grl
-asTX = function(grl, reference){
-  gr = unlist(grl, use.names = F)
-
-  txCoord = mapToTranscripts(gr,reference)
-  txCoord = txCoord[names(
-    gr[txCoord$xHits]) == seqnames(txCoord)]
-  txCoord$xHits = NULL;txCoord$transcriptsHits = NULL
-  #sort them by column called names
-  txCoord$names = gr$names
-  return(groupGRangesBy(txCoord, txCoord$names))
+#' @param reference a GrangesList of ranges
+#'  that include and are bigger or equal to grl
+#'  ig. cds is grl and gene can be reference
+asTX <- function(grl, reference){
+  if(is.null(OrfToTxNames(grl))){
+    stop("The unlisted grl must have non-NULL names,
+         \ncheck syntax for orfik uorfs")
+  }
+  return(pmapToTranscripts(grl, reference[OrfToTxNames(grl)]))
 }
 
 #' get transcript sequence from a GrangesList and a faFile
@@ -315,9 +295,23 @@ txSeqsFromFa <- function(grl,faFile, is.sorted = F){
   return(extractTranscriptSeqs(fa, transcripts = grl))
 }
 
-#' get the start sites from a GRangesList of orfs grouped by orfs
-#' @param grl a GRangesList object
-#' @param is.sorted a speedup, if you know the ranges are sorted
-ORFStartSites <- function(grl, is.sorted = F){
-
+#' Creates window around GRanged object.
+#'
+#' It creates window of window_size around input ranges eg.
+#' for GRanges starting at 100-100 and window_size of 3 will give
+#' 97-103
+#' @param GRanges_obj GRanges object of your CDSs start or stop postions.
+#' @param window_size Numeric. Default 30. What size of the window to consider.
+#' @return A GRanges object of resized by window_size sites.
+#' @export
+#' @import GenomicRanges
+#' @examples
+#' window_resize(GRanges(Rle(c('1'), c(4)),
+#'                       IRanges(c(100, 200, 200, 100), width=c(1, 1, 1, 1)),
+#'                       Rle(strand(c('+', '+', '-', '-')))),
+#'              window_size = 50)
+#'
+window_resize <- function(GRanges_obj, window_size = 30) {
+  GRanges_obj <- promoters(GRanges_obj, upstream = window_size, downstream = window_size + 1)
+  return(GRanges_obj)
 }

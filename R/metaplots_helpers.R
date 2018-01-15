@@ -1,23 +1,4 @@
-#' Creates window around GRanged object.
-#'
-#' It creates window of window_size around input ranges eg.
-#' for GRanges starting at 100-100 and window_size of 3 will give
-#' 97-103
-#' @param GRanges_obj GRanges object of your CDSs start or stop postions.
-#' @param window_size Numeric. Default 30. What size of the window to consider.
-#' @return A GRanges object of resized by window_size sites.
-#' @export
-#' @import GenomicRanges
-#' @examples
-#' window_resize(GRanges(Rle(c('1'), c(4)),
-#'                       IRanges(c(100, 200, 200, 100), width=c(1, 1, 1, 1)),
-#'                       Rle(strand(c('+', '+', '-', '-')))),
-#'              window_size = 50)
-#'
-window_resize <- function(GRanges_obj, window_size = 30) {
-    GRanges_obj <- promoters(GRanges_obj, upstream = window_size, downstream = window_size + 1)
-    return(GRanges_obj)
-}
+
 
 #' Calculate metaplot coverage of reads around input GRanges object.
 #'

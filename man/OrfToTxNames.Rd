@@ -4,15 +4,19 @@
 \alias{OrfToTxNames}
 \title{Get transcript names from orf names
 names must either be a column called names, or the names of the
-grl object must be orf names}
+grl object}
 \usage{
-OrfToTxNames(grl)
+OrfToTxNames(grl, unique = F)
 }
 \arguments{
 \item{grl}{a GRangeslist grouped by ORF}
+
+\item{unique}{a boolean, if true unique the names,
+used if several orfs map to same transcript and you only
+want the unique groups}
 }
 \description{
 Get transcript names from orf names
 names must either be a column called names, or the names of the
-grl object must be orf names
+grl object
 }
