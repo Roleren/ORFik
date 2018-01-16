@@ -2,7 +2,8 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{firstExonPerGroup}
 \alias{firstExonPerGroup}
-\title{get first exon per granges group}
+\title{get first exon per granges group
+grl must be sorted, call ORFik:::sortPerGroup if needed}
 \usage{
 firstExonPerGroup(grl)
 }
@@ -11,4 +12,5 @@ firstExonPerGroup(grl)
 }
 \description{
 get first exon per granges group
+grl must be sorted, call ORFik:::sortPerGroup if needed
 }

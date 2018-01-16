@@ -2,11 +2,9 @@
 
 export(assign_annotations)
 export(calculateCoverage)
-export(calculateEntropy)
 export(define_isoform)
 export(define_trailer)
-export(extract_START_sites_from_CDSs)
-export(extract_STOP_sites_from_CDSs)
+export(entropy)
 export(find_ORFs_fa)
 export(find_in_frame_ORFs)
 export(map_to_GRanges)

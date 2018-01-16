@@ -12,7 +12,7 @@ cds <- GRangesList("gene_plus_strand" = gene1, "gene_minus_strand" = gene2)
 
 test_that("extract_START_sites_from_CDSs works as intended", {
 
-  cds_starts <- extract_START_sites_from_CDSs(cds)
+  cds_starts <- ORFStartSites(cds, asGR = T)
 
   expect_is(cds_starts, "GRanges")
   expect_equal(start(cds_starts)[1], 925942)
@@ -21,7 +21,7 @@ test_that("extract_START_sites_from_CDSs works as intended", {
 
 test_that("extract_STOP_sites_from_CDSs works as intended", {
 
-  cds_stops <- extract_STOP_sites_from_CDSs(cds)
+  cds_stops <- ORFStopSites(cds, asGR = T)
 
   expect_is(cds_stops, "GRanges")
   expect_equal(start(cds_stops)[1], 939291)
@@ -30,7 +30,7 @@ test_that("extract_STOP_sites_from_CDSs works as intended", {
 
 test_that("window_resize works as intended", {
 
-  cds_starts <- extract_START_sites_from_CDSs(cds)
+  cds_starts <- ORFStartSites(cds, asGR = T)
   resized <- window_resize(cds_starts, window_size = 30)
 
   expect_is(resized, "GRanges")

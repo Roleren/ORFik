@@ -10,7 +10,11 @@ groupGRangesBy(gr, other = NULL)
 \arguments{
 \item{gr}{a GRanges object}
 
-\item{other}{a vector of names to group by}
+\item{other}{a vector of names to group, no 2 groups can have same name}
+}
+\value{
+a GRangesList named after names(Granges) if other is NULL, else
+names are from unique(other)
 }
 \description{
 make GRangesList from GRanges, grouped by names or another column(other)
