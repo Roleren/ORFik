@@ -69,6 +69,7 @@ entropy <- function(grl, reads) {
   names <- names(countsTile)
   names(countsTile) <- NULL
   countList <- split(countsTile, names)
+<<<<<<< HEAD
 
   countList <- IRanges::RleList(countList)
   countList <- countList[names(grl)]
@@ -76,6 +77,14 @@ entropy <- function(grl, reads) {
   # generate the entropy variables
   sums <- sum(countList)
   if(sum(as.numeric(sums)) == 0){ # no variance in countList, 0 entropy
+=======
+  names(countList) <- NULL
+  countList <- IRanges::RleList(countList)
+
+  # generate the entropy variables
+  sums <- sum(countList)
+  if(sum(sums) == 0){ # no variance in countList, 0 entropy
+>>>>>>> master
     return(rep(0, length(tileBy1)))
   }
   N <- unlist(sums, use.names = F)
@@ -128,7 +137,16 @@ entropy <- function(grl, reads) {
   int_seqs <- lapply(1:length(which_reads_start), function(x){
     which_reads_start[x]:which_reads_end[x]
   })
+<<<<<<< HEAD
 
+=======
+  # group int_seqs
+  int_grouping <- unlist(lapply(1:length(reg_counts), function(x){
+    rep(x, reg_counts[x])
+  }), use.names = F)
+  int_seqs <- split(int_seqs, int_grouping)
+  names(int_seqs) <- NULL
+>>>>>>> master
   N <- unlist(lapply(indeces, function(x){
     rep(N[x], reg_counts[x])
   }), use.names = F)
@@ -138,8 +156,13 @@ entropy <- function(grl, reads) {
                         use.names = F)
 
   # get the assigned tuplets per orf, usually triplets
+<<<<<<< HEAD
   triplets <- lapply(int_seqs, function(x){
     unlintcount[x]
+=======
+  triplets <- lapply(1:length(int_seqs), function(x){
+    unlintcount[int_seqs[[x]]]
+>>>>>>> master
   })
   tripletSums <- unlist(lapply(triplets, function(x){
     sum(x)
