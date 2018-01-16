@@ -58,7 +58,8 @@ subset_coverage <- function(cov, y) {
 #' Where 0 is no variance in reads over group.
 #' @export
 #' @param grl a GRangesList that the reads can map to
-#' @param reads a GAlignment object, ig. from ribo seq, or rna seq
+#' @param reads a GAlignment object, ig. from ribo seq, or rna seq,
+#'  can also be GRanges or GRangesList
 #' @return A numeric vector containing entropy per ORF
 #'
 entropy <- function(grl, reads) {
@@ -68,12 +69,13 @@ entropy <- function(grl, reads) {
   names <- names(countsTile)
   names(countsTile) <- NULL
   countList <- split(countsTile, names)
-  names(countList) <- NULL
-  countList <- IRanges::RleList(countList)
 
+  countList <- IRanges::RleList(countList)
+  countList <- countList[names(grl)]
+  names(countList) <- NULL
   # generate the entropy variables
   sums <- sum(countList)
-  if(sum(sums) == 0){ # no variance in countList, 0 entropy
+  if(sum(as.numeric(sums)) == 0){ # no variance in countList, 0 entropy
     return(rep(0, length(tileBy1)))
   }
   N <- unlist(sums, use.names = F)
@@ -126,12 +128,7 @@ entropy <- function(grl, reads) {
   int_seqs <- lapply(1:length(which_reads_start), function(x){
     which_reads_start[x]:which_reads_end[x]
   })
-  # group int_seqs
-  int_grouping <- unlist(lapply(1:length(reg_counts), function(x){
-    rep(x, reg_counts[x])
-  }), use.names = F)
-  int_seqs <- split(int_seqs, int_grouping)
-  names(int_seqs) <- NULL
+
   N <- unlist(lapply(indeces, function(x){
     rep(N[x], reg_counts[x])
   }), use.names = F)
@@ -141,8 +138,8 @@ entropy <- function(grl, reads) {
                         use.names = F)
 
   # get the assigned tuplets per orf, usually triplets
-  triplets <- lapply(1:length(int_seqs), function(x){
-    unlintcount[int_seqs[[x]]]
+  triplets <- lapply(int_seqs, function(x){
+    unlintcount[x]
   })
   tripletSums <- unlist(lapply(triplets, function(x){
     sum(x)

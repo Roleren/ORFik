@@ -12,7 +12,8 @@ entropy(grl, reads)
 \arguments{
 \item{grl}{a GRangesList that the reads can map to}
 
-\item{reads}{a GAlignment object, ig. from ribo seq, or rna seq}
+\item{reads}{a GAlignment object, ig. from ribo seq, or rna seq,
+can also be GRanges or GRangesList}
 }
 \value{
 A numeric vector containing entropy per ORF

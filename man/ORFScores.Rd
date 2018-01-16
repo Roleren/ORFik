@@ -12,7 +12,8 @@ ORFScores(grl, RFP)
 \arguments{
 \item{grl}{a GRangesList object with ORFs}
 
-\item{RFP}{ribozomal footprints, given as Galignment object}
+\item{RFP}{ribozomal footprints, given as Galignment object,
+Granges or GRangesList}
 }
 \value{
 a matrix with 4 columns, the orfscore and score of
