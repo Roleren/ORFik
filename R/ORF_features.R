@@ -3,7 +3,8 @@
 #' Is the first one most important, by how much ?
 #' NB! Only support + and - strand, not *
 #' @param grl a GRangesList object with ORFs
-#' @param RFP ribozomal footprints, given as Galignment object
+#' @param RFP ribozomal footprints, given as Galignment object,
+#'  Granges or GRangesList
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
 ORFScores <- function(grl, RFP){

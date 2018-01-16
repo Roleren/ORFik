@@ -4,6 +4,7 @@
 #' @param other a vector of names to group, no 2 groups can have same name
 #' @return a GRangesList named after names(Granges) if other is NULL, else
 #' names are from unique(other)
+#' @export
 groupGRangesBy <- function(gr,other = NULL){
   if (class(gr) != "GRanges") stop("gr must be GRanges Object")
   if(is.null(other)){ # if not using other
@@ -255,20 +256,31 @@ makeORFNames <- function(grl){
 #' This is not supported originally by GenomicRanges
 #' @param grl a GRangesList object
 #' @return a GRangesList grouped by original group, tiled to 1
+#' @export
 tile1 <- function(grl){
   ORFs <- unlist(grl, use.names = F)
+  if(is.null(names(ORFs))) stop("unlisted grl have not names,\n
+                                try: names(unlist(grl, use.names = F))")
   if(sum(duplicated(names(ORFs)))){
     if(!is.null(ORFs$names)){
       names(ORFs) <- ORFs$names
-    } else stop("duplicated ORF names,\n
-                need a column called 'names' to fix this")
+    } else{
+        nametest <- unlist(grl, use.names = T)
+        dups <- sum(duplicated(names(nametest)))
+        if(dups != sum(duplicated(names(ORFs)))){
+          stop("duplicated ORF names,\n
+                need a column called 'names' that are unique,\n
+                or change names of groups")
+        }
+      ORFs$names <- names(ORFs)
+    }
   }
 
   tilex <- tile(ORFs, width =  1L)
 
   names(tilex) <- ORFs$names
   unl <- unlist(tilex, use.names = T)
-  tilex <- ORFik:::groupGRangesBy(unl)
+  tilex <- groupGRangesBy(unl)
   return(sortPerGroup(tilex))
 }
 
