@@ -12,6 +12,9 @@ ORFStartSites(grl, asGR = F, keep.names = F, is.sorted = F)
 
 \item{asGR}{a boolean, return as GRanges object}
 
+\item{keep.names}{if asGR is False, do you still want
+to keep a named vector}
+
 \item{is.sorted}{a speedup, if you know the ranges are sorted}
 }
 \value{

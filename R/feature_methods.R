@@ -144,7 +144,7 @@ entropy <- function(grl, reads) {
   triplets <- lapply(1:length(int_seqs), function(x){
     unlintcount[int_seqs[[x]]]
   })
-  tripletSums <- unlist(lapply(trip, function(x){
+  tripletSums <- unlist(lapply(triplets, function(x){
     sum(x)
   }), use.names = F)
 

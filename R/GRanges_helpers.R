@@ -155,7 +155,7 @@ lastExonEndPerGroup = function(grl,keep.names = T){
 #' get last end per granges group
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
-lastExonStartPerGroup = function(grl,keep.names = T){
+lastExonStartPerGroup = function(grl, keep.names = T){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (keep.names){
     return(start(lastExonPerGroup(grl)))
@@ -264,7 +264,7 @@ tile1 <- function(grl){
                 need a column called 'names' to fix this")
   }
 
-  tilex <- tile(ORFs,width =  1L)
+  tilex <- tile(ORFs, width =  1L)
 
   names(tilex) <- ORFs$names
   unl <- unlist(tilex, use.names = T)
@@ -279,20 +279,17 @@ tile1 <- function(grl){
 #'  that include and are bigger or equal to grl
 #'  ig. cds is grl and gene can be reference
 asTX <- function(grl, reference){
-  if(is.null(OrfToTxNames(grl))){
-    stop("The unlisted grl must have non-NULL names,
-         \ncheck syntax for orfik uorfs")
-  }
   return(pmapToTranscripts(grl, reference[OrfToTxNames(grl)]))
 }
 
 #' get transcript sequence from a GrangesList and a faFile
 #' @param grl a GRangesList object
-#' @param faFile a faFile used to find the transcripts
+#' @param faFile FaFile used to find the transcripts,
 #' @param is.sorted a speedup, if you know the ranges are sorted
-txSeqsFromFa <- function(grl,faFile, is.sorted = F){
+txSeqsFromFa <- function(grl, faFile, is.sorted = F){
+  if(class(faFile) != "FaFile") stop("only FaFile is valid input")
   if(!isSorted) grl <- sortPerGroup(grl)
-  return(extractTranscriptSeqs(fa, transcripts = grl))
+  return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
 #' Creates window around GRanged object.

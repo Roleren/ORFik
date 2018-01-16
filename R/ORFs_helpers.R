@@ -143,29 +143,31 @@ OrfToTxNames <- function(grl, unique = F){
 #' In ATGTTTTGG, get the position of the A.
 #' @param grl a GRangesList object
 #' @param asGR a boolean, return as GRanges object
+#' @param keep.names if asGR is False, do you still want
+#'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
 ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
   if(!is.sorted){
     grl <- ORFik:::sortPerGroup(grl)
   }
-  posIds <- ORFik:::strandPerGroup(grl, F) == "+"
-  minIds <- ORFik:::strandPerGroup(grl, F) == "-"
+  posIds <- strandPerGroup(grl, F) == "+"
+  minIds <- strandPerGroup(grl, F) == "-"
 
   startSites <- rep(NA, length(grl))
-  startSites[posIds] <- ORFik:::firstStartPerGroup(grl[posIds], F)
-  startSites[minIds] <- ORFik:::firstEndPerGroup(grl[minIds], F)
+  startSites[posIds] <- firstStartPerGroup(grl[posIds], F)
+  startSites[minIds] <- firstEndPerGroup(grl[minIds], F)
 
   if(asGR){
-    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, F),
+    gr <- GRanges(seqnames = seqnamesPerGroup(grl, F),
                   ranges = IRanges(startSites,startSites),
-                  strand = ORFik:::strandPerGroup(grl, F))
+                  strand = strandPerGroup(grl, F))
     names(gr) <- names(grl)
     return(gr)
   }
 
   if(keep.names){
-    names(startSites) <- names(firstExons)
+    names(startSites) <- names(grl)
     return(startSites)
   }
   return(startSites)
@@ -183,12 +185,12 @@ ORFStopSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
   if(!is.sorted){
     grl <- ORFik:::sortPerGroup(grl)
   }
-  posIds <- ORFik:::strandPerGroup(grl, F) == "+"
-  minIds <- ORFik:::strandPerGroup(grl, F) == "-"
+  posIds <- strandPerGroup(grl, F) == "+"
+  minIds <- strandPerGroup(grl, F) == "-"
 
   stopSites <- rep(NA, length(grl))
-  stopSites[posIds] <- ORFik:::lastExonEndPerGroup(grl[posIds], F)
-  stopSites[minIds] <- ORFik:::lastExonStartPerGroup(grl[minIds], F)
+  stopSites[posIds] <- lastExonEndPerGroup(grl[posIds], F)
+  stopSites[minIds] <- lastExonStartPerGroup(grl[minIds], F)
 
   if(asGR){
     gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, F),
