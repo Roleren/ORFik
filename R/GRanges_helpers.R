@@ -59,11 +59,11 @@ gSort <- function(grl, decreasing = F){
   DT <- as.data.table(grl)
   if (decreasing){
     asgrl <- makeGRangesListFromDataFrame(
-      DT[order(group, -start)],split.field = "group",
+      DT[order(group, -start)], split.field = "group",
       names.field = "group_name", keep.extra.columns = T)
   } else {
     asgrl <- makeGRangesListFromDataFrame(
-      DT[order(group, start)],split.field = "group",
+      DT[order(group, start)], split.field = "group",
       names.field = "group_name", keep.extra.columns = T)
   }
   names(asgrl) <- names(grl)
@@ -79,10 +79,9 @@ sortPerGroup <- function(grl, ignore.strand = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (!ignore.strand){
     indexesPos <- which(strandPerGroup(grl, F) == "+")
-    indexesMin <- which(strandPerGroup(grl, F) == "-")
 
     grl[indexesPos] <- gSort(grl[indexesPos])
-    grl[indexesMin] <- gSort(grl[indexesMin], decreasing = T)
+    grl[!indexesPos] <- gSort(grl[!indexesPos], decreasing = T)
 
     return(grl)
   } else {
@@ -102,7 +101,7 @@ strandPerGroup <- function(grl, keep.names = T){
   }
 }
 
-#' get first exon per granges group
+#' get first exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a GRangesList
 firstExonPerGroup <- function(grl){
@@ -110,14 +109,17 @@ firstExonPerGroup <- function(grl){
   return(phead(grl, 1L)) # S4Vectors::phead() wrapper
 }
 
-#' get last exon per granges group
-#' @param grl a GRangesList
+#' get first exon per GRangesList group
+#' grl must be sorted, call ORFik:::sortPerGroup if needed
+#' @param grl a GRangesList,
+#' @return a GRangesList of last exons per group
 lastExonPerGroup <- function(grl){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   return(ptail(grl,1L)) # S4Vectors::ptail() wrapper
 }
 
 #' get first start per granges group
+#' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 firstStartPerGroup <- function(grl, keep.names = T){
@@ -130,6 +132,7 @@ firstStartPerGroup <- function(grl, keep.names = T){
 }
 
 #' get first end per granges group
+#' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 firstEndPerGroup <- function(grl, keep.names = T){
@@ -174,7 +177,7 @@ numExonsPerGroup <- function(grl, keep.names = T){
   if (!is.null(names(unlist(grl, use.names = F)))){
     exonsPerGroup <- runLength(S4Vectors::Rle(names(unlist(grl,
       use.names = F))))
-  } else if (!is.null(names(unlist(grl)))){
+  } else if (!is.null(names(unlist(grl, use.names = T)))){
     exonsPerGroup <- runLength(S4Vectors::Rle(names(unlist(grl,
       use.names = T))))
   } else stop("no names to group exons")
@@ -323,4 +326,21 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
 window_resize <- function(GRanges_obj, window_size = 30) {
   GRanges_obj <- promoters(GRanges_obj, upstream = window_size, downstream = window_size + 1)
   return(GRanges_obj)
+}
+
+#' source bioconductor
+#' helperfunction for quick update of bioconductor packages
+#' @param packages either NULL if only source and no update/install
+#'  or "all" if you want to update all your bioconductor packages
+#'  or c(package1, package2, ...)
+#'  for specific packages as a character vector
+sourceBioC <- function(packages = NULL){
+  source("https://bioconductor.org/biocLite.R")
+  if(!is.null(packages)){
+    if(packages == "all"){
+      biocLite()
+    } else{
+        biocLite(packages)
+    }
+  }
 }

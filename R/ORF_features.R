@@ -77,6 +77,70 @@ distOrfToCds <- function(ORFs, fiveUTRs, cds, extension = 1000){
   return(dists)
 }
 
+#' Make a score for each ORFs start region
+#' The closer the sequence is to the kozak sequence
+#' The higher the score, based on simplification of PWM
+#' score system: 4 upstream, 5 downstream of start
+#' CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
+#' CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
+#' Inspired by experimental bit values for each position
+#' @param grl a GRangesList grouped by ORF
+#' @param faFile a faFile from the fasta file
+#' @param species which species to use, currently only support human
+kozacSequenceScore <- function(grl, faFile, species = "human"){
+  firstExons <- firstExonPerGroup(grl)
+  kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
+
+  sequences <- as.character(txSeqsFromFa(grl, faFile))
+  names(sequences) <- NULL
+  scores <- rep(0, length(sequences))
+  if(species == "human"){
+    # split strings and relist as letters of 9 rows
+    subSplit <- strsplit(sequences, split = "")
+    mat <- matrix(unlist(subSplit), nrow = 9) #this will not when ATG is on start of chr
+    pos1 <- as.character(mat[1,])
+    pos2 <- as.character(mat[2,])
+    pos3 <- as.character(mat[2,])
+    pos4 <- as.character(mat[2,])
+    pos8 <- as.character(mat[8,])
+    pos9 <- as.character(mat[9,])
+
+
+    match <- grepl(x = pos1, pattern = "C|G|A")
+    scores[match] <- scores[match] + 1
+
+    match <- pos2 == "A"
+    scores[match] <- scores[match] + 5
+    match <- pos2 == "G"
+    scores[match] <- scores[match] + 2
+    match <- pos2 == "C"
+    scores[match] <- scores[match] + 1
+
+    match <- grepl(x = pos3, pattern = "C|A")
+    scores[match] <- scores[match] + 1
+
+    match <- pos4 == "C"
+    scores[match] <- scores[match] + 2
+    match <- pos4 == "G"
+    scores[match] <- scores[match] + 1
+    match <- pos4 == "A"
+    scores[match] <- scores[match] + 1
+
+    match <- pos8 == "G"
+    scores[match] <- scores[match] + 2
+    match <- pos8 == "A"
+    scores[match] <- scores[match] + 1
+    match <- pos8 == "T"
+    scores[match] <- scores[match] + 1
+
+    match <- grepl(x = pos9, pattern = "C|A")
+    scores[match] <- scores[match] + 1
+
+    return(scores)
+  }
+  else stop("other species are not supported")
+}
+
 #' find frame for each orf relative to cds
 #' @param dists a vector of distances between ORF and cds
 #' Input of this function, is the output of the function distOrfToCds

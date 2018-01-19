@@ -188,66 +188,111 @@ calculateCoverage <- function(countsOver) {
   return(sum(countsOver >= 1)/length(countsOver))
 }
 
-#' Make a score for each ORFs start region
-#' The closer the sequence is to the kozak sequence
-#' The higher the score, based on simplification of PWM
-#' score system: 4 upstream, 5 downstream of start
-#' CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
-#' CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
-#' Inspired by experimental bit values for each position
-#' @param grl a GRangesList grouped by ORF
-#' @param faFile a faFile from the fasta file
-#' @param species which species to use, currently only support human
-kozacSequenceScore <- function(grl, faFile, species = "human"){
-  firstExons <- firstExonPerGroup(grl)
-  kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
+#' Fragment Length Organization Similarity Score
+#' @param grl a GRangesList object with ORFs
+#' @param RFP ribozomal footprints, given as Galignment object
+#' @param cds a GRangesList of coding sequences
+#' @param start usually 26, the start of the floss interval
+#' @param end usually 34, the end of the floss interval
+#' @return a vector of FLOSS of length same as grl
+floss <- function(grl, RFP, cds, start = 26, end = 34){
+  # for orfs
+  overlaps <- findOverlaps(grl, RFP)
+  rfpMatch <- RFP[to(overlaps)]
+  rfpWidth <- qwidth(rfpMatch)
+  rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
+  rfpValidMatch <- rfpWidth[rfpPassFilter]
+  ORFGrouping <- from(overlaps)[rfpPassFilter]
 
-  sequences <- as.character(txSeqsFromFa(grl, faFile))
-  names(sequences) <- NULL
-  scores <- rep(0, length(sequences))
-  if(species == "human"){
-    # split strings and relist as letters of 9 rows
-    subSplit <- strsplit(sequences, split = "")
-    mat <- matrix(unlist(subSplit), nrow = 9) #this will not when ATG is on start of chr
-    pos1 <- as.character(mat[1,])
-    pos2 <- as.character(mat[2,])
-    pos3 <- as.character(mat[2,])
-    pos4 <- as.character(mat[2,])
-    pos8 <- as.character(mat[8,])
-    pos9 <- as.character(mat[9,])
+  orfFractions <- split(rfpValidMatch, ORFGrouping)
+  listing<- IRanges::RleList(orfFractions)
+  tableFracs <- table(listing)
+  colnames(tableFracs) <- NULL
+  orfFractions <- lapply(1:length(listing), function(x){
+    tableFracs[x,]/sum(tableFracs[x,])
+  })
 
-
-    match <- grepl(x = pos1, pattern = "C|G|A")
-    scores[match] <- scores[match] + 1
-
-    match <- pos2 == "A"
-    scores[match] <- scores[match] + 5
-    match <- pos2 == "G"
-    scores[match] <- scores[match] + 2
-    match <- pos2 == "C"
-    scores[match] <- scores[match] + 1
-
-    match <- grepl(x = pos3, pattern = "C|A")
-    scores[match] <- scores[match] + 1
-
-    match <- pos4 == "C"
-    scores[match] <- scores[match] + 2
-    match <- pos4 == "G"
-    scores[match] <- scores[match] + 1
-    match <- pos4 == "A"
-    scores[match] <- scores[match] + 1
-
-    match <- pos8 == "G"
-    scores[match] <- scores[match] + 2
-    match <- pos8 == "A"
-    scores[match] <- scores[match] + 1
-    match <- pos8 == "T"
-    scores[match] <- scores[match] + 1
-
-    match <- grepl(x = pos9, pattern = "C|A")
-    scores[match] <- scores[match] + 1
-
-    return(scores)
-  }
-  else stop("other species are not supported")
+  # for cds
+  # should we only use cds' from orfs ?
+  overlapsCds <- findOverlaps(cds, RFP)
+  rfpMatch <- RFP[to(overlapsCds)]
+  rfpWidth <- qwidth(rfpMatch)
+  rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
+  rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
+  cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
+  totalLength <- length(rfpValidMatchCDS)
+  cdsFractions <- sapply(cdsFractions, function(x){
+    length(x)/totalLength
+  })
+  cdsFractions <- as.double(cdsFractions)
+  # floss score ->
+  score <- sapply(1:length(orfFractions), function(x){
+    sum(abs(orfFractions[[x]] - cdsFractions)) * 0.5
+  })
+  return(score)
 }
+
+#' Translational efficiency
+#' Uses Rna-seq and Ribo-seq to get te of grl
+#' is defined as (density of RPFs within ORF)/(RNA expression).
+#' @param grl a GRangesList object with usually either leaders,
+#'  cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len
+#' @param RNA rna seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @param RFP ribo seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @param tx_len the transcript lengths of the transcripts
+#'  a named (tx names) vector.
+#'  Normally you call argument as: tx_len = TxLen(Gtf)
+#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf))
+#'  See TxLen in ORFik.
+#'  NB!!! if you used cage data, then
+#'  the tss for the the leaders have changed,
+#'  therefor the tx lengths have changed,
+#'  if so, call:
+#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
+#'  where fiveUTRs are the changed cageLeaders as GRangesList.
+te <- function(grl, RNA, RFP, tx_len){
+
+  libraryRna <- length(RNA)
+  libraryRPF <- length(RFP)
+
+  overlapRNA <- countOverlaps(grl, RNA)
+  overlapRFP <- countOverlaps(grl, RFP)
+  #transcriptLengths(Gtf,with.cds_len = T,with.utr5_len = T,with.utr3_len = T)
+  if(is.null(names(tx_len))) stop("tx_len have no names")
+  tx_len <- tx_len[OrfToTxNames(grl)]
+  if(sum(is.na(tx_len))) stop("tx_len have na values, check naming")
+  grl_len <- widthPerGroup(grl, F)
+
+  #normalize by tx lengths
+  fpkmRNA <- fpkm(overlapRNA, tx_len, libraryRna)
+  #normalize by grl lengths
+  fpkmRFP <- fpkm(overlapRFP, grl_len, libraryRPF)
+
+  return(fpkmRFP / fpkmRNA)
+}
+
+#' Fraction Length
+#' is defined as (length of grls)/(length of transcripts)
+#' @param grl a GRangesList object with usually either leaders,
+#'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param tx_len the transcript lengths of the transcripts
+#'  a named (tx names) vector.
+#'  Normally you call argument as: tx_len = TxLen(Gtf)
+#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf))
+#'  See TxLen in ORFik.
+#'  NB!!! if you used cage data, then
+#'  the tss for the the leaders have changed,
+#'  therefor the tx lengths have changed,
+#'  if so, call:
+#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
+#'  where fiveUTRs are the changed cageLeaders.
+fractionLength <- function(grl, tx_len){
+  grl_len = widthPerGroup(grl, F)
+  tx_len <- tx_len[OrfToTxNames(grl)]
+  names(tx_len) <- NULL
+  return(grl_len / tx_len)
+}
+
+
