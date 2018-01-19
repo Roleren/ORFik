@@ -2,14 +2,15 @@
 % Please edit documentation in R/feature_methods.R
 \name{floss}
 \alias{floss}
-\title{Fragment Length Organization Similarity Score}
+\title{Fragment Length Organization Similarity Score
+See article: 10.1016/j.celrep.2014.07.045}
 \usage{
 floss(grl, RFP, cds, start = 26, end = 34)
 }
 \arguments{
 \item{grl}{a GRangesList object with ORFs}
 
-\item{RFP}{ribozomal footprints, given as Galignment object}
+\item{RFP}{ribozomal footprints, given as Galignment or GRanges object}
 
 \item{cds}{a GRangesList of coding sequences}
 
@@ -22,4 +23,5 @@ a vector of FLOSS of length same as grl
 }
 \description{
 Fragment Length Organization Similarity Score
+See article: 10.1016/j.celrep.2014.07.045
 }

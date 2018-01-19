@@ -13,7 +13,8 @@ OrfToTxNames(grl, unique = F)
 
 \item{unique}{a boolean, if true unique the names,
 used if several orfs map to same transcript and you only
-want the unique groups}
+want the unique groups
+@export}
 }
 \description{
 Get transcript names from orf names

@@ -5,7 +5,8 @@
 \title{Get ORF score for given GRangesList object grouped by orfs
 That is, of the 3 possible frame in an ORF
 Is the first one most important, by how much ?
-NB! Only support + and - strand, not *}
+NB! Only support + and - strand, not *
+See article: 10.1002/embj.201488411}
 \usage{
 ORFScores(grl, RFP)
 }
@@ -24,4 +25,5 @@ Get ORF score for given GRangesList object grouped by orfs
 That is, of the 3 possible frame in an ORF
 Is the first one most important, by how much ?
 NB! Only support + and - strand, not *
+See article: 10.1002/embj.201488411
 }

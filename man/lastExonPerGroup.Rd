@@ -2,13 +2,18 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{lastExonPerGroup}
 \alias{lastExonPerGroup}
-\title{get last exon per granges group}
+\title{get first exon per GRangesList group
+grl must be sorted, call ORFik:::sortPerGroup if needed}
 \usage{
 lastExonPerGroup(grl)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a GRangesList,}
+}
+\value{
+a GRangesList of last exons per group
 }
 \description{
-get last exon per granges group
+get first exon per GRangesList group
+grl must be sorted, call ORFik:::sortPerGroup if needed
 }

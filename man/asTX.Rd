@@ -12,7 +12,8 @@ grl must have column called names that gives grouping for result}
 
 \item{reference}{a GrangesList of ranges
 that include and are bigger or equal to grl
-ig. cds is grl and gene can be reference}
+ig. cds is grl and gene can be reference
+@export}
 }
 \description{
 map genomic to transcript coordinates by reference

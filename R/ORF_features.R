@@ -2,6 +2,7 @@
 #' That is, of the 3 possible frame in an ORF
 #' Is the first one most important, by how much ?
 #' NB! Only support + and - strand, not *
+#' See article: 10.1002/embj.201488411
 #' @param grl a GRangesList object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
@@ -97,7 +98,8 @@ kozacSequenceScore <- function(grl, faFile, species = "human"){
   if(species == "human"){
     # split strings and relist as letters of 9 rows
     subSplit <- strsplit(sequences, split = "")
-    mat <- matrix(unlist(subSplit), nrow = 9) #this will not when ATG is on start of chr
+    # this will not when ATG is on start of chr
+    mat <- matrix(unlist(subSplit), nrow = 9)
     pos1 <- as.character(mat[1,])
     pos2 <- as.character(mat[2,])
     pos3 <- as.character(mat[2,])
@@ -139,6 +141,48 @@ kozacSequenceScore <- function(grl, faFile, species = "human"){
     return(scores)
   }
   else stop("other species are not supported")
+}
+
+#' Inside/outside score (IO)
+#' is defined as (RPFs over ORF)/(RPFs downstream to tx end).
+#' A pseudo-count of one was added to both the ORF and downstream sums.
+#' See article: 10.1242/dev.098345
+#' @param grl a GRangesList object with usually either leaders,
+#'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param RFP ribo seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @param GtfOrTx if Gtf: a TxDb object of a gtf file,
+#'  if tx: a GrangesList of transcripts, called from:
+#'  exonsBy(Gtf, by = "tx", use.names = T)
+#' @return a named vector of numeric values of scores
+insideOutsideORF <- function(grl, RFP, GtfOrTx){
+  overlapGrl <- countOverlaps(grl, RFP) + 1
+
+  if(class(GtfOrTx) == "TxDb"){
+    tx <- exonsBy(GtfOrTx, by = "tx", use.names = T)
+  } else if(class(GtfOrTx) == "GRangesList") {
+    tx <- GtfOrTx
+  } else {
+    stop("GtfOrTx is neithter of type TxDb or GRangesList")
+  }
+  tx <- tx[ORFik:::OrfToTxNames(grl, F)]
+
+  grlStarts <- ORFik:::ORFStartSites(grl,asGR = F)
+  grlStops <- ORFik:::ORFStopSites(grl,asGR = F)
+
+  downstreamTx <- downstreamOfPerGroup(tx, grlStops)
+  upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
+  dtd <- as.data.table(downstreamTx)
+  dtu <- as.data.table(upstreamTx)
+  dtmerge <- rbindlist(l = list(dtu, dtd))
+  txOutside <- makeGRangesListFromDataFrame(
+    dtmerge[order(group)], split.field = "group",
+    names.field = "group_name", keep.extra.columns = T)
+  names(txOutside) <- names(tx)
+
+  overlapTxOutside <- countOverlaps(txOutside, RFP) + 1
+
+  return(overlapGrl / overlapTxOutside)
 }
 
 #' find frame for each orf relative to cds

@@ -138,7 +138,7 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000){
 #' @param cageOverlaps The cageOverlaps between cage and extended 5' leaders
 #' @param filteredrawCageData The filtered raw cage-data used to reassign 5' leaders
 #' @importFrom data.table as.data.table
-findMaxPeaks = function(cageOverlaps, filteredrawCageData){
+findMaxPeaks <- function(cageOverlaps, filteredrawCageData){
 
   dt <- as.data.table(filteredrawCageData)
   dt <- dt[from(cageOverlaps)]
@@ -157,7 +157,7 @@ findMaxPeaks = function(cageOverlaps, filteredrawCageData){
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param cageData The location of the cage-file
 #' @param extension The number of basses upstream to add on transcripts
-findNewTSS = function(fiveUTRs, cageData, extension){
+findNewTSS <- function(fiveUTRs, cageData, extension){
 
   shiftedfiveUTRs <- extendsTSSexons(fiveUTRs, extension)
   cageOverlaps <- findOverlaps(query = cageData, subject = shiftedfiveUTRs)
@@ -168,7 +168,7 @@ findNewTSS = function(fiveUTRs, cageData, extension){
 #' After all transcript start sites have been updated from cage, grangeslist back together
 #' @param firstExons The first exon of every transcript from 5' leaders
 #' @param fiveUTRs The 5' leader sequences as GRangesList
-makeGrlAndFilter = function(firstExons, fiveUTRs){
+makeGrlAndFilter <- function(firstExons, fiveUTRs){
 
   fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
   fiveAsgr[fiveAsgr$exon_rank == 1] <- firstExons
@@ -179,7 +179,7 @@ makeGrlAndFilter = function(firstExons, fiveUTRs){
 #' (*) strands are not supported, since direction must be known.
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param maxPeakPosition The max peak for each 5' leader found by cage
-addNewTSSOnLeaders = function(fiveUTRs, maxPeakPosition){
+addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 
   fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
   firstExons <- fiveAsgr[fiveAsgr$exon_rank == 1]
@@ -213,7 +213,8 @@ addNewTSSOnLeaders = function(fiveUTRs, maxPeakPosition){
 #' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
 #' @param cds If you want to extend 5' leaders downstream, to catch upstream ORFs going into cds, include it.
 #' @export
-reassignTSSbyCage = function(fiveUTRs, cage, extension = 1000, filterValue = 1, cds = NULL){
+reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
+                              filterValue = 1, cds = NULL){
 
   ###Read in cage files
   if (class(fiveUTRs) != "GRangesList") stop("fiveUTRs must be type GRangesList!")

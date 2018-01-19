@@ -3,13 +3,15 @@
 \name{te}
 \alias{te}
 \title{Translational efficiency
-Uses Rna-seq and Ribo-seq to get te of grl}
+Uses Rna-seq and Ribo-seq to get te of grl
+is defined as (density of RPFs within ORF)/(RNA expression).
+See article: 10.1126/science.1168978}
 \usage{
 te(grl, RNA, RFP, tx_len)
 }
 \arguments{
 \item{grl}{a GRangesList object with usually either leaders,
-cds', 3' utrs or ORFs. ORFs is a special case, see parameter tx_len}
+cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len}
 
 \item{RNA}{rna seq reads as GAlignment, GRanges
 or GRangesList object}
@@ -27,9 +29,11 @@ the tss for the the leaders have changed,
 therefor the tx lengths have changed,
 if so, call:
 te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
-where fiveUTRs are the changed cageLeaders.}
+where fiveUTRs are the changed cageLeaders as GRangesList.}
 }
 \description{
 Translational efficiency
 Uses Rna-seq and Ribo-seq to get te of grl
+is defined as (density of RPFs within ORF)/(RNA expression).
+See article: 10.1126/science.1168978
 }

@@ -1,4 +1,13 @@
 
+#' Creates normalizations of the counts, normally used in Translations efficiency calculations
+#' @param counts a list of integer counts per object
+#' @param lengthSizeA a list of integer lengths per object
+#' @param librarySize A numeric of size 1, the size of the library
+#' @export
+fpkm <- function(counts, lengthSize, librarySize){
+  return((as.numeric(counts) * (10^9)) /
+           (as.numeric(lengthSize) * as.numeric(librarySize)))
+}
 
 #' Subset GRanges to get desired frame. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
@@ -179,7 +188,7 @@ entropy <- function(grl, reads) {
 
 #' Calculate Coverage of the input reads.
 #' What is percent of the vector covered by the values higher than zero?
-#'
+#' See article: 10.1002/embj.201488411
 #' @export
 #' @param countsOver A numerc vector
 #' @return numeric value in between 0 and 1
@@ -189,21 +198,32 @@ calculateCoverage <- function(countsOver) {
 }
 
 #' Fragment Length Organization Similarity Score
+#' See article: 10.1016/j.celrep.2014.07.045
 #' @param grl a GRangesList object with ORFs
-#' @param RFP ribozomal footprints, given as Galignment object
+#' @param RFP ribozomal footprints, given as Galignment or GRanges object
 #' @param cds a GRangesList of coding sequences
 #' @param start usually 26, the start of the floss interval
 #' @param end usually 34, the end of the floss interval
 #' @return a vector of FLOSS of length same as grl
 floss <- function(grl, RFP, cds, start = 26, end = 34){
+  if(start > end) stop("start is bigger than end")
+  if(class(RFP) == "GRangesList"){
+    stop("RFP must be either GAlignment or GRanges type")
+  }
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
   rfpMatch <- RFP[to(overlaps)]
-  rfpWidth <- qwidth(rfpMatch)
+  if(class(RFP) == "GRanges"){
+    rfpWidth <- width(rfpMatch)
+  } else {
+    rfpWidth <- qwidth(rfpMatch)
+  }
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
-
+  if(sum(ORFGrouping) == 0){
+    return(as.numeric(rep(0, length(grl))))
+  }
   orfFractions <- split(rfpValidMatch, ORFGrouping)
   listing<- IRanges::RleList(orfFractions)
   tableFracs <- table(listing)
@@ -213,10 +233,14 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   })
 
   # for cds
-  # should we only use cds' from orfs ?
   overlapsCds <- findOverlaps(cds, RFP)
   rfpMatch <- RFP[to(overlapsCds)]
-  rfpWidth <- qwidth(rfpMatch)
+  if(class(RFP) == "GRanges"){
+    rfpWidth <- width(rfpMatch)
+  } else {
+    rfpWidth <- qwidth(rfpMatch)
+  }
+
   rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
   rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
   cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
@@ -235,6 +259,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' Translational efficiency
 #' Uses Rna-seq and Ribo-seq to get te of grl
 #' is defined as (density of RPFs within ORF)/(RNA expression).
+#' See article: 10.1126/science.1168978
 #' @param grl a GRangesList object with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len
 #' @param RNA rna seq reads as GAlignment, GRanges
@@ -275,10 +300,11 @@ te <- function(grl, RNA, RFP, tx_len){
 
 #' Fraction Length
 #' is defined as (length of grls)/(length of transcripts)
+#' see article: 10.1242/dev.098343
 #' @param grl a GRangesList object with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param tx_len the transcript lengths of the transcripts
-#'  a named (tx names) vector.
+#'  a named (tx names) vector of integers.
 #'  Normally you call argument as: tx_len = TxLen(Gtf)
 #'  te(grl, RNA, RFP, tx_len = TxLen(Gtf))
 #'  See TxLen in ORFik.
@@ -293,6 +319,84 @@ fractionLength <- function(grl, tx_len){
   tx_len <- tx_len[OrfToTxNames(grl)]
   names(tx_len) <- NULL
   return(grl_len / tx_len)
+}
+
+#' Disengagement score (DS)
+#' is defined as (RPFs over ORF)/(RPFs downstream to tx end).
+#' A pseudo-count of one was added to both the ORF and downstream sums.
+#' See article: 10.1242/dev.098344
+#' @param grl a GRangesList object with usually either leaders,
+#'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param RFP ribo seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @param GtfOrTx if Gtf: a TxDb object of a gtf file,
+#'  if tx: a GrangesList of transcripts, called from:
+#'  exonsBy(Gtf, by = "tx", use.names = T)
+#' @return a named vector of numeric values of scores
+disengagementScore <- function(grl, RFP, GtfOrTx){
+  overlapGrl <- countOverlaps(grl, RFP) + 1
+
+  if(class(GtfOrTx) == "TxDb"){
+    tx <- exonsBy(GtfOrTx, by = "tx", use.names = T)
+  } else if(class(GtfOrTx) == "GRangesList") {
+    tx <- GtfOrTx
+  } else {
+    stop("GtfOrTx is neithter of type TxDb or GRangesList")
+  }
+
+  tx <- tx[OrfToTxNames(grl, F)]
+
+  grlStops <- ORFStopSites(grl,asGR = F)
+  downstreamTx <- downstreamOfPerGroup(tx, grlStops)
+
+  overlapDownstream <- countOverlaps(downstreamTx, RFP) + 1
+  score <- overlapGrl / overlapDownstream
+  names(score) <- NULL
+  return(score)
+}
+
+#' Ribosome Release Score (RRS)
+#' is defined as (RPFs over ORF)/(RPFs over 3' utrs).
+#' normalized by lengths
+#' , if RNA is added as argument, normalize by RNA counts over areas too
+#' to justify location of 3' utrs
+#' A pseudo-count of one was added to both the ORF and downstream sums.
+#' See article: 10.1016/j.cell.2013.06.009
+#' @param grl a GRangesList object with usually either leaders,
+#'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param RFP ribo seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @param GtfOrThreeUtrs if Gtf: a TxDb object of a gtf file,
+#'  if ThreeUtrs: a GrangesList of transcripts, called from:
+#'  threeUTRsByTranscript(Gtf, use.names = T)
+#'  @param RNA rna seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @return a named vector of numeric values of scores
+RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
+  overlapGrl <- countOverlaps(grl, RFP) + 1
+
+  if(class(GtfOrThreeUtrs) == "TxDb"){
+    threeUtrs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
+                                        use.names = T)
+  } else if(class(GtfOrThreeUtrs) == "GRangesList") {
+    threeUtrs <- GtfOrThreeUtrs
+  } else {
+    stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
+  }
+  threeUtrs <- threeUtrs[ORFik:::OrfToTxNames(grl, F)]
+
+
+  overlapThreeUtrs <- countOverlaps(threeUtrs, RFP) + 1
+  rrs <- (overlapGrl / widthPerGroup(grl)) /
+    (overlapThreeUtrs /  widthPerGroup(threeUtrs))
+
+  if(!is.null(RNA)){ # normalize by rna ratio
+    rnaRatio <- (countOverlaps(grl, RNA) + 1) /
+      (countOverlaps(threeUtrs, RNA) + 1)
+    rrs <- rrs / rnaRatio
+  }
+  names(rrs) <- NULL
+  return(rrs)
 }
 
 

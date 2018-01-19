@@ -78,10 +78,10 @@ gSort <- function(grl, decreasing = F){
 sortPerGroup <- function(grl, ignore.strand = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (!ignore.strand){
-    indexesPos <- which(strandPerGroup(grl, F) == "+")
+    indecesPos <- strandBool(grl)
 
-    grl[indexesPos] <- gSort(grl[indexesPos])
-    grl[!indexesPos] <- gSort(grl[!indexesPos], decreasing = T)
+    grl[indecesPos] <- gSort(grl[indecesPos])
+    grl[!indecesPos] <- gSort(grl[!indecesPos], decreasing = T)
 
     return(grl)
   } else {
@@ -293,6 +293,7 @@ tile1 <- function(grl){
 #' @param reference a GrangesList of ranges
 #'  that include and are bigger or equal to grl
 #'  ig. cds is grl and gene can be reference
+#'  @export
 asTX <- function(grl, reference){
   return(pmapToTranscripts(grl, reference[OrfToTxNames(grl)]))
 }
@@ -305,6 +306,136 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   if(class(faFile) != "FaFile") stop("only FaFile is valid input")
   if(!isSorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
+}
+
+#' helper function to get a logical list of True/False, if GRangesList group have
+#' + strand = T, if - strand = F
+#' Also checks for * strands, so a good check for bugs
+#' @param grl a GRangesList object
+strandBool <- function(grl){
+  posIndeces <- strandPerGroup(grl, F) == "+"
+  sums <- sum(posIndeces) + sum(!posIndeces)
+  if(is.na(sums)){
+    stop("could not get strands from grl object,\n
+          most likely NULL object was passed.")
+  }
+  if(sums != length(grl)){
+    stop("grl contains * strands, set them to either + or -")
+  }
+  return(posIndeces)
+}
+
+#' Reassign the start positions of the first exons per group in grl
+#' make sure your grl is sorted, since start of "-" strand objects should be the
+#' max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+#' @param grl a GRangesList object
+#' @param newStarts an integer vector of same length as grl, with new start values
+assignFirstExonsStartSite <- function(grl, newStarts){
+  if(length(grl) != length(newStarts)) stop("length of grl and newStarts \n
+                                            are not equal!")
+  posIndeces <- strandBool(grl)
+
+  dt <- as.data.table(grl)
+  dt[!duplicated(dt$group),]$start[posIndeces] <- newStarts[posIndeces]
+  dt[!duplicated(dt$group),]$end[!posIndeces] <- newStarts[!posIndeces]
+
+  ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
+    split.field = "group", names.field = "group_name", keep.extra.columns = T)
+  names(ngrl) <- names(grl)
+
+  return(ngrl)
+}
+
+#' Reassign the stop positions of the last exons per group in grl
+#' make sure your grl is sorted, since stop of "-" strand objects should be the
+#' min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+#' @param grl a GRangesList object
+#' @param newStarts an integer vector of same length as grl, with new start values
+assignLastExonsStopSite <- function(grl, newStops){
+  if(length(grl) != length(newStops)) stop("length of grl and newStops \n
+                                           are not equal!")
+  posIndeces <- strandBool(grl)
+
+  dt <- as.data.table(grl)
+  idx = dt[, .I[.N], by=group]
+  dt[idx$V1]$end[posIndeces] <- newStops[posIndeces]
+  dt[idx$V1]$start[!posIndeces] <- newStops[!posIndeces]
+  ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
+    split.field = "group", names.field = "group_name", keep.extra.columns = T)
+  names(ngrl) <- names(grl)
+
+  return(ngrl)
+}
+
+#' per group get the part downstream of position defined in downstreamOf
+#' @param tx a GRangesList, usually of Transcripts to be changed
+#' @param downstreamOf a vector of integers, for each group in tx, where
+#' is the new start point of first valid exon.
+#' @example downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
+#'  will return the 3' utrs per transcrip as GRangesList,
+#'  usually used for interesting
+#'  parts of the transcripts, like upstream open reading frames(uorf).
+#'  downstreamOf +/- 1 is start/end site
+#'  of transformed tx's, depending on strand
+downstreamOfPerGroup <- function(tx, downstreamOf){
+  posIndeces <- strandBool(tx)
+  posEnds <- end(tx[posIndeces])
+  negEnds <- start(tx[!posIndeces])
+  posDown <- downstreamOf[posIndeces]
+  negDown <- downstreamOf[!posIndeces]
+  pos <- posEnds > posDown
+  neg <- negEnds < negDown
+  posTx <- tx[posIndeces][pos]
+  negTx <- tx[!posIndeces][neg]
+  downTx <- tx
+  downTx[posIndeces] <- posTx
+  downTx[!posIndeces] <- negTx
+  #check if anyone hits boundary, set those to boundary
+  if(anyNA(ORFik:::strandPerGroup(downTx, F))){
+    boundaryHits <- which(is.na(ORFik:::strandPerGroup(downTx, F)))
+    downTx[boundaryHits] <- ORFik:::firstExonPerGroup(tx[boundaryHits])
+    ir <- IRanges(start = downstreamOf[boundaryHits],
+                    end = downstreamOf[boundaryHits])
+    irl <- split(ir, 1:length(ir))
+    names(irl) <- names(tx[boundaryHits])
+    ranges(downTx[boundaryHits]) <- irl
+  }
+  return(assignFirstExonsStartSite(downTx, downstreamOf))
+}
+
+#' per group get the part upstream of position defined in upstreamOf
+#' @param tx a GRangesList, usually of Transcripts to be changed
+#' @param downstreamOf a vector of integers, for each group in tx, where
+#' is the new start point of first valid exon.
+#' @example downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
+#'  will return the 3' utrs per transcrip, usually used for interesting
+#'  parts of the transcripts, like upstream open reading frames(uorf).
+#'  downstreamOf +/- 1 is start/end site
+#'  of transformed tx's, depending on strand
+upstreamOfPerGroup <- function(tx, upstreamOf){
+  posIndeces <- strandBool(tx)
+  posStarts <- start(tx[posIndeces])
+  negStarts <- end(tx[!posIndeces])
+  posGrlStarts <- upstreamOf[posIndeces]
+  negGrlStarts <- upstreamOf[!posIndeces]
+  pos <- posStarts < posGrlStarts
+  neg <- negStarts > negGrlStarts
+  # need to fix pos/neg with possible cage extensions
+  outside <- which(sum(pos) == 0)
+  pos[outside] = T
+  posTx <- tx[posIndeces]
+  posTx[outside] <- firstExonPerGroup(posTx[outside])
+  outside <- which(sum(neg) == 0)
+  neg[outside] = T
+  negTx <- tx[!posIndeces]
+  negTx[outside] <- firstExonPerGroup(negTx[outside])
+
+  posTx <- posTx[pos]
+  negTx <- negTx[neg]
+  tx[posIndeces] <- posTx
+  tx[!posIndeces] <- negTx
+
+  return(assignLastExonsStopSite(tx, upstreamOf))
 }
 
 #' Creates window around GRanged object.
@@ -324,7 +455,8 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
 #'              window_size = 50)
 #'
 window_resize <- function(GRanges_obj, window_size = 30) {
-  GRanges_obj <- promoters(GRanges_obj, upstream = window_size, downstream = window_size + 1)
+  GRanges_obj <- promoters(GRanges_obj, upstream = window_size,
+                           downstream = window_size + 1)
   return(GRanges_obj)
 }
 
@@ -339,7 +471,7 @@ sourceBioC <- function(packages = NULL){
   if(!is.null(packages)){
     if(packages == "all"){
       biocLite()
-    } else{
+    } else {
         biocLite(packages)
     }
   }

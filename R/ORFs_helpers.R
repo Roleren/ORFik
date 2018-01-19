@@ -120,6 +120,7 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
+#'  @export
 OrfToTxNames <- function(grl, unique = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (is.null(names(grl))){
