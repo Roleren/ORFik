@@ -139,7 +139,7 @@ firstExonPerGroup <- function(grl){
 #' @return a GRangesList of last exons per group
 lastExonPerGroup <- function(grl){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  return(ptail(grl,1L)) # S4Vectors::ptail() wrapper
+  return(ptail(grl, 1L)) # S4Vectors::ptail() wrapper
 }
 
 #' get first start per granges group
