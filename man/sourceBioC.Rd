@@ -2,8 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{sourceBioC}
 \alias{sourceBioC}
-\title{source bioconductor
-helperfunction for quick update of bioconductor packages}
+\title{source bioconductor}
 \usage{
 sourceBioC(packages = NULL)
 }
@@ -14,6 +13,5 @@ or c(package1, package2, ...)
 for specific packages as a character vector}
 }
 \description{
-source bioconductor
 helperfunction for quick update of bioconductor packages
 }

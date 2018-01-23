@@ -17,6 +17,25 @@ names(ORFranges2) = rep("tx1_2",3)
 grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
 gr <- unlist(grl, use.names = F)
 
+cds1 <- ORFranges <- GRanges(seqnames = Rle(rep("1", 2)),
+                             ranges = IRanges(start = c(100, 110),
+                                              end = c(105, 115)),
+                             strand = Rle(strand(rep("+", 2))))
+cds2 <- ORFranges <- GRanges(seqnames = Rle(rep("1", 2)),
+                             ranges = IRanges(start = c(200, 210),
+                                              end = c(205, 215)),
+                             strand = Rle(strand(rep("+", 2))))
+cds <- GRangesList( tx1 = cds1, tx2 = cds2)
+fiveUTRs1 <- GRanges(seqnames = Rle(rep("1", 6)),
+               ranges = IRanges(start = c(1, 10, 20, 30, 40, 50),
+                                end = c(5, 15, 25, 35, 45, 55)),
+               strand = Rle(strand(rep("+", 6))))
+fiveUTRs2 <- GRanges(seqnames = Rle(rep("1", 2)),
+                     ranges = IRanges(start = c(150, 180),
+                                      end = c(170, 190)),
+                     strand = Rle(strand(rep("+", 2))))
+fiveUTRs <- GRangesList(tx1 = fiveUTRs1, tx2 = fiveUTRs2)
+
 test_that("groupGRangesBy works as intended", {
 
   grltest <- groupGRangesBy(gr)
@@ -116,8 +135,17 @@ test_that("asTX works as intended", {
   reassigned <- asTX(grl, txl)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(17,29)))
+  expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(17, 29)))
 })
+
+test_that("extendLeaders works as intended", {
+  reassigned <- extendLeaders(fiveUTRs, 5, cds)
+  expect_is(reassigned,"GRangesList")
+  expect_equal(length(reassigned), 2)
+  expect_equal(firstStartPerGroup(reassigned, F), as.integer(c(-4, 145)))
+  expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(105, 205)))
+})
+
 
 
 

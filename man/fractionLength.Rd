@@ -2,9 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{fractionLength}
 \alias{fractionLength}
-\title{Fraction Length
-is defined as (length of grls)/(length of transcripts)
-see article: 10.1242/dev.098343}
+\title{Fraction Length}
 \usage{
 fractionLength(grl, tx_len)
 }
@@ -14,9 +12,9 @@ cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{tx_len}{the transcript lengths of the transcripts
 a named (tx names) vector of integers.
-Normally you call argument as: tx_len = TxLen(Gtf)
-te(grl, RNA, RFP, tx_len = TxLen(Gtf))
-See TxLen in ORFik.
+Normally you call argument as: tx_len = txLen(Gtf)
+fractionLength(grl, tx_len = txLen(Gtf))
+See ?ORFik:::txLen
 NB!!! if you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
@@ -25,7 +23,6 @@ te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 where fiveUTRs are the changed cageLeaders.}
 }
 \description{
-Fraction Length
 is defined as (length of grls)/(length of transcripts)
 see article: 10.1242/dev.098343
 }

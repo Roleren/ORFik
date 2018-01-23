@@ -2,10 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{disengagementScore}
 \alias{disengagementScore}
-\title{Disengagement score (DS)
-is defined as (RPFs over ORF)/(RPFs downstream to tx end).
-A pseudo-count of one was added to both the ORF and downstream sums.
-See article: 10.1242/dev.098344}
+\title{Disengagement score (DS)}
 \usage{
 disengagementScore(grl, RFP, GtfOrTx)
 }
@@ -24,7 +21,6 @@ exonsBy(Gtf, by = "tx", use.names = T)}
 a named vector of numeric values of scores
 }
 \description{
-Disengagement score (DS)
 is defined as (RPFs over ORF)/(RPFs downstream to tx end).
 A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1242/dev.098344

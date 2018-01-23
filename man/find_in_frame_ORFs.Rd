@@ -2,9 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{find_in_frame_ORFs}
 \alias{find_in_frame_ORFs}
-\title{Creates GRangesList of Open Reading Frames mapped to genomic coordinates
-Input is a Grangeslist of regions to search, together with a DNAStringSet with
-fastaSequence in same order as the grl.}
+\title{Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates}
 \usage{
 find_in_frame_ORFs(grl, fastaSeqs, startCodon = "ATG",
   stopCodon = "TAA|TAG|TGA", longestORF = F, minimumLength = 0)
@@ -29,7 +27,6 @@ For example minimumLength = 8 will result in size of ORFs to be at least
 A GRangesList of ORFs.
 }
 \description{
-Creates GRangesList of Open Reading Frames mapped to genomic coordinates
 Input is a Grangeslist of regions to search, together with a DNAStringSet with
 fastaSequence in same order as the grl.
 }

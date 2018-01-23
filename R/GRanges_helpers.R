@@ -1,5 +1,7 @@
+
 #' make GRangesList from GRanges, grouped by names or another column(other)
-#' ig. if GRanges should be grouped by gene, give gene column as other
+#' @description ig. if GRanges should be grouped by gene,
+#'  give gene column as other
 #' @param gr a GRanges object
 #' @param other a vector of names to group, no 2 groups can have same name
 #' @return a GRangesList named after names(Granges) if other is NULL, else
@@ -101,6 +103,28 @@ strandPerGroup <- function(grl, keep.names = T){
   }
 }
 
+#' helper function to get a logical list of True/False, if GRangesList group have
+#' + strand = T, if - strand = F
+#' Also checks for * strands, so a good check for bugs
+#' @param grl a GRangesList or GRanges object
+strandBool <- function(grl){
+  if(class(grl) == "GRanges"){
+    posIndeces <- as.character(strand(grl)) == "+"
+  } else {
+    posIndeces <- strandPerGroup(grl, F) == "+"
+  }
+
+  sums <- sum(posIndeces) + sum(!posIndeces)
+  if(is.na(sums)){
+    stop("could not get strands from grl object,\n
+          most likely NULL object was passed.")
+  }
+  if(sums != length(grl)){
+    stop("grl contains * strands, set them to either + or -")
+  }
+  return(posIndeces)
+}
+
 #' get first exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a GRangesList
@@ -109,7 +133,7 @@ firstExonPerGroup <- function(grl){
   return(phead(grl, 1L)) # S4Vectors::phead() wrapper
 }
 
-#' get first exon per GRangesList group
+#' get last exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a GRangesList,
 #' @return a GRangesList of last exons per group
@@ -308,26 +332,10 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
-#' helper function to get a logical list of True/False, if GRangesList group have
-#' + strand = T, if - strand = F
-#' Also checks for * strands, so a good check for bugs
-#' @param grl a GRangesList object
-strandBool <- function(grl){
-  posIndeces <- strandPerGroup(grl, F) == "+"
-  sums <- sum(posIndeces) + sum(!posIndeces)
-  if(is.na(sums)){
-    stop("could not get strands from grl object,\n
-          most likely NULL object was passed.")
-  }
-  if(sums != length(grl)){
-    stop("grl contains * strands, set them to either + or -")
-  }
-  return(posIndeces)
-}
-
 #' Reassign the start positions of the first exons per group in grl
-#' make sure your grl is sorted, since start of "-" strand objects should be the
-#' max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+#' @description make sure your grl is sorted, since start of "-" strand
+#'  objects should be the
+#'  max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a GRangesList object
 #' @param newStarts an integer vector of same length as grl, with new start values
 assignFirstExonsStartSite <- function(grl, newStarts){
@@ -345,10 +353,10 @@ assignFirstExonsStartSite <- function(grl, newStarts){
 
   return(ngrl)
 }
-
-#' Reassign the stop positions of the last exons per group in grl
-#' make sure your grl is sorted, since stop of "-" strand objects should be the
-#' min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+#' Reassign the stop positions of the last exons per group
+#' @description make sure your grl is sorted,
+#'  since stop of "-" strand objects should be the
+#'  min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a GRangesList object
 #' @param newStarts an integer vector of same length as grl, with new start values
 assignLastExonsStopSite <- function(grl, newStops){
@@ -366,17 +374,18 @@ assignLastExonsStopSite <- function(grl, newStops){
 
   return(ngrl)
 }
-
-#' per group get the part downstream of position defined in downstreamOf
-#' @param tx a GRangesList, usually of Transcripts to be changed
-#' @param downstreamOf a vector of integers, for each group in tx, where
-#' is the new start point of first valid exon.
-#' @example downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
-#'  will return the 3' utrs per transcrip as GRangesList,
+#' get rest of objects downstream
+#' @description per group get the part downstream of position
+#'  defined in downstreamOf
+#'  downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
+#'  will return the 3' utrs per transcript as GRangesList,
 #'  usually used for interesting
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
+#' @param tx a GRangesList, usually of Transcripts to be changed
+#' @param downstreamOf a vector of integers, for each group in tx, where
+#' is the new start point of first valid exon.
 downstreamOfPerGroup <- function(tx, downstreamOf){
   posIndeces <- strandBool(tx)
   posEnds <- end(tx[posIndeces])
@@ -402,16 +411,17 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
   }
   return(assignFirstExonsStartSite(downTx, downstreamOf))
 }
-
-#' per group get the part upstream of position defined in upstreamOf
-#' @param tx a GRangesList, usually of Transcripts to be changed
-#' @param downstreamOf a vector of integers, for each group in tx, where
-#' is the new start point of first valid exon.
-#' @example downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
-#'  will return the 3' utrs per transcrip, usually used for interesting
+#' get rest of objects upstream
+#' @description per group get the part upstream of position
+#'  defined in upstreamOf
+#'  upstream(tx, ORFik:::ORFStopSites(cds, asGR = F))
+#'  will return the 5' utrs per transcript, usually used for interesting
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
+#' @param tx a GRangesList, usually of Transcripts to be changed
+#' @param downstreamOf a vector of integers, for each group in tx, where
+#'  is the new start point of first valid exon.
 upstreamOfPerGroup <- function(tx, upstreamOf){
   posIndeces <- strandBool(tx)
   posStarts <- start(tx[posIndeces])
@@ -438,6 +448,30 @@ upstreamOfPerGroup <- function(tx, upstreamOf){
   return(assignLastExonsStopSite(tx, upstreamOf))
 }
 
+#' Extend the leaders tss.
+#'
+#' Either if you have the 5' utr sequences or the
+#'  transcript sequences to extend,
+#'  any way the 5' part will be extended.
+#'  Remember to sort it, if not sorted beforehand.
+#'  use ORFik:::sortPerGroup(grl) to get sorted grl.
+#' @param grl a GRangesList of 5' utrs or transcripts..
+#' @param extension an integer, how much to extend the leaders
+#' @param cds If you want to extend 5' leaders downstream, to catch
+#'  upstream ORFs going into cds, include it. It will add first
+#'  cds exon to grl matched by names.
+extendLeaders <- function(grl, extension = 1000, cds = NULL){
+
+  newStarts <- as.integer(start(
+      promoters(unlist(firstExonPerGroup(grl), use.names = F),
+        upstream = extension)))
+
+  extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
+  if(is.null(cds)) return (extendedLeaders)
+  return(addFirstCdsOnLeaderEnds(
+    extendedLeaders, cds))
+}
+
 #' Creates window around GRanged object.
 #'
 #' It creates window of window_size around input ranges eg.
@@ -460,8 +494,44 @@ window_resize <- function(GRanges_obj, window_size = 30) {
   return(GRanges_obj)
 }
 
+#' Subset GRanges to get desired frame. GRanges object should be beforehand
+#' tiled to size of 1. This subsetting takes account for strand.
+#'
+#’ @export
+#' @param x A tiled to size of 1 GRanges object
+#' @param frame A numeric indicating which frame to extract
+#' @return GRanges object reduced to only first frame
+#' @examples
+#' #subset_to_frame(x, 1)
+#'
+subset_to_frame <- function(x, frame){
+  if(as.vector(strand(x) == "+")[1]){
+    x[seq(frame, length(x), 3)]
+  }else{
+    x[seq(length(x) + 1 - frame, 1, -3)]
+  }
+}
+
+
+#' Subset GRanges to get stop codons. GRanges object should be beforehand
+#' tiled to size of 1. This subsetting takes account for strand.
+#'
+#' @param x A tiled to size of 1 GRanges object
+#' @return GRanges object reduced to only stop codon
+#' @export
+#' @examples
+#' #subset_to_stop(x)
+#'
+subset_to_stop <- function(x){
+  if(as.vector(strand(x))[1] == "+"){
+    x[c(length(x) - 3, length(x) - 4, length(x) - 5)]
+  } else {
+    x[c(4, 5, 6)]
+  }
+}
+
 #' source bioconductor
-#' helperfunction for quick update of bioconductor packages
+#' @description helperfunction for quick update of bioconductor packages
 #' @param packages either NULL if only source and no update/install
 #'  or "all" if you want to update all your bioconductor packages
 #'  or c(package1, package2, ...)

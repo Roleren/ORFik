@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{lastExonPerGroup}
 \alias{lastExonPerGroup}
-\title{get first exon per GRangesList group
+\title{get last exon per GRangesList group
 grl must be sorted, call ORFik:::sortPerGroup if needed}
 \usage{
 lastExonPerGroup(grl)
@@ -14,6 +14,6 @@ lastExonPerGroup(grl)
 a GRangesList of last exons per group
 }
 \description{
-get first exon per GRangesList group
+get last exon per GRangesList group
 grl must be sorted, call ORFik:::sortPerGroup if needed
 }

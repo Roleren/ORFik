@@ -76,7 +76,8 @@ stop_definition <- function(transl_table) {
 }
 
 
-#' Creates GRangesList of Open Reading Frames mapped to genomic coordinates
+#' Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates
+#'
 #' Input is a Grangeslist of regions to search, together with a DNAStringSet with
 #' fastaSequence in same order as the grl.
 #' @param grl GRangesList of sequences to search for orfs, in Genomic coordinates

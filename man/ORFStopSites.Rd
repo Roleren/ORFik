@@ -2,8 +2,7 @@
 % Please edit documentation in R/ORFs_helpers.R
 \name{ORFStopSites}
 \alias{ORFStopSites}
-\title{get the Stop sites from a GRangesList of orfs grouped by orfs
-In ATGTTTTGC, get the position of the C.}
+\title{get the Stop sites from a GRangesList of orfs grouped by orfs}
 \usage{
 ORFStopSites(grl, asGR = F, keep.names = F, is.sorted = F)
 }
@@ -21,6 +20,5 @@ to keep a named vector}
 if asGR is False, a vector, if True a GRanges object
 }
 \description{
-get the Stop sites from a GRangesList of orfs grouped by orfs
 In ATGTTTTGC, get the position of the C.
 }

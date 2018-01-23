@@ -2,8 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{groupGRangesBy}
 \alias{groupGRangesBy}
-\title{make GRangesList from GRanges, grouped by names or another column(other)
-ig. if GRanges should be grouped by gene, give gene column as other}
+\title{make GRangesList from GRanges, grouped by names or another column(other)}
 \usage{
 groupGRangesBy(gr, other = NULL)
 }
@@ -17,6 +16,6 @@ a GRangesList named after names(Granges) if other is NULL, else
 names are from unique(other)
 }
 \description{
-make GRangesList from GRanges, grouped by names or another column(other)
-ig. if GRanges should be grouped by gene, give gene column as other
+ig. if GRanges should be grouped by gene,
+ give gene column as other
 }

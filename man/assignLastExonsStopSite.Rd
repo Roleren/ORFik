@@ -2,9 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{assignLastExonsStopSite}
 \alias{assignLastExonsStopSite}
-\title{Reassign the stop positions of the last exons per group in grl
-make sure your grl is sorted, since stop of "-" strand objects should be the
-min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.}
+\title{Reassign the stop positions of the last exons per group}
 \usage{
 assignLastExonsStopSite(grl, newStops)
 }
@@ -14,7 +12,7 @@ assignLastExonsStopSite(grl, newStops)
 \item{newStarts}{an integer vector of same length as grl, with new start values}
 }
 \description{
-Reassign the stop positions of the last exons per group in grl
-make sure your grl is sorted, since stop of "-" strand objects should be the
-min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+make sure your grl is sorted,
+ since stop of "-" strand objects should be the
+ min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{floss}
 \alias{floss}
-\title{Fragment Length Organization Similarity Score
-See article: 10.1016/j.celrep.2014.07.045}
+\title{Fragment Length Organization Similarity Score}
 \usage{
 floss(grl, RFP, cds, start = 26, end = 34)
 }
@@ -22,6 +21,5 @@ floss(grl, RFP, cds, start = 26, end = 34)
 a vector of FLOSS of length same as grl
 }
 \description{
-Fragment Length Organization Similarity Score
 See article: 10.1016/j.celrep.2014.07.045
 }

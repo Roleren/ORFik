@@ -2,10 +2,7 @@
 % Please edit documentation in R/ORF_features.R
 \name{insideOutsideORF}
 \alias{insideOutsideORF}
-\title{Inside/outside score (IO)
-is defined as (RPFs over ORF)/(RPFs downstream to tx end).
-A pseudo-count of one was added to both the ORF and downstream sums.
-See article: 10.1242/dev.098345}
+\title{Inside/outside score (IO)}
 \usage{
 insideOutsideORF(grl, RFP, GtfOrTx)
 }
@@ -24,7 +21,6 @@ exonsBy(Gtf, by = "tx", use.names = T)}
 a named vector of numeric values of scores
 }
 \description{
-Inside/outside score (IO)
 is defined as (RPFs over ORF)/(RPFs downstream to tx end).
 A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1242/dev.098345

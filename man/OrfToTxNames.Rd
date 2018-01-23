@@ -2,9 +2,7 @@
 % Please edit documentation in R/ORFs_helpers.R
 \name{OrfToTxNames}
 \alias{OrfToTxNames}
-\title{Get transcript names from orf names
-names must either be a column called names, or the names of the
-grl object}
+\title{Get transcript names from orf names}
 \usage{
 OrfToTxNames(grl, unique = F)
 }
@@ -17,7 +15,6 @@ want the unique groups
 @export}
 }
 \description{
-Get transcript names from orf names
 names must either be a column called names, or the names of the
 grl object
 }

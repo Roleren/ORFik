@@ -2,8 +2,7 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{bedToGR}
 \alias{bedToGR}
-\title{Converts different type of files to Granges
-Only Accepts bed files for now, standard format from Fantom5}
+\title{Converts different type of files to Granges}
 \usage{
 bedToGR(x, bed6 = TRUE)
 }
@@ -13,6 +12,5 @@ bedToGR(x, bed6 = TRUE)
 \item{bed6}{If bed6, no meta column is added}
 }
 \description{
-Converts different type of files to Granges
 Only Accepts bed files for now, standard format from Fantom5
 }

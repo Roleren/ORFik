@@ -2,24 +2,24 @@
 % Please edit documentation in R/ORF_features.R
 \name{distOrfToCds}
 \alias{distOrfToCds}
-\title{Get distances between orf ends and starts of transcripts cds' belonging to orfs.
-matching is done by transcript names.
-fiveUTRs must be used to make transcript positions possible.
-The cds start site, will be presumed to be on + 1 of end of fiveUTRs}
+\title{Get distances between orf ends and starts of transcripts cds' belonging to orfs.}
 \usage{
-distOrfToCds(ORFs, fiveUTRs, cds, extension = 1000)
+distOrfToCds(ORFs, fiveUTRs, cds = NULL, extension = NULL)
 }
 \arguments{
 \item{ORFs}{orfs as GRangesList, names of orfs must be transcript names}
 
 \item{fiveUTRs}{fiveUTRs as GRangesList, must be original unchanged fiveUTRs}
 
-\item{cds}{cds' as GRangesList}
+\item{cds}{cds' as GRangesList, only add if you used cage extension}
 
-\item{extension}{if you changed the extension of tss when finding the orfs}
+\item{extension}{needs to be set! set to 0 if you did not use cage
+if you used cage to change tss' when finding the orfs, standard cage
+extension is 1000
+@return an integer vector, +1 means one base upstream of cds, -1 means
+ 2nd base in cds, 0 means orf stops at cds start.}
 }
 \description{
-Get distances between orf ends and starts of transcripts cds' belonging to orfs.
 matching is done by transcript names.
 fiveUTRs must be used to make transcript positions possible.
 The cds start site, will be presumed to be on + 1 of end of fiveUTRs

@@ -2,7 +2,8 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{makeGrlAndFilter}
 \alias{makeGrlAndFilter}
-\title{After all transcript start sites have been updated from cage, grangeslist back together}
+\title{After all transcript start sites have been updated from cage,
+ put grangeslist back together}
 \usage{
 makeGrlAndFilter(firstExons, fiveUTRs)
 }
@@ -12,5 +13,6 @@ makeGrlAndFilter(firstExons, fiveUTRs)
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 }
 \description{
-After all transcript start sites have been updated from cage, grangeslist back together
+After all transcript start sites have been updated from cage,
+ put grangeslist back together
 }

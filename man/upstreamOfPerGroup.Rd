@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{upstreamOfPerGroup}
 \alias{upstreamOfPerGroup}
-\title{per group get the part upstream of position defined in upstreamOf}
+\title{get rest of objects upstream}
 \usage{
 upstreamOfPerGroup(tx, upstreamOf)
 }
@@ -13,5 +13,11 @@ upstreamOfPerGroup(tx, upstreamOf)
 is the new start point of first valid exon.}
 }
 \description{
-per group get the part upstream of position defined in upstreamOf
+per group get the part upstream of position
+ defined in upstreamOf
+ upstream(tx, ORFik:::ORFStopSites(cds, asGR = F))
+ will return the 5' utrs per transcript, usually used for interesting
+ parts of the transcripts, like upstream open reading frames(uorf).
+ downstreamOf +/- 1 is start/end site
+ of transformed tx's, depending on strand
 }

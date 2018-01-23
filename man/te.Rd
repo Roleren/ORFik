@@ -2,10 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{te}
 \alias{te}
-\title{Translational efficiency
-Uses Rna-seq and Ribo-seq to get te of grl
-is defined as (density of RPFs within ORF)/(RNA expression).
-See article: 10.1126/science.1168978}
+\title{Translational efficiency}
 \usage{
 te(grl, RNA, RFP, tx_len)
 }
@@ -21,9 +18,9 @@ or GRangesList object}
 
 \item{tx_len}{the transcript lengths of the transcripts
 a named (tx names) vector.
-Normally you call argument as: tx_len = TxLen(Gtf)
-te(grl, RNA, RFP, tx_len = TxLen(Gtf))
-See TxLen in ORFik.
+Normally you call argument as: tx_len = txLen(Gtf)
+fractionLength(grl, tx_len = txLen(Gtf))
+See ?ORFik:::txLen
 NB!!! if you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
@@ -32,7 +29,6 @@ te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 where fiveUTRs are the changed cageLeaders as GRangesList.}
 }
 \description{
-Translational efficiency
 Uses Rna-seq and Ribo-seq to get te of grl
 is defined as (density of RPFs within ORF)/(RNA expression).
 See article: 10.1126/science.1168978

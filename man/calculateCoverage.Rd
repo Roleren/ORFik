@@ -2,9 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{calculateCoverage}
 \alias{calculateCoverage}
-\title{Calculate Coverage of the input reads.
-What is percent of the vector covered by the values higher than zero?
-See article: 10.1002/embj.201488411}
+\title{Calculate Coverage of the input reads.}
 \usage{
 calculateCoverage(countsOver)
 }
@@ -15,7 +13,6 @@ calculateCoverage(countsOver)
 numeric value in between 0 and 1
 }
 \description{
-Calculate Coverage of the input reads.
 What is percent of the vector covered by the values higher than zero?
 See article: 10.1002/embj.201488411
 }

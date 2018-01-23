@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{downstreamOfPerGroup}
 \alias{downstreamOfPerGroup}
-\title{per group get the part downstream of position defined in downstreamOf}
+\title{get rest of objects downstream}
 \usage{
 downstreamOfPerGroup(tx, downstreamOf)
 }
@@ -13,5 +13,12 @@ downstreamOfPerGroup(tx, downstreamOf)
 is the new start point of first valid exon.}
 }
 \description{
-per group get the part downstream of position defined in downstreamOf
+per group get the part downstream of position
+ defined in downstreamOf
+ downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
+ will return the 3' utrs per transcript as GRangesList,
+ usually used for interesting
+ parts of the transcripts, like upstream open reading frames(uorf).
+ downstreamOf +/- 1 is start/end site
+ of transformed tx's, depending on strand
 }

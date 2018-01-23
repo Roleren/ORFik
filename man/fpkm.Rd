@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{fpkm}
 \alias{fpkm}
-\title{Creates normalizations of the counts, normally used in Translations efficiency calculations}
+\title{Creates normalizations of the counts, normally,}
 \usage{
 fpkm(counts, lengthSize, librarySize)
 }
@@ -14,5 +14,5 @@ fpkm(counts, lengthSize, librarySize)
 \item{lengthSizeA}{a list of integer lengths per object}
 }
 \description{
-Creates normalizations of the counts, normally used in Translations efficiency calculations
+used in Translations efficiency calculations
 }

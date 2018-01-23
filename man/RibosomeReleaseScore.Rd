@@ -2,13 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{RibosomeReleaseScore}
 \alias{RibosomeReleaseScore}
-\title{Ribosome Release Score (RRS)
-is defined as (RPFs over ORF)/(RPFs over 3' utrs).
-normalized by lengths
-, if RNA is added as argument, normalize by RNA counts over areas too
-to justify location of 3' utrs
-A pseudo-count of one was added to both the ORF and downstream sums.
-See article: 10.1016/j.cell.2013.06.009}
+\title{Ribosome Release Score (RRS)}
 \usage{
 RibosomeReleaseScore(grl, RFP, GtfOrThreeUtrs, RNA = NULL)
 }
@@ -29,7 +23,6 @@ or GRangesList object}
 a named vector of numeric values of scores
 }
 \description{
-Ribosome Release Score (RRS)
 is defined as (RPFs over ORF)/(RPFs over 3' utrs).
 normalized by lengths
 , if RNA is added as argument, normalize by RNA counts over areas too

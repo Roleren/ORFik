@@ -2,9 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{assignFirstExonsStartSite}
 \alias{assignFirstExonsStartSite}
-\title{Reassign the start positions of the first exons per group in grl
-make sure your grl is sorted, since start of "-" strand objects should be the
-max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.}
+\title{Reassign the start positions of the first exons per group in grl}
 \usage{
 assignFirstExonsStartSite(grl, newStarts)
 }
@@ -14,7 +12,7 @@ assignFirstExonsStartSite(grl, newStarts)
 \item{newStarts}{an integer vector of same length as grl, with new start values}
 }
 \description{
-Reassign the start positions of the first exons per group in grl
-make sure your grl is sorted, since start of "-" strand objects should be the
-max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+make sure your grl is sorted, since start of "-" strand
+ objects should be the
+ max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 }
