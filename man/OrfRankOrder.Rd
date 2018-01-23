@@ -2,7 +2,7 @@
 % Please edit documentation in R/ORF_features.R
 \name{OrfRankOrder}
 \alias{OrfRankOrder}
-\title{Get the orf number in transcripts, ig. second orf _1 -> 2}
+\title{Get the orf rank in transcripts}
 \usage{
 OrfRankOrder(grl)
 }
@@ -10,5 +10,5 @@ OrfRankOrder(grl)
 \item{grl}{a GRangesList object with ORFs}
 }
 \description{
-Get the orf number in transcripts, ig. second orf _1 -> 2
+ig. second orf _2 -> 2
 }

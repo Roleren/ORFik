@@ -2,10 +2,7 @@
 % Please edit documentation in R/ORF_features.R
 \name{ORFScores}
 \alias{ORFScores}
-\title{Get ORF score for given GRangesList object grouped by orfs
-That is, of the 3 possible frame in an ORF
-Is the first one most important, by how much ?
-NB! Only support + and - strand, not *}
+\title{Get ORF score for a GRangesList of ORFs}
 \usage{
 ORFScores(grl, RFP)
 }
@@ -20,8 +17,8 @@ a matrix with 4 columns, the orfscore and score of
 each of the 3 tiles
 }
 \description{
-Get ORF score for given GRangesList object grouped by orfs
 That is, of the 3 possible frame in an ORF
 Is the first one most important, by how much ?
 NB! Only support + and - strand, not *
+See article: 10.1002/embj.201488411
 }

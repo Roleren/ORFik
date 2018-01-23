@@ -240,16 +240,16 @@ test_that("map_to_GRanges works as intended for strange exons negative strand", 
                                     longestORF = F,
                                     minimumLength = 0)
 
-  test_ranges <- ORFik:::sortPerGroup(test_ranges)
+  test_ranges <- sortPerGroup(test_ranges)
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "-")
+  expect_equal(strandPerGroup(test_ranges,F)[1], "-")
   expect_equal(as.integer(unlist(start(test_ranges))), c(5, 5, 5000, 4000, 3000,
                                                          2000, 1000, 1))
   expect_equal(as.integer(unlist(end(test_ranges))), c(13, 10, 5000, 4000, 3000,
                                                        2000, 1000, 1))
-  expect_equal(sum(ORFik:::widthPerGroup(test_ranges) %% 3), 0)
+  expect_equal(sum(widthPerGroup(test_ranges) %% 3), 0)
   expect_equal(unlist(grl)$names,c("tx1", "tx1", "tx2", "tx2", "tx2",
                                    "tx2", "tx2", "tx2"))
   expect_equal(unlist(test_ranges)$names,c("tx1_1","tx1_2", "tx2_1", "tx2_1",

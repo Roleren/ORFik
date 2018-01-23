@@ -114,12 +114,14 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 }
 
 #' Get transcript names from orf names
+#'
 #' names must either be a column called names, or the names of the
 #' grl object
 #' @param grl a GRangeslist grouped by ORF
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
+#'  @export
 OrfToTxNames <- function(grl, unique = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
   if (is.null(names(grl))){
@@ -140,6 +142,7 @@ OrfToTxNames <- function(grl, unique = F){
 }
 
 #' get the start sites from a GRangesList of orfs grouped by orfs
+#'
 #' In ATGTTTTGG, get the position of the A.
 #' @param grl a GRangesList object
 #' @param asGR a boolean, return as GRanges object
@@ -174,6 +177,7 @@ ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
 }
 
 #' get the Stop sites from a GRangesList of orfs grouped by orfs
+#'
 #' In ATGTTTTGC, get the position of the C.
 #' @param grl a GRangesList object
 #' @param asGR a boolean, return as GRanges object

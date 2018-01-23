@@ -2,10 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{entropy}
 \alias{entropy}
-\title{Calucalte Entropy value of input reads overlapping per group in grl
-For example reads per orf.
-The entropy interval per group is a real number in the interval (0:1)
-Where 0 is no variance in reads over group.}
+\title{Calucalte Entropy value of input reads overlapping}
 \usage{
 entropy(grl, reads)
 }
@@ -19,7 +16,6 @@ can also be GRanges or GRangesList}
 A numeric vector containing entropy per ORF
 }
 \description{
-Calucalte Entropy value of input reads overlapping per group in grl
 For example reads per orf.
 The entropy interval per group is a real number in the interval (0:1)
 Where 0 is no variance in reads over group.

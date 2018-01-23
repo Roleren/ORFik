@@ -2,8 +2,7 @@
 % Please edit documentation in R/ORFs_helpers.R
 \name{ORFStartSites}
 \alias{ORFStartSites}
-\title{get the start sites from a GRangesList of orfs grouped by orfs
-In ATGTTTTGG, get the position of the A.}
+\title{get the start sites from a GRangesList of orfs grouped by orfs}
 \usage{
 ORFStartSites(grl, asGR = F, keep.names = F, is.sorted = F)
 }
@@ -21,6 +20,5 @@ to keep a named vector}
 if asGR is False, a vector, if True a GRanges object
 }
 \description{
-get the start sites from a GRangesList of orfs grouped by orfs
 In ATGTTTTGG, get the position of the A.
 }

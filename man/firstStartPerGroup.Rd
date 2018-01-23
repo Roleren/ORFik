@@ -2,7 +2,8 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{firstStartPerGroup}
 \alias{firstStartPerGroup}
-\title{get first start per granges group}
+\title{get first start per granges group
+grl must be sorted, call ORFik:::sortPerGroup if needed}
 \usage{
 firstStartPerGroup(grl, keep.names = T)
 }
@@ -13,4 +14,5 @@ firstStartPerGroup(grl, keep.names = T)
 }
 \description{
 get first start per granges group
+grl must be sorted, call ORFik:::sortPerGroup if needed
 }

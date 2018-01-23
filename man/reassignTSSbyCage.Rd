@@ -2,9 +2,7 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{reassignTSSbyCage}
 \alias{reassignTSSbyCage}
-\title{Reassign all Transcript start sites(tss's) in 5' leaders, that are found by given cage-file
-A max peak is defined as new tss if it is within boundary of 5'leader range, specified by extension
-A max peak must also be greater that the cage peak cutoff specified in filterValue}
+\title{Reassign all Transcript start sites(tss')}
 \usage{
 reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
   cds = NULL)
@@ -14,14 +12,21 @@ reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
 
 \item{cage}{Either a  filePath for cage-file, or already loaded R-object as GRanges}
 
-\item{extension}{The maximum number of basses upstream the cage-peak can be from original tss}
+\item{extension}{The maximum number of basses upstream the
+cage-peak can be from original tss}
 
-\item{filterValue}{The number of counts(score) to filter on for a tss to pass as hit}
+\item{filterValue}{The number of counts(score) to filter on,
+for a tss to pass as hit}
 
-\item{cds}{If you want to extend 5' leaders downstream, to catch upstream ORFs going into cds, include it.}
+\item{cds}{If you want to extend 5' leaders downstream,
+to catch upstream ORFs going into cds, include it.}
 }
 \description{
-Reassign all Transcript start sites(tss's) in 5' leaders, that are found by given cage-file
-A max peak is defined as new tss if it is within boundary of 5'leader range, specified by extension
-A max peak must also be greater that the cage peak cutoff specified in filterValue
+Given a GRangesList of 5' utrs, reassign the start postitions.
+ A max peak is defined as new tss if it is within boundary
+ of 5'leader range, specified by extension
+ A max peak must also be greater that the cage peak cutoff specified
+ in filterValue
+ The new TSS will then be the position of the cage read,
+  with highest read count in the interval.
 }

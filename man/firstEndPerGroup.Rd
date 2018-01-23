@@ -2,7 +2,8 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{firstEndPerGroup}
 \alias{firstEndPerGroup}
-\title{get first end per granges group}
+\title{get first end per granges group
+grl must be sorted, call ORFik:::sortPerGroup if needed}
 \usage{
 firstEndPerGroup(grl, keep.names = T)
 }
@@ -13,4 +14,5 @@ firstEndPerGroup(grl, keep.names = T)
 }
 \description{
 get first end per granges group
+grl must be sorted, call ORFik:::sortPerGroup if needed
 }
