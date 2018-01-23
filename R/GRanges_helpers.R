@@ -319,7 +319,11 @@ tile1 <- function(grl){
 #'  ig. cds is grl and gene can be reference
 #'  @export
 asTX <- function(grl, reference){
-  return(pmapToTranscripts(grl, reference[OrfToTxNames(grl)]))
+  orfNames <- OrfToTxNames(grl)
+  if(sum(orfNames %in% names(reference)) != length(orfNames)){
+    stop("not all references are present, so can not map to transcripts.")
+  }
+  return(pmapToTranscripts(grl, reference[orfNames]))
 }
 
 #' get transcript sequence from a GrangesList and a faFile
@@ -462,9 +466,12 @@ upstreamOfPerGroup <- function(tx, upstreamOf){
 #'  cds exon to grl matched by names.
 extendLeaders <- function(grl, extension = 1000, cds = NULL){
 
-  newStarts <- as.integer(start(
-      promoters(unlist(firstExonPerGroup(grl), use.names = F),
-        upstream = extension)))
+  posIndeces <- strandBool(grl)
+  promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
+    upstream = extension)
+  newStarts <- rep(NA, length(grl))
+  newStarts[posIndeces] <- as.integer(start(promo[posIndeces]))
+  newStarts[!posIndeces] <- as.integer(end(promo[!posIndeces]))
 
   extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
   if(is.null(cds)) return (extendedLeaders)
@@ -536,7 +543,7 @@ subset_to_stop <- function(x){
 #'  or "all" if you want to update all your bioconductor packages
 #'  or c(package1, package2, ...)
 #'  for specific packages as a character vector
-sourceBioC <- function(packages = NULL){
+sourceBioc <- function(packages = NULL){
   source("https://bioconductor.org/biocLite.R")
   if(!is.null(packages)){
     if(packages == "all"){

@@ -225,7 +225,7 @@ isOverlappingCds <- function(dists){
 #' @description ig. second orf _2 -> 2
 #' @param grl a GRangesList object with ORFs
 OrfRankOrder <- function(grl){
-  gr <- unlist(grl, use.names = F)
+  gr <- unlist(grl, use.names = FALSE)
 
   if(is.null(names(grl))){
     if(is.null(gr$names)){

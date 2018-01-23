@@ -59,7 +59,7 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
   cageSeqlevels <- seqlevels(filteredCage)
   if (length(grep(pattern = "chr", fiveSeqlevels)) > 0 &&
      length(grep(pattern = "chr", cageSeqlevels)) == 0){
-    warning("seqnames use different chromosome naming conventions,",
+    message("seqnames use different chromosome naming conventions,",
             " trying to fix them")
     regexNormalChr <- '(^[a-zA-Z])*([0-9]+)' # <- chr1, chr2, not chrX, chrY etc.
     normalChr <- paste0("chr", grep(regexNormalChr,
@@ -98,13 +98,13 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
     warning("not all cds names matches fiveUTRs names, returning without using cds.")
     return(fiveUTRs)
   }
-
-  cdsForUTRs <- cds[names(fiveUTRs)] # get only the ones we need
-  firstExons <- phead(cdsForUTRs, 1L) #select first in every, they must be sorted!
+  # get only the ones we need
+  # select first in every, they must be sorted!
+  firstExons <- firstExonPerGroup(cds[names(fiveUTRs)])
   gr <- unlist(firstExons, use.names = FALSE)
   # fix mcols of cds, so that pc() will work
   mcols(gr) <- as.data.frame(mcols(unlist(fiveUTRs,
-    use.names = F)))[1:length(gr),]
+                use.names = FALSE)))[1:length(gr),]
 
   grl <- relist(gr, firstExons)
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)
@@ -168,7 +168,7 @@ findNewTSS <- function(fiveUTRs, cageData, extension){
 #'  put grangeslist back together
 #' @param firstExons The first exon of every transcript from 5' leaders
 #' @param fiveUTRs The 5' leader sequences as GRangesList
-makeGrlAndFilter <- function(firstExons, fiveUTRs){
+assignFirstExons <- function(firstExons, fiveUTRs){
 
   fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
   fiveAsgr[fiveAsgr$exon_rank == 1] <- firstExons
@@ -241,7 +241,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
   filteredCage <- matchSeqnames(filteredCage, fiveUTRs)
 
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension)
-  fiveUTRs <- makeGrlAndFilter(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition), fiveUTRs)
+  fiveUTRs <- assignFirstExons(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition), fiveUTRs)
   if(!is.null(cds)) fiveUTRs <- addFirstCdsOnLeaderEnds(fiveUTRs, cds)
 
   return(fiveUTRs)

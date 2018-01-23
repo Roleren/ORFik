@@ -171,6 +171,7 @@ calculateCoverage <- function(countsOver) {
 #' @param end usually 34, the end of the floss interval
 #' @return a vector of FLOSS of length same as grl
 floss <- function(grl, RFP, cds, start = 26, end = 34){
+  #TODO: add 0 to the ones that dont hit
   if(start > end) stop("start is bigger than end")
   if(class(RFP) == "GRangesList"){
     stop("RFP must be either GAlignment or GRanges type")
@@ -188,6 +189,10 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   ORFGrouping <- from(overlaps)[rfpPassFilter]
   if(sum(ORFGrouping) == 0){
     return(as.numeric(rep(0, length(grl))))
+  }
+  whichNoHit <- NULL
+  if(length(unique(ORFGrouping)) != length(grl)){
+    whichNoHit <- S4Vectors::setdiff.Vector(1:4, unique(ORFGrouping))
   }
   orfFractions <- split(rfpValidMatch, ORFGrouping)
   listing<- IRanges::RleList(orfFractions)
@@ -218,6 +223,15 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   score <- sapply(1:length(orfFractions), function(x){
     sum(abs(orfFractions[[x]] - cdsFractions)) * 0.5
   })
+  if(!is.null(whichNoHit)){
+    tempScores <- as.numeric(rep(NA, length(grl)))
+    tempScores[unique(ORFGrouping)] <- score
+    tempScores[whichNoHit] <- 0.
+    score <- tempScores
+  }
+  if(length(score) != length(grl) || anyNA(score)) stop("could not find\n
+                                        floss-score for all objects, most\n
+                                        likely objects are wrongly annotated.")
   return(score)
 }
 
@@ -408,14 +422,20 @@ allFeatures <- function(grl, orfFeatures = T, RFP, RNA = NULL,  Gtf = NULL, tx =
                               standard cage extension is 1000")
 
   if(class(grl) != "GRangesList") stop("grl must be GRangesList")
-  if(class(RFP) != "GAlignment"){
+  if(class(RFP) != "GAlignments"){
     if(class(RFP) != "GRanges"){
-      stop("RFP must be either GAlignment or GRanges")
+      stop("RFP must be either GAlignments or GRanges")
     }
   }
   if(is.null(RNA)){
     message("No RNA added, skipping feature te and fpkm of RNA,\n
             also RibosomeReleaseScore will also be not normalized best way possible.")
+  } else {
+    if(class(RNA) != "GAlignments"){
+      if(class(RNA) != "GRanges"){
+        stop("RNA must be either GAlignments or GRanges")
+      }
+    }
   }
   tx_len <- NULL
   if(is.null(Gtf)){
