@@ -2,8 +2,8 @@
 #' Creates normalizations of the counts, normally,
 #' @description used in Translations efficiency calculations
 #' @param counts a list of integer counts per object
-#' @param lengthSizeA a list of integer lengths per object
-#' @param librarySize A numeric of size 1, the size of the library
+#' @param lengthSize a list of integer lengths per object
+#' @param librarySize a numeric of size 1, the size of the library
 #' @export
 fpkm <- function(counts, lengthSize, librarySize){
   return((as.numeric(counts) * (10^9)) /
@@ -348,7 +348,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' @param GtfOrThreeUtrs if Gtf: a TxDb object of a gtf file,
 #'  if ThreeUtrs: a GrangesList of transcripts, called from:
 #'  threeUTRsByTranscript(Gtf, use.names = T)
-#'  @param RNA rna seq reads as GAlignment, GRanges
+#' @param RNA rna seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @return a named vector of numeric values of scores
 RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
@@ -393,9 +393,11 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' try ?floss
 #' @param grl a GRangesList object with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param orfFeatures a logical, is this features found on orf,
+#'  is grl a list of orfs?
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
-#'  @param RNA rna seq reads as GAlignment, GRanges
+#' @param RNA rna seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param Gtf a TxDb object of a gtf file,
 #' @param tx a GrangesList of transcripts,
@@ -412,6 +414,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #'  if you used cage to change tss' when finding the orfs, standard cage
 #'  extension is 1000
 #' @importFrom data.table data.table
+#' @export
 #' @return a data.table with scores, each column is one score type, name of
 #'  columns are the names of the scores, i.g floss or fpkmRFP.
 allFeatures <- function(grl, orfFeatures = T, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
@@ -450,37 +453,37 @@ allFeatures <- function(grl, orfFeatures = T, RFP, RNA = NULL,  Gtf = NULL, tx =
                              tx must be specified as a GRangesList")
     }
     #this should be fixed!!!!!
-    tx_len <- ORFik:::widthPerGroup(tx, T)
+    tx_len <- ORFik:::widthPerGroup(tx, TRUE)
   } else {
     if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
     if(!is.null(fiveUTRs)){
       if(class(fiveUTRs) != "GRangesList")
         stop("fiveUTRs must be of type GRangesList")
     } else {
-      fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = T)
+      fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
     }
     if(!is.null(cds)){
       if(class(cds) != "GRangesList")
         stop("cds must be of type GRangesList")
     } else {
-      cds <- cdsBy(Gtf, by = "tx", use.names = T)
+      cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
     }
     if(!is.null(threeUTRs)){
       if(class(threeUTRs) != "GRangesList")
         stop("threeUTRs must be of type GRangesList")
     } else {
-      threeUTRs <- threeUTRsByTranscript(Gtf, use.names = T)
+      threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
     }
     if(!is.null(tx)){
       if(class(tx) != "GRangesList")
         stop("fiveUTRs must be of type GRangesList")
-      tx_len <- ORFik:::widthPerGroup(tx, T)
+      tx_len <- ORFik:::widthPerGroup(tx, TRUE)
     } else {
-      tx <- exonsBy(Gtf, by = "tx", use.names = T)
+      tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
       if(extension > 0){
         tx_len <- txLen(Gtf)
       } else{
-        tx_len <- ORFik:::widthPerGroup(tx, T)
+        tx_len <- ORFik:::widthPerGroup(tx, TRUE)
       }
     }
   }

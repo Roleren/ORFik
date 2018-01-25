@@ -12,9 +12,13 @@ allFeatures(grl, orfFeatures = T, RFP, RNA = NULL, Gtf = NULL,
 \item{grl}{a GRangesList object with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
+\item{orfFeatures}{a logical, is this features found on orf,
+is grl a list of orfs?}
+
 \item{RFP}{ribo seq reads as GAlignment, GRanges
-or GRangesList object
-@param RNA rna seq reads as GAlignment, GRanges
+or GRangesList object}
+
+\item{RNA}{rna seq reads as GAlignment, GRanges
 or GRangesList object}
 
 \item{Gtf}{a TxDb object of a gtf file,}

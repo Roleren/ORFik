@@ -9,7 +9,8 @@ assignLastExonsStopSite(grl, newStops)
 \arguments{
 \item{grl}{a GRangesList object}
 
-\item{newStarts}{an integer vector of same length as grl, with new start values}
+\item{newStops}{an integer vector of same length as grl,
+with new start values}
 }
 \description{
 make sure your grl is sorted,

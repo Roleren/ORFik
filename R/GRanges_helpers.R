@@ -362,7 +362,8 @@ assignFirstExonsStartSite <- function(grl, newStarts){
 #'  since stop of "-" strand objects should be the
 #'  min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a GRangesList object
-#' @param newStarts an integer vector of same length as grl, with new start values
+#' @param newStops an integer vector of same length as grl,
+#'  with new start values
 assignLastExonsStopSite <- function(grl, newStops){
   if(length(grl) != length(newStops)) stop("length of grl and newStops \n
                                            are not equal!")
@@ -424,7 +425,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
 #' @param tx a GRangesList, usually of Transcripts to be changed
-#' @param downstreamOf a vector of integers, for each group in tx, where
+#' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new start point of first valid exon.
 upstreamOfPerGroup <- function(tx, upstreamOf){
   posIndeces <- strandBool(tx)

@@ -23,8 +23,8 @@ ORFik currently supports:
 
 # Introduction
 
-`ORFik` main usage is to get GenomicRanges compatitable results of Open reading frame searching together with
-Ribo-seq and RNA-seq analysis. You can then get the features you want, and make various plots. 
+`ORFik` main usage is to get Open reading frames compatitable with Bioconductor's GenomicRanges package, combined with Ribo-seq and RNA-seq analysis.
+You can then get the features you want, and make various plots. 
 
 # Finding ORFs:
 To find all Open Reading Frames (ORFs) use ?findORFs function. If input is only .fasta file (or BSGenome), findORFs will treat it as prokaryotic genome and findORFs on the chromosomes assuming no splicing. If .gtf file is also supplied, sequences of transcripts from .gtf file will be extracted and findORFs will search there. 
@@ -69,14 +69,14 @@ library(GenomicFeatures)
 
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
-fiveUTRs = fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
 
 # Now get the Fasta file, we of course choose the fasta file for hg19,
 # that is version 19 of human genome
 
 if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vignette
 
-  tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTR fastasequences
+  tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
   test_ranges <- find_in_frame_ORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
   View(test_ranges)
 }
@@ -87,4 +87,100 @@ There are 7 exons in this group, named 3_* where star is the orf number.
 You will also see that the second orf named 3_2 is twice,
 because that single orf is split on two exons.
 
+# Cage-data for tissue specific 5' utrs
 
+In the previous example we used the reference annotation of the 5' utrs
+from the package GenomicFeatures.
+This is a general reference, which will fail to catch tissue specific orfs.
+Here is an example how to include cage-data, to set new Transcription start sites(TSS).
+
+```r
+library(ORFik)
+library(GenomicFeatures)
+
+# Make BSGenome  example with fasta file and gtf file
+
+# First the gtf file, we will extract the 5' leaders and reassign them
+
+# here we use example data from GenomicFeatures,
+# usually you have your own txdb object, a gtf file etc.
+
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "GenomicFeatures")
+txdb <- loadDb(samplefile)
+fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
+cageData <- "./cageData/heartCage.bed" # location of the cage file
+extension <- 1000 # how much upstream of the original tss
+# can the new tss be ?
+filterValue <- 2 # filter for max cage-peak, how many reads must the max peak have
+# to be valid ?
+cds <- cdsBy(txdb, by = "tx", use.names = TRUE) # if you want to find 
+# upstream open reading frames (uORFs), they can go into the cds.
+# therefor we need the coding sequences.
+changedFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData, extension,
+                                        filterValue, cds)
+View(changedFiveUTRs)
+
+```
+
+You will now see that most of the transcription start sites have changed.
+For different tissues, you will get different leaders.
+From testing on Fantom5 cage-data, less than 1% of the start sites remain the same
+on average after reassignment by cage.
+
+# Finding tissue specific ORFs
+Using the results from the last example, lets find the tissue specific uORFs from
+the heart cage-data.
+
+```r
+# From the previous two examples we had Hsapiens and changedFiveUTRs.
+# we now assign to null to avoid vignette error.
+changedFiveUTRs <- NULL # get this object from previous example
+Hsapiens <- NULL # get this from the BSGenome example
+
+tx_seqs <- extractTranscriptSeqs(Hsapiens, changedFiveUTRs) # <- Now get only fiveUTRs fastasequences
+
+uORFs <- find_in_frame_ORFs(changedFiveUTRs,tx_seqs)
+View(uORFs)
+```
+The uORFs from this example will most likely contain some uORFs not in the original
+example, also some will be lost. This is, because different tissues transcribes
+different mRNAs.
+
+# Features from ORFs
+
+ORFik contains a big feature set, things like FLOSS, coverage, ORFscore, entropy, 
+translational effiency, inside outside score, distance metrics, etc.
+All the features are justified with a reference to an article, i.g to see
+justification for floss, see ?floss
+
+Now lets do an example to get all features.
+
+```r
+
+# From the previous two examples we had Hsapiens and changedFiveUTRs.
+# we now assign to null to avoid vignette error.
+# additionally we need the GenomicAlignments package
+library(GenomicAlignments)
+changedFiveUTRs <- NULL # get this object from previous example
+Hsapiens <- NULL # get this from the BSGenome example, a FaFile.
+txdb <-NULL # the gtf file as TxDb
+uORFs <- NULL # the uorfs from previous example
+fiveUTRs <- NULL # the original non cage 5' utrs
+RFP <- GenomicAlignments:::readGAlignments("./Ribo-seq-heart.bed") # can also be bam
+RNA <- GenomicAlignments:::readGAlignments("./RNA-seq-heart.bed") # can also be bam
+# important thing  here! if RFP and RNA is not shifted for the p-site,
+# the scores will be wrong.
+# You can use ORFik to do this.
+riboStart <- 26 # minimum allowed fragment length on ribo-seq data.
+riboStop <- 34 # maximum allowed fragment length on ribo-seq data.
+extension <- 1000 # in the original cage-data example, we extended the
+# 5' utrs by a 1000 upstream, add this as information.
+
+allFeatures <- allFeatures(grl = uORFs, orfFeatures = T, RFP, RNA,  Gtf = txdb,
+  fiveUTRs = fiveUTRs, faFile = Hsapiens, riboStart = riboStart, 
+   riboStop = riboStop, extension = extension)
+View(allFeatures)
+```
+
+You will now get a data.table with one column per score, the columns are named after
+the different scores, you can now go further with prediction, or making plots.

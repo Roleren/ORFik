@@ -15,8 +15,9 @@ or GRangesList object}
 
 \item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file,
 if ThreeUtrs: a GrangesList of transcripts, called from:
-threeUTRsByTranscript(Gtf, use.names = T)
-@param RNA rna seq reads as GAlignment, GRanges
+threeUTRsByTranscript(Gtf, use.names = T)}
+
+\item{RNA}{rna seq reads as GAlignment, GRanges
 or GRangesList object}
 }
 \value{

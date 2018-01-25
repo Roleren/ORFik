@@ -9,9 +9,9 @@ fpkm(counts, lengthSize, librarySize)
 \arguments{
 \item{counts}{a list of integer counts per object}
 
-\item{librarySize}{A numeric of size 1, the size of the library}
+\item{lengthSize}{a list of integer lengths per object}
 
-\item{lengthSizeA}{a list of integer lengths per object}
+\item{librarySize}{a numeric of size 1, the size of the library}
 }
 \description{
 used in Translations efficiency calculations
