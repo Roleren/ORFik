@@ -7,9 +7,23 @@
 inFrameWithCDS(dists)
 }
 \arguments{
-\item{dists}{a vector of distances between ORF and cds
-Input of this function, is the output of the function distOrfToCds}
+\item{dists}{a vector of distances between ORF and cds}
 }
 \description{
-find frame for each orf relative to cds
+Input of this function, is the output of the function distOrfToCds
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

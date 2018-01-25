@@ -23,7 +23,7 @@ ORFik currently supports:
 
 # Introduction
 
-`ORFik` main usage is to get Open reading frames compatitable with Bioconductor's GenomicRanges package, combined with Ribo-seq and RNA-seq analysis.
+`ORFik` main usage is to get Open reading frames compatitable with Bioconductor's GenomicRanges package, combined with Ribo-seq, RNA-seq and cage-seq data.
 You can then get the features you want, and make various plots. 
 
 # Finding ORFs:
@@ -104,11 +104,13 @@ library(GenomicFeatures)
 
 # here we use example data from GenomicFeatures,
 # usually you have your own txdb object, a gtf file etc.
-
-samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "GenomicFeatures")
+  
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+                package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
 fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
-cageData <- "./cageData/heartCage.bed" # location of the cage file
+cageData <- system.file("extdata", "cage_data_heart.bed.bgz",
+                package = "ORFik") # location of the cage file
 extension <- 1000 # how much upstream of the original tss
 # can the new tss be ?
 filterValue <- 2 # filter for max cage-peak, how many reads must the max peak have
@@ -148,10 +150,13 @@ different mRNAs.
 
 # Features from ORFs
 
-ORFik contains a big feature set, things like FLOSS, coverage, ORFscore, entropy, 
-translational effiency, inside outside score, distance metrics, etc.
+ORFik contains a big feature set:
+FLOSS (?floss), coverage (?coverage) , ORFscore (?ORFScore), entropy (?entropy) , 
+translational effiency (?te), inside outside score (?insideOutsideScore),
+distance between orfs and cds' (?distOrfToCds) etc.
 All the features are justified with a reference to an article, i.g to see
 justification for floss, see ?floss
+
 
 Now lets do an example to get all features.
 
@@ -166,8 +171,12 @@ Hsapiens <- NULL # get this from the BSGenome example, a FaFile.
 txdb <-NULL # the gtf file as TxDb
 uORFs <- NULL # the uorfs from previous example
 fiveUTRs <- NULL # the original non cage 5' utrs
-RFP <- GenomicAlignments:::readGAlignments("./Ribo-seq-heart.bed") # can also be bam
-RNA <- GenomicAlignments:::readGAlignments("./RNA-seq-heart.bed") # can also be bam
+
+
+RFP <- import.bed(system.file("extdata", "ribo-seq-heart.bed.bgz",
+                package = "ORFik")) # can also be bam
+RNA <- import.bed(system.file("extdata", "rna-seq-heart.bed.bgz",
+                package = "ORFik")) # can also be bam
 # important thing  here! if RFP and RNA is not shifted for the p-site,
 # the scores will be wrong.
 # You can use ORFik to do this.

@@ -4,7 +4,9 @@
 #' @param counts a list of integer counts per object
 #' @param lengthSize a list of integer lengths per object
 #' @param librarySize a numeric of size 1, the size of the library
+#' @family features
 #' @export
+#' @return a numeric vector
 fpkm <- function(counts, lengthSize, librarySize){
   return((as.numeric(counts) * (10^9)) /
            (as.numeric(lengthSize) * as.numeric(librarySize)))
@@ -16,11 +18,11 @@ fpkm <- function(counts, lengthSize, librarySize){
 #'  tiled to size of 1. This subsetting takes account for strand.
 #' @param cov A coverage object from coverage()
 #' @param y GRanges object for which coverage should be extracted
-#' @return numeric vector of coverage of input GRanges object
+#' @family features
 #' @export
 #' @examples
 #' #subset_coverage(x)
-#'
+#' @return numeric vector of coverage of input GRanges object
 subset_coverage <- function(cov, y) {
   cov1 <- cov[[as.vector(seqnames(y)[1])]]
   return(as.vector(cov1[ranges(y)]))
@@ -34,6 +36,8 @@ subset_coverage <- function(cov, y) {
 #' @param grl a GRangesList that the reads can map to
 #' @param reads a GAlignment object, ig. from ribo seq, or rna seq,
 #'  can also be GRanges or GRangesList
+#' @family features
+#' @export
 #' @return A numeric vector containing entropy per ORF
 #'
 entropy <- function(grl, reads) {
@@ -154,8 +158,9 @@ entropy <- function(grl, reads) {
 #' Calculate Coverage of the input reads.
 #' @description What is percent of the vector covered by the values higher than zero?
 #' See article: 10.1002/embj.201488411
-#' @export
 #' @param countsOver A numerc vector
+#' @family features
+#' @export
 #' @return numeric value in between 0 and 1
 #'
 calculateCoverage <- function(countsOver) {
@@ -169,6 +174,8 @@ calculateCoverage <- function(countsOver) {
 #' @param cds a GRangesList of coding sequences
 #' @param start usually 26, the start of the floss interval
 #' @param end usually 34, the end of the floss interval
+#' @family features
+#' @export
 #' @return a vector of FLOSS of length same as grl
 floss <- function(grl, RFP, cds, start = 26, end = 34){
   #TODO: add 0 to the ones that dont hit
@@ -256,6 +263,9 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #'  if so, call:
 #'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders as GRangesList.
+#' @family features
+#' @export
+#' @return a numeric vector of fpkm ratios
 te <- function(grl, RNA, RFP, tx_len){
 
   libraryRna <- length(RNA)
@@ -293,6 +303,9 @@ te <- function(grl, RNA, RFP, tx_len){
 #'  if so, call:
 #'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders.
+#' @family features
+#' @export
+#' @return a numeric vector of ratios
 fractionLength <- function(grl, tx_len){
   grl_len <- widthPerGroup(grl, F)
   tx_len <- tx_len[OrfToTxNames(grl)]
@@ -311,6 +324,8 @@ fractionLength <- function(grl, tx_len){
 #' @param GtfOrTx if Gtf: a TxDb object of a gtf file,
 #'  if tx: a GrangesList of transcripts, called from:
 #'  exonsBy(Gtf, by = "tx", use.names = T)
+#' @family features
+#' @export
 #' @return a named vector of numeric values of scores
 disengagementScore <- function(grl, RFP, GtfOrTx){
   overlapGrl <- countOverlaps(grl, RFP) + 1
@@ -350,6 +365,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #'  threeUTRsByTranscript(Gtf, use.names = T)
 #' @param RNA rna seq reads as GAlignment, GRanges
 #'  or GRangesList object
+#' @family features
+#' @export
 #' @return a named vector of numeric values of scores
 RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   overlapGrl <- countOverlaps(grl, RFP) + 1
@@ -380,21 +397,10 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 
 #' Get all possible feature in ORFik
 #' @description If you want to get all the features easily, run this function.
-#' There are a lot of arguments, so make sure to input correct,
-#' that is: use grl = "yourgrl", RFP = "yourRFP" instead of
-#' "yourgrl", "yourRFP" etc.
-#' The easiest method to run is to include as this:
-#' allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
-#'  faFile = faFile, extension = 0)
-#' The other arguments will then be found by the Gtf file,
-#' and extension = 0 means
-#' you did not use cage to extend 5' utrs
 #' Each feature have a link to an article describing feature,
 #' try ?floss
 #' @param grl a GRangesList object with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
-#' @param orfFeatures a logical, is this features found on orf,
-#'  is grl a list of orfs?
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param RNA rna seq reads as GAlignment, GRanges
@@ -413,42 +419,35 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' @param extension needs to be set! set to 0 if you did not use cage
 #'  if you used cage to change tss' when finding the orfs, standard cage
 #'  extension is 1000
+#' @param orfFeatures a logical,  is the grl a list of orfs? Must be assigned.
 #' @importFrom data.table data.table
+#' @family features
 #' @export
 #' @return a data.table with scores, each column is one score type, name of
 #'  columns are the names of the scores, i.g floss or fpkmRFP.
-allFeatures <- function(grl, orfFeatures = T, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
+#' @examples
+#'  \dontrun{
+#'  #The easiest way to run the method is to include as this:
+#'  allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
+#'   faFile = faFile, extension = 0)
+#'  #The other arguments will then be found by the Gtf file,
+#'  #and extension = 0 means
+#'  #you did not use cage to extend 5' utrs
+#'  }
+allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                         fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
-                        faFile = NULL, riboStart = 26, riboStop = 34, extension = NULL){
+                        faFile = NULL, riboStart = 26, riboStop = 34,
+                        extension = NULL, orfFeatures = T){
   if(is.null(extension)) stop("please specify extension, to avoid bugs\n
                               ,if you did not use cage, set it to 0,\n
                               standard cage extension is 1000")
-
-  if(class(grl) != "GRangesList") stop("grl must be GRangesList")
-  if(class(RFP) != "GAlignments"){
-    if(class(RFP) != "GRanges"){
-      stop("RFP must be either GAlignments or GRanges")
-    }
-  }
-  if(is.null(RNA)){
-    message("No RNA added, skipping feature te and fpkm of RNA,\n
-            also RibosomeReleaseScore will also be not normalized best way possible.")
-  } else {
-    if(class(RNA) != "GAlignments"){
-      if(class(RNA) != "GRanges"){
-        stop("RNA must be either GAlignments or GRanges")
-      }
-    }
-  }
+  validGRL(class(grl), "grl")
+  checkRFP(class(RFP))
+  checkRNA(class(RNA))
   tx_len <- NULL
   if(is.null(Gtf)){
-
-    if(class(fiveUTRs) != "GRangesList") stop("fiveUTRs must be given\n
-                                              and be type GRangesList")
-    if(class(cds) != "GRangesList") stop("cds must be given\n
-                                         and be type GRangesList")
-    if(class(threeUTRs) != "GRangesList") stop("threeUTRs must be given\n
-                                               and be type GRangesList")
+    validGRL(c(class(fiveUTRs), class(cds), class(threeUTRs)),
+             c("fiveUTRs", "cds", "threeUTRs"))
     if(class(tx) != "GRangesList"){ stop("if Gtf is not given,\n
                              tx must be specified as a GRangesList")
     }
@@ -456,27 +455,20 @@ allFeatures <- function(grl, orfFeatures = T, RFP, RNA = NULL,  Gtf = NULL, tx =
     tx_len <- ORFik:::widthPerGroup(tx, TRUE)
   } else {
     if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
-    if(!is.null(fiveUTRs)){
-      if(class(fiveUTRs) != "GRangesList")
-        stop("fiveUTRs must be of type GRangesList")
-    } else {
+
+    included <- !validGRL(c(class(fiveUTRs), class(cds),
+                              class(threeUTRs), class(tx)), c("fiveUTRs",
+                                "cds", "threeUTRs", "tx"), TRUE)
+    if(included[1]){
       fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
     }
-    if(!is.null(cds)){
-      if(class(cds) != "GRangesList")
-        stop("cds must be of type GRangesList")
-    } else {
+    if(included[2]){
       cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
     }
-    if(!is.null(threeUTRs)){
-      if(class(threeUTRs) != "GRangesList")
-        stop("threeUTRs must be of type GRangesList")
-    } else {
+    if(included[3]){
       threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
     }
-    if(!is.null(tx)){
-      if(class(tx) != "GRangesList")
-        stop("fiveUTRs must be of type GRangesList")
+    if(included[4]){
       tx_len <- ORFik:::widthPerGroup(tx, TRUE)
     } else {
       tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
@@ -508,23 +500,17 @@ allFeatures <- function(grl, orfFeatures = T, RFP, RNA = NULL,  Gtf = NULL, tx =
     te <- ORFik:::te(grl, RNA, RFP, tx_len)
     scores$te <- te
   }
-
-
   if(orfFeatures){
-    ORFScores <- ORFik:::ORFScores(grl, RFP)
+    scores$ORFScores <- ORFik:::ORFScores(grl, RFP)
 
     if(class(faFile) == "FaFile"){
-      kozak <- ORFik:::grl = ORFik:::kozakSequenceScore(grl, faFile)
-      scores$kozak <- kozak
+      scores$kozak <-  ORFik:::grl = ORFik:::kozakSequenceScore(grl, faFile)
     } else { message("faFile not included, skipping kozak sequence score")}
     distORFCDS <- ORFik:::distOrfToCds(grl, fiveUTRs, cds, extension)
-    inFrameCDS <- ORFik:::inFrameWithCDS(distORFCDS)
-    isOverlappingCds <- ORFik:::isOverlappingCds(distORFCDS)
-    rankInTx <- ORFik:::OrfRankOrder(grl)
     scores$distORFCDS <- distORFCDS
-    scores$inFrameCDS <- inFrameCDS
-    scores$isOverlappingCds <- isOverlappingCds
-    scores$rankInTx <- rankInTx
+    scores$inFrameCDS <- ORFik:::inFrameWithCDS(distORFCDS)
+    scores$isOverlappingCds <- ORFik:::isOverlappingCds(distORFCDS)
+    scores$rankInTx <- ORFik:::OrfRankOrder(grl)
   } else {
     message("orfFeatures set to False, dropping all orf features.")
   }

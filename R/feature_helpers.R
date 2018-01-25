@@ -32,3 +32,24 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
   names(tx_len) <- tx_len_temp$tx_name
   return(tx_len)
 }
+
+#' Helper Function to check valid RNA input
+#' @param class, the given class of RNA object
+checkRNA <- function(class){
+  if(is.null(class)){
+    message("No RNA added, skipping feature te and fpkm of RNA,\n
+            also RibosomeReleaseScore will also be not normalized best way possible.")
+  } else {
+    if(class != "GAlignments" & class != "GRanges"){
+      stop("RNA must be either GAlignments or GRanges")
+    }
+  }
+}
+
+#' Helper Function to check valid RFP input
+#' @param class, the given class of RFP object
+checkRFP <- function(class){
+  if(class != "GAlignments" & class != "GRanges"){
+    stop("RFP must be either GAlignments or GRanges")
+  }
+}

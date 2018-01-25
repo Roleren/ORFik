@@ -13,6 +13,9 @@ kozakSequenceScore(grl, faFile, species = "human")
 
 \item{species}{which species to use, currently only support human}
 }
+\value{
+an integer vector, one score per orf
+}
 \description{
 The closer the sequence is to the kozak sequence
 The higher the score, based on simplification of PWM
@@ -20,4 +23,19 @@ score system: 4 upstream, 5 downstream of start
 CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
 CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
 Inspired by experimental bit values for each position
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

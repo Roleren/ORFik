@@ -37,10 +37,6 @@ library(ORFik)
 # get a feature-set from predicted orfs
 ?allFeatures
 
-# to be added:
-# By machine learning, rank the predicted
-# orfs, from the the feature set.
-
 # read vignette
 browseVignettes("ORFik")
 ```  

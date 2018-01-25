@@ -538,6 +538,34 @@ subset_to_stop <- function(x){
   }
 }
 
+#' Helper Function to check valid GRangesList input
+#' @param class as character vector the given class of
+#'  supposed GRangesList object
+#' @param type a character vector, is it gtf, cds, 5', 3', for messages.
+#' @param checNULL should NULL classes be checked and return indeces of these?
+validGRL <- function(class, type, checkNULL = FALSE){
+  if(length(class) != length(type)) stop("not equal length of classes\n
+                                         and types, see validGRL")
+  if(checkNULL){
+    indeces <-"NULL" == class
+
+    class <- class[!indeces]
+    type <- type[!indeces]
+  }
+
+  for(classI in 1:length(class)){
+    if(class[classI] != "GRangesList"){
+      messageI <- paste(type[classI], "must be given
+          and be type GRangesList")
+      stop(messageI)
+    }
+  }
+
+  if(checkNULL){
+    return(indeces)
+  }
+}
+
 #' source bioconductor
 #' @description helperfunction for quick update of bioconductor packages
 #' @param packages either NULL if only source and no update/install

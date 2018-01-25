@@ -28,8 +28,27 @@ if so, call:
 te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 where fiveUTRs are the changed cageLeaders as GRangesList.}
 }
+\value{
+a numeric vector of fpkm ratios
+}
 \description{
 Uses Rna-seq and Ribo-seq to get te of grl
 is defined as (density of RPFs within ORF)/(RNA expression).
 See article: 10.1126/science.1168978
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}
 }
