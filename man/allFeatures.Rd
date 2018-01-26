@@ -9,8 +9,9 @@ allFeatures(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = T)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
-cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
+\item{grl}{a GRangesList object with usually ORFs, but can also be
+either leaders, cds', 3' utrs or  ORFs are a special case,
+see argument tx_len}
 
 \item{RFP}{ribo seq reads as GAlignment, GRanges
 or GRangesList object}

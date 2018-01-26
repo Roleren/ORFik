@@ -194,7 +194,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
-  if(sum(ORFGrouping) == 0){
+  if(sum(as.numeric(ORFGrouping)) == 0){
     return(as.numeric(rep(0, length(grl))))
   }
   whichNoHit <- NULL
@@ -399,8 +399,9 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' @description If you want to get all the features easily, run this function.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
-#' @param grl a GRangesList object with usually either leaders,
-#'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param grl a GRangesList object with usually ORFs, but can also be
+#'  either leaders, cds', 3' utrs or  ORFs are a special case,
+#'  see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param RNA rna seq reads as GAlignment, GRanges
@@ -456,19 +457,19 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   } else {
     if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
 
-    included <- !validGRL(c(class(fiveUTRs), class(cds),
+    notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
                               class(threeUTRs), class(tx)), c("fiveUTRs",
                                 "cds", "threeUTRs", "tx"), TRUE)
-    if(included[1]){
+    if(notIncluded[1]){
       fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
     }
-    if(included[2]){
+    if(notIncluded[2]){
       cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
     }
-    if(included[3]){
+    if(notIncluded[3]){
       threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
     }
-    if(included[4]){
+    if(notIncluded[4]){
       tx_len <- ORFik:::widthPerGroup(tx, TRUE)
     } else {
       tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
@@ -479,7 +480,6 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
       }
     }
   }
-
 
   floss <- ORFik:::floss(grl, RFP,cds, riboStart, riboStop)
   entropyRFP <- ORFik:::entropy(grl, RFP)
