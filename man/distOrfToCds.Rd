@@ -15,12 +15,29 @@ distOrfToCds(ORFs, fiveUTRs, cds = NULL, extension = NULL)
 
 \item{extension}{needs to be set! set to 0 if you did not use cage
 if you used cage to change tss' when finding the orfs, standard cage
-extension is 1000
-@return an integer vector, +1 means one base upstream of cds, -1 means
- 2nd base in cds, 0 means orf stops at cds start.}
+extension is 1000}
+}
+\value{
+an integer vector, +1 means one base upstream of cds, -1 means
+  2nd base in cds, 0 means orf stops at cds start.
 }
 \description{
 matching is done by transcript names.
 fiveUTRs must be used to make transcript positions possible.
 The cds start site, will be presumed to be on + 1 of end of fiveUTRs
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

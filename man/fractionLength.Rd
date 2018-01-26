@@ -22,7 +22,25 @@ if so, call:
 te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 where fiveUTRs are the changed cageLeaders.}
 }
+\value{
+a numeric vector of ratios
+}
 \description{
 is defined as (length of grls)/(length of transcripts)
 see article: 10.1242/dev.098343
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

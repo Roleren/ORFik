@@ -25,7 +25,7 @@ cageFromFile <- function(filePath){
 
   if (.Platform$OS.type == "unix") {
     if (file.exists(filePath)) {
-      if (gsub(pattern = ".*\\.", "", filePath) == "gzip"){
+      if (any(gsub(pattern = ".*\\.", "", filePath) == c("gzip", "gz", "bgz"))){
         rawCage <- bedToGR(as.data.frame(
           fread(paste("gunzip -c", filePath), sep = "\t")))
       } else if (gsub(pattern = ".*\\.", "", filePath) == "bed"){

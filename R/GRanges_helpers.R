@@ -362,7 +362,8 @@ assignFirstExonsStartSite <- function(grl, newStarts){
 #'  since stop of "-" strand objects should be the
 #'  min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a GRangesList object
-#' @param newStarts an integer vector of same length as grl, with new start values
+#' @param newStops an integer vector of same length as grl,
+#'  with new start values
 assignLastExonsStopSite <- function(grl, newStops){
   if(length(grl) != length(newStops)) stop("length of grl and newStops \n
                                            are not equal!")
@@ -424,7 +425,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
 #' @param tx a GRangesList, usually of Transcripts to be changed
-#' @param downstreamOf a vector of integers, for each group in tx, where
+#' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new start point of first valid exon.
 upstreamOfPerGroup <- function(tx, upstreamOf){
   posIndeces <- strandBool(tx)
@@ -534,6 +535,34 @@ subset_to_stop <- function(x){
     x[c(length(x) - 3, length(x) - 4, length(x) - 5)]
   } else {
     x[c(4, 5, 6)]
+  }
+}
+
+#' Helper Function to check valid GRangesList input
+#' @param class as character vector the given class of
+#'  supposed GRangesList object
+#' @param type a character vector, is it gtf, cds, 5', 3', for messages.
+#' @param checNULL should NULL classes be checked and return indeces of these?
+validGRL <- function(class, type, checkNULL = FALSE){
+  if(length(class) != length(type)) stop("not equal length of classes\n
+                                         and types, see validGRL")
+  if(checkNULL){
+    indeces <-"NULL" == class
+
+    class <- class[!indeces]
+    type <- type[!indeces]
+  }
+
+  for(classI in 1:length(class)){
+    if(class[classI] != "GRangesList"){
+      messageI <- paste(type[classI], "must be given
+          and be type GRangesList")
+      stop(messageI)
+    }
+  }
+
+  if(checkNULL){
+    return(indeces)
   }
 }
 

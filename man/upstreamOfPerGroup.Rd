@@ -9,7 +9,7 @@ upstreamOfPerGroup(tx, upstreamOf)
 \arguments{
 \item{tx}{a GRangesList, usually of Transcripts to be changed}
 
-\item{downstreamOf}{a vector of integers, for each group in tx, where
+\item{upstreamOf}{a vector of integers, for each group in tx, where
 is the new start point of first valid exon.}
 }
 \description{

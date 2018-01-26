@@ -15,8 +15,9 @@ or GRangesList object}
 
 \item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file,
 if ThreeUtrs: a GrangesList of transcripts, called from:
-threeUTRsByTranscript(Gtf, use.names = T)
-@param RNA rna seq reads as GAlignment, GRanges
+threeUTRsByTranscript(Gtf, use.names = T)}
+
+\item{RNA}{rna seq reads as GAlignment, GRanges
 or GRangesList object}
 }
 \value{
@@ -29,4 +30,18 @@ normalized by lengths
 to justify location of 3' utrs
 A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1016/j.cell.2013.06.009
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}}, \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

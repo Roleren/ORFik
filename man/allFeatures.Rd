@@ -4,17 +4,18 @@
 \alias{allFeatures}
 \title{Get all possible feature in ORFik}
 \usage{
-allFeatures(grl, orfFeatures = T, RFP, RNA = NULL, Gtf = NULL,
-  tx = NULL, fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
-  faFile = NULL, riboStart = 26, riboStop = 34, extension = NULL)
+allFeatures(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
+  fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
+  riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = T)
 }
 \arguments{
 \item{grl}{a GRangesList object with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{RFP}{ribo seq reads as GAlignment, GRanges
-or GRangesList object
-@param RNA rna seq reads as GAlignment, GRanges
+or GRangesList object}
+
+\item{RNA}{rna seq reads as GAlignment, GRanges
 or GRangesList object}
 
 \item{Gtf}{a TxDb object of a gtf file,}
@@ -39,6 +40,8 @@ normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 \item{extension}{needs to be set! set to 0 if you did not use cage
 if you used cage to change tss' when finding the orfs, standard cage
 extension is 1000}
+
+\item{orfFeatures}{a logical,  is the grl a list of orfs? Must be assigned.}
 }
 \value{
 a data.table with scores, each column is one score type, name of
@@ -46,15 +49,31 @@ a data.table with scores, each column is one score type, name of
 }
 \description{
 If you want to get all the features easily, run this function.
-There are a lot of arguments, so make sure to input correct,
-that is: use grl = "yourgrl", RFP = "yourRFP" instead of
-"yourgrl", "yourRFP" etc.
-The easiest method to run is to include as this:
-allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
- faFile = faFile, extension = 0)
-The other arguments will then be found by the Gtf file,
-and extension = 0 means
-you did not use cage to extend 5' utrs
 Each feature have a link to an article describing feature,
 try ?floss
+}
+\examples{
+ \dontrun{
+ #The easiest way to run the method is to include as this:
+ allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
+  faFile = faFile, extension = 0)
+ #The other arguments will then be found by the Gtf file,
+ #and extension = 0 means
+ #you did not use cage to extend 5' utrs
+ }
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

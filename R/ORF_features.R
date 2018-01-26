@@ -6,6 +6,8 @@
 #' @param grl a GRangesList object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
+#' @family features
+#' @export
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
 ORFScores <- function(grl, RFP){
@@ -63,7 +65,9 @@ ORFScores <- function(grl, RFP){
 #' @param extension needs to be set! set to 0 if you did not use cage
 #'  if you used cage to change tss' when finding the orfs, standard cage
 #'  extension is 1000
-#'  @return an integer vector, +1 means one base upstream of cds, -1 means
+#' @family features
+#' @export
+#' @return an integer vector, +1 means one base upstream of cds, -1 means
 #'   2nd base in cds, 0 means orf stops at cds start.
 distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
   if (class(ORFs) != "GRangesList") stop("ORFs must be GRangesList Object")
@@ -107,6 +111,9 @@ distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' @param grl a GRangesList grouped by ORF
 #' @param faFile a FaFile from the fasta file, see ?FaFile
 #' @param species which species to use, currently only support human
+#' @family features
+#' @export
+#' @return an integer vector, one score per orf
 kozakSequenceScore <- function(grl, faFile, species = "human"){
   firstExons <- firstExonPerGroup(grl)
   kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
@@ -175,6 +182,8 @@ kozakSequenceScore <- function(grl, faFile, species = "human"){
 #'  if tx: a GrangesList of transcripts, called from:
 #'  exonsBy(Gtf, by = "tx", use.names = T)
 #' @importFrom data.table rbindlist
+#' @family features
+#' @export
 #' @return a named vector of numeric values of scores
 insideOutsideORF <- function(grl, RFP, GtfOrTx){
   overlapGrl <- countOverlaps(grl, RFP) + 1
@@ -208,15 +217,21 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 }
 
 #' find frame for each orf relative to cds
-#' @param dists a vector of distances between ORF and cds
+#'
 #' Input of this function, is the output of the function distOrfToCds
+#' @param dists a vector of distances between ORF and cds
+#' @family features
+#' @export
 inFrameWithCDS <- function(dists){
   return(dists %% 3)
 }
 
-#' find for each orf if it overlaps cds range
-#' @param dists a vector of distances between ORF and cds
+#' find frame for each orf relative to cds
+#'
 #' Input of this function, is the output of the function distOrfToCds
+#' @param dists a vector of distances between ORF and cds
+#' @family features
+#' @export
 isOverlappingCds <- function(dists){
   return(dists < 0)
 }
@@ -224,6 +239,8 @@ isOverlappingCds <- function(dists){
 #' Get the orf rank in transcripts
 #' @description ig. second orf _2 -> 2
 #' @param grl a GRangesList object with ORFs
+#' @family features
+#' @export
 OrfRankOrder <- function(grl){
   gr <- unlist(grl, use.names = FALSE)
 

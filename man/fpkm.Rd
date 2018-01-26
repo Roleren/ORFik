@@ -9,10 +9,28 @@ fpkm(counts, lengthSize, librarySize)
 \arguments{
 \item{counts}{a list of integer counts per object}
 
-\item{librarySize}{A numeric of size 1, the size of the library}
+\item{lengthSize}{a list of integer lengths per object}
 
-\item{lengthSizeA}{a list of integer lengths per object}
+\item{librarySize}{a numeric of size 1, the size of the library}
+}
+\value{
+a numeric vector
 }
 \description{
 used in Translations efficiency calculations
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }

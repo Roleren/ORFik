@@ -28,8 +28,14 @@ After installation run:
 ```r
 library(ORFik)
 
+# Tissue specific 5' utrs using cage-data
+?reassignTSSbyCage
+
 # Detecting open reading frames
 ?find_in_frame_ORFs
+
+# get a feature-set from predicted orfs
+?allFeatures
 
 # read vignette
 browseVignettes("ORFik")

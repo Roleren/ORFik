@@ -16,3 +16,18 @@ numeric value in between 0 and 1
 What is percent of the vector covered by the values higher than zero?
 See article: 10.1002/embj.201488411
 }
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{isOverlappingCds}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
+}

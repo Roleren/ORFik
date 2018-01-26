@@ -2,14 +2,28 @@
 % Please edit documentation in R/ORF_features.R
 \name{isOverlappingCds}
 \alias{isOverlappingCds}
-\title{find for each orf if it overlaps cds range}
+\title{find frame for each orf relative to cds}
 \usage{
 isOverlappingCds(dists)
 }
 \arguments{
-\item{dists}{a vector of distances between ORF and cds
-Input of this function, is the output of the function distOrfToCds}
+\item{dists}{a vector of distances between ORF and cds}
 }
 \description{
-find for each orf if it overlaps cds range
+Input of this function, is the output of the function distOrfToCds
+}
+\seealso{
+Other features: \code{\link{ORFScores}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeReleaseScore}},
+  \code{\link{allFeatures}},
+  \code{\link{calculateCoverage}},
+  \code{\link{disengagementScore}},
+  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
+  \code{\link{inFrameWithCDS}},
+  \code{\link{insideOutsideORF}},
+  \code{\link{kozakSequenceScore}},
+  \code{\link{subset_coverage}}, \code{\link{te}}
 }
