@@ -53,3 +53,19 @@ checkRFP <- function(class){
     stop("RFP must be either GAlignments or GRanges")
   }
 }
+
+#' Helper function to check valid combinations of extension and cageFiveUTRs
+#' @param extension a numeric/integer to reassign 5' utrs.
+#' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
+validExtension <- function(extension, cageFiveUTRs){
+  if(is.null(extension)){
+    stop("please specify extension, to avoid bugs\n
+                              ,if you did not use cage, set it to 0,\n
+                              standard cage extension is 1000")
+  } else if(!is.numeric(extension) && !is.integer(extension)){
+      stop("extension must be numeric or integer")
+  }
+  if(extension != 0 && class(cageFiveUTRs) != "GRangesList"){
+    stop("if extension is not 0, then cageFiveUTRs must be defined")
+  }
+}

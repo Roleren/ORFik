@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{lastExonStartPerGroup}
 \alias{lastExonStartPerGroup}
-\title{get last end per granges group}
+\title{get last start per granges group}
 \usage{
 lastExonStartPerGroup(grl, keep.names = T)
 }
@@ -12,5 +12,5 @@ lastExonStartPerGroup(grl, keep.names = T)
 \item{keep.names}{a boolean, keep names or not}
 }
 \description{
-get last end per granges group
+get last start per granges group
 }

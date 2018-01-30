@@ -12,6 +12,9 @@ cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{tx_len}{the transcript lengths of the transcripts
 a named (tx names) vector of integers.
+If you have the transcripts as GRangesList,
+call ORFik:::widthPerGroup(tx, T)
+If not:
 Normally you call argument as: tx_len = txLen(Gtf)
 fractionLength(grl, tx_len = txLen(Gtf))
 See ?ORFik:::txLen

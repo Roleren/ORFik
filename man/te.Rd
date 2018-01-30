@@ -4,7 +4,7 @@
 \alias{te}
 \title{Translational efficiency}
 \usage{
-te(grl, RNA, RFP, tx_len)
+te(grl, RNA, RFP, tx_len, with.fpkm = F)
 }
 \arguments{
 \item{grl}{a GRangesList object with usually either leaders,
@@ -17,7 +17,10 @@ or GRangesList object}
 or GRangesList object}
 
 \item{tx_len}{the transcript lengths of the transcripts
-a named (tx names) vector.
+a named (tx names) vector of integers.
+If you have the transcripts as GRangesList,
+call ORFik:::widthPerGroup(tx, T)
+If not:
 Normally you call argument as: tx_len = txLen(Gtf)
 fractionLength(grl, tx_len = txLen(Gtf))
 See ?ORFik:::txLen
@@ -26,10 +29,13 @@ the tss for the the leaders have changed,
 therefor the tx lengths have changed,
 if so, call:
 te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
-where fiveUTRs are the changed cageLeaders as GRangesList.}
+where fiveUTRs are the changed cageLeaders.}
+
+\item{with.fpkm}{logical F, if true return the fpkm values together with te}
 }
 \value{
-a numeric vector of fpkm ratios
+a numeric vector of fpkm ratios, if with.fpkm is TRUE
+ ,return a data.table with te and fpkm values
 }
 \description{
 Uses Rna-seq and Ribo-seq to get te of grl

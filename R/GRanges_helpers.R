@@ -180,7 +180,7 @@ lastExonEndPerGroup = function(grl,keep.names = T){
   }
 }
 
-#' get last end per granges group
+#' get last start per granges group
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 lastExonStartPerGroup = function(grl, keep.names = T){
@@ -405,9 +405,9 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
   downTx[posIndeces] <- posTx
   downTx[!posIndeces] <- negTx
   #check if anyone hits boundary, set those to boundary
-  if(anyNA(ORFik:::strandPerGroup(downTx, F))){
-    boundaryHits <- which(is.na(ORFik:::strandPerGroup(downTx, F)))
-    downTx[boundaryHits] <- ORFik:::firstExonPerGroup(tx[boundaryHits])
+  if(anyNA(strandPerGroup(downTx, F))){
+    boundaryHits <- which(is.na(strandPerGroup(downTx, F)))
+    downTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
     ir <- IRanges(start = downstreamOf[boundaryHits],
                     end = downstreamOf[boundaryHits])
     irl <- split(ir, 1:length(ir))
@@ -461,18 +461,28 @@ upstreamOfPerGroup <- function(tx, upstreamOf){
 #'  Remember to sort it, if not sorted beforehand.
 #'  use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a GRangesList of 5' utrs or transcripts..
-#' @param extension an integer, how much to extend the leaders
+#' @param extension an integer, how much to extend the leaders.
+#'  Or a GRangesList where start / stops by strand are the positions
+#'  to use as new starts.
 #' @param cds If you want to extend 5' leaders downstream, to catch
 #'  upstream ORFs going into cds, include it. It will add first
 #'  cds exon to grl matched by names.
+#'  Do not add for transcripts, as they are already included.
 extendLeaders <- function(grl, extension = 1000, cds = NULL){
-
-  posIndeces <- strandBool(grl)
-  promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
-    upstream = extension)
-  newStarts <- rep(NA, length(grl))
-  newStarts[posIndeces] <- as.integer(start(promo[posIndeces]))
-  newStarts[!posIndeces] <- as.integer(end(promo[!posIndeces]))
+  if(class(extension) == "numeric" && length(extension) == 1){
+    posIndeces <- strandBool(grl)
+    promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
+      upstream = extension)
+    newStarts <- rep(NA, length(grl))
+    newStarts[posIndeces] <- as.integer(start(promo[posIndeces]))
+    newStarts[!posIndeces] <- as.integer(end(promo[!posIndeces]))
+  } else if(is.grl(class(grl))){
+    starts <- ORFStartSites(extension)
+    changedGRL <-downstreamOfPerGroup(grl[names(extension)], starts)
+    return(changedGRL)
+  } else {
+    stop("extension must either be an integer, or a GRangesList")
+  }
 
   extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
   if(is.null(cds)) return (extendedLeaders)
@@ -520,7 +530,6 @@ subset_to_frame <- function(x, frame){
   }
 }
 
-
 #' Subset GRanges to get stop codons. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
@@ -538,6 +547,17 @@ subset_to_stop <- function(x){
   }
 }
 
+#' Helper function to check for GRangesList
+#' @param class the class you want to check if is GRL
+#' @return a boolean
+is.grl <- function(class){
+  if(class == "GRangesList"){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
 #' Helper Function to check valid GRangesList input
 #' @param class as character vector the given class of
 #'  supposed GRangesList object
@@ -550,17 +570,19 @@ validGRL <- function(class, type, checkNULL = FALSE){
     indeces <-"NULL" == class
 
     class <- class[!indeces]
+    if(length(class) == 0){
+      return(rep(T, length(type)))
+    }
     type <- type[!indeces]
-  }
 
+  }
   for(classI in 1:length(class)){
-    if(class[classI] != "GRangesList"){
+    if(!is.grl(class[classI])){
       messageI <- paste(type[classI], "must be given
           and be type GRangesList")
       stop(messageI)
     }
   }
-
   if(checkNULL){
     return(indeces)
   }
