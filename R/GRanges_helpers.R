@@ -332,7 +332,7 @@ asTX <- function(grl, reference){
 #' @param is.sorted a speedup, if you know the ranges are sorted
 txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   if(class(faFile) != "FaFile") stop("only FaFile is valid input")
-  if(!isSorted) grl <- sortPerGroup(grl)
+  if(!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 

@@ -118,7 +118,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human"){
   firstExons <- firstExonPerGroup(grl)
   kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
 
-  sequences <- as.character(txSeqsFromFa(grl, faFile))
+  sequences <- as.character(txSeqsFromFa(grl, faFile, is.sorted = TRUE))
   names(sequences) <- NULL
   scores <- rep(0, length(sequences))
   if(species == "human"){
