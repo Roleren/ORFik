@@ -18,6 +18,8 @@ fpkm <- function(counts, lengthSize, librarySize){
 #'  see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
+#' @family features
+#' @export
 #' @return a numeric vector with the fpkm values
 fpkmRFP <- function(grl, RFP, pseudoCount = 0){
 
@@ -51,6 +53,8 @@ fpkmRFP <- function(grl, RFP, pseudoCount = 0){
 #'  if so, call:
 #'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders.
+#' @family features
+#' @export
 #' @return a numeric vector with the fpkm values
 fpkmRNA <- function(grl, RNA, tx_len, pseudoCount = 0){
 
@@ -432,29 +436,37 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #'  or GRangesList object
 #' @family features
 #' @export
-#' @return a named vector of numeric values of scores
+#' @return a named vector of numeric values of scores, NA means that
+#'  no 3' utr was found for that transcript.
 RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
-  overlapGrl <- countOverlaps(grl, RFP) + 1
-
   if(class(GtfOrThreeUtrs) == "TxDb"){
-    threeUtrs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
+    threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
                                         use.names = T)
   } else if(class(GtfOrThreeUtrs) == "GRangesList") {
-    threeUtrs <- GtfOrThreeUtrs
+    threeUTRs <- GtfOrThreeUtrs
   } else {
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
   }
-  threeUtrs <- threeUtrs[OrfToTxNames(grl, F)]
+  # check that naming is correct, else change it.
+  orfNames <- ORFik:::OrfToTxNames(grl, F)
+  validNamesThree <- names(threeUTRs) %in% orfNames
+  validNamesGRL <- orfNames %in% names(threeUTRs)
+  rrs <- rep(NA,length(grl))
+  if(sum(validNamesGRL) != length(grl)){
+    threeUTRs <- threeUTRs[validNamesThree]
+    grl <- grl[validNamesGRL]
+  }
+  overlapGrl <- countOverlaps(grl, RFP) + 1
+  threeUTRs <- threeUTRs[orfNames[validNamesGRL]]
+  overlapThreeUtrs <- countOverlaps(threeUTRs, RFP) + 1
 
-
-  overlapThreeUtrs <- countOverlaps(threeUtrs, RFP) + 1
-  rrs <- (overlapGrl / widthPerGroup(grl)) /
-    (overlapThreeUtrs /  widthPerGroup(threeUtrs))
+  rrs[validNamesGRL] <- (overlapGrl / ORFik:::widthPerGroup(grl)) /
+    (overlapThreeUtrs /  ORFik:::widthPerGroup(threeUTRs))
 
   if(!is.null(RNA)){ # normalize by rna ratio
     rnaRatio <- (countOverlaps(grl, RNA) + 1) /
-      (countOverlaps(threeUtrs, RNA) + 1)
-    rrs <- rrs / rnaRatio
+      (countOverlaps(threeUTRs, RNA) + 1)
+    rrs[validNamesGRL] <- rrs[validNamesGRL] / rnaRatio
   }
   names(rrs) <- NULL
   return(rrs)

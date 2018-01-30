@@ -21,7 +21,8 @@ threeUTRsByTranscript(Gtf, use.names = T)}
 or GRangesList object}
 }
 \value{
-a named vector of numeric values of scores
+a named vector of numeric values of scores, NA means that
+ no 3' utr was found for that transcript.
 }
 \description{
 is defined as (RPFs over ORF)/(RPFs over 3' utrs).
@@ -37,7 +38,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
+  \code{\link{floss}}, \code{\link{fpkmRFP}},
+  \code{\link{fpkmRNA}}, \code{\link{fpkm}},
   \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
