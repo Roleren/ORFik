@@ -576,7 +576,7 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     scores$ORFScores <- ORFik:::ORFScores(grl, RFP)$ORFscore
 
     if(class(faFile) == "FaFile"){
-      scores$kozak <-  ORFik:::grl = ORFik:::kozakSequenceScore(grl, faFile)
+      scores$kozak <- ORFik:::kozakSequenceScore(grl, faFile)
     } else { message("faFile not included, skipping kozak sequence score")}
     distORFCDS <- ORFik:::distOrfToCds(grl, fiveUTRs, cds, extension)
     scores$distORFCDS <- distORFCDS
