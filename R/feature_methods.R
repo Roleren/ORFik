@@ -239,11 +239,10 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   }
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
-  rfpMatch <- RFP[to(overlaps)]
   if(class(RFP) == "GRanges"){
-    rfpWidth <- width(rfpMatch)
+    rfpWidth <- width(RFP[to(overlaps)])
   } else {
-    rfpWidth <- qwidth(rfpMatch)
+    rfpWidth <- qwidth(RFP[to(overlaps)])
   }
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
@@ -251,9 +250,10 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   if(sum(as.numeric(ORFGrouping)) == 0){
     return(as.numeric(rep(0, length(grl))))
   }
-  whichNoHit <- NULL
+  whichNoHit <- NULL # which ribo-seq did not hit grl
   if(length(unique(ORFGrouping)) != length(grl)){
-    whichNoHit <- S4Vectors::setdiff.Vector(1:4, unique(ORFGrouping))
+    whichNoHit <- S4Vectors::setdiff.Vector(1:length(grl),
+                                            unique(ORFGrouping))
   }
   orfFractions <- split(rfpValidMatch, ORFGrouping)
   listing<- IRanges::RleList(orfFractions)
@@ -265,11 +265,10 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 
   # for cds
   overlapsCds <- findOverlaps(cds, RFP)
-  rfpMatch <- RFP[to(overlapsCds)]
   if(class(RFP) == "GRanges"){
-    rfpWidth <- width(rfpMatch)
+    rfpWidth <- width(RFP[to(overlapsCds)])
   } else {
-    rfpWidth <- qwidth(rfpMatch)
+    rfpWidth <- qwidth(RFP[to(overlapsCds)])
   }
 
   rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
