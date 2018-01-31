@@ -21,9 +21,6 @@ a named (tx names) vector of integers.
 If you have the transcripts as GRangesList,
 call ORFik:::widthPerGroup(tx, T)
 If not:
-Normally you call argument as: tx_len = txLen(Gtf)
-fractionLength(grl, tx_len = txLen(Gtf))
-See ?ORFik:::txLen
 NB!!! if you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,

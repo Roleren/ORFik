@@ -316,7 +316,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 13)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
@@ -324,7 +324,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 13)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
@@ -332,7 +332,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 13)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
@@ -340,7 +340,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 13)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
 })

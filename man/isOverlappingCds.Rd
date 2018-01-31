@@ -11,6 +11,7 @@ isOverlappingCds(dists)
 }
 \description{
 Input of this function, is the output of the function distOrfToCds
+See article:  10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

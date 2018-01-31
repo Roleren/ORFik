@@ -28,5 +28,5 @@ Given a GRangesList of 5' utrs, reassign the start postitions.
  A max peak must also be greater that the cage peak cutoff specified
  in filterValue
  The new TSS will then be the position of the cage read,
-  with highest read count in the interval.
+ with highest read count in the interval.
 }

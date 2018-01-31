@@ -1,6 +1,6 @@
 
-#' Creates normalizations of the counts, normally,
-#' @description used in Translations efficiency calculations
+#' Create normalizations of counts
+#' @description Normally used in Translations efficiency calculations
 #' @param counts a list of integer counts per object
 #' @param lengthSize a list of integer lengths per object
 #' @param librarySize a numeric of size 1, the size of the library
@@ -33,7 +33,7 @@ fpkmRFP <- function(grl, RFP, pseudoCount = 0){
   return(fpkm(overlapRFP, grl_len, libraryRPF) + pseudoCount)
 }
 
-#' Get fpkm of ribo-seq data
+#' Get fpkm of RNA-seq data
 #' @param grl a GRangesList object with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,
 #'  see argument tx_len
@@ -44,9 +44,6 @@ fpkmRFP <- function(grl, RFP, pseudoCount = 0){
 #'  If you have the transcripts as GRangesList,
 #'  call ORFik:::widthPerGroup(tx, T)
 #'  If not:
-#'  Normally you call argument as: tx_len = txLen(Gtf)
-#'  fractionLength(grl, tx_len = txLen(Gtf))
-#'  See ?ORFik:::txLen
 #'  NB!!! if you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
@@ -314,9 +311,6 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #'  If you have the transcripts as GRangesList,
 #'  call ORFik:::widthPerGroup(tx, T)
 #'  If not:
-#'  Normally you call argument as: tx_len = txLen(Gtf)
-#'  fractionLength(grl, tx_len = txLen(Gtf))
-#'  See ?ORFik:::txLen
 #'  NB!!! if you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
@@ -363,9 +357,6 @@ te <- function(grl, RNA, RFP, tx_len, with.fpkm = F){
 #'  If you have the transcripts as GRangesList,
 #'  call ORFik:::widthPerGroup(tx, T)
 #'  If not:
-#'  Normally you call argument as: tx_len = txLen(Gtf)
-#'  fractionLength(grl, tx_len = txLen(Gtf))
-#'  See ?ORFik:::txLen
 #'  NB!!! if you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
@@ -578,6 +569,7 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     if(class(faFile) == "FaFile"){
       scores$kozak <- ORFik:::kozakSequenceScore(grl, faFile)
     } else { message("faFile not included, skipping kozak sequence score")}
+    scores$ioScore <- ORFik:::insideOutsideORF(grl, RFP, tx)
     distORFCDS <- ORFik:::distOrfToCds(grl, fiveUTRs, cds, extension)
     scores$distORFCDS <- distORFCDS
     scores$inFrameCDS <- ORFik:::inFrameWithCDS(distORFCDS)

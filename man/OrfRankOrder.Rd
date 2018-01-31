@@ -12,6 +12,9 @@ OrfRankOrder(grl)
 \description{
 ig. second orf _2 -> 2
 }
+\details{
+See article:  10.1074/jbc.R116.733899
+}
 \seealso{
 Other features: \code{\link{ORFScores}},
   \code{\link{RibosomeReleaseScore}},

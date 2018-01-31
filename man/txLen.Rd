@@ -7,8 +7,7 @@
 txLen(Gtf = NULL, changedFiveUTRs = NULL)
 }
 \arguments{
-\item{Gtf}{a TxDb object of a gtf file
-NB! only add this if you dont use tx argument}
+\item{Gtf}{a TxDb object of a gtf file}
 
 \item{changedFiveUTRs}{a GRangesList object of leaders.
 NB! only add this if you used cage data or other things to change the

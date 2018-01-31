@@ -25,6 +25,7 @@ an integer vector, +1 means one base upstream of cds, -1 means
 matching is done by transcript names.
 fiveUTRs must be used to make transcript positions possible.
 The cds start site, will be presumed to be on + 1 of end of fiveUTRs
+See article:  10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

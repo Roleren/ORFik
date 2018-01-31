@@ -12,7 +12,6 @@ findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
 #'
 #' A helper function for easy length retrieval
 #' @param Gtf a TxDb object of a gtf file
-#'  NB! only add this if you dont use tx argument
 #' @param changedFiveUTRs a GRangesList object of leaders.
 #'  NB! only add this if you used cage data or other things to change the
 #'  leaders, therefor we need it to update transcript lengths.

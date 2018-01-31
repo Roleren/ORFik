@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{fpkm}
 \alias{fpkm}
-\title{Creates normalizations of the counts, normally,}
+\title{Create normalizations of counts}
 \usage{
 fpkm(counts, lengthSize, librarySize)
 }
@@ -17,7 +17,7 @@ fpkm(counts, lengthSize, librarySize)
 a numeric vector
 }
 \description{
-used in Translations efficiency calculations
+Normally used in Translations efficiency calculations
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

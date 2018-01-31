@@ -69,13 +69,17 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
     for(i in normalChrInd){
       seqlevels(filteredCage)[i] <- sub(regexNormalChr, normalChr[i], cageSeqlevels[i])
     }
-    if (length(grep("chrY", fiveSeqlevels)) == 0)
-      seqlevels(filteredCage) <- sub("chrY", "Y", seqlevels(filteredCage))
-    if (length(grep("chrX", fiveSeqlevels)) == 0)
-      seqlevels(filteredCage) <- sub("chrX", "X", seqlevels(filteredCage))
-    if (length(grep("chrM", fiveSeqlevels)) == 0)
-      seqlevels(filteredCage) <- sub("chrM", "MT", seqlevels(filteredCage))
   }
+  if (length(grep("chrY", fiveSeqlevels)) == 0 &&
+        length(grep("chrY", cageSeqlevels)) != 0)
+    seqlevels(filteredCage) <- sub("chrY", "Y", seqlevels(filteredCage))
+  if (length(grep("chrX", fiveSeqlevels)) == 0 &&
+        length(grep("chrX", cageSeqlevels)) != 0)
+    seqlevels(filteredCage) <- sub("chrX", "X", seqlevels(filteredCage))
+  if (length(grep("chrM", fiveSeqlevels)) == 0 &&
+        length(grep("chrM", cageSeqlevels)) != 0)
+    seqlevels(filteredCage) <- sub("chrM", "MT", seqlevels(filteredCage))
+
   return(filteredCage)
 }
 
@@ -212,7 +216,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #'  A max peak must also be greater that the cage peak cutoff specified
 #'  in filterValue
 #'  The new TSS will then be the position of the cage read,
-#'   with highest read count in the interval.
+#'  with highest read count in the interval.
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param cage Either a  filePath for cage-file, or already loaded R-object as GRanges
 #' @param extension The maximum number of basses upstream the

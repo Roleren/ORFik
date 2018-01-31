@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{fpkmRNA}
 \alias{fpkmRNA}
-\title{Get fpkm of ribo-seq data}
+\title{Get fpkm of RNA-seq data}
 \usage{
 fpkmRNA(grl, RNA, tx_len, pseudoCount = 0)
 }
@@ -19,9 +19,6 @@ a named (tx names) vector of integers.
 If you have the transcripts as GRangesList,
 call ORFik:::widthPerGroup(tx, T)
 If not:
-Normally you call argument as: tx_len = txLen(Gtf)
-fractionLength(grl, tx_len = txLen(Gtf))
-See ?ORFik:::txLen
 NB!!! if you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
@@ -33,7 +30,7 @@ where fiveUTRs are the changed cageLeaders.}
 a numeric vector with the fpkm values
 }
 \description{
-Get fpkm of ribo-seq data
+Get fpkm of RNA-seq data
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

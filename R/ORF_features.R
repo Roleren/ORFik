@@ -11,10 +11,8 @@
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
 ORFScores <- function(grl, RFP){
-
-  sortedTilex <- tile1(grl)
-
-  dt <- as.data.table(sortedTilex)
+  # tile the orfs into a d.t for easy seperation
+  dt <- as.data.table(tile1(grl))
 
   group <- NULL
   # seperate the three tiles, by the 3 frames
@@ -27,7 +25,6 @@ ORFScores <- function(grl, RFP){
   tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
   grl3 <- makeGRangesListFromDataFrame(tilex2,
     split.field = "group", names.field = "group_name")
-
 
   countsTile1 <- countOverlaps(grl1, RFP)
   countsTile2 <- countOverlaps(grl2, RFP)
@@ -59,6 +56,7 @@ ORFScores <- function(grl, RFP){
 #' @description matching is done by transcript names.
 #' fiveUTRs must be used to make transcript positions possible.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs
+#' See article:  10.1074/jbc.R116.733899
 #' @param ORFs orfs as GRangesList, names of orfs must be transcript names
 #' @param fiveUTRs fiveUTRs as GRangesList, must be original unchanged fiveUTRs
 #' @param cds cds' as GRangesList, only add if you used cage extension
@@ -219,6 +217,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 #' find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function distOrfToCds
+#' See article:  10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @export
@@ -229,6 +228,7 @@ inFrameWithCDS <- function(dists){
 #' find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function distOrfToCds
+#' See article:  10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @export
@@ -237,6 +237,8 @@ isOverlappingCds <- function(dists){
 }
 
 #' Get the orf rank in transcripts
+#'
+#' See article:  10.1074/jbc.R116.733899
 #' @description ig. second orf _2 -> 2
 #' @param grl a GRangesList object with ORFs
 #' @family features
