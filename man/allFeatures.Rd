@@ -10,7 +10,8 @@ allFeatures(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   cageFiveUTRs = NULL)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually ORFs, but can also be
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+with usually ORFs, but can also be
 either leaders, cds', 3' utrs or  ORFs are a special case,
 see argument tx_len}
 
@@ -51,7 +52,8 @@ include this, also extension must match with the extension used for these.}
 }
 \value{
 a data.table with scores, each column is one score type, name of
- columns are the names of the scores, i.g floss or fpkmRFP.
+ columns are the names of the scores, i.g \code{\link{floss}}
+ or \code{\link{fpkmRFP}}
 }
 \description{
 If you want to get all the features easily, run this function.

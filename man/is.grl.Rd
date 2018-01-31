@@ -7,7 +7,8 @@
 is.grl(class)
 }
 \arguments{
-\item{class}{the class you want to check if is GRL}
+\item{class}{the class you want to check if is GRL,
+either a character from class or the object itself.}
 }
 \value{
 a boolean

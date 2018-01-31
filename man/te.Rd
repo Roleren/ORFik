@@ -7,7 +7,8 @@
 te(grl, RNA, RFP, tx_len, with.fpkm = F)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with
+usually either leaders,
 cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len}
 
 \item{RNA}{rna seq reads as GAlignment, GRanges

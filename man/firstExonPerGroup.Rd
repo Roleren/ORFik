@@ -8,7 +8,7 @@ grl must be sorted, call ORFik:::sortPerGroup if needed}
 firstExonPerGroup(grl)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
 \description{
 get first exon per GRangesList group

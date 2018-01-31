@@ -7,11 +7,14 @@
 distOrfToCds(ORFs, fiveUTRs, cds = NULL, extension = NULL)
 }
 \arguments{
-\item{ORFs}{orfs as GRangesList, names of orfs must be transcript names}
+\item{ORFs}{orfs as \code{\link[GenomicRanges]{GRangesList}},
+names of orfs must be transcript names}
 
-\item{fiveUTRs}{fiveUTRs as GRangesList, must be original unchanged fiveUTRs}
+\item{fiveUTRs}{fiveUTRs as \code{\link[GenomicRanges]{GRangesList}},
+must be original unchanged fiveUTRs}
 
-\item{cds}{cds' as GRangesList, only add if you used cage extension}
+\item{cds}{cds' as \code{\link[GenomicRanges]{GRangesList}},
+only add if you used cage extension}
 
 \item{extension}{needs to be set! set to 0 if you did not use cage
 if you used cage to change tss' when finding the orfs, standard cage

@@ -7,7 +7,8 @@
 fpkmRNA(grl, RNA, tx_len, pseudoCount = 0)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually ORFs, but can also be
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+with usually ORFs, but can also be
 either leaders, cds', 3' utrs or  ORFs are a special case,
 see argument tx_len}
 
@@ -25,12 +26,14 @@ therefor the tx lengths have changed,
 if so, call:
 te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 where fiveUTRs are the changed cageLeaders.}
+
+\item{an}{integer, 0, set it to 1 if you want to avoid NA and inf values.}
 }
 \value{
 a numeric vector with the fpkm values
 }
 \description{
-Get fpkm of RNA-seq data
+see article: 10.1038/nbt.1621
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

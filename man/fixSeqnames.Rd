@@ -10,7 +10,7 @@ chrX instead of X chr1 instead of 1 etc..}
 fixSeqnames(grl)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
 \description{
 seqnames cleanup

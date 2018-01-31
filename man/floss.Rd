@@ -7,11 +7,11 @@
 floss(grl, RFP, cds, start = 26, end = 34)
 }
 \arguments{
-\item{grl}{a GRangesList object with ORFs}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with ORFs}
 
 \item{RFP}{ribozomal footprints, given as Galignment or GRanges object}
 
-\item{cds}{a GRangesList of coding sequences}
+\item{cds}{a \code{\link[GenomicRanges]{GRangesList}} of coding sequences}
 
 \item{start}{usually 26, the start of the floss interval}
 

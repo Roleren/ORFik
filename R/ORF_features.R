@@ -3,7 +3,7 @@
 #' Is the first one most important, by how much ?
 #' NB! Only support + and - strand, not *
 #' See article: 10.1002/embj.201488411
-#' @param grl a GRangesList object with ORFs
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
 #' @family features
@@ -57,9 +57,12 @@ ORFScores <- function(grl, RFP){
 #' fiveUTRs must be used to make transcript positions possible.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs
 #' See article:  10.1074/jbc.R116.733899
-#' @param ORFs orfs as GRangesList, names of orfs must be transcript names
-#' @param fiveUTRs fiveUTRs as GRangesList, must be original unchanged fiveUTRs
-#' @param cds cds' as GRangesList, only add if you used cage extension
+#' @param ORFs orfs as \code{\link[GenomicRanges]{GRangesList}},
+#'  names of orfs must be transcript names
+#' @param fiveUTRs fiveUTRs as \code{\link[GenomicRanges]{GRangesList}},
+#'  must be original unchanged fiveUTRs
+#' @param cds cds' as \code{\link[GenomicRanges]{GRangesList}},
+#'  only add if you used cage extension
 #' @param extension needs to be set! set to 0 if you did not use cage
 #'  if you used cage to change tss' when finding the orfs, standard cage
 #'  extension is 1000
@@ -106,7 +109,7 @@ distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
 #' CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
 #' Inspired by experimental bit values for each position
-#' @param grl a GRangesList grouped by ORF
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
 #' @param faFile a FaFile from the fasta file, see ?FaFile
 #' @param species which species to use, currently only support human
 #' @family features
@@ -172,7 +175,8 @@ kozakSequenceScore <- function(grl, faFile, species = "human"){
 #' is defined as (RPFs over ORF)/(RPFs downstream to tx end).
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' See article: 10.1242/dev.098345
-#' @param grl a GRangesList object with usually either leaders,
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
@@ -240,7 +244,7 @@ isOverlappingCds <- function(dists){
 #'
 #' See article:  10.1074/jbc.R116.733899
 #' @description ig. second orf _2 -> 2
-#' @param grl a GRangesList object with ORFs
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @family features
 #' @export
 OrfRankOrder <- function(grl){

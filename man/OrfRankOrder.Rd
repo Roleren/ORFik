@@ -7,7 +7,7 @@
 OrfRankOrder(grl)
 }
 \arguments{
-\item{grl}{a GRangesList object with ORFs}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with ORFs}
 }
 \description{
 ig. second orf _2 -> 2

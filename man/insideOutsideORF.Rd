@@ -7,7 +7,8 @@
 insideOutsideORF(grl, RFP, GtfOrTx)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{RFP}{ribo seq reads as GAlignment, GRanges

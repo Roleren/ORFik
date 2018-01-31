@@ -7,7 +7,7 @@
 ORFStartSites(grl, asGR = F, keep.names = F, is.sorted = F)
 }
 \arguments{
-\item{grl}{a GRangesList object}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object}
 
 \item{asGR}{a boolean, return as GRanges object}
 

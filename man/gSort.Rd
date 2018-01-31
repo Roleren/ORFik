@@ -7,7 +7,7 @@
 gSort(grl, decreasing = F)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 
 \item{decreasing}{should the first in each group have max(start(group))
 ->T or min-> default(F) ?}

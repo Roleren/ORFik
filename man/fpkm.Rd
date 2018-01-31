@@ -18,6 +18,7 @@ a numeric vector
 }
 \description{
 Normally used in Translations efficiency calculations
+see article: 10.1038/nbt.1621
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

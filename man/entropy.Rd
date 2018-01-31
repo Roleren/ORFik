@@ -7,7 +7,7 @@
 entropy(grl, reads)
 }
 \arguments{
-\item{grl}{a GRangesList that the reads can map to}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} that the reads can map to}
 
 \item{reads}{a GAlignment object, ig. from ribo seq, or rna seq,
 can also be GRanges or GRangesList}

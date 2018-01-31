@@ -12,7 +12,7 @@ supposed GRangesList object}
 
 \item{type}{a character vector, is it gtf, cds, 5', 3', for messages.}
 
-\item{checNULL}{should NULL classes be checked and return indeces of these?}
+\item{checkNULL}{should NULL classes be checked and return indeces of these?}
 }
 \description{
 Helper Function to check valid GRangesList input

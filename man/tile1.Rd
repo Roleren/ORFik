@@ -8,7 +8,7 @@ This is not supported originally by GenomicRanges}
 tile1(grl)
 }
 \arguments{
-\item{grl}{a GRangesList object}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1

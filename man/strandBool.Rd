@@ -9,7 +9,7 @@ Also checks for * strands, so a good check for bugs}
 strandBool(grl)
 }
 \arguments{
-\item{grl}{a GRangesList or GRanges object}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} or GRanges object}
 }
 \description{
 helper function to get a logical list of True/False, if GRangesList group have

@@ -8,7 +8,7 @@ which works poorly for > 10k groups}
 sortPerGroup(grl, ignore.strand = F)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 
 \item{ignore.strand}{a boolean, should minus strands be sorted from highest
 to lowest(T)}

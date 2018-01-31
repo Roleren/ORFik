@@ -8,9 +8,11 @@ find_in_frame_ORFs(grl, fastaSeqs, startCodon = "ATG",
   stopCodon = "TAA|TAG|TGA", longestORF = F, minimumLength = 0)
 }
 \arguments{
-\item{grl}{GRangesList of sequences to search for orfs, in Genomic coordinates}
+\item{grl}{\code{\link[GenomicRanges]{GRangesList}} of sequences
+to search for orfs, in Genomic coordinates}
 
-\item{fastaSeqs}{DNA sequences to search for Open Reading Frames, must be DNAStringSet.}
+\item{fastaSeqs}{DNA sequences to search for Open Reading Frames,
+must be DNAStringSet.}
 
 \item{startCodon}{string. Default is "ATG".}
 

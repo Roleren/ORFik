@@ -55,11 +55,12 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
 #'  a list of group indeces
 #'
-#' @param grl GRangesList. A GRangesList of the original sequences that gave the orfs
+#' @param grl A \code{\link[GenomicRanges]{GRangesList}} of the original
+#'  sequences that gave the orfs
 #' @param result List. A list of the results of finding uorfs
 #' list syntax is: result[1] contain grouping indeces, named index
 #' result[2] countains two columns of start and stops,  named orf
-#' @return A GRangesList of ORFs.
+#' @return A \code{\link[GenomicRanges]{GRangesList}} of ORFs.
 #' @export
 #' @importFrom GenomicFeatures pmapFromTranscripts
 map_to_GRanges <- function(grl, result) {
@@ -117,7 +118,7 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 #'
 #' names must either be a column called names, or the names of the
 #' grl object
-#' @param grl a GRangeslist grouped by ORF
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
@@ -144,7 +145,7 @@ OrfToTxNames <- function(grl, unique = F){
 #' get the start sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGG, get the position of the A.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
@@ -179,7 +180,7 @@ ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
 #' get the Stop sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the position of the C.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector

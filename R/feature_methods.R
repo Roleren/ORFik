@@ -1,6 +1,8 @@
 
 #' Create normalizations of counts
-#' @description Normally used in Translations efficiency calculations
+#'
+#' Normally used in Translations efficiency calculations
+#' see article: 10.1038/nbt.1621
 #' @param counts a list of integer counts per object
 #' @param lengthSize a list of integer lengths per object
 #' @param librarySize a numeric of size 1, the size of the library
@@ -13,11 +15,13 @@ fpkm <- function(counts, lengthSize, librarySize){
 }
 
 #' Get fpkm of ribo-seq data
-#' @param grl a GRangesList object with usually ORFs, but can also be
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,
 #'  see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
+#' @param an integer, 0, set it to 1 if you want to avoid NA and inf values.
 #' @family features
 #' @export
 #' @return a numeric vector with the fpkm values
@@ -34,7 +38,10 @@ fpkmRFP <- function(grl, RFP, pseudoCount = 0){
 }
 
 #' Get fpkm of RNA-seq data
-#' @param grl a GRangesList object with usually ORFs, but can also be
+#'
+#' see article: 10.1038/nbt.1621
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,
 #'  see argument tx_len
 #' @param RNA rna seq reads as GAlignment, GRanges
@@ -50,6 +57,7 @@ fpkmRFP <- function(grl, RFP, pseudoCount = 0){
 #'  if so, call:
 #'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders.
+#' @param an integer, 0, set it to 1 if you want to avoid NA and inf values.
 #' @family features
 #' @export
 #' @return a numeric vector with the fpkm values
@@ -88,7 +96,7 @@ subset_coverage <- function(cov, y) {
 #' The entropy interval per group is a real number in the interval (0:1)
 #' Where 0 is no variance in reads over group.
 #' @export
-#' @param grl a GRangesList that the reads can map to
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} that the reads can map to
 #' @param reads a GAlignment object, ig. from ribo seq, or rna seq,
 #'  can also be GRanges or GRangesList
 #' @family features
@@ -224,9 +232,9 @@ calculateCoverage <- function(countsOver) {
 
 #' Fragment Length Organization Similarity Score
 #' @description See article: 10.1016/j.celrep.2014.07.045
-#' @param grl a GRangesList object with ORFs
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment or GRanges object
-#' @param cds a GRangesList of coding sequences
+#' @param cds a \code{\link[GenomicRanges]{GRangesList}} of coding sequences
 #' @param start usually 26, the start of the floss interval
 #' @param end usually 34, the end of the floss interval
 #' @family features
@@ -300,7 +308,8 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' @description Uses Rna-seq and Ribo-seq to get te of grl
 #' is defined as (density of RPFs within ORF)/(RNA expression).
 #' See article: 10.1126/science.1168978
-#' @param grl a GRangesList object with usually either leaders,
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with
+#'  usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len
 #' @param RNA rna seq reads as GAlignment, GRanges
 #'  or GRangesList object
@@ -350,7 +359,8 @@ te <- function(grl, RNA, RFP, tx_len, with.fpkm = F){
 #' Fraction Length
 #' @description is defined as (length of grls)/(length of transcripts)
 #' see article: 10.1242/dev.098343
-#' @param grl a GRangesList object with usually either leaders,
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param tx_len the transcript lengths of the transcripts
 #'  a named (tx names) vector of integers.
@@ -377,7 +387,8 @@ fractionLength <- function(grl, tx_len){
 #' @description is defined as (RPFs over ORF)/(RPFs downstream to tx end).
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' See article: 10.1242/dev.098344
-#' @param grl a GRangesList object with usually either leaders,
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
@@ -416,7 +427,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' to justify location of 3' utrs
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' See article: 10.1016/j.cell.2013.06.009
-#' @param grl a GRangesList object with usually either leaders,
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
@@ -467,7 +479,8 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' @description If you want to get all the features easily, run this function.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
-#' @param grl a GRangesList object with usually ORFs, but can also be
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,
 #'  see argument tx_len
 #' @param RFP ribo seq reads as GAlignment, GRanges
@@ -496,7 +509,8 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' @family features
 #' @export
 #' @return a data.table with scores, each column is one score type, name of
-#'  columns are the names of the scores, i.g floss or fpkmRFP.
+#'  columns are the names of the scores, i.g \code{\link{floss}}
+#'  or \code{\link{fpkmRFP}}
 #' @examples
 #'  \dontrun{
 #'  #The easiest way to run the method is to include as this:
