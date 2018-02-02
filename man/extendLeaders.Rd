@@ -7,13 +7,17 @@
 extendLeaders(grl, extension = 1000, cds = NULL)
 }
 \arguments{
-\item{grl}{a GRangesList of 5' utrs or transcripts..}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}
+of 5' utrs or transcripts..}
 
-\item{extension}{an integer, how much to extend the leaders}
+\item{extension}{an integer, how much to extend the leaders.
+Or a GRangesList where start / stops by strand are the positions
+to use as new starts.}
 
 \item{cds}{If you want to extend 5' leaders downstream, to catch
 upstream ORFs going into cds, include it. It will add first
-cds exon to grl matched by names.}
+cds exon to grl matched by names.
+Do not add for transcripts, as they are already included.}
 }
 \description{
 Either if you have the 5' utr sequences or the

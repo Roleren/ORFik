@@ -4,10 +4,10 @@
 \alias{ORFStopSites}
 \title{get the Stop sites from a GRangesList of orfs grouped by orfs}
 \usage{
-ORFStopSites(grl, asGR = F, keep.names = F, is.sorted = F)
+ORFStopSites(grl, asGR = FALSE, keep.names = FALSE, is.sorted = FALSE)
 }
 \arguments{
-\item{grl}{a GRangesList object}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object}
 
 \item{asGR}{a boolean, return as GRanges object}
 

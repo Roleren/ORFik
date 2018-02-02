@@ -7,7 +7,8 @@
 RibosomeReleaseScore(grl, RFP, GtfOrThreeUtrs, RNA = NULL)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{RFP}{ribo seq reads as GAlignment, GRanges
@@ -21,7 +22,8 @@ threeUTRsByTranscript(Gtf, use.names = T)}
 or GRangesList object}
 }
 \value{
-a named vector of numeric values of scores
+a named vector of numeric values of scores, NA means that
+ no 3' utr was found for that transcript.
 }
 \description{
 is defined as (RPFs over ORF)/(RPFs over 3' utrs).
@@ -37,8 +39,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

@@ -80,8 +80,10 @@ stop_definition <- function(transl_table) {
 #'
 #' Input is a Grangeslist of regions to search, together with a DNAStringSet with
 #' fastaSequence in same order as the grl.
-#' @param grl GRangesList of sequences to search for orfs, in Genomic coordinates
-#' @param fastaSeqs DNA sequences to search for Open Reading Frames, must be DNAStringSet.
+#' @param grl \code{\link[GenomicRanges]{GRangesList}} of sequences
+#'  to search for orfs, in Genomic coordinates
+#' @param fastaSeqs DNA sequences to search for Open Reading Frames,
+#'  must be DNAStringSet.
 #' @param startCodon string. Default is "ATG".
 #' @param stopCodon string. Default is "TAA|TAG|TGA".
 #' @param longestORF bolean. Default FALSE. Defines whether pick longest ORF only.

@@ -242,15 +242,15 @@ test_that("floss works as intended", {
 
 test_that("te works as intended", {
 
-  scores <- te(grl, RNA, RFP, tx_len)
+  scores <- te(grl, RNA, RFP, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores,2), c(19.06, 18.00, 12.00, NaN))
 
-  scores <- te(grl, RNA, RFP2, tx_len)
+  scores <- te(grl, RNA, RFP2, tx)
   expect_is(scores, "numeric")
   expect_equal(scores, c(0, 0, 0, NaN))
 
-  scores <- te(grl, RNA2, RFP7, tx_len)
+  scores <- te(grl, RNA2, RFP7, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores,2), c(7.06, 10.00, 10.00, 9.72))
 })
@@ -316,23 +316,23 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 10)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
-                            extension = 5)
+                            extension = 5, cageFiveUTRs = fiveUTRs)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 10)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
-                            extension = 5)
+                            extension = 5, cageFiveUTRs = fiveUTRs)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 10)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
@@ -340,7 +340,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 10)
+  expect_equal(ncol(dt), 14)
   expect_equal(nrow(dt), 4)
 
 })

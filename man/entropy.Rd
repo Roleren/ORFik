@@ -7,7 +7,7 @@
 entropy(grl, reads)
 }
 \arguments{
-\item{grl}{a GRangesList that the reads can map to}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} that the reads can map to}
 
 \item{reads}{a GAlignment object, ig. from ribo seq, or rna seq,
 can also be GRanges or GRangesList}
@@ -28,7 +28,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{floss}},
-  \code{\link{fpkm}}, \code{\link{fractionLength}},
+  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

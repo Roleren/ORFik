@@ -7,11 +7,14 @@
 distOrfToCds(ORFs, fiveUTRs, cds = NULL, extension = NULL)
 }
 \arguments{
-\item{ORFs}{orfs as GRangesList, names of orfs must be transcript names}
+\item{ORFs}{orfs as \code{\link[GenomicRanges]{GRangesList}},
+names of orfs must be transcript names}
 
-\item{fiveUTRs}{fiveUTRs as GRangesList, must be original unchanged fiveUTRs}
+\item{fiveUTRs}{fiveUTRs as \code{\link[GenomicRanges]{GRangesList}},
+must be original unchanged fiveUTRs}
 
-\item{cds}{cds' as GRangesList, only add if you used cage extension}
+\item{cds}{cds' as \code{\link[GenomicRanges]{GRangesList}},
+only add if you used cage extension}
 
 \item{extension}{needs to be set! set to 0 if you did not use cage
 if you used cage to change tss' when finding the orfs, standard cage
@@ -25,6 +28,7 @@ an integer vector, +1 means one base upstream of cds, -1 means
 matching is done by transcript names.
 fiveUTRs must be used to make transcript positions possible.
 The cds start site, will be presumed to be on + 1 of end of fiveUTRs
+See article:  10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{ORFScores}},
@@ -33,8 +37,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

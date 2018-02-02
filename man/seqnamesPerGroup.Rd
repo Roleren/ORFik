@@ -7,7 +7,7 @@
 seqnamesPerGroup(grl, keep.names = T)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 
 \item{keep.names}{a boolean, keep names or not}
 }

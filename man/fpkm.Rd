@@ -2,22 +2,29 @@
 % Please edit documentation in R/feature_methods.R
 \name{fpkm}
 \alias{fpkm}
-\title{Creates normalizations of the counts, normally,}
+\title{Create normalizations of counts}
 \usage{
-fpkm(counts, lengthSize, librarySize)
+fpkm(grl, reads, pseudoCount = 0)
 }
 \arguments{
-\item{counts}{a list of integer counts per object}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+can be either transcripts, 5' utrs, cds', 3' utrs or
+ORFs are a special case (uORFs, potential new cds' etc).}
 
-\item{lengthSize}{a list of integer lengths per object}
+\item{reads}{a GAlignment, GRanges or GRangesList object,
+usually of ribo-seq, rna seq, cage seq, etc.}
 
-\item{librarySize}{a numeric of size 1, the size of the library}
+\item{pseudoCount}{an integer, 0,
+set it to 1 if you want to avoid NA and inf values.}
 }
 \value{
-a numeric vector
+a numeric vector with the fpkm values
 }
 \description{
-used in Translations efficiency calculations
+Short for: Fragments per kilobase of transcript per million fragments
+ For ribo seq on orfs, send orfs as grl,
+ for rna seq always send transcripts as grl
+see article: 10.1038/nbt.1621
 }
 \seealso{
 Other features: \code{\link{ORFScores}},
@@ -27,7 +34,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

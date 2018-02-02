@@ -7,7 +7,7 @@
 ORFScores(grl, RFP)
 }
 \arguments{
-\item{grl}{a GRangesList object with ORFs}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with ORFs}
 
 \item{RFP}{ribozomal footprints, given as Galignment object,
 Granges or GRangesList}
@@ -29,8 +29,8 @@ Other features: \code{\link{OrfRankOrder}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

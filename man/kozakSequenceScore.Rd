@@ -7,7 +7,7 @@
 kozakSequenceScore(grl, faFile, species = "human")
 }
 \arguments{
-\item{grl}{a GRangesList grouped by ORF}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF}
 
 \item{faFile}{a FaFile from the fasta file, see ?FaFile}
 
@@ -32,8 +32,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

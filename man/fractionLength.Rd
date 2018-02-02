@@ -7,14 +7,15 @@
 fractionLength(grl, tx_len)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{tx_len}{the transcript lengths of the transcripts
 a named (tx names) vector of integers.
-Normally you call argument as: tx_len = txLen(Gtf)
-fractionLength(grl, tx_len = txLen(Gtf))
-See ?ORFik:::txLen
+If you have the transcripts as GRangesList,
+call ORFik:::widthPerGroup(tx, T)
+If not:
 NB!!! if you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
@@ -37,8 +38,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{inFrameWithCDS}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},
   \code{\link{kozakSequenceScore}},

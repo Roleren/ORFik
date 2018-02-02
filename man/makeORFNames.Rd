@@ -9,7 +9,7 @@ ORF names, then create them and return the new GRangesList}
 makeORFNames(grl)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
 \value{
 a GRangesList now with ORF names

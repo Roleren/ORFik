@@ -7,10 +7,13 @@
 OrfRankOrder(grl)
 }
 \arguments{
-\item{grl}{a GRangesList object with ORFs}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with ORFs}
 }
 \description{
 ig. second orf _2 -> 2
+}
+\details{
+See article:  10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{ORFScores}},
@@ -19,8 +22,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

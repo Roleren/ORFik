@@ -55,11 +55,12 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
 #'  a list of group indeces
 #'
-#' @param grl GRangesList. A GRangesList of the original sequences that gave the orfs
+#' @param grl A \code{\link[GenomicRanges]{GRangesList}} of the original
+#'  sequences that gave the orfs
 #' @param result List. A list of the results of finding uorfs
 #' list syntax is: result[1] contain grouping indeces, named index
 #' result[2] countains two columns of start and stops,  named orf
-#' @return A GRangesList of ORFs.
+#' @return A \code{\link[GenomicRanges]{GRangesList}} of ORFs.
 #' @export
 #' @importFrom GenomicFeatures pmapFromTranscripts
 map_to_GRanges <- function(grl, result) {
@@ -117,25 +118,25 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 #'
 #' names must either be a column called names, or the names of the
 #' grl object
-#' @param grl a GRangeslist grouped by ORF
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
 #'  @export
 OrfToTxNames <- function(grl, unique = F){
   if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (is.null(names(grl))){
+  if (is.null(names(grl))) {
     otherPossibility <- unlist(grl, use.names = F)$names
-    if(is.null(otherPossibility)){
+    if (is.null(otherPossibility)) {
       stop("grl have no valid orf names to convert")
     } else {
-      if(unique){
+      if (unique) {
         return(gsub("_[0-9]*", "", unique(otherPossibility)))
       }
       return(gsub("_[0-9]*", "", otherPossibility))
     }
   }
-  if(unique){
+  if (unique) {
     return(gsub("_[0-9]*", "", unique(names(grl))))
   }
   return(gsub("_[0-9]*", "", names(grl)))
@@ -144,32 +145,33 @@ OrfToTxNames <- function(grl, unique = F){
 #' get the start sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGG, get the position of the A.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
-ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
-  if(!is.sorted){
-    grl <- ORFik:::sortPerGroup(grl)
+ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
+                          is.sorted = FALSE){
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
   }
-  posIds <- strandPerGroup(grl, F) == "+"
-  minIds <- strandPerGroup(grl, F) == "-"
+  posIds <- strandBool(grl)
+
 
   startSites <- rep(NA, length(grl))
-  startSites[posIds] <- firstStartPerGroup(grl[posIds], F)
-  startSites[minIds] <- firstEndPerGroup(grl[minIds], F)
+  startSites[posIds] <- firstStartPerGroup(grl[posIds], FALSE)
+  startSites[!posIds] <- firstEndPerGroup(grl[!posIds], FALSE)
 
-  if(asGR){
-    gr <- GRanges(seqnames = seqnamesPerGroup(grl, F),
+  if (asGR) {
+    gr <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
                   ranges = IRanges(startSites,startSites),
-                  strand = strandPerGroup(grl, F))
+                  strand = strandPerGroup(grl, FALSE))
     names(gr) <- names(grl)
     return(gr)
   }
 
-  if(keep.names){
+  if (keep.names) {
     names(startSites) <- names(grl)
     return(startSites)
   }
@@ -179,32 +181,32 @@ ORFStartSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
 #' get the Stop sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the position of the C.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
-ORFStopSites <- function(grl, asGR = F, keep.names = F, is.sorted = F){
-  if(!is.sorted){
-    grl <- ORFik:::sortPerGroup(grl)
+ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
+                         is.sorted = FALSE){
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
   }
-  posIds <- strandPerGroup(grl, F) == "+"
-  minIds <- strandPerGroup(grl, F) == "-"
+  posIds <- strandBool(grl)
 
   stopSites <- rep(NA, length(grl))
-  stopSites[posIds] <- lastExonEndPerGroup(grl[posIds], F)
-  stopSites[minIds] <- lastExonStartPerGroup(grl[minIds], F)
+  stopSites[posIds] <- lastExonEndPerGroup(grl[posIds], FALSE)
+  stopSites[!posIds] <- lastExonStartPerGroup(grl[!posIds], FALSE)
 
-  if(asGR){
-    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, F),
+  if (asGR) {
+    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, FALSE),
                 ranges = IRanges(stopSites,stopSites),
-                  strand = ORFik:::strandPerGroup(grl, F))
+                  strand = ORFik:::strandPerGroup(grl, FALSE))
     names(gr) <- names(grl)
     return(gr)
   }
 
-  if(keep.names){
+  if (keep.names) {
     names(stopSites) <- names(grl)
     return(stopSites)
   }

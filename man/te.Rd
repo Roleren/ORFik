@@ -4,11 +4,12 @@
 \alias{te}
 \title{Translational efficiency}
 \usage{
-te(grl, RNA, RFP, tx_len)
+te(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
-cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+can be either transcripts, 5' utrs, cds', 3' utrs or
+ORFs are a special case (uORFs, potential new cds' etc).}
 
 \item{RNA}{rna seq reads as GAlignment, GRanges
 or GRangesList object}
@@ -16,20 +17,22 @@ or GRangesList object}
 \item{RFP}{ribo seq reads as GAlignment, GRanges
 or GRangesList object}
 
-\item{tx_len}{the transcript lengths of the transcripts
-a named (tx names) vector.
-Normally you call argument as: tx_len = txLen(Gtf)
-fractionLength(grl, tx_len = txLen(Gtf))
-See ?ORFik:::txLen
+\item{tx}{a GRangesList of the transcripts,
 NB!!! if you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
 if so, call:
-te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
-where fiveUTRs are the changed cageLeaders as GRangesList.}
+te(grl, RNA, RFP, tx= TxLen(Gtf, fiveUTRs))
+where fiveUTRs are the changed cageLeaders.}
+
+\item{with.fpkm}{logical F, if true return the fpkm values together with te}
+
+\item{pseudoCount}{an integer, 0,
+set it to 1 if you want to avoid NA and inf values.}
 }
 \value{
-a numeric vector of fpkm ratios
+a numeric vector of fpkm ratios, if with.fpkm is TRUE
+ ,return a data.table with te and fpkm values
 }
 \description{
 Uses Rna-seq and Ribo-seq to get te of grl
@@ -44,8 +47,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

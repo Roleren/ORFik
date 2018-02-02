@@ -6,11 +6,14 @@
 \usage{
 allFeatures(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
-  riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = T)
+  riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = T,
+  cageFiveUTRs = NULL)
 }
 \arguments{
-\item{grl}{a GRangesList object with usually either leaders,
-cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+with usually ORFs, but can also be
+either leaders, cds', 3' utrs or  ORFs are a special case,
+see argument tx_len}
 
 \item{RFP}{ribo seq reads as GAlignment, GRanges
 or GRangesList object}
@@ -22,7 +25,8 @@ or GRangesList object}
 
 \item{tx}{a GrangesList of transcripts,
 normally called from: exonsBy(Gtf, by = "tx", use.names = T)
-only add this if you are not including Gtf file}
+only add this if you are not including Gtf file
+You do not need to reassign these to the cage peaks, it will do it for you.}
 
 \item{fiveUTRs}{fiveUTRs as GRangesList, must be original unchanged fiveUTRs}
 
@@ -37,15 +41,19 @@ normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 
 \item{riboStop}{usually 34, the end of the floss interval}
 
-\item{extension}{needs to be set! set to 0 if you did not use cage
-if you used cage to change tss' when finding the orfs, standard cage
-extension is 1000}
+\item{extension}{a numeric/integer needs to be set! set to 0 if you did not
+use cage, if you used cage to change tss' when finding the orfs,
+standard cage extension is 1000}
 
 \item{orfFeatures}{a logical,  is the grl a list of orfs? Must be assigned.}
+
+\item{cageFiveUTRs}{a GRangesList, if you used cage-data to extend 5' utrs,
+include this, also extension must match with the extension used for these.}
 }
 \value{
 a data.table with scores, each column is one score type, name of
- columns are the names of the scores, i.g floss or fpkmRFP.
+ columns are the names of the scores, i.g \code{\link{floss}}
+ or \code{\link{fpkmRFP}}
 }
 \description{
 If you want to get all the features easily, run this function.
@@ -69,8 +77,8 @@ Other features: \code{\link{ORFScores}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
+  \code{\link{floss}}, \code{\link{fpkm_calc}},
+  \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{inFrameWithCDS}},
   \code{\link{insideOutsideORF}},
   \code{\link{isOverlappingCds}},

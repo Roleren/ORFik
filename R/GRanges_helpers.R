@@ -9,7 +9,7 @@
 #' @export
 groupGRangesBy <- function(gr,other = NULL){
   if (class(gr) != "GRanges") stop("gr must be GRanges Object")
-  if(is.null(other)){ # if not using other
+  if (is.null(other)) { # if not using other
     if (is.null(names(gr))) stop("gr object have no names")
     l <- S4Vectors::Rle(names(gr))
   } else { # else use other
@@ -19,9 +19,9 @@ groupGRangesBy <- function(gr,other = NULL){
   }
   grouping <- unlist(lapply(1:nrun(l), function(x){ rep(x, runLength(l)[x])}))
   grl <- split(gr, grouping)
-  if(is.null(other)){
+  if (is.null(other)) {
     names(grl) <- unique(names(gr))
-  } else{
+  } else {
     names(grl) <- unique(other)
   }
 
@@ -29,11 +29,11 @@ groupGRangesBy <- function(gr,other = NULL){
 }
 
 #' get list of widths per granges group
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 widthPerGroup = function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(sum(width(grl)))
   } else {
     return(as.integer(sum(width(grl))))
@@ -41,11 +41,11 @@ widthPerGroup = function(grl, keep.names = T){
 }
 
 #' get list of seqnames per granges group
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 seqnamesPerGroup <- function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(seqnames(phead(grl, 1L)))
   } else {
     return(as.character(seqnames(phead(grl, 1L))))
@@ -53,13 +53,13 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 }
 
 #' A faster reimplementation of GenomicRanges::sort() for GRangesList
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param decreasing should the first in each group have max(start(group))
 #'   ->T or min-> default(F) ?
 #' @importFrom data.table as.data.table
 gSort <- function(grl, decreasing = F){
   DT <- as.data.table(grl)
-  if (decreasing){
+  if (decreasing) {
     asgrl <- makeGRangesListFromDataFrame(
       DT[order(group, -start)], split.field = "group",
       names.field = "group_name", keep.extra.columns = T)
@@ -73,13 +73,13 @@ gSort <- function(grl, decreasing = F){
 }
 #' sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
 #' which works poorly for > 10k groups
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param ignore.strand a boolean, should minus strands be sorted from highest
 #'  to lowest(T)
 #' @export
 sortPerGroup <- function(grl, ignore.strand = F){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (!ignore.strand){
+  validGRL(class(grl), "grl")
+  if (!ignore.strand) {
     indecesPos <- strandBool(grl)
 
     grl[indecesPos] <- gSort(grl[indecesPos])
@@ -92,13 +92,13 @@ sortPerGroup <- function(grl, ignore.strand = F){
 }
 
 #' get list of strands per granges group
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 strandPerGroup <- function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(strand(phead(grl, 1L))) # S4Vectors::phead() wrapper
-  }else{
+  } else {
     return(as.character(strand(phead(grl, 1L))))
   }
 }
@@ -106,20 +106,20 @@ strandPerGroup <- function(grl, keep.names = T){
 #' helper function to get a logical list of True/False, if GRangesList group have
 #' + strand = T, if - strand = F
 #' Also checks for * strands, so a good check for bugs
-#' @param grl a GRangesList or GRanges object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
 strandBool <- function(grl){
-  if(class(grl) == "GRanges"){
+  if (class(grl) == "GRanges") {
     posIndeces <- as.character(strand(grl)) == "+"
   } else {
     posIndeces <- strandPerGroup(grl, F) == "+"
   }
 
   sums <- sum(posIndeces) + sum(!posIndeces)
-  if(is.na(sums)){
+  if (is.na(sums)) {
     stop("could not get strands from grl object,\n
           most likely NULL object was passed.")
   }
-  if(sums != length(grl)){
+  if (sums != length(grl)) {
     stop("grl contains * strands, set them to either + or -")
   }
   return(posIndeces)
@@ -127,67 +127,67 @@ strandBool <- function(grl){
 
 #' get first exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 firstExonPerGroup <- function(grl){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  validGRL(class(grl), "grl")
   return(phead(grl, 1L)) # S4Vectors::phead() wrapper
 }
 
 #' get last exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a GRangesList,
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}},
 #' @return a GRangesList of last exons per group
 lastExonPerGroup <- function(grl){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  validGRL(class(grl), "grl")
   return(ptail(grl, 1L)) # S4Vectors::ptail() wrapper
 }
 
 #' get first start per granges group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 firstStartPerGroup <- function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(start(firstExonPerGroup(grl)))
-  }else{
+  }else {
     return(as.integer(start(firstExonPerGroup(grl))))
   }
 }
 
 #' get first end per granges group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 firstEndPerGroup <- function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(end(firstExonPerGroup(grl)))
-  }else{
+  } else {
     return(as.integer(end(firstExonPerGroup(grl))))
   }
 }
 
 #' get last end per granges group
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 lastExonEndPerGroup = function(grl,keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(end(lastExonPerGroup(grl)))
-  }else{
+  } else {
     return(as.integer(end(lastExonPerGroup(grl))))
   }
 }
 
-#' get last end per granges group
-#' @param grl a GRangesList
+#' get last start per granges group
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 lastExonStartPerGroup = function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
-  if (keep.names){
+  validGRL(class(grl), "grl")
+  if (keep.names) {
     return(start(lastExonPerGroup(grl)))
-  }else{
+  } else {
     return(as.integer(start(lastExonPerGroup(grl))))
   }
 }
@@ -196,16 +196,16 @@ lastExonStartPerGroup = function(grl, keep.names = T){
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 numExonsPerGroup <- function(grl, keep.names = T){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  validGRL(class(grl), "grl")
 
-  if (!is.null(names(unlist(grl, use.names = F)))){
+  if (!is.null(names(unlist(grl, use.names = F)))) {
     exonsPerGroup <- runLength(S4Vectors::Rle(names(unlist(grl,
       use.names = F))))
-  } else if (!is.null(names(unlist(grl, use.names = T)))){
+  } else if (!is.null(names(unlist(grl, use.names = T)))) {
     exonsPerGroup <- runLength(S4Vectors::Rle(names(unlist(grl,
       use.names = T))))
   } else stop("no names to group exons")
-  if(keep.names){
+  if(keep.names) {
     if(is.null(names(grl))) stop("grl must have names if keep.names == T")
     names(exonsPerGroup) = names(grl)
   }
@@ -216,9 +216,10 @@ numExonsPerGroup <- function(grl, keep.names = T){
 #' For many datasets, the fa file and the gtf file have different naming
 #' This functions tries to fix the naming to the GRanges standard
 #' chrX instead of X chr1 instead of 1 etc..
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 fixSeqnames <- function(grl){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  validGRL(class(grl), "grl")
+
   temp <- unlist(grl)
   seqnamesTransformed <- as.character(seqnames(temp))
   indexes <- which(nchar(seqnamesTransformed) < 6)
@@ -230,12 +231,12 @@ fixSeqnames <- function(grl){
 }
 
 #' make a meta column with exon ranks
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param byTranscript if ORfs are by transcript, check duplicates
 makeExonRanks <- function(grl, byTranscript = F){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  validGRL(class(grl), "grl")
 
-  if (byTranscript){
+  if (byTranscript) {
     oldNames <- names(grl)
     names(grl) <- 1:length(grl)
   }
@@ -245,7 +246,7 @@ makeExonRanks <- function(grl, byTranscript = F){
   }))
 
   Inds <- rep(1, length(t))
-  if (!byTranscript){
+  if (!byTranscript) {
     for (x in 2:length(t)) {
       if (t[x] == t[x - 1]) {
         Inds[x] <- Inds[x - 1] + 1
@@ -254,7 +255,7 @@ makeExonRanks <- function(grl, byTranscript = F){
   } else {
     for (x in 2:length(t)) {
       if (t[x] != t[x - 1]) {
-        if (oldNames[t[x]] == oldNames[t[x] - 1]){
+        if (oldNames[t[x]] == oldNames[t[x] - 1]) {
           Inds[x] <- Inds[x - 1] + 1
         }
       } else{
@@ -268,7 +269,7 @@ makeExonRanks <- function(grl, byTranscript = F){
 #' Make ORF names per orf, grl must be grouped by transcript
 #' If a list of orfs are grouped by transcripts, but does not have
 #' ORF names, then create them and return the new GRangesList
-#' @param grl a GRangesList
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return a GRangesList now with ORF names
 makeORFNames <- function(grl){
   ranks <- makeExonRanks(grl, byTranscript = T)
@@ -281,20 +282,20 @@ makeORFNames <- function(grl){
 
 #' Tile a GRangeslist by 1
 #' This is not supported originally by GenomicRanges
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @export
 tile1 <- function(grl){
   ORFs <- unlist(grl, use.names = F)
-  if(is.null(names(ORFs))) stop("unlisted grl have not names,\n
+  if (is.null(names(ORFs))) stop("unlisted grl have not names,\n
                                 try: names(unlist(grl, use.names = F))")
-  if(sum(duplicated(names(ORFs)))){
-    if(!is.null(ORFs$names)){
+  if (sum(duplicated(names(ORFs)))) {
+    if (!is.null(ORFs$names)) {
       names(ORFs) <- ORFs$names
     } else{
-        nametest <- unlist(grl, use.names = T)
+        nametest <- unlist(grl, use.names = TRUE)
         dups <- sum(duplicated(names(nametest)))
-        if(dups != sum(duplicated(names(ORFs)))){
+        if (dups != sum(duplicated(names(ORFs)))) {
           stop("duplicated ORF names,\n
                 need a column called 'names' that are unique,\n
                 or change names of groups")
@@ -312,15 +313,16 @@ tile1 <- function(grl){
 }
 
 #' map genomic to transcript coordinates by reference
-#' @param grl a GRangesList of ranges within the reference,
-#'  grl must have column called names that gives grouping for result
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} of ranges within
+#'  the reference, grl must have column called names that gives
+#'  grouping for result
 #' @param reference a GrangesList of ranges
 #'  that include and are bigger or equal to grl
 #'  ig. cds is grl and gene can be reference
 #'  @export
 asTX <- function(grl, reference){
   orfNames <- OrfToTxNames(grl)
-  if(sum(orfNames %in% names(reference)) != length(orfNames)){
+  if (sum(orfNames %in% names(reference)) != length(orfNames)) {
     stop("not all references are present, so can not map to transcripts.")
   }
   return(pmapToTranscripts(grl, reference[orfNames]))
@@ -332,7 +334,7 @@ asTX <- function(grl, reference){
 #' @param is.sorted a speedup, if you know the ranges are sorted
 txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   if(class(faFile) != "FaFile") stop("only FaFile is valid input")
-  if(!isSorted) grl <- sortPerGroup(grl)
+  if(!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
@@ -340,10 +342,10 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
 #' @description make sure your grl is sorted, since start of "-" strand
 #'  objects should be the
 #'  max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param newStarts an integer vector of same length as grl, with new start values
 assignFirstExonsStartSite <- function(grl, newStarts){
-  if(length(grl) != length(newStarts)) stop("length of grl and newStarts \n
+  if (length(grl) != length(newStarts)) stop("length of grl and newStarts \n
                                             are not equal!")
   posIndeces <- strandBool(grl)
 
@@ -361,11 +363,13 @@ assignFirstExonsStartSite <- function(grl, newStarts){
 #' @description make sure your grl is sorted,
 #'  since stop of "-" strand objects should be the
 #'  min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param newStops an integer vector of same length as grl,
 #'  with new start values
+#' @importFrom data.table .I
+#' @importFrom data.table .N
 assignLastExonsStopSite <- function(grl, newStops){
-  if(length(grl) != length(newStops)) stop("length of grl and newStops \n
+  if (length(grl) != length(newStops)) stop("length of grl and newStops \n
                                            are not equal!")
   posIndeces <- strandBool(grl)
 
@@ -374,7 +378,8 @@ assignLastExonsStopSite <- function(grl, newStops){
   dt[idx$V1]$end[posIndeces] <- newStops[posIndeces]
   dt[idx$V1]$start[!posIndeces] <- newStops[!posIndeces]
   ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
-    split.field = "group", names.field = "group_name", keep.extra.columns = T)
+    split.field = "group", names.field = "group_name",
+      keep.extra.columns = TRUE)
   names(ngrl) <- names(grl)
 
   return(ngrl)
@@ -388,7 +393,8 @@ assignLastExonsStopSite <- function(grl, newStops){
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
-#' @param tx a GRangesList, usually of Transcripts to be changed
+#' @param tx a \code{\link[GenomicRanges]{GRangesList}},
+#'  usually of Transcripts to be changed
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
 downstreamOfPerGroup <- function(tx, downstreamOf){
@@ -405,9 +411,9 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
   downTx[posIndeces] <- posTx
   downTx[!posIndeces] <- negTx
   #check if anyone hits boundary, set those to boundary
-  if(anyNA(ORFik:::strandPerGroup(downTx, F))){
-    boundaryHits <- which(is.na(ORFik:::strandPerGroup(downTx, F)))
-    downTx[boundaryHits] <- ORFik:::firstExonPerGroup(tx[boundaryHits])
+  if (anyNA(strandPerGroup(downTx, FALSE))) {
+    boundaryHits <- which(is.na(strandPerGroup(downTx, FALSE)))
+    downTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
     ir <- IRanges(start = downstreamOf[boundaryHits],
                     end = downstreamOf[boundaryHits])
     irl <- split(ir, 1:length(ir))
@@ -424,7 +430,8 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
-#' @param tx a GRangesList, usually of Transcripts to be changed
+#' @param tx a \code{\link[GenomicRanges]{GRangesList}},
+#'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new start point of first valid exon.
 upstreamOfPerGroup <- function(tx, upstreamOf){
@@ -460,19 +467,30 @@ upstreamOfPerGroup <- function(tx, upstreamOf){
 #'  any way the 5' part will be extended.
 #'  Remember to sort it, if not sorted beforehand.
 #'  use ORFik:::sortPerGroup(grl) to get sorted grl.
-#' @param grl a GRangesList of 5' utrs or transcripts..
-#' @param extension an integer, how much to extend the leaders
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#'  of 5' utrs or transcripts..
+#' @param extension an integer, how much to extend the leaders.
+#'  Or a GRangesList where start / stops by strand are the positions
+#'  to use as new starts.
 #' @param cds If you want to extend 5' leaders downstream, to catch
 #'  upstream ORFs going into cds, include it. It will add first
 #'  cds exon to grl matched by names.
+#'  Do not add for transcripts, as they are already included.
 extendLeaders <- function(grl, extension = 1000, cds = NULL){
-
-  posIndeces <- strandBool(grl)
-  promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
-    upstream = extension)
-  newStarts <- rep(NA, length(grl))
-  newStarts[posIndeces] <- as.integer(start(promo[posIndeces]))
-  newStarts[!posIndeces] <- as.integer(end(promo[!posIndeces]))
+  if (class(extension) == "numeric" && length(extension) == 1) {
+    posIndeces <- strandBool(grl)
+    promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
+      upstream = extension)
+    newStarts <- rep(NA, length(grl))
+    newStarts[posIndeces] <- as.integer(start(promo[posIndeces]))
+    newStarts[!posIndeces] <- as.integer(end(promo[!posIndeces]))
+  } else if (is.grl(class(grl))) {
+    starts <- ORFStartSites(extension)
+    changedGRL <-downstreamOfPerGroup(grl[names(extension)], starts)
+    return(changedGRL)
+  } else {
+    stop("extension must either be an integer, or a GRangesList")
+  }
 
   extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
   if(is.null(cds)) return (extendedLeaders)
@@ -513,13 +531,12 @@ window_resize <- function(GRanges_obj, window_size = 30) {
 #' #subset_to_frame(x, 1)
 #'
 subset_to_frame <- function(x, frame){
-  if(as.vector(strand(x) == "+")[1]){
+  if (as.vector(strand(x) == "+")[1]) {
     x[seq(frame, length(x), 3)]
-  }else{
+  } else {
     x[seq(length(x) + 1 - frame, 1, -3)]
   }
 }
-
 
 #' Subset GRanges to get stop codons. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
@@ -531,10 +548,25 @@ subset_to_frame <- function(x, frame){
 #' #subset_to_stop(x)
 #'
 subset_to_stop <- function(x){
-  if(as.vector(strand(x))[1] == "+"){
+  if (as.vector(strand(x))[1] == "+") {
     x[c(length(x) - 3, length(x) - 4, length(x) - 5)]
   } else {
     x[c(4, 5, 6)]
+  }
+}
+
+#' Helper function to check for GRangesList
+#' @param class the class you want to check if is GRL,
+#'  either a character from class or the object itself.
+#' @return a boolean
+is.grl <- function(class){
+  if (!is.character(class)) {
+    class <- class(class)
+  }
+  if (class == "GRangesList") {
+    return(TRUE)
+  } else {
+    return(FALSE)
   }
 }
 
@@ -542,26 +574,28 @@ subset_to_stop <- function(x){
 #' @param class as character vector the given class of
 #'  supposed GRangesList object
 #' @param type a character vector, is it gtf, cds, 5', 3', for messages.
-#' @param checNULL should NULL classes be checked and return indeces of these?
+#' @param checkNULL should NULL classes be checked and return indeces of these?
 validGRL <- function(class, type, checkNULL = FALSE){
   if(length(class) != length(type)) stop("not equal length of classes\n
                                          and types, see validGRL")
-  if(checkNULL){
+  if (checkNULL) {
     indeces <-"NULL" == class
 
     class <- class[!indeces]
+    if (length(class) == 0) {
+      return(rep(T, length(type)))
+    }
     type <- type[!indeces]
-  }
 
+  }
   for(classI in 1:length(class)){
-    if(class[classI] != "GRangesList"){
+    if (!is.grl(class[classI])) {
       messageI <- paste(type[classI], "must be given
           and be type GRangesList")
       stop(messageI)
     }
   }
-
-  if(checkNULL){
+  if (checkNULL) {
     return(indeces)
   }
 }
@@ -574,8 +608,9 @@ validGRL <- function(class, type, checkNULL = FALSE){
 #'  for specific packages as a character vector
 sourceBioc <- function(packages = NULL){
   source("https://bioconductor.org/biocLite.R")
-  if(!is.null(packages)){
-    if(packages == "all"){
+  if (!is.null(packages)) {
+    biocLite <- NULL # Get this from bioc
+    if (packages == "all") {
       biocLite()
     } else {
         biocLite(packages)
