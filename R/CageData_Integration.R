@@ -1,18 +1,18 @@
 #' Converts different type of files to Granges
-#' @description Only Accepts bed files for now, standard format from Fantom5
+#'
+#' Only Accepts bed files for now, standard format from Fantom5
 #' @param x An imported bed-file, to convert to GRanges
 #' @param bed6 If bed6, no meta column is added
-#' TODO: Fix the start end
 bedToGR <- function(x, bed6 = TRUE){
 
   if (!bed6) {
-    gr <- GRanges(x[, 1], IRanges(x[, 2] - 1, x[, 3]))
+    gr <- GRanges(x[, 1], IRanges(x[, 2] + 1, x[, 3]))
     return(gr)
   }
-  starts <- ifelse(x[, 6] == "+", x[, 2] - 1, x[, 2])
-  ends <- ifelse(x[, 6] == "-", x[, 3], x[, 3] - 1)
-  gr <- GRanges(x[, 1], IRanges(starts, ends))
-  strand(gr) <- x[, 6]
+  starts <- x[, 2] + 1
+  ends <- x[, 3]
+  gr <- GRanges(x[, 1], IRanges(starts, ends),
+                strand = x[, 6])
   score(gr) <- x[, 5]
   if (ncol(x) > 6) mcols(gr) <- x[, 7:ncol(x)]
   return(gr)
