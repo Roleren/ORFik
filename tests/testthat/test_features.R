@@ -242,15 +242,15 @@ test_that("floss works as intended", {
 
 test_that("te works as intended", {
 
-  scores <- te(grl, RNA, RFP, tx_len)
+  scores <- te(grl, RNA, RFP, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores,2), c(19.06, 18.00, 12.00, NaN))
 
-  scores <- te(grl, RNA, RFP2, tx_len)
+  scores <- te(grl, RNA, RFP2, tx)
   expect_is(scores, "numeric")
   expect_equal(scores, c(0, 0, 0, NaN))
 
-  scores <- te(grl, RNA2, RFP7, tx_len)
+  scores <- te(grl, RNA2, RFP7, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores,2), c(7.06, 10.00, 10.00, 9.72))
 })

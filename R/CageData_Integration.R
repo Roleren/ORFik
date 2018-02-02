@@ -2,9 +2,10 @@
 #' @description Only Accepts bed files for now, standard format from Fantom5
 #' @param x An imported bed-file, to convert to GRanges
 #' @param bed6 If bed6, no meta column is added
+#' TODO: Fix the start end
 bedToGR <- function(x, bed6 = TRUE){
 
-  if (!bed6){
+  if (!bed6) {
     gr <- GRanges(x[, 1], IRanges(x[, 2] - 1, x[, 3]))
     return(gr)
   }
@@ -25,7 +26,8 @@ cageFromFile <- function(filePath){
 
   if (.Platform$OS.type == "unix") {
     if (file.exists(filePath)) {
-      if (any(gsub(pattern = ".*\\.", "", filePath) == c("gzip", "gz", "bgz"))){
+      if (any(gsub(pattern = ".*\\.", "",
+                   filePath) == c("gzip", "gz", "bgz"))) {
         rawCage <- bedToGR(as.data.frame(
           fread(paste("gunzip -c", filePath), sep = "\t")))
       } else if (gsub(pattern = ".*\\.", "", filePath) == "bed"){
@@ -58,7 +60,7 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
   fiveSeqlevels <- seqlevels(unlist(fiveUTRs, use.names = FALSE))
   cageSeqlevels <- seqlevels(filteredCage)
   if (length(grep(pattern = "chr", fiveSeqlevels)) > 0 &&
-     length(grep(pattern = "chr", cageSeqlevels)) == 0){
+     length(grep(pattern = "chr", cageSeqlevels)) == 0) {
     message("seqnames use different chromosome naming conventions,",
             " trying to fix them")
     regexNormalChr <- '(^[a-zA-Z])*([0-9]+)' # <- chr1, chr2, not chrX, chrY etc.
@@ -89,16 +91,16 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
 #' @param cds If you want to extend 5' leaders downstream, to catch uorfs going into cds, include it.
 addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
 
-  if (length(cds) == 0){
+  if (length(cds) == 0) {
     warning("cds is empty, returning without using it.")
     return(fiveUTRs)
   }
-  if (is.null(names(cds))){
+  if (is.null(names(cds))) {
     warning("cds have no names, returning without using it.")
     return(fiveUTRs)
   }
   matchingNames <- names(fiveUTRs) %in% names(cds)
-  if (sum(matchingNames) - length(names(fiveUTRs)) != 0){ # <- check valid names
+  if (sum(matchingNames) - length(names(fiveUTRs)) != 0) { # <- check valid names
     warning("not all cds names matches fiveUTRs names, returning without using cds.")
     return(fiveUTRs)
   }
@@ -236,11 +238,13 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
   if (class(filterValue) != "numeric") stop("filterValue must be numeric!")
   if (is.null(cage)) stop("Cage can not be NULL")
 
-  if (class(cage) == "character"){ # <- get cage file
+  if (class(cage) == "character") { # <- get cage file
     filteredCage <- filterCage(cageFromFile(cage), filterValue) # get the cage data
-  } else if (class(cage) == "GRanges"){
+  } else if (class(cage) == "GRanges") {
     filteredCage <- filterCage(cage, filterValue)
-  } else {stop("Cage-file must be either a valid character filepath or GRanges object")}
+  } else {
+    stop("Cage-file must be either a valid character filepath or GRanges object")
+  }
   # check that seqnames match
   filteredCage <- matchSeqnames(filteredCage, fiveUTRs)
 

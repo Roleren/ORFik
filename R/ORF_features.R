@@ -6,6 +6,8 @@
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
+#' @importFrom data.table .SD
+#' @importFrom data.table .N
 #' @family features
 #' @export
 #' @return a matrix with 4 columns, the orfscore and score of
@@ -71,13 +73,13 @@ ORFScores <- function(grl, RFP){
 #' @return an integer vector, +1 means one base upstream of cds, -1 means
 #'   2nd base in cds, 0 means orf stops at cds start.
 distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
-  if (class(ORFs) != "GRangesList") stop("ORFs must be GRangesList Object")
-  if(is.null(extension)) stop("please specify extension, to avoid bugs\n
+  validGRL(class(ORFs), "ORFs")
+  if (is.null(extension)) stop("please specify extension, to avoid bugs\n
                               ,if you did not use cage, set it to 0,\n
                               standard cage extension is 1000")
 
-  if(extension > 0){
-    if(class(cds) != "GRangesList"){
+  if (extension > 0) {
+    if (class(cds) != "GRangesList") {
       stop("cds must be GRangesList Object,\n
         when extension > 0, cds must be included")
     }
@@ -90,7 +92,7 @@ distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
   orfsTx <- asTX(lastExons, fiveUTRs)
   # this is ok, since it is tx not genomic ->
   orfEnds <- lastExonEndPerGroup(orfsTx, F)
-  if(extension > 0){
+  if (extension > 0) {
     cdsStarts <- widthPerGroup(extendedLeadersWithoutCds[
       OrfToTxNames(lastExons)], F) + 1
   } else {
@@ -122,7 +124,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human"){
   sequences <- as.character(txSeqsFromFa(kozakLocation, faFile, is.sorted = TRUE))
   names(sequences) <- NULL
   scores <- rep(0, length(sequences))
-  if(species == "human"){
+  if (species == "human") {
     # split strings and relist as letters of 9 rows
     subSplit <- strsplit(sequences, split = "")
     # this will not when ATG is on start of chr
@@ -190,9 +192,9 @@ kozakSequenceScore <- function(grl, faFile, species = "human"){
 insideOutsideORF <- function(grl, RFP, GtfOrTx){
   overlapGrl <- countOverlaps(grl, RFP) + 1
 
-  if(class(GtfOrTx) == "TxDb"){
+  if (class(GtfOrTx) == "TxDb") {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = T)
-  } else if(class(GtfOrTx) == "GRangesList") {
+  } else if (class(GtfOrTx) == "GRangesList") {
     tx <- GtfOrTx
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
@@ -250,9 +252,9 @@ isOverlappingCds <- function(dists){
 OrfRankOrder <- function(grl){
   gr <- unlist(grl, use.names = FALSE)
 
-  if(is.null(names(grl))){
-    if(is.null(gr$names)){
-      if(is.null(names(gr))){
+  if (is.null(names(grl))) {
+    if (is.null(gr$names)) {
+      if (is.null(names(gr))) {
         stop("no valid names to find ranks")
       } else {
           orfName <- names(gr)
@@ -281,7 +283,7 @@ OrfRankOrder <- function(grl){
 
   if(is.null(orfName)) stop("grl must have column called names, with orf names")
   ranks <- as.integer(gsub(".*_", "", orfName))
-  if(anyNA(ranks)){
+  if (anyNA(ranks)) {
     stop("no valid names to find ranks, check for orf _* names, i.g tx_1, tx_2.")
   }
   return(ranks)

@@ -1,6 +1,9 @@
 
 #' Create normalizations of counts
 #'
+#' Normally use function \code{\link{fpkm}}, if you want unusual normalization
+#' , you can use this.
+#' Short for: Fragments per kilobase of transcript per million fragments
 #' Normally used in Translations efficiency calculations
 #' see article: 10.1038/nbt.1621
 #' @param counts a list of integer counts per object
@@ -9,70 +12,35 @@
 #' @family features
 #' @export
 #' @return a numeric vector
-fpkm <- function(counts, lengthSize, librarySize){
+fpkm_calc <- function(counts, lengthSize, librarySize){
   return((as.numeric(counts) * (10^9)) /
            (as.numeric(lengthSize) * as.numeric(librarySize)))
 }
 
-#' Get fpkm of ribo-seq data
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
-#'  with usually ORFs, but can also be
-#'  either leaders, cds', 3' utrs or  ORFs are a special case,
-#'  see argument tx_len
-#' @param RFP ribo seq reads as GAlignment, GRanges
-#'  or GRangesList object
-#' @param an integer, 0, set it to 1 if you want to avoid NA and inf values.
-#' @family features
-#' @export
-#' @return a numeric vector with the fpkm values
-fpkmRFP <- function(grl, RFP, pseudoCount = 0){
-
-  libraryRPF <- length(RFP)
-
-  overlapRFP <- countOverlaps(grl, RFP)
-
-  grl_len <- widthPerGroup(grl, F)
-
-  #normalize by grl lengths
-  return(fpkm(overlapRFP, grl_len, libraryRPF) + pseudoCount)
-}
-
-#' Get fpkm of RNA-seq data
+#' Create normalizations of counts
 #'
+#' Short for: Fragments per kilobase of transcript per million fragments
+#'  For ribo seq on orfs, send orfs as grl,
+#'  for rna seq always send transcripts as grl
 #' see article: 10.1038/nbt.1621
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
-#'  with usually ORFs, but can also be
-#'  either leaders, cds', 3' utrs or  ORFs are a special case,
-#'  see argument tx_len
-#' @param RNA rna seq reads as GAlignment, GRanges
-#'  or GRangesList object
-#' @param tx_len the transcript lengths of the transcripts
-#'  a named (tx names) vector of integers.
-#'  If you have the transcripts as GRangesList,
-#'  call ORFik:::widthPerGroup(tx, T)
-#'  If not:
-#'  NB!!! if you used cage data, then
-#'  the tss for the the leaders have changed,
-#'  therefor the tx lengths have changed,
-#'  if so, call:
-#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
-#'  where fiveUTRs are the changed cageLeaders.
-#' @param an integer, 0, set it to 1 if you want to avoid NA and inf values.
+#'  can be either transcripts, 5' utrs, cds', 3' utrs or
+#'  ORFs are a special case (uORFs, potential new cds' etc).
+#' @param reads a GAlignment, GRanges or GRangesList object,
+#'  usually of ribo-seq, rna seq, cage seq, etc.
+#' @param pseudoCount an integer, 0,
+#'  set it to 1 if you want to avoid NA and inf values.
 #' @family features
 #' @export
 #' @return a numeric vector with the fpkm values
-fpkmRNA <- function(grl, RNA, tx_len, pseudoCount = 0){
+fpkm <- function(grl, reads, pseudoCount = 0){
+  grl_len <- widthPerGroup(grl, FALSE)
 
-  libraryRna <- length(RNA)
+  overlaps <- countOverlaps(grl, reads)
 
-  overlapRNA <- countOverlaps(grl, RNA)
+  librarySize <- length(reads)
 
-  if(is.null(names(tx_len))) stop("tx_len have no names")
-  tx_len <- tx_len[OrfToTxNames(grl)]
-  if(sum(is.na(tx_len))) stop("tx_len have na values, check naming")
-
-  #normalize by tx lengths
-  return(fpkm(overlapRNA, tx_len, libraryRna) + pseudoCount)
+  return(fpkm_calc(overlaps, grl_len, librarySize) + pseudoCount)
 }
 
 
@@ -116,7 +84,7 @@ entropy <- function(grl, reads) {
   names(countList) <- NULL
   # generate the entropy variables
   sums <- sum(countList)
-  if(sum(as.numeric(sums)) == 0){ # no variance in countList, 0 entropy
+  if (sum(as.numeric(sums)) == 0) { # no variance in countList, 0 entropy
     return(rep(0, length(tileBy1)))
   }
   N <- unlist(sums, use.names = F)
@@ -242,13 +210,13 @@ calculateCoverage <- function(countsOver) {
 #' @return a vector of FLOSS of length same as grl
 floss <- function(grl, RFP, cds, start = 26, end = 34){
   #TODO: add 0 to the ones that dont hit
-  if(start > end) stop("start is bigger than end")
-  if(class(RFP) == "GRangesList"){
+  if (start > end) stop("start is bigger than end")
+  if (class(RFP) == "GRangesList"){
     stop("RFP must be either GAlignment or GRanges type")
   }
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
-  if(class(RFP) == "GRanges"){
+  if (class(RFP) == "GRanges"){
     rfpWidth <- width(RFP[to(overlaps)])
   } else {
     rfpWidth <- qwidth(RFP[to(overlaps)])
@@ -256,11 +224,11 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
-  if(sum(as.numeric(ORFGrouping)) == 0){
+  if (sum(as.numeric(ORFGrouping)) == 0){
     return(as.numeric(rep(0, length(grl))))
   }
   whichNoHit <- NULL # which ribo-seq did not hit grl
-  if(length(unique(ORFGrouping)) != length(grl)){
+  if (length(unique(ORFGrouping)) != length(grl)) {
     whichNoHit <- S4Vectors::setdiff.Vector(1:length(grl),
                                             unique(ORFGrouping))
   }
@@ -274,7 +242,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 
   # for cds
   overlapsCds <- findOverlaps(cds, RFP)
-  if(class(RFP) == "GRanges"){
+  if (class(RFP) == "GRanges"){
     rfpWidth <- width(RFP[to(overlapsCds)])
   } else {
     rfpWidth <- qwidth(RFP[to(overlapsCds)])
@@ -292,13 +260,13 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   score <- sapply(1:length(orfFractions), function(x){
     sum(abs(orfFractions[[x]] - cdsFractions)) * 0.5
   })
-  if(!is.null(whichNoHit)){
+  if (!is.null(whichNoHit)) {
     tempScores <- as.numeric(rep(NA, length(grl)))
     tempScores[unique(ORFGrouping)] <- score
     tempScores[whichNoHit] <- 0.
     score <- tempScores
   }
-  if(length(score) != length(grl) || anyNA(score)) stop("could not find\n
+  if (length(score) != length(grl) || anyNA(score)) stop("could not find\n
                                         floss-score for all objects, most\n
                                         likely objects are wrongly annotated.")
   return(score)
@@ -308,48 +276,35 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' @description Uses Rna-seq and Ribo-seq to get te of grl
 #' is defined as (density of RPFs within ORF)/(RNA expression).
 #' See article: 10.1126/science.1168978
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with
-#'  usually either leaders,
-#'  cds', 3' utrs or ORFs. ORFs is a special case, see argument tx_len
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  can be either transcripts, 5' utrs, cds', 3' utrs or
+#'  ORFs are a special case (uORFs, potential new cds' etc).
 #' @param RNA rna seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
-#' @param tx_len the transcript lengths of the transcripts
-#'  a named (tx names) vector of integers.
-#'  If you have the transcripts as GRangesList,
-#'  call ORFik:::widthPerGroup(tx, T)
-#'  If not:
+#' @param tx a GRangesList of the transcripts,
 #'  NB!!! if you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
 #'  if so, call:
-#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
+#'  te(grl, RNA, RFP, tx= TxLen(Gtf, fiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders.
 #' @param with.fpkm logical F, if true return the fpkm values together with te
+#' @param pseudoCount an integer, 0,
+#'  set it to 1 if you want to avoid NA and inf values.
 #' @importFrom data.table data.table
 #' @family features
 #' @export
 #' @return a numeric vector of fpkm ratios, if with.fpkm is TRUE
 #'  ,return a data.table with te and fpkm values
-te <- function(grl, RNA, RFP, tx_len, with.fpkm = F){
-
-  libraryRna <- length(RNA)
-  libraryRPF <- length(RFP)
-
-  overlapRNA <- countOverlaps(grl, RNA)
-  overlapRFP <- countOverlaps(grl, RFP)
-
-  if(is.null(names(tx_len))) stop("tx_len have no names")
-  tx_len <- tx_len[OrfToTxNames(grl)]
-  if(sum(is.na(tx_len))) stop("tx_len have na values, check naming")
-  grl_len <- widthPerGroup(grl, F)
-
+te <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
+  tx <- tx[OrfToTxNames(grl)]
   #normalize by tx lengths
-  fpkmRNA <- fpkm(overlapRNA, tx_len, libraryRna)
+  fpkmRNA <- fpkm(tx, RNA, pseudoCount)
   #normalize by grl lengths
-  fpkmRFP <- fpkm(overlapRFP, grl_len, libraryRPF)
-  if(with.fpkm){
+  fpkmRFP <- fpkm(grl, RFP, pseudoCount)
+  if (with.fpkm) {
     return(data.table(fpkmRFP = fpkmRFP, fpkmRNA = fpkmRNA,
                       te = fpkmRFP / fpkmRNA))
   }
@@ -377,7 +332,7 @@ te <- function(grl, RNA, RFP, tx_len, with.fpkm = F){
 #' @export
 #' @return a numeric vector of ratios
 fractionLength <- function(grl, tx_len){
-  grl_len <- widthPerGroup(grl, F)
+  grl_len <- widthPerGroup(grl, FALSE)
   tx_len <- tx_len[OrfToTxNames(grl)]
   names(tx_len) <- NULL
   return(grl_len / tx_len)
@@ -401,9 +356,9 @@ fractionLength <- function(grl, tx_len){
 disengagementScore <- function(grl, RFP, GtfOrTx){
   overlapGrl <- countOverlaps(grl, RFP) + 1
 
-  if(class(GtfOrTx) == "TxDb"){
+  if (class(GtfOrTx) == "TxDb") {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = T)
-  } else if(class(GtfOrTx) == "GRangesList") {
+  } else if (class(GtfOrTx) == "GRangesList") {
     tx <- GtfOrTx
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
@@ -442,10 +397,10 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' @return a named vector of numeric values of scores, NA means that
 #'  no 3' utr was found for that transcript.
 RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
-  if(class(GtfOrThreeUtrs) == "TxDb"){
+  if (class(GtfOrThreeUtrs) == "TxDb") {
     threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
                                         use.names = T)
-  } else if(class(GtfOrThreeUtrs) == "GRangesList") {
+  } else if (class(GtfOrThreeUtrs) == "GRangesList") {
     threeUTRs <- GtfOrThreeUtrs
   } else {
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
@@ -455,7 +410,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   validNamesThree <- names(threeUTRs) %in% orfNames
   validNamesGRL <- orfNames %in% names(threeUTRs)
   rrs <- rep(NA,length(grl))
-  if(sum(validNamesGRL) != length(grl)){
+  if (sum(validNamesGRL) != length(grl)) {
     threeUTRs <- threeUTRs[validNamesThree]
     grl <- grl[validNamesGRL]
   }
@@ -466,7 +421,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   rrs[validNamesGRL] <- (overlapGrl / ORFik:::widthPerGroup(grl)) /
     (overlapThreeUtrs /  ORFik:::widthPerGroup(threeUTRs))
 
-  if(!is.null(RNA)){ # normalize by rna ratio
+  if (!is.null(RNA)) { # normalize by rna ratio
     rnaRatio <- (countOverlaps(grl, RNA) + 1) /
       (countOverlaps(threeUTRs, RNA) + 1)
     rrs[validNamesGRL] <- rrs[validNamesGRL] / rnaRatio
@@ -531,10 +486,10 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   checkRFP(class(RFP))
   checkRNA(class(RNA))
   tx_len <- NULL
-  if(is.null(Gtf)){
+  if (is.null(Gtf)) {
     validGRL(c(class(fiveUTRs), class(cds), class(threeUTRs)),
              c("fiveUTRs", "cds", "threeUTRs"))
-    if(class(tx) != "GRangesList"){ stop("if Gtf is not given,\n
+    if (class(tx) != "GRangesList") { stop("if Gtf is not given,\n
                              tx must be specified as a GRangesList")
     }
   } else {
@@ -543,20 +498,20 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
                               class(threeUTRs), class(tx)), c("fiveUTRs",
                                 "cds", "threeUTRs", "tx"), TRUE)
-    if(notIncluded[1]){
+    if (notIncluded[1]) {
       fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
     }
-    if(notIncluded[2]){
+    if (notIncluded[2]) {
       cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
     }
-    if(notIncluded[3]){
+    if (notIncluded[3]) {
       threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
     }
-    if(notIncluded[4]){
+    if (notIncluded[4]) {
       tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
     }
   }
-  if(!is.null(cageFiveUTRs)){
+  if (!is.null(cageFiveUTRs)) {
     tx <- ORFik:::extendLeaders(tx, extension = cageFiveUTRs)
   }
   tx_len <- ORFik:::widthPerGroup(tx, TRUE)
@@ -570,17 +525,17 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                        fractionLengths = fractionLengths,
                        disengagementScores = disengagementScores,
                        RRS = RRS)
-  if(!is.null(RNA)){ # if rna seq is included
+  if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
-    te <- ORFik:::te(grl, RNA, RFP, tx_len, with.fpkm = T)
+    te <- ORFik:::te(grl, RNA, RFP, tx, with.fpkm = T)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA
   }
-  if(orfFeatures){ # if features are found for orfs
+  if (orfFeatures) { # if features are found for orfs
     scores$ORFScores <- ORFik:::ORFScores(grl, RFP)$ORFscore
 
-    if(class(faFile) == "FaFile"){
+    if (class(faFile) == "FaFile") {
       scores$kozak <- ORFik:::kozakSequenceScore(grl, faFile)
     } else { message("faFile not included, skipping kozak sequence score")}
     scores$ioScore <- ORFik:::insideOutsideORF(grl, RFP, tx)

@@ -9,7 +9,8 @@ bedToGR(x, bed6 = TRUE)
 \arguments{
 \item{x}{An imported bed-file, to convert to GRanges}
 
-\item{bed6}{If bed6, no meta column is added}
+\item{bed6}{If bed6, no meta column is added
+TODO: Fix the start end}
 }
 \description{
 Only Accepts bed files for now, standard format from Fantom5
