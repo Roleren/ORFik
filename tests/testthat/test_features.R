@@ -49,10 +49,10 @@ ORFranges4 <- GRanges(seqnames = Rle(rep("1", 3)),
                       ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
                       strand = Rle(strand(rep("-", 3))))
 ORFranges4 <- sort(ORFranges4, decreasing = TRUE)
-names(ORFranges) = rep("tx1_1" ,3)
-names(ORFranges2) = rep("tx1_2", 3)
-names(ORFranges3) = rep("tx1_3", 3)
-names(ORFranges4) = rep("tx4_1", 3)
+names(ORFranges) <- rep("tx1_1" ,3)
+names(ORFranges2) <- rep("tx1_2", 3)
+names(ORFranges3) <- rep("tx1_3", 3)
+names(ORFranges4) <- rep("tx4_1", 3)
 grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2,
                    tx1_3 = ORFranges3, tx4_1 = ORFranges4)
 
@@ -212,22 +212,38 @@ test_that("disengagementScore works as intended", {
 test_that("RibosomeReleaseScore works as intended", {
   scores <- RibosomeReleaseScore(grl, RFP, threeUTRs)
   expect_is(scores, "numeric")
-  expect_equal(round(scores,2), c(11.76, 11.11, 8.33, 2.72))
+  expect_equal(round(scores, 2), c(11.76, 11.11, 8.33, 2.72))
 
   scores <- RibosomeReleaseScore(grl, RFP2, threeUTRs)
   expect_is(scores, "numeric")
-  expect_equal(round(scores,2), c(2.94, 2.78, 2.78, 2.72))
+  expect_equal(round(scores, 2), c(2.94, 2.78, 2.78, 2.72))
 
   scores <- RibosomeReleaseScore(grl, RFP7, threeUTRs)
   expect_is(scores, "numeric")
-  expect_equal(round(scores,2), c(8.82, 11.11, 11.11, 2.72))
+  expect_equal(round(scores, 2), c(8.82, 11.11, 11.11, 2.72))
 })
+
+test_that("RibosomeStallingScore works as intended", {
+  scores <- RibosomeStallingScore(grl, RFP)
+  expect_is(scores, "numeric")
+  expect_equal(round(scores, 2), c(2.83, 3.00, 2.00, 6.00))
+
+  scores <- RibosomeStallingScore(grl, RFP2)
+  expect_is(scores, "numeric")
+  expect_equal(round(scores, 2), c(5.67, 6.00, 6.00, 6.00))
+
+  scores <- RibosomeStallingScore(grl, RFP7)
+  expect_is(scores, "numeric")
+  expect_equal(round(scores, 2), c(5.67, 3.00, 3.00, 6.00))
+})
+
+
 
 test_that("floss works as intended", {
 
   scores <- floss(grl, RFP5, cds, 26, 34)
   expect_is(scores, "numeric")
-  expect_equal(round(scores,2), c(0.25, 0.08, 0.08, 0.00))
+  expect_equal(round(scores, 2), c(0.25, 0.08, 0.08, 0.00))
 
   scores <- floss(grl, RFP2, cds, 26, 34)
   expect_is(scores, "numeric")
@@ -235,7 +251,7 @@ test_that("floss works as intended", {
 
   scores <- floss(grl, RFP7, cds, 26, 34)
   expect_is(scores, "numeric")
-  expect_equal(round(scores,2), c(0.25, 0.08, 0.08, 0.08))
+  expect_equal(round(scores, 2), c(0.25, 0.08, 0.08, 0.08))
 })
 
 
@@ -292,7 +308,7 @@ test_that("inFrameWithCDS works as intended", {
 
   inFrame <- inFrameWithCDS(scores)
   expect_is(inFrame, "numeric")
-  expect_equal(inFrame, c(1, 1, 1, 2))
+  expect_equal(inFrame, c(0, 0, 0, 1))
 })
 
 test_that("isOverlappingCds works as intended", {
@@ -316,7 +332,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 14)
+  expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
@@ -324,7 +340,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 14)
+  expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
@@ -332,7 +348,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 14)
+  expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
@@ -340,7 +356,7 @@ test_that("allFeatures works as intended", {
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 14)
+  expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
 })

@@ -19,7 +19,6 @@ Depends:
     GenomicRanges,
     GenomicAlignments
 Imports:
-    seqinr,
     S4Vectors,
     GenomeInfoDb,
     GenomicFeatures,

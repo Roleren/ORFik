@@ -199,7 +199,14 @@ calculateCoverage <- function(countsOver) {
 }
 
 #' Fragment Length Organization Similarity Score
-#' @description See article: 10.1016/j.celrep.2014.07.045
+#'
+#' Defined as: for riboseq reads between size start and stop,
+#' sum the fraction of riboseq with width in the interval start:stop
+#' for orfs.
+#' Divided by the fraction of rriboseq with width in the interval
+#' start:stop for coding sequences.
+#' A sum of ratios
+#' See article: 10.1016/j.celrep.2014.07.045
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment or GRanges object
 #' @param cds a \code{\link[GenomicRanges]{GRangesList}} of coding sequences
@@ -376,10 +383,12 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 }
 
 #' Ribosome Release Score (RRS)
-#' @description is defined as (RPFs over ORF)/(RPFs over 3' utrs).
+#'
+#' Is defined as (RPFs over ORF)/(RPFs over 3' utrs),
 #' normalized by lengths
 #' , if RNA is added as argument, normalize by RNA counts over areas too
 #' to justify location of 3' utrs
+#' It can be seen as a ribosome stalling feature.
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' See article: 10.1016/j.cell.2013.06.009
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
@@ -418,8 +427,8 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   threeUTRs <- threeUTRs[orfNames[validNamesGRL]]
   overlapThreeUtrs <- countOverlaps(threeUTRs, RFP) + 1
 
-  rrs[validNamesGRL] <- (overlapGrl / ORFik:::widthPerGroup(grl)) /
-    (overlapThreeUtrs /  ORFik:::widthPerGroup(threeUTRs))
+  rrs[validNamesGRL] <- (overlapGrl / widthPerGroup(grl)) /
+    (overlapThreeUtrs / widthPerGroup(threeUTRs))
 
   if (!is.null(RNA)) { # normalize by rna ratio
     rnaRatio <- (countOverlaps(grl, RNA) + 1) /
@@ -430,7 +439,34 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   return(rrs)
 }
 
-#' Get all possible feature in ORFik
+#' Ribosome Stalling Score (RSS)
+#'
+#' Is defined as (RPFs over ORF stop sites)/(RPFs over ORFs),
+#' normalized by lengths
+#' A pseudo-count of one was added to both the ORF and downstream sums.
+#' See article: 10.1016/j.cels.2017.08.004
+#'
+#' For a more accurate analysis see article:  10.1016/j.cels.2017.08.004.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#'  with usually either leaders,
+#'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
+#' @param RFP ribo seq reads as GAlignment, GRanges
+#'  or GRangesList object
+#' @family features
+#' @export
+#' @return a named vector of numeric values of scores
+RibosomeStallingScore <- function(grl, RFP){
+  grl_len <- widthPerGroup(grl, FALSE)
+  overlapGrl <- countOverlaps(grl, RFP)
+  stopCodons <- ORFStopCodons(grl, TRUE)
+  overlapStop <- countOverlaps(stopCodons, RFP)
+
+  rss <- ((overlapStop + 1) / 3) / ((overlapGrl + 1) / grl_len)
+  names(rss) <- NULL
+  return(rss)
+}
+
+#' Get all possible features in ORFik
 #' @description If you want to get all the features easily, run this function.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
@@ -512,38 +548,39 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     }
   }
   if (!is.null(cageFiveUTRs)) {
-    tx <- ORFik:::extendLeaders(tx, extension = cageFiveUTRs)
+    tx <- extendLeaders(tx, extension = cageFiveUTRs)
   }
-  tx_len <- ORFik:::widthPerGroup(tx, TRUE)
+  tx_len <- widthPerGroup(tx, TRUE)
 
-  floss <- ORFik:::floss(grl, RFP, cds, riboStart, riboStop)
-  entropyRFP <- ORFik:::entropy(grl, RFP)
-  fractionLengths <- ORFik:::fractionLength(grl, tx_len)
-  disengagementScores <- ORFik:::disengagementScore(grl, RFP, tx)
-  RRS <- ORFik:::RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+  floss <- floss(grl, RFP, cds, riboStart, riboStop)
+  entropyRFP <- entropy(grl, RFP)
+  fractionLengths <- fractionLength(grl, tx_len)
+  disengagementScores <- disengagementScore(grl, RFP, tx)
+  RRS <- RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+  RSS <- RibosomeStallingScore(grl, RFP)
   scores <- data.table(floss = floss, entropyRFP = entropyRFP,
                        fractionLengths = fractionLengths,
                        disengagementScores = disengagementScores,
-                       RRS = RRS)
+                       RRS = RRS, RSS = RSS)
   if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
-    te <- ORFik:::te(grl, RNA, RFP, tx, with.fpkm = T)
+    te <- te(grl, RNA, RFP, tx, with.fpkm = T)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA
   }
   if (orfFeatures) { # if features are found for orfs
-    scores$ORFScores <- ORFik:::ORFScores(grl, RFP)$ORFscore
+    scores$ORFScores <- ORFScores(grl, RFP)$ORFscore
 
     if (class(faFile) == "FaFile") {
-      scores$kozak <- ORFik:::kozakSequenceScore(grl, faFile)
+      scores$kozak <- kozakSequenceScore(grl, faFile)
     } else { message("faFile not included, skipping kozak sequence score")}
-    scores$ioScore <- ORFik:::insideOutsideORF(grl, RFP, tx)
-    distORFCDS <- ORFik:::distOrfToCds(grl, fiveUTRs, cds, extension)
+    scores$ioScore <- insideOutsideORF(grl, RFP, tx)
+    distORFCDS <- distOrfToCds(grl, fiveUTRs, cds, extension)
     scores$distORFCDS <- distORFCDS
-    scores$inFrameCDS <- ORFik:::inFrameWithCDS(distORFCDS)
-    scores$isOverlappingCds <- ORFik:::isOverlappingCds(distORFCDS)
-    scores$rankInTx <- ORFik:::OrfRankOrder(grl)
+    scores$inFrameCDS <- inFrameWithCDS(distORFCDS)
+    scores$isOverlappingCds <- isOverlappingCds(distORFCDS)
+    scores$rankInTx <- OrfRankOrder(grl)
   } else {
     message("orfFeatures set to False, dropping all orf features.")
   }

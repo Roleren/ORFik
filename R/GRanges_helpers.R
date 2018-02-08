@@ -109,12 +109,12 @@ strandPerGroup <- function(grl, keep.names = T){
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
 strandBool <- function(grl){
   if (class(grl) == "GRanges") {
-    posIndeces <- as.character(strand(grl)) == "+"
+    posIndices <- as.character(strand(grl)) == "+"
   } else {
-    posIndeces <- strandPerGroup(grl, F) == "+"
+    posIndices <- strandPerGroup(grl, F) == "+"
   }
 
-  sums <- sum(posIndeces) + sum(!posIndeces)
+  sums <- sum(posIndices) + sum(!posIndices)
   if (is.na(sums)) {
     stop("could not get strands from grl object,\n
           most likely NULL object was passed.")
@@ -122,7 +122,7 @@ strandBool <- function(grl){
   if (sums != length(grl)) {
     stop("grl contains * strands, set them to either + or -")
   }
-  return(posIndeces)
+  return(posIndices)
 }
 
 #' get first exon per GRangesList group
@@ -347,11 +347,11 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
 assignFirstExonsStartSite <- function(grl, newStarts){
   if (length(grl) != length(newStarts)) stop("length of grl and newStarts \n
                                             are not equal!")
-  posIndeces <- strandBool(grl)
+  posIndices <- strandBool(grl)
 
   dt <- as.data.table(grl)
-  dt[!duplicated(dt$group),]$start[posIndeces] <- newStarts[posIndeces]
-  dt[!duplicated(dt$group),]$end[!posIndeces] <- newStarts[!posIndeces]
+  dt[!duplicated(dt$group),]$start[posIndices] <- newStarts[posIndices]
+  dt[!duplicated(dt$group),]$end[!posIndices] <- newStarts[!posIndices]
 
   ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
     split.field = "group", names.field = "group_name", keep.extra.columns = T)
@@ -371,12 +371,12 @@ assignFirstExonsStartSite <- function(grl, newStarts){
 assignLastExonsStopSite <- function(grl, newStops){
   if (length(grl) != length(newStops)) stop("length of grl and newStops \n
                                            are not equal!")
-  posIndeces <- strandBool(grl)
+  posIndices <- strandBool(grl)
 
   dt <- as.data.table(grl)
   idx = dt[, .I[.N], by=group]
-  dt[idx$V1]$end[posIndeces] <- newStops[posIndeces]
-  dt[idx$V1]$start[!posIndeces] <- newStops[!posIndeces]
+  dt[idx$V1]$end[posIndices] <- newStops[posIndices]
+  dt[idx$V1]$start[!posIndices] <- newStops[!posIndices]
   ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
     split.field = "group", names.field = "group_name",
       keep.extra.columns = TRUE)
@@ -398,18 +398,18 @@ assignLastExonsStopSite <- function(grl, newStops){
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
 downstreamOfPerGroup <- function(tx, downstreamOf){
-  posIndeces <- strandBool(tx)
-  posEnds <- end(tx[posIndeces])
-  negEnds <- start(tx[!posIndeces])
-  posDown <- downstreamOf[posIndeces]
-  negDown <- downstreamOf[!posIndeces]
+  posIndices <- strandBool(tx)
+  posEnds <- end(tx[posIndices])
+  negEnds <- start(tx[!posIndices])
+  posDown <- downstreamOf[posIndices]
+  negDown <- downstreamOf[!posIndices]
   pos <- posEnds > posDown
   neg <- negEnds < negDown
-  posTx <- tx[posIndeces][pos]
-  negTx <- tx[!posIndeces][neg]
+  posTx <- tx[posIndices][pos]
+  negTx <- tx[!posIndices][neg]
   downTx <- tx
-  downTx[posIndeces] <- posTx
-  downTx[!posIndeces] <- negTx
+  downTx[posIndices] <- posTx
+  downTx[!posIndices] <- negTx
   #check if anyone hits boundary, set those to boundary
   if (anyNA(strandPerGroup(downTx, FALSE))) {
     boundaryHits <- which(is.na(strandPerGroup(downTx, FALSE)))
@@ -435,27 +435,27 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new start point of first valid exon.
 upstreamOfPerGroup <- function(tx, upstreamOf){
-  posIndeces <- strandBool(tx)
-  posStarts <- start(tx[posIndeces])
-  negStarts <- end(tx[!posIndeces])
-  posGrlStarts <- upstreamOf[posIndeces]
-  negGrlStarts <- upstreamOf[!posIndeces]
+  posIndices <- strandBool(tx)
+  posStarts <- start(tx[posIndices])
+  negStarts <- end(tx[!posIndices])
+  posGrlStarts <- upstreamOf[posIndices]
+  negGrlStarts <- upstreamOf[!posIndices]
   pos <- posStarts < posGrlStarts
   neg <- negStarts > negGrlStarts
   # need to fix pos/neg with possible cage extensions
   outside <- which(sum(pos) == 0)
   pos[outside] = T
-  posTx <- tx[posIndeces]
+  posTx <- tx[posIndices]
   posTx[outside] <- firstExonPerGroup(posTx[outside])
   outside <- which(sum(neg) == 0)
   neg[outside] = T
-  negTx <- tx[!posIndeces]
+  negTx <- tx[!posIndices]
   negTx[outside] <- firstExonPerGroup(negTx[outside])
 
   posTx <- posTx[pos]
   negTx <- negTx[neg]
-  tx[posIndeces] <- posTx
-  tx[!posIndeces] <- negTx
+  tx[posIndices] <- posTx
+  tx[!posIndices] <- negTx
 
   return(assignLastExonsStopSite(tx, upstreamOf))
 }
@@ -478,12 +478,12 @@ upstreamOfPerGroup <- function(tx, upstreamOf){
 #'  Do not add for transcripts, as they are already included.
 extendLeaders <- function(grl, extension = 1000, cds = NULL){
   if (class(extension) == "numeric" && length(extension) == 1) {
-    posIndeces <- strandBool(grl)
+    posIndices <- strandBool(grl)
     promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
       upstream = extension)
     newStarts <- rep(NA, length(grl))
-    newStarts[posIndeces] <- as.integer(start(promo[posIndeces]))
-    newStarts[!posIndeces] <- as.integer(end(promo[!posIndeces]))
+    newStarts[posIndices] <- as.integer(start(promo[posIndices]))
+    newStarts[!posIndices] <- as.integer(end(promo[!posIndices]))
   } else if (is.grl(class(grl))) {
     starts <- ORFStartSites(extension)
     changedGRL <-downstreamOfPerGroup(grl[names(extension)], starts)

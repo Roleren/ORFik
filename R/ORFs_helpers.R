@@ -212,3 +212,36 @@ ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   }
   return(stopSites)
 }
+
+
+#' get the Stop codons(3 bases) from a GRangesList of orfs grouped by orfs
+#'
+#' In ATGTTTTGC, get the positions TGC.
+#' It takes care of exons boundaries, with exons < 3 length.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @return a GRangesList of stopCodons, since they might be split on exons
+ORFStopCodons <- function(grl, is.sorted = FALSE){
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
+  }
+  lastExons <- ORFik:::lastExonPerGroup(grl)
+  widths <- ORFik:::widthPerGroup(lastExons)
+  validWidths <- widths >= 3
+  if(!all(validWidths)){ # fix short exons by tiling
+    needToFix <- grl[!validWidths]
+    tileBy1 <- ORFik:::tile1(needToFix)
+    fixedStops <- reduce(ptail(tileBy1, 3L))
+    grl[!validWidths] <- fixedStops
+  }
+  # fix the others the easy way
+  lastExons <- lastExons[validWidths]
+  posIds <- ORFik:::strandBool(lastExons)
+
+  start(lastExons[posIds]) <- end(lastExons[posIds]) - 2L
+  end(lastExons[!posIds]) <- start(lastExons[!posIds]) + 2L
+
+  grl[validWidths] <- lastExons
+
+  return(grl)
+}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{allFeatures}
 \alias{allFeatures}
-\title{Get all possible feature in ORFik}
+\title{Get all possible features in ORFik}
 \usage{
 allFeatures(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
@@ -74,6 +74,7 @@ try ?floss
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},

@@ -223,12 +223,18 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 #' find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function distOrfToCds
+#' possible outputs:
+#' 0: orf is in frame with cds
+#' 1: 1 shifted from cds
+#' 2: 2 shifted from cds
+#'
 #' See article:  10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @export
 inFrameWithCDS <- function(dists){
-  return(dists %% 3)
+
+  return((dists - 1) %% 3)
 }
 
 #' find frame for each orf relative to cds
@@ -238,6 +244,7 @@ inFrameWithCDS <- function(dists){
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @export
+#' @return a logical vector
 isOverlappingCds <- function(dists){
   return(dists < 0)
 }
@@ -249,6 +256,7 @@ isOverlappingCds <- function(dists){
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @family features
 #' @export
+#' @return a numeric vector of integers
 OrfRankOrder <- function(grl){
   gr <- unlist(grl, use.names = FALSE)
 
