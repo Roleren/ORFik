@@ -53,7 +53,7 @@ include this, also extension must match with the extension used for these.}
 \value{
 a data.table with scores, each column is one score type, name of
  columns are the names of the scores, i.g \code{\link{floss}}
- or \code{\link{fpkmRFP}}
+ or \code{\link{fpkm}}
 }
 \description{
 If you want to get all the features easily, run this function.

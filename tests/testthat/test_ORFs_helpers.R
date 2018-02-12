@@ -314,6 +314,57 @@ test_that("GRangesList sorting works as intended", {
                                                        2015, 3004, 3036))
 })
 
+test_that("ORFStartCodons works as intended", {
+
+  ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
+                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                       strand = Rle(strand(rep("+", 3))))
+
+  ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+                        ranges = IRanges(start = c(20, 30, 40), end = c(25, 35, 45)),
+                        strand = Rle(strand(rep("+", 3))))
+
+  ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
+                        ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                        strand = Rle(strand(rep("+", 3))))
+  ORFranges4 <- GRanges(seqnames = Rle(rep("1", 3)),
+                        ranges = IRanges(start = c(50, 40, 30), end = c(55, 45, 35)),
+                        strand = Rle(strand(rep("-", 3))))
+  ORFranges5 <- GRanges(seqnames = Rle(rep("1", 4)),
+                        ranges = IRanges(start = c(1000, 1002, 1004, 1006),
+                                         end = c(1000, 1002, 1004, 1006)),
+                        strand = Rle(strand(rep("+", 4))))
+  ORFranges6 <- GRanges(seqnames = Rle(rep("1", 4)),
+                        ranges = IRanges(start = c(1002, 1004, 1005, 1006),
+                                         end = c(1002, 1004, 1005, 1006)),
+                        strand = Rle(strand(rep("+", 4))))
+  ORFranges4 <- sort(ORFranges4, decreasing = TRUE)
+  names(ORFranges) <- rep("tx1_1" ,3)
+  names(ORFranges2) <- rep("tx1_2", 3)
+  names(ORFranges3) <- rep("tx1_3", 3)
+  names(ORFranges4) <- rep("tx4_1", 3)
+  names(ORFranges5) <- rep("tx1_4", 4)
+  names(ORFranges6) <- rep("tx1_5", 4)
+  grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2,
+                     tx1_3 = ORFranges3, tx4_1 = ORFranges4,
+                     tx1_4 = ORFranges5, tx1_5 = ORFranges6)
+
+
+  test_ranges <- ORFStartCodons(grl, TRUE)
+
+  expect_is(test_ranges, "GRangesList")
+  expect_is(strand(test_ranges),"CompressedRleList")
+  expect_is(seqnames(test_ranges),"CompressedRleList")
+  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(as.integer(unlist(start(test_ranges))), c(1,
+                                                         20, 30, 53, 1000,
+                                                         1002, 1004, 1002, 1004))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(3,
+                                                       22, 32, 55, 1000,
+                                                       1002, 1004, 1002, 1005))
+
+})
+
 test_that("ORFStopCodons works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
@@ -350,12 +401,12 @@ test_that("ORFStopCodons works as intended", {
                      tx1_4 = ORFranges5, tx1_5 = ORFranges6)
 
 
-  test_ranges <- ORFik:::ORFStopCodons(grl, TRUE)
+  test_ranges <- ORFStopCodons(grl, TRUE)
 
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(ORFik:::strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
   expect_equal(as.integer(unlist(start(test_ranges))), c(23,
                                                          43, 53, 30, 1002,
                                                          1004, 1006, 1003, 1006))
@@ -365,5 +416,33 @@ test_that("ORFStopCodons works as intended", {
 
 })
 
+test_that("uniqueORFs works as intended", {
 
+  ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
+                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                       strand = Rle(strand(rep("+", 3))),
+                       names = paste0("tx1_", rep(1, 3)))
+  ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                       strand = Rle(strand(rep("+", 3))),
+                       names = paste0("tx2_", rep(1, 3)))
+  ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
+                        ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                        strand = Rle(strand(rep("-", 3))),
+                        names = paste0("tx3_", rep(1, 3)))
+
+  names(ORFranges) <- rep("tx1_1" ,3)
+  names(ORFranges2) <- rep("tx2_1", 3)
+  names(ORFranges3) <- rep("tx3_1", 3)
+  grl <- GRangesList(tx1_1 = ORFranges, tx2_1 = ORFranges2,
+                     tx3_1 = ORFranges3)
+
+  test_ranges <- uniqueORFs(grl)
+
+  expect_is(test_ranges, "GRangesList")
+  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(length(test_ranges), 2)
+  expect_equal(names(test_ranges),  c("1", "2"))
+
+})
 

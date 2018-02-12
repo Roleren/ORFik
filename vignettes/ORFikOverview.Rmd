@@ -111,13 +111,12 @@ txdb <- loadDb(samplefile)
 fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
 cageData <- system.file("extdata", "cage_data_heart.bed.bgz",
                 package = "ORFik") # location of the cage file
-extension <- 1000 # how much upstream of the original tss
-# can the new tss be ?
+extension <- 1000 # how much upstream of the original tss can the new tss be ?
+
 filterValue <- 2 # filter for max cage-peak, how many reads must the max peak have
 # to be valid ?
 cds <- cdsBy(txdb, by = "tx", use.names = TRUE) # if you want to find 
-# upstream open reading frames (uORFs), they can go into the cds.
-# therefor we need the coding sequences.
+# upstream open reading frames (uORFs), that can go into the cds.
 changedFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData, extension,
                                         filterValue, cds)
 View(changedFiveUTRs)
@@ -131,7 +130,7 @@ on average after reassignment by cage.
 
 # Finding tissue specific ORFs
 Using the results from the last example, lets find the tissue specific uORFs from
-the heart cage-data.
+the example heart cage-data.
 
 ```r
 # From the previous two examples we had Hsapiens and changedFiveUTRs.
@@ -141,8 +140,9 @@ Hsapiens <- NULL # get this from the BSGenome example
 
 tx_seqs <- extractTranscriptSeqs(Hsapiens, changedFiveUTRs) # <- Now get only fiveUTRs fastasequences
 
-uORFs <- find_in_frame_ORFs(changedFiveUTRs,tx_seqs)
-View(uORFs)
+# run this:
+#uORFs <- find_in_frame_ORFs(changedFiveUTRs,tx_seqs)
+#View(uORFs)
 ```
 The uORFs from this example will most likely contain some uORFs not in the original
 example, also some will be lost. This is, because different tissues transcribes
@@ -165,31 +165,109 @@ Now lets do an example to get all features.
 # From the previous two examples we had Hsapiens and changedFiveUTRs.
 # we now assign to null to avoid vignette error.
 # additionally we need the GenomicAlignments package
-library(GenomicAlignments)
-changedFiveUTRs <- NULL # get this object from previous example
-Hsapiens <- NULL # get this from the BSGenome example, a FaFile.
-txdb <-NULL # the gtf file as TxDb
-uORFs <- NULL # the uorfs from previous example
-fiveUTRs <- NULL # the original non cage 5' utrs
-
-
-RFP <- import.bed(system.file("extdata", "ribo-seq-heart.bed.bgz",
-                package = "ORFik")) # can also be bam
-RNA <- import.bed(system.file("extdata", "rna-seq-heart.bed.bgz",
-                package = "ORFik")) # can also be bam
-# important thing  here! if RFP and RNA is not shifted for the p-site,
-# the scores will be wrong.
-# You can use ORFik to do this.
-riboStart <- 26 # minimum allowed fragment length on ribo-seq data.
-riboStop <- 34 # maximum allowed fragment length on ribo-seq data.
-extension <- 1000 # in the original cage-data example, we extended the
-# 5' utrs by a 1000 upstream, add this as information.
-
-allFeatures <- allFeatures(grl = uORFs, orfFeatures = T, RFP, RNA,  Gtf = txdb,
-  fiveUTRs = fiveUTRs, faFile = Hsapiens, riboStart = riboStart, 
-   riboStop = riboStop, extension = extension)
-View(allFeatures)
+if(requireNamespace("GenomicAlignments")){ # <- safe require for vignette
+  changedFiveUTRs <- NULL # get this object from previous example
+  Hsapiens <- NULL # get this from the BSGenome example, a FaFile.
+  txdb <-NULL # the gtf file as TxDb
+  uORFs <- NULL # the uorfs from previous example
+  fiveUTRs <- NULL # the original non cage 5' utrs
+  
+  
+  RFP <- import.bed(system.file("extdata", "ribo-seq-heart.bed.bgz",
+                  package = "ORFik")) # can also be bam
+  RNA <- import.bed(system.file("extdata", "rna-seq-heart.bed.bgz",
+                  package = "ORFik")) # can also be bam
+  # important thing  here! if RFP and RNA is not shifted for the p-site,
+  # the scores will be wrong, see example of p-site shifting.
+  # You can use ORFik to do this.
+  riboStart <- 26 # minimum allowed fragment length on ribo-seq data.
+  riboStop <- 34 # maximum allowed fragment length on ribo-seq data.
+  extension <- 1000 # in the original cage-data example, we extended the
+  # 5' utrs by a 1000 upstream, add this as information.
+  
+  # run this:
+  #allFeatures <- allFeatures(grl = uORFs, orfFeatures = T, RFP, RNA,  Gtf = txdb,
+  #  fiveUTRs = fiveUTRs, faFile = Hsapiens, riboStart = riboStart, 
+  #   riboStop = riboStop, extension = extension)
+  #View(allFeatures)
+}
 ```
 
 You will now get a data.table with one column per score, the columns are named after
 the different scores, you can now go further with prediction, or making plots.
+
+# Grouping ORFs
+
+Sometimes you want a GRangesList of orfs grouped by transcript, or you might want 
+each orf as groups in the GRangesList. To do this more easily you can use the function
+ORFik:::groupGRangesBy.
+
+```r
+# the first part is equal to BSGenome example:
+
+library(ORFik)
+library(GenomicFeatures)
+
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "GenomicFeatures")
+txdb <- loadDb(samplefile)
+fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
+
+if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vignette
+
+  tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
+  test_ranges <- find_in_frame_ORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
+  
+  # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
+  # we use the orfs exon column called ($names) to group, it is made by ORFik.
+  test_ranges <- groupGRangesBy(test_ranges, test_ranges$names)
+  
+  # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
+  
+  test_ranges <- groupGRangesBy(test_ranges,
+    unique(names(unlist(test_ranges, use.names = FALSE)))
+}
+```
+
+# Alligning ribo-seq data centered on p-sites
+
+Features like floss needs the ribo-seq data to be alligned for the p-site.
+To do this, you can either do it manually by using plots from ORFik, to 
+deduce the p-sites, or you can do it automaticly by using the package 
+shoelaces(recomended). 
+
+# Predicting functional orfs
+
+If you have found a set of orfs, and you have used the function ORFik:::allFeatures
+to find the features for those orfs, you can try to predict which orfs to might be coding.
+To do this you can specify some cut-off for the features, so that most of the orfs get excluded.
+
+An example could be:
+
+For all orfs with ribo-seq fpkm < 1, filter out.
+For all orfs with kozak score < 5, filter out.
+For all orfs with ORFScore < 0.5, filter out.
+
+The more strict you are, the less orfs you get. This smaller set can
+be verified further with other ORF-tools, experiments or by proteomics.
+
+Now an example on Upstream open reading frames(uorfs):
+
+For all uorfs with ribo-seq fpkm bigger than coding sequences fpkm, keep them.
+
+Even though the uorf is translated, it does not mean it regulates a gene-product.
+Two ways to check this: 
+
+One of the features is if the orf goes into the cds of its transcript, 
+you can use it like this:
+For all uorfs with distance between orf and cds > 0,
+(which mean it does not goes into cds), filter out.
+Now you will only have uorfs going into cds.
+
+For all uorfs with distance to cds > 200, filter out.
+Since the distance is so high, the ribosome most likely can 
+reinitiate. But this also depends on the region between the uorf stop site, and
+coding sequence start site.
+
+Because of the small set of experimentally verified uorfs, it can be hard to know
+what are good features for uorfs, ribo-seq features like the ones in this package, 
+at least tries to predict what could be relevant.

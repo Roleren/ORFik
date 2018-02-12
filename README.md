@@ -11,7 +11,8 @@ ORFik is an R package containing various functions for analysis of Ribo-Seq and 
 - Finding Open Reading Frames (very fast) in the genome of interest or on the set of transcripts.
 - Metaplots for Ribo-Seq allowing to spot the shift.
 - Shifting functions for the Ribo-Seq data.
-- Various measurements of gene identity eg. FLOSS, coverage, ORFscore, entropy.
+- Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, entropy.
+- Utility functions to extend GenomicRanges, e.g. the functions tile1 and groupGRangesBy.
 
 
 

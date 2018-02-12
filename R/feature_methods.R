@@ -415,7 +415,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
   }
   # check that naming is correct, else change it.
-  orfNames <- ORFik:::OrfToTxNames(grl, F)
+  orfNames <- OrfToTxNames(grl, F)
   validNamesThree <- names(threeUTRs) %in% orfNames
   validNamesGRL <- orfNames %in% names(threeUTRs)
   rrs <- rep(NA,length(grl))
@@ -501,7 +501,7 @@ RibosomeStallingScore <- function(grl, RFP){
 #' @export
 #' @return a data.table with scores, each column is one score type, name of
 #'  columns are the names of the scores, i.g \code{\link{floss}}
-#'  or \code{\link{fpkmRFP}}
+#'  or \code{\link{fpkm}}
 #' @examples
 #'  \dontrun{
 #'  #The easiest way to run the method is to include as this:
