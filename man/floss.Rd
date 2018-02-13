@@ -21,12 +21,19 @@ floss(grl, RFP, cds, start = 26, end = 34)
 a vector of FLOSS of length same as grl
 }
 \description{
+Defined as: for riboseq reads between size start and stop,
+sum the fraction of riboseq with width in the interval start:stop
+for orfs.
+Divided by the fraction of rriboseq with width in the interval
+start:stop for coding sequences.
+A sum of ratios
 See article: 10.1016/j.celrep.2014.07.045
 }
 \seealso{
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},

@@ -11,12 +11,19 @@ inFrameWithCDS(dists)
 }
 \description{
 Input of this function, is the output of the function distOrfToCds
+possible outputs:
+0: orf is in frame with cds
+1: 1 shifted from cds
+2: 2 shifted from cds
+}
+\details{
 See article:  10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},

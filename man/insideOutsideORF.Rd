@@ -30,6 +30,7 @@ See article: 10.1242/dev.098345
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},

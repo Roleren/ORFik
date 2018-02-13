@@ -26,16 +26,19 @@ a named vector of numeric values of scores, NA means that
  no 3' utr was found for that transcript.
 }
 \description{
-is defined as (RPFs over ORF)/(RPFs over 3' utrs).
+Is defined as (RPFs over ORF)/(RPFs over 3' utrs),
 normalized by lengths
 , if RNA is added as argument, normalize by RNA counts over areas too
 to justify location of 3' utrs
+It can be seen as a ribosome stalling feature.
 A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1016/j.cell.2013.06.009
 }
 \seealso{
 Other features: \code{\link{ORFScores}},
-  \code{\link{OrfRankOrder}}, \code{\link{allFeatures}},
+  \code{\link{OrfRankOrder}},
+  \code{\link{RibosomeStallingScore}},
+  \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},

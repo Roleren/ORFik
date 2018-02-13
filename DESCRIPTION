@@ -15,22 +15,21 @@ LazyData: TRUE
 BugReports: https://github.com/JokingHero/ORFik/issues
 URL: https://github.com/JokingHero/ORFik
 Depends:
-    IRanges,
-    GenomicRanges,
-    GenomicAlignments
+    R (>= 3.4.0),
+    IRanges (>= 2.12.0),
+    GenomicRanges (>= 1.30.1),
+    GenomicAlignments (>= 1.14.1)
 Imports:
-    seqinr,
-    S4Vectors,
-    GenomeInfoDb,
-    GenomicFeatures,
-    rtracklayer,
-    Rcpp,
-    data.table
+    S4Vectors (>= 0.16.0),
+    GenomeInfoDb (>= 1.14.0),
+    GenomicFeatures (>= 1.30.3),
+    rtracklayer (>= 1.38.3),
+    Rcpp (>= 0.12.15), 
+    data.table (>= 1.10.4-3) 
 RoxygenNote: 6.0.1
 Suggests:
     testthat,
     biovizBase,
-    stringr,
     rmarkdown,
     knitr,
     BiocStyle,

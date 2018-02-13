@@ -34,6 +34,7 @@ See article:  10.1074/jbc.R116.733899
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}}, \code{\link{entropy}},

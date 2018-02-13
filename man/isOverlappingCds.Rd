@@ -9,6 +9,9 @@ isOverlappingCds(dists)
 \arguments{
 \item{dists}{a vector of distances between ORF and cds}
 }
+\value{
+a logical vector
+}
 \description{
 Input of this function, is the output of the function distOrfToCds
 See article:  10.1074/jbc.R116.733899
@@ -17,6 +20,7 @@ See article:  10.1074/jbc.R116.733899
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},

@@ -20,6 +20,7 @@ See article: 10.1002/embj.201488411
 Other features: \code{\link{ORFScores}},
   \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distOrfToCds}}, \code{\link{entropy}},

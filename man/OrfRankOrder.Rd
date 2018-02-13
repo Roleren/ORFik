@@ -9,6 +9,9 @@ OrfRankOrder(grl)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with ORFs}
 }
+\value{
+a numeric vector of integers
+}
 \description{
 ig. second orf _2 -> 2
 }
@@ -18,6 +21,7 @@ See article:  10.1074/jbc.R116.733899
 \seealso{
 Other features: \code{\link{ORFScores}},
   \code{\link{RibosomeReleaseScore}},
+  \code{\link{RibosomeStallingScore}},
   \code{\link{allFeatures}},
   \code{\link{calculateCoverage}},
   \code{\link{disengagementScore}},

@@ -52,6 +52,8 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
   }
 }
 
+
+
 #' Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
 #'  a list of group indeces
 #'
@@ -199,9 +201,9 @@ ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   stopSites[!posIds] <- lastExonStartPerGroup(grl[!posIds], FALSE)
 
   if (asGR) {
-    gr <- GRanges(seqnames = ORFik:::seqnamesPerGroup(grl, FALSE),
+    gr <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
                 ranges = IRanges(stopSites,stopSites),
-                  strand = ORFik:::strandPerGroup(grl, FALSE))
+                  strand = strandPerGroup(grl, FALSE))
     names(gr) <- names(grl)
     return(gr)
   }
@@ -211,4 +213,114 @@ ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
     return(stopSites)
   }
   return(stopSites)
+}
+
+#' Get the Start codons(3 bases) from a GRangesList of orfs grouped by orfs
+#'
+#' In ATGTTTTGC, get the positions ATG.
+#' It takes care of exons boundaries, with exons < 3 length.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @return a GRangesList of start codons, since they might be split on exons
+ORFStartCodons <- function(grl, is.sorted = FALSE){
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
+  }
+  firstExons <- firstExonPerGroup(grl)
+  widths <- widthPerGroup(firstExons)
+  validWidths <- widths >= 3
+  if (!all(validWidths)) { # fix short exons by tiling
+    needToFix <- grl[!validWidths]
+    tileBy1 <- tile1(needToFix)
+    fixedStops <- reduce(phead(tileBy1, 3L))
+    grl[!validWidths] <- fixedStops
+  }
+  # fix the others the easy way
+  firstExons <- firstExons[validWidths]
+  posIds <- strandBool(firstExons)
+
+  end(firstExons[posIds]) <- start(firstExons[posIds]) + 2L
+  start(firstExons[!posIds]) <- end(firstExons[!posIds]) - 2L
+
+  grl[validWidths] <- firstExons
+
+  return(grl)
+}
+
+
+#' Get the Stop codons(3 bases) from a GRangesList of orfs grouped by orfs
+#'
+#' In ATGTTTTGC, get the positions TGC.
+#' It takes care of exons boundaries, with exons < 3 length.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @return a GRangesList of stop codons, since they might be split on exons
+ORFStopCodons <- function(grl, is.sorted = FALSE){
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
+  }
+  lastExons <- lastExonPerGroup(grl)
+  widths <- widthPerGroup(lastExons)
+  validWidths <- widths >= 3
+  if (!all(validWidths)) { # fix short exons by tiling
+    needToFix <- grl[!validWidths]
+    tileBy1 <- tile1(needToFix)
+    fixedStops <- reduce(ptail(tileBy1, 3L))
+    grl[!validWidths] <- fixedStops
+  }
+  # fix the others the easy way
+  lastExons <- lastExons[validWidths]
+  posIds <- strandBool(lastExons)
+
+  start(lastExons[posIds]) <- end(lastExons[posIds]) - 2L
+  end(lastExons[!posIds]) <- start(lastExons[!posIds]) + 2L
+
+  grl[validWidths] <- lastExons
+
+  return(grl)
+}
+
+#' Get id's for orf
+#'
+#' These id's can be uniqued by isoform etc,
+#' this is not supported by GenomicRanges.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param with.tx a boolean, include transcript names,
+#'  if you want unique orfs, so that they dont have multiple
+#'  versions on different isoforms, set it to FALSE.
+#'  @return a character vector of ids, 1 per orf
+orfID <- function(grl, with.tx = FALSE){
+  seqnames <- as.character(seqnames(phead(grl,1L)))
+  strands <- strandPerGroup(grl,F)
+
+  exonInfo <- paste(start(grl),width(grl))
+  exonInfo <- paste(exonInfo, sep = '', collapse = ';')
+  names(exonInfo) <- NULL
+
+  uorfID <- paste(seqnames, strands, exonInfo, sep = ",")
+  if (with.tx) {
+    uorfID <- paste(uorfID, OrfToTxNames(grl))
+  }
+  return(uorfID)
+}
+
+#' Get the unique set of orfs
+#'
+#' Some orfs might be found several times, from different isoforms
+#' If you want to have the unique orfs, not seperated by which
+#' isoform it came from, use this function.
+#'
+#' NB. You will lose the transcript and name information, since
+#' they no longer map to a transcript, but are now general.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @return a GRangesList of unique orfs
+uniqueORFs <- function(grl){
+  ids <- orfID(grl)
+  grl <- grl[!duplicated(ids)]
+  gr <- unlist(grl, use.names = FALSE)
+  names(gr) <- NULL
+  gr$names <- NULL
+  grl <- relist(gr, grl)
+  names(grl) <- seq(1, length(grl))
+  return(grl)
 }
