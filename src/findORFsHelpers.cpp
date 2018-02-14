@@ -22,15 +22,15 @@ vi get_index_list(vi z, string& working_string, string& substring)
 {
   int counter = 0;
   size_t subSize = substring.size();
-
+  int subSizeInt = static_cast<int>(subSize);
   for (size_t i = subSize; i < working_string.size(); ++i)
-    if (z[i] >= subSize)
+    if (z[i] >= subSizeInt)
       counter++;
     vi indeces(counter, 0);
     counter = 0;
 
     for (size_t i = subSize; i < working_string.size(); ++i)
-      if (z[i] >= subSize)
+      if (z[i] >= subSizeInt)
         indeces[counter++] = i - substring.size();
       return indeces;
 }
