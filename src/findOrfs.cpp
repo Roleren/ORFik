@@ -30,7 +30,7 @@ List ORFs_as_List(
   std::vector<int> result_index; // index of input that output belongs to
   std::vector<int> all_orfs;
 
-  for (size_t i = 0; i < fastaSeqs.size(); i++) {
+  for (int i = 0; i < fastaSeqs.size(); i++) {
     std::string fastaSeq = static_cast<std::string>(fastaSeqs[i]);
     std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
                                                      stopCodon,longestORF,
