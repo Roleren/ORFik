@@ -21,16 +21,16 @@ Function IRangesA("IRanges", Environment::namespace_env("IRanges"));
 vi get_index_list(vi z, string& working_string, string& substring)
 {
   int counter = 0;
-  int subSize = substring.size();
-
-  for (int i = subSize; i < working_string.size(); ++i)
-    if (z[i] >= subSize)
+  size_t subSize = substring.size();
+  int subSizeInt = static_cast<int>(subSize);
+  for (size_t i = subSize; i < working_string.size(); ++i)
+    if (z[i] >= subSizeInt)
       counter++;
     vi indeces(counter, 0);
     counter = 0;
 
-    for (int i = subSize; i < working_string.size(); ++i)
-      if (z[i] >= subSize)
+    for (size_t i = subSize; i < working_string.size(); ++i)
+      if (z[i] >= subSizeInt)
         indeces[counter++] = i - substring.size();
       return indeces;
 }
@@ -246,8 +246,9 @@ S4 orfs_as_IRanges(std::string &main_string, std::string s,
                            std::string e, bool longestORF,
                            int minimumLength)
 {
+  size_t minLength = 6 + (minimumLength * 3) - 1;
   if (main_string.length() < 6 ||
-      main_string.length() < (6 + (minimumLength * 3) - 1)) {
+      main_string.length() < minLength) {
     S4 I("IRanges");
     return I;
   }
