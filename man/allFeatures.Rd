@@ -7,7 +7,7 @@
 allFeatures(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
   riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = T,
-  cageFiveUTRs = NULL)
+  cageFiveUTRs = NULL, includeNonVarying = T)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
@@ -49,6 +49,10 @@ standard cage extension is 1000}
 
 \item{cageFiveUTRs}{a GRangesList, if you used cage-data to extend 5' utrs,
 include this, also extension must match with the extension used for these.}
+
+\item{includeNonVarying}{a logical T, if TRUE, include all features not dependent on
+Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
+inFrameCDS, isOverlappingCds and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of

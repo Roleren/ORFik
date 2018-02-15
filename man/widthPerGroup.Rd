@@ -11,6 +11,9 @@ widthPerGroup(grl, keep.names = T)
 
 \item{keep.names}{a boolean, keep names or not}
 }
+\value{
+an integer vector (named/unnamed) of widths
+}
 \description{
 get list of widths per granges group
 }

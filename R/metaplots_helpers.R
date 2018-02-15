@@ -12,6 +12,8 @@
 #' positions (Position) specified in cdsRanges along with frame (Frame).
 #' @export
 #' @import GenomicRanges
+#' @importFrom S4Vectors subjectHits
+#' @importFrom S4Vectors queryHits
 #' @examples
 #' #metaPosition()
 #'

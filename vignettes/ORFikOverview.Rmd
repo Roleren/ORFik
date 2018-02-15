@@ -2,7 +2,7 @@
 title: "ORFik Overview"
 author: "Haakon Tjeldnes"
 date: "`r BiocStyle::doc_date()`"
-package: "r pkg_ver('ORFik')"
+package: "`r pkg_ver('ORFik')`"
 output: BiocStyle::html_document
 vignette: >
   %\VignetteIndexEntry{ORFik Overview}
@@ -18,7 +18,8 @@ ORFik currently supports:
 - Finding Open Reading Frames (very fast) in the genome of interest or on the set of transcripts.
 - Metaplots for Ribo-Seq allowing to spot the shift.
 - Shifting functions for the Ribo-Seq data.
-- Various measurements of gene identity eg. FLOSS, coverage, ORFscore, entropy.
+- Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, entropy.
+- Utility functions to extend GenomicRanges, e.g. the functions tile1 and groupGRangesBy.
 
 
 # Introduction
@@ -177,7 +178,7 @@ if(requireNamespace("GenomicAlignments")){ # <- safe require for vignette
                   package = "ORFik")) # can also be bam
   RNA <- import.bed(system.file("extdata", "rna-seq-heart.bed.bgz",
                   package = "ORFik")) # can also be bam
-  # important thing  here! if RFP and RNA is not shifted for the p-site,
+  # important thing  here! if RFP is not shifted for the p-site,
   # the scores will be wrong, see example of p-site shifting.
   # You can use ORFik to do this.
   riboStart <- 26 # minimum allowed fragment length on ribo-seq data.
@@ -228,7 +229,7 @@ if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vigne
 }
 ```
 
-# Alligning ribo-seq data centered on p-sites
+# Aligning ribo-seq data centered on p-sites
 
 Features like floss needs the ribo-seq data to be alligned for the p-site.
 To do this, you can either do it manually by using plots from ORFik, to 

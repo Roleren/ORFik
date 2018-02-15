@@ -17,6 +17,7 @@
 #' @export
 #' @import IRanges
 #' @import GenomicRanges
+#' @importFrom S4Vectors runValue
 #' @examples
 #' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
 #'                      ranges = IRanges(start = c(1, 10, 20),
@@ -288,7 +289,8 @@ ORFStopCodons <- function(grl, is.sorted = FALSE){
 #' @param with.tx a boolean, include transcript names,
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
-#'  @return a character vector of ids, 1 per orf
+#' @importFrom S4Vectors phead
+#' @return a character vector of ids, 1 per orf
 orfID <- function(grl, with.tx = FALSE){
   seqnames <- as.character(seqnames(phead(grl,1L)))
   strands <- strandPerGroup(grl,F)

@@ -496,6 +496,9 @@ RibosomeStallingScore <- function(grl, RFP){
 #' @param orfFeatures a logical,  is the grl a list of orfs? Must be assigned.
 #' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
 #'  include this, also extension must match with the extension used for these.
+#' @param includeNonVarying a logical T, if TRUE, include all features not dependent on
+#'  Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
+#'  inFrameCDS, isOverlappingCds and rankInTx
 #' @importFrom data.table data.table
 #' @family features
 #' @export
@@ -515,7 +518,7 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                         fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                         faFile = NULL, riboStart = 26, riboStop = 34,
                         extension = NULL, orfFeatures = T,
-                        cageFiveUTRs = NULL){
+                        cageFiveUTRs = NULL, includeNonVarying = T){
 
   validExtension(extension, cageFiveUTRs)
   validGRL(class(grl), "grl")
@@ -554,33 +557,41 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 
   floss <- floss(grl, RFP, cds, riboStart, riboStop)
   entropyRFP <- entropy(grl, RFP)
-  fractionLengths <- fractionLength(grl, tx_len)
+
   disengagementScores <- disengagementScore(grl, RFP, tx)
   RRS <- RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
   RSS <- RibosomeStallingScore(grl, RFP)
   scores <- data.table(floss = floss, entropyRFP = entropyRFP,
-                       fractionLengths = fractionLengths,
                        disengagementScores = disengagementScores,
                        RRS = RRS, RSS = RSS)
+  if (includeNonVarying) {
+    scores$fractionLengths <- fractionLength(grl, tx_len)
+  }
+
   if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
     te <- te(grl, RNA, RFP, tx, with.fpkm = T)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA
+  } else {
+    scores$fpkmRFP <- fpkm(grl, RFP)
   }
   if (orfFeatures) { # if features are found for orfs
     scores$ORFScores <- ORFScores(grl, RFP)$ORFscore
-
-    if (class(faFile) == "FaFile") {
-      scores$kozak <- kozakSequenceScore(grl, faFile)
-    } else { message("faFile not included, skipping kozak sequence score")}
     scores$ioScore <- insideOutsideORF(grl, RFP, tx)
-    distORFCDS <- distOrfToCds(grl, fiveUTRs, cds, extension)
-    scores$distORFCDS <- distORFCDS
-    scores$inFrameCDS <- inFrameWithCDS(distORFCDS)
-    scores$isOverlappingCds <- isOverlappingCds(distORFCDS)
-    scores$rankInTx <- OrfRankOrder(grl)
+
+    if (includeNonVarying) {
+      if (class(faFile) == "FaFile") {
+        scores$kozak <- kozakSequenceScore(grl, faFile)
+      } else { message("faFile not included, skipping kozak sequence score")}
+
+      distORFCDS <- distOrfToCds(grl, fiveUTRs, cds, extension)
+      scores$distORFCDS <- distORFCDS
+      scores$inFrameCDS <- inFrameWithCDS(distORFCDS)
+      scores$isOverlappingCds <- isOverlappingCds(distORFCDS)
+      scores$rankInTx <- OrfRankOrder(grl)
+    }
   } else {
     message("orfFeatures set to False, dropping all orf features.")
   }

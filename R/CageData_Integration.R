@@ -22,6 +22,7 @@ bedToGR <- function(x, bed6 = TRUE){
 #' Get Cage-Data From a file-path
 #' @param filePath The location of the cage-file
 #' @importFrom data.table fread
+#' @return a GRanges object
 cageFromFile <- function(filePath){
 
   if (.Platform$OS.type == "unix") {
@@ -45,6 +46,7 @@ cageFromFile <- function(filePath){
 #' Filter peak of cage-data by value
 #' @param rawCage The raw cage-data
 #' @param filterValue The number of counts(score) to filter on for a tss to pass as hit
+#' @return the filtered Granges object
 filterCage <- function(rawCage, filterValue = 1){
 
   if (is.null(rawCage$score)) stop("Found no score column in the cageData-file,",
@@ -89,6 +91,8 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
 #' This is a simple way to do that
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param cds If you want to extend 5' leaders downstream, to catch uorfs going into cds, include it.
+#' @importFrom S4Vectors pc
+#' @return a GRangesList of cds exons added to ends
 addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
 
   if (length(cds) == 0) {
@@ -212,14 +216,19 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 
 #' Reassign all Transcript start sites(tss')
 #'
-#' Given a GRangesList of 5' utrs, reassign the start postitions.
-#'  A max peak is defined as new tss if it is within boundary
+#' Given a GRangesList of 5' utrs or transcripts, reassign the start
+#'  postitions. A max peak is defined as new tss if it is within boundary
 #'  of 5'leader range, specified by extension
 #'  A max peak must also be greater that the cage peak cutoff specified
 #'  in filterValue
 #'  The new TSS will then be the position of the cage read,
 #'  with highest read count in the interval.
-#' @param fiveUTRs The 5' leader sequences as GRangesList
+#'
+#' This method can also be used with other ngs methods, if i.g. if you have a
+#' list of possible cds starts (with scores) and cds'. It would reassign the
+#' cds starts.
+#' @param fiveUTRs The 5' leader or transcript
+#'  sequences as GRangesList
 #' @param cage Either a  filePath for cage-file, or already loaded R-object as GRanges
 #' @param extension The maximum number of basses upstream the
 #'  cage-peak can be from original tss
@@ -228,6 +237,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' @param cds If you want to extend 5' leaders downstream,
 #'  to catch upstream ORFs going into cds, include it.
 #' @export
+#' @return a GRangesList
 reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
                               filterValue = 1, cds = NULL){
 

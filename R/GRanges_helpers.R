@@ -4,6 +4,7 @@
 #'  give gene column as other
 #' @param gr a GRanges object
 #' @param other a vector of names to group, no 2 groups can have same name
+#' @importFrom S4Vectors nrun
 #' @return a GRangesList named after names(Granges) if other is NULL, else
 #' names are from unique(other)
 #' @export
@@ -31,6 +32,7 @@ groupGRangesBy <- function(gr,other = NULL){
 #' get list of widths per granges group
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
+#' @return an integer vector (named/unnamed) of widths
 widthPerGroup = function(grl, keep.names = T){
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -43,6 +45,7 @@ widthPerGroup = function(grl, keep.names = T){
 #' get list of seqnames per granges group
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
+#' @importFrom S4Vectors phead
 seqnamesPerGroup <- function(grl, keep.names = T){
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -94,10 +97,12 @@ sortPerGroup <- function(grl, ignore.strand = F){
 #' get list of strands per granges group
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
+#' @importFrom S4Vectors phead
+#' @return a vector named/unnamed of characters
 strandPerGroup <- function(grl, keep.names = T){
   validGRL(class(grl), "grl")
   if (keep.names) {
-    return(strand(phead(grl, 1L))) # S4Vectors::phead() wrapper
+    return(strand(phead(grl, 1L)))
   } else {
     return(as.character(strand(phead(grl, 1L))))
   }
@@ -128,18 +133,21 @@ strandBool <- function(grl){
 #' get first exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @importFrom S4Vectors phead
+#' @return a GRangesList of the first exon per group
 firstExonPerGroup <- function(grl){
   validGRL(class(grl), "grl")
-  return(phead(grl, 1L)) # S4Vectors::phead() wrapper
+  return(phead(grl, 1L))
 }
 
 #' get last exon per GRangesList group
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}},
-#' @return a GRangesList of last exons per group
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @importFrom S4Vectors ptail
+#' @return a GRangesList of the last exon per group
 lastExonPerGroup <- function(grl){
   validGRL(class(grl), "grl")
-  return(ptail(grl, 1L)) # S4Vectors::ptail() wrapper
+  return(ptail(grl, 1L))
 }
 
 #' get first start per granges group
@@ -233,6 +241,8 @@ fixSeqnames <- function(grl){
 #' make a meta column with exon ranks
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param byTranscript if ORfs are by transcript, check duplicates
+#' @importFrom S4Vectors nrun Rle
+#' @return an integer vector of indices for exon ranks
 makeExonRanks <- function(grl, byTranscript = F){
   validGRL(class(grl), "grl")
 
@@ -332,6 +342,7 @@ asTX <- function(grl, reference){
 #' @param grl a GRangesList object
 #' @param faFile FaFile used to find the transcripts,
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @return a DNAStringSet of the transcript sequences
 txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   if(class(faFile) != "FaFile") stop("only FaFile is valid input")
   if(!is.sorted) grl <- sortPerGroup(grl)
