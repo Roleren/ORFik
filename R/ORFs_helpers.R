@@ -126,7 +126,9 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
-#'  @export
+#' @export
+#' @return a character vector of transcript names,
+#'  without _* naming
 OrfToTxNames <- function(grl, unique = F){
   if (!is.gr_or_grl(class(grl))) {
     stop("grl must be GRangesList or GRanges Object")
@@ -162,6 +164,7 @@ OrfToTxNames <- function(grl, unique = F){
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @export
 #' @return if asGR is False, a vector, if True a GRanges object
 ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                           is.sorted = FALSE){
@@ -198,6 +201,7 @@ ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @export
 #' @return if asGR is False, a vector, if True a GRanges object
 ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                          is.sorted = FALSE){
@@ -231,6 +235,7 @@ ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @export
 #' @return a GRangesList of start codons, since they might be split on exons
 ORFStartCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
@@ -264,6 +269,7 @@ ORFStartCodons <- function(grl, is.sorted = FALSE){
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @export
 #' @return a GRangesList of stop codons, since they might be split on exons
 ORFStopCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {

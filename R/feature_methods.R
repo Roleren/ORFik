@@ -74,7 +74,9 @@ subset_coverage <- function(cov, y) {
 entropy <- function(grl, reads) {
   # Get count list of overlaps
   tileBy1 <- tile1(grl)
-  countsTile <- countOverlaps(unlist(tileBy1, use.names = F), reads)
+  unlTile <- unlist(tileBy1, use.names = FALSE)
+  names(unlTile) <- unlTile$names
+  countsTile <- countOverlaps(unlTile, reads)
   names <- names(countsTile)
   names(countsTile) <- NULL
   countList <- split(countsTile, names)
@@ -87,7 +89,7 @@ entropy <- function(grl, reads) {
   if (sum(as.numeric(sums)) == 0) { # no variance in countList, 0 entropy
     return(rep(0, length(tileBy1)))
   }
-  N <- unlist(sums, use.names = F)
+  N <- unlist(sums, use.names = FALSE)
   # get indeces where entropy is not 0
   validIndeces <- N > 0
   N <- N[validIndeces] # <- sums not 0
@@ -117,8 +119,8 @@ entropy <- function(grl, reads) {
   reg_len <- lapply(indeces, function(x){
     rep(reg_len[x], runLengths[x])
   })
-  unlh <- unlist(h, use.names = F)
-  unlreg_len <- unlist(reg_len, use.names = F)
+  unlh <- unlist(h, use.names = FALSE)
+  unlreg_len <- unlist(reg_len, use.names = FALSE)
 
   # make sequences for reads, start -> stop
   # gives a triplet reading, 1:3, 3,6
@@ -128,7 +130,7 @@ entropy <- function(grl, reads) {
   }
   unlacums <- unlist(lapply(1:(length(runLengths)-1), function(x){
     rep(acums[x], runLengths[x+1])
-  }), use.names = F)
+  }), use.names = FALSE)
   unlacums <- unlist(c(rep(1,runLengths[1]), unlacums))
 
   which_reads_start <- (unlacums + unlh * unlreg_len)
@@ -143,7 +145,7 @@ entropy <- function(grl, reads) {
   }), use.names = F)
 
   intcountList <- IntegerList(countList)
-  unlintcount <- unlist(unlist(intcountList, use.names = F),
+  unlintcount <- unlist(unlist(intcountList, use.names = FALSE),
                         use.names = F)
 
   # get the assigned tuplets per orf, usually triplets
@@ -172,7 +174,7 @@ entropy <- function(grl, reads) {
 
   grouping <- unlist(lapply(indeces, function(x){
     rep(x, runLengths[x])
-  }), use.names = F)
+  }), use.names = FALSE)
 
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))

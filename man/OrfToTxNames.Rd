@@ -12,8 +12,11 @@ or GRanges object}
 
 \item{unique}{a boolean, if true unique the names,
 used if several orfs map to same transcript and you only
-want the unique groups
-@export}
+want the unique groups}
+}
+\value{
+a character vector of transcript names,
+ without _* naming
 }
 \description{
 names must either be a column called names, or the names of the

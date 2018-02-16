@@ -149,6 +149,23 @@ The uORFs from this example will most likely contain some uORFs not in the origi
 example, also some will be lost. This is, because different tissues transcribes
 different mRNAs.
 
+# Syntax of Orfs in ORFik
+
+The ORFs in ORFik are grouped in a GRangesList. Each group is the exons per orf.
+The names of the GRangesList is the orf names, named as transcriptName_*, 
+where transcriptName is the transcriptName i.g for ensembl: "ENST123101239".
+The "_" is the seperator
+The * is an integer, where the first orf found on transcript is "_1", second is "_2" etc.
+The first orf will alway be the one most upstream for + strand, and least upstream 
+for - strand
+For a GRangesList called grl with 1 orf, names(grl) will return i.g. "ENST123101239_1"
+Lets say the orf have 2 exons, if you unlist the grl,
+then names(unlist(grl, use.names = FALSE)) will return
+the transcript names, i.g. c("ENST123101239", "ENST123101239")
+The unlisted orf also have a metacolumn called names, which contains the orf names,
+i.g. c("ENST123101239_1", "ENST123101239_1") for this example.
+The reason for this, is to keep redundant information for easy unlisting.
+
 # Features from ORFs
 
 ORFik contains a big feature set:

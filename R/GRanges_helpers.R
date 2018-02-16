@@ -84,9 +84,10 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
         DT <- DT[order(group, end)]
     }
   }
+  DT[, group := gsub("_[0-9]*", "", DT$group_name)]
   asgrl <- makeGRangesListFromDataFrame(
-    DT, split.field = "group",
-    names.field = "group_name", keep.extra.columns = TRUE)
+    DT, split.field = "group_name",
+    names.field = "group", keep.extra.columns = TRUE)
   names(asgrl) <- names(grl)
   return(asgrl)
 }
