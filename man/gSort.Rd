@@ -2,16 +2,23 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{gSort}
 \alias{gSort}
-\title{A faster reimplementation of GenomicRanges::sort() for GRangesList}
+\title{Sort a GRangesList, helper.}
 \usage{
-gSort(grl, decreasing = F)
+gSort(grl, decreasing = FALSE, byStarts = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 
 \item{decreasing}{should the first in each group have max(start(group))
 ->T or min-> default(F) ?}
+
+\item{byStarts}{a logical T, should it order by starts
+or ends F.}
 }
 \description{
-A faster reimplementation of GenomicRanges::sort() for GRangesList
+A helper for \code{\link{sortPerGroup}}.
+A faster, more versatile reimplementation of GenomicRanges::sort()
+Normally not used directly.
+Groups first each group, then either decreasing or increasing
+(on starts if byStarts == T, on ends if byStarts == F)
 }

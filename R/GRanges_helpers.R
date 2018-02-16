@@ -55,38 +55,63 @@ seqnamesPerGroup <- function(grl, keep.names = T){
   }
 }
 
-#' A faster reimplementation of GenomicRanges::sort() for GRangesList
+#' Sort a GRangesList, helper.
+#'
+#' A helper for \code{\link{sortPerGroup}}.
+#' A faster, more versatile reimplementation of GenomicRanges::sort()
+#' Normally not used directly.
+#' Groups first each group, then either decreasing or increasing
+#' (on starts if byStarts == T, on ends if byStarts == F)
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param decreasing should the first in each group have max(start(group))
 #'   ->T or min-> default(F) ?
+#' @param byStarts a logical T, should it order by starts
+#'  or ends F.
 #' @importFrom data.table as.data.table
-gSort <- function(grl, decreasing = F){
+gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
   DT <- as.data.table(grl)
+
   if (decreasing) {
-    asgrl <- makeGRangesListFromDataFrame(
-      DT[order(group, -start)], split.field = "group",
-      names.field = "group_name", keep.extra.columns = T)
+    if (byStarts) {
+      DT <- DT[order(group, -start)]
+    } else {
+        DT <- DT[order(group, -end)]
+    }
   } else {
-    asgrl <- makeGRangesListFromDataFrame(
-      DT[order(group, start)], split.field = "group",
-      names.field = "group_name", keep.extra.columns = T)
+    if (byStarts) {
+      DT <- DT[order(group, start)]
+    } else {
+        DT <- DT[order(group, end)]
+    }
   }
+  asgrl <- makeGRangesListFromDataFrame(
+    DT, split.field = "group",
+    names.field = "group_name", keep.extra.columns = TRUE)
   names(asgrl) <- names(grl)
   return(asgrl)
 }
-#' sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
-#' which works poorly for > 10k groups
+
+#' Sort a GRangesList
+#'
+#' A faster, more versatile reimplementation of GenomicRanges::sort()
+#' for GRangesList, which works poorly for > 10k groups
+#' It sorts each group, where + strands increasing by start
+#' and - strands decreasing by ends.
+#'
+#' If you want unusual sorts, like reversed ordering,
+#' use \code{\link{gSort}} directly.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param ignore.strand a boolean, should minus strands be sorted from highest
 #'  to lowest(T)
 #' @export
-sortPerGroup <- function(grl, ignore.strand = F){
+sortPerGroup <- function(grl, ignore.strand = FALSE){
   validGRL(class(grl), "grl")
   if (!ignore.strand) {
-    indecesPos <- strandBool(grl)
+    indicesPos <- strandBool(grl)
 
-    grl[indecesPos] <- gSort(grl[indecesPos])
-    grl[!indecesPos] <- gSort(grl[!indecesPos], decreasing = T)
+    grl[indicesPos] <- gSort(grl[indicesPos])
+    grl[!indicesPos] <- gSort(grl[!indicesPos], decreasing = TRUE,
+                              byStarts = FALSE)
 
     return(grl)
   } else {
@@ -239,6 +264,8 @@ fixSeqnames <- function(grl){
 }
 
 #' make a meta column with exon ranks
+#'
+#' Must be ordered, so that same transcripts are ordered together.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param byTranscript if ORfs are by transcript, check duplicates
 #' @importFrom S4Vectors nrun Rle
@@ -250,7 +277,7 @@ makeExonRanks <- function(grl, byTranscript = F){
     oldNames <- names(grl)
     names(grl) <- 1:length(grl)
   }
-  l <- Rle(names(unlist(grl)))
+  l <- Rle(names(unlist(grl, use.names = TRUE)))
   t <- unlist(lapply(1:nrun(l), function(x) {
     rep(x, runLength(l)[x])
   }))
@@ -280,12 +307,12 @@ makeExonRanks <- function(grl, byTranscript = F){
 #' If a list of orfs are grouped by transcripts, but does not have
 #' ORF names, then create them and return the new GRangesList
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @return a GRangesList now with ORF names
+#' @return a GRangesList now with ORF names, grouped by transcripts
 makeORFNames <- function(grl){
-  ranks <- makeExonRanks(grl, byTranscript = T)
+  ranks <- makeExonRanks(grl, byTranscript = TRUE)
 
-  asGR <- unlist(grl, use.names = F)
-  if (is.null(names(asGR))) asGR <- unlist(grl, use.names = T)
+  asGR <- unlist(grl, use.names = FALSE)
+  if (is.null(names(asGR))) asGR <- unlist(grl, use.names = TRUE)
     asGR$names <- paste0(names(asGR), "_", ranks)
   return(groupGRangesBy(asGR))
 }

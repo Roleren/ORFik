@@ -2,10 +2,9 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{sortPerGroup}
 \alias{sortPerGroup}
-\title{sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
-which works poorly for > 10k groups}
+\title{Sort a GRangesList}
 \usage{
-sortPerGroup(grl, ignore.strand = F)
+sortPerGroup(grl, ignore.strand = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
@@ -14,6 +13,12 @@ sortPerGroup(grl, ignore.strand = F)
 to lowest(T)}
 }
 \description{
-sorts a GRangesList object, uses a faster sort than GenomicRanges::sort(),
-which works poorly for > 10k groups
+A faster, more versatile reimplementation of GenomicRanges::sort()
+for GRangesList, which works poorly for > 10k groups
+It sorts each group, where + strands increasing by start
+and - strands decreasing by ends.
+}
+\details{
+If you want unusual sorts, like reversed ordering,
+use \code{\link{gSort}} directly.
 }

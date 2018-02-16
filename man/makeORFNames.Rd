@@ -12,7 +12,7 @@ makeORFNames(grl)
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
 \value{
-a GRangesList now with ORF names
+a GRangesList now with ORF names, grouped by transcripts
 }
 \description{
 Make ORF names per orf, grl must be grouped by transcript
