@@ -414,6 +414,18 @@ test_that("ORFStopCodons works as intended", {
                                                        45, 55, 32, 1002,
                                                        1004, 1006, 1004, 1006))
 
+  # check with meta columns
+  ORFranges$names <- rep("tx1_1" ,3)
+  ORFranges2$names <- rep("tx1_2", 3)
+  ORFranges3$names <- rep("tx1_3", 3)
+  ORFranges4$names <- rep("tx4_1", 3)
+  ORFranges5$names <- rep("tx1_4", 4)
+  ORFranges6$names <- rep("tx1_5", 4)
+  grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2,
+                     tx1_3 = ORFranges3, tx4_1 = ORFranges4,
+                     tx1_4 = ORFranges5, tx1_5 = ORFranges6)
+
+  test_ranges <- ORFStopCodons(grl, TRUE)
 })
 
 test_that("uniqueORFs works as intended", {

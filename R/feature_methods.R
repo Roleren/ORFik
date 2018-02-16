@@ -75,7 +75,10 @@ entropy <- function(grl, reads) {
   # Get count list of overlaps
   tileBy1 <- tile1(grl)
   unlTile <- unlist(tileBy1, use.names = FALSE)
-  names(unlTile) <- unlTile$names
+  if(!is.null(unlTile$names)){ # TODO: check if this is safe enough
+    names(unlTile) <- unlTile$names
+  }
+
   countsTile <- countOverlaps(unlTile, reads)
   names <- names(countsTile)
   names(countsTile) <- NULL

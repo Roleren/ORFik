@@ -243,12 +243,12 @@ ORFStartCodons <- function(grl, is.sorted = FALSE){
   }
   firstExons <- firstExonPerGroup(grl)
   widths <- widthPerGroup(firstExons)
-  validWidths <- widths >= 3
+  validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStops <- reduce(phead(tileBy1, 3L))
-    grl[!validWidths] <- fixedStops
+    fixedStarts <- reduce_keep_naming(phead(tileBy1, 3L))
+    grl[!validWidths] <- fixedStarts
   }
   # fix the others the easy way
   firstExons <- firstExons[validWidths]
@@ -277,11 +277,11 @@ ORFStopCodons <- function(grl, is.sorted = FALSE){
   }
   lastExons <- lastExonPerGroup(grl)
   widths <- widthPerGroup(lastExons)
-  validWidths <- widths >= 3
+  validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStops <- reduce(ptail(tileBy1, 3L))
+    fixedStops <- reduce_keep_naming(ptail(tileBy1, 3L))
     grl[!validWidths] <- fixedStops
   }
   # fix the others the easy way

@@ -69,6 +69,8 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #'  or ends F.
 #' @importFrom data.table as.data.table
 gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
+  if(length(grl) == 0) return(GRangesList())
+
   DT <- as.data.table(grl)
 
   if (decreasing) {
@@ -84,7 +86,14 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
         DT <- DT[order(group, end)]
     }
   }
-  DT[, group := gsub("_[0-9]*", "", DT$group_name)]
+  # test naming
+  testName <- names(unlist(grl[1], use.names = FALSE)[1])
+  if (!any(grep(pattern = "_", testName))) {
+    DT[, group := gsub("_[0-9]*", "", DT$group_name)]
+  } else {
+      DT[, group := DT$group_name]
+  }
+
   asgrl <- makeGRangesListFromDataFrame(
     DT, split.field = "group_name",
     names.field = "group", keep.extra.columns = TRUE)
@@ -106,7 +115,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
 #'  to lowest(T)
 #' @export
 sortPerGroup <- function(grl, ignore.strand = FALSE){
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   if (!ignore.strand) {
     indicesPos <- strandBool(grl)
 
@@ -343,12 +352,8 @@ tile1 <- function(grl){
   }
 
   tilex <- tile(ORFs, width =  1L)
-
   names(tilex) <- ORFs$names
-  unl <- unlist(tilex, use.names = T)
-  unl$names <- names(unl)
-  names(unl) <- OrfToTxNames(unl)
-  tilex <- groupGRangesBy(unl, unl$names)
+  tilex <- matchNaming(tilex, grl[1])
   return(sortPerGroup(tilex))
 }
 
@@ -579,21 +584,56 @@ subset_to_frame <- function(x, frame){
   }
 }
 
-#' Subset GRanges to get stop codons. GRanges object should be beforehand
-#' tiled to size of 1. This subsetting takes account for strand.
+#' Match naming of GRangesList
 #'
-#' @param x A tiled to size of 1 GRanges object
-#' @return GRanges object reduced to only stop codon
-#' @export
-#' @examples
-#' #subset_to_stop(x)
-#'
-subset_to_stop <- function(x){
-  if (as.vector(strand(x))[1] == "+") {
-    x[c(length(x) - 3, length(x) - 4, length(x) - 5)]
-  } else {
-    x[c(4, 5, 6)]
+#' Given a GRangesList and a reference, make the naming convention and
+#' the number of metacolumns equal to reference
+#' @param gr a \code{\link[GenomicRanges]{GRangesList}}
+#'  or GRanges object
+#' @param reference a GRangesList of a reference
+#' @return a GRangesList
+matchNaming <- function(gr, reference){
+  # First check if unlist should be T or F
+  if (is.grl(gr)) {
+    grTemp <- unlist(gr[1], use.names = FALSE)
+    if (is.null(names(grTemp))) {
+      gr <- unlist(gr, use.names = TRUE)
+    } else {
+      gr <- unlist(gr, use.names = FALSE)
+    }
   }
+  # now get a reference
+  grTest <- unlist(reference[1], use.names = FALSE)
+
+  if (!is.null(grTest$names)) gr$names <- names(gr)
+  if (!is.null(names(grTest))) {
+    if (!any(grep(pattern = "_", names(grTest)[1]))) {
+      names(gr) <- OrfToTxNames(gr)
+    }
+  }
+
+  # TODO: add possibily to add unknown columns, i.g. exon_rank etc.
+
+  if (!is.null(gr$names)) {
+    return(groupGRangesBy(gr, gr$names))
+  } else {
+    return(groupGRangesBy(gr))
+  }
+}
+
+#' Reduce a GRangesList
+#'
+#' Extends function \code{\link[GenomicRanges]{reduce}}
+#' by trying to keep names and meta columns
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @export
+#' @return A reduced GRangesList
+reduce_keep_naming <- function(grl){
+  validGRL(class(grl))
+
+  gr <- unlist(reduce(grl), use.names = TRUE)
+
+  return(matchNaming(gr, grl))
 }
 
 #' Helper function to check for GRangesList
@@ -631,7 +671,7 @@ is.gr_or_grl <- function(class){
 #'  supposed GRangesList object
 #' @param type a character vector, is it gtf, cds, 5', 3', for messages.
 #' @param checkNULL should NULL classes be checked and return indeces of these?
-validGRL <- function(class, type, checkNULL = FALSE){
+validGRL <- function(class, type = "grl", checkNULL = FALSE){
   if(length(class) != length(type)) stop("not equal length of classes\n
                                          and types, see validGRL")
   if (checkNULL) {

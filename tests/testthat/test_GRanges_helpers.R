@@ -146,6 +146,28 @@ test_that("extendLeaders works as intended", {
   expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(105, 205)))
 })
 
+test_that("reduce_keep_naming works as intended", {
+
+  ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
+                       ranges = IRanges(start = c(1, 2, 3),
+                                        end = c(1, 2, 3)),
+                       strand = Rle(strand(rep("+", 3))))
+
+  ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+                        ranges = IRanges(start = c(4, 5, 7),
+                                         end = c(4, 5, 7)),
+                        strand = Rle(strand(rep("+", 3))))
+
+  names(ORFranges) = rep("tx1_1",3)
+  names(ORFranges2) = rep("tx1_2",3)
+  grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
+  reassigned <- reduce_keep_naming(grl)
+  expect_is(reassigned,"GRangesList")
+  expect_equal(length(reassigned), 2)
+  unlreassigned <- unlist(reassigned, use.names = FALSE)
+  expect_equal(as.integer(start(unlreassigned)), c(1,4,7))
+  expect_equal(names(unlreassigned), c("tx1_1", "tx1_2", "tx1_2"))
+})
 
 
 
