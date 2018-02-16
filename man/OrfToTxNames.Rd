@@ -7,7 +7,8 @@
 OrfToTxNames(grl, unique = F)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
+or GRanges object}
 
 \item{unique}{a boolean, if true unique the names,
 used if several orfs map to same transcript and you only

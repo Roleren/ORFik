@@ -345,7 +345,9 @@ tile1 <- function(grl){
 
   names(tilex) <- ORFs$names
   unl <- unlist(tilex, use.names = T)
-  tilex <- groupGRangesBy(unl)
+  unl$names <- names(unl)
+  names(unl) <- OrfToTxNames(unl)
+  tilex <- groupGRangesBy(unl, unl$names)
   return(sortPerGroup(tilex))
 }
 
@@ -602,6 +604,21 @@ is.grl <- function(class){
     class <- class(class)
   }
   if (class == "GRangesList") {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+#' Helper function to check for GRangesList or GRanges class
+#' @param class the class you want to check if is GRL or GR,
+#'  either a character from class or the object itself.
+#' @return a boolean
+is.gr_or_grl <- function(class){
+  if (!is.character(class)) {
+    class <- class(class)
+  }
+  if (is.grl(class) || class == "GRanges") {
     return(TRUE)
   } else {
     return(FALSE)

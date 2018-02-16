@@ -122,14 +122,23 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 #' names must either be a column called names, or the names of the
 #' grl object
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
+#'  or GRanges object
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
 #'  @export
 OrfToTxNames <- function(grl, unique = F){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (!is.gr_or_grl(class(grl))) {
+    stop("grl must be GRangesList or GRanges Object")
+  }
+
   if (is.null(names(grl))) {
-    otherPossibility <- unlist(grl, use.names = F)$names
+    if (!is.grl(class(grl))) {
+      otherPossibility <- unlist(grl, use.names = F)$names
+    } else {
+      otherPossibility <- grl$names
+    }
+
     if (is.null(otherPossibility)) {
       stop("grl have no valid orf names to convert")
     } else {
