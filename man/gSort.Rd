@@ -15,6 +15,10 @@ gSort(grl, decreasing = FALSE, byStarts = TRUE)
 \item{byStarts}{a logical T, should it order by starts
 or ends F.}
 }
+\value{
+an equally named GRangesList, where each group is
+ sorted within group.
+}
 \description{
 A helper for \code{\link{sortPerGroup}}.
 A faster, more versatile reimplementation of GenomicRanges::sort()

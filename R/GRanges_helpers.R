@@ -68,6 +68,8 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #' @param byStarts a logical T, should it order by starts
 #'  or ends F.
 #' @importFrom data.table as.data.table
+#' @return an equally named GRangesList, where each group is
+#'  sorted within group.
 gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
   if(length(grl) == 0) return(GRangesList())
 
@@ -88,16 +90,24 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
   }
   # test naming
   testName <- names(unlist(grl[1], use.names = FALSE)[1])
-  if (!any(grep(pattern = "_", testName))) {
-    DT[, group := gsub("_[0-9]*", "", DT$group_name)]
+  if ( is.null(testName)){
+    DT[, group := NULL]
+    asgrl <- makeGRangesListFromDataFrame(
+      DT, split.field = "group_name",
+      keep.extra.columns = TRUE)
   } else {
-      DT[, group := DT$group_name]
+    if (!any(grep(pattern = "_", testName))) {
+      DT[, group := gsub("_[0-9]*", "", DT$group_name)]
+    } else {
+        DT[, group := DT$group_name]
+    }
+    asgrl <- makeGRangesListFromDataFrame(
+      DT, split.field = "group_name",
+      names.field = "group", keep.extra.columns = TRUE)
   }
 
-  asgrl <- makeGRangesListFromDataFrame(
-    DT, split.field = "group_name",
-    names.field = "group", keep.extra.columns = TRUE)
-  names(asgrl) <- names(grl)
+
+  asgrl <- asgrl[names(grl)]
   return(asgrl)
 }
 
@@ -114,6 +124,8 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
 #' @param ignore.strand a boolean, should minus strands be sorted from highest
 #'  to lowest(T)
 #' @export
+#' @return an equally named GRangesList, where each group is
+#'  sorted within group.
 sortPerGroup <- function(grl, ignore.strand = FALSE){
   validGRL(class(grl))
   if (!ignore.strand) {
@@ -430,8 +442,9 @@ assignLastExonsStopSite <- function(grl, newStops){
 
   return(ngrl)
 }
-#' get rest of objects downstream
-#' @description per group get the part downstream of position
+#' Get rest of objects downstream
+#'
+#' Per group get the part downstream of position
 #'  defined in downstreamOf
 #'  downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
 #'  will return the 3' utrs per transcript as GRangesList,
@@ -468,8 +481,9 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
   }
   return(assignFirstExonsStartSite(downTx, downstreamOf))
 }
-#' get rest of objects upstream
-#' @description per group get the part upstream of position
+#' Get rest of objects upstream
+#'
+#' Per group get the part upstream of position
 #'  defined in upstreamOf
 #'  upstream(tx, ORFik:::ORFStopSites(cds, asGR = F))
 #'  will return the 5' utrs per transcript, usually used for interesting
@@ -479,7 +493,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #' @param tx a \code{\link[GenomicRanges]{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
-#'  is the new start point of first valid exon.
+#'  is the new stop point of last valid exon.
 upstreamOfPerGroup <- function(tx, upstreamOf){
   posIndices <- strandBool(tx)
   posStarts <- start(tx[posIndices])

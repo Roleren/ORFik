@@ -472,9 +472,12 @@ RibosomeStallingScore <- function(grl, RFP){
 }
 
 #' Get all possible features in ORFik
-#' @description If you want to get all the features easily, run this function.
+#'
+#' If you want to get all the features easily, run this function.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
+#'
+#' Remember to sort ORFs, use: sortPerGroup(grl)
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,

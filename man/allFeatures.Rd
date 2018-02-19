@@ -64,6 +64,9 @@ If you want to get all the features easily, run this function.
 Each feature have a link to an article describing feature,
 try ?floss
 }
+\details{
+Remember to sort ORFs, use: sortPerGroup(grl)
+}
 \examples{
  \dontrun{
  #The easiest way to run the method is to include as this:

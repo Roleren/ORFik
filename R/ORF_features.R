@@ -176,6 +176,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human"){
 #'
 #' is defined as (RPFs over ORF)/(RPFs downstream to tx end).
 #' A pseudo-count of one was added to both the ORF and downstream sums.
+#'
 #' See article: 10.1242/dev.098345
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually either leaders,
@@ -201,8 +202,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
   }
   tx <- tx[OrfToTxNames(grl, F)]
 
-  grlStarts <- ORFStartSites(grl,asGR = F)
-  grlStops <- ORFStopSites(grl,asGR = F)
+  grlStarts <- ORFStartSites(grl, asGR = FALSE)
+  grlStops <- ORFStopSites(grl, asGR = F)
 
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts)

@@ -12,6 +12,10 @@ sortPerGroup(grl, ignore.strand = FALSE)
 \item{ignore.strand}{a boolean, should minus strands be sorted from highest
 to lowest(T)}
 }
+\value{
+an equally named GRangesList, where each group is
+ sorted within group.
+}
 \description{
 A faster, more versatile reimplementation of GenomicRanges::sort()
 for GRangesList, which works poorly for > 10k groups
