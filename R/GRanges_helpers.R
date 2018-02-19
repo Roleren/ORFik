@@ -396,6 +396,35 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
+#' Get Ribo-seq widths
+#'
+#' Input a ribo-seq object and get width of reads,
+#'  if input is p-shifted and GRanges, the "$score column" must
+#'  exist, and contain the original read widths.
+#' @param reads a GRanges or GAlignment object.
+#' @return an integer vector of widths
+riboSeqReadWidths <- function(reads){
+
+  if (class(reads) == "GRanges"){
+    rfpWidth <- width(reads)
+    is.one_based <- all(as.integer(rfpWidth) == rep(1, length(rfpWidth)))
+    if (is.one_based ) {
+      if (is.null(reads$score)) {
+        message("All widths are 1, If ribo-seq is p-shifted,\n
+             score column should contain widths of read,\n
+                will continue using 1-widths")
+      } else {
+        message("All widths are 1, using score column for widths, remove
+                 score column and run again if this is wrong.")
+        rfpWidth <- reads$score
+      }
+    }
+  } else {
+    rfpWidth <- qwidth(reads)
+  }
+  return(rfpWidth)
+}
+
 #' Reassign the start positions of the first exons per group in grl
 #' @description make sure your grl is sorted, since start of "-" strand
 #'  objects should be the

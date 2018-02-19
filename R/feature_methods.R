@@ -228,11 +228,8 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   }
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
-  if (class(RFP) == "GRanges"){
-    rfpWidth <- width(RFP[to(overlaps)])
-  } else {
-    rfpWidth <- qwidth(RFP[to(overlaps)])
-  }
+  rfpWidth <- riboSeqReadWidths(RFP[to(overlaps)])
+
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
@@ -254,11 +251,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 
   # for cds
   overlapsCds <- findOverlaps(cds, RFP)
-  if (class(RFP) == "GRanges"){
-    rfpWidth <- width(RFP[to(overlapsCds)])
-  } else {
-    rfpWidth <- qwidth(RFP[to(overlapsCds)])
-  }
+  rfpWidth <- riboSeqReadWidths(RFP[to(overlapsCds)])
 
   rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
   rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
