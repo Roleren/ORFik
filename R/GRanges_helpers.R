@@ -247,22 +247,19 @@ lastExonStartPerGroup = function(grl, keep.names = T){
   }
 }
 
-#' get list of the number of exons per group
+#' Get list of the number of exons per group
+#'
+#' Can also be used generaly to get number of GRanges object
+#'  per GRangesList group
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 numExonsPerGroup <- function(grl, keep.names = T){
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
 
-  if (!is.null(names(unlist(grl, use.names = F)))) {
-    exonsPerGroup <- runLength(S4Vectors::Rle(names(unlist(grl,
-      use.names = F))))
-  } else if (!is.null(names(unlist(grl, use.names = T)))) {
-    exonsPerGroup <- runLength(S4Vectors::Rle(names(unlist(grl,
-      use.names = T))))
-  } else stop("no names to group exons")
-  if(keep.names) {
-    if(is.null(names(grl))) stop("grl must have names if keep.names == T")
-    names(exonsPerGroup) = names(grl)
+  # Get Rle -> to logcal -> sum, that is groups
+  exonsPerGroup <- sum(IRanges::LogicalList(strand(grl) == strand(grl)))
+  if(!keep.names) {
+    names(exonsPerGroup) <- NULL
   }
   return(exonsPerGroup)
 }
@@ -325,11 +322,14 @@ makeExonRanks <- function(grl, byTranscript = F){
   return(Inds)
 }
 
-#' Make ORF names per orf, grl must be grouped by transcript
+#' Make ORF names per orf
+#'
+#' grl must be grouped by transcript
 #' If a list of orfs are grouped by transcripts, but does not have
 #' ORF names, then create them and return the new GRangesList
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @return a GRangesList now with ORF names, grouped by transcripts
+#' @return a GRangesList now with ORF names, grouped by transcripts.
+#'  They are also sorted
 makeORFNames <- function(grl){
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
 
@@ -340,6 +340,7 @@ makeORFNames <- function(grl){
 }
 
 #' Tile a GRangeslist by 1
+#'
 #' This is not supported originally by GenomicRanges
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @return a GRangesList grouped by original group, tiled to 1
@@ -366,7 +367,10 @@ tile1 <- function(grl){
   tilex <- tile(ORFs, width =  1L)
   names(tilex) <- ORFs$names
   tilex <- matchNaming(tilex, grl[1])
-  return(sortPerGroup(tilex))
+  # only negative must be sorted
+  posIndices <- strandBool(tilex)
+  tilex[!posIndices] <- sortPerGroup(tilex[!posIndices])
+  return(tilex)
 }
 
 #' map genomic to transcript coordinates by reference

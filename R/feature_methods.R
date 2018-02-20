@@ -192,7 +192,8 @@ entropy <- function(grl, reads) {
 
 
 #' Calculate Coverage of the input reads.
-#' @description What is percent of the vector covered by the values higher than zero?
+#'
+#' What is percent of the vector covered by the values higher than zero?
 #' See article: 10.1002/embj.201488411
 #' @param countsOver A numerc vector
 #' @family features
@@ -229,7 +230,6 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
   rfpWidth <- riboSeqReadWidths(RFP[to(overlaps)])
-
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
@@ -252,7 +252,6 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   # for cds
   overlapsCds <- findOverlaps(cds, RFP)
   rfpWidth <- riboSeqReadWidths(RFP[to(overlapsCds)])
-
   rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
   rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
   cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
@@ -554,6 +553,8 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   if (!is.null(cageFiveUTRs)) {
     tx <- extendLeaders(tx, extension = cageFiveUTRs)
   }
+
+  grl <- sortPerGroup(grl)
   tx_len <- widthPerGroup(tx, TRUE)
 
   floss <- floss(grl, RFP, cds, riboStart, riboStop)
