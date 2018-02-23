@@ -55,7 +55,8 @@ ORFScores <- function(grl, RFP){
 }
 
 #' Get distances between orf ends and starts of transcripts cds' belonging to orfs.
-#' @description matching is done by transcript names.
+#'
+#' Matching is done by transcript names.
 #' fiveUTRs must be used to make transcript positions possible.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs
 #' See article:  10.1074/jbc.R116.733899
@@ -105,12 +106,13 @@ distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 }
 
 #' Make a score for each ORFs start region
-#' @description The closer the sequence is to the kozak sequence
+#'
+#' The closer the sequence is to the kozak sequence
 #' The higher the score, based on simplification of PWM
 #' score system: 4 upstream, 5 downstream of start
 #' CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
 #' CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
-#' Inspired by experimental bit values for each position
+#' Transformed from experimental bit values for each position
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
 #' @param faFile a FaFile from the fasta file, see ?FaFile
 #' @param species which species to use, currently only support human

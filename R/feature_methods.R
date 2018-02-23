@@ -78,7 +78,8 @@ entropy <- function(grl, reads) {
   if(!is.null(unlTile$names)){ # TODO: check if this is safe enough
     names(unlTile) <- unlTile$names
   }
-
+  # could make this more efficient by counting overlaps
+  # only on untiled, then tile the ones that hit and count again
   countsTile <- countOverlaps(unlTile, reads)
   names <- names(countsTile)
   names(countsTile) <- NULL
