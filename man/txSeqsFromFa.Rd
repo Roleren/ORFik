@@ -13,6 +13,9 @@ txSeqsFromFa(grl, faFile, is.sorted = F)
 
 \item{is.sorted}{a speedup, if you know the ranges are sorted}
 }
+\value{
+a DNAStringSet of the transcript sequences
+}
 \description{
 get transcript sequence from a GrangesList and a faFile
 }

@@ -7,7 +7,7 @@
 assign_annotations(ORFs, con)
 }
 \arguments{
-\item{ORFs}{- GRanges or GRanges List object of your ORFs.}
+\item{ORFs}{- GRanges or GRangesList object of your ORFs.}
 
 \item{con}{- Path to gtf file with annotations.}
 }

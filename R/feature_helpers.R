@@ -35,7 +35,7 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
 #' Helper Function to check valid RNA input
 #' @param class, the given class of RNA object
 checkRNA <- function(class){
-  if (is.null(class)) {
+  if (is.null(class) || (class == "NULL")) {
     message("No RNA added, skipping feature te and fpkm of RNA,\n
             also RibosomeReleaseScore will also be not normalized best way possible.")
   } else {

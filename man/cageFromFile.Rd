@@ -9,6 +9,9 @@ cageFromFile(filePath)
 \arguments{
 \item{filePath}{The location of the cage-file}
 }
+\value{
+a GRanges object
+}
 \description{
 Get Cage-Data From a file-path
 }

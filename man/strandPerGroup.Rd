@@ -11,6 +11,9 @@ strandPerGroup(grl, keep.names = T)
 
 \item{keep.names}{a boolean, keep names or not}
 }
+\value{
+a vector named/unnamed of characters
+}
 \description{
 get list of strands per granges group
 }

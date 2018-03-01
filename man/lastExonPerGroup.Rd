@@ -8,10 +8,10 @@ grl must be sorted, call ORFik:::sortPerGroup if needed}
 lastExonPerGroup(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}},}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
 \value{
-a GRangesList of last exons per group
+a GRangesList of the last exon per group
 }
 \description{
 get last exon per GRangesList group

@@ -74,7 +74,13 @@ subset_coverage <- function(cov, y) {
 entropy <- function(grl, reads) {
   # Get count list of overlaps
   tileBy1 <- tile1(grl)
-  countsTile <- countOverlaps(unlist(tileBy1, use.names = F), reads)
+  unlTile <- unlist(tileBy1, use.names = FALSE)
+  if(!is.null(unlTile$names)){ # TODO: check if this is safe enough
+    names(unlTile) <- unlTile$names
+  }
+  # could make this more efficient by counting overlaps
+  # only on untiled, then tile the ones that hit and count again
+  countsTile <- countOverlaps(unlTile, reads)
   names <- names(countsTile)
   names(countsTile) <- NULL
   countList <- split(countsTile, names)
@@ -87,7 +93,7 @@ entropy <- function(grl, reads) {
   if (sum(as.numeric(sums)) == 0) { # no variance in countList, 0 entropy
     return(rep(0, length(tileBy1)))
   }
-  N <- unlist(sums, use.names = F)
+  N <- unlist(sums, use.names = FALSE)
   # get indeces where entropy is not 0
   validIndeces <- N > 0
   N <- N[validIndeces] # <- sums not 0
@@ -117,8 +123,8 @@ entropy <- function(grl, reads) {
   reg_len <- lapply(indeces, function(x){
     rep(reg_len[x], runLengths[x])
   })
-  unlh <- unlist(h, use.names = F)
-  unlreg_len <- unlist(reg_len, use.names = F)
+  unlh <- unlist(h, use.names = FALSE)
+  unlreg_len <- unlist(reg_len, use.names = FALSE)
 
   # make sequences for reads, start -> stop
   # gives a triplet reading, 1:3, 3,6
@@ -128,7 +134,7 @@ entropy <- function(grl, reads) {
   }
   unlacums <- unlist(lapply(1:(length(runLengths)-1), function(x){
     rep(acums[x], runLengths[x+1])
-  }), use.names = F)
+  }), use.names = FALSE)
   unlacums <- unlist(c(rep(1,runLengths[1]), unlacums))
 
   which_reads_start <- (unlacums + unlh * unlreg_len)
@@ -143,7 +149,7 @@ entropy <- function(grl, reads) {
   }), use.names = F)
 
   intcountList <- IntegerList(countList)
-  unlintcount <- unlist(unlist(intcountList, use.names = F),
+  unlintcount <- unlist(unlist(intcountList, use.names = FALSE),
                         use.names = F)
 
   # get the assigned tuplets per orf, usually triplets
@@ -172,7 +178,7 @@ entropy <- function(grl, reads) {
 
   grouping <- unlist(lapply(indeces, function(x){
     rep(x, runLengths[x])
-  }), use.names = F)
+  }), use.names = FALSE)
 
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
@@ -187,7 +193,8 @@ entropy <- function(grl, reads) {
 
 
 #' Calculate Coverage of the input reads.
-#' @description What is percent of the vector covered by the values higher than zero?
+#'
+#' What is percent of the vector covered by the values higher than zero?
 #' See article: 10.1002/embj.201488411
 #' @param countsOver A numerc vector
 #' @family features
@@ -223,11 +230,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   }
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
-  if (class(RFP) == "GRanges"){
-    rfpWidth <- width(RFP[to(overlaps)])
-  } else {
-    rfpWidth <- qwidth(RFP[to(overlaps)])
-  }
+  rfpWidth <- riboSeqReadWidths(RFP[to(overlaps)])
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
@@ -249,12 +252,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 
   # for cds
   overlapsCds <- findOverlaps(cds, RFP)
-  if (class(RFP) == "GRanges"){
-    rfpWidth <- width(RFP[to(overlapsCds)])
-  } else {
-    rfpWidth <- qwidth(RFP[to(overlapsCds)])
-  }
-
+  rfpWidth <- riboSeqReadWidths(RFP[to(overlapsCds)])
   rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
   rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
   cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
@@ -467,9 +465,12 @@ RibosomeStallingScore <- function(grl, RFP){
 }
 
 #' Get all possible features in ORFik
-#' @description If you want to get all the features easily, run this function.
+#'
+#' If you want to get all the features easily, run this function.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
+#'
+#' Remember to sort ORFs, use: sortPerGroup(grl)
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,
@@ -496,6 +497,9 @@ RibosomeStallingScore <- function(grl, RFP){
 #' @param orfFeatures a logical,  is the grl a list of orfs? Must be assigned.
 #' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
 #'  include this, also extension must match with the extension used for these.
+#' @param includeNonVarying a logical T, if TRUE, include all features not dependent on
+#'  Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
+#'  inFrameCDS, isOverlappingCds and rankInTx
 #' @importFrom data.table data.table
 #' @family features
 #' @export
@@ -515,7 +519,7 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                         fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                         faFile = NULL, riboStart = 26, riboStop = 34,
                         extension = NULL, orfFeatures = T,
-                        cageFiveUTRs = NULL){
+                        cageFiveUTRs = NULL, includeNonVarying = T){
 
   validExtension(extension, cageFiveUTRs)
   validGRL(class(grl), "grl")
@@ -550,37 +554,47 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   if (!is.null(cageFiveUTRs)) {
     tx <- extendLeaders(tx, extension = cageFiveUTRs)
   }
+
+  grl <- sortPerGroup(grl)
   tx_len <- widthPerGroup(tx, TRUE)
 
   floss <- floss(grl, RFP, cds, riboStart, riboStop)
   entropyRFP <- entropy(grl, RFP)
-  fractionLengths <- fractionLength(grl, tx_len)
+
   disengagementScores <- disengagementScore(grl, RFP, tx)
   RRS <- RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
   RSS <- RibosomeStallingScore(grl, RFP)
   scores <- data.table(floss = floss, entropyRFP = entropyRFP,
-                       fractionLengths = fractionLengths,
                        disengagementScores = disengagementScores,
                        RRS = RRS, RSS = RSS)
+  if (includeNonVarying) {
+    scores$fractionLengths <- fractionLength(grl, tx_len)
+  }
+
   if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
     te <- te(grl, RNA, RFP, tx, with.fpkm = T)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA
+  } else {
+    scores$fpkmRFP <- fpkm(grl, RFP)
   }
   if (orfFeatures) { # if features are found for orfs
     scores$ORFScores <- ORFScores(grl, RFP)$ORFscore
-
-    if (class(faFile) == "FaFile") {
-      scores$kozak <- kozakSequenceScore(grl, faFile)
-    } else { message("faFile not included, skipping kozak sequence score")}
     scores$ioScore <- insideOutsideORF(grl, RFP, tx)
-    distORFCDS <- distOrfToCds(grl, fiveUTRs, cds, extension)
-    scores$distORFCDS <- distORFCDS
-    scores$inFrameCDS <- inFrameWithCDS(distORFCDS)
-    scores$isOverlappingCds <- isOverlappingCds(distORFCDS)
-    scores$rankInTx <- OrfRankOrder(grl)
+
+    if (includeNonVarying) {
+      if (class(faFile) == "FaFile") {
+        scores$kozak <- kozakSequenceScore(grl, faFile)
+      } else { message("faFile not included, skipping kozak sequence score")}
+
+      distORFCDS <- distOrfToCds(grl, fiveUTRs, cds, extension)
+      scores$distORFCDS <- distORFCDS
+      scores$inFrameCDS <- inFrameWithCDS(distORFCDS)
+      scores$isOverlappingCds <- isOverlappingCds(distORFCDS)
+      scores$rankInTx <- OrfRankOrder(grl)
+    }
   } else {
     message("orfFeatures set to False, dropping all orf features.")
   }

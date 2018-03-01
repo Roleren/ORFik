@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{downstreamOfPerGroup}
 \alias{downstreamOfPerGroup}
-\title{get rest of objects downstream}
+\title{Get rest of objects downstream}
 \usage{
 downstreamOfPerGroup(tx, downstreamOf)
 }
@@ -14,7 +14,7 @@ usually of Transcripts to be changed}
 is the new start point of first valid exon.}
 }
 \description{
-per group get the part downstream of position
+Per group get the part downstream of position
  defined in downstreamOf
  downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
  will return the 3' utrs per transcript as GRangesList,

@@ -11,6 +11,9 @@ makeExonRanks(grl, byTranscript = F)
 
 \item{byTranscript}{if ORfs are by transcript, check duplicates}
 }
+\value{
+an integer vector of indices for exon ranks
+}
 \description{
-make a meta column with exon ranks
+Must be ordered, so that same transcripts are ordered together.
 }
