@@ -11,6 +11,9 @@ strandBool(grl)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} or GRanges object}
 }
+\value{
+a logical vector
+}
 \description{
 helper function to get a logical list of True/False, if GRangesList group have
 + strand = T, if - strand = F

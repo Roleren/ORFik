@@ -4,25 +4,35 @@
 \alias{kozakSequenceScore}
 \title{Make a score for each ORFs start region}
 \usage{
-kozakSequenceScore(grl, faFile, species = "human")
+kozakSequenceScore(grl, faFile, species = "human", include.N = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF}
 
 \item{faFile}{a FaFile from the fasta file, see ?FaFile}
 
-\item{species}{which species to use, currently only support human}
+\item{species}{("human"), which species to use,
+currently only support human and zebrafish. You can also specify a pfm
+here for your own, syntax is an rectangular integer matrix,
+where all columns must sum to the same value, normally 100.}
+
+\item{include.N}{logical (F), if TRUE, allow N bases to be counted as hits,
+score will be average of the other bases. If True N bases will be
+added to pfm, automaticly, so dont include them.}
 }
 \value{
+a numeric vector with values between 0 and 1
+
 an integer vector, one score per orf
 }
 \description{
 The closer the sequence is to the kozak sequence
-The higher the score, based on simplification of PWM
-score system: 4 upstream, 5 downstream of start
-CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
-CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
-Inspired by experimental bit values for each position
+The higher the score, based on the experimental pwms from paper.
+Minimum score is 0 (worst correlation), max is 1 (the best
+base per column was chosen)
+}
+\details{
+See article: https://doi.org/10.1371/journal.pone.0108475
 }
 \seealso{
 Other features: \code{\link{ORFScores}},

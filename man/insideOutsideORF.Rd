@@ -24,6 +24,8 @@ a named vector of numeric values of scores
 \description{
 is defined as (RPFs over ORF)/(RPFs downstream to tx end).
 A pseudo-count of one was added to both the ORF and downstream sums.
+}
+\details{
 See article: 10.1242/dev.098345
 }
 \seealso{

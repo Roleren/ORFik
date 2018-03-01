@@ -11,6 +11,9 @@ filterCage(rawCage, filterValue = 1)
 
 \item{filterValue}{The number of counts(score) to filter on for a tss to pass as hit}
 }
+\value{
+the filtered Granges object
+}
 \description{
 Filter peak of cage-data by value
 }

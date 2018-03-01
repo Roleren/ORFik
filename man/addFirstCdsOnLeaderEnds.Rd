@@ -12,6 +12,9 @@ addFirstCdsOnLeaderEnds(fiveUTRs, cds)
 
 \item{cds}{If you want to extend 5' leaders downstream, to catch uorfs going into cds, include it.}
 }
+\value{
+a GRangesList of cds exons added to ends
+}
 \description{
 When reassigning Transcript start site, often you want to add downstream too.
 This is a simple way to do that

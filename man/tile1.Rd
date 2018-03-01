@@ -2,8 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{tile1}
 \alias{tile1}
-\title{Tile a GRangeslist by 1
-This is not supported originally by GenomicRanges}
+\title{Tile a GRangeslist by 1}
 \usage{
 tile1(grl)
 }
@@ -14,6 +13,7 @@ tile1(grl)
 a GRangesList grouped by original group, tiled to 1
 }
 \description{
-Tile a GRangeslist by 1
+Per group, sepereate the groups and split them on each position.
+Returned sorted
 This is not supported originally by GenomicRanges
 }

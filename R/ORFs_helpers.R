@@ -17,6 +17,7 @@
 #' @export
 #' @import IRanges
 #' @import GenomicRanges
+#' @importFrom S4Vectors runValue
 #' @examples
 #' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
 #'                      ranges = IRanges(start = c(1, 10, 20),
@@ -121,14 +122,25 @@ resize_ORF <- function(grangesObj, orf_goal_length) {
 #' names must either be a column called names, or the names of the
 #' grl object
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
+#'  or GRanges object
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
-#'  @export
+#' @export
+#' @return a character vector of transcript names,
+#'  without _* naming
 OrfToTxNames <- function(grl, unique = F){
-  if (class(grl) != "GRangesList") stop("grl must be GRangesList Object")
+  if (!is.gr_or_grl(class(grl))) {
+    stop("grl must be GRangesList or GRanges Object")
+  }
+
   if (is.null(names(grl))) {
-    otherPossibility <- unlist(grl, use.names = F)$names
+    if (!is.grl(class(grl))) {
+      otherPossibility <- unlist(grl, use.names = F)$names
+    } else {
+      otherPossibility <- grl$names
+    }
+
     if (is.null(otherPossibility)) {
       stop("grl have no valid orf names to convert")
     } else {
@@ -152,6 +164,7 @@ OrfToTxNames <- function(grl, unique = F){
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @export
 #' @return if asGR is False, a vector, if True a GRanges object
 ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                           is.sorted = FALSE){
@@ -188,6 +201,7 @@ ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @export
 #' @return if asGR is False, a vector, if True a GRanges object
 ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                          is.sorted = FALSE){
@@ -221,6 +235,7 @@ ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @export
 #' @return a GRangesList of start codons, since they might be split on exons
 ORFStartCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
@@ -228,12 +243,12 @@ ORFStartCodons <- function(grl, is.sorted = FALSE){
   }
   firstExons <- firstExonPerGroup(grl)
   widths <- widthPerGroup(firstExons)
-  validWidths <- widths >= 3
+  validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStops <- reduce(phead(tileBy1, 3L))
-    grl[!validWidths] <- fixedStops
+    fixedStarts <- reduce_Keep_Attr(phead(tileBy1, 3L), keep.names = TRUE)
+    grl[!validWidths] <- fixedStarts
   }
   # fix the others the easy way
   firstExons <- firstExons[validWidths]
@@ -254,6 +269,7 @@ ORFStartCodons <- function(grl, is.sorted = FALSE){
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
+#' @export
 #' @return a GRangesList of stop codons, since they might be split on exons
 ORFStopCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
@@ -261,11 +277,11 @@ ORFStopCodons <- function(grl, is.sorted = FALSE){
   }
   lastExons <- lastExonPerGroup(grl)
   widths <- widthPerGroup(lastExons)
-  validWidths <- widths >= 3
+  validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStops <- reduce(ptail(tileBy1, 3L))
+    fixedStops <- reduce_Keep_Attr(ptail(tileBy1, 3L), keep.names = TRUE)
     grl[!validWidths] <- fixedStops
   }
   # fix the others the easy way
@@ -288,7 +304,8 @@ ORFStopCodons <- function(grl, is.sorted = FALSE){
 #' @param with.tx a boolean, include transcript names,
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
-#'  @return a character vector of ids, 1 per orf
+#' @importFrom S4Vectors phead
+#' @return a character vector of ids, 1 per orf
 orfID <- function(grl, with.tx = FALSE){
   seqnames <- as.character(seqnames(phead(grl,1L)))
   strands <- strandPerGroup(grl,F)

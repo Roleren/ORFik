@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{numExonsPerGroup}
 \alias{numExonsPerGroup}
-\title{get list of the number of exons per group}
+\title{Get list of the number of exons per group}
 \usage{
 numExonsPerGroup(grl, keep.names = T)
 }
@@ -12,5 +12,6 @@ numExonsPerGroup(grl, keep.names = T)
 \item{keep.names}{a boolean, keep names or not}
 }
 \description{
-get list of the number of exons per group
+Can also be used generaly to get number of GRanges object
+ per GRangesList group
 }

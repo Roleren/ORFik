@@ -4,7 +4,7 @@
 \alias{validGRL}
 \title{Helper Function to check valid GRangesList input}
 \usage{
-validGRL(class, type, checkNULL = FALSE)
+validGRL(class, type = "grl", checkNULL = FALSE)
 }
 \arguments{
 \item{class}{as character vector the given class of

@@ -327,6 +327,16 @@ test_that("OrfRankOrder works as intended", {
 
 
 test_that("allFeatures works as intended", {
+  # without RNA in input
+  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5,
+                            tx = tx, fiveUTRs = fiveUTRs, cds = cds,
+                            threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
+                            extension = 0)
+  expect_is(dt, "data.table")
+  expect_equal(ncol(dt), 13)
+  expect_equal(nrow(dt), 4)
+
+  # normal inputs
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
@@ -351,6 +361,16 @@ test_that("allFeatures works as intended", {
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
+  # only nonvarying by Ribo-seq
+  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
+                            tx = tx, fiveUTRs = fiveUTRs, cds = cds,
+                            threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
+                            extension = 5, cageFiveUTRs = fiveUTRs, includeNonVarying = F)
+  expect_is(dt, "data.table")
+  expect_equal(ncol(dt), 10)
+  expect_equal(nrow(dt), 4)
+
+  # test from example table in orfik
   dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
@@ -358,6 +378,10 @@ test_that("allFeatures works as intended", {
   expect_is(dt, "data.table")
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
+  # load file
+  load(system.file("extdata", "featureTable.rdata",
+                         package = "ORFik")) # loaded as featureExamples
+  expect_equal(dt, featureExamples) # should be equal to saved version
 
 })
 

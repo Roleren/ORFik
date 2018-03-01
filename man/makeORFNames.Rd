@@ -2,9 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{makeORFNames}
 \alias{makeORFNames}
-\title{Make ORF names per orf, grl must be grouped by transcript
-If a list of orfs are grouped by transcripts, but does not have
-ORF names, then create them and return the new GRangesList}
+\title{Make ORF names per orf}
 \usage{
 makeORFNames(grl)
 }
@@ -12,10 +10,11 @@ makeORFNames(grl)
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
 \value{
-a GRangesList now with ORF names
+a GRangesList now with ORF names, grouped by transcripts.
+ They are also sorted
 }
 \description{
-Make ORF names per orf, grl must be grouped by transcript
+grl must be grouped by transcript
 If a list of orfs are grouped by transcripts, but does not have
 ORF names, then create them and return the new GRangesList
 }

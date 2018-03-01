@@ -1,6 +1,12 @@
 library(ORFik)
 context("cds helpers")
 
+###########################NB########################
+# Until AnnotationDbi version 1.41.4 is released
+# a warning will appear, see:
+# https://github.com/Bioconductor/AnnotationHub/issues/1
+# remove this text when that happens.
+
 gene1 <- GRanges(Rle(c("1"), c(4)),
                  IRanges(c(925942, 930155, 939040, 939275), width=c(72, 182, 90, 17)),
                  Rle(strand(c("+", "+", "+", "+"))))

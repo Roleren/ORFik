@@ -8,7 +8,8 @@ reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
   cds = NULL)
 }
 \arguments{
-\item{fiveUTRs}{The 5' leader sequences as GRangesList}
+\item{fiveUTRs}{The 5' leader or transcript
+sequences as GRangesList}
 
 \item{cage}{Either a  filePath for cage-file, or already loaded R-object as GRanges}
 
@@ -21,12 +22,20 @@ for a tss to pass as hit}
 \item{cds}{If you want to extend 5' leaders downstream,
 to catch upstream ORFs going into cds, include it.}
 }
+\value{
+a GRangesList
+}
 \description{
-Given a GRangesList of 5' utrs, reassign the start postitions.
- A max peak is defined as new tss if it is within boundary
+Given a GRangesList of 5' utrs or transcripts, reassign the start
+ postitions. A max peak is defined as new tss if it is within boundary
  of 5'leader range, specified by extension
  A max peak must also be greater that the cage peak cutoff specified
  in filterValue
  The new TSS will then be the position of the cage read,
  with highest read count in the interval.
+}
+\details{
+This method can also be used with other ngs methods, if i.g. if you have a
+list of possible cds starts (with scores) and cds'. It would reassign the
+cds starts.
 }

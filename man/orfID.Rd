@@ -11,8 +11,10 @@ orfID(grl, with.tx = FALSE)
 
 \item{with.tx}{a boolean, include transcript names,
 if you want unique orfs, so that they dont have multiple
-versions on different isoforms, set it to FALSE.
-@return a character vector of ids, 1 per orf}
+versions on different isoforms, set it to FALSE.}
+}
+\value{
+a character vector of ids, 1 per orf
 }
 \description{
 These id's can be uniqued by isoform etc,
