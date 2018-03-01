@@ -13,5 +13,7 @@ tile1(grl)
 a GRangesList grouped by original group, tiled to 1
 }
 \description{
+Per group, sepereate the groups and split them on each position.
+Returned sorted
 This is not supported originally by GenomicRanges
 }

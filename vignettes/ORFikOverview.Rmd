@@ -251,15 +251,15 @@ if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vigne
 Features like floss needs the ribo-seq data to be alligned for the p-site.
 To do this, you can either do it manually by using plots from ORFik, to 
 deduce the p-sites, or you can do it automaticly by using the package 
-shoelaces(recomended). 
+shoelaces(recomended). (automatic p-site finding is soon included with orfik using shoelaces) 
 
 Syntax of p-shifted bed files are:
 
 column 1: Seqname (the chromosome)
 column 2: start
 column 3: end
-column 4: width( all must be 1 width reads)
-column 5: the original read length( i.g 26-34)
+column 4: width( all must be 1 width reads of the p-sites)
+column 5: the original read lengths (i.g 26-34)
 column 6: the strand ( + / - (* is not allowed))
 
 The files can also be compressed by the following formats:

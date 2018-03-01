@@ -108,70 +108,86 @@ distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' Make a score for each ORFs start region
 #'
 #' The closer the sequence is to the kozak sequence
-#' The higher the score, based on simplification of PWM
-#' score system: 4 upstream, 5 downstream of start
-#' CACCATGGC, 1+3+1+2, skip ATG, +2+1 = 10
-#' CGCCATGGC, 1+!2+1+2, skip ATG, +2+1 = 9
-#' Transformed from experimental bit values for each position
+#' The higher the score, based on the experimental pwms from paper.
+#' Minimum score is 0 (worst correlation), max is 1 (the best
+#' base per column was chosen)
+#'
+#' See article: https://doi.org/10.1371/journal.pone.0108475
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
 #' @param faFile a FaFile from the fasta file, see ?FaFile
-#' @param species which species to use, currently only support human
+#' @param species ("human"), which species to use,
+#'  currently only support human and zebrafish. You can also specify a pfm
+#'  here for your own, syntax is an rectangular integer matrix,
+#'  where all columns must sum to the same value, normally 100.
+#' @param include.N logical (F), if TRUE, allow N bases to be counted as hits,
+#'  score will be average of the other bases. If True N bases will be
+#'  added to pfm, automaticly, so dont include them.
+#' @return a numeric vector with values between 0 and 1
 #' @family features
+#' @importFrom Biostrings PWM
 #' @export
 #' @return an integer vector, one score per orf
-kozakSequenceScore <- function(grl, faFile, species = "human"){
+kozakSequenceScore <- function(grl, faFile, species = "human",
+                               include.N = FALSE){
   firstExons <- firstExonPerGroup(grl)
-  kozakLocation <- promoters(firstExons, upstream = 4, downstream = 5)
+  kozakLocation <- promoters(firstExons, upstream = 9, downstream = 6)
 
-  sequences <- as.character(txSeqsFromFa(kozakLocation, faFile, is.sorted = TRUE))
-  names(sequences) <- NULL
-  scores <- rep(0, length(sequences))
-  if (species == "human") {
-    # split strings and relist as letters of 9 rows
-    subSplit <- strsplit(sequences, split = "")
-    # this will not when ATG is on start of chr
-    mat <- matrix(unlist(subSplit), nrow = 9)
-    pos1 <- as.character(mat[1,])
-    pos2 <- as.character(mat[2,])
-    pos3 <- as.character(mat[2,])
-    pos4 <- as.character(mat[2,])
-    pos8 <- as.character(mat[8,])
-    pos9 <- as.character(mat[9,])
-
-
-    match <- grepl(x = pos1, pattern = "C|G|A")
-    scores[match] <- scores[match] + 1
-
-    match <- pos2 == "A"
-    scores[match] <- scores[match] + 5
-    match <- pos2 == "G"
-    scores[match] <- scores[match] + 2
-    match <- pos2 == "C"
-    scores[match] <- scores[match] + 1
-
-    match <- grepl(x = pos3, pattern = "C|A")
-    scores[match] <- scores[match] + 1
-
-    match <- pos4 == "C"
-    scores[match] <- scores[match] + 2
-    match <- pos4 == "G"
-    scores[match] <- scores[match] + 1
-    match <- pos4 == "A"
-    scores[match] <- scores[match] + 1
-
-    match <- pos8 == "G"
-    scores[match] <- scores[match] + 2
-    match <- pos8 == "A"
-    scores[match] <- scores[match] + 1
-    match <- pos8 == "T"
-    scores[match] <- scores[match] + 1
-
-    match <- grepl(x = pos9, pattern = "C|A")
-    scores[match] <- scores[match] + 1
-
-    return(scores)
+  sequences <- as.character(txSeqsFromFa(kozakLocation,
+                                                 faFile, is.sorted = TRUE))
+  if (!all(nchar(sequences) == 15)) {
+    stop("not all ranges had valid kozak sequences length, not 15")
   }
-  else stop("other species are not supported")
+
+  #template <- sapply(s, function(x) PWMscoreStartingAt(pwm, x))
+
+  if (species == "human") {
+    # human pfm, see article reference
+    pfm <- t(matrix(as.integer(c(20,20,21,21,19,24,46,29,19,22,28,16,
+                                 27,33,32,23,32,38,10,38,45,15,39,26,
+                                 35,29,28,39,30,26,37,20,28,49,18,37,
+                                 18,18,19,17,19,12,7,13,8,14,15,21)),
+                    ncol = 4))
+  } else if (species == "zebrafish") {
+    # zebrafish pfm, see article reference
+    pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
+                                 21,26,24,16,28,32,5,23,35,12,42,21,
+                                 25,24,22,33,22,19,28,17,27,47,16,34,
+                                 25,24,26,25,28,14,5,21,10,17,15,28)),
+                    ncol = 4))
+  } else if(class(species) == "matrix"){
+    # self defined pfm
+    pfm <- species
+  } else {
+    stop("other species are not supported")
+  }
+
+  bases <- c("A", "C", "G", "T")
+
+
+  rownames(pfm) <- bases
+  pwm <- PWM(pfm)
+
+  if(include.N){
+    bases <- c(bases, "N")
+    pwm <- rbind(pwm, colMeans(pwm))
+    rownames(pwm) <- bases
+  }
+
+  # exclude start codon
+  s <- paste0(substr(x = sequences, 1, 9), substr(x = sequences, 13, 15))
+  # split strings and relist as letters of 9 rows
+  subSplit <- strsplit(s, split = "")
+  # this will not when ATG is on start of chr
+  mat <- t(matrix(unlist(subSplit, use.names = FALSE), ncol = length(s)))
+
+  scores <- rep(0., length(s))
+  for(i in 1:ncol(mat)){
+    for(n in 1:length(bases)){
+      match <- mat[, i] == bases[n]
+      scores[match] <- scores[match] + pwm[n, i]
+    }
+  }
+  return(scores)
 }
 
 #' Inside/outside score (IO)
@@ -212,6 +228,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
   dtd <- as.data.table(downstreamTx)
   dtu <- as.data.table(upstreamTx)
   dtmerge <- data.table::rbindlist(l = list(dtu, dtd))
+  group <- NULL # for avoiding warning
   txOutside <- makeGRangesListFromDataFrame(
     dtmerge[order(group)], split.field = "group",
     names.field = "group_name", keep.extra.columns = T)

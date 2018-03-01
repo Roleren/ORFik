@@ -1,6 +1,8 @@
 
-#' make GRangesList from GRanges, grouped by names or another column(other)
-#' @description ig. if GRanges should be grouped by gene,
+#' make GRangesList from GRanges,
+#'
+#' Grouped by names or another column(other)
+#'  ig. if GRanges should be grouped by gene,
 #'  give gene column as other
 #' @param gr a GRanges object
 #' @param other a vector of names to group, no 2 groups can have same name
@@ -67,14 +69,14 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #'   ->T or min-> default(F) ?
 #' @param byStarts a logical T, should it order by starts
 #'  or ends F.
-#' @importFrom data.table as.data.table
+#' @importFrom data.table as.data.table :=
 #' @return an equally named GRangesList, where each group is
 #'  sorted within group.
 gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
   if(length(grl) == 0) return(GRangesList())
 
   DT <- as.data.table(grl)
-
+  group <- NULL # for not getting warning
   if (decreasing) {
     if (byStarts) {
       DT <- DT[order(group, -start)]
@@ -159,6 +161,8 @@ strandPerGroup <- function(grl, keep.names = T){
 #' + strand = T, if - strand = F
 #' Also checks for * strands, so a good check for bugs
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
+#' @export
+#' @return a logical vector
 strandBool <- function(grl){
   if (class(grl) == "GRanges") {
     posIndices <- as.character(strand(grl)) == "+"
@@ -341,6 +345,8 @@ makeORFNames <- function(grl){
 
 #' Tile a GRangeslist by 1
 #'
+#' Per group, sepereate the groups and split them on each position.
+#' Returned sorted
 #' This is not supported originally by GenomicRanges
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @return a GRangesList grouped by original group, tiled to 1
@@ -465,7 +471,8 @@ assignLastExonsStopSite <- function(grl, newStops){
   posIndices <- strandBool(grl)
 
   dt <- as.data.table(grl)
-  idx = dt[, .I[.N], by=group]
+  group <- NULL # avoid check warning
+  idx = dt[, .I[.N], by = group]
   dt[idx$V1]$end[posIndices] <- newStops[posIndices]
   dt[idx$V1]$start[!posIndices] <- newStops[!posIndices]
   ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
@@ -668,19 +675,41 @@ matchNaming <- function(gr, reference){
   }
 }
 
-#' Reduce a GRangesList
+
+
+#' Reduce GRanges / GRangesList
 #'
 #' Extends function \code{\link[GenomicRanges]{reduce}}
-#' by trying to keep names and meta columns
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' by trying to keep names and meta columns if it is a
+#' GRangesList. If keep.names == F, it's just the normal
+#' GenomicRanges::reduce.
+#'
+#' Only tested for orfik, might not work for other naming conventions.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
+#' @param drop.empty.ranges (FALSE) if a group is empty (width 0), delete it.
+#' @param min.gapwidth (1L) how long gap can it be to say they belong together
+#' @param with.revmap (FALSE) return info on which mapped to which
+#' @param with.inframe.attrib (FALSE) For internal use.
+#' @param ignore.strand (FALSE), can different strands be reduced together.
+#' @param keep.names (FALSE) keep the names and meta columns of the GRangesList
 #' @export
 #' @return A reduced GRangesList
-reduce_keep_naming <- function(grl){
-  validGRL(class(grl))
+reduce_Keep_Attr <- function(grl, keep.names = FALSE,
+                             drop.empty.ranges = FALSE, min.gapwidth = 1L,
+                             with.revmap = FALSE, with.inframe.attrib = FALSE,
+                             ignore.strand = FALSE){
 
-  gr <- unlist(reduce(grl), use.names = TRUE)
+  if (keep.names) { # return with names
 
-  return(matchNaming(gr, grl))
+    gr <- unlist(GenomicRanges::reduce(grl), use.names = TRUE)
+    if (length(gr) == 0) return(GRangesList())
+
+    return(matchNaming(gr, grl))
+  } else { # return original
+    return(GenomicRanges::reduce(grl, drop.empty.ranges, min.gapwidth,
+           with.revmap, with.inframe.attrib,
+           ignore.strand))
+  }
 }
 
 #' Helper function to check for GRangesList

@@ -21,7 +21,7 @@ bedToGR <- function(x, bed6 = TRUE){
 
 #' Get Cage-Data From a file-path
 #' @param filePath The location of the cage-file
-#' @importFrom data.table fread
+#' @importFrom data.table fread setDF
 #' @return a GRanges object
 cageFromFile <- function(filePath){
 
@@ -29,10 +29,10 @@ cageFromFile <- function(filePath){
     if (file.exists(filePath)) {
       if (any(gsub(pattern = ".*\\.", "",
                    filePath) == c("gzip", "gz", "bgz"))) {
-        rawCage <- bedToGR(as.data.frame(
+        rawCage <- bedToGR(setDF(
           fread(paste("gunzip -c", filePath), sep = "\t")))
       } else if (gsub(pattern = ".*\\.", "", filePath) == "bed"){
-        rawCage <- bedToGR(as.data.frame(fread(filePath, sep = "\t")))
+        rawCage <- bedToGR(setDF(fread(filePath, sep = "\t")))
       } else {stop("Only bed and gzip formats are supported for filePath")}
     } else {stop("Filepath specified does not name existing file.")}
   } else {
