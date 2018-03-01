@@ -25,7 +25,8 @@ Imports:
     GenomicFeatures (>= 1.30.3),
     rtracklayer (>= 1.38.3),
     Rcpp (>= 0.12.15), 
-    data.table (>= 1.10.4-3) 
+    data.table (>= 1.10.4-3),
+    Biostrings (>= 2.46.0)
 RoxygenNote: 6.0.1
 Suggests:
     testthat,
