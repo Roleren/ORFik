@@ -11,6 +11,9 @@ seqnamesPerGroup(grl, keep.names = T)
 
 \item{keep.names}{a boolean, keep names or not}
 }
+\value{
+a character vector or Rle of seqnames(if seqnames == T)
+}
 \description{
 get list of seqnames per granges group
 }

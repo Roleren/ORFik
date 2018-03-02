@@ -9,7 +9,8 @@ filterCage(rawCage, filterValue = 1)
 \arguments{
 \item{rawCage}{The raw cage-data}
 
-\item{filterValue}{The number of counts(score) to filter on for a tss to pass as hit}
+\item{filterValue}{The number of counts(score) to filter on
+for a tss to pass as hit}
 }
 \value{
 the filtered Granges object

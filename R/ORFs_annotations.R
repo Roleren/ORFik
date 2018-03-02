@@ -174,7 +174,7 @@ assign_annotations <- function(ORFs, con) {
 
     newIsoforms_p <- c()
     newIsoforms_o <- c()
-    cds <- cdsBy(txdb, by = "tx", use.names = T)
+    cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
     p_coding <- newORFs[newORFs$transcript_biotype == "protein_coding"]
     other_coding <- newORFs[newORFs$transcript_biotype != "protein_coding"]
     message("Preparing annotations for ORFs overlapping coding regions...")

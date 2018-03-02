@@ -22,7 +22,7 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
   if (!is.null(changedFiveUTRs)) {
     if (!is.null(Gtf)) {
       new5Length <- findCageUTRFivelen(changedFiveUTRs, tx_len_temp$tx_name)
-      tx_len_temp <- transcriptLengths(Gtf, T, T, T)
+      tx_len_temp <- transcriptLengths(Gtf, TRUE, TRUE, TRUE)
       tx_len_temp$utr5_len <- new5Length
       tx_len <- tx_len_temp$utr5_len +
       tx_len_temp$cds_len + tx_len_temp$utr3_len

@@ -32,3 +32,17 @@ A GRangesList of ORFs.
 Input is a Grangeslist of regions to search, together with a DNAStringSet with
 fastaSequence in same order as the grl.
 }
+\examples{
+seqs <- c("ATGGGTATTTATA") # the dna sequence
+startCodons <- "ATG|TGG|GGG"
+stopCodons <- "TAA|AAT|ATA"
+# gr is sequence mapping
+gr <- GRanges(seqnames = rep("1", 2),
+                ranges = IRanges(start = c(21, 10), end = c(23, 19)),
+                strand = rep("-", 2), names = rep(seqname[1], 2))
+grl <- GRangesList(gr)
+names(grl) <- "tx1"
+# now run
+find_in_frame_ORFs(grl,seqs,startCodons, stopCodons,
+                   longestORF = F, minimumLength = 0)
+}

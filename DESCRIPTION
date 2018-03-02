@@ -4,12 +4,14 @@ Title: Open Reading Frames
 Version: 0.1.0
 Author@R: c(
     person("Kornel", "Labun", email = "kornellabun@gmail.com",role = "aut"),
-    person("Haakon", "Tjeldnes", email = "hauken_heyken@hotmail.com", role = "aut"),
+    person("Haakon", "Tjeldnes", email = "hauken_heyken@hotmail.com",
+    role = "aut"),
     person("Evind", "Valen", email = "eivind.valen@gmail.com",role = "cre"))
 Author: Kornel Labun [aut],
     Haakon Tjeldnes [aut]
 Maintainer: Eivind Valen <eivind.valen@gmail.com>	
 Description: Ribosome Profiling tools.
+biocViews: Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage
 License: MIT + file LICENSE
 LazyData: TRUE
 BugReports: https://github.com/JokingHero/ORFik/issues

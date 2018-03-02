@@ -69,12 +69,14 @@ Remember to sort ORFs, use: sortPerGroup(grl)
 }
 \examples{
  \dontrun{
- #The easiest way to run the method is to include as this:
+ #The easiest way to run the method is to include:
  allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
   faFile = faFile, extension = 0)
  #The other arguments will then be found by the Gtf file,
  #and extension = 0 means
  #you did not use cage to extend 5' utrs
+
+ See vignettes for more examples
  }
 }
 \seealso{

@@ -26,3 +26,19 @@ Either if you have the 5' utr sequences or the
  Remember to sort it, if not sorted beforehand.
  use ORFik:::sortPerGroup(grl) to get sorted grl.
 }
+\examples{
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+package = "GenomicFeatures")
+txdb <- loadDb(samplefile)
+fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+cds <- cdsBy(txdb,"tx",use.names = T)
+# now try:
+extendLeaders(fiveUTRs, extension = 1000, cds)
+
+
+# when extending transcripts, don't include cds' ofcourse,
+# since they are already there
+extendLeaders(tx, extension = 1000)
+
+}

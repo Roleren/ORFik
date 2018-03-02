@@ -221,7 +221,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
   tx <- tx[OrfToTxNames(grl, F)]
 
   grlStarts <- ORFStartSites(grl, asGR = FALSE)
-  grlStops <- ORFStopSites(grl, asGR = F)
+  grlStops <- ORFStopSites(grl, asGR = FALSE)
 
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
@@ -231,7 +231,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
   group <- NULL # for avoiding warning
   txOutside <- makeGRangesListFromDataFrame(
     dtmerge[order(group)], split.field = "group",
-    names.field = "group_name", keep.extra.columns = T)
+    names.field = "group_name", keep.extra.columns = TRUE)
   names(txOutside) <- names(tx)
 
   overlapTxOutside <- countOverlaps(txOutside, RFP) + 1

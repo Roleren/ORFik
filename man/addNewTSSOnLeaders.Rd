@@ -12,6 +12,9 @@ addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
 
 \item{maxPeakPosition}{The max peak for each 5' leader found by cage}
 }
+\value{
+a GRanges object of first exons
+}
 \description{
 add cage max peaks as new transcript start sites for each 5' leader
 (*) strands are not supported, since direction must be known.

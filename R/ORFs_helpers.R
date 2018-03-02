@@ -78,13 +78,13 @@ map_to_GRanges <- function(grl, result) {
   # Check that grl is sorted
   grl <- sortPerGroup(grl, ignore.strand = T)
   # Create Ranges object from orf scanner result
-  ranges = IRanges(start = unlist(result$orf[1], use.names = F),
-                   end = unlist(result$orf[2], use.names = F))
+  ranges = IRanges(start = unlist(result$orf[1], use.names = FALSE),
+                   end = unlist(result$orf[2], use.names = FALSE))
 
   # map transcripts to genomic coordinates, reduce away false hits
   genomicCoordinates <- pmapFromTranscripts(x = ranges,
                                             transcripts = grl[result$index])
-  genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = T)
+  genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
 
   return(makeORFNames(genomicCoordinates))
 }

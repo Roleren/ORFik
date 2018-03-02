@@ -91,8 +91,21 @@ stop_definition <- function(transl_table) {
 #' @param minimumLength numeric. Default is 0.
 #' For example minimumLength = 8 will result in size of ORFs to be at least
 #'  START + 8*3 [bp] + STOP.
-#' @return A GRangesList of ORFs.
+#' @examples
+#' seqs <- c("ATGGGTATTTATA") # the dna sequence
+#' startCodons <- "ATG|TGG|GGG"
+#' stopCodons <- "TAA|AAT|ATA"
+#' # gr is sequence mapping
+#' gr <- GRanges(seqnames = rep("1", 2),
+#'                 ranges = IRanges(start = c(21, 10), end = c(23, 19)),
+#'                 strand = rep("-", 2), names = rep(seqname[1], 2))
+#' grl <- GRangesList(gr)
+#' names(grl) <- "tx1"
+#' # now run
+#' find_in_frame_ORFs(grl,seqs,startCodons, stopCodons,
+#'                    longestORF = F, minimumLength = 0)
 #' @export
+#' @return A GRangesList of ORFs.
 find_in_frame_ORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
                                stopCodon = "TAA|TAG|TGA", longestORF = F,
                                minimumLength = 0 ){

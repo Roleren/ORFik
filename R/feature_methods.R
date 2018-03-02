@@ -413,7 +413,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
   }
   # check that naming is correct, else change it.
-  orfNames <- OrfToTxNames(grl, F)
+  orfNames <- OrfToTxNames(grl, FALSE)
   validNamesThree <- names(threeUTRs) %in% orfNames
   validNamesGRL <- orfNames %in% names(threeUTRs)
   rrs <- rep(NA,length(grl))
@@ -508,12 +508,14 @@ RibosomeStallingScore <- function(grl, RFP){
 #'  or \code{\link{fpkm}}
 #' @examples
 #'  \dontrun{
-#'  #The easiest way to run the method is to include as this:
+#'  #The easiest way to run the method is to include:
 #'  allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
 #'   faFile = faFile, extension = 0)
 #'  #The other arguments will then be found by the Gtf file,
 #'  #and extension = 0 means
 #'  #you did not use cage to extend 5' utrs
+#'
+#'  See vignettes for more examples
 #'  }
 allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                         fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
@@ -573,7 +575,7 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 
   if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
-    te <- te(grl, RNA, RFP, tx, with.fpkm = T)
+    te <- te(grl, RNA, RFP, tx, with.fpkm = TRUE)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA

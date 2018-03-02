@@ -7,9 +7,33 @@
 #' @param gr a GRanges object
 #' @param other a vector of names to group, no 2 groups can have same name
 #' @importFrom S4Vectors nrun
+#' @examples
+#' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                  end = c(5, 15, 25)),
+#' strand = Rle(strand(rep("+", 3))))
+#'
+#' ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+#'                      ranges = IRanges(start = c(20, 30, 40),
+#'                                       end = c(25, 35, 45)),
+#'                      strand = Rle(strand(rep("+", 3))))
+#' names(ORFranges) = rep("tx1_1",3)
+#'names(ORFranges2) = rep("tx1_2",3)
+#' grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
+#' gr <- unlist(grl, use.names = F)
+#' now recreate the grl
+#' # group by orf
+#' grltest <- groupGRangesBy(gr) # using the names to group
+#' identical(grl, grltest) # they are identical
+#'
+#' # group by transcript
+#' names(gr) <- OrfToTxNames(gr)
+#' grltest <- groupGRangesBy(gr)
+#' identical(grl, grltest) # they are not identical
+#'
+#' @export
 #' @return a GRangesList named after names(Granges) if other is NULL, else
 #' names are from unique(other)
-#' @export
 groupGRangesBy <- function(gr,other = NULL){
   if (class(gr) != "GRanges") stop("gr must be GRanges Object")
   if (is.null(other)) { # if not using other
@@ -48,6 +72,7 @@ widthPerGroup = function(grl, keep.names = T){
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @importFrom S4Vectors phead
+#' @return a character vector or Rle of seqnames(if seqnames == T)
 seqnamesPerGroup <- function(grl, keep.names = T){
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -441,6 +466,7 @@ riboSeqReadWidths <- function(reads){
 #'  max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param newStarts an integer vector of same length as grl, with new start values
+#' @return the same GRangesList with new start sites
 assignFirstExonsStartSite <- function(grl, newStarts){
   if (length(grl) != length(newStarts)) stop("length of grl and newStarts \n
                                             are not equal!")
@@ -465,6 +491,7 @@ assignFirstExonsStartSite <- function(grl, newStarts){
 #'  with new start values
 #' @importFrom data.table .I
 #' @importFrom data.table .N
+#' @return the same GRangesList with new stop sites
 assignLastExonsStopSite <- function(grl, newStops){
   if (length(grl) != length(newStops)) stop("length of grl and newStops \n
                                            are not equal!")
@@ -496,6 +523,7 @@ assignLastExonsStopSite <- function(grl, newStops){
 #'  usually of Transcripts to be changed
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
+#' @return a GRangesList of downstream part
 downstreamOfPerGroup <- function(tx, downstreamOf){
   posIndices <- strandBool(tx)
   posEnds <- end(tx[posIndices])
@@ -534,6 +562,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new stop point of last valid exon.
+#' @return a GRangesList of upstream part
 upstreamOfPerGroup <- function(tx, upstreamOf){
   posIndices <- strandBool(tx)
   posStarts <- start(tx[posIndices])
@@ -576,10 +605,25 @@ upstreamOfPerGroup <- function(tx, upstreamOf){
 #'  upstream ORFs going into cds, include it. It will add first
 #'  cds exon to grl matched by names.
 #'  Do not add for transcripts, as they are already included.
+#' @examples
+#' samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#' package = "GenomicFeatures")
+#' txdb <- loadDb(samplefile)
+#' fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+#' tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+#' cds <- cdsBy(txdb,"tx",use.names = T)
+#' # now try:
+#' extendLeaders(fiveUTRs, extension = 1000, cds)
+#'
+#'
+#' # when extending transcripts, don't include cds' ofcourse,
+#' # since they are already there
+#' extendLeaders(tx, extension = 1000)
+#'
 extendLeaders <- function(grl, extension = 1000, cds = NULL){
   if (class(extension) == "numeric" && length(extension) == 1) {
     posIndices <- strandBool(grl)
-    promo <- promoters(unlist(firstExonPerGroup(grl), use.names = F),
+    promo <- promoters(unlist(firstExonPerGroup(grl), use.names = FALSE),
       upstream = extension)
     newStarts <- rep(NA, length(grl))
     newStarts[posIndices] <- as.integer(start(promo[posIndices]))
@@ -755,7 +799,7 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE){
 
     class <- class[!indeces]
     if (length(class) == 0) {
-      return(rep(T, length(type)))
+      return(rep(TRUE, length(type)))
     }
     type <- type[!indeces]
 

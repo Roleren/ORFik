@@ -13,6 +13,9 @@ findNewTSS(fiveUTRs, cageData, extension)
 
 \item{extension}{The number of basses upstream to add on transcripts}
 }
+\value{
+a Hits object
+}
 \description{
 Finds max peaks per trancsript from reads in the cagefile
 }

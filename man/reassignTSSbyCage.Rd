@@ -39,3 +39,18 @@ This method can also be used with other ngs methods, if i.g. if you have a
 list of possible cds starts (with scores) and cds'. It would reassign the
 cds starts.
 }
+\examples{
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+package = "GenomicFeatures")
+txdb <- loadDb(samplefile)
+fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+cds <- cdsBy(txdb)
+# make some fake cage data
+cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),
+               ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500),
+                                 as.integer(start(fiveUTRs)[1 : 2])),
+               strand = as.character(strand(fiveUTRs)[1 : 2]),
+                score = c(5, 10))
+test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cageEqualStart,
+ cds = cds)
+}
