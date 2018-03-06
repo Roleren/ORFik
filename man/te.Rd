@@ -39,20 +39,31 @@ Uses Rna-seq and Ribo-seq to get te of grl
 is defined as (density of RPFs within ORF)/(RNA expression).
 See article: 10.1126/science.1168978
 }
+\examples{
+ORF <- GRanges(seqnames = "1",
+ranges = IRanges(start = c(1, 10, 20),
+                end = c(5, 15, 25)),
+strand = "+")
+grl <- GRangesList(tx1_1 = ORF)
+RFP <- GRanges("1", IRanges(25, 25),"+")
+RNA <- GRanges("1", IRanges(1, 50),"+")
+tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+# nb: grl must have same names as tx, + _1 etc
+te <- te(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
+te$fpkmRFP
+te$te
+}
 \seealso{
-Other features: \code{\link{ORFScores}},
-  \code{\link{OrfRankOrder}},
+Other features: \code{\link{ORFDistToCds}},
+  \code{\link{ORFScores}}, \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
   \code{\link{RibosomeStallingScore}},
-  \code{\link{allFeatures}},
-  \code{\link{calculateCoverage}},
-  \code{\link{disengagementScore}},
-  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{computeFeatures}},
+  \code{\link{disengagementScore}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},
   \code{\link{fpkm}}, \code{\link{fractionLength}},
-  \code{\link{inFrameWithCDS}},
-  \code{\link{insideOutsideORF}},
-  \code{\link{isOverlappingCds}},
+  \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
+  \code{\link{isOverlapping}},
   \code{\link{kozakSequenceScore}},
   \code{\link{subset_coverage}}
 }

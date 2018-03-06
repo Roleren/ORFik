@@ -22,26 +22,26 @@ Grouped by names or another column(other)
 }
 \examples{
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-ranges = IRanges(start = c(1, 10, 20),
-                 end = c(5, 15, 25)),
-strand = Rle(strand(rep("+", 3))))
+           ranges = IRanges(start = c(1, 10, 20),
+           end = c(5, 15, 25)),
+           strand = "+")
 
-ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+ORFranges2 <- GRanges("1",
                      ranges = IRanges(start = c(20, 30, 40),
                                       end = c(25, 35, 45)),
-                     strand = Rle(strand(rep("+", 3))))
+                     strand = "+")
 names(ORFranges) = rep("tx1_1",3)
 names(ORFranges2) = rep("tx1_2",3)
 grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
-gr <- unlist(grl, use.names = F)
-now recreate the grl
-# group by orf
+gr <- unlist(grl, use.names = FALSE)
+## now recreate the grl
+## group by orf
 grltest <- groupGRangesBy(gr) # using the names to group
-identical(grl, grltest) # they are identical
+identical(grl, grltest) ## they are identical
 
-# group by transcript
+## group by transcript
 names(gr) <- OrfToTxNames(gr)
 grltest <- groupGRangesBy(gr)
-identical(grl, grltest) # they are not identical
+identical(grl, grltest) ## they are not identical
 
 }

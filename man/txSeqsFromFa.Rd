@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{txSeqsFromFa}
 \alias{txSeqsFromFa}
-\title{get transcript sequence from a GrangesList and a faFile}
+\title{Get transcript sequence from a GrangesList and a faFile}
 \usage{
 txSeqsFromFa(grl, faFile, is.sorted = F)
 }
@@ -17,5 +17,5 @@ txSeqsFromFa(grl, faFile, is.sorted = F)
 a DNAStringSet of the transcript sequences
 }
 \description{
-get transcript sequence from a GrangesList and a faFile
+Get transcript sequence from a GrangesList and a faFile
 }

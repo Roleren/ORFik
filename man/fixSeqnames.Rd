@@ -2,18 +2,17 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{fixSeqnames}
 \alias{fixSeqnames}
-\title{seqnames cleanup
-For many datasets, the fa file and the gtf file have different naming
-This functions tries to fix the naming to the GRanges standard
-chrX instead of X chr1 instead of 1 etc..}
+\title{Seqnames cleanup}
 \usage{
 fixSeqnames(grl)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 }
+\value{
+a GRangesList with fixed seqnames
+}
 \description{
-seqnames cleanup
 For many datasets, the fa file and the gtf file have different naming
 This functions tries to fix the naming to the GRanges standard
 chrX instead of X chr1 instead of 1 etc..

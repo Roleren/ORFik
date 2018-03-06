@@ -11,7 +11,8 @@ reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
 \item{fiveUTRs}{The 5' leader or transcript
 sequences as GRangesList}
 
-\item{cage}{Either a  filePath for cage-file, or already loaded R-object as GRanges}
+\item{cage}{Either a  filePath for cage-file, or already loaded
+R-object as GRanges}
 
 \item{extension}{The maximum number of basses upstream the
 cage-peak can be from original tss}
@@ -40,17 +41,19 @@ list of possible cds starts (with scores) and cds'. It would reassign the
 cds starts.
 }
 \examples{
+library(GenomicFeatures)
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-package = "GenomicFeatures")
+                         package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
 fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
-cds <- cdsBy(txdb)
-# make some fake cage data
+cds <- cdsBy(txdb,"tx",use.names = TRUE)[1:length(fiveUTRs)]
+names(cds) <- names(fiveUTRs)
+# make cage from promoter of leaders (just for example)
 cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),
-               ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500),
-                                 as.integer(start(fiveUTRs)[1 : 2])),
-               strand = as.character(strand(fiveUTRs)[1 : 2]),
-                score = c(5, 10))
-test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cageEqualStart,
+   ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500) ,
+                               as.integer(start(fiveUTRs)[1 : 2])),
+             strand = as.character(strand(fiveUTRs)[1 : 2]), score = c(5, 10))
+# now run it:
+test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cage,
  cds = cds)
 }

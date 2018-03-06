@@ -55,9 +55,10 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 
 
 
-#' Creates GRangesList from the results of get_all_ORFs_as_GRangesList and
-#'  a list of group indeces
+#' Map orfs to genomic coordinates
 #'
+#' Creates GRangesList from the results of ORFs_as_List and
+#'  the GRangesList used to find the ORFs
 #' @param grl A \code{\link[GenomicRanges]{GRangesList}} of the original
 #'  sequences that gave the orfs
 #' @param result List. A list of the results of finding uorfs
@@ -66,7 +67,7 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' @return A \code{\link[GenomicRanges]{GRangesList}} of ORFs.
 #' @export
 #' @importFrom GenomicFeatures pmapFromTranscripts
-map_to_GRanges <- function(grl, result) {
+mapToGRanges <- function(grl, result) {
 
   if (class(grl) != "GRangesList") stop("Invalid type of grl,",
                                         "must be GRangesList.")
@@ -95,8 +96,7 @@ map_to_GRanges <- function(grl, result) {
 #' @param grangesObj A GRanges object of ORF.
 #' @param orf_goal_length numeric. Desired length of ORF.
 #' @return GRanges object of resized ORF
-#'
-resize_ORF <- function(grangesObj, orf_goal_length) {
+resizeORF <- function(grangesObj, orf_goal_length) {
 
   if (!requireNamespace("biovizBase", quietly = TRUE)) {
     stop("biovizBase needed for this function to work. Please install it.", call. = FALSE)
@@ -247,7 +247,7 @@ ORFStartCodons <- function(grl, is.sorted = FALSE){
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStarts <- reduce_Keep_Attr(phead(tileBy1, 3L), keep.names = TRUE)
+    fixedStarts <- reduceKeepAttr(phead(tileBy1, 3L), keep.names = TRUE)
     grl[!validWidths] <- fixedStarts
   }
   # fix the others the easy way
@@ -281,7 +281,7 @@ ORFStopCodons <- function(grl, is.sorted = FALSE){
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStops <- reduce_Keep_Attr(ptail(tileBy1, 3L), keep.names = TRUE)
+    fixedStops <- reduceKeepAttr(ptail(tileBy1, 3L), keep.names = TRUE)
     grl[!validWidths] <- fixedStops
   }
   # fix the others the easy way

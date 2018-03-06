@@ -20,20 +20,35 @@ For example reads per orf.
 The entropy interval per group is a real number in the interval (0:1)
 Where 0 is no variance in reads over group.
 }
+\examples{
+ORF <- GRanges("1",
+ranges = IRanges(start = c(1, 12, 22),
+                end = c(10, 20, 32)),
+strand = "+")
+ORF$names = "tx1_1"
+names(ORF) <- rep("tx1", 3)
+grl <- GRangesList(tx1_1 = ORF)
+RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)),"+")
+# NB: grl must have same names as cds, + _1 etc
+entropy(grl, RFP)
+# or on cds
+cdsORF <- GRanges("1", IRanges(35, 44),"+")
+cdsORF$names = "tx1"
+names(cdsORF) <- "tx1"
+cds <-  GRangesList(tx1 = cdsORF)
+entropy(cds, RFP)
+}
 \seealso{
-Other features: \code{\link{ORFScores}},
-  \code{\link{OrfRankOrder}},
+Other features: \code{\link{ORFDistToCds}},
+  \code{\link{ORFScores}}, \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
   \code{\link{RibosomeStallingScore}},
-  \code{\link{allFeatures}},
-  \code{\link{calculateCoverage}},
-  \code{\link{disengagementScore}},
-  \code{\link{distOrfToCds}}, \code{\link{floss}},
+  \code{\link{computeFeatures}},
+  \code{\link{disengagementScore}}, \code{\link{floss}},
   \code{\link{fpkm_calc}}, \code{\link{fpkm}},
   \code{\link{fractionLength}},
-  \code{\link{inFrameWithCDS}},
-  \code{\link{insideOutsideORF}},
-  \code{\link{isOverlappingCds}},
+  \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
+  \code{\link{isOverlapping}},
   \code{\link{kozakSequenceScore}},
   \code{\link{subset_coverage}}, \code{\link{te}}
 }

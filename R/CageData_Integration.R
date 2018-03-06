@@ -117,8 +117,10 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
     return(fiveUTRs)
   }
   matchingNames <- names(fiveUTRs) %in% names(cds)
-  if (sum(matchingNames) - length(names(fiveUTRs)) != 0) { # <- check valid names
-    warning("not all cds names matches fiveUTRs names, returning without using cds.")
+  areValidNames <- (sum(matchingNames) - length(names(fiveUTRs))) != 0
+  if (areValidNames) {
+    warning("not all cds names matches fiveUTRs names,
+            returning without using cds.")
     return(fiveUTRs)
   }
   # get only the ones we need
@@ -162,7 +164,8 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000){
 #' Find max peak for each transcript,
 #' returns as data.table, without names, but with index
 #' @param cageOverlaps The cageOverlaps between cage and extended 5' leaders
-#' @param filteredrawCageData The filtered raw cage-data used to reassign 5' leaders
+#' @param filteredrawCageData The filtered raw cage-data
+#'  used to reassign 5' leaders
 #' @importFrom data.table as.data.table
 #' @return a data.table of max peaks
 findMaxPeaks <- function(cageOverlaps, filteredrawCageData){
@@ -250,7 +253,8 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' cds starts.
 #' @param fiveUTRs The 5' leader or transcript
 #'  sequences as GRangesList
-#' @param cage Either a  filePath for cage-file, or already loaded R-object as GRanges
+#' @param cage Either a  filePath for cage-file, or already loaded
+#'  R-object as GRanges
 #' @param extension The maximum number of basses upstream the
 #'  cage-peak can be from original tss
 #' @param filterValue The number of counts(score) to filter on,
@@ -258,18 +262,20 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' @param cds If you want to extend 5' leaders downstream,
 #'  to catch upstream ORFs going into cds, include it.
 #' @examples
+#' library(GenomicFeatures)
 #' samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-#' package = "GenomicFeatures")
+#'                          package = "GenomicFeatures")
 #' txdb <- loadDb(samplefile)
 #' fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
-#' cds <- cdsBy(txdb)
-#' # make some fake cage data
+#' cds <- cdsBy(txdb,"tx",use.names = TRUE)[1:length(fiveUTRs)]
+#' names(cds) <- names(fiveUTRs)
+#' # make cage from promoter of leaders (just for example)
 #' cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),
-#'                ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500),
-#'                                  as.integer(start(fiveUTRs)[1 : 2])),
-#'                strand = as.character(strand(fiveUTRs)[1 : 2]),
-#'                 score = c(5, 10))
-#' test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cageEqualStart,
+#'    ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500) ,
+#'                                as.integer(start(fiveUTRs)[1 : 2])),
+#'              strand = as.character(strand(fiveUTRs)[1 : 2]), score = c(5, 10))
+#' # now run it:
+#' test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cage,
 #'  cds = cds)
 #' @export
 #' @return a GRangesList
@@ -284,8 +290,9 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
   if (!is.numeric(filterValue)) stop("filterValue must be numeric!")
   if (is.null(cage)) stop("Cage can not be NULL")
 
-  if (is.character(class(cage))) { # <- get cage file
-    filteredCage <- filterCage(cageFromFile(cage), filterValue) # get the cage data
+  if (class(cage) == "character") { # <- get cage file
+    filteredCage <- filterCage(cageFromFile(cage),
+                               filterValue) # get the cage data
   } else if (class(cage) == "GRanges") {
     filteredCage <- filterCage(cage, filterValue)
   } else {
@@ -295,7 +302,8 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
   filteredCage <- matchSeqnames(filteredCage, fiveUTRs)
 
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension)
-  fiveUTRs <- assignFirstExons(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition), fiveUTRs)
+  fiveUTRs <- assignFirstExons(addNewTSSOnLeaders(fiveUTRs,
+                                                  maxPeakPosition), fiveUTRs)
   if(!is.null(cds)) fiveUTRs <- addFirstCdsOnLeaderEnds(fiveUTRs, cds)
 
   return(fiveUTRs)

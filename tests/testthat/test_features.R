@@ -286,34 +286,34 @@ test_that("insideOutsideORF works as intended", {
   expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.57))
 })
 
-test_that("distOrfToCds works as intended", {
+test_that("ORFDistToCds works as intended", {
 
-  scores <- distOrfToCds(grl, fiveUTRs, extension = 0)
+  scores <- ORFDistToCds(grl, fiveUTRs, extension = 0)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 38))
 
-  scores <- distOrfToCds(grl, fiveUTRs, cds, 0)
+  scores <- ORFDistToCds(grl, fiveUTRs, cds, 0)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 38))
   # TODO: Decide if this is correct behavior ?
   # My idea now is to keep it.
-  scores <- distOrfToCds(grl, fiveUTRs, cds, 5)
+  scores <- ORFDistToCds(grl, fiveUTRs, cds, 5)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 43))
 })
 
 
-scores <- distOrfToCds(grl, fiveUTRs, extension = 0)
-test_that("inFrameWithCDS works as intended", {
+scores <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+test_that("isInFrame works as intended", {
 
-  inFrame <- inFrameWithCDS(scores)
+  inFrame <- isInFrame(scores)
   expect_is(inFrame, "numeric")
   expect_equal(inFrame, c(0, 0, 0, 1))
 })
 
-test_that("isOverlappingCds works as intended", {
+test_that("isOverlapping works as intended", {
 
-  overlaps <- isOverlappingCds(scores)
+  overlaps <- isOverlapping(scores)
   expect_is(overlaps, "logical")
   expect_equal(overlaps, c(F, F, F, F))
 })
@@ -326,9 +326,9 @@ test_that("OrfRankOrder works as intended", {
 })
 
 
-test_that("allFeatures works as intended", {
+test_that("computeFeatures works as intended", {
   # without RNA in input
-  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5,
+  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
@@ -337,7 +337,7 @@ test_that("allFeatures works as intended", {
   expect_equal(nrow(dt), 4)
 
   # normal inputs
-  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNAGAlign,
+  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
@@ -345,7 +345,7 @@ test_that("allFeatures works as intended", {
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
-  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
+  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
@@ -353,7 +353,7 @@ test_that("allFeatures works as intended", {
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
-  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
+  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
@@ -362,7 +362,7 @@ test_that("allFeatures works as intended", {
   expect_equal(nrow(dt), 4)
 
   # only nonvarying by Ribo-seq
-  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
+  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs, includeNonVarying = F)
@@ -371,7 +371,7 @@ test_that("allFeatures works as intended", {
   expect_equal(nrow(dt), 4)
 
   # test from example table in orfik
-  dt <- ORFik:::allFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
+  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)

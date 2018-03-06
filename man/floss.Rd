@@ -29,20 +29,30 @@ start:stop for coding sequences.
 A sum of ratios
 See article: 10.1016/j.celrep.2014.07.045
 }
+\examples{
+ORF <- GRanges(seqnames = "1",
+ranges = IRanges(start = c(1, 12, 22),
+                end = c(10, 20, 32)),
+strand = "+")
+grl <- GRangesList(tx1_1 = ORF)
+RFP <- GRanges("1", IRanges(25, 25),"+")
+cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
+# nb: grl must have same names as cds, + _1 etc
+floss(grl, RFP, cds)
+# or change ribosome start/stop, more strict
+floss(grl, RFP, cds, 28, 32)
+}
 \seealso{
-Other features: \code{\link{ORFScores}},
-  \code{\link{OrfRankOrder}},
+Other features: \code{\link{ORFDistToCds}},
+  \code{\link{ORFScores}}, \code{\link{OrfRankOrder}},
   \code{\link{RibosomeReleaseScore}},
   \code{\link{RibosomeStallingScore}},
-  \code{\link{allFeatures}},
-  \code{\link{calculateCoverage}},
-  \code{\link{disengagementScore}},
-  \code{\link{distOrfToCds}}, \code{\link{entropy}},
+  \code{\link{computeFeatures}},
+  \code{\link{disengagementScore}}, \code{\link{entropy}},
   \code{\link{fpkm_calc}}, \code{\link{fpkm}},
   \code{\link{fractionLength}},
-  \code{\link{inFrameWithCDS}},
-  \code{\link{insideOutsideORF}},
-  \code{\link{isOverlappingCds}},
+  \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
+  \code{\link{isOverlapping}},
   \code{\link{kozakSequenceScore}},
   \code{\link{subset_coverage}}, \code{\link{te}}
 }

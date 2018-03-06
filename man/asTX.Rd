@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{asTX}
 \alias{asTX}
-\title{map genomic to transcript coordinates by reference}
+\title{Map genomic to transcript coordinates by reference}
 \usage{
 asTX(grl, reference)
 }
@@ -17,5 +17,5 @@ ig. cds is grl and gene can be reference
 @export}
 }
 \description{
-map genomic to transcript coordinates by reference
+Map genomic to transcript coordinates by reference
 }

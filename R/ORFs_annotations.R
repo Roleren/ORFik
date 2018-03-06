@@ -20,8 +20,8 @@
 #' @import GenomicRanges
 #' @export
 #' @examples
-#' #define_isoform()
-define_isoform <- function(rel_orf, tran, isoform_names = c("perfect_match",
+#' #defineIsoform()
+defineIsoform <- function(rel_orf, tran, isoform_names = c("perfect_match",
                                                             "elong_START_match",
                                                             "trunc_START_match",
                                                             "elong_STOP_match",
@@ -136,9 +136,9 @@ define_isoform <- function(rel_orf, tran, isoform_names = c("perfect_match",
 #' @importFrom S4Vectors queryHits
 #' @importFrom S4Vectors subjectHits
 #' @examples
-#' #assign_annotations()
+#' #assignAnnotations()
 
-assign_annotations <- function(ORFs, con) {
+assignAnnotations <- function(ORFs, con) {
 
     message("Loading annotations from gtf file")
     txdb <- makeTxDbFromGFF(con, format = "gtf")
@@ -179,11 +179,11 @@ assign_annotations <- function(ORFs, con) {
     other_coding <- newORFs[newORFs$transcript_biotype != "protein_coding"]
     message("Preparing annotations for ORFs overlapping coding regions...")
     for (i in 1:length(p_coding)) {
-        newIsoforms_p[i] <- define_isoform(p_coding[i], cds[[p_coding[i]$transcript_id]])
+        newIsoforms_p[i] <- defineIsoform(p_coding[i], cds[[p_coding[i]$transcript_id]])
     }
     message("Preparing annotations for ORFs overlapping non-coding regions...")
     for (i in 1:length(other_coding)) {
-        newIsoforms_o[i] <- define_isoform(other_coding[i], transcripts[[other_coding[i]$transcript_id]])
+        newIsoforms_o[i] <- defineIsoform(other_coding[i], transcripts[[other_coding[i]$transcript_id]])
     }
     p_coding$isoform <- newIsoforms_p
     other_coding$isoform <- newIsoforms_o

@@ -4,7 +4,7 @@
 \alias{widthPerGroup}
 \title{get list of widths per granges group}
 \usage{
-widthPerGroup(grl, keep.names = T)
+widthPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

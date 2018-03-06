@@ -2,7 +2,7 @@
 % Please edit documentation in R/GRanges_helpers.R
 \name{makeExonRanks}
 \alias{makeExonRanks}
-\title{make a meta column with exon ranks}
+\title{Make a meta column with exon ranks}
 \usage{
 makeExonRanks(grl, byTranscript = F)
 }

@@ -11,6 +11,9 @@ numExonsPerGroup(grl, keep.names = T)
 
 \item{keep.names}{a boolean, keep names or not}
 }
+\value{
+an integer vector of counts
+}
 \description{
 Can also be used generaly to get number of GRanges object
  per GRangesList group

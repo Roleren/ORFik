@@ -70,10 +70,15 @@ ORFScores <- function(grl, RFP){
 #'  if you used cage to change tss' when finding the orfs, standard cage
 #'  extension is 1000
 #' @family features
+#' @examples
+#' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
+#' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
+#' dist <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+#' ## Now dist contains distances as vector
 #' @export
 #' @return an integer vector, +1 means one base upstream of cds, -1 means
 #'   2nd base in cds, 0 means orf stops at cds start.
-distOrfToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
+ORFDistToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
   validGRL(class(ORFs), "ORFs")
   if (is.null(extension)) stop("please specify extension, to avoid bugs\n
                               ,if you did not use cage, set it to 0,\n
@@ -242,7 +247,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 
 #' find frame for each orf relative to cds
 #'
-#' Input of this function, is the output of the function distOrfToCds
+#' Input of this function, is the output of the function ORFDistToCds
 #' possible outputs:
 #' 0: orf is in frame with cds
 #' 1: 1 shifted from cds
@@ -251,21 +256,32 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 #' See article:  10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
+#' @examples
+#' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
+#' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
+#' dist <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+#' isInFrame <- isInFrame(dist)
 #' @export
-inFrameWithCDS <- function(dists){
+#' @return a logical vector
+isInFrame <- function(dists){
 
   return((dists - 1) %% 3)
 }
 
 #' find frame for each orf relative to cds
 #'
-#' Input of this function, is the output of the function distOrfToCds
+#' Input of this function, is the output of the function ORFDistToCds
 #' See article:  10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
+#' @examples
+#' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
+#' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
+#' dist <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+#' isOverlapping <- isOverlapping(dist)
 #' @export
 #' @return a logical vector
-isOverlappingCds <- function(dists){
+isOverlapping <- function(dists){
   return(dists < 0)
 }
 

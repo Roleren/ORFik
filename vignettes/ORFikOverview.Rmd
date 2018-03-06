@@ -171,7 +171,7 @@ The reason for this, is to keep redundant information for easy unlisting.
 ORFik contains a big feature set:
 FLOSS (?floss), coverage (?coverage) , ORFscore (?ORFScore), entropy (?entropy) , 
 translational effiency (?te), inside outside score (?insideOutsideScore),
-distance between orfs and cds' (?distOrfToCds) etc.
+distance between orfs and cds' (?ORFDistToCds) etc.
 All the features are justified with a reference to an article, i.g to see
 justification for floss, see ?floss
 
@@ -204,10 +204,10 @@ if(requireNamespace("GenomicAlignments")){ # <- safe require for vignette
   # 5' utrs by a 1000 upstream, add this as information.
   
   # run this:
-  #allFeatures <- allFeatures(grl = uORFs, orfFeatures = T, RFP, RNA,  Gtf = txdb,
+  #features <- computeFeatures(grl = uORFs, orfFeatures = T, RFP, RNA,  Gtf = txdb,
   #  fiveUTRs = fiveUTRs, faFile = Hsapiens, riboStart = riboStart, 
   #   riboStop = riboStop, extension = extension)
-  #View(allFeatures)
+  #View(features)
 }
 ```
 
@@ -269,7 +269,7 @@ The files can also be compressed by the following formats:
 
 # Predicting functional orfs
 
-If you have found a set of orfs, and you have used the function ORFik:::allFeatures
+If you have found a set of orfs, and you have used the function ORFik:::computeFeatures
 to find the features for those orfs, you can try to predict which orfs to might be coding.
 To do this you can specify some cut-off for the features, so that most of the orfs get excluded.
 
