@@ -1,7 +1,7 @@
 parse_cigar <- function(cigar, shift, is_plus_strand) {
     c_signs <- unlist(explodeCigarOps(cigar))
     c_counts <- unlist(explodeCigarOpLengths(cigar))
-    
+
     i = ifelse(is_plus_strand, 0, length(c_signs) + 1)
     increment = ifelse(is_plus_strand, 1, -1)
     limit = 0
@@ -42,14 +42,14 @@ parse_cigar <- function(cigar, shift, is_plus_strand) {
 #' #shift_footprints()
 
 shift_footprints <- function(bam_input, selected_lengths, selected_shifts) {
-    
+
     selected_shifts <- -1 * selected_shifts
     allFootrpintsShifted <- GRanges()
-    
+
     message("Loading reads into memory...")
     riboReads <- readGAlignments(bam_input)
     message("Reads loaded.")
-    
+
     # check for input correctness
     if (length(selected_lengths) != length(selected_shifts)) {
         stop("Incorrect input. Not equal number of elements in selected_lengths and selected_shifts!")
@@ -57,7 +57,7 @@ shift_footprints <- function(bam_input, selected_lengths, selected_shifts) {
     if (sum(selected_lengths > abs(selected_shifts)) != length(selected_shifts)) {
         stop("Incorrect input. selected_shifts cant be bigger than selected_lengths!")
     }
-    
+
     for (i in 1:length(selected_lengths)) {
         message("Shifting footprints of length ", selected_lengths[i])
         riboReadsW <- riboReads[qwidth(riboReads) == selected_lengths[i]]
@@ -67,14 +67,14 @@ shift_footprints <- function(bam_input, selected_lengths, selected_shifts) {
         is_cigar <- width(riboReadsW) != qwidth(riboReadsW)
         cigar_strings <- cigar(riboReadsW[is_cigar])
         sizes <- qwidth(riboReadsW)
-        
-        riboReadsW <- granges(riboReadsW, use.mcols = T)
+
+        riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
         riboReadsW$size <- sizes  #move footprint length to size
         riboReadsW <- resize(riboReadsW, 1)  #resize to 5' only
-        
+
         cigars <- riboReadsW[is_cigar]
         notCigars <- riboReadsW[!is_cigar]
-        
+
         # Not Cigars - shift 5' ends, + shift right, - shift left
         if (length(notCigars) != 0) {
             is_plus <- as.vector(strand(notCigars) == "+")
@@ -92,7 +92,7 @@ shift_footprints <- function(bam_input, selected_lengths, selected_shifts) {
             allFootrpintsShifted <- c(allFootrpintsShifted, shifted_cigars)
         }
     }
-    
+
     message("Sorting shifted footprints...")
     allFootrpintsShifted <- sortSeqlevels(allFootrpintsShifted)
     allFootrpintsShifted <- sort(allFootrpintsShifted)

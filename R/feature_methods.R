@@ -1,22 +1,3 @@
-
-#' Create normalizations of counts
-#'
-#' Normally use function \code{\link{fpkm}}, if you want unusual normalization
-#' , you can use this.
-#' Short for: Fragments per kilobase of transcript per million fragments
-#' Normally used in Translations efficiency calculations
-#' see article: 10.1038/nbt.1621
-#' @param counts a list of integer counts per object
-#' @param lengthSize a list of integer lengths per object
-#' @param librarySize a numeric of size 1, the size of the library
-#' @family features
-#' @export
-#' @return a numeric vector
-fpkm_calc <- function(counts, lengthSize, librarySize){
-  return((as.numeric(counts) * (10^9)) /
-           (as.numeric(lengthSize) * as.numeric(librarySize)))
-}
-
 #' Create normalizations of counts
 #'
 #' Short for: Fragments per kilobase of transcript per million fragments
@@ -31,6 +12,14 @@ fpkm_calc <- function(counts, lengthSize, librarySize){
 #' @param pseudoCount an integer, 0,
 #'  set it to 1 if you want to avoid NA and inf values.
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' fpkm(grl, RFP)
 #' @export
 #' @return a numeric vector with the fpkm values
 fpkm <- function(grl, reads, pseudoCount = 0){
@@ -68,30 +57,34 @@ subset_coverage <- function(cov, y) {
 #' @param reads a GAlignment object, ig. from ribo seq, or rna seq,
 #'  can also be GRanges or GRangesList
 #' @family features
+#' @examples
+#' ORF <- GRanges("1",
+#' ranges = IRanges(start = c(1, 12, 22),
+#'                 end = c(10, 20, 32)),
+#' strand = "+")
+#' ORF$names = "tx1_1"
+#' names(ORF) <- rep("tx1", 3)
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)),"+")
+#' # NB: grl must have same names as cds, + _1 etc
+#' entropy(grl, RFP)
+#' # or on cds
+#' cdsORF <- GRanges("1", IRanges(35, 44),"+")
+#' cdsORF$names = "tx1"
+#' names(cdsORF) <- "tx1"
+#' cds <-  GRangesList(tx1 = cdsORF)
+#' entropy(cds, RFP)
 #' @export
 #' @return A numeric vector containing entropy per ORF
-#'
 entropy <- function(grl, reads) {
   # Get count list of overlaps
-  tileBy1 <- tile1(grl)
-  unlTile <- unlist(tileBy1, use.names = FALSE)
-  if(!is.null(unlTile$names)){ # TODO: check if this is safe enough
-    names(unlTile) <- unlTile$names
-  }
-  # could make this more efficient by counting overlaps
-  # only on untiled, then tile the ones that hit and count again
-  countsTile <- countOverlaps(unlTile, reads)
-  names <- names(countsTile)
-  names(countsTile) <- NULL
-  countList <- split(countsTile, names)
-
-  countList <- IRanges::RleList(countList)
-  countList <- countList[names(grl)]
+  countList <- coveragePerTiling(grl, reads)
   names(countList) <- NULL
+
   # generate the entropy variables
   sums <- sum(countList)
   if (sum(as.numeric(sums)) == 0) { # no variance in countList, 0 entropy
-    return(rep(0, length(tileBy1)))
+    return(rep(0, length(grl)))
   }
   N <- unlist(sums, use.names = FALSE)
   # get indeces where entropy is not 0
@@ -120,45 +113,13 @@ entropy <- function(grl, reads) {
   runLengths <- lengths(IRanges::RleList(h))
   # get sequence from valid indeces
   indeces <- 1:length(runLengths)
-  reg_len <- lapply(indeces, function(x){
-    rep(reg_len[x], runLengths[x])
-  })
-  unlh <- unlist(h, use.names = FALSE)
-  unlreg_len <- unlist(reg_len, use.names = FALSE)
-
-  # make sequences for reads, start -> stop
-  # gives a triplet reading, 1:3, 3,6
-  acums <- L
-  for(i in 2:length(L)){
-    acums[i] <-acums[i-1] + acums[i]
-  }
-  unlacums <- unlist(lapply(1:(length(runLengths)-1), function(x){
-    rep(acums[x], runLengths[x+1])
-  }), use.names = FALSE)
-  unlacums <- unlist(c(rep(1,runLengths[1]), unlacums))
-
-  which_reads_start <- (unlacums + unlh * unlreg_len)
-  which_reads_end <- (unlh * unlreg_len + (unlreg_len + unlacums -1))
-  # the actual triplets ->
-  int_seqs <- lapply(1:length(which_reads_start), function(x){
-    which_reads_start[x]:which_reads_end[x]
-  })
+  # stop here
+  tripletSums <- codonSumsPerGroup(h, indeces, L, N, reg_len,
+                                   runLengths, countList)
 
   N <- unlist(lapply(indeces, function(x){
     rep(N[x], reg_counts[x])
-  }), use.names = F)
-
-  intcountList <- IntegerList(countList)
-  unlintcount <- unlist(unlist(intcountList, use.names = FALSE),
-                        use.names = F)
-
-  # get the assigned tuplets per orf, usually triplets
-  triplets <- lapply(int_seqs, function(x){
-    unlintcount[x]
-  })
-  tripletSums <- unlist(lapply(triplets, function(x){
-    sum(x)
-  }), use.names = F)
+  }), use.names = FALSE)
 
   # entropy function, interval 0:1 real number
   Xi <-  tripletSums / N
@@ -183,26 +144,12 @@ entropy <- function(grl, reads) {
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
 
-  entropy <- rep(0.0, length(tileBy1))
+  entropy <- rep(0.0, length(grl))
 
   # non 0 entropy values set to HX / MHX
   entropy[validIndeces] <- Hx / MHx
   entropy[is.na(entropy)] <- 0
   return(entropy)
-}
-
-
-#' Calculate Coverage of the input reads.
-#'
-#' What is percent of the vector covered by the values higher than zero?
-#' See article: 10.1002/embj.201488411
-#' @param countsOver A numerc vector
-#' @family features
-#' @export
-#' @return numeric value in between 0 and 1
-#'
-calculateCoverage <- function(countsOver) {
-  return(sum(countsOver >= 1)/length(countsOver))
 }
 
 #' Fragment Length Organization Similarity Score
@@ -220,6 +167,18 @@ calculateCoverage <- function(countsOver) {
 #' @param start usually 26, the start of the floss interval
 #' @param end usually 34, the end of the floss interval
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 12, 22),
+#'                 end = c(10, 20, 32)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
+#' # nb: grl must have same names as cds, + _1 etc
+#' floss(grl, RFP, cds)
+#' # or change ribosome start/stop, more strict
+#' floss(grl, RFP, cds, 28, 32)
 #' @export
 #' @return a vector of FLOSS of length same as grl
 floss <- function(grl, RFP, cds, start = 26, end = 34){
@@ -300,6 +259,19 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #'  set it to 1 if you want to avoid NA and inf values.
 #' @importFrom data.table data.table
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' RNA <- GRanges("1", IRanges(1, 50),"+")
+#' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+#' # nb: grl must have same names as tx, + _1 etc
+#' te <- te(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
+#' te$fpkmRFP
+#' te$te
 #' @export
 #' @return a numeric vector of fpkm ratios, if with.fpkm is TRUE
 #'  ,return a data.table with te and fpkm values
@@ -326,14 +298,21 @@ te <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
 #'  a named (tx names) vector of integers.
 #'  If you have the transcripts as GRangesList,
 #'  call ORFik:::widthPerGroup(tx, T)
-#'  If not:
 #'  NB!!! if you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
 #'  if so, call:
-#'  te(grl, RNA, RFP, tx_len = TxLen(Gtf, fiveUTRs))
-#'  where fiveUTRs are the changed cageLeaders.
+#'  fractionLength(grl, tx_len = TxLen(Gtf, cageLeaders))
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' # nb: grl must have same names as tx, + _1 etc
+#' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+#' fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
 #' @export
 #' @return a numeric vector of ratios
 fractionLength <- function(grl, tx_len){
@@ -356,6 +335,19 @@ fractionLength <- function(grl, tx_len){
 #'  if tx: a GrangesList of transcripts, called from:
 #'  exonsBy(Gtf, by = "tx", use.names = T)
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+#' RFP <- GRanges("1",
+#' ranges = IRanges(start = c(1, 25, 50),
+#'                 end = c(1, 25, 50)),
+#' strand = "+")
+
+#' disengagementScore(grl, RFP, tx)
 #' @export
 #' @return a named vector of numeric values of scores
 disengagementScore <- function(grl, RFP, GtfOrTx){
@@ -400,6 +392,16 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' @param RNA rna seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' threeUTRs <- GRangesList(tx1 = GRanges("1", IRanges(40, 50), "+"))
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' RNA <- GRanges("1", IRanges(1, 50),"+")
+#' RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #' @export
 #' @return a named vector of numeric values of scores, NA means that
 #'  no 3' utr was found for that transcript.
@@ -413,7 +415,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
   }
   # check that naming is correct, else change it.
-  orfNames <- OrfToTxNames(grl, F)
+  orfNames <- OrfToTxNames(grl, FALSE)
   validNamesThree <- names(threeUTRs) %in% orfNames
   validNamesGRL <- orfNames %in% names(threeUTRs)
   rrs <- rep(NA,length(grl))
@@ -451,6 +453,14 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @family features
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' RibosomeStallingScore(grl, RFP)
 #' @export
 #' @return a named vector of numeric values of scores
 RibosomeStallingScore <- function(grl, RFP){
@@ -499,7 +509,7 @@ RibosomeStallingScore <- function(grl, RFP){
 #'  include this, also extension must match with the extension used for these.
 #' @param includeNonVarying a logical T, if TRUE, include all features not dependent on
 #'  Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
-#'  inFrameCDS, isOverlappingCds and rankInTx
+#'  isInFrame, isOverlapping and rankInTx
 #' @importFrom data.table data.table
 #' @family features
 #' @export
@@ -508,14 +518,16 @@ RibosomeStallingScore <- function(grl, RFP){
 #'  or \code{\link{fpkm}}
 #' @examples
 #'  \dontrun{
-#'  #The easiest way to run the method is to include as this:
-#'  allFeatures(grl = grl, orfFeatures =  T, RFP = RFP, RNA = RNA, Gtf = Gtf,
-#'   faFile = faFile, extension = 0)
+#'  #The easiest way to run the method is to include:
+#'  computeFeatures(grl = grl, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
+#'   Gtf = Gtf, faFile = faFile, extension = 0)
 #'  #The other arguments will then be found by the Gtf file,
 #'  #and extension = 0 means
 #'  #you did not use cage to extend 5' utrs
+#'
+#'  See vignettes for more examples
 #'  }
-allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
+computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                         fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                         faFile = NULL, riboStart = 26, riboStop = 34,
                         extension = NULL, orfFeatures = T,
@@ -573,7 +585,7 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 
   if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
-    te <- te(grl, RNA, RFP, tx, with.fpkm = T)
+    te <- te(grl, RNA, RFP, tx, with.fpkm = TRUE)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA
@@ -589,10 +601,10 @@ allFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else { message("faFile not included, skipping kozak sequence score")}
 
-      distORFCDS <- distOrfToCds(grl, fiveUTRs, cds, extension)
+      distORFCDS <- ORFDistToCds(grl, fiveUTRs, cds, extension)
       scores$distORFCDS <- distORFCDS
-      scores$inFrameCDS <- inFrameWithCDS(distORFCDS)
-      scores$isOverlappingCds <- isOverlappingCds(distORFCDS)
+      scores$inFrameCDS <- isInFrame(distORFCDS)
+      scores$isOverlappingCds <- isOverlapping(distORFCDS)
       scores$rankInTx <- OrfRankOrder(grl)
     }
   } else {

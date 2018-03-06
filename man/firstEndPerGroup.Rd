@@ -12,6 +12,9 @@ firstEndPerGroup(grl, keep.names = T)
 
 \item{keep.names}{a boolean, keep names or not}
 }
+\value{
+a Rle(keep.names = T), or integer vector(F)
+}
 \description{
 get first end per granges group
 grl must be sorted, call ORFik:::sortPerGroup if needed

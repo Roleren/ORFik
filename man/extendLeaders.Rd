@@ -19,10 +19,28 @@ upstream ORFs going into cds, include it. It will add first
 cds exon to grl matched by names.
 Do not add for transcripts, as they are already included.}
 }
+\value{
+an extended GRangeslist
+}
 \description{
 Either if you have the 5' utr sequences or the
  transcript sequences to extend,
  any way the 5' part will be extended.
  Remember to sort it, if not sorted beforehand.
  use ORFik:::sortPerGroup(grl) to get sorted grl.
+}
+\examples{
+library(GenomicFeatures)
+samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+package = "GenomicFeatures")
+txdb <- loadDb(samplefile)
+fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+cds <- cdsBy(txdb,"tx",use.names = TRUE)
+## now try(extend upstream 1000, downstream 1st cds exons):
+extendLeaders(fiveUTRs, extension = 1000, cds)
+
+## when extending transcripts, don't include cds' ofcourse,
+## since they are already there
+extendLeaders(tx, extension = 1000)
 }

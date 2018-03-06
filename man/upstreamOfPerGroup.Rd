@@ -13,6 +13,9 @@ usually of Transcripts to be changed}
 \item{upstreamOf}{a vector of integers, for each group in tx, where
 is the new stop point of last valid exon.}
 }
+\value{
+a GRangesList of upstream part
+}
 \description{
 Per group get the part upstream of position
  defined in upstreamOf

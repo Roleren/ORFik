@@ -2,20 +2,21 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{addFirstCdsOnLeaderEnds}
 \alias{addFirstCdsOnLeaderEnds}
-\title{When reassigning Transcript start site, often you want to add downstream too.
-This is a simple way to do that}
+\title{Extends leaders downstream}
 \usage{
 addFirstCdsOnLeaderEnds(fiveUTRs, cds)
 }
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
-\item{cds}{If you want to extend 5' leaders downstream, to catch uorfs going into cds, include it.}
+\item{cds}{If you want to extend 5' leaders downstream,
+to catch uorfs going into cds, include it.}
 }
 \value{
 a GRangesList of cds exons added to ends
 }
 \description{
-When reassigning Transcript start site, often you want to add downstream too.
+When reassigning Transcript start sites,
+ often you want to add downstream too.
 This is a simple way to do that
 }

@@ -6,7 +6,7 @@
 #' @return A string of START sies separatd with "|".
 #' @export
 #'
-start_definition <- function(transl_table) {
+startDefinition <- function(transl_table) {
   STARTdef <- c("ATG|TTG|CTG", #1 The Standard Code
                 "ATT|ATC|ATA|ATG|GTG", #2 The Vertebrate Mitochondrial Code
                 "ATA|ATG", #3 The Yeast Mitochondrial Code
@@ -45,7 +45,7 @@ start_definition <- function(transl_table) {
 #' @return A string of STOP sies separatd with "|".
 #' @export
 #'
-stop_definition <- function(transl_table) {
+stopDefinition <- function(transl_table) {
   STOPdef <- c("TAA|TAG|TGA", #1 The Standard Code
                "TAA|TAG|AGA|AGG", #2 The Vertebrate Mitochondrial Code
                "TAA|TAG", #3 The Yeast Mitochondrial Code
@@ -91,10 +91,23 @@ stop_definition <- function(transl_table) {
 #' @param minimumLength numeric. Default is 0.
 #' For example minimumLength = 8 will result in size of ORFs to be at least
 #'  START + 8*3 [bp] + STOP.
-#' @return A GRangesList of ORFs.
+#' @examples
+#' seqs <- c("ATGGGTATTTATA") # the dna sequence
+#' startCodons <- "ATG|TGG|GGG"
+#' stopCodons <- "TAA|AAT|ATA"
+#' ## gr is sequence mapping
+#' gr <- GRanges(seqnames = rep("1", 2),
+#'                 ranges = IRanges(start = c(21, 10), end = c(23, 19)),
+#'                 strand = rep("-", 2), names = rep("tx1_1", 2))
+#' grl <- GRangesList(tx1 = gr)
+#' ## now run
+#' findORFs(grl,seqs,startCodons, stopCodons,
+#'                    longestORF = FALSE, minimumLength = 0)
+#' ## You will find 1 orf splitted on 2 exons (10-19 with 21-22)
 #' @export
-find_in_frame_ORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
-                               stopCodon = "TAA|TAG|TGA", longestORF = F,
+#' @return A GRangesList of ORFs.
+findORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
+                               stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
                                minimumLength = 0 ){
 
   if (class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
@@ -105,5 +118,5 @@ find_in_frame_ORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
                                  longestORF = longestORF,
                                  minimumLength = minimumLength)
 
-  return(map_to_GRanges(grl, result))
+  return(mapToGRanges(grl, result))
 }

@@ -6,7 +6,8 @@ samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                                             package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
 fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
-cds <- cdsBy(txdb)
+cds <- cdsBy(txdb,"tx",use.names = TRUE)[1:length(fiveUTRs)]
+names(cds) <- names(fiveUTRs)
 rm(txdb)
 
 cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),

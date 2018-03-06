@@ -17,7 +17,7 @@
 #' @examples
 #' #metaPosition()
 #'
-meta_position <- function(cdsRanges, AllRiboReadsRangesResized) {
+metaPosition <- function(cdsRanges, AllRiboReadsRangesResized) {
 
     window_size <- unique(width(cdsRanges))
     if (length(window_size) != 1) {

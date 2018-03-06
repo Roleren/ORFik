@@ -146,7 +146,7 @@ test_that("extendLeaders works as intended", {
   expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(105, 205)))
 })
 
-test_that("reduce works as intended", {
+test_that("reduceKeepAttr works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                        ranges = IRanges(start = c(1, 2, 3),
@@ -161,7 +161,7 @@ test_that("reduce works as intended", {
   names(ORFranges) = rep("tx1_1",3)
   names(ORFranges2) = rep("tx1_2",3)
   grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
-  reassigned <- reduce_Keep_Attr(grl, keep.names = TRUE)
+  reassigned <- reduceKeepAttr(grl, keep.names = TRUE)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
   unlreassigned <- unlist(reassigned, use.names = FALSE)

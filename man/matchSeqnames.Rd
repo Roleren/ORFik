@@ -2,7 +2,7 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{matchSeqnames}
 \alias{matchSeqnames}
-\title{Check that seqnames of fiveUTRs and cage uses same standard, i.g chr1 vs 1.}
+\title{Match seqnames}
 \usage{
 matchSeqnames(filteredCage, fiveUTRs)
 }
@@ -10,6 +10,9 @@ matchSeqnames(filteredCage, fiveUTRs)
 \item{filteredCage}{Cage-data to check seqnames in}
 
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
+}
+\value{
+filteredCage with matched seqnames convention
 }
 \description{
 Check that seqnames of fiveUTRs and cage uses same standard, i.g chr1 vs 1.

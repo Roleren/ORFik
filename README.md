@@ -33,10 +33,10 @@ library(ORFik)
 ?reassignTSSbyCage
 
 # Detecting open reading frames
-?find_in_frame_ORFs
+?findORFs
 
 # get a feature-set from predicted orfs
-?allFeatures
+?computeFeatures
 
 # read vignette
 browseVignettes("ORFik")

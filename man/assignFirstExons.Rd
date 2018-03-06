@@ -12,6 +12,9 @@ assignFirstExons(firstExons, fiveUTRs)
 
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 }
+\value{
+a GRangesList
+}
 \description{
 After all transcript start sites have been updated from cage,
  put grangeslist back together

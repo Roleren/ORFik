@@ -10,7 +10,11 @@ findMaxPeaks(cageOverlaps, filteredrawCageData)
 \arguments{
 \item{cageOverlaps}{The cageOverlaps between cage and extended 5' leaders}
 
-\item{filteredrawCageData}{The filtered raw cage-data used to reassign 5' leaders}
+\item{filteredrawCageData}{The filtered raw cage-data
+used to reassign 5' leaders}
+}
+\value{
+a data.table of max peaks
 }
 \description{
 Find max peak for each transcript,

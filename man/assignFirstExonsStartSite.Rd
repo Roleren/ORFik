@@ -11,6 +11,9 @@ assignFirstExonsStartSite(grl, newStarts)
 
 \item{newStarts}{an integer vector of same length as grl, with new start values}
 }
+\value{
+the same GRangesList with new start sites
+}
 \description{
 make sure your grl is sorted, since start of "-" strand
  objects should be the

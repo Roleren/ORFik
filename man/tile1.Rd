@@ -17,3 +17,17 @@ Per group, sepereate the groups and split them on each position.
 Returned sorted
 This is not supported originally by GenomicRanges
 }
+\examples{
+gr1 <- GRanges("1",
+           ranges = IRanges(start = c(1, 10, 20),
+           end = c(5, 15, 25)),
+           strand = "+")
+
+gr2 <- GRanges("1", ranges = IRanges(start = c(20, 30, 40),
+                                      end = c(25, 35, 45)),
+                     strand = "+")
+names(gr1) = rep("tx1_1",3)
+names(gr2) = rep("tx1_2",3)
+grl <- GRangesList(tx1_1 = gr1, tx1_2 = gr2)
+tile1(grl)
+}

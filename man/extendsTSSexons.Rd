@@ -11,6 +11,9 @@ extendsTSSexons(fiveUTRs, extension = 1000)
 
 \item{extension}{The number of basses upstream to add on transcripts}
 }
+\value{
+granges object of first exons
+}
 \description{
 Extend first exon of each transcript with length specified
 }

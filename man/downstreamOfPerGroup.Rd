@@ -13,6 +13,9 @@ usually of Transcripts to be changed}
 \item{downstreamOf}{a vector of integers, for each group in tx, where
 is the new start point of first valid exon.}
 }
+\value{
+a GRangesList of downstream part
+}
 \description{
 Per group get the part downstream of position
  defined in downstreamOf

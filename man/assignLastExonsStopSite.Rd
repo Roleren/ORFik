@@ -12,6 +12,9 @@ assignLastExonsStopSite(grl, newStops)
 \item{newStops}{an integer vector of same length as grl,
 with new start values}
 }
+\value{
+the same GRangesList with new stop sites
+}
 \description{
 make sure your grl is sorted,
  since stop of "-" strand objects should be the
