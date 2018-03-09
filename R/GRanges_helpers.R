@@ -779,8 +779,10 @@ matchNaming <- function(gr, reference){
 #'
 #' Extends function \code{\link[GenomicRanges]{reduce}}
 #' by trying to keep names and meta columns if it is a
-#' GRangesList. If keep.names == F, it's just the normal
-#' GenomicRanges::reduce.
+#' GRangesList. It also does not loose sorting for GRangesList,
+#' since original reduce sorts all by ascending.
+#' If keep.names == F, it's just the normal GenomicRanges::reduce
+#' with sorting negative strands descending for GRangesList
 #'
 #' Only tested for orfik, might not work for other naming conventions.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
@@ -795,6 +797,9 @@ matchNaming <- function(gr, reference){
 #' ranges = IRanges(start = c(1, 2, 3),
 #'                 end = c(1, 2, 3)),
 #' strand = "+")
+#' ##For GRanges
+#' reduceKeepAttr(ORF, keep.names = TRUE)
+#' ## For GRangesList
 #' grl <- GRangesList(tx1_1 = ORF)
 #' reduceKeepAttr(grl, keep.names = TRUE)
 #' ##Only 1 GRanges object in GRangesList returned
@@ -804,17 +809,24 @@ reduceKeepAttr <- function(grl, keep.names = FALSE,
                              drop.empty.ranges = FALSE, min.gapwidth = 1L,
                              with.revmap = FALSE, with.inframe.attrib = FALSE,
                              ignore.strand = FALSE){
+  if (!is.gr_or_grl(class(grl))) stop("grl must be GRanges or GRangesList")
 
+  reduced <- GenomicRanges::reduce(grl, drop.empty.ranges, min.gapwidth,
+                        with.revmap, with.inframe.attrib,
+                        ignore.strand)
+  if (is.grl(class(grl))) {
+    reduced <- sortPerGroup(reduced)
+  }
   if (keep.names) { # return with names
-
-    gr <- unlist(GenomicRanges::reduce(grl), use.names = TRUE)
+    if (!is.grl(class(grl))) {
+      return(reduced)
+    }
+    gr <- unlist(reduced, use.names = TRUE)
     if (length(gr) == 0) return(GRangesList())
 
     return(matchNaming(gr, grl))
   } else { # return original
-    return(GenomicRanges::reduce(grl, drop.empty.ranges, min.gapwidth,
-           with.revmap, with.inframe.attrib,
-           ignore.strand))
+    return(reduced)
   }
 }
 
