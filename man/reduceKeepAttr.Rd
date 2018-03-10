@@ -29,8 +29,10 @@ A reduced GRangesList
 \description{
 Extends function \code{\link[GenomicRanges]{reduce}}
 by trying to keep names and meta columns if it is a
-GRangesList. If keep.names == F, it's just the normal
-GenomicRanges::reduce.
+GRangesList. It also does not loose sorting for GRangesList,
+since original reduce sorts all by ascending.
+If keep.names == F, it's just the normal GenomicRanges::reduce
+with sorting negative strands descending for GRangesList
 }
 \details{
 Only tested for orfik, might not work for other naming conventions.
@@ -40,6 +42,9 @@ ORF <- GRanges(seqnames = "1",
 ranges = IRanges(start = c(1, 2, 3),
                 end = c(1, 2, 3)),
 strand = "+")
+##For GRanges
+reduceKeepAttr(ORF, keep.names = TRUE)
+## For GRangesList
 grl <- GRangesList(tx1_1 = ORF)
 reduceKeepAttr(grl, keep.names = TRUE)
 ##Only 1 GRanges object in GRangesList returned
