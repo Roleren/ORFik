@@ -3,6 +3,7 @@
 #' @param start_df a data.frame with the periods
 #' @return NULL
 #' @import ggplot2
+#'
 plot_periodic_lengths_start <- function(start_df) {
   colnames(start_df) <- c("start_codon", "count", "flength")
   start_df$fill <- factor(rep(c(0, 1, 1), 10))
@@ -16,8 +17,11 @@ plot_periodic_lengths_start <- function(start_df) {
   xmax <- NULL
   ymin <- NULL
   ymax <- NULL
-  p <- ggplot(start_df, aes(x=start_codon, y=count, fill=fill)) + geom_bar(stat="identity") +
-    scale_fill_manual(values=c("#E72B3C", "#A9A9A9")) + facet_grid( ~ flength) + theme(legend.position="none")
+  p <- ggplot(start_df, aes(x=start_codon, y=count, fill=fill)) +
+    geom_bar(stat="identity") +
+    scale_fill_manual(values=c("#E72B3C", "#A9A9A9")) +
+    facet_grid( ~ flength) +
+    theme(legend.position="none")
   rect <- data.frame(xmin=30.5, xmax=33.5, ymin=-Inf, ymax=Inf) # rectangle
   p <- p + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax),
                      fill="green", alpha=0.25, inherit.aes = FALSE)
