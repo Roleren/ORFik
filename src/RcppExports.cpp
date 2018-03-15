@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// ORFs_as_List
-List ORFs_as_List(CharacterVector fastaSeqs, std::string startCodon, std::string stopCodon, bool longestORF, int minimumLength);
-RcppExport SEXP _ORFik_ORFs_as_List(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
+// orfs_as_List
+List orfs_as_List(CharacterVector fastaSeqs, std::string startCodon, std::string stopCodon, bool longestORF, int minimumLength);
+RcppExport SEXP _ORFik_orfs_as_List(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,7 +16,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type stopCodon(stopCodonSEXP);
     Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(ORFs_as_List(fastaSeqs, startCodon, stopCodon, longestORF, minimumLength));
+    rcpp_result_gen = Rcpp::wrap(orfs_as_List(fastaSeqs, startCodon, stopCodon, longestORF, minimumLength));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -53,7 +53,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ORFik_ORFs_as_List", (DL_FUNC) &_ORFik_ORFs_as_List, 5},
+    {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 5},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 6},
     {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 5},
     {NULL, NULL, 0}

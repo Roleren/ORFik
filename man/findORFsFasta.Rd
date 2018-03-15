@@ -21,6 +21,9 @@ When FALSE will report all open reaidng frames, even overlapping small ones.}
 \item{minimumLength}{numeric. Default is 0.
 For example minimumLength = 8 will result in size of ORFs
  to be at least START + 8*3 [bp] + STOP.}
+
+\item{is.circular}{a logical(F), should ORFs that start before end
+and after start be searched for.}
 }
 \value{
 A GRanges object of ORFs mapped from fasta file.
@@ -36,7 +39,7 @@ returned in metadata column 'frame'.
 filePath <- system.file("extdata", "orfFindingExample.fasta",
 package = "ORFik") ## location of the fasta file
 
-find_ORFs_fa(filePath)
+findORFsFasta(filePath)
 ## orfs are now returned as GRanges.
 
 }

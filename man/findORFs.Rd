@@ -22,16 +22,12 @@ When FALSE will report all open reaidng frames, even overlapping small ones.}
 \item{minimumLength}{numeric. Default is 0.
 For example minimumLength = 8 will result in size of ORFs to be at least
  START + 8*3 [bp] + STOP.}
-
-\item{grl}{\code{\link[GenomicRanges]{GRangesList}} of sequences
-to search for orfs, in Genomic coordinates}
 }
 \value{
 An IRangesList of ORFs grouped by fasta sequence from input.
 }
 \description{
-Input is a  DNAStringSet with
-fastaSequence in same order as the grl.
+Input is a  DNAStringSet / character vector with fastaSequence.
 If you want Genomic coordinates, use function \code{\link{findMapORFs}}
 }
 \examples{
