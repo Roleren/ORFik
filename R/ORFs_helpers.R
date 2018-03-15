@@ -43,9 +43,10 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
   if (sum(width(leftSpace)) <= lengthOftrailer) {
     return(leftSpace)
   } else {
-    widths <- if (strands == "-") rev(cumsum(rev(width(leftSpace)))
-                          - lengthOftrailer - 1) else cumsum(width(leftSpace))
-                                        - lengthOftrailer - 1
+    widths <- if (strands == "-") { rev(cumsum(rev(width(leftSpace)))
+                          - lengthOftrailer - 1) } else {
+                              cumsum(width(leftSpace)) - lengthOftrailer - 1
+                            }
     whichExon <- which(widths >= 0)
     whichExon <- whichExon[if (strands == "-") {length(whichExon)} else 1]
 

@@ -205,10 +205,10 @@ findORFsFasta <- function(file, startCodon = "ATG",
   if (class(file) != "character") stop("filepath must be of type character")
   if(!file.exists(file)) stop("file does not exist, check working dir!")
 
-  ORFs <- findORFs_fasta(file,startCodon,stopCodon,longestORF,
+  gr <- findORFs_fasta(file,startCodon,stopCodon,longestORF,
                          minimumLength, is.circular)
   if (is.circular) {
     isCircular(gr) <- rep(T, length(seqlevels(gr)))
   }
-  return(ORFs)
+  return(gr)
 }
