@@ -15,26 +15,26 @@ ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
                       ranges = IRanges(start = c(20, 30, 40), end = c(25, 35, 45)),
                       strand = Rle(strand(rep("+", 3))))
 
-test_that("define_trailer works as intended for plus strand", {
+test_that("defineTrailer works as intended for plus strand", {
 
   #at the start
-  trailer <- define_trailer(ORFranges, transcriptRanges)
+  trailer <- defineTrailer(ORFranges, transcriptRanges)
   expect_is(trailer, "GRanges")
   expect_equal(start(trailer), c(30, 40))
   expect_equal(end(trailer), c(35, 45))
 
   #middle
-  trailer2 <- define_trailer(ORFranges2, transcriptRanges)
+  trailer2 <- defineTrailer(ORFranges2, transcriptRanges)
   expect_equal(start(trailer2), 40)
   expect_equal(end(trailer2), 45)
 
   #at the end
-  trailer3 <- define_trailer(ORFranges3, transcriptRanges)
+  trailer3 <- defineTrailer(ORFranges3, transcriptRanges)
   expect_is(trailer3, "GRanges")
   expect_equal(length(trailer3), 0)
 
   #trailer size 3
-  trailer4 <- define_trailer(ORFranges2, transcriptRanges, 3)
+  trailer4 <- defineTrailer(ORFranges2, transcriptRanges, 3)
   expect_equal(start(trailer4), 40)
   expect_equal(end(trailer4), 42)
 })
@@ -57,26 +57,26 @@ ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
                         end = rev(c(25, 35, 45))),
                           strand = Rle(strand(rep("-", 3))))
 
-test_that("define_trailer works as intended for minus strand", {
+test_that("defineTrailer works as intended for minus strand", {
 
   #at the end
-  trailer <- define_trailer(ORFranges, transcriptRanges)
+  trailer <- defineTrailer(ORFranges, transcriptRanges)
   expect_is(trailer, "GRanges")
   expect_is(trailer, "GRanges")
   expect_equal(length(trailer), 0)
 
   #middle
-  trailer2 <- define_trailer(ORFranges2, transcriptRanges)
+  trailer2 <- defineTrailer(ORFranges2, transcriptRanges)
   expect_equal(start(trailer2), 1)
   expect_equal(end(trailer2), 5)
 
   #at the start
-  trailer3 <- define_trailer(ORFranges3, transcriptRanges)
+  trailer3 <- defineTrailer(ORFranges3, transcriptRanges)
   expect_equal(start(trailer3), c(1, 10))
   expect_equal(end(trailer3), c(5, 15))
 
   #trailer size 3
-  trailer4 <- define_trailer(ORFranges2, transcriptRanges, 3)
+  trailer4 <- defineTrailer(ORFranges2, transcriptRanges, 3)
   expect_equal(start(trailer4), 3)
   expect_equal(end(trailer4), 5)
 })
@@ -85,6 +85,21 @@ transcriptRanges <- GRanges(seqnames = Rle(rep("1", 4)),
                             ranges = IRanges(start = rev(c(10, 20, 30, 40)),
                               end = rev(c(15, 25, 35, 45))),
                                 strand = Rle(strand(rep("-", 4))))
+
+test_that("findORFsFasta works as intended", {
+  filePath <- system.file("extdata", "orfFindingExample.fasta",
+              package = "ORFik")
+
+  test_result <- findORFsFasta(filePath)
+  expect_is(test_result, "GRanges")
+  expect_equal(length(test_result), 2)
+
+  ## allow circular
+  test_result <- findORFsFasta(filePath, is.circular = TRUE)
+  expect_is(test_result, "GRanges")
+  expect_equal(length(test_result), 2)
+
+})
 
 
 
@@ -165,10 +180,10 @@ grIn4 <- GRanges(seqnames = rep("1", 2),
 grl <- GRangesList(grIn1, grIn2, grIn3, grIn4)
 names(grl) <- seqname
 
-test_that("findORFs works as intended for minus strand", {
+test_that("findMapORFs works as intended for minus strand", {
 
   #longestORF F with different frames
-  test_ranges <-findORFs(grl,seqs,
+  test_ranges <-findMapORFs(grl,seqs,
                                     "ATG|TGG|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,
@@ -200,7 +215,7 @@ names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons positive strand", {
 
   #longestORF F with different frames
-  test_ranges <- findORFs(grl,seqs,
+  test_ranges <- findMapORFs(grl,seqs,
                                              "ATG|TGG|GGG",
                                              "TAA|AAT|ATA",
                                              longestORF = F,
@@ -234,7 +249,7 @@ names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons negative strand", {
 
   #longestORF F with different frames
-  test_ranges <- findORFs(grl,seqs,
+  test_ranges <- findMapORFs(grl,seqs,
                                     "ATG|TGG|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,
@@ -272,7 +287,7 @@ names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons both strands", {
 
   #longestORF F with different frames
-  test_ranges <- findORFs(grl,seqs,
+  test_ranges <- findMapORFs(grl,seqs,
                                     "ATG|TGG|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,

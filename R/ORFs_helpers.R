@@ -6,7 +6,8 @@
 #' When lengthOFtrailer is smaller than space left on the transcript than
 #' all available space is returned as trailer.
 #'
-#' It assumes that ORFranges and transcriptRanges are not sorted when on minus strand. Should be like:
+#' It assumes that ORFranges and transcriptRanges are not
+#' sorted when on minus strand. Should be like:
 #' [200, 600]
 #' [50, 100]
 #'
@@ -22,14 +23,14 @@
 #' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
 #'                      ranges = IRanges(start = c(1, 10, 20),
 #'                                       end = c(5, 15, 25)),
-#'                      strand = Rle(strand(rep("+", 3))))
+#'                      strand = "+")
 #' transcriptRanges <- GRanges(seqnames = Rle(rep("1", 5)),
 #'                             ranges = IRanges(start = c(1, 10, 20, 30, 40),
 #'                                              end = c(5, 15, 25, 35, 45)),
-#'                      strand = Rle(strand(rep("+", 5))))
-#' define_trailer(ORFranges, transcriptRanges)
+#'                      strand = "+")
+#' defineTrailer(ORFranges, transcriptRanges)
 #'
-define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
+defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 
   strands <- runValue(strand(ORFranges))
   leftSpace <- setdiff(transcriptRanges, ORFranges)
@@ -42,7 +43,10 @@ define_trailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
   if (sum(width(leftSpace)) <= lengthOftrailer) {
     return(leftSpace)
   } else {
-    widths <- if (strands == "-") rev(cumsum(rev(width(leftSpace))) - lengthOftrailer - 1) else cumsum(width(leftSpace)) - lengthOftrailer - 1
+    widths <- if (strands == "-") { rev(cumsum(rev(width(leftSpace)))
+                          - lengthOftrailer - 1) } else {
+                              cumsum(width(leftSpace)) - lengthOftrailer - 1
+                            }
     whichExon <- which(widths >= 0)
     whichExon <- whichExon[if (strands == "-") {length(whichExon)} else 1]
 
@@ -99,7 +103,8 @@ mapToGRanges <- function(grl, result) {
 resizeORF <- function(grangesObj, orf_goal_length) {
 
   if (!requireNamespace("biovizBase", quietly = TRUE)) {
-    stop("biovizBase needed for this function to work. Please install it.", call. = FALSE)
+    stop("biovizBase needed for this function to work.
+         Please install it.", call. = FALSE)
   }
 
   length_diff <- (sum(width(grangesObj))/3 - orf_goal_length) * 3

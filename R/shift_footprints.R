@@ -39,9 +39,9 @@ parse_cigar <- function(cigar, shift, is_plus_strand) {
 #' @import GenomicAlignments
 #' @import GenomeInfoDb
 #' @examples
-#' #shift_footprints()
+#' #shiftFootprints()
 
-shift_footprints <- function(bam_input, selected_lengths, selected_shifts) {
+shiftFootprints <- function(bam_input, selected_lengths, selected_shifts) {
 
     selected_shifts <- -1 * selected_shifts
     allFootrpintsShifted <- GRanges()

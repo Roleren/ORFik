@@ -16,6 +16,8 @@ a GRangesList grouped by original group, tiled to 1
 Per group, sepereate the groups and split them on each position.
 Returned sorted
 This is not supported originally by GenomicRanges
+As a precaution, this function requires the unlisted objects to
+have names, so that regrouping will be done correctly.
 }
 \examples{
 gr1 <- GRanges("1",

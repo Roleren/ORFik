@@ -20,7 +20,7 @@ using namespace Rcpp;
 // Instead of passing back and forth from r, do it all in C
 
 // [[Rcpp::export]]
-List ORFs_as_List(
+List orfs_as_List(
     CharacterVector fastaSeqs,
     std::string startCodon,
     std::string stopCodon,

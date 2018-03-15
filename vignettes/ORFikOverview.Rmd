@@ -28,10 +28,11 @@ ORFik currently supports:
 You can then get the features you want, and make various plots. 
 
 # Finding ORFs:
-To find all Open Reading Frames (ORFs) use ?findORFs function. If input is only .fasta file (or BSGenome), findORFs will treat it as prokaryotic genome and findORFs on the chromosomes assuming no splicing. If .gtf file is also supplied, sequences of transcripts from .gtf file will be extracted and findORFs will search there. 
-It is also possible to operate on a vector of characters or Biostrings::DNAString or Biostrings::DNAStringSet.
+To find all Open Reading Frames (ORFs) and possibly map them to genomic coordinates.
+If input is only .fasta file (or BSGenome), use findORFsFasta, it will treat it as prokaryotic genome and find ORFs on the chromosomes assuming no splicing. If .gtf file is also supplied, sequences of transcripts from .gtf file will be extracted, using findMapORFs will search and also map to genome. 
+It is also possible to operate on a vector of characters or Biostrings::DNAString or Biostrings::DNAStringSet, then use findORFs that returns a IRangesList grouped by sequence.
 
-We will now provide two examples of finding ORFs, one with character vector and one with DNAStringSet from BSGenome.
+We will now provide two examples of finding ORFs, one with character vector and one with DNAStringSet from BSGenome and map them to genome.
 
 # Character vector example
 
@@ -51,7 +52,7 @@ names(grl) <- "tx1"
 # Then we are ready to find the ORFs, they will be returned as GRangesList,
 # grouped by which transcript they came from
 
-test_ranges <- find_in_frame_ORFs(grl,seqs) # <- ORFs are now in test_ranges
+test_ranges <- findMapORFs(grl,seqs) # <- ORFs are now in test_ranges
 
 ```
 
@@ -78,7 +79,7 @@ fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' lea
 if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vignette
 
   tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
-  test_ranges <- find_in_frame_ORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
+  test_ranges <- findMapORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
   View(test_ranges)
 }
 ```
@@ -142,7 +143,7 @@ Hsapiens <- NULL # get this from the BSGenome example
 tx_seqs <- extractTranscriptSeqs(Hsapiens, changedFiveUTRs) # <- Now get only fiveUTRs fastasequences
 
 # run this:
-#uORFs <- find_in_frame_ORFs(changedFiveUTRs,tx_seqs)
+#uORFs <- findMapORFs(changedFiveUTRs,tx_seqs)
 #View(uORFs)
 ```
 The uORFs from this example will most likely contain some uORFs not in the original
@@ -233,7 +234,7 @@ fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' lea
 if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vignette
 
   tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
-  test_ranges <- find_in_frame_ORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
+  test_ranges <- findMapORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
   
   # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
   # we use the orfs exon column called ($names) to group, it is made by ORFik.

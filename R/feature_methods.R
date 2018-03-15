@@ -41,9 +41,9 @@ fpkm <- function(grl, reads, pseudoCount = 0){
 #' @family features
 #' @export
 #' @examples
-#' #subset_coverage(x)
+#' #subsetCoverage(x)
 #' @return numeric vector of coverage of input GRanges object
-subset_coverage <- function(cov, y) {
+subsetCoverage <- function(cov, y) {
   cov1 <- cov[[as.vector(seqnames(y)[1])]]
   return(as.vector(cov1[ranges(y)]))
 }
