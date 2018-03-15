@@ -86,6 +86,21 @@ transcriptRanges <- GRanges(seqnames = Rle(rep("1", 4)),
                               end = rev(c(15, 25, 35, 45))),
                                 strand = Rle(strand(rep("-", 4))))
 
+test_that("findORFsFasta works as intended", {
+  filePath <- system.file("extdata", "orfFindingExample.fasta",
+              package = "ORFik")
+
+  test_result <- findORFsFasta(filePath)
+  expect_is(test_result, "GRanges")
+  expect_equal(length(test_result), 2)
+
+  ## allow circular
+  test_result <- findORFsFasta(filePath, is.circular = TRUE)
+  expect_is(test_result, "GRanges")
+  expect_equal(length(test_result), 2)
+
+})
+
 
 
 test_that("findORFs works as intended for plus strand", {
@@ -165,10 +180,10 @@ grIn4 <- GRanges(seqnames = rep("1", 2),
 grl <- GRangesList(grIn1, grIn2, grIn3, grIn4)
 names(grl) <- seqname
 
-test_that("findORFs works as intended for minus strand", {
+test_that("findMapORFs works as intended for minus strand", {
 
   #longestORF F with different frames
-  test_ranges <-findORFs(grl,seqs,
+  test_ranges <-findMapORFs(grl,seqs,
                                     "ATG|TGG|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,
@@ -200,7 +215,7 @@ names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons positive strand", {
 
   #longestORF F with different frames
-  test_ranges <- findORFs(grl,seqs,
+  test_ranges <- findMapORFs(grl,seqs,
                                              "ATG|TGG|GGG",
                                              "TAA|AAT|ATA",
                                              longestORF = F,
@@ -234,7 +249,7 @@ names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons negative strand", {
 
   #longestORF F with different frames
-  test_ranges <- findORFs(grl,seqs,
+  test_ranges <- findMapORFs(grl,seqs,
                                     "ATG|TGG|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,
@@ -272,7 +287,7 @@ names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons both strands", {
 
   #longestORF F with different frames
-  test_ranges <- findORFs(grl,seqs,
+  test_ranges <- findMapORFs(grl,seqs,
                                     "ATG|TGG|GGG",
                                     "TAA|AAT|ATA",
                                     longestORF = F,

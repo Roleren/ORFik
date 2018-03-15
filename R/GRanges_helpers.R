@@ -380,6 +380,8 @@ makeORFNames <- function(grl){
 #' Per group, sepereate the groups and split them on each position.
 #' Returned sorted
 #' This is not supported originally by GenomicRanges
+#' As a precaution, this function requires the unlisted objects to
+#' have names, so that regrouping will be done correctly.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @examples
 #' gr1 <- GRanges("1",
@@ -397,9 +399,10 @@ makeORFNames <- function(grl){
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @export
 tile1 <- function(grl){
-  ORFs <- unlist(grl, use.names = F)
+  ORFs <- unlist(grl, use.names = FALSE)
   if (is.null(names(ORFs))) stop("unlisted grl have not names,\n
                                 try: names(unlist(grl, use.names = F))")
+  ## Try to catch dangerous groupings, that is equally named groups
   if (sum(duplicated(names(ORFs)))) {
     if (!is.null(ORFs$names)) {
       names(ORFs) <- ORFs$names
@@ -409,10 +412,17 @@ tile1 <- function(grl){
         if (dups != sum(duplicated(names(ORFs)))) {
           stop("duplicated ORF names,\n
                 need a column called 'names' that are unique,\n
-                or change names of groups")
+                or change names of groups so they are unique")
         }
       ORFs$names <- names(ORFs)
     }
+  }
+  # special case for only single grouped GRangesList
+  if (is.null(ORFs$names)) {
+    if(length(ORFs) != length(grl)) {
+      stop("wrong naming, could not find unique names")
+    }
+    ORFs$names <- names(grl)
   }
 
   tilex <- tile(ORFs, width =  1L)
@@ -745,7 +755,7 @@ subset_to_frame <- function(x, frame){
 #' @param reference a GRangesList of a reference
 #' @return a GRangesList
 matchNaming <- function(gr, reference){
-  # First check if unlist should be T or F
+  ## First check if unlist should be T or F
   if (is.grl(gr)) {
     grTemp <- unlist(gr[1], use.names = FALSE)
     if (is.null(names(grTemp))) {
@@ -754,17 +764,19 @@ matchNaming <- function(gr, reference){
       gr <- unlist(gr, use.names = FALSE)
     }
   }
-  # now get a reference
+  ## now get a reference
   grTest <- unlist(reference[1], use.names = FALSE)
 
+  ## add names column if reference have it
   if (!is.null(grTest$names)) gr$names <- names(gr)
+  ## if reference have names, add them to gr
   if (!is.null(names(grTest))) {
     if (!any(grep(pattern = "_", names(grTest)[1]))) {
       names(gr) <- OrfToTxNames(gr)
     }
   }
 
-  # TODO: add possibily to add unknown columns, i.g. exon_rank etc.
+  ## TODO: add possibily to add unknown columns, i.g. exon_rank etc.
 
   if (!is.null(gr$names)) {
     return(groupGRangesBy(gr, gr$names))

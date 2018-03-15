@@ -45,5 +45,5 @@ Other features: \code{\link{ORFDistToCds}},
   \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
   \code{\link{isOverlapping}},
-  \code{\link{subset_coverage}}, \code{\link{te}}
+  \code{\link{subsetCoverage}}, \code{\link{te}}
 }

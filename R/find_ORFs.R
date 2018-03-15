@@ -76,21 +76,69 @@ stopDefinition <- function(transl_table) {
 }
 
 
-#' Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates
+#' Creates an IRangesList of Open Reading Frames
 #'
-#' Input is a Grangeslist of regions to search, together with a DNAStringSet with
+#' Input is a  DNAStringSet with
 #' fastaSequence in same order as the grl.
+#' If you want Genomic coordinates, use function \code{\link{findMapORFs}}
 #' @param grl \code{\link[GenomicRanges]{GRangesList}} of sequences
 #'  to search for orfs, in Genomic coordinates
 #' @param fastaSeqs DNA sequences to search for Open Reading Frames,
 #'  must be DNAStringSet.
 #' @param startCodon string. Default is "ATG".
 #' @param stopCodon string. Default is "TAA|TAG|TGA".
-#' @param longestORF bolean. Default FALSE. Defines whether pick longest ORF only.
+#' @param longestORF bolean. Default FALSE. When TRUE pick
+#' longest ORF per group/chromosome.
 #' When FALSE will report all open reaidng frames, even overlapping small ones.
 #' @param minimumLength numeric. Default is 0.
 #' For example minimumLength = 8 will result in size of ORFs to be at least
 #'  START + 8*3 [bp] + STOP.
+#' @return An IRangesList of ORFs grouped by fasta sequence from input.
+#' @export
+#' @examples
+#' seqs <- c("ATGGGTATTTATA") # the dna sequence
+#' startCodons <- "ATG|TGG|GGG"
+#' stopCodons <- "TAA|AAT|ATA"
+#'
+#' ## now run
+#' findORFs(seqs,startCodons, stopCodons,
+#'                    longestORF = FALSE, minimumLength = 0)
+#' ## You will find 1 orf (1-11)
+#'
+findORFs <- function(fastaSeqs, startCodon =  "ATG",
+                               stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
+                               minimumLength = 0 ){
+
+  if (is.null(fastaSeqs) || length(fastaSeqs) == 0)
+    stop("Fasta sequences had length 0 or is NULL")
+
+  result <- ORFs_as_List(fastaSeqs = as.character(fastaSeqs,
+                                                  use.names = FALSE),
+                                 startCodon = startCodon,stopCodon = stopCodon,
+                                 longestORF = longestORF,
+                                 minimumLength = minimumLength)
+
+  return(split(IRanges(result$orf[[1]], result$orf[[2]]), result$index))
+}
+
+#' Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates
+#'
+#' Input is a Grangeslist of regions to search, together with a DNAStringSet
+#' / character vector with fastaSequence in same order as the grl.
+#' @param grl \code{\link[GenomicRanges]{GRangesList}} of sequences
+#'  to search for orfs, in Genomic coordinates
+#' @param fastaSeqs DNA sequences to search for Open Reading Frames,
+#'  must be DNAStringSet.
+#' @param startCodon string. Default is "ATG".
+#' @param stopCodon string. Default is "TAA|TAG|TGA".
+#' @param longestORF bolean. Default FALSE. When TRUE pick
+#' longest ORF per group/chromosome.
+#' When FALSE will report all open reaidng frames, even overlapping small ones.
+#' @param minimumLength numeric. Default is 0.
+#' For example minimumLength = 8 will result in size of ORFs to be at least
+#'  START + 8*3 [bp] + STOP.
+#' @return A GRangesList of ORFs.
+#' @export
 #' @examples
 #' seqs <- c("ATGGGTATTTATA") # the dna sequence
 #' startCodons <- "ATG|TGG|GGG"
@@ -101,22 +149,66 @@ stopDefinition <- function(transl_table) {
 #'                 strand = rep("-", 2), names = rep("tx1_1", 2))
 #' grl <- GRangesList(tx1 = gr)
 #' ## now run
-#' findORFs(grl,seqs,startCodons, stopCodons,
+#' findMapORFs(grl,seqs,startCodons, stopCodons,
 #'                    longestORF = FALSE, minimumLength = 0)
 #' ## You will find 1 orf splitted on 2 exons (10-19 with 21-22)
-#' @export
-#' @return A GRangesList of ORFs.
-findORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
-                               stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
-                               minimumLength = 0 ){
+#'
+findMapORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
+                     stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
+                     minimumLength = 0 ){
 
-  if (class(grl) != "GRangesList") stop("Invalid type of grl, must be GRangesList.")
-  if (length(fastaSeqs) == 0) stop("Fasta sequences had length 0")
-  if (length(fastaSeqs) != length(grl)) stop("Fasta seqs and grl must have same length!")
-  result <- ORFs_as_List(fastaSeqs = as.matrix(as.character( fastaSeqs)),
-                                 startCodon = startCodon,stopCodon = stopCodon,
-                                 longestORF = longestORF,
-                                 minimumLength = minimumLength)
+  if (class(grl) != "GRangesList")
+    stop("Invalid type of grl, must be GRangesList.")
+  if (is.null(fastaSeqs) || length(fastaSeqs) == 0)
+    stop("Fasta sequences had length 0 or is NULL")
+  if (length(fastaSeqs) != length(grl))
+    stop("Fasta seqs and grl must have same length!")
+
+  result <- ORFs_as_List(fastaSeqs = as.character(fastaSeqs, use.names = FALSE),
+                         startCodon = startCodon,stopCodon = stopCodon,
+                         longestORF = longestORF,
+                         minimumLength = minimumLength)
 
   return(mapToGRanges(grl, result))
+}
+
+
+#' Creates GRanges with Open Reading Frames from fasta files.
+#'
+#' Each fasta header is treated separately, and name of the sequence will
+#' be used as seqname in returned GRanges object.
+#' Frame of the Open Reading Frame is also
+#' returned in metadata column 'frame'.
+#' @param file - Path to fasta file.
+#' @param startCodon Default is "ATG".
+#' @param stopCodon Default is "TAA|TAG|TGA".
+#' @param longestORF bolean. Default FALSE. When TRUE pick
+#' longest ORF per group/chromosome.
+#' When FALSE will report all open reaidng frames, even overlapping small ones.
+#' @param minimumLength numeric. Default is 0.
+#' For example minimumLength = 8 will result in size of ORFs
+#'  to be at least START + 8*3 [bp] + STOP.
+#' @return A GRanges object of ORFs mapped from fasta file.
+#'  Each ORF includes START and STOP codon, seqname, strand and frame.
+#' @export
+#' @examples
+#' filePath <- system.file("extdata", "orfFindingExample.fasta",
+#' package = "ORFik") ## location of the fasta file
+#'
+#' find_ORFs_fa(filePath)
+#' ## orfs are now returned as GRanges.
+#'
+findORFsFasta <- function(file, startCodon = "ATG",
+                         stopCodon = "TAA|TAG|TGA",
+                         longestORF = TRUE,
+                         minimumLength = 0, is.circular = FALSE) {
+  if (class(file) != "character") stop("filepath must be of type character")
+  if(!file.exists(file)) stop("file does not exist, check working dir!")
+
+  ORFs <- findORFs_fasta(file,startCodon,stopCodon,longestORF,
+                         minimumLength, is.circular)
+  if (is.circular) {
+    isCircular(gr) <- rep(T, length(seqlevels(gr)))
+  }
+  return(ORFs)
 }
