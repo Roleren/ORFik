@@ -47,7 +47,10 @@ char complement(char n)
 // can do procaryotic circular genomes
 // Takes a fasta file and finds all orfs,
 // including orfs that span from before stop to over start position of genome
-// TODO: Need to find a way to return chromosome lengths.
+// TODO: We should add the seqinfo from the fasta here, so that especially
+//  if genome is circular, we add lengths of chromosomes
+// We could also add name of genome from name of fasta file
+// And get the real seqnames
 // [[Rcpp::export]]
 S4 findORFs_fasta(std::string file,
                        std::string startCodon,

@@ -2,16 +2,16 @@
 % Please edit documentation in R/CageData_Integration.R
 \name{cageFromFile}
 \alias{cageFromFile}
-\title{Get Cage-Data From a file-path}
+\title{Get Cage-Data from a file-path}
 \usage{
 cageFromFile(filePath)
 }
 \arguments{
-\item{filePath}{The location of the cage-file}
+\item{filePath}{The location of the cage file}
 }
 \value{
 a GRanges object
 }
 \description{
-Get Cage-Data From a file-path
+Get Cage-Data from a file-path
 }

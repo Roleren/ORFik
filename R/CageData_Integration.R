@@ -21,26 +21,45 @@ bedToGR <- function(x, bed6 = TRUE){
   return(gr)
 }
 
-
-#' Get Cage-Data From a file-path
-#' @param filePath The location of the cage-file
+#' Get bed file from a file-path
+#'
+#' Tries to speed up rtracklayer import.bed
+#' If speedup is not supported, it will use normal
+#' rtracklayer::import.bed
+#' Supports gzip, gz, bgz and bed formats
+#' @param filePath The location of the bed file
 #' @importFrom data.table fread setDF
+#' @importFrom tools file_ext
+#' @importFrom rtracklayer import.bed
 #' @return a GRanges object
-cageFromFile <- function(filePath){
+fread.bed <- function(filePath) {
 
   if (.Platform$OS.type == "unix") {
     if (file.exists(filePath)) {
-      if (any(gsub(pattern = ".*\\.", "",
-                   filePath) == c("gzip", "gz", "bgz"))) {
-        rawCage <- bedToGR(setDF(
+      if (any(file_ext(filePath) == c("gzip", "gz", "bgz"))) {
+        bed <- bedToGR(setDF(
           fread(paste("gunzip -c", filePath), sep = "\t")))
-      } else if (gsub(pattern = ".*\\.", "", filePath) == "bed"){
-        rawCage <- bedToGR(setDF(fread(filePath, sep = "\t")))
-      } else {stop("Only bed and gzip formats are supported for filePath")}
+      } else if (file_ext(filePath) == "bed"){
+        bed <- bedToGR(setDF(fread(filePath, sep = "\t")))
+      } else {
+        bed <- import.bed(con =  filePath)
+      }
     } else {stop("Filepath specified does not name existing file.")}
   } else {
-    stop("Only unix operating-systems currently support filePath,
-         use cage as GRanges argument instead.")}
+    ## NB: Windows user will have slower loading
+    bed <- import.bed(con =  filePath)
+  }
+
+  return(bed)
+}
+
+
+#' Get Cage-Data from a file-path
+#' @param filePath The location of the cage file
+#' @return a GRanges object
+cageFromFile <- function(filePath){
+
+  rawCage <- fread.bed(filePath)
 
   message("Loaded cage-file successfully")
   return(rawCage)

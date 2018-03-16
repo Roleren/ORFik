@@ -28,7 +28,11 @@ Imports:
     rtracklayer (>= 1.38.3),
     Rcpp (>= 0.12.15), 
     data.table (>= 1.10.4-3),
-    Biostrings (>= 2.46.0)
+    Biostrings (>= 2.46.0),
+    stats,
+    tools,
+    ggplot2 (>= 2.2.1),
+    Rsamtools (>= 1.30.0)
 RoxygenNote: 6.0.1
 Suggests:
     testthat,
