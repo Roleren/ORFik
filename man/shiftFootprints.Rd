@@ -4,10 +4,11 @@
 \alias{shiftFootprints}
 \title{Shifts footprints}
 \usage{
-shiftFootprints(bam_input, selected_lengths, selected_shifts)
+shiftFootprints(footprints, selected_lengths, selected_shifts)
 }
 \arguments{
-\item{bam_input}{Path to bam file. Bam file should have .bai file generated.}
+\item{footprints}{a bam or bed file path, or a GAlignment object
+of ribo-seq reads}
 
 \item{selected_lengths}{Numeric vector of lengths of footprints you select for shifting.}
 
@@ -26,5 +27,16 @@ treated as p site. Takes account for junctions in cigars. Length of footprint is
 position, ready for saving e.g. as bed file.
 }
 \examples{
-#shiftFootprints()
+gtf <- system.file("extdata", "example.gtf",
+                   package = "ORFik") ## location of the gtf file
+suppressWarnings(txdb <-
+                   GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
+bam <- system.file("extdata", "example.bam",
+                   package = "ORFik") ## location of the bam file
+footprints <-readFootprints(bam)
+shifts <- detectRibosomeShifts(footprints, txdb, start=TRUE,
+                               stop=FALSE, offset_plots=FALSE, top_tx=10)
+
+shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
+                                shifts$offsets_start)
 }
