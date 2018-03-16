@@ -1,5 +1,7 @@
 // Find many orfs faster by putting all the data into Cpp directly
 // Cpp format: Webkit: 80 character max line
+// TODO ASAP: use Biostrings_interface.h to input XStringSet
+// rename ORFs_as_List to findORFsC or smth
 
 #include <fstream>
 #include <iostream>
@@ -14,10 +16,6 @@ using vi = std::vector<int>;
 using string = std::string;
 
 using namespace Rcpp;
-
-// Input is fasta sequences and fiveUTRs as grangesList
-// Output is GRanges object with ranges mapped to genomic coordinates
-// Instead of passing back and forth from r, do it all in C
 
 // [[Rcpp::export]]
 List orfs_as_List(

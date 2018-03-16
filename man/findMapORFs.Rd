@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{findMapORFs}
 \alias{findMapORFs}
-\title{Find Open Reading Frames  mapped to genomic coordinates.}
+\title{Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates}
 \usage{
 findMapORFs(grl, fastaSeqs, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
   longestORF = FALSE, minimumLength = 0)

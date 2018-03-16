@@ -103,23 +103,22 @@ stopDefinition <- function(transl_table) {
 #' ## You will find 1 orf (1-11)
 #'
 findORFs <- function(fastaSeqs, startCodon =  "ATG",
-                               stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
-                               minimumLength = 0 ){
+                     stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
+                     minimumLength = 0 ){
 
   if (is.null(fastaSeqs) || length(fastaSeqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
 
   result <- orfs_as_List(fastaSeqs = as.character(fastaSeqs,
                                                   use.names = FALSE),
-                                 startCodon = startCodon,stopCodon = stopCodon,
-                                 longestORF = longestORF,
-                                 minimumLength = minimumLength)
+                         startCodon = startCodon,stopCodon = stopCodon,
+                         longestORF = longestORF,
+                         minimumLength = minimumLength)
 
   return(split(IRanges(result$orf[[1]], result$orf[[2]]), result$index))
 }
 
-
-#' Find Open Reading Frames  mapped to genomic coordinates.
+#' Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates
 #'
 #' Input is a Grangeslist of regions to search, together with a DNAStringSet
 #' / character vector with fastaSequence in same order as the grl.
@@ -152,8 +151,8 @@ findORFs <- function(fastaSeqs, startCodon =  "ATG",
 #' ## You will find 1 orf splitted on 2 exons (10-19 with 21-22)
 #'
 findMapORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
-                     stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
-                     minimumLength = 0 ){
+                        stopCodon = "TAA|TAG|TGA", longestORF = FALSE,
+                        minimumLength = 0 ){
 
   if (class(grl) != "GRangesList")
     stop("Invalid type of grl, must be GRangesList.")
@@ -166,6 +165,7 @@ findMapORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
                          startCodon = startCodon,stopCodon = stopCodon,
                          longestORF = longestORF,
                          minimumLength = minimumLength)
+
   return(mapToGRanges(grl, result))
 }
 
@@ -195,16 +195,17 @@ findMapORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
 #' package = "ORFik") ## location of the fasta file
 #'
 #' findORFsFasta(filePath)
+#' ## orfs are now returned as GRanges.
 #'
 findORFsFasta <- function(file, startCodon = "ATG",
-                         stopCodon = "TAA|TAG|TGA",
-                         longestORF = TRUE,
-                         minimumLength = 0, is.circular = FALSE) {
+                          stopCodon = "TAA|TAG|TGA",
+                          longestORF = TRUE,
+                          minimumLength = 0, is.circular = FALSE) {
   if (class(file) != "character") stop("filepath must be of type character")
   if(!file.exists(file)) stop("file does not exist, check working dir!")
 
   gr <- findORFs_fasta(file,startCodon,stopCodon,longestORF,
-                         minimumLength, is.circular)
+                       minimumLength, is.circular)
   if (is.circular) {
     isCircular(gr) <- rep(T, length(seqlevels(gr)))
   }

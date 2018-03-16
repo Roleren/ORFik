@@ -40,5 +40,6 @@ filePath <- system.file("extdata", "orfFindingExample.fasta",
 package = "ORFik") ## location of the fasta file
 
 findORFsFasta(filePath)
+## orfs are now returned as GRanges.
 
 }
