@@ -19,7 +19,7 @@ a GRangesList of downstream part
 \description{
 Per group get the part downstream of position
  defined in downstreamOf
- downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
+ downstreamOf(tx, ORFik:::stopSites(cds, asGR = F))
  will return the 3' utrs per transcript as GRangesList,
  usually used for interesting
  parts of the transcripts, like upstream open reading frames(uorf).

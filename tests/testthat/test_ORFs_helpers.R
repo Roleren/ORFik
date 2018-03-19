@@ -329,7 +329,7 @@ test_that("GRangesList sorting works as intended", {
                                                        2015, 3004, 3036))
 })
 
-test_that("ORFStartCodons works as intended", {
+test_that("startCodons works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                        ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
@@ -365,7 +365,7 @@ test_that("ORFStartCodons works as intended", {
                      tx1_4 = ORFranges5, tx1_5 = ORFranges6)
 
 
-  test_ranges <- ORFStartCodons(grl, TRUE)
+  test_ranges <- startCodons(grl, TRUE)
 
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
@@ -380,7 +380,7 @@ test_that("ORFStartCodons works as intended", {
 
 })
 
-test_that("ORFStopCodons works as intended", {
+test_that("stopCodons works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                        ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
@@ -416,7 +416,7 @@ test_that("ORFStopCodons works as intended", {
                      tx1_4 = ORFranges5, tx1_5 = ORFranges6)
 
 
-  test_ranges <- ORFStopCodons(grl, TRUE)
+  test_ranges <- stopCodons(grl, TRUE)
 
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
@@ -440,7 +440,7 @@ test_that("ORFStopCodons works as intended", {
                      tx1_3 = ORFranges3, tx4_1 = ORFranges4,
                      tx1_4 = ORFranges5, tx1_5 = ORFranges6)
 
-  test_ranges <- ORFStopCodons(grl, TRUE)
+  test_ranges <- stopCodons(grl, TRUE)
 })
 
 test_that("uniqueORFs works as intended", {

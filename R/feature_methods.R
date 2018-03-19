@@ -22,13 +22,11 @@
 #' fpkm(grl, RFP)
 #' @export
 #' @return a numeric vector with the fpkm values
+#'
 fpkm <- function(grl, reads, pseudoCount = 0){
   grl_len <- widthPerGroup(grl, FALSE)
-
   overlaps <- countOverlaps(grl, reads)
-
   librarySize <- length(reads)
-
   return(fpkm_calc(overlaps, grl_len, librarySize) + pseudoCount)
 }
 
@@ -152,6 +150,7 @@ entropy <- function(grl, reads) {
   return(entropy)
 }
 
+
 #' Fragment Length Organization Similarity Score
 #'
 #' Defined as: for riboseq reads between size start and stop,
@@ -252,7 +251,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
 #'  if so, call:
-#'  te(grl, RNA, RFP, tx= TxLen(Gtf, fiveUTRs))
+#'  translationalEff(grl, RNA, RFP, tx= TxLen(Gtf, fiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders.
 #' @param with.fpkm logical F, if true return the fpkm values together with te
 #' @param pseudoCount an integer, 0,
@@ -269,14 +268,14 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' RNA <- GRanges("1", IRanges(1, 50),"+")
 #' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
 #' # nb: grl must have same names as tx, + _1 etc
-#' te <- te(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
+#' te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
 #' te$fpkmRFP
 #' te$te
 #' @export
 #' @return a numeric vector of fpkm ratios, if with.fpkm is TRUE
 #'  ,return a data.table with te and fpkm values
-te <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
-  tx <- tx[OrfToTxNames(grl)]
+translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
+  tx <- tx[txNames(grl)]
   #normalize by tx lengths
   fpkmRNA <- fpkm(tx, RNA, pseudoCount)
   #normalize by grl lengths
@@ -317,7 +316,7 @@ te <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
 #' @return a numeric vector of ratios
 fractionLength <- function(grl, tx_len){
   grl_len <- widthPerGroup(grl, FALSE)
-  tx_len <- tx_len[OrfToTxNames(grl)]
+  tx_len <- tx_len[txNames(grl)]
   names(tx_len) <- NULL
   return(grl_len / tx_len)
 }
@@ -361,9 +360,9 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
 
-  tx <- tx[OrfToTxNames(grl, F)]
+  tx <- tx[txNames(grl, F)]
 
-  grlStops <- ORFStopSites(grl,asGR = F)
+  grlStops <- stopSites(grl,asGR = F)
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
 
   overlapDownstream <- countOverlaps(downstreamTx, RFP) + 1
@@ -401,11 +400,11 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' threeUTRs <- GRangesList(tx1 = GRanges("1", IRanges(40, 50), "+"))
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' RNA <- GRanges("1", IRanges(1, 50),"+")
-#' RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+#' ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #' @export
 #' @return a named vector of numeric values of scores, NA means that
 #'  no 3' utr was found for that transcript.
-RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
+ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   if (class(GtfOrThreeUtrs) == "TxDb") {
     threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
                                         use.names = T)
@@ -415,7 +414,7 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
   }
   # check that naming is correct, else change it.
-  orfNames <- OrfToTxNames(grl, FALSE)
+  orfNames <- txNames(grl, FALSE)
   validNamesThree <- names(threeUTRs) %in% orfNames
   validNamesGRL <- orfNames %in% names(threeUTRs)
   rrs <- rep(NA,length(grl))
@@ -460,19 +459,20 @@ RibosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
-#' RibosomeStallingScore(grl, RFP)
+#' ribosomeStallingScore(grl, RFP)
 #' @export
 #' @return a named vector of numeric values of scores
-RibosomeStallingScore <- function(grl, RFP){
+ribosomeStallingScore <- function(grl, RFP){
   grl_len <- widthPerGroup(grl, FALSE)
   overlapGrl <- countOverlaps(grl, RFP)
-  stopCodons <- ORFStopCodons(grl, TRUE)
+  stopCodons <- stopCodons(grl, TRUE)
   overlapStop <- countOverlaps(stopCodons, RFP)
 
   rss <- ((overlapStop + 1) / 3) / ((overlapGrl + 1) / grl_len)
   names(rss) <- NULL
   return(rss)
 }
+
 
 #' Get all possible features in ORFik
 #'
@@ -574,8 +574,8 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   entropyRFP <- entropy(grl, RFP)
 
   disengagementScores <- disengagementScore(grl, RFP, tx)
-  RRS <- RibosomeReleaseScore(grl, RFP, threeUTRs, RNA)
-  RSS <- RibosomeStallingScore(grl, RFP)
+  RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+  RSS <- ribosomeStallingScore(grl, RFP)
   scores <- data.table(floss = floss, entropyRFP = entropyRFP,
                        disengagementScores = disengagementScores,
                        RRS = RRS, RSS = RSS)
@@ -585,7 +585,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 
   if (!is.null(RNA)) { # if rna seq is included
     # TODO: add fpkm functions specific for rfp and rna
-    te <- te(grl, RNA, RFP, tx, with.fpkm = TRUE)
+    te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
     scores$te <- te$te
     scores$fpkmRFP <- te$fpkmRFP
     scores$fpkmRNA <- te$fpkmRNA
@@ -593,7 +593,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     scores$fpkmRFP <- fpkm(grl, RFP)
   }
   if (orfFeatures) { # if features are found for orfs
-    scores$ORFScores <- ORFScores(grl, RFP)$ORFscore
+    scores$ORFScores <- orfScore(grl, RFP)$ORFScores
     scores$ioScore <- insideOutsideORF(grl, RFP, tx)
 
     if (includeNonVarying) {
@@ -601,11 +601,11 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else { message("faFile not included, skipping kozak sequence score")}
 
-      distORFCDS <- ORFDistToCds(grl, fiveUTRs, cds, extension)
+      distORFCDS <- distToCds(grl, fiveUTRs, cds, extension)
       scores$distORFCDS <- distORFCDS
       scores$inFrameCDS <- isInFrame(distORFCDS)
       scores$isOverlappingCds <- isOverlapping(distORFCDS)
-      scores$rankInTx <- OrfRankOrder(grl)
+      scores$rankInTx <- rankOrder(grl)
     }
   } else {
     message("orfFeatures set to False, dropping all orf features.")

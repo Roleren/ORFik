@@ -27,7 +27,7 @@
 #' identical(grl, grltest) ## they are identical
 #'
 #' ## group by transcript
-#' names(gr) <- OrfToTxNames(gr)
+#' names(gr) <- txNames(gr)
 #' grltest <- groupGRangesBy(gr)
 #' identical(grl, grltest) ## they are not identical
 #'
@@ -443,7 +443,7 @@ tile1 <- function(grl){
 #'  ig. cds is grl and gene can be reference
 #'  @export
 asTX <- function(grl, reference){
-  orfNames <- OrfToTxNames(grl)
+  orfNames <- txNames(grl)
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
     stop("not all references are present, so can not map to transcripts.")
   }
@@ -543,7 +543,7 @@ assignLastExonsStopSite <- function(grl, newStops){
 #'
 #' Per group get the part downstream of position
 #'  defined in downstreamOf
-#'  downstreamOf(tx, ORFik:::ORFStopSites(cds, asGR = F))
+#'  downstreamOf(tx, ORFik:::stopSites(cds, asGR = F))
 #'  will return the 3' utrs per transcript as GRangesList,
 #'  usually used for interesting
 #'  parts of the transcripts, like upstream open reading frames(uorf).
@@ -583,7 +583,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf){
 #'
 #' Per group get the part upstream of position
 #'  defined in upstreamOf
-#'  upstream(tx, ORFik:::ORFStopSites(cds, asGR = F))
+#'  upstream(tx, ORFik:::stopSites(cds, asGR = F))
 #'  will return the 5' utrs per transcript, usually used for interesting
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
@@ -660,7 +660,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL){
     newStarts[posIndices] <- as.integer(start(promo[posIndices]))
     newStarts[!posIndices] <- as.integer(end(promo[!posIndices]))
   } else if (is.grl(class(grl))) {
-    starts <- ORFStartSites(extension)
+    starts <- startSites(extension)
     changedGRL <-downstreamOfPerGroup(grl[names(extension)], starts)
     return(changedGRL)
   } else {
@@ -687,7 +687,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL){
 #' strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
-#' RibosomeStallingScore(grl, RFP)
+#' ribosomeStallingScore(grl, RFP)
 #' @export
 #' @return a Rle, one list per group with # of hits per position.
 coveragePerTiling <- function(grl, reads){
@@ -772,7 +772,7 @@ matchNaming <- function(gr, reference){
   ## if reference have names, add them to gr
   if (!is.null(names(grTest))) {
     if (!any(grep(pattern = "_", names(grTest)[1]))) {
-      names(gr) <- OrfToTxNames(gr)
+      names(gr) <- txNames(gr)
     }
   }
 

@@ -29,15 +29,16 @@ A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1242/dev.098345
 }
 \seealso{
-Other features: \code{\link{ORFDistToCds}},
-  \code{\link{ORFScores}}, \code{\link{OrfRankOrder}},
-  \code{\link{RibosomeReleaseScore}},
-  \code{\link{RibosomeStallingScore}},
-  \code{\link{computeFeatures}},
-  \code{\link{disengagementScore}}, \code{\link{entropy}},
+Other features: \code{\link{computeFeatures}},
+  \code{\link{disengagementScore}},
+  \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},
   \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{isInFrame}}, \code{\link{isOverlapping}},
-  \code{\link{kozakSequenceScore}},
-  \code{\link{subsetCoverage}}, \code{\link{te}}
+  \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
+  \code{\link{rankOrder}},
+  \code{\link{ribosomeReleaseScore}},
+  \code{\link{ribosomeStallingScore}},
+  \code{\link{subsetCoverage}},
+  \code{\link{translationalEff}}
 }

@@ -12,7 +12,7 @@
 #' @export
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
-ORFScores <- function(grl, RFP){
+orfScore <- function(grl, RFP){
   # tile the orfs into a d.t for easy seperation
   dt <- as.data.table(tile1(grl))
 
@@ -49,7 +49,7 @@ ORFScores <- function(grl, RFP){
   revORFscore <-  which(tile1 < tile2 | tile1 < tile3)
   ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
   ORFscore[is.na(ORFscore)] <- 0
-  dfORFs$ORFscore <- ORFscore
+  dfORFs$ORFScores <- ORFscore
 
   return(dfORFs)
 }
@@ -73,12 +73,12 @@ ORFScores <- function(grl, RFP){
 #' @examples
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
-#' dist <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+#' dist <- distToCds(grl, fiveUTRs, extension = 0)
 #' ## Now dist contains distances as vector
 #' @export
 #' @return an integer vector, +1 means one base upstream of cds, -1 means
 #'   2nd base in cds, 0 means orf stops at cds start.
-ORFDistToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
+distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
   validGRL(class(ORFs), "ORFs")
   if (is.null(extension)) stop("please specify extension, to avoid bugs\n
                               ,if you did not use cage, set it to 0,\n
@@ -100,10 +100,10 @@ ORFDistToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
   orfEnds <- lastExonEndPerGroup(orfsTx, F)
   if (extension > 0) {
     cdsStarts <- widthPerGroup(extendedLeadersWithoutCds[
-      OrfToTxNames(lastExons)], F) + 1
+      txNames(lastExons)], F) + 1
   } else {
       cdsStarts <- widthPerGroup(fiveUTRs[
-        OrfToTxNames(lastExons)], F) + 1
+        txNames(lastExons)], F) + 1
   }
   dists <- cdsStarts - orfEnds
 
@@ -223,10 +223,10 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
-  tx <- tx[OrfToTxNames(grl, F)]
+  tx <- tx[txNames(grl, F)]
 
-  grlStarts <- ORFStartSites(grl, asGR = FALSE)
-  grlStops <- ORFStopSites(grl, asGR = FALSE)
+  grlStarts <- startSites(grl, asGR = FALSE)
+  grlStops <- stopSites(grl, asGR = FALSE)
 
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
@@ -247,7 +247,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 
 #' find frame for each orf relative to cds
 #'
-#' Input of this function, is the output of the function ORFDistToCds
+#' Input of this function, is the output of the function distToCds
 #' possible outputs:
 #' 0: orf is in frame with cds
 #' 1: 1 shifted from cds
@@ -259,7 +259,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx){
 #' @examples
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
-#' dist <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+#' dist <- distToCds(grl, fiveUTRs, extension = 0)
 #' isInFrame <- isInFrame(dist)
 #' @export
 #' @return a logical vector
@@ -270,14 +270,14 @@ isInFrame <- function(dists){
 
 #' find frame for each orf relative to cds
 #'
-#' Input of this function, is the output of the function ORFDistToCds
+#' Input of this function, is the output of the function distToCds
 #' See article:  10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @examples
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
-#' dist <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+#' dist <- distToCds(grl, fiveUTRs, extension = 0)
 #' isOverlapping <- isOverlapping(dist)
 #' @export
 #' @return a logical vector
@@ -293,7 +293,7 @@ isOverlapping <- function(dists){
 #' @family features
 #' @export
 #' @return a numeric vector of integers
-OrfRankOrder <- function(grl){
+rankOrder <- function(grl){
   gr <- unlist(grl, use.names = FALSE)
 
   if (is.null(names(grl))) {

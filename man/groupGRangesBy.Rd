@@ -40,7 +40,7 @@ grltest <- groupGRangesBy(gr) # using the names to group
 identical(grl, grltest) ## they are identical
 
 ## group by transcript
-names(gr) <- OrfToTxNames(gr)
+names(gr) <- txNames(gr)
 grltest <- groupGRangesBy(gr)
 identical(grl, grltest) ## they are not identical
 

@@ -26,5 +26,5 @@ ranges = IRanges(start = c(1, 10, 20),
 strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
-RibosomeStallingScore(grl, RFP)
+ribosomeStallingScore(grl, RFP)
 }

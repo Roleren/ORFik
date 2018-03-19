@@ -157,19 +157,19 @@ test_that("entropy works as intended", {
   expect_equal(round(entropy, 2), c(0.93, 0.99, 0.97, 0.94))
 })
 
-test_that("ORFScore works as intended", {
+test_that("orfScore works as intended", {
 
-  scores <- ORFScores(grl, RFP)
+  scores <- orfScore(grl, RFP)
   expect_is(scores, "list")
-  expect_equal(as.numeric(scores$ORFscore), c(0, 0, 0, 0))
+  expect_equal(as.numeric(scores$ORFScores), c(0, 0, 0, 0))
 
-  scores <- ORFScores(grl, RFP4)
+  scores <- orfScore(grl, RFP4)
   expect_is(scores, "list")
-  expect_equal(as.numeric(round(scores$ORFscore, 2)), c(0.58, 0.00, 0.00, 0.00))
+  expect_equal(as.numeric(round(scores$ORFScores, 2)), c(0.58, 0.00, 0.00, 0.00))
 
-  scores <- ORFScores(grl, RFP7)
+  scores <- orfScore(grl, RFP7)
   expect_is(scores, "list")
-  expect_equal(as.numeric(round(scores$ORFscore, 2)), c(0.00, 0.00, 0.36, 0.00))
+  expect_equal(as.numeric(round(scores$ORFScores, 2)), c(0.00, 0.00, 0.36, 0.00))
 
 })
 
@@ -209,30 +209,30 @@ test_that("disengagementScore works as intended", {
 })
 
 
-test_that("RibosomeReleaseScore works as intended", {
-  scores <- RibosomeReleaseScore(grl, RFP, threeUTRs)
+test_that("ribosomeReleaseScore works as intended", {
+  scores <- ribosomeReleaseScore(grl, RFP, threeUTRs)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(11.76, 11.11, 8.33, 2.72))
 
-  scores <- RibosomeReleaseScore(grl, RFP2, threeUTRs)
+  scores <- ribosomeReleaseScore(grl, RFP2, threeUTRs)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(2.94, 2.78, 2.78, 2.72))
 
-  scores <- RibosomeReleaseScore(grl, RFP7, threeUTRs)
+  scores <- ribosomeReleaseScore(grl, RFP7, threeUTRs)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(8.82, 11.11, 11.11, 2.72))
 })
 
-test_that("RibosomeStallingScore works as intended", {
-  scores <- RibosomeStallingScore(grl, RFP)
+test_that("ribosomeStallingScore works as intended", {
+  scores <- ribosomeStallingScore(grl, RFP)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(2.83, 3.00, 2.00, 6.00))
 
-  scores <- RibosomeStallingScore(grl, RFP2)
+  scores <- ribosomeStallingScore(grl, RFP2)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(5.67, 6.00, 6.00, 6.00))
 
-  scores <- RibosomeStallingScore(grl, RFP7)
+  scores <- ribosomeStallingScore(grl, RFP7)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(5.67, 3.00, 3.00, 6.00))
 })
@@ -256,17 +256,17 @@ test_that("floss works as intended", {
 
 
 
-test_that("te works as intended", {
+test_that("translationalEff works as intended", {
 
-  scores <- te(grl, RNA, RFP, tx)
+  scores <- translationalEff(grl, RNA, RFP, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores,2), c(19.06, 18.00, 12.00, NaN))
 
-  scores <- te(grl, RNA, RFP2, tx)
+  scores <- translationalEff(grl, RNA, RFP2, tx)
   expect_is(scores, "numeric")
   expect_equal(scores, c(0, 0, 0, NaN))
 
-  scores <- te(grl, RNA2, RFP7, tx)
+  scores <- translationalEff(grl, RNA2, RFP7, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores,2), c(7.06, 10.00, 10.00, 9.72))
 })
@@ -286,24 +286,24 @@ test_that("insideOutsideORF works as intended", {
   expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.57))
 })
 
-test_that("ORFDistToCds works as intended", {
+test_that("distToCds works as intended", {
 
-  scores <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+  scores <- distToCds(grl, fiveUTRs, extension = 0)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 38))
 
-  scores <- ORFDistToCds(grl, fiveUTRs, cds, 0)
+  scores <- distToCds(grl, fiveUTRs, cds, 0)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 38))
   # TODO: Decide if this is correct behavior ?
   # My idea now is to keep it.
-  scores <- ORFDistToCds(grl, fiveUTRs, cds, 5)
+  scores <- distToCds(grl, fiveUTRs, cds, 5)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 43))
 })
 
 
-scores <- ORFDistToCds(grl, fiveUTRs, extension = 0)
+scores <- distToCds(grl, fiveUTRs, extension = 0)
 test_that("isInFrame works as intended", {
 
   inFrame <- isInFrame(scores)
@@ -318,9 +318,9 @@ test_that("isOverlapping works as intended", {
   expect_equal(overlaps, c(F, F, F, F))
 })
 
-test_that("OrfRankOrder works as intended", {
+test_that("rankOrder works as intended", {
 
-  ranks <- OrfRankOrder(grl)
+  ranks <- rankOrder(grl)
   expect_is(ranks, "integer")
   expect_equal(ranks, c(1, 2, 3, 1))
 })
@@ -382,6 +382,5 @@ test_that("computeFeatures works as intended", {
   load(system.file("extdata", "featureTable.rdata",
                          package = "ORFik")) # loaded as featureExamples
   expect_equal(dt, featureExamples) # should be equal to saved version
-
 })
 

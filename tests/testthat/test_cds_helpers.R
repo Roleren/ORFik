@@ -16,18 +16,18 @@ gene2 <- GRanges(Rle(c("1"), c(4)),
 
 cds <- GRangesList("gene_plus_strand" = gene1, "gene_minus_strand" = gene2)
 
-test_that("ORFStartSites works as intended", {
+test_that("startSites works as intended", {
 
-  cds_starts <- ORFStartSites(cds, asGR = T)
+  cds_starts <- startSites(cds, asGR = T)
 
   expect_is(cds_starts, "GRanges")
   expect_equal(start(cds_starts)[1], 925942)
   expect_equal(start(cds_starts)[2], 245929901)
 })
 
-test_that("ORFStopSites works as intended", {
+test_that("stopSites works as intended", {
 
-  cds_stops <- ORFStopSites(cds, asGR = T)
+  cds_stops <- stopSites(cds, asGR = T)
 
   expect_is(cds_stops, "GRanges")
   expect_equal(start(cds_stops)[1], 939291)
@@ -36,7 +36,7 @@ test_that("ORFStopSites works as intended", {
 
 test_that("windowResize works as intended", {
 
-  cds_starts <- ORFStartSites(cds, asGR = T)
+  cds_starts <- startSites(cds, asGR = T)
   resized <- windowResize(cds_starts, window_size = 30)
 
   expect_is(resized, "GRanges")

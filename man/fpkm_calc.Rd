@@ -25,16 +25,17 @@ Normally used in Translations efficiency calculations
 see article: 10.1038/nbt.1621
 }
 \seealso{
-Other features: \code{\link{ORFDistToCds}},
-  \code{\link{ORFScores}}, \code{\link{OrfRankOrder}},
-  \code{\link{RibosomeReleaseScore}},
-  \code{\link{RibosomeStallingScore}},
-  \code{\link{computeFeatures}},
-  \code{\link{disengagementScore}}, \code{\link{entropy}},
+Other features: \code{\link{computeFeatures}},
+  \code{\link{disengagementScore}},
+  \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm}},
   \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
   \code{\link{isOverlapping}},
-  \code{\link{kozakSequenceScore}},
-  \code{\link{subsetCoverage}}, \code{\link{te}}
+  \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
+  \code{\link{rankOrder}},
+  \code{\link{ribosomeReleaseScore}},
+  \code{\link{ribosomeStallingScore}},
+  \code{\link{subsetCoverage}},
+  \code{\link{translationalEff}}
 }

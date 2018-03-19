@@ -19,7 +19,7 @@ a GRangesList of upstream part
 \description{
 Per group get the part upstream of position
  defined in upstreamOf
- upstream(tx, ORFik:::ORFStopSites(cds, asGR = F))
+ upstream(tx, ORFik:::stopSites(cds, asGR = F))
  will return the 5' utrs per transcript, usually used for interesting
  parts of the transcripts, like upstream open reading frames(uorf).
  downstreamOf +/- 1 is start/end site

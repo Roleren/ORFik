@@ -134,7 +134,7 @@ resizeORF <- function(grangesObj, orf_goal_length) {
 #' @export
 #' @return a character vector of transcript names,
 #'  without _* naming
-OrfToTxNames <- function(grl, unique = F){
+txNames <- function(grl, unique = F){
   if (!is.gr_or_grl(class(grl))) {
     stop("grl must be GRangesList or GRanges Object")
   }
@@ -161,6 +161,7 @@ OrfToTxNames <- function(grl, unique = F){
   return(gsub("_[0-9]*", "", names(grl)))
 }
 
+
 #' get the start sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGG, get the position of the A.
@@ -171,7 +172,7 @@ OrfToTxNames <- function(grl, unique = F){
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
 #' @return if asGR is False, a vector, if True a GRanges object
-ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
+startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                           is.sorted = FALSE){
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
@@ -208,7 +209,7 @@ ORFStartSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
 #' @return if asGR is False, a vector, if True a GRanges object
-ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
+stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                          is.sorted = FALSE){
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
@@ -242,7 +243,7 @@ ORFStopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @export
 #' @return a GRangesList of start codons, since they might be split on exons
-ORFStartCodons <- function(grl, is.sorted = FALSE){
+startCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
   }
@@ -276,7 +277,7 @@ ORFStartCodons <- function(grl, is.sorted = FALSE){
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @export
 #' @return a GRangesList of stop codons, since they might be split on exons
-ORFStopCodons <- function(grl, is.sorted = FALSE){
+stopCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
   }
@@ -321,7 +322,7 @@ orfID <- function(grl, with.tx = FALSE){
 
   uorfID <- paste(seqnames, strands, exonInfo, sep = ",")
   if (with.tx) {
-    uorfID <- paste(uorfID, OrfToTxNames(grl))
+    uorfID <- paste(uorfID, txNames(grl))
   }
   return(uorfID)
 }

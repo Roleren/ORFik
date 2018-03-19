@@ -180,9 +180,9 @@ The reason for this, is to keep redundant information for easy unlisting.
 # Features from ORFs
 
 `ORFik` contains a big feature set:
-FLOSS (?floss), coverage (?coverage) , ORFscore (?ORFScore), entropy (?entropy) , 
+FLOSS (?floss), coverage (?coverage) , ORFscore (?orfScore), entropy (?entropy) , 
 translational effiency (?te), inside outside score (?insideOutsideScore),
-distance between orfs and cds' (?ORFDistToCds) etc.
+distance between orfs and cds' (?distToCds) etc.
 All the features are justified with a reference to an article, i.g to see
 justification for floss, see ?floss
 
