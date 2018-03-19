@@ -4,11 +4,11 @@
 \alias{findORFs}
 \title{Find Open Reading Frames.}
 \usage{
-findORFs(seq, startCodon = startDefinition(1),
+findORFs(seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)
 }
 \arguments{
-\item{seq}{(DNAStringSet or character) DNA sequences to search for Open
+\item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
 Reading Frames.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check

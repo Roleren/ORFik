@@ -69,17 +69,16 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' list syntax is: result[1] contain grouping indeces, named index
 #' result[2] countains two columns of start and stops,  named orf
 #' @return A \code{\link[GenomicRanges]{GRangesList}} of ORFs.
-#' @export
 #' @importFrom GenomicFeatures pmapFromTranscripts
 mapToGRanges <- function(grl, result) {
 
-  if (class(grl) != "GRangesList") stop("Invalid type of grl,",
-                                        "must be GRangesList.")
-  if (is.null(names(grl))) stop("grl contains no names")
+  if (class(grl) != "GRangesList")
+    stop("Invalid type of grl, ", "must be GRangesList.")
+  if (is.null(names(grl))) stop("'grl' contains no names.")
   if (class(result) != "list") stop("Invalid type of result, must be list.")
   if (length(result) != 2)
-    stop("Invalid structure of result, must be list with 2 elements",
-         "read info for structure")
+    stop("Invalid structure of result, must be list with 2 elements ",
+         "read info for structure.")
   # Check that grl is sorted
   grl <- sortPerGroup(grl, ignore.strand = T)
   # Create Ranges object from orf scanner result
@@ -90,7 +89,6 @@ mapToGRanges <- function(grl, result) {
   genomicCoordinates <- pmapFromTranscripts(x = ranges,
                                             transcripts = grl[result$index])
   genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
-
   return(makeORFNames(genomicCoordinates))
 }
 

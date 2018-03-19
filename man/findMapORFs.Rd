@@ -4,15 +4,15 @@
 \alias{findMapORFs}
 \title{Find ORFs and imidiately map them to their genomic positions.}
 \usage{
-findMapORFs(grl, fastaSeqs, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
-  longestORF = FALSE, minimumLength = 0)
+findMapORFs(grl, seqs, startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)
 }
 \arguments{
-\item{grl}{\code{\link[GenomicRanges]{GRangesList}} of sequences
-to search for orfs, in Genomic coordinates}
+\item{grl}{(\code{\link[GenomicRanges]{GRangesList}}) of sequences
+to search for ORFs, probably in genomic coordinates}
 
-\item{fastaSeqs}{DNA sequences to search for Open Reading Frames,
-must be DNAStringSet.}
+\item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
+Reading Frames.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
 \code{\link{startDefinition}} for helper function.}
@@ -41,32 +41,28 @@ genomic coordinates of ORFs found on transcript sequences.
 }
 \details{
 This function assumes that \code{seq} is in widths relative to \code{grl},
-and that \code{seq} was acquired with the use of \code{grl}.
-
-This function is a wrapper around \code{\link{findORFs}} and
-\code{\link{mapToGRanges}}, that skips passing of output through R and does
-all calculations in C, therefore is much faster than chaining.
-
-scenario output of
-Input is a Grangeslist of regions to search, together with a DNAStringSet
-/ character vector with fastaSequence in same order as the grl.
+and that their orders match.
 }
 \examples{
-seqs <- c("ATGGGTATTTATA") # the dna sequence
-startCodons <- "ATG|TGG|GGG"
-stopCodons <- "TAA|AAT|ATA"
-## gr is sequence mapping
-gr <- GRanges(seqnames = rep("1", 2),
-                ranges = IRanges(start = c(21, 10), end = c(23, 19)),
-                strand = rep("-", 2), names = rep("tx1_1", 2))
+# This sequence has ORFs at 1-9 and 4-9
+seqs <- c("ATGATGTAA") # the dna sequence
+findORFs(seqs)
+# lets assume that this sequence comes from two exons as follows
+gr <- GRanges(seqnames = rep("1", 2), # chromosome 1
+              ranges = IRanges(start = c(21, 10), end = c(23, 15)),
+              strand = rep("-", 2), names = rep("tx1", 2))
 grl <- GRangesList(tx1 = gr)
-## now run
-findMapORFs(grl,seqs,startCodons, stopCodons,
-                   longestORF = FALSE, minimumLength = 0)
-## You will find 1 orf splitted on 2 exons (10-19 with 21-22)
+findMapORFs(grl, seqs) # ORFs are properly mapped to its genomic coordinates
+
+grl <- c(grl, grl)
+names(grl) <- c("tx1", "tx2")
+findMapORFs(grl, c(seqs, seqs))
 
 }
 \seealso{
+\code{\link{findORFs}}, \code{\link{findORFsFasta}},
+\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+
 Other findORFs: \code{\link{findORFsFasta}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},
   \code{\link{stopDefinition}}
