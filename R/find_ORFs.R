@@ -118,7 +118,8 @@ findORFs <- function(fastaSeqs, startCodon =  "ATG",
   return(split(IRanges(result$orf[[1]], result$orf[[2]]), result$index))
 }
 
-#' Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates
+
+#' Find Open Reading Frames  mapped to genomic coordinates.
 #'
 #' Input is a Grangeslist of regions to search, together with a DNAStringSet
 #' / character vector with fastaSequence in same order as the grl.
@@ -165,7 +166,6 @@ findMapORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
                          startCodon = startCodon,stopCodon = stopCodon,
                          longestORF = longestORF,
                          minimumLength = minimumLength)
-
   return(mapToGRanges(grl, result))
 }
 
@@ -195,7 +195,6 @@ findMapORFs <- function(grl, fastaSeqs, startCodon =  "ATG",
 #' package = "ORFik") ## location of the fasta file
 #'
 #' findORFsFasta(filePath)
-#' ## orfs are now returned as GRanges.
 #'
 findORFsFasta <- function(file, startCodon = "ATG",
                          stopCodon = "TAA|TAG|TGA",

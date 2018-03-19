@@ -88,7 +88,7 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
   fiveSeqlevels <- seqlevels(unlist(fiveUTRs, use.names = FALSE))
   cageSeqlevels <- seqlevels(filteredCage)
   if (length(grep(pattern = "chr", fiveSeqlevels)) > 0 &&
-     length(grep(pattern = "chr", cageSeqlevels)) == 0) {
+      length(grep(pattern = "chr", cageSeqlevels)) == 0) {
     message("seqnames use different chromosome naming conventions,",
             " trying to fix them")
     # chr1, chr2, not chrX, chrY etc. ->
@@ -103,13 +103,13 @@ matchSeqnames <- function(filteredCage, fiveUTRs){
     }
   }
   if (length(grep("chrY", fiveSeqlevels)) == 0 &&
-        length(grep("chrY", cageSeqlevels)) != 0)
+      length(grep("chrY", cageSeqlevels)) != 0)
     seqlevels(filteredCage) <- sub("chrY", "Y", seqlevels(filteredCage))
   if (length(grep("chrX", fiveSeqlevels)) == 0 &&
-        length(grep("chrX", cageSeqlevels)) != 0)
+      length(grep("chrX", cageSeqlevels)) != 0)
     seqlevels(filteredCage) <- sub("chrX", "X", seqlevels(filteredCage))
   if (length(grep("chrM", fiveSeqlevels)) == 0 &&
-        length(grep("chrM", cageSeqlevels)) != 0)
+      length(grep("chrM", cageSeqlevels)) != 0)
     seqlevels(filteredCage) <- sub("chrM", "MT", seqlevels(filteredCage))
 
   return(filteredCage)
@@ -148,7 +148,7 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds){
   gr <- unlist(firstExons, use.names = FALSE)
   # fix mcols of cds, so that pc() will work
   mcols(gr) <- as.data.frame(mcols(unlist(fiveUTRs,
-                use.names = FALSE)))[1:length(gr),]
+                                          use.names = FALSE)))[1:length(gr),]
 
   grl <- relist(gr, firstExons)
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)

@@ -21,3 +21,18 @@ Useful links:
 }
 
 }
+\author{
+\strong{Maintainer}: Kornel Labun \email{kornellabun@gmail.com} [copyright holder]
+
+Authors:
+\itemize{
+  \item Haakon Tjeldnes \email{hauken_heyken@hotmail.com} [data contributor]
+}
+
+Other contributors:
+\itemize{
+  \item Katazyna Chyzynska \email{katchyz@gmail.com} [contributor, data contributor]
+  \item Evind Valen \email{eivind.valen@gmail.com} [thesis advisor, funder]
+}
+
+}

@@ -1,46 +1,48 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames
-Version: 0.1.0
-Author@R: c(
-    person("Kornel", "Labun", email = "kornellabun@gmail.com",role = "aut"),
-    person("Haakon", "Tjeldnes", email = "hauken_heyken@hotmail.com",
-    role = "aut"),
-    person("Evind", "Valen", email = "eivind.valen@gmail.com",role = "cre"))
-Author: Kornel Labun [aut],
-    Haakon Tjeldnes [aut]
-Maintainer: Eivind Valen <eivind.valen@gmail.com>	
-Description: Ribosome Profiling tools.
+Version: 0.99.0
+Authors@R: c(
+  person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cre", "cph")),
+  person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "dtc")),
+  person(given = "Katazyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
+  person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")) )
+Description: Tools for manipulation of RiboSeq, RNASeq and CageSeq data. ORFik 
+  is extremally fast through use of C, data.table and GenomicRanges. Package 
+  allows to reassign starts of the transcripts with the use of CageSeq data,
+  automatic shifting of RiboSeq reads, finding of Open Reading Frames for the 
+  whole genomes and many more.
 biocViews: Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage
 License: MIT + file LICENSE
 LazyData: TRUE
 BugReports: https://github.com/JokingHero/ORFik/issues
 URL: https://github.com/JokingHero/ORFik
 Depends:
-    R (>= 3.4.0),
-    IRanges (>= 2.12.0),
-    GenomicRanges (>= 1.30.1),
-    GenomicAlignments (>= 1.14.1)
+  R (>= 3.4.0),
+  IRanges (>= 2.12.0),
+  GenomicRanges (>= 1.30.1),
+  GenomicAlignments (>= 1.14.1)
 Imports:
-    S4Vectors (>= 0.16.0),
-    GenomeInfoDb (>= 1.14.0),
-    GenomicFeatures (>= 1.30.3),
-    rtracklayer (>= 1.38.3),
-    Rcpp (>= 0.12.15), 
-    data.table (>= 1.10.4-3),
-    Biostrings (>= 2.46.0),
-    stats,
-    tools,
-    ggplot2 (>= 2.2.1),
-    Rsamtools (>= 1.30.0)
+  S4Vectors (>= 0.16.0),
+  GenomeInfoDb (>= 1.14.0),
+  GenomicFeatures (>= 1.30.3),
+  rtracklayer (>= 1.38.3),
+  Rcpp (>= 0.12.15), 
+  data.table (>= 1.10.4-3),
+  Biostrings (>= 2.46.0),
+  stats,
+  tools,
+  ggplot2 (>= 2.2.1),
+  Rsamtools (>= 1.30.0)
 RoxygenNote: 6.0.1
 Suggests:
-    testthat,
-    biovizBase,
-    rmarkdown,
-    knitr,
-    BiocStyle,
-    BSgenome,
-    BSgenome.Hsapiens.UCSC.hg19
+  testthat,
+  biovizBase,
+  rmarkdown,
+  knitr,
+  BiocStyle,
+  BSgenome,
+  BSgenome.Hsapiens.UCSC.hg19,
+  ggplot2
 LinkingTo: Rcpp
 VignetteBuilder: knitr

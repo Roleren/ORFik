@@ -1,6 +1,6 @@
 ---
 title: "ORFik Overview"
-author: "Haakon Tjeldnes"
+author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
 output: BiocStyle::html_document
@@ -10,31 +10,41 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
-Welcome to the ORFik package. This vignette will walk you through our main package usage with examples.
-ORFik is an R package containing various functions for analysis of Ribo-Seq and RNA-Seq data.
-ORFik currently supports:
-
-- Finding Open Reading Frames (very fast) in the genome of interest or on the set of transcripts.
-- Metaplots for Ribo-Seq allowing to spot the shift.
-- Shifting functions for the Ribo-Seq data.
-- Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, entropy.
-- Utility functions to extend GenomicRanges, e.g. the functions tile1 and groupGRangesBy.
-
-
 # Introduction
 
-`ORFik` main usage is to get Open reading frames compatitable with Bioconductor's GenomicRanges package, combined with Ribo-seq, RNA-seq and cage-seq data.
-You can then get the features you want, and make various plots. 
+Welcome to the `ORFik` package. This vignette will walk you through our main 
+package usage with examples. `ORFik` is an R package containing various 
+functions for analysis of RiboSeq, RNASeq and CageSeq data.  
 
-# Finding ORFs:
-To find all Open Reading Frames (ORFs) and possibly map them to genomic coordinates.
+`ORFik` currently supports:  
+
+1. Finding Open Reading Frames (very fast) in the genome of interest or on the 
+set of transcripts/sequences.  
+2. Automatic estimations of RiboSeq footprint shift.  
+3. Utilities for metaplots of RiboSeq coverage over gene START and STOP codons 
+allowing to spot the shift.  
+4. Shifting functions for the RiboSeq data.  
+5. Finding new Transcription Start Sites with the use of CageSeq data.  
+6. Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, 
+entropy that are recreated based on many scientific publications.  
+7. Utility functions to extend GenomicRanges for faster grouping, spliting, 
+tiling etc.  
+
+# Finding Open Reading Frames
+
+In molecular genetics, an Open Reading Frame (ORF) is the part of a reading 
+frame that has the ability to be translated. It does not mean that every ORF is
+being translated or is functional, but to be able to find novel genes we must be
+able to firstly identify potential ORFs.
+
+To find all Open Reading Frames (ORFs) and possibly map them to genomic 
+coordinates `ORFik` supportes three main functions
 If input is only .fasta file (or BSGenome), use findORFsFasta, it will treat it as prokaryotic genome and find ORFs on the chromosomes assuming no splicing. If .gtf file is also supplied, sequences of transcripts from .gtf file will be extracted, using findMapORFs will search and also map to genome. 
 It is also possible to operate on a vector of characters or Biostrings::DNAString or Biostrings::DNAStringSet, then use findORFs that returns a IRangesList grouped by sequence.
 
 We will now provide two examples of finding ORFs, one with character vector and one with DNAStringSet from BSGenome and map them to genome.
 
-# Character vector example
+## Character vector example
 
 ```r
 library(ORFik)
@@ -56,7 +66,7 @@ test_ranges <- findMapORFs(grl,seqs) # <- ORFs are now in test_ranges
 
 ```
 
-# BSGenome example
+## BSGenome example
 
 ```r
 library(ORFik)
@@ -89,7 +99,7 @@ There are 7 exons in this group, named 3_* where star is the orf number.
 You will also see that the second orf named 3_2 is twice,
 because that single orf is split on two exons.
 
-# Cage-data for tissue specific 5' utrs
+## Cage-data for tissue specific 5' utrs
 
 In the previous example we used the reference annotation of the 5' utrs
 from the package GenomicFeatures.
@@ -130,7 +140,7 @@ For different tissues, you will get different leaders.
 From testing on Fantom5 cage-data, less than 1% of the start sites remain the same
 on average after reassignment by cage.
 
-# Finding tissue specific ORFs
+## Finding tissue specific ORFs
 Using the results from the last example, lets find the tissue specific uORFs from
 the example heart cage-data.
 
@@ -150,9 +160,9 @@ The uORFs from this example will most likely contain some uORFs not in the origi
 example, also some will be lost. This is, because different tissues transcribes
 different mRNAs.
 
-# Syntax of Orfs in ORFik
+## Syntax of ORFs in `ORFik`
 
-The ORFs in ORFik are grouped in a GRangesList. Each group is the exons per orf.
+The ORFs in `ORFik` are grouped in a GRangesList. Each group is the exons per orf.
 The names of the GRangesList is the orf names, named as transcriptName_*, 
 where transcriptName is the transcriptName i.g for ensembl: "ENST123101239".
 The "_" is the seperator
@@ -169,7 +179,7 @@ The reason for this, is to keep redundant information for easy unlisting.
 
 # Features from ORFs
 
-ORFik contains a big feature set:
+`ORFik` contains a big feature set:
 FLOSS (?floss), coverage (?coverage) , ORFscore (?ORFScore), entropy (?entropy) , 
 translational effiency (?te), inside outside score (?insideOutsideScore),
 distance between orfs and cds' (?ORFDistToCds) etc.
@@ -250,9 +260,9 @@ if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vigne
 # Aligning ribo-seq data centered on p-sites
 
 Features like floss needs the ribo-seq data to be alligned for the p-site.
-To do this, you can either do it manually by using plots from ORFik, to 
+To do this, you can either do it manually by using plots from `ORFik`, to 
 deduce the p-sites, or you can do it automaticly by using the package 
-shoelaces(recomended). (automatic p-site finding is soon included with orfik using shoelaces) 
+shoelaces(recomended). (automatic p-site finding is soon included with `ORFik` using shoelaces) 
 
 Syntax of p-shifted bed files are:
 
