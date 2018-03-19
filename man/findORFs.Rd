@@ -2,42 +2,58 @@
 % Please edit documentation in R/find_ORFs.R
 \name{findORFs}
 \alias{findORFs}
-\title{Creates an IRangesList of Open Reading Frames}
+\title{Find Open Reading Frames.}
 \usage{
-findORFs(fastaSeqs, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
-  longestORF = FALSE, minimumLength = 0)
+findORFs(seq, startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)
 }
 \arguments{
-\item{fastaSeqs}{DNA sequences to search for Open Reading Frames,
-must be DNAStringSet.}
+\item{seq}{(DNAStringSet or character) DNA sequences to search for Open
+Reading Frames.}
 
-\item{startCodon}{string. Default is "ATG".}
+\item{startCodon}{(character) Possible START codons to search for. Check
+\code{\link{startDefinition}} for helper function.}
 
-\item{stopCodon}{string. Default is "TAA|TAG|TGA".}
+\item{stopCodon}{(character) Possible STOP codons to search for. Check
+\code{\link{stopDefinition}} for helper function.}
 
-\item{longestORF}{bolean. Default FALSE. When TRUE pick
-longest ORF per group/chromosome.
-When FALSE will report all open reaidng frames, even overlapping small ones.}
+\item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
+that are longest, all smaller overlapping ORFs will be ignored.
+When FALSE will report all possible ORFs in all three reading frames.}
 
-\item{minimumLength}{numeric. Default is 0.
-For example minimumLength = 8 will result in size of ORFs to be at least
- START + 8*3 [bp] + STOP.}
+\item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
+counting 3bp for START and STOP codons. For example minimumLength = 8 will
+result in size of ORFs to be at least START + 8*3 [bp] + STOP. Use this param
+to restrict search.}
 }
 \value{
-An IRangesList of ORFs grouped by fasta sequence from input.
+(IRangesList) of ORFs locations incuding START and STOP codons
+grouped by input seqeunces.
 }
 \description{
-Input is a  DNAStringSet / character vector with fastaSequence.
-If you want Genomic coordinates, use function \code{\link{findMapORFs}}
+Find all Open Reading Frames (ORFs) on the input sequences
+in 5'- 3' direction, but within all three possible reading frames. For each
+sequence of the input vector \code{\link[IRanges]{IRanges}} with START and
+STOP positions (inclusive) will be returned as
+\code{\link[IRanges]{IRangesList}}. Returned coordinates are relative to the
+input sequences.
 }
 \examples{
-seqs <- c("ATGGGTATTTATA") # the dna sequence
-startCodons <- "ATG|TGG|GGG"
-stopCodons <- "TAA|AAT|ATA"
+findORFs("ATGTAA")
+findORFs("ATGTTAA") # not in frame anymore
 
-## now run
-findORFs(seqs,startCodons, stopCodons,
-                   longestORF = FALSE, minimumLength = 0)
-## You will find 1 orf (1-11)
+findORFs("ATGATGTAA") # two ORFs
+findORFs("ATGATGTAA", longestORF = TRUE) # only longest of two above
 
+findORFs(c("ATGTAA", "ATGATGTAA"))
+
+}
+\seealso{
+\code{\link{findMapORFs}}, \code{\link{findORFsFasta}},
+\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+
+Other findORFs: \code{\link{findMapORFs}},
+  \code{\link{findORFsFasta}},
+  \code{\link{startDefinition}},
+  \code{\link{stopDefinition}}
 }

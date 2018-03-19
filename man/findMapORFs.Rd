@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{findMapORFs}
 \alias{findMapORFs}
-\title{Creates a GRangeslist of Open Reading Frames mapped to genomic coordinates}
+\title{Find ORFs and imidiately map them to their genomic positions.}
 \usage{
 findMapORFs(grl, fastaSeqs, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
   longestORF = FALSE, minimumLength = 0)
@@ -14,22 +14,40 @@ to search for orfs, in Genomic coordinates}
 \item{fastaSeqs}{DNA sequences to search for Open Reading Frames,
 must be DNAStringSet.}
 
-\item{startCodon}{string. Default is "ATG".}
+\item{startCodon}{(character) Possible START codons to search for. Check
+\code{\link{startDefinition}} for helper function.}
 
-\item{stopCodon}{string. Default is "TAA|TAG|TGA".}
+\item{stopCodon}{(character) Possible STOP codons to search for. Check
+\code{\link{stopDefinition}} for helper function.}
 
-\item{longestORF}{bolean. Default FALSE. When TRUE pick
-longest ORF per group/chromosome.
-When FALSE will report all open reaidng frames, even overlapping small ones.}
+\item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
+that are longest, all smaller overlapping ORFs will be ignored.
+When FALSE will report all possible ORFs in all three reading frames.}
 
-\item{minimumLength}{numeric. Default is 0.
-For example minimumLength = 8 will result in size of ORFs to be at least
- START + 8*3 [bp] + STOP.}
+\item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
+counting 3bp for START and STOP codons. For example minimumLength = 8 will
+result in size of ORFs to be at least START + 8*3 [bp] + STOP. Use this param
+to restrict search.}
 }
 \value{
 A GRangesList of ORFs.
 }
 \description{
+Finds ORFs on the sequences of interest, but returns relative positions to
+the positions of \code{grl} argument. For example, \code{grl} can be exons
+of known transcripts (with genomic coordinates), and \code{seq} sequences of
+those transcripts, in that case, \code{\link{findMapORFs}} will return
+genomic coordinates of ORFs found on transcript sequences.
+}
+\details{
+This function assumes that \code{seq} is in widths relative to \code{grl},
+and that \code{seq} was acquired with the use of \code{grl}.
+
+This function is a wrapper around \code{\link{findORFs}} and
+\code{\link{mapToGRanges}}, that skips passing of output through R and does
+all calculations in C, therefore is much faster than chaining.
+
+scenario output of
 Input is a Grangeslist of regions to search, together with a DNAStringSet
 / character vector with fastaSequence in same order as the grl.
 }
@@ -47,4 +65,9 @@ findMapORFs(grl,seqs,startCodons, stopCodons,
                    longestORF = FALSE, minimumLength = 0)
 ## You will find 1 orf splitted on 2 exons (10-19 with 21-22)
 
+}
+\seealso{
+Other findORFs: \code{\link{findORFsFasta}},
+  \code{\link{findORFs}}, \code{\link{startDefinition}},
+  \code{\link{stopDefinition}}
 }

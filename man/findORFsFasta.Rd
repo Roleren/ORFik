@@ -10,17 +10,20 @@ findORFsFasta(file, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
 \arguments{
 \item{file}{- Path to fasta file.}
 
-\item{startCodon}{Default is "ATG".}
+\item{startCodon}{(character) Possible START codons to search for. Check
+\code{\link{startDefinition}} for helper function.}
 
-\item{stopCodon}{Default is "TAA|TAG|TGA".}
+\item{stopCodon}{(character) Possible STOP codons to search for. Check
+\code{\link{stopDefinition}} for helper function.}
 
-\item{longestORF}{bolean. Default FALSE. When TRUE pick
-longest ORF per group/chromosome.
-When FALSE will report all open reaidng frames, even overlapping small ones.}
+\item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
+that are longest, all smaller overlapping ORFs will be ignored.
+When FALSE will report all possible ORFs in all three reading frames.}
 
-\item{minimumLength}{numeric. Default is 0.
-For example minimumLength = 8 will result in size of ORFs
- to be at least START + 8*3 [bp] + STOP.}
+\item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
+counting 3bp for START and STOP codons. For example minimumLength = 8 will
+result in size of ORFs to be at least START + 8*3 [bp] + STOP. Use this param
+to restrict search.}
 
 \item{is.circular}{a logical(F), should ORFs that start before end
 and after start be searched for.}
@@ -42,4 +45,9 @@ package = "ORFik") ## location of the fasta file
 findORFsFasta(filePath)
 ## orfs are now returned as GRanges.
 
+}
+\seealso{
+Other findORFs: \code{\link{findMapORFs}},
+  \code{\link{findORFs}}, \code{\link{startDefinition}},
+  \code{\link{stopDefinition}}
 }
