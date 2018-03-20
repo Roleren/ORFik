@@ -1,4 +1,4 @@
-ORFik: R package for discovery of novel genes with Ribo-Seq and RNA-Seq data.
+ORFik: R package for discovery of novel genes.
 ==============================================================================
 
 This package is still under development, although this version is stable and can be used already.
@@ -6,11 +6,11 @@ This package is still under development, although this version is stable and can
 #### About
 
 
-ORFik is an R package containing various functions for analysis of Ribo-Seq and RNA-Seq data. Currently it supports:
+ORFik is an R package containing various functions for analysis of Ribo-Seq, RNA-Seq and Cage-Seq data. ORFik currently supports:
 
 - Finding Open Reading Frames (very fast) in the genome of interest or on the set of transcripts.
 - Metaplots for Ribo-Seq allowing to spot the shift.
-- Shifting functions for the Ribo-Seq data.
+- Automatically detecting shifts for Ribo-Seq data.
 - Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, entropy.
 - Utility functions to extend GenomicRanges, e.g. the functions tile1 and groupGRangesBy.
 
@@ -44,4 +44,4 @@ browseVignettes("ORFik")
 
 #### Feedback
 
-Please feel free to provide feedback or desired functionality. My contact address is Kornel.Labun at uib.no.
+Please feel free to provide feedback or desired functionality. My contact address is kornellabun at gmail.com.

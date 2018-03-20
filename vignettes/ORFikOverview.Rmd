@@ -1,6 +1,6 @@
 ---
 title: "ORFik Overview"
-author: "Haakon Tjeldnes"
+author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
 output: BiocStyle::html_document
@@ -10,206 +10,144 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-
-Welcome to the ORFik package. This vignette will walk you through our main package usage with examples.
-ORFik is an R package containing various functions for analysis of Ribo-Seq and RNA-Seq data.
-ORFik currently supports:
-
-- Finding Open Reading Frames (very fast) in the genome of interest or on the set of transcripts.
-- Metaplots for Ribo-Seq allowing to spot the shift.
-- Shifting functions for the Ribo-Seq data.
-- Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, entropy.
-- Utility functions to extend GenomicRanges, e.g. the functions tile1 and groupGRangesBy.
-
-
 # Introduction
 
-`ORFik` main usage is to get Open reading frames compatitable with Bioconductor's GenomicRanges package, combined with Ribo-seq, RNA-seq and cage-seq data.
-You can then get the features you want, and make various plots. 
+Welcome to the `ORFik` package. This vignette will walk you through our main 
+package usage with examples. `ORFik` is an R package containing various 
+functions for analysis of RiboSeq, RNASeq and CageSeq data.  
 
-# Finding ORFs:
-To find all Open Reading Frames (ORFs) and possibly map them to genomic coordinates.
-If input is only .fasta file (or BSGenome), use findORFsFasta, it will treat it as prokaryotic genome and find ORFs on the chromosomes assuming no splicing. If .gtf file is also supplied, sequences of transcripts from .gtf file will be extracted, using findMapORFs will search and also map to genome. 
-It is also possible to operate on a vector of characters or Biostrings::DNAString or Biostrings::DNAStringSet, then use findORFs that returns a IRangesList grouped by sequence.
+`ORFik` currently supports:  
 
-We will now provide two examples of finding ORFs, one with character vector and one with DNAStringSet from BSGenome and map them to genome.
+1. Finding Open Reading Frames (very fast) in the genome of interest or on the 
+set of transcripts/sequences.  
+2. Automatic estimations of RiboSeq footprint shift.  
+3. Utilities for metaplots of RiboSeq coverage over gene START and STOP codons 
+allowing to spot the shift.  
+4. Shifting functions for the RiboSeq data.  
+5. Finding new Transcription Start Sites with the use of CageSeq data.  
+6. Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, 
+entropy that are recreated based on many scientific publications.  
+7. Utility functions to extend GenomicRanges for faster grouping, splitting, 
+tiling etc.  
 
-# Character vector example
+# Finding Open Reading Frames 
 
-```r
-library(ORFik)
+In molecular genetics, an Open Reading Frame (ORF) is the part of a reading 
+frame that has the ability to be translated. It does not mean that every ORF is
+being translated or is functional, but to be able to find novel genes we must be
+able to firstly identify potential ORFs.
 
-# Make Character vector example data, here we dont use fasta file, but just a character vector:
-seqname <- c("tx1","tx1") # <- a two exon transcript
-seqs <- c("ATGATGTAATAA") # <- simple sequence
-grIn1 <- GRanges(seqnames = rep("1", 2),
-                 ranges = IRanges(start = c(1, 2), end = c(1, 12)),
-                 strand = rep("+", 2), names = rep(seqname[1],2))
+To find all Open Reading Frames (ORFs) and possibly map them to genomic 
+coordinates `ORFik` gives you three main functions:
 
-grl <- GRangesList(grIn1) # <- make it GRangesList
-names(grl) <- "tx1"
+* `findORFs` - find ORFs in sequences of interest,
+* `findMapORFs` - find ORFs and map them to their respective genomic coordinates 
+* `findORFsFasta` - find ORFs in Fasta file or `BSGenome` (supports circular genomes!)
 
-# Then we are ready to find the ORFs, they will be returned as GRangesList,
-# grouped by which transcript they came from
+## Example of finding ORFs in on 5' UTR of hg19
 
-test_ranges <- findMapORFs(grl,seqs) # <- ORFs are now in test_ranges
-
-```
-
-# BSGenome example
-
-```r
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 library(ORFik)
 library(GenomicFeatures)
+```
 
-# Make BSGenome  example with fasta file and gtf file
+After laoding libraries, load example data from `GenomicFeatures`. We load gtf 
+file as txdb. We will extract the 5' leaders to find all upstream open reading 
+frames.
 
-# First the gtf file, we will extract the 5' leaders to find all upstream open reading frames.
+```{r eval = TRUE, echo = TRUE}
+txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite", 
+                        package = "GenomicFeatures")
+txdb <- loadDb(txdbFile)
+fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
+fiveUTRs
+```
 
-# here we use example data from GenomicFeatures,
-# usually you have your own txdb object, a gtf file etc.
+As we can see we have extracted 5' UTRs for hg19 annotations. Now we can load
+`BSgenome` version of human genome (hg19). If you don't have this package 
+installed you will not see the result from the code below. You might have to 
+install `BSgenome.Hsapiens.UCSC.hg19` and run the code for yourself as we don't
+install this package together with `ORFik`.
 
-samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "GenomicFeatures")
-txdb <- loadDb(samplefile)
-fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 
-# Now get the Fasta file, we of course choose the fasta file for hg19,
-# that is version 19 of human genome
-
-if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vignette
-
-  tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
-  test_ranges <- findMapORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
-  View(test_ranges)
+  # Extract sequences of fiveUTRs.
+  tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, fiveUTRs) 
+  
+  # Find all ORFs on those transcripts and get their genomic coordinates
+  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
+  fiveUTR_ORFs
 }
 ```
 
-You will see that test_ranges are grouped by transcript, the first group is from transcript 3.
-There are 7 exons in this group, named 3_* where star is the orf number.
-You will also see that the second orf named 3_2 is twice,
-because that single orf is split on two exons.
+In the example above you can see that fiveUTR_ORFs are grouped by transcript, 
+the first group is from transcript "uc010ogz.1". Meta-column names contains name 
+of the transcript and identifier of the ORF separated by "_". When ORF is 
+separated into two exons you can see it twice, like the first ORF with name 
+"uc010ogz.1_1". The first ORF will always be the one most upstream for "+"" 
+strand, and least upstream for "-"" strand.
 
-# Cage-data for tissue specific 5' utrs
+# CageSeq data for 5' UTR re-annotation
 
-In the previous example we used the reference annotation of the 5' utrs
-from the package GenomicFeatures.
-This is a general reference, which will fail to catch tissue specific orfs.
-Here is an example how to include cage-data, to set new Transcription start sites(TSS).
+In the prerevious example we used the refence annotation of the 5' UTRs
+from the package GenomicFeatures. Here we will use advantage of CageSeq data to 
+set new Transcription Start Sites (TSS) and re-annotate 5' UTRs.
 
-```r
-library(ORFik)
-library(GenomicFeatures)
-
-# Make BSGenome  example with fasta file and gtf file
-
-# First the gtf file, we will extract the 5' leaders and reassign them
-
-# here we use example data from GenomicFeatures,
-# usually you have your own txdb object, a gtf file etc.
-  
-samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-                package = "GenomicFeatures")
-txdb <- loadDb(samplefile)
-fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
-cageData <- system.file("extdata", "cage_data_heart.bed.bgz",
-                package = "ORFik") # location of the cage file
-extension <- 1000 # how much upstream of the original tss can the new tss be ?
-
-filterValue <- 2 # filter for max cage-peak, how many reads must the max peak have
-# to be valid ?
-cds <- cdsBy(txdb, by = "tx", use.names = TRUE) # if you want to find 
-# upstream open reading frames (uORFs), that can go into the cds.
-changedFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData, extension,
-                                        filterValue, cds)
-View(changedFiveUTRs)
-
+```{r eval = TRUE, echo = TRUE} 
+# path to example CageSeq data from hg19 heart sample
+cageData <- system.file("extdata", "cage_data_heart.bed.bgz", 
+                        package = "ORFik")
+# get new Transcription Start Sites using CageSeq dataset
+newFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData)
+newFiveUTRs
 ```
 
-You will now see that most of the transcription start sites have changed.
-For different tissues, you will get different leaders.
-From testing on Fantom5 cage-data, less than 1% of the start sites remain the same
-on average after reassignment by cage.
+You will now see that most of the transcription start sites have changed. 
+Depending on the species, regular annotations might be incomplete or not 
+specific enough for your purposes. 
 
-# Finding tissue specific ORFs
-Using the results from the last example, lets find the tissue specific uORFs from
-the example heart cage-data.
+From testing on Fantom5 CageSeq data, less than 1% of the start sites remain the 
+same on average after re-assignment.
 
-```r
-# From the previous two examples we had Hsapiens and changedFiveUTRs.
-# we now assign to null to avoid vignette error.
-changedFiveUTRs <- NULL # get this object from previous example
-Hsapiens <- NULL # get this from the BSGenome example
+# Gene identity functions for ORFs or genes
 
-tx_seqs <- extractTranscriptSeqs(Hsapiens, changedFiveUTRs) # <- Now get only fiveUTRs fastasequences
+`ORFik` contains couple functions of gene identity that can be used to predict 
+which ORFs are potentially coding and functional.
 
-# run this:
-#uORFs <- findMapORFs(changedFiveUTRs,tx_seqs)
-#View(uORFs)
-```
-The uORFs from this example will most likely contain some uORFs not in the original
-example, also some will be lost. This is, because different tissues transcribes
-different mRNAs.
+- FLOSS `floss`,   
+- coverage `coverage`,  
+- ORFscore `orfScore`,  
+- entropy `entropy`,  
+- translational effiency `translationalEff`,  
+- inside outside score `insideOutsideScore`,  
+- distance between orfs and cds' `distToCds`,  
+- other  
 
-# Syntax of Orfs in ORFik
+All of the features are implemented based on scientific article published in
+per reviewed journal. `ORFik` supports seemingles calculation of all available 
+features. See example below.
 
-The ORFs in ORFik are grouped in a GRangesList. Each group is the exons per orf.
-The names of the GRangesList is the orf names, named as transcriptName_*, 
-where transcriptName is the transcriptName i.g for ensembl: "ENST123101239".
-The "_" is the seperator
-The * is an integer, where the first orf found on transcript is "_1", second is "_2" etc.
-The first orf will alway be the one most upstream for + strand, and least upstream 
-for - strand
-For a GRangesList called grl with 1 orf, names(grl) will return i.g. "ENST123101239_1"
-Lets say the orf have 2 exons, if you unlist the grl,
-then names(unlist(grl, use.names = FALSE)) will return
-the transcript names, i.g. c("ENST123101239", "ENST123101239")
-The unlisted orf also have a metacolumn called names, which contains the orf names,
-i.g. c("ENST123101239_1", "ENST123101239_1") for this example.
-The reason for this, is to keep redundant information for easy unlisting.
+```{r eval = TRUE, echo = TRUE}
+# Lets grab all ORFs with the re-annotated TSS
+seqs <- extractTranscriptSeqs(
+  BSgenome.Hsapiens.UCSC.hg19::Hsapiens, newFiveUTRs)
+ORFs <- findMapORFs(newFiveUTRs, seqs)
 
-# Features from ORFs
+# Load RiboSeq example data for hg19 heart tissue. 
+# Data here is already shifted for p-sites.
+RFP <- rtracklayer::import.bed(
+  system.file("extdata", "ribo-seq-heart.bed.bgz",
+              package = "ORFik"))
+# Load RNASeq example data for hg19 heart tissue.
+RNA <- rtracklayer::import.bed(
+  system.file("extdata", "rna-seq-heart.bed.bgz",
+              package = "ORFik"))
 
-ORFik contains a big feature set:
-FLOSS (?floss), coverage (?coverage) , ORFscore (?ORFScore), entropy (?entropy) , 
-translational effiency (?te), inside outside score (?insideOutsideScore),
-distance between orfs and cds' (?ORFDistToCds) etc.
-All the features are justified with a reference to an article, i.g to see
-justification for floss, see ?floss
-
-
-Now lets do an example to get all features.
-
-```r
-
-# From the previous two examples we had Hsapiens and changedFiveUTRs.
-# we now assign to null to avoid vignette error.
-# additionally we need the GenomicAlignments package
-if(requireNamespace("GenomicAlignments")){ # <- safe require for vignette
-  changedFiveUTRs <- NULL # get this object from previous example
-  Hsapiens <- NULL # get this from the BSGenome example, a FaFile.
-  txdb <-NULL # the gtf file as TxDb
-  uORFs <- NULL # the uorfs from previous example
-  fiveUTRs <- NULL # the original non cage 5' utrs
-  
-  
-  RFP <- import.bed(system.file("extdata", "ribo-seq-heart.bed.bgz",
-                  package = "ORFik")) # can also be bam
-  RNA <- import.bed(system.file("extdata", "rna-seq-heart.bed.bgz",
-                  package = "ORFik")) # can also be bam
-  # important thing  here! if RFP is not shifted for the p-site,
-  # the scores will be wrong, see example of p-site shifting.
-  # You can use ORFik to do this.
-  riboStart <- 26 # minimum allowed fragment length on ribo-seq data.
-  riboStop <- 34 # maximum allowed fragment length on ribo-seq data.
-  extension <- 1000 # in the original cage-data example, we extended the
-  # 5' utrs by a 1000 upstream, add this as information.
-  
-  # run this:
-  #features <- computeFeatures(grl = uORFs, orfFeatures = T, RFP, RNA,  Gtf = txdb,
-  #  fiveUTRs = fiveUTRs, faFile = Hsapiens, riboStart = riboStart, 
-  #   riboStop = riboStop, extension = extension)
-  #View(features)
-}
+#features <- computeFeatures(
+#  grl = ORFs, RFP, RNA,  Gtf = txdb,
+#  fiveUTRs = fiveUTRs, faFile = Hsapiens)
+# View(features)
 ```
 
 You will now get a data.table with one column per score, the columns are named after
@@ -221,38 +159,32 @@ Sometimes you want a GRangesList of orfs grouped by transcript, or you might wan
 each orf as groups in the GRangesList. To do this more easily you can use the function
 ORFik:::groupGRangesBy.
 
-```r
-# the first part is equal to BSGenome example:
-
-library(ORFik)
-library(GenomicFeatures)
-
-samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite", package = "GenomicFeatures")
-txdb <- loadDb(samplefile)
-fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
-
-if(requireNamespace("BSgenome.Hsapiens.UCSC.hg19")){ # <- safe require for vignette
-
-  tx_seqs <- extractTranscriptSeqs(Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
-  test_ranges <- findMapORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
-  
-  # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
-  # we use the orfs exon column called ($names) to group, it is made by ORFik.
-  test_ranges <- groupGRangesBy(test_ranges, test_ranges$names)
-  
-  # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
-  
-  test_ranges <- groupGRangesBy(test_ranges,
-    unique(names(unlist(test_ranges, use.names = FALSE)))
-}
+```{r eval = TRUE, echo = TRUE}
+# fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
+# 
+# if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) { 
+# 
+#   tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
+#   test_ranges <- findMapORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
+#   
+#   # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
+#   # we use the orfs exon column called ($names) to group, it is made by ORFik.
+#   test_ranges <- unlist(test_ranges, use.names = FALSE)
+#   test_ranges <- groupGRangesBy(test_ranges, test_ranges$names)
+#   
+#   # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
+#   
+#   test_ranges <- groupGRangesBy(unlist(test_ranges, use.names = FALSE),
+#     unique(names(unlist(test_ranges, use.names = FALSE))))
+# }
 ```
 
 # Aligning ribo-seq data centered on p-sites
 
 Features like floss needs the ribo-seq data to be alligned for the p-site.
-To do this, you can either do it manually by using plots from ORFik, to 
+To do this, you can either do it manually by using plots from `ORFik`, to 
 deduce the p-sites, or you can do it automaticly by using the package 
-shoelaces(recomended). (automatic p-site finding is soon included with orfik using shoelaces) 
+shoelaces(recomended). (automatic p-site finding is soon included with `ORFik` using shoelaces) 
 
 Syntax of p-shifted bed files are:
 

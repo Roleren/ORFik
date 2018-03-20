@@ -8,9 +8,16 @@
 \description{
 Main goals:
 \enumerate{
-\item Find open reading frames
-\item Compatible with GRanges
-\item Make it fast enough for big data
+\item Finding Open Reading Frames (very fast) in the genome of interest or
+ on the set of transcripts/sequences.
+\item Utilities for metaplots of RiboSeq coverage over gene START and STOP
+codons allowing to spot the shift.
+\item Shifting functions for the RiboSeq data.
+\item Finding new Transcription Start Sites with the use of CageSeq data.
+\item Various measurements of gene identity e.g. FLOSS, coverage, ORFscore,
+entropy that are recreated based on many scientific publications.
+\item Utility functions to extend GenomicRanges for faster grouping,
+splitting, tiling etc.
 }
 }
 \seealso{
@@ -18,6 +25,21 @@ Useful links:
 \itemize{
   \item \url{https://github.com/JokingHero/ORFik}
   \item Report bugs at \url{https://github.com/JokingHero/ORFik/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Kornel Labun \email{kornellabun@gmail.com} [copyright holder]
+
+Authors:
+\itemize{
+  \item Haakon Tjeldnes \email{hauken_heyken@hotmail.com} [data contributor]
+}
+
+Other contributors:
+\itemize{
+  \item Katazyna Chyzynska \email{katchyz@gmail.com} [contributor, data contributor]
+  \item Evind Valen \email{eivind.valen@gmail.com} [thesis advisor, funder]
 }
 
 }

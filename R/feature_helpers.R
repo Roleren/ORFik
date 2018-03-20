@@ -112,7 +112,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize){
 checkRNA <- function(class){
   if (is.null(class) || (class == "NULL")) {
     message("No RNA added, skipping feature te and fpkm of RNA,\n
-            also RibosomeReleaseScore will also be not normalized best way possible.")
+            also ribosomeReleaseScore will also be not normalized best way possible.")
   } else {
     if(class != "GAlignments" & class != "GRanges") {
       stop("RNA must be either GAlignments or GRanges")

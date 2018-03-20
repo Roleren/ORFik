@@ -136,10 +136,10 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   offsets_stop <- c()
 
   if (start) {
-    start_df <- data.frame(start_codon=c(), count, flength=c())
+    start_df <- data.frame(start_codon=c(), count=c(), flength=c())
   }
   if (stop) {
-    stop_df <- data.frame(stop_codon=c(), count, flength=c())
+    stop_df <- data.frame(stop_codon=c(), count=c(), flength=c())
   }
 
   unlCds150 <- unlist(cds150, use.names = FALSE)

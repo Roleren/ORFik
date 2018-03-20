@@ -2,44 +2,56 @@
 % Please edit documentation in R/find_ORFs.R
 \name{findORFsFasta}
 \alias{findORFsFasta}
-\title{Creates GRanges with Open Reading Frames from fasta files.}
+\title{Finds Open Reading Frames in fasta files.}
 \usage{
-findORFsFasta(file, startCodon = "ATG", stopCodon = "TAA|TAG|TGA",
-  longestORF = TRUE, minimumLength = 0, is.circular = FALSE)
+findORFsFasta(filePath, startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1), longestORF = TRUE, minimumLength = 0,
+  is.circular = FALSE)
 }
 \arguments{
-\item{file}{- Path to fasta file.}
+\item{filePath}{(character) Path to the fasta file.}
 
-\item{startCodon}{Default is "ATG".}
+\item{startCodon}{(character) Possible START codons to search for. Check
+\code{\link{startDefinition}} for helper function.}
 
-\item{stopCodon}{Default is "TAA|TAG|TGA".}
+\item{stopCodon}{(character) Possible STOP codons to search for. Check
+\code{\link{stopDefinition}} for helper function.}
 
-\item{longestORF}{bolean. Default FALSE. When TRUE pick
-longest ORF per group/chromosome.
-When FALSE will report all open reaidng frames, even overlapping small ones.}
+\item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
+that are longest, all smaller overlapping ORFs will be ignored.
+When FALSE will report all possible ORFs in all three reading frames.}
 
-\item{minimumLength}{numeric. Default is 0.
-For example minimumLength = 8 will result in size of ORFs
- to be at least START + 8*3 [bp] + STOP.}
+\item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
+counting 3bp for START and STOP codons. For example minimumLength = 8 will
+result in size of ORFs to be at least START + 8*3 [bp] + STOP. Use this param
+to restrict search.}
 
-\item{is.circular}{a logical(F), should ORFs that start before end
-and after start be searched for.}
+\item{is.circular}{(logical) Whether the genome in filePath is circular.
+Prokaryotic genomes are usually circular.}
 }
 \value{
-A GRanges object of ORFs mapped from fasta file.
- Each ORF includes START and STOP codon, seqname, strand and frame.
+(GRanges) object of ORFs mapped from fasta file. Positions are
+relative to the fasta file.
 }
 \description{
+Searches through each fasta header and reports all ORFs found for sense (+)
+and antisense strand (-) in all frames. Name of the header will be used as
+seqnames of reported ORFs.
 Each fasta header is treated separately, and name of the sequence will
 be used as seqname in returned GRanges object.
-Frame of the Open Reading Frame is also
-returned in metadata column 'frame'.
 }
 \examples{
+# location of the example fasta file
 filePath <- system.file("extdata", "orfFindingExample.fasta",
-package = "ORFik") ## location of the fasta file
-
+                        package = "ORFik")
 findORFsFasta(filePath)
-## orfs are now returned as GRanges.
 
+}
+\seealso{
+\code{\link{findORFs}}, \code{\link{findMapORFs}},
+\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+
+Other findORFs: \code{\link{findMapORFs}},
+  \code{\link{findORFs}}, \code{\link{startDefinition}},
+  \code{\link{stopDefinition}}
 }
