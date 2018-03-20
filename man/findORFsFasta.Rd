@@ -48,6 +48,9 @@ findORFsFasta(filePath)
 
 }
 \seealso{
+\code{\link{findORFs}}, \code{\link{findMapORFs}},
+\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},
   \code{\link{stopDefinition}}

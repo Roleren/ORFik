@@ -12,6 +12,7 @@
 #' @export
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
+#'
 orfScore <- function(grl, RFP){
   # tile the orfs into a d.t for easy seperation
   dt <- as.data.table(tile1(grl))

@@ -70,6 +70,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' result[2] countains two columns of start and stops,  named orf
 #' @return A \code{\link[GenomicRanges]{GRangesList}} of ORFs.
 #' @importFrom GenomicFeatures pmapFromTranscripts
+#'
 mapToGRanges <- function(grl, result) {
 
   if (class(grl) != "GRangesList")
@@ -91,6 +92,7 @@ mapToGRanges <- function(grl, result) {
   genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
   return(makeORFNames(genomicCoordinates))
 }
+
 
 #' Resizes down ORF to the desired length, removing inside. Preserves exons.
 #'

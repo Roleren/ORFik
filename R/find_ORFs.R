@@ -196,6 +196,8 @@ findMapORFs <- function(
 #' relative to the fasta file.
 #' @export
 #' @family findORFs
+#' @seealso \code{\link{findORFs}}, \code{\link{findMapORFs}},
+#' \code{\link{startDefinition}}, \code{\link{stopDefinition}}
 #' @examples
 #' # location of the example fasta file
 #' filePath <- system.file("extdata", "orfFindingExample.fasta",
