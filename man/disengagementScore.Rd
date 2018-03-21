@@ -40,10 +40,11 @@ strand = "+")
 disengagementScore(grl, RFP, tx)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
-  \code{\link{distToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm_calc}},
-  \code{\link{fpkm}}, \code{\link{fractionLength}},
+Other features: \code{\link{computeFeaturesSpecial}},
+  \code{\link{computeFeatures}}, \code{\link{distToCds}},
+  \code{\link{entropy}}, \code{\link{floss}},
+  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
   \code{\link{isOverlapping}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},

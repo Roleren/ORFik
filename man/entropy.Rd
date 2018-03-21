@@ -39,7 +39,8 @@ cds <-  GRangesList(tx1 = cdsORF)
 entropy(cds, RFP)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesSpecial}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{floss}},
   \code{\link{fpkm_calc}}, \code{\link{fpkm}},

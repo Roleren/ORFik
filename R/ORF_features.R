@@ -12,6 +12,15 @@
 #' @export
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#' ranges = IRanges(start = c(1, 10, 20),
+#'                 end = c(5, 15, 25)),
+#' strand = "+")
+#' names(ORF) <- c("tx1", "tx1", "tx1")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP){
   # tile the orfs into a d.t for easy seperation

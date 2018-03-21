@@ -29,7 +29,8 @@ A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1242/dev.098345
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesSpecial}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

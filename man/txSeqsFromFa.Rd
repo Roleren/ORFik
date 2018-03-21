@@ -2,14 +2,14 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{txSeqsFromFa}
 \alias{txSeqsFromFa}
-\title{Get transcript sequence from a GrangesList and a faFile}
+\title{Get transcript sequence from a GrangesList and a faFile or BSgenome}
 \usage{
 txSeqsFromFa(grl, faFile, is.sorted = F)
 }
 \arguments{
 \item{grl}{a GRangesList object}
 
-\item{faFile}{FaFile used to find the transcripts,}
+\item{faFile}{FaFile or BSgenome used to find the transcripts,}
 
 \item{is.sorted}{a speedup, if you know the ranges are sorted}
 }
@@ -17,5 +17,5 @@ txSeqsFromFa(grl, faFile, is.sorted = F)
 a DNAStringSet of the transcript sequences
 }
 \description{
-Get transcript sequence from a GrangesList and a faFile
+A small safety wrapper around GenomicFeatures::extractTranscriptSeqs
 }

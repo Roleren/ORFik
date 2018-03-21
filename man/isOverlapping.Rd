@@ -23,7 +23,8 @@ dist <- distToCds(grl, fiveUTRs, extension = 0)
 isOverlapping <- isOverlapping(dist)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesSpecial}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

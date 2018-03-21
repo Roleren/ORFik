@@ -8,7 +8,7 @@ Authors@R: c(
   person(given = "Katazyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
   person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")) )
 Description: Tools for manipulation of RiboSeq, RNASeq and CageSeq data. ORFik 
-  is extremally fast through use of C, data.table and GenomicRanges. Package 
+  is extremely fast through use of C, data.table and GenomicRanges. Package 
   allows to reassign starts of the transcripts with the use of CageSeq data,
   automatic shifting of RiboSeq reads, finding of Open Reading Frames for the 
   whole genomes and many more.
@@ -43,6 +43,5 @@ Suggests:
   BiocStyle,
   BSgenome,
   BSgenome.Hsapiens.UCSC.hg19,
-  ggplot2
 LinkingTo: Rcpp
 VignetteBuilder: knitr

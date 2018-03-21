@@ -43,7 +43,8 @@ floss(grl, RFP, cds)
 floss(grl, RFP, cds, 28, 32)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesSpecial}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{fpkm_calc}}, \code{\link{fpkm}},

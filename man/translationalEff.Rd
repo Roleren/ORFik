@@ -28,7 +28,8 @@ where fiveUTRs are the changed cageLeaders.}
 \item{with.fpkm}{logical F, if true return the fpkm values together with te}
 
 \item{pseudoCount}{an integer, 0,
-set it to 1 if you want to avoid NA and inf values.}
+set it to 1 if you want to avoid NA and inf values.
+It also helps against bias from low depth libraries.}
 }
 \value{
 a numeric vector of fpkm ratios, if with.fpkm is TRUE
@@ -54,7 +55,8 @@ te$fpkmRFP
 te$te
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesSpecial}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

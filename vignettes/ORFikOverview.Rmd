@@ -129,25 +129,41 @@ per reviewed journal. `ORFik` supports seemingles calculation of all available
 features. See example below.
 
 ```{r eval = TRUE, echo = TRUE}
-# Lets grab all ORFs with the re-annotated TSS
-seqs <- extractTranscriptSeqs(
-  BSgenome.Hsapiens.UCSC.hg19::Hsapiens, newFiveUTRs)
-ORFs <- findMapORFs(newFiveUTRs, seqs)
+  # a example without cage-seq data:
+  # we will find ORFs in the 5' utrs
+  # and then calculate features on them
 
-# Load RiboSeq example data for hg19 heart tissue. 
-# Data here is already shifted for p-sites.
-RFP <- rtracklayer::import.bed(
-  system.file("extdata", "ribo-seq-heart.bed.bgz",
-              package = "ORFik"))
-# Load RNASeq example data for hg19 heart tissue.
-RNA <- rtracklayer::import.bed(
-  system.file("extdata", "rna-seq-heart.bed.bgz",
-              package = "ORFik"))
+ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  library(GenomicFeatures)
+  # Get the gtf txdb file
+  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+  package = "GenomicFeatures")
+  txdb <- loadDb(txdbFile)
 
-#features <- computeFeatures(
-#  grl = ORFs, RFP, RNA,  Gtf = txdb,
-#  fiveUTRs = fiveUTRs, faFile = Hsapiens)
-# View(features)
+  # Extract sequences of fiveUTRs.
+  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)[1:10]
+  faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+  # need to suppress warning because of bug in GenomicFeatures, will
+  # be fixed soon.
+  tx_seqs <- suppressWarnings(extractTranscriptSeqs(faFile, fiveUTRs))
+
+  # Find all ORFs on those transcripts and get their genomic coordinates
+  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
+  unlistedORFs <- unlist(fiveUTR_ORFs, use.names = TRUE)
+  # group GRanges by ORFs instead of Transcripts
+  fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)
+
+  # make some toy ribo seq and rna seq data
+  starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
+  RFP <- promoters(starts, upstream = 0, downstream = 1)
+  score(RFP) <- rep(29, length(RFP)) # the original read widths
+
+  # set RNA seq to duplicate transcripts
+  RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
+
+  computeFeatures(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
+                  Gtf = txdb, faFile = faFile)
+}
 ```
 
 You will now get a data.table with one column per score, the columns are named after
