@@ -51,7 +51,7 @@ library(ORFik)
 library(GenomicFeatures)
 ```
 
-After laoding libraries, load example data from `GenomicFeatures`. We load gtf 
+After loading libraries, load example data from `GenomicFeatures`. We load gtf 
 file as txdb. We will extract the 5' leaders to find all upstream open reading 
 frames.
 
@@ -135,13 +135,9 @@ features. See example below.
 
  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(GenomicFeatures)
-  # Get the gtf txdb file
-  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-  package = "GenomicFeatures")
-  txdb <- loadDb(txdbFile)
 
   # Extract sequences of fiveUTRs.
-  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)[1:10]
+  fiveUTRs <- fiveUTRs[1:10]
   faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
   # need to suppress warning because of bug in GenomicFeatures, will
   # be fixed soon.
@@ -176,23 +172,17 @@ each orf as groups in the GRangesList. To do this more easily you can use the fu
 ORFik:::groupGRangesBy.
 
 ```{r eval = TRUE, echo = TRUE}
-# fiveUTRs = fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
-# 
-# if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) { 
-# 
-#   tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, fiveUTRs) # <- Now get only fiveUTRs fastasequences
-#   test_ranges <- findMapORFs(fiveUTRs,tx_seqs) # <- ORFs are now in test_ranges
-#   
-#   # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
-#   # we use the orfs exon column called ($names) to group, it is made by ORFik.
-#   test_ranges <- unlist(test_ranges, use.names = FALSE)
-#   test_ranges <- groupGRangesBy(test_ranges, test_ranges$names)
-#   
-#   # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
-#   
-#   test_ranges <- groupGRangesBy(unlist(test_ranges, use.names = FALSE),
-#     unique(names(unlist(test_ranges, use.names = FALSE))))
-# }
+
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
+  unlisted_ranges <- unlist(fiveUTR_ORFs, use.names = FALSE)
+  test_ranges <- groupGRangesBy(unlisted_ranges, names(unlisted_ranges))
+  
+  # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
+  # we use the orfs exon column called ($names) to group, it is made by ORFik.
+  unlisted_ranges <- unlist(test_ranges, use.names = FALSE)
+  test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
+}
 ```
 
 # Aligning ribo-seq data centered on p-sites

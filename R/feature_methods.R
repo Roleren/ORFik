@@ -769,7 +769,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
         message("faFile not included, skipping kozak sequence score")
       }
 
-      distORFCDS <- distToCds(grl, fiveUTRs)
+      distORFCDS <- distToCds(grl, fiveUTRs, extension = 0)
       scores$distORFCDS <- distORFCDS
       scores$inFrameCDS <- isInFrame(distORFCDS)
       scores$isOverlappingCds <- isOverlapping(distORFCDS)
