@@ -12,9 +12,11 @@ kozakSequenceScore(grl, faFile, species = "human", include.N = FALSE)
 \item{faFile}{a FaFile from the fasta file, see ?FaFile}
 
 \item{species}{("human"), which species to use,
-currently only support human and zebrafish. You can also specify a pfm
-here for your own, syntax is an rectangular integer matrix,
-where all columns must sum to the same value, normally 100.}
+currently supports human, zebrafish and mouse (m. musculus).
+You can also specify a pfm for your own species.
+Syntax of pfm is an rectangular integer matrix,
+where all columns must sum to the same value, normally 100.
+See example for information.}
 
 \item{include.N}{logical (F), if TRUE, allow N bases to be counted as hits,
 score will be average of the other bases. If True N bases will be
@@ -34,8 +36,41 @@ base per column was chosen)
 \details{
 See article: https://doi.org/10.1371/journal.pone.0108475
 }
+\examples{
+ \dontrun{
+ # in this example we will find kozak score of cds'
+
+ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+   library(GenomicFeatures)
+   # Get the gtf txdb file
+   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+   package = "GenomicFeatures")
+   txdb <- loadDb(txdbFile)
+   cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
+
+   faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+
+   kozakSequenceScore(cds, faFile, species = "human")
+
+   # A few species are pre supported, if not, make your own input pfm.
+
+   # here is an example where the human pfm is sent in again, even though
+   # it is already supported.
+
+   pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
+                                21,26,24,16,28,32,5,23,35,12,42,21,
+                                25,24,22,33,22,19,28,17,27,47,16,34,
+                                25,24,26,25,28,14,5,21,10,17,15,28)),
+                   ncol = 4))
+
+  kozakSequenceScore(cds, faFile, species = pfm)
+
+ }
+ }
+}
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

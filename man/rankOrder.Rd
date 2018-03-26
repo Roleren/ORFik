@@ -19,7 +19,8 @@ ig. second orf _2 -> 2
 See article:  10.1074/jbc.R116.733899
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

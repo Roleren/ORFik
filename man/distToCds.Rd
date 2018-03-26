@@ -37,7 +37,8 @@ dist <- distToCds(grl, fiveUTRs, extension = 0)
 ## Now dist contains distances as vector
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},
   \code{\link{fpkm}}, \code{\link{fractionLength}},

@@ -472,13 +472,16 @@ asTX <- function(grl, reference){
   return(pmapToTranscripts(grl, reference[orfNames]))
 }
 
-#' Get transcript sequence from a GrangesList and a faFile
+#' Get transcript sequence from a GrangesList and a faFile or BSgenome
+#'
+#' A small safety wrapper around GenomicFeatures::extractTranscriptSeqs
 #' @param grl a GRangesList object
-#' @param faFile FaFile used to find the transcripts,
+#' @param faFile FaFile or BSgenome used to find the transcripts,
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return a DNAStringSet of the transcript sequences
 txSeqsFromFa <- function(grl, faFile, is.sorted = F){
-  if(class(faFile) != "FaFile") stop("only FaFile is valid input")
+  if(!(class(faFile) == "FaFile" || class(faFile) == "BSgenome"))
+    stop("only FaFile and BSgenome is valid input class")
   if(!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }

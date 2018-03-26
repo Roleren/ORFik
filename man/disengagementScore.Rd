@@ -27,10 +27,10 @@ A pseudo-count of one was added to both the ORF and downstream sums.
 See article: 10.1242/dev.098344
 }
 \examples{
-ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 10, 20),
-                end = c(5, 15, 25)),
-strand = "+")
+ORF <- GRanges(seqnames = "1", ranges = IRanges(
+               start = c(1, 10, 20),
+               end = c(5, 15, 25)),
+               strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
 RFP <- GRanges("1",
@@ -40,10 +40,11 @@ strand = "+")
 disengagementScore(grl, RFP, tx)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
-  \code{\link{distToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm_calc}},
-  \code{\link{fpkm}}, \code{\link{fractionLength}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}}, \code{\link{distToCds}},
+  \code{\link{entropy}}, \code{\link{floss}},
+  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
   \code{\link{isOverlapping}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},

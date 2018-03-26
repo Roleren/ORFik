@@ -28,7 +28,8 @@ where fiveUTRs are the changed cageLeaders.}
 \item{with.fpkm}{logical F, if true return the fpkm values together with te}
 
 \item{pseudoCount}{an integer, 0,
-set it to 1 if you want to avoid NA and inf values.}
+set it to 1 if you want to avoid NA and inf values.
+It also helps against bias from low depth libraries.}
 }
 \value{
 a numeric vector of fpkm ratios, if with.fpkm is TRUE
@@ -40,10 +41,10 @@ is defined as (density of RPFs within ORF)/(RNA expression).
 See article: 10.1126/science.1168978
 }
 \examples{
-ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 10, 20),
-                end = c(5, 15, 25)),
-strand = "+")
+ORF <- GRanges(seqnames = "1", ranges = IRanges(
+               start = c(1, 10, 20),
+               end = c(5, 15, 25)),
+               strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 RNA <- GRanges("1", IRanges(1, 50),"+")
@@ -54,7 +55,8 @@ te$fpkmRFP
 te$te
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

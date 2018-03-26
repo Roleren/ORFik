@@ -56,4 +56,5 @@ cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),
 # now run it:
 test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cage,
  cds = cds)
+# we now get back the first leader reassigned
 }

@@ -22,7 +22,8 @@ GRanges object should be beforehand
 #subsetCoverage(x)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

@@ -328,7 +328,7 @@ test_that("rankOrder works as intended", {
 
 test_that("computeFeatures works as intended", {
   # without RNA in input
-  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5,
+  dt <- computeFeaturesCage(grl = grl,orfFeatures = T, RFP = RFP5,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
@@ -337,7 +337,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(nrow(dt), 4)
 
   # normal inputs
-  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNAGAlign,
+  dt <- computeFeaturesCage(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)
@@ -345,7 +345,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
-  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
+  dt <- computeFeaturesCage(grl = grl,orfFeatures = T, RFP = RFP5, RNA = RNA,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
@@ -353,7 +353,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
 
-  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
+  dt <- computeFeaturesCage(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs)
@@ -362,7 +362,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(nrow(dt), 4)
 
   # only nonvarying by Ribo-seq
-  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
+  dt <- computeFeaturesCage(grl = grl,orfFeatures = T, RFP = RFP5GAlign, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 5, cageFiveUTRs = fiveUTRs, includeNonVarying = F)
@@ -371,7 +371,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(nrow(dt), 4)
 
   # test from example table in orfik
-  dt <- computeFeatures(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
+  dt <- computeFeaturesCage(grl = grl,orfFeatures = T, RFP = RFP7, RNA = RNAGAlign,
                             tx = tx, fiveUTRs = fiveUTRs, cds = cds,
                             threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
                             extension = 0)

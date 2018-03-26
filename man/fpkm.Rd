@@ -28,15 +28,16 @@ see article: 10.1038/nbt.1621
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 10, 20),
-                end = c(5, 15, 25)),
-strand = "+")
+               ranges = IRanges(start = c(1, 10, 20),
+               end = c(5, 15, 25)),
+               strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 fpkm(grl, RFP)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

@@ -12,6 +12,15 @@
 #' @export
 #' @return a matrix with 4 columns, the orfscore and score of
 #' each of the 3 tiles
+#' @examples
+#' ORF <- GRanges(seqnames = "1", ranges = IRanges(
+#'                start = c(1, 10, 20),
+#'                end = c(5, 15, 25)),
+#'                strand = "+")
+#' names(ORF) <- c("tx1", "tx1", "tx1")
+#' grl <- GRangesList(tx1_1 = ORF)
+#' RFP <- GRanges("1", IRanges(25, 25),"+")
+#' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP){
   # tile the orfs into a d.t for easy seperation
@@ -122,9 +131,11 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
 #' @param faFile a FaFile from the fasta file, see ?FaFile
 #' @param species ("human"), which species to use,
-#'  currently only support human and zebrafish. You can also specify a pfm
-#'  here for your own, syntax is an rectangular integer matrix,
+#'  currently supports human, zebrafish and mouse (m. musculus).
+#'  You can also specify a pfm for your own species.
+#'  Syntax of pfm is an rectangular integer matrix,
 #'  where all columns must sum to the same value, normally 100.
+#'  See example for information.
 #' @param include.N logical (F), if TRUE, allow N bases to be counted as hits,
 #'  score will be average of the other bases. If True N bases will be
 #'  added to pfm, automaticly, so dont include them.
@@ -133,6 +144,37 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' @importFrom Biostrings PWM
 #' @export
 #' @return an integer vector, one score per orf
+#' @examples
+#'  \dontrun{
+#'  # in this example we will find kozak score of cds'
+#'
+#'  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+#'    library(GenomicFeatures)
+#'    # Get the gtf txdb file
+#'    txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'    package = "GenomicFeatures")
+#'    txdb <- loadDb(txdbFile)
+#'    cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
+#'
+#'    faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+#'
+#'    kozakSequenceScore(cds, faFile, species = "human")
+#'
+#'    # A few species are pre supported, if not, make your own input pfm.
+#'
+#'    # here is an example where the human pfm is sent in again, even though
+#'    # it is already supported.
+#'
+#'    pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
+#'                                 21,26,24,16,28,32,5,23,35,12,42,21,
+#'                                 25,24,22,33,22,19,28,17,27,47,16,34,
+#'                                 25,24,26,25,28,14,5,21,10,17,15,28)),
+#'                    ncol = 4))
+#'
+#'   kozakSequenceScore(cds, faFile, species = pfm)
+#'
+#'  }
+#'  }
 kozakSequenceScore <- function(grl, faFile, species = "human",
                                include.N = FALSE){
   firstExons <- firstExonPerGroup(grl)
@@ -146,12 +188,24 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 
   #template <- sapply(s, function(x) PWMscoreStartingAt(pwm, x))
 
-  if (species == "human") {
+
+  if(class(species) == "matrix"){
+    # self defined pfm
+    pfm <- species
+  } else if (species == "human") {
     # human pfm, see article reference
     pfm <- t(matrix(as.integer(c(20,20,21,21,19,24,46,29,19,22,28,16,
                                  27,33,32,23,32,38,10,38,45,15,39,26,
                                  35,29,28,39,30,26,37,20,28,49,18,37,
                                  18,18,19,17,19,12,7,13,8,14,15,21)),
+                    ncol = 4))
+  } else if (species == "mouse") {
+    # zebrafish pfm, see article reference
+    pfm <- t(matrix(as.integer(c(20,19,21,20,18,25,49,28,17,23,28,15,
+                                 27,34,31,23,32,38,9,39,47,14,40,26,
+                                 34,28,27,39,29,25,36,20,28,49,18,37,
+                                 19,19,21,18,21,12,6,13,8,14,14,22
+                                 )),
                     ncol = 4))
   } else if (species == "zebrafish") {
     # zebrafish pfm, see article reference
@@ -160,11 +214,9 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
                                  25,24,22,33,22,19,28,17,27,47,16,34,
                                  25,24,26,25,28,14,5,21,10,17,15,28)),
                     ncol = 4))
-  } else if(class(species) == "matrix"){
-    # self defined pfm
-    pfm <- species
-  } else {
-    stop("other species are not supported")
+  } else  {
+    stop("Either input species as a matrix
+         or name of presupported pfm organism")
   }
 
   bases <- c("A", "C", "G", "T")
@@ -209,7 +261,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #'  or GRangesList object
 #' @param GtfOrTx if Gtf: a TxDb object of a gtf file,
 #'  if tx: a GrangesList of transcripts, called from:
-#'  exonsBy(Gtf, by = "tx", use.names = T)
+#'  exonsBy(Gtf, by = "tx", use.names = T) or similar.
 #' @importFrom data.table rbindlist
 #' @family features
 #' @export

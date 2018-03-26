@@ -31,9 +31,9 @@ See article: 10.1016/j.celrep.2014.07.045
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 12, 22),
-                end = c(10, 20, 32)),
-strand = "+")
+               ranges = IRanges(start = c(1, 12, 22),
+               end = c(10, 20, 32)),
+               strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
@@ -43,7 +43,8 @@ floss(grl, RFP, cds)
 floss(grl, RFP, cds, 28, 32)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{fpkm_calc}}, \code{\link{fpkm}},

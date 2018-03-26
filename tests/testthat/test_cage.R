@@ -22,7 +22,7 @@ start(cageEqualStart)[3] <- start(cageEqualStart)[3] - 1
 
 test_that("reassignTSSbyCage picks best one max peak of several", {
   # second granges have higher score, and both are within frame, then max one should be picked
-  test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cageEqualStart, cds = cds)
+  test_result <- suppressWarnings(reassignTSSbyCage(fiveUTRs[1], cage = cageEqualStart, cds = cds))
 
   expect_is(test_result, "GRangesList")
   expect_is(strand(test_result),"CompressedRleList")

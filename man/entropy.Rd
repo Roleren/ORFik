@@ -21,10 +21,8 @@ The entropy interval per group is a real number in the interval (0:1)
 Where 0 is no variance in reads over group.
 }
 \examples{
-ORF <- GRanges("1",
-ranges = IRanges(start = c(1, 12, 22),
-                end = c(10, 20, 32)),
-strand = "+")
+ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
+ end = c(10, 20, 32)), strand = "+")
 ORF$names = "tx1_1"
 names(ORF) <- rep("tx1", 3)
 grl <- GRangesList(tx1_1 = ORF)
@@ -39,7 +37,8 @@ cds <-  GRangesList(tx1 = cdsORF)
 entropy(cds, RFP)
 }
 \seealso{
-Other features: \code{\link{computeFeatures}},
+Other features: \code{\link{computeFeaturesCage}},
+  \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{floss}},
   \code{\link{fpkm_calc}}, \code{\link{fpkm}},
