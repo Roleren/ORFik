@@ -47,13 +47,13 @@ try ?floss
 NB: If you used cage-data. Your txDB object, must contain the
  reassigned leaders. If you used cage and dont have the reassigned
  txdb, either reassign them with \code{\link{reassignTSSbyCage}}
- or use the other function: \code{\link{computeFeaturesSpecial}}
+ or use the other function: \code{\link{computeFeaturesCage}}
 }
 \examples{
  # we will find ORFs in the 5' utrs
  # and then calculate features on them
-
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+ \dontrun{
+ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(GenomicFeatures)
   # Get the gtf txdb file
   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
@@ -86,10 +86,11 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 
 }
 # See vignettes for more examples
+}
 
 }
 \seealso{
-Other features: \code{\link{computeFeaturesSpecial}},
+Other features: \code{\link{computeFeaturesCage}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},

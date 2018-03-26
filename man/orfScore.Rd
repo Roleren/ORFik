@@ -23,10 +23,10 @@ NB! Only support + and - strand, not *
 See article: 10.1002/embj.201488411
 }
 \examples{
-ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 10, 20),
-                end = c(5, 15, 25)),
-strand = "+")
+ORF <- GRanges(seqnames = "1", ranges = IRanges(
+               start = c(1, 10, 20),
+               end = c(5, 15, 25)),
+               strand = "+")
 names(ORF) <- c("tx1", "tx1", "tx1")
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
@@ -34,7 +34,7 @@ orfScore(grl, RFP)
 
 }
 \seealso{
-Other features: \code{\link{computeFeaturesSpecial}},
+Other features: \code{\link{computeFeaturesCage}},
   \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},

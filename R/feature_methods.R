@@ -15,7 +15,7 @@
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(1, 10, 20),
-#'                         end = c(5, 15, 25)),
+#'                end = c(5, 15, 25)),
 #'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
@@ -56,10 +56,8 @@ subsetCoverage <- function(cov, y) {
 #'  can also be GRanges or GRangesList
 #' @family features
 #' @examples
-#' ORF <- GRanges("1",
-#' ranges = IRanges(start = c(1, 12, 22),
-#'                 end = c(10, 20, 32)),
-#' strand = "+")
+#' ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
+#'  end = c(10, 20, 32)), strand = "+")
 #' ORF$names = "tx1_1"
 #' names(ORF) <- rep("tx1", 3)
 #' grl <- GRangesList(tx1_1 = ORF)
@@ -168,9 +166,9 @@ entropy <- function(grl, reads) {
 #' @family features
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 12, 22),
-#'                 end = c(10, 20, 32)),
-#' strand = "+")
+#'                ranges = IRanges(start = c(1, 12, 22),
+#'                end = c(10, 20, 32)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
@@ -260,10 +258,10 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' @importFrom data.table data.table
 #' @family features
 #' @examples
-#' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 10, 20),
-#'                 end = c(5, 15, 25)),
-#' strand = "+")
+#' ORF <- GRanges(seqnames = "1", ranges = IRanges(
+#'                start = c(1, 10, 20),
+#'                end = c(5, 15, 25)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' RNA <- GRanges("1", IRanges(1, 50),"+")
@@ -305,10 +303,10 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
 #'  fractionLength(grl, tx_len = TxLen(Gtf, cageLeaders))
 #' @family features
 #' @examples
-#' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 10, 20),
-#'                 end = c(5, 15, 25)),
-#' strand = "+")
+#' ORF <- GRanges(seqnames = "1", ranges = IRanges(
+#'                start = c(1, 10, 20),
+#'                end = c(5, 15, 25)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' # nb: grl must have same names as tx, + _1 etc
 #' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
@@ -336,10 +334,10 @@ fractionLength <- function(grl, tx_len){
 #'  exonsBy(Gtf, by = "tx", use.names = T)
 #' @family features
 #' @examples
-#' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 10, 20),
-#'                 end = c(5, 15, 25)),
-#' strand = "+")
+#' ORF <- GRanges(seqnames = "1", ranges = IRanges(
+#'                start = c(1, 10, 20),
+#'                end = c(5, 15, 25)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
 #' RFP <- GRanges("1",
@@ -393,10 +391,10 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #'  or GRangesList object
 #' @family features
 #' @examples
-#' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 10, 20),
-#'                 end = c(5, 15, 25)),
-#' strand = "+")
+#' ORF <- GRanges(seqnames = "1", ranges = IRanges(
+#'                start = c(1, 10, 20),
+#'                end = c(5, 15, 25)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' threeUTRs <- GRangesList(tx1 = GRanges("1", IRanges(40, 50), "+"))
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
@@ -454,10 +452,10 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #'  or GRangesList object
 #' @family features
 #' @examples
-#' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 10, 20),
-#'                 end = c(5, 15, 25)),
-#' strand = "+")
+#' ORF <- GRanges(seqnames = "1", ranges = IRanges(
+#'                start = c(1, 10, 20),
+#'                end = c(5, 15, 25)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' ribosomeStallingScore(grl, RFP)
@@ -480,7 +478,10 @@ ribosomeStallingScore <- function(grl, RFP){
 #' Normally dont use this function, but instead use:
 #' \code{\link{computeFeatures}}
 #'
-#' A specialized version to save time, if you used Cage data.
+#' A specialized version if you used Cage data, and don't have
+#' a new txdb with reassigned leaders, transcripts and gene starts.
+#' If you do have a txdb with cage reassignments, use computeFeatures
+#' instead.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
@@ -522,8 +523,8 @@ ribosomeStallingScore <- function(grl, RFP){
 #'  # a small example without cage-seq data:
 #'  # we will find ORFs in the 5' utrs
 #'  # and then calculate features on them
-#'
-#' if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+#'  \dontrun{
+#'  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 #'   library(GenomicFeatures)
 #'   # Get the gtf txdb file
 #'   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
@@ -553,13 +554,14 @@ ribosomeStallingScore <- function(grl, RFP){
 #'
 #'   cageNotUsed <- 0 # used to inform that no cage was used
 #'
-#'   computeFeaturesSpecial(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
+#'   computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
 #'    Gtf = txdb, faFile = faFile, extension = cageNotUsed)
 #'
 #' }
 #' # See vignettes for more examples
+#' }
 #'
-computeFeaturesSpecial <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
+computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                         fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                         faFile = NULL, riboStart = 26, riboStop = 34,
                         extension = NULL, orfFeatures = TRUE,
@@ -634,7 +636,7 @@ computeFeaturesSpecial <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
-        }
+      }
 
       distORFCDS <- distToCds(grl, fiveUTRs, cds, extension)
       scores$distORFCDS <- distORFCDS
@@ -657,7 +659,7 @@ computeFeaturesSpecial <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' NB: If you used cage-data. Your txDB object, must contain the
 #'  reassigned leaders. If you used cage and dont have the reassigned
 #'  txdb, either reassign them with \code{\link{reassignTSSbyCage}}
-#'  or use the other function: \code{\link{computeFeaturesSpecial}}
+#'  or use the other function: \code{\link{computeFeaturesCage}}
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs, etc.
@@ -682,8 +684,8 @@ computeFeaturesSpecial <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' @examples
 #'  # we will find ORFs in the 5' utrs
 #'  # and then calculate features on them
-#'
-#' if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+#'  \dontrun{
+#'  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 #'   library(GenomicFeatures)
 #'   # Get the gtf txdb file
 #'   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
@@ -716,6 +718,7 @@ computeFeaturesSpecial <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #'
 #' }
 #' # See vignettes for more examples
+#' }
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,

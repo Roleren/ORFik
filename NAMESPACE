@@ -2,7 +2,7 @@
 
 export(assignAnnotations)
 export(computeFeatures)
-export(computeFeaturesSpecial)
+export(computeFeaturesCage)
 export(coveragePerTiling)
 export(defineIsoform)
 export(defineTrailer)

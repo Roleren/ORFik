@@ -29,7 +29,7 @@ dist <- distToCds(grl, fiveUTRs, extension = 0)
 isInFrame <- isInFrame(dist)
 }
 \seealso{
-Other features: \code{\link{computeFeaturesSpecial}},
+Other features: \code{\link{computeFeaturesCage}},
   \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
   \code{\link{distToCds}}, \code{\link{entropy}},
