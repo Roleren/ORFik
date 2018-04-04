@@ -1,3 +1,56 @@
+#' Helper function to check for GRangesList
+#' @param class the class you want to check if is GRL,
+#' either a character from class or the object itself.
+#' @return a boolean
+#'
+is.grl <- function(class) {
+  if (!is.character(class)) {
+    class <- class(class)
+  }
+  return(class == "GRangesList")
+}
+
+
+#' Helper function to check for GRangesList or GRanges class
+#' @param class the class you want to check if is GRL or GR,
+#'  either a character from class or the object itself.
+#' @return a boolean
+#'
+is.gr_or_grl <- function(class) {
+  if (!is.character(class)) {
+    class <- class(class)
+  }
+  return(is.grl(class) || class == "GRanges")
+}
+
+
+#' Helper Function to check valid GRangesList input
+#' @param class as character vector the given class of
+#'  supposed GRangesList object
+#' @param type a character vector, is it gtf, cds, 5', 3', for messages.
+#' @param checkNULL should NULL classes be checked and return indeces of these?
+#'
+validGRL <- function(class, type = "grl", checkNULL = FALSE) {
+  if(length(class) != length(type)) stop("not equal length of classes",
+                                         " and types, see validGRL")
+  if (checkNULL) {
+    indeces <- "NULL" == class
+    class <- class[!indeces]
+    if (length(class) == 0) return(rep(TRUE, length(type)))
+    type <- type[!indeces]
+  }
+  for (classI in 1:length(class)) {
+    if (!is.grl(class[classI])) {
+      messageI <- paste(type[classI], "must be given and be type GRangesList")
+      stop(messageI)
+    }
+  }
+  if (checkNULL) {
+    return(indeces)
+  }
+}
+
+
 #' Converts different type of files to Granges
 #'
 #' column 5 will be set to score
@@ -6,6 +59,7 @@
 #'  to convert to GRanges
 #' @param bed6 If bed6, no meta column is added
 #' @return a GRanges object from bed
+#'
 bedToGR <- function(x, bed6 = TRUE){
 
   if (!bed6) {
@@ -21,12 +75,11 @@ bedToGR <- function(x, bed6 = TRUE){
   return(gr)
 }
 
-#' Get bed file from a file-path
+
+#' Load bed file as GRanges.
 #'
-#' Tries to speed up rtracklayer import.bed
-#' If speedup is not supported, it will use normal
-#' rtracklayer::import.bed
-#' Supports gzip, gz, bgz and bed formats
+#' Wraps around rtracklayer::import.bed and tries to speed up loading with the
+#' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' @param filePath The location of the bed file
 #' @importFrom data.table fread setDF
 #' @importFrom tools file_ext
@@ -35,9 +88,8 @@ bedToGR <- function(x, bed6 = TRUE){
 #' @export
 #' @examples
 #' # path to example CageSeq data from hg19 heart sample
-#' cageData <- system.file("extdata", "cage_data_heart.bed.bgz",
-#'                        package = "ORFik")
-#'
+#' cageData <- system.file("extdata", "cage-seq-heart.bed.bgz",
+#'                         package = "ORFik")
 #' fread.bed(cageData)
 #'
 fread.bed <- function(filePath) {
@@ -57,17 +109,16 @@ fread.bed <- function(filePath) {
     ## NB: Windows user will have slower loading
     bed <- import.bed(con =  filePath)
   }
-
   return(bed)
 }
+
 
 #' Source bioconductor
 #'
 #' Helper function for quick update of bioconductor packages,
 #' @param packages either NULL if only source and no update/install
 #' or "all" if you want to update all your bioconductor packages
-#' or c(package1, package2, ...)
-#' for specific packages as a character vector
+#' or c(package1, package2, ...) for specific packages as a character vector
 #' @return NULL
 #'
 sourceBioc <- function(packages = NULL) {

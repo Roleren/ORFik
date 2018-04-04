@@ -2,14 +2,14 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{groupGRangesBy}
 \alias{groupGRangesBy}
-\title{make GRangesList from GRanges,}
+\title{Group GRanges}
 \usage{
 groupGRangesBy(gr, other = NULL)
 }
 \arguments{
 \item{gr}{a GRanges object}
 
-\item{other}{a vector of names to group, no 2 groups can have same name}
+\item{other}{a vector of unique names to group by}
 }
 \value{
 a GRangesList named after names(Granges) if other is NULL, else

@@ -2,59 +2,55 @@
 % Please edit documentation in R/cage_annotations.R
 \name{reassignTSSbyCage}
 \alias{reassignTSSbyCage}
-\title{Reassign all Transcript start sites(tss')}
+\title{Reassign all Transcript Start Sites (TSS)}
 \usage{
 reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
   cds = NULL)
 }
 \arguments{
-\item{fiveUTRs}{The 5' leader or transcript
-sequences as GRangesList}
+\item{fiveUTRs}{(GRangesList) The 5' leaders or transcript sequences}
 
-\item{cage}{Either a  filePath for cage-file, or already loaded
-R-object as GRanges}
+\item{cage}{Either a filePath for CageSeq file, or already loaded
+CageSeq peak data as GRanges}
 
-\item{extension}{The maximum number of basses upstream the
-cage-peak can be from original tss}
+\item{extension}{The maximum number of basses upstream of the TSS to search
+for CageSeq peak.}
 
-\item{filterValue}{The number of counts(score) to filter on,
-for a tss to pass as hit}
+\item{filterValue}{The number of counts (score column in CageSeq data) to
+filter out low peaks.}
 
-\item{cds}{If you want to extend 5' leaders downstream,
-to catch upstream ORFs going into cds, include it.}
+\item{cds}{(GRangesList) CDS of relative fiveUTRs, applicable only if you
+want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
+can overlap into CDS's.}
 }
 \value{
-a GRangesList
+a GRangesList of newly assigned TSS for fiveUTRs, using CageSeq data.
 }
 \description{
-Given a GRangesList of 5' utrs or transcripts, reassign the start
- postitions. A max peak is defined as new tss if it is within boundary
- of 5'leader range, specified by extension
- A max peak must also be greater that the cage peak cutoff specified
- in filterValue
- The new TSS will then be the position of the cage read,
- with highest read count in the interval.
-}
-\details{
-This method can also be used with other ngs methods, if i.g. if you have a
-list of possible cds starts (with scores) and cds'. It would reassign the
-cds starts.
+Given a GRangesList of 5' UTRs or transcripts, reassign the start
+postitions using max peaks from CageSeq data. A max peak is defined as new
+TSS if it is within boundary of 5' leader range, specified by
+\code{extension} in bp. A max peak must also be higher than minimum
+CageSeq peak cutoff specified in \code{filterValue}. The new TSS will then
+be the position of the cage read, with highest read count in the interval.
 }
 \examples{
-library(GenomicFeatures)
-samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-                         package = "GenomicFeatures")
-txdb <- loadDb(samplefile)
-fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
-cds <- cdsBy(txdb,"tx",use.names = TRUE)[1:length(fiveUTRs)]
-names(cds) <- names(fiveUTRs)
-# make cage from promoter of leaders (just for example)
-cage <- GRanges(seqnames = as.character(seqnames(fiveUTRs)[1:2]),
-   ranges =  IRanges(as.integer(start(fiveUTRs)[1 : 2] - 500) ,
-                               as.integer(start(fiveUTRs)[1 : 2])),
-             strand = as.character(strand(fiveUTRs)[1 : 2]), score = c(5, 10))
-# now run it:
-test_result <- reassignTSSbyCage(fiveUTRs[1], cage = cage,
- cds = cds)
-# we now get back the first leader reassigned
+# example 5' leader, notice exon_rank column
+fiveUTRs <- GenomicRanges::GRangesList(
+  GenomicRanges::GRanges(seqnames = "chr1",
+                         ranges = IRanges::IRanges(1000, 2000),
+                         strand = "+",
+                         exon_rank = 1))
+names(fiveUTRs) <- "tx1"
+
+# make fake CageSeq data from promoter of 5' leaders, notice score column
+cage <- GenomicRanges::GRanges(
+  seqnames = "chr1",
+  ranges =  IRanges::IRanges(500, 510),
+  strand = "+",
+  score = 10)
+
+# finally reassign TSS for fiveUTRs
+reassignTSSbyCage(fiveUTRs, cage)
+
 }

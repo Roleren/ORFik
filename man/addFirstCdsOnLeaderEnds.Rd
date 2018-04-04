@@ -17,6 +17,6 @@ a GRangesList of cds exons added to ends
 }
 \description{
 When reassigning Transcript start sites,
- often you want to add downstream too.
+often you want to add downstream too.
 This is a simple way to do that
 }

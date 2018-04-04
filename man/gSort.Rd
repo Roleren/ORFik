@@ -12,12 +12,11 @@ gSort(grl, decreasing = FALSE, byStarts = TRUE)
 \item{decreasing}{should the first in each group have max(start(group))
 ->T or min-> default(F) ?}
 
-\item{byStarts}{a logical T, should it order by starts
-or ends F.}
+\item{byStarts}{a logical T, should it order by starts or ends F.}
 }
 \value{
-an equally named GRangesList, where each group is
- sorted within group.
+an equally named GRangesList, where each group is sorted within
+group.
 }
 \description{
 A helper for \code{\link{sortPerGroup}}.

@@ -1,6 +1,6 @@
 Package: ORFik
 Type: Package
-Title: Open Reading Frames
+Title: Open Reading Frames in Genomics
 Version: 0.99.0
 Authors@R: c(
   person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cre", "cph")),
@@ -32,7 +32,6 @@ Imports:
   Biostrings (>= 2.46.0),
   stats,
   tools,
-  ggplot2 (>= 2.2.1),
   Rsamtools (>= 1.30.0)
 RoxygenNote: 6.0.1
 Suggests:
@@ -43,5 +42,6 @@ Suggests:
   BiocStyle,
   BSgenome,
   BSgenome.Hsapiens.UCSC.hg19,
+  ggplot2 (>= 2.2.1)
 LinkingTo: Rcpp
 VignetteBuilder: knitr

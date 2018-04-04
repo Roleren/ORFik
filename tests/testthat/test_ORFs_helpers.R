@@ -3,8 +3,8 @@ context("ORF helpers")
 
 transcriptRanges <- GRanges(seqnames = Rle(rep("1", 5)),
                             ranges = IRanges(start = c(1, 10, 20, 30, 40),
-                              end = c(5, 15, 25, 35, 45)),
-                                strand = Rle(strand(rep("+", 5))))
+                                             end = c(5, 15, 25, 35, 45)),
+                            strand = Rle(strand(rep("+", 5))))
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                      ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                      strand = Rle(strand(rep("+", 3))))
@@ -42,20 +42,20 @@ test_that("defineTrailer works as intended for plus strand", {
 
 transcriptRanges <- GRanges(seqnames = Rle(rep("1", 5)),
                             ranges = IRanges(start = rev(c(1, 10, 20, 30, 40)),
-                              end = rev(c(5, 15, 25, 35, 45))),
-                                strand = Rle(strand(rep("-", 5))))
+                                             end = rev(c(5, 15, 25, 35, 45))),
+                            strand = Rle(strand(rep("-", 5))))
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-                      ranges = IRanges(start = rev(c(1, 10, 20)),
-                        end = rev(c(5, 15, 25))),
-                          strand = Rle(strand(rep("-", 3))))
+                     ranges = IRanges(start = rev(c(1, 10, 20)),
+                                      end = rev(c(5, 15, 25))),
+                     strand = Rle(strand(rep("-", 3))))
 ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
                       ranges = IRanges(start = rev(c(10, 20, 30)),
-                        end = rev(c(15, 25, 35))),
-                          strand = Rle(strand(rep("-", 3))))
+                                       end = rev(c(15, 25, 35))),
+                      strand = Rle(strand(rep("-", 3))))
 ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
                       ranges = IRanges(start = rev(c(20, 30, 40)),
-                        end = rev(c(25, 35, 45))),
-                          strand = Rle(strand(rep("-", 3))))
+                                       end = rev(c(25, 35, 45))),
+                      strand = Rle(strand(rep("-", 3))))
 
 test_that("defineTrailer works as intended for minus strand", {
 
@@ -83,12 +83,12 @@ test_that("defineTrailer works as intended for minus strand", {
 
 transcriptRanges <- GRanges(seqnames = Rle(rep("1", 4)),
                             ranges = IRanges(start = rev(c(10, 20, 30, 40)),
-                              end = rev(c(15, 25, 35, 45))),
-                                strand = Rle(strand(rep("-", 4))))
+                                             end = rev(c(15, 25, 35, 45))),
+                            strand = Rle(strand(rep("-", 4))))
 
 test_that("findORFsFasta works as intended", {
-  filePath <- system.file("extdata", "orfFindingExample.fasta",
-              package = "ORFik")
+  filePath <- system.file("extdata", "genome.fasta",
+                          package = "ORFik")
 
   test_result <- findORFsFasta(filePath)
   expect_is(test_result, "GRanges")
@@ -107,50 +107,50 @@ test_that("findORFs works as intended for plus strand", {
 
   #longestORF F with different frames
   test_ranges <- orfs_as_IRanges("ATGGGTAATA",
-                                  "ATG|TGG|GGG",
-                                  "TAA|AAT|ATA",
-                                  longestORF = FALSE,
-                                  minimumLength = 0)
+                                 "ATG|TGG|GGG",
+                                 "TAA|AAT|ATA",
+                                 longestORF = FALSE,
+                                 minimumLength = 0)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(1, 2, 3))
   expect_equal(end(test_ranges), c(9, 10, 8))
 
   #longestORF T
   test_ranges <- orfs_as_IRanges("ATGATGTAATAA",
-                                  "ATG|TGA|GGG",
-                                  "TAA|AAT|ATA",
-                                  longestORF = T,
-                                  minimumLength = 0)
+                                 "ATG|TGA|GGG",
+                                 "TAA|AAT|ATA",
+                                 longestORF = T,
+                                 minimumLength = 0)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(1, 2))
   expect_equal(end(test_ranges), c(9, 10))
 
   #longestORF F with minimum size 12 -> 6 + 3*2
   test_ranges <- orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
-                                    "ATG|TGA|GGG",
-                                    "TAA|AAT|ATA",
-                                    longestORF = F,
-                                    minimumLength = 2)
+                                 "ATG|TGA|GGG",
+                                 "TAA|AAT|ATA",
+                                 longestORF = F,
+                                 minimumLength = 2)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(10, 13, 11, 14))
   expect_equal(end(test_ranges), c(24, 24, 25, 25))
 
   #longestORF T with minimum size 12 -> 6 + 3*2
   test_ranges <- orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
-                                  "ATG|TGA|GGG",
-                                  "TAA|AAT|ATA",
-                                  longestORF = T,
-                                  minimumLength = 2)
+                                 "ATG|TGA|GGG",
+                                 "TAA|AAT|ATA",
+                                 longestORF = T,
+                                 minimumLength = 2)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(10, 11))
   expect_equal(end(test_ranges), c(24, 25))
 
   #find nothing
   test_ranges <- orfs_as_IRanges("B",
-                                  "ATG|TGA|GGG",
-                                  "TAA|AAT|ATA",
-                                  longestORF = T,
-                                  minimumLength = 2)
+                                 "ATG|TGA|GGG",
+                                 "TAA|AAT|ATA",
+                                 longestORF = T,
+                                 minimumLength = 2)
   expect_is(test_ranges, "IRanges")
   expect_equal(length(test_ranges), 0)
 
@@ -184,10 +184,10 @@ test_that("findMapORFs works as intended for minus strand", {
 
   #longestORF F with different frames
   test_ranges <-findMapORFs(grl,seqs,
-                                    "ATG|TGG|GGG",
-                                    "TAA|AAT|ATA",
-                                    longestORF = F,
-                                    minimumLength = 0)
+                            "ATG|TGG|GGG",
+                            "TAA|AAT|ATA",
+                            longestORF = F,
+                            minimumLength = 0)
 
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
@@ -207,19 +207,19 @@ grIn1 <- GRanges(seqnames = rep("1", 2),
                  ranges = IRanges(start = c(1, 3), end = c(1, 13)),
                  strand = rep("+", 2), names = rep(namesTx[1], 2))
 grIn2<- GRanges(seqnames = rep("1", 6),
-                 ranges = IRanges(start = c(1, 1000, 2000, 3000, 4000, 5000),
-                                  end = c(1, 1000, 2000, 3000, 4000, 5000)),
-                 strand = rep("+", 6), names = rep(namesTx[2], 6))
+                ranges = IRanges(start = c(1, 1000, 2000, 3000, 4000, 5000),
+                                 end = c(1, 1000, 2000, 3000, 4000, 5000)),
+                strand = rep("+", 6), names = rep(namesTx[2], 6))
 grl <- GRangesList(grIn1, grIn2)
 names(grl) <- namesTx
 test_that("mapToGRanges works as intended for strange exons positive strand", {
 
   #longestORF F with different frames
   test_ranges <- findMapORFs(grl,seqs,
-                                             "ATG|TGG|GGG",
-                                             "TAA|AAT|ATA",
-                                             longestORF = F,
-                                             minimumLength = 0)
+                             "ATG|TGG|GGG",
+                             "TAA|AAT|ATA",
+                             longestORF = F,
+                             minimumLength = 0)
 
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
@@ -250,10 +250,10 @@ test_that("mapToGRanges works as intended for strange exons negative strand", {
 
   #longestORF F with different frames
   test_ranges <- findMapORFs(grl,seqs,
-                                    "ATG|TGG|GGG",
-                                    "TAA|AAT|ATA",
-                                    longestORF = F,
-                                    minimumLength = 0)
+                             "ATG|TGG|GGG",
+                             "TAA|AAT|ATA",
+                             longestORF = F,
+                             minimumLength = 0)
 
   test_ranges <- sortPerGroup(test_ranges)
   expect_is(test_ranges, "GRangesList")
@@ -268,7 +268,7 @@ test_that("mapToGRanges works as intended for strange exons negative strand", {
   expect_equal(unlist(grl)$names,c("tx1", "tx1", "tx2", "tx2", "tx2",
                                    "tx2", "tx2", "tx2"))
   expect_equal(unlist(test_ranges)$names,c("tx1_1","tx1_2", "tx2_1", "tx2_1",
-                                   "tx2_1", "tx2_1", "tx2_1", "tx2_1"))
+                                           "tx2_1", "tx2_1", "tx2_1", "tx2_1"))
 })
 
 namesTx <- c("tx1", "tx2", "tx3", "tx4")
@@ -288,10 +288,10 @@ test_that("mapToGRanges works as intended for strange exons both strands", {
 
   #longestORF F with different frames
   test_ranges <- findMapORFs(grl,seqs,
-                                    "ATG|TGG|GGG",
-                                    "TAA|AAT|ATA",
-                                    longestORF = F,
-                                    minimumLength = 0)
+                             "ATG|TGG|GGG",
+                             "TAA|AAT|ATA",
+                             longestORF = F,
+                             minimumLength = 0)
 
   test_ranges <- sortPerGroup(test_ranges)
   expect_is(test_ranges, "GRangesList")
@@ -450,9 +450,9 @@ test_that("uniqueORFs works as intended", {
                        strand = Rle(strand(rep("+", 3))),
                        names = paste0("tx1_", rep(1, 3)))
   ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
-                       strand = Rle(strand(rep("+", 3))),
-                       names = paste0("tx2_", rep(1, 3)))
+                        ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                        strand = Rle(strand(rep("+", 3))),
+                        names = paste0("tx2_", rep(1, 3)))
   ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
                         ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
                         strand = Rle(strand(rep("-", 3))),

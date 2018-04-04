@@ -200,9 +200,8 @@ findMapORFs <- function(
 #' \code{\link{startDefinition}}, \code{\link{stopDefinition}}
 #' @examples
 #' # location of the example fasta file
-#' filePath <- system.file("extdata", "orfFindingExample.fasta",
-#'                         package = "ORFik")
-#' findORFsFasta(filePath)
+#' example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")
+#' findORFsFasta(example_genome)
 #'
 findORFsFasta <- function(
   filePath, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),

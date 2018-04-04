@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{fread.bed}
 \alias{fread.bed}
-\title{Get bed file from a file-path}
+\title{Load bed file as GRanges.}
 \usage{
 fread.bed(filePath)
 }
@@ -13,16 +13,13 @@ fread.bed(filePath)
 a GRanges object
 }
 \description{
-Tries to speed up rtracklayer import.bed
-If speedup is not supported, it will use normal
-rtracklayer::import.bed
-Supports gzip, gz, bgz and bed formats
+Wraps around rtracklayer::import.bed and tries to speed up loading with the
+use of data.table. Supports gzip, gz, bgz and bed formats.
 }
 \examples{
 # path to example CageSeq data from hg19 heart sample
-cageData <- system.file("extdata", "cage_data_heart.bed.bgz",
-                       package = "ORFik")
-
+cageData <- system.file("extdata", "cage-seq-heart.bed.bgz",
+                        package = "ORFik")
 fread.bed(cageData)
 
 }

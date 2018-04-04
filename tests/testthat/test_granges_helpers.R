@@ -1,8 +1,6 @@
 library(ORFik)
 context("GRanges Helpers")
 
-
-
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                      ranges = IRanges(start = c(1, 10, 20),
                                       end = c(5, 15, 25)),
@@ -27,9 +25,9 @@ cds2 <- ORFranges <- GRanges(seqnames = Rle(rep("1", 2)),
                              strand = Rle(strand(rep("+", 2))))
 cds <- GRangesList( tx1 = cds1, tx2 = cds2)
 fiveUTRs1 <- GRanges(seqnames = Rle(rep("1", 6)),
-               ranges = IRanges(start = c(1, 10, 20, 30, 40, 50),
-                                end = c(5, 15, 25, 35, 45, 55)),
-               strand = Rle(strand(rep("+", 6))))
+                     ranges = IRanges(start = c(1, 10, 20, 30, 40, 50),
+                                      end = c(5, 15, 25, 35, 45, 55)),
+                     strand = Rle(strand(rep("+", 6))))
 fiveUTRs2 <- GRanges(seqnames = Rle(rep("1", 2)),
                      ranges = IRanges(start = c(150, 180),
                                       end = c(170, 190)),
@@ -49,11 +47,11 @@ test_that("tile1 works as intended", {
   tilex <- tile1(grl)
   expect_is(tilex,"GRangesList")
   expect_equal(as.integer(unlist(start(tilex[1]))),
-    c(1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15,
-        20, 21, 22, 23, 24, 25))
+               c(1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 15,
+                 20, 21, 22, 23, 24, 25))
   expect_equal(as.integer(unlist(end(tilex[2]))),
-    c(20, 21, 22, 23, 24, 25, 30, 31, 32, 33,
-        34, 35, 40, 41, 42, 43, 44, 45))
+               c(20, 21, 22, 23, 24, 25, 30, 31, 32, 33,
+                 34, 35, 40, 41, 42, 43, 44, 45))
 })
 
 test_that("widthPerGroup works as intended", {
@@ -121,14 +119,14 @@ test_that("upstreamOfPerGroup works as intended", {
 })
 
 tx1 <-  GRanges(seqnames = Rle(rep("1", 5)),
-                                 ranges = IRanges(start = c(1, 10, 20, 30, 40),
-                                                  end = c(5, 15, 25, 35, 45)),
-                                 strand = Rle(strand(rep("+", 5))))
+                ranges = IRanges(start = c(1, 10, 20, 30, 40),
+                                 end = c(5, 15, 25, 35, 45)),
+                strand = Rle(strand(rep("+", 5))))
 
 tx2 <- GRanges(seqnames = Rle(rep("1", 5)),
-                      ranges = IRanges(start = c(20, 30, 40, 50, 60),
-                                       end = c(25, 35, 45, 55, 65)),
-                      strand = Rle(strand(rep("+", 5))))
+               ranges = IRanges(start = c(20, 30, 40, 50, 60),
+                                end = c(25, 35, 45, 55, 65)),
+               strand = Rle(strand(rep("+", 5))))
 txl <- GRangesList(tx1 = tx1, tx2 = tx2)
 
 test_that("asTX works as intended", {

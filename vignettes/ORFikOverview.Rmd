@@ -96,7 +96,7 @@ set new Transcription Start Sites (TSS) and re-annotate 5' UTRs.
 
 ```{r eval = TRUE, echo = TRUE} 
 # path to example CageSeq data from hg19 heart sample
-cageData <- system.file("extdata", "cage_data_heart.bed.bgz", 
+cageData <- system.file("extdata", "cage-seq-heart.bed.bgz", 
                         package = "ORFik")
 # get new Transcription Start Sites using CageSeq dataset
 newFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData)
@@ -107,8 +107,100 @@ You will now see that most of the transcription start sites have changed.
 Depending on the species, regular annotations might be incomplete or not 
 specific enough for your purposes. 
 
-From testing on Fantom5 CageSeq data, less than 1% of the start sites remain the 
-same on average after re-assignment.
+# RiboSeq footprints automatic shift detection and shifting
+
+In RiboSeq data ribosomal footprints are restricted to their p-site positions 
+and shifted with respect to the shifts visible over the start and stop 
+codons. `ORFik` has multiple functions for processing of RiboSeq data. We will
+go through an example processing of RiboSeq data below.
+
+Load example raw RiboSeq footprints (unshifted).
+```{r eval = TRUE, echo = TRUE} 
+bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+footprints <- GenomicAlignments::readGAlignments(bam_file)
+```
+
+Investigate what footprint lengths are present in our data.
+```{r eval = TRUE, echo = TRUE} 
+table(qwidth(footprints))
+```
+
+For the sake of this example we will focus only on most abundant length of 29.
+```{r eval = TRUE, echo = TRUE} 
+footprints <- footprints[qwidth(footprints) == 29]
+footprintsGR <- granges(footprints, use.mcols = TRUE)
+footprintsGR
+```
+
+Restrict footprints to their 5' starts (after shifting it will be a p-site).
+```{r eval = TRUE, echo = TRUE} 
+footprintsGR <- resize(footprintsGR, 1)
+footprintsGR
+```
+
+Now, lets prepare annotations and focus on START and STOP codons.
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+```
+
+Filter cds to only those who have some minimum trailer and leader lengths, as 
+well as cds. And get start and stop codons with extra window of 30bp around 
+them.
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+txNames <- txNamesWithLeaders(txdb)
+windows <- getStartStopWindows(txdb, txNames)
+windows
+```
+
+Calculate meta-coverage over start and stop windowed regions.
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+hitMapStart <- metaWindow(footprintsGR, windows$start)
+hitMapStop <- metaWindow(footprintsGR, windows$stop)
+```
+
+Plot start/stop windows for length 29.
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+if (requireNamespace("ggplot2")) {
+  library(ggplot2)
+  ggplot(hitMapStart, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(title = paste0("Length 29 over START of canonical CDS")) +
+    xlab("\nshift from first START nucleotide [bp]") +
+    ylab("Averaged counts") +
+    guides(fill = FALSE)
+}
+```
+
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+if (requireNamespace("ggplot2")) {
+  ggplot(hitMapStop, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(title = paste0("Length 29 over STOP of canonical CDS")) +
+    xlab("\nshift from last STOP nucleotide [bp]") +
+    ylab("Averaged counts") +
+    guides(fill = FALSE)
+}
+```
+
+We can also use automatic detection of RiboSeq shifts using the code below. As
+we can see reasonable conclusion from the plots would be to shift length 29 by
+12, it is in agreement with the automatic detection of the offsets.
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+shifts <- detectRibosomeShifts(footprints, txdb, stop = TRUE)
+shifts
+```
+
+Fortunately `ORFik` has function that can be used to shift footprints using 
+desired shifts. Check documentation for more details.
+```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+shiftedFootprints <- shiftFootprints(
+  footprints, shifts$fragment_length, shifts$offsets_start)
+shiftedFootprints
+```
 
 # Gene identity functions for ORFs or genes
 
@@ -128,7 +220,7 @@ All of the features are implemented based on scientific article published in
 per reviewed journal. `ORFik` supports seemingles calculation of all available 
 features. See example below.
 
-```{r eval = TRUE, echo = TRUE}
+```{r eval = FALSE, echo = TRUE}
   # a example without cage-seq data:
   # we will find ORFs in the 5' utrs
   # and then calculate features on them
@@ -164,6 +256,11 @@ features. See example below.
 
 You will now get a data.table with one column per score, the columns are named after
 the different scores, you can now go further with prediction, or making plots.
+
+
+# GRanges and GRangesList utilities
+
+Blabla
 
 # Grouping ORFs
 

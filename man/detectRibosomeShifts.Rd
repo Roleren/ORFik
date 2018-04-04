@@ -2,40 +2,66 @@
 % Please edit documentation in R/shift_footprints.R
 \name{detectRibosomeShifts}
 \alias{detectRibosomeShifts}
-\title{Shift ribosome footprints}
+\title{Detect ribosome shifts}
 \usage{
 detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
-  offset_plots = FALSE, top_tx = 10)
+  top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
+  firstN = 150L)
 }
 \arguments{
-\item{footprints}{a bam or bed file path, or a GAlignment object
-of ribo-seq reads}
+\item{footprints}{(GAlignments) object of RiboSeq reads - footprints}
 
 \item{txdb}{a txdb object from a gtf file}
 
-\item{start}{logical (T), include starts}
+\item{start}{(logical) Whether to include predictions based on the start
+codons. Default TRUE.}
 
-\item{stop}{logical (F), include stops}
+\item{stop}{(logical) Whether to include predictions based on the stop
+codons. Default FASLE.}
 
-\item{offset_plots}{logical (F), plot shifting for validation}
+\item{top_tx}{(integer) Specify which % of the top covered by RiboSeq reads
+transcripts to use for estimation of the shifts. By default we take top 10%
+top covered transcripts as they represent less noisy dataset. This is only
+applicable when there are more than 1000 transcripts.}
 
-\item{top_tx}{numeric(10), which top percentage of transcripts to use.}
+\item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
+transcripts}
+
+\item{minCDS}{(integer) minimum bp for CDS during filtering for the
+transcripts}
+
+\item{minThreeUTR}{(integer) minimum bp for 3' UTR during filtering for the
+transcripts}
+
+\item{firstN}{(integer) Represents how many bases of the transcripts
+downstream of start codons to use for initial estimation of the
+periodicity.}
 }
 \value{
-a data.frame with shift lengths and offsets
+a data.frame with lengths of footprints and their predicted
+coresponding offsets
 }
 \description{
-Given a TxDb object and a bam file path, get the predicted shifts
-of the footprints to the p-site.
+Utilizes periodicity measurement (fourier transform) and change point
+analysis to detect ribosomal footprint shifts for each of the ribosomal
+read lengths. Returns subset of read lengths and their shifts for which
+top covered transcripts follow periodicity measure. Each shift value
+assumes 5' anchoring of the reads, so that output offsets values will
+shift 5' anchored footprints to be on the p-site of the ribosome.
+}
+\details{
+Check out vignette for the examples of plotting RiboSeq metaplots over start
+and stop codons, so that you can verify visually whether this function
+detects correct shifts.
 }
 \examples{
-gtf <- system.file("extdata", "example.gtf",
-        package = "ORFik") ## location of the gtf file
-suppressWarnings(txdb <-
- GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
-bam <- system.file("extdata", "example.bam",
-        package = "ORFik") ## location of the bam file
-detectRibosomeShifts(bam, txdb, start=TRUE, stop=FALSE,
-                     offset_plots=FALSE, top_tx=10)
+gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+footprints <- GenomicAlignments::readGAlignments(
+  riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
+    isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
+
+detectRibosomeShifts(footprints, txdb, stop = TRUE)
 
 }

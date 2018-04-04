@@ -9,8 +9,7 @@ sourceBioc(packages = NULL)
 \arguments{
 \item{packages}{either NULL if only source and no update/install
 or "all" if you want to update all your bioconductor packages
-or c(package1, package2, ...)
-for specific packages as a character vector}
+or c(package1, package2, ...) for specific packages as a character vector}
 }
 \description{
 Helper function for quick update of bioconductor packages,

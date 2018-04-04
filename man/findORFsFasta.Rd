@@ -42,9 +42,8 @@ be used as seqname in returned GRanges object.
 }
 \examples{
 # location of the example fasta file
-filePath <- system.file("extdata", "orfFindingExample.fasta",
-                        package = "ORFik")
-findORFsFasta(filePath)
+example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")
+findORFsFasta(example_genome)
 
 }
 \seealso{

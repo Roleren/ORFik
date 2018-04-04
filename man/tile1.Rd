@@ -2,12 +2,12 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{tile1}
 \alias{tile1}
-\title{Tile a GRangeslist by 1}
+\title{Tile a GRangesList by 1}
 \usage{
 tile1(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with names}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1
@@ -17,7 +17,7 @@ Per group, sepereate the groups and split them on each position.
 Returned sorted
 This is not supported originally by GenomicRanges
 As a precaution, this function requires the unlisted objects to
-have names, so that regrouping will be done correctly.
+have names.
 }
 \examples{
 gr1 <- GRanges("1",
@@ -28,8 +28,8 @@ gr1 <- GRanges("1",
 gr2 <- GRanges("1", ranges = IRanges(start = c(20, 30, 40),
                                       end = c(25, 35, 45)),
                      strand = "+")
-names(gr1) = rep("tx1_1",3)
-names(gr2) = rep("tx1_2",3)
+names(gr1) = rep("tx1_1", 3)
+names(gr2) = rep("tx1_2", 3)
 grl <- GRangesList(tx1_1 = gr1, tx1_2 = gr2)
 tile1(grl)
 }
