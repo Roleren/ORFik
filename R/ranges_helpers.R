@@ -1,10 +1,10 @@
-#' make GRangesList from GRanges,
+#' Group GRanges
 #'
 #' Grouped by names or another column(other)
 #'  ig. if GRanges should be grouped by gene,
 #'  give gene column as other
 #' @param gr a GRanges object
-#' @param other a vector of names to group, no 2 groups can have same name
+#' @param other a vector of unique names to group by
 #' @importFrom S4Vectors nrun
 #' @examples
 #' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
@@ -97,14 +97,13 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param decreasing should the first in each group have max(start(group))
 #'   ->T or min-> default(F) ?
-#' @param byStarts a logical T, should it order by starts
-#'  or ends F.
+#' @param byStarts a logical T, should it order by starts or ends F.
 #' @importFrom data.table as.data.table :=
-#' @return an equally named GRangesList, where each group is
-#'  sorted within group.
+#' @return an equally named GRangesList, where each group is sorted within
+#' group.
 #'
 gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
-  if(length(grl) == 0) return(GRangesList())
+  if (length(grl) == 0) return(GRangesList())
 
   DT <- as.data.table(grl)
   group <- NULL # for not getting warning
@@ -123,7 +122,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
   }
   # test naming
   testName <- names(unlist(grl[1], use.names = FALSE)[1])
-  if ( is.null(testName)){
+  if (is.null(testName)) {
     DT[, group := NULL]
     asgrl <- makeGRangesListFromDataFrame(
       DT, split.field = "group_name",
@@ -161,14 +160,12 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
 #'  sorted within group.
 #'
 sortPerGroup <- function(grl, ignore.strand = FALSE){
-  validGRL(class(grl))
   if (!ignore.strand) {
     indicesPos <- strandBool(grl)
 
     grl[indicesPos] <- gSort(grl[indicesPos])
     grl[!indicesPos] <- gSort(grl[!indicesPos], decreasing = TRUE,
                               byStarts = FALSE)
-
     return(grl)
   } else {
     return(gSort(grl))
@@ -397,14 +394,14 @@ makeORFNames <- function(grl){
   return(groupGRangesBy(asGR))
 }
 
-#' Tile a GRangeslist by 1
+#' Tile a GRangesList by 1
 #'
 #' Per group, sepereate the groups and split them on each position.
 #' Returned sorted
 #' This is not supported originally by GenomicRanges
 #' As a precaution, this function requires the unlisted objects to
-#' have names, so that regrouping will be done correctly.
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' have names.
+#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with names
 #' @examples
 #' gr1 <- GRanges("1",
 #'            ranges = IRanges(start = c(1, 10, 20),
@@ -414,16 +411,16 @@ makeORFNames <- function(grl){
 #' gr2 <- GRanges("1", ranges = IRanges(start = c(20, 30, 40),
 #'                                       end = c(25, 35, 45)),
 #'                      strand = "+")
-#' names(gr1) = rep("tx1_1",3)
-#' names(gr2) = rep("tx1_2",3)
+#' names(gr1) = rep("tx1_1", 3)
+#' names(gr2) = rep("tx1_2", 3)
 #' grl <- GRangesList(tx1_1 = gr1, tx1_2 = gr2)
 #' tile1(grl)
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @export
+#'
 tile1 <- function(grl){
   ORFs <- unlist(grl, use.names = FALSE)
-  if (is.null(names(ORFs))) stop("unlisted grl have not names,\n
-                                try: names(unlist(grl, use.names = F))")
+  if (is.null(names(ORFs))) stop("Unlisted grl has no names.")
   ## Try to catch dangerous groupings, that is equally named groups
   if (sum(duplicated(names(ORFs)))) {
     if (!is.null(ORFs$names)) {
@@ -731,6 +728,7 @@ coveragePerTiling <- function(grl, reads){
   return(IRanges::RleList(countList)[names(grl)])
 }
 
+
 #' Creates window around GRanged object.
 #'
 #' It creates window of window_size around input ranges eg.
@@ -752,6 +750,7 @@ windowResize <- function(GRanges_obj, window_size = 30) {
                            downstream = window_size + 1)
   return(GRanges_obj)
 }
+
 
 #' Subset GRanges to get desired frame. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
@@ -864,65 +863,5 @@ reduceKeepAttr <- function(grl, keep.names = FALSE,
     return(matchNaming(gr, grl))
   } else { # return original
     return(reduced)
-  }
-}
-
-#' Helper function to check for GRangesList
-#' @param class the class you want to check if is GRL,
-#'  either a character from class or the object itself.
-#' @return a boolean
-is.grl <- function(class){
-  if (!is.character(class)) {
-    class <- class(class)
-  }
-  if (class == "GRangesList") {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-#' Helper function to check for GRangesList or GRanges class
-#' @param class the class you want to check if is GRL or GR,
-#'  either a character from class or the object itself.
-#' @return a boolean
-is.gr_or_grl <- function(class){
-  if (!is.character(class)) {
-    class <- class(class)
-  }
-  if (is.grl(class) || class == "GRanges") {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-#' Helper Function to check valid GRangesList input
-#' @param class as character vector the given class of
-#'  supposed GRangesList object
-#' @param type a character vector, is it gtf, cds, 5', 3', for messages.
-#' @param checkNULL should NULL classes be checked and return indeces of these?
-validGRL <- function(class, type = "grl", checkNULL = FALSE){
-  if(length(class) != length(type)) stop("not equal length of classes\n
-                                         and types, see validGRL")
-  if (checkNULL) {
-    indeces <-"NULL" == class
-
-    class <- class[!indeces]
-    if (length(class) == 0) {
-      return(rep(TRUE, length(type)))
-    }
-    type <- type[!indeces]
-
-  }
-  for(classI in 1:length(class)){
-    if (!is.grl(class[classI])) {
-      messageI <- paste(type[classI], "must be given
-          and be type GRangesList")
-      stop(messageI)
-    }
-  }
-  if (checkNULL) {
-    return(indeces)
   }
 }

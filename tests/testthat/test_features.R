@@ -2,13 +2,13 @@ library(ORFik)
 context("features")
 
 RFP <- GRanges(seqnames = Rle(rep("1", 5)),
-                            ranges = IRanges(start = c(1, 10, 20, 30, 40),
-                                             end = c(5, 15, 25, 35, 45)),
-                            strand = Rle(strand(rep("+", 5))))
+               ranges = IRanges(start = c(1, 10, 20, 30, 40),
+                                end = c(5, 15, 25, 35, 45)),
+               strand = Rle(strand(rep("+", 5))))
 RFP2 <- GRanges(seqnames = Rle(rep("1", 2)),
-               ranges = IRanges(start = c(1000, 1010),
-                                end = c(1005, 1015)),
-               strand = Rle(strand(rep("+", 2))))
+                ranges = IRanges(start = c(1000, 1010),
+                                 end = c(1005, 1015)),
+                strand = Rle(strand(rep("+", 2))))
 
 RFP3 <- GRanges(seqnames = Rle(rep("1", 3)),
                 ranges = IRanges(start = c(1, 10, 20),
@@ -109,23 +109,23 @@ fiveUTRs <- GRangesList(tx1 = fiveUTRs1, tx2 = fiveUTRs2, tx4 = fiveUTRs4)
 
 
 cds1 <- GRanges(seqnames = Rle(rep("1", 1)),
-                 ranges = IRanges(start = c(56),
-                                  end = c(150)),
-                 strand = Rle(strand(rep("+", 1))))
+                ranges = IRanges(start = c(56),
+                                 end = c(150)),
+                strand = Rle(strand(rep("+", 1))))
 cds2 <- GRanges(seqnames = Rle(rep("1", 1)),
-                 ranges = IRanges(start = c(291),
-                                  end = c(302)),
-                 strand = Rle(strand(rep("+", 1))))
+                ranges = IRanges(start = c(291),
+                                 end = c(302)),
+                strand = Rle(strand(rep("+", 1))))
 cds4 <- GRanges(seqnames = Rle(rep("1", 1)),
-                 ranges = IRanges(start = c(50),
-                                  end = c(139)),
-                 strand = Rle(strand(rep("-", 1))))
+                ranges = IRanges(start = c(50),
+                                 end = c(139)),
+                strand = Rle(strand(rep("-", 1))))
 cds4 <- sort(cds4, decreasing = TRUE)
 cds <- GRangesList(tx1 = cds1, tx2 = cds2, tx4 = cds4)
 threeUTRs1 <- GRanges(seqnames = Rle(rep("1", 1)),
-                     ranges = IRanges(start = c(151),
-                                      end = c(200)),
-                     strand = Rle(strand(rep("+", 1))))
+                      ranges = IRanges(start = c(151),
+                                       end = c(200)),
+                      strand = Rle(strand(rep("+", 1))))
 threeUTRs2 <- GRanges(seqnames = Rle(rep("1", 1)),
                       ranges = IRanges(start = c(303),
                                        end = c(310)),
@@ -379,8 +379,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(ncol(dt), 15)
   expect_equal(nrow(dt), 4)
   # load file
-  load(system.file("extdata", "featureTable.rdata",
-                         package = "ORFik")) # loaded as featureExamples
+  load(system.file("extdata", "features.rdata", package = "ORFik"))
   expect_equal(dt, featureExamples) # should be equal to saved version
 })
 

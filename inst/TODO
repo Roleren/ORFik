@@ -1,0 +1,21 @@
+TODO
+-----------------------
+
+    o remove naming of ORFs with "_"
+    o remove unnecesary type checking
+    o make computeFeatures completely independent on CageSeq and as input txdb
+    o split files into smaller files, tests too
+    o remove whole utils file?
+
+    CageSeq:
+    o make CageSeq leader reassignment return txdb object and take in txdb
+    object
+    o remove cageFromFile etc. so that we don't load the data for the user
+    o remove filterCage so that we don't filter, user filters himself
+    o matchSeqnames should be generalized to matchSeqlevels(grA, grB) etc.,
+    I think it already exists as ?relevel
+
+    RiboSeq:
+    o add examples to getStartStopWindows
+    o parseCigar implement into C++
+    o

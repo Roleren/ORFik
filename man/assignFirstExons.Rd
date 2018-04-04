@@ -3,7 +3,7 @@
 \name{assignFirstExons}
 \alias{assignFirstExons}
 \title{After all transcript start sites have been updated from cage,
- put grangeslist back together}
+put GRangesList back together}
 \usage{
 assignFirstExons(firstExons, fiveUTRs)
 }
@@ -17,5 +17,5 @@ a GRangesList
 }
 \description{
 After all transcript start sites have been updated from cage,
- put grangeslist back together
+put GRangesList back together
 }

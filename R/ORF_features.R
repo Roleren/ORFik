@@ -1,4 +1,5 @@
 #' Get ORF score for a GRangesList of ORFs
+#'
 #' @description That is, of the 3 possible frame in an ORF
 #' Is the first one most important, by how much ?
 #' NB! Only support + and - strand, not *

@@ -1,3 +1,156 @@
+#' Compute coverage for every GRangesList subset.
+#'
+#' This is similar to \code{\link[GenomicFeatures]{coverageByTranscript}}, but
+#' it adds: automatic sorting of the windows, fix for some rare cases when
+#' subsetting fails on minus/plus strands and security that subseting of windows
+#' will always return values (zeros) istead of out of bounds error.
+#'
+#' Minus strand is already flipped so that the most 5' position on the window
+#' is the first position in the returned Rle.
+#' @param x the cigar of the reads
+#' @param windows (GRangesList) of transcripts or CDS or other ranges that will
+#' be subseting coverage of \code{x}
+#' @param ignore.strand (logical) Whether to consider all reads to be "*".
+#' @return (RleList) of positional counts of \code{x} ranges overlapping each
+#' consecutive position of the elements of \code{windows}
+#' @examples
+#' cds <- GenomicRanges::GRangesList(
+#'   GenomicRanges::GRanges(seqnames = "chr1",
+#'                          ranges = IRanges::IRanges(100, 200),
+#'                          strand = "+"))
+#' reads <- GenomicRanges::GRanges(
+#'   seqnames = "chr1",
+#'   ranges =  IRanges::IRanges(c(100, 150), c(110, 160)),
+#'   strand = "+")
+#' ORFik:::coverageByWindow(reads, cds)
+#'
+coverageByWindow <- function(x, windows, ignore.strand = FALSE) {
+  if (!methods::is(windows, "GRangesList")) {
+    windows <- try(exonsBy(windows, by="tx", use.names=TRUE),
+                   silent=TRUE)
+    if (methods::is(windows, "try-error"))
+      stop("failed to extract the exon ranges ", "from 'windows' with ",
+           "exonsBy(windows, by=\"tx\", use.names=TRUE)")
+  }
+  seqinfo(x) <- merge(seqinfo(x), seqinfo(windows))
+  if (!S4Vectors::isTRUEorFALSE(ignore.strand))
+    stop("'ignore.strand' must be TRUE or FALSE")
+
+  ## Fix seqlengths so that windows will always be able to subset on x coverage
+  tDT <- data.table::as.data.table(windows)
+  tDT <- tDT[, list(seqlengths = max(end)), by = "seqnames"]
+  xDT <- data.table::as.data.table(x)
+  xDT <- xDT[, list(seqlengths = max(end)), by = "seqnames"]
+  cDT <- rbind(xDT, tDT)
+  cDT <- cDT[, list(seqlengths = max(seqlengths)), by = "seqnames"]
+  seqlengths(x) <- cDT$seqlengths[match(seqlevels(x), cDT$seqnames)]
+
+  # sort windows
+  if (is.null(names(windows))) names(windows) <- seq_along(windows)
+  windows <- sortPerGroup(windows)
+
+  ## 1) Compute unique exons ('uex').
+
+  ex <- unlist(windows, use.names = FALSE)
+  ## We could simply do 'uex <- unique(ex)' here but we're going to need
+  ## 'sm' and 'is_unique' later to compute the "reverse index" so we compute
+  ## them now and use them to extract the unique exons. That way we hash
+  ## 'ex' only once (the expensive operation).
+  sm <- selfmatch(ex)  # uses a hash table internally
+  is_unique <- sm == seq_along(sm)
+  uex2ex <- which(is_unique)  # index of unique exons
+  uex <- ex[uex2ex]  # unique exons
+
+  ## 2) Compute coverage for each unique exon ('uex_cvg').
+
+  #There doesn't seem to be much benefit in doing this.
+  #x <- subsetByOverlaps(x, windows, ignore.strand=TRUE)
+  if (ignore.strand) {
+    cvg <- coverage(x)
+    uex_cvg <- cvg[uex]  # parallel to 'uex'
+  } else {
+    x1 <- x[strand(x) %in% c("+", "*")]
+    x2 <- x[strand(x) %in% c("-", "*")]
+    cvg1 <- coverage(x1)
+    cvg2 <- coverage(x2)
+    is_plus_ex <- strand(uex) == "+"
+    is_minus_ex <- strand(uex) == "-"
+    if (!identical(is_plus_ex, !is_minus_ex))
+      stop("'windows' has exons on the * strand. ",
+           "This is not supported at the moment.")
+    uex_cvg <- RleList(as.list(rep(0, length(uex))))
+    uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
+    uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+  }
+
+  ## 3) Flip coverage for exons on minus strand.
+
+  ## It feels like this is not as fast as it could be (the bottleneck being
+  ## subsetting an Rle object which needs to be revisited at some point).
+  uex_cvg <- IRanges::revElements(uex_cvg, strand(uex) == "-")
+
+  ## 4) Compute coverage by original exon ('ex_cvg').
+
+  ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]  # reverse index
+  #stopifnot(identical(ex2uex[uex2ex], seq_along(uex2ex)))  # sanity
+  #stopifnot(identical(ex2uex[sm], ex2uex))  # sanity
+  #stopifnot(all(uex[ex2uex] == ex))  # sanity
+
+  ex_cvg <- uex_cvg[ex2uex]  # parallel go 'ex'
+
+  ## 5) Compute coverage of each transcript by concatenating coverage of its
+  ##    exons.
+
+  ans <- IRanges:::regroupBySupergroup(ex_cvg, windows)
+
+  ## 6) Propagate 'mcols(windows)'.
+
+  mcols(ans) <- mcols(windows)
+  ans
+}
+
+
+#' Calculate metaplot coverage of reads around input GRangesList object.
+#'
+#' Sums up coverage over set of GRanges objects that.
+#' @param x GRanges object of your reads.
+#' You should resize them beforehand to width of 1 to focus on
+#' 5' ends of footprints.
+#' @param windows GRanges object of your CDSs start or stop postions. Its width
+#' has to be even number as we will assume in the middle is position zero which
+#' is included in the downstream window.
+#' @return A data.frame with average counts (avg_counts) of reads mapped to
+#' positions (position) specified in windows along with frame (frame).
+#' @export
+#' @examples
+#' windows <- GenomicRanges::GRangesList(
+#'   GenomicRanges::GRanges(seqnames = "chr1",
+#'                          ranges = IRanges::IRanges(c(50, 100), c(80, 200)),
+#'                          strand = "-"))
+#' x <- GenomicRanges::GRanges(
+#'   seqnames = "chr1",
+#'   ranges =  IRanges::IRanges(c(100, 180), c(200, 300)),
+#'   strand = "-")
+#' metaWindow(x, windows)
+#'
+metaWindow <- function(x, windows) {
+
+  window_size <- unique(sum(width(windows)))
+  if (length(window_size) != 1) {
+    stop("All input 'windows' should have the same sum(width(windows))")
+  }
+  if (window_size %% 2 != 0) stop("Width of the window has to be even number.")
+  window_size <- (window_size)/2
+  cvg <- coverageByWindow(x, windows)
+  cvg <- Reduce(`+`, cvg) / length(cvg)
+
+  hitMap <- data.frame(avg_counts = as.vector(cvg),
+                       position = -window_size:(window_size - 1),
+                       frame = c(rev(rep_len(3:1, window_size)),
+                                 rep_len(1:3, window_size)))
+  return(hitMap)
+}
+
 
 #' Shift ribo-seq reads using cigar string
 #'
@@ -5,7 +158,8 @@
 #' @param shift the shift as numeric
 #' @param is_plus_strand logical
 #' @return the shifted read
-parse_cigar <- function(cigar, shift, is_plus_strand) {
+#'
+parseCigar <- function(cigar, shift, is_plus_strand) {
   c_signs <- unlist(explodeCigarOps(cigar))
   c_counts <- unlist(explodeCigarOpLengths(cigar))
 
@@ -29,270 +183,128 @@ parse_cigar <- function(cigar, shift, is_plus_strand) {
   return(shift)
 }
 
-#' Get only unique mapping reads
+
+#' Get the transcripts that have minimum lengths of leaders and cds.
 #'
-#' Helper for detectRibosomeShifts
-#' @param file a bam or bed file path or GAlignment object
-#' @param filterNH1 logical(T), only keep unique reads, require a
-#'  meta column called NH
-#' @return a GAlignments object
-#' @importFrom tools file_ext
-#' @importFrom Rsamtools ScanBamParam
-#' @export
-#' @examples
-#' bam <- system.file("extdata", "example.bam",
-#'        package = "ORFik") ## location of the bam file
-#' readFootprints(bam)
-#'
-readFootprints <- function(file, filterNH1=TRUE) {
-
-  if (class(file) == "GAlignments" || class(file) == "GRanges") {
-    alignments <- file
-  } else if(is.character(file)) {
-    message("Loading reads into memory...")
-    if (file_ext(file) == "bam") {
-      param <- ScanBamParam(tag="NH")
-      alignments <- readGAlignments(file, param=param)
-
-    } else if (file_ext(file) == "bed") {
-      alignments <- fread.bed(file)
-    }
-    message("Reads loaded.")
-  } else {
-    stop("could not get alignments from file, check input.")
-  }
-
-  if (filterNH1) { ## filter for unique reads
-    if(!is.null(mcols(alignments)$NH)) {
-      alignments <- alignments[mcols(alignments)$NH == 1]
-    }
-  }
-
-  return(alignments)
-}
-
-#' Get the longest transcripts
-#'
-#' These settings must be true:
-#' utr5 & utr3 > 30 width
-#' cds > 150 width
-#' If these are accepted, it is returned
+#' Filter transcripts to those whohave 5' UTR, CDS, 3' UTR of
+#' some lengths, pick the longest per gene.
 #' @param txdb a TxDb object from gtf
+#' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
+#' transcripts
+#' @param minCDS (integer) minimum bp for CDS during filtering for the
+#' transcripts
+#' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
+#' transcripts
 #' @return a character vector of valid tramscript names
-#' @importFrom data.table setDT setorder
-get_longest_tx <- function(txdb) {
+#' @export
+#'
+txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
+                               minCDS = 150L, minThreeUTR = 30L) {
   if(class(txdb) != "TxDb") stop("txdb must be a TxDb object")
 
-  txLengths <- setDT(transcriptLengths(txdb, with.cds_len=TRUE,
-                                       with.utr5_len=TRUE, with.utr3_len=TRUE))
-  ## avoid check warning
-  gene_id <- NULL
-  cds_len <- NULL
-  setorder(txLengths, gene_id, -cds_len)
-
-  longest_tx <- txLengths[!duplicated(txLengths$gene_id),]
-  rownames(longest_tx) <- longest_tx$tx_name
-  # get CDS longer than 150, UTRs longer than 30
-  longest_tx <- longest_tx[longest_tx$utr5_len > 30,]
-  longest_tx <- longest_tx[longest_tx$cds_len > 150,]
-  longest_tx <- longest_tx[longest_tx$utr3_len > 30,]
-  return(longest_tx$tx_name)
+  tx <- data.table::setDT(
+    GenomicFeatures::transcriptLengths(
+      txdb, with.cds_len = TRUE, with.utr5_len = TRUE, with.utr3_len = TRUE))
+  tx <- tx[tx$utr5_len >= minFiveUTR & tx$cds_len >= minCDS &
+             tx$utr3_len >= minThreeUTR, ]
+  gene_id <- cds_len <- NULL
+  data.table::setorder(tx, gene_id, -cds_len)
+  tx <- tx[!duplicated(tx$gene_id), ]
+  tx <- tx[!is.na(tx$gene_id)]
+  return(tx$tx_name)
 }
 
-#' Get cds' for shoelaces periodicity
-#'
-#' Gives you the first 150 bases per cds
-#' @param txdb a TxDb object from gtf
-#' @param txNames a character vector of the longest
-#'  valid transcript names
-#' @return a GRangesList of tiled cds' to 150 length
-get_cds150 <- function(txdb, txNames) {
-  cds <- cdsBy(txdb, by="tx", use.names=TRUE)[txNames]
-  tiledCDS <- tile1(groupGRangesBy(unlist(cds, use.names = TRUE)))
 
-  return(phead(tiledCDS, 150L))
-}
-
-#' Get start and stops of cds windows
+#' Get Start and Stop codon within specified windows over CDS.
 #'
-#' For each cds in longest_tx, get a window around start and stop
-#' of each cds. +29 and -30 from cds start
-#' @param txdb a txdb object from gtf
-#' @param txNames a character vector of the longest
-#'  valid transcript names
-#' @param start logical (T), include starts
-#' @param stop logical (F), include stops
-#' @return a list of starts and stops with cds windows
-get_start_stop <- function(txdb, txNames, start=TRUE, stop=TRUE) {
-  cds <- cdsBy(txdb, by="tx", use.names=TRUE)[txNames]
+#' For each cds in \code{txdb} object, filtered by \code{txNames},
+#' get a window around start and stop codons within \code{window_size}
+#' downstream and upstream of the codon.
+#' @param txdb a txdb object of annotations
+#' @param txNames a character vector of the transcript names to use
+#' @param start (logical) whether to include start codons
+#' @param stop (logical) whether to incude stop codons
+#' @param window_size (integer) size of the window to extract upstream of the
+#' start/stop codon and downstream
+#' @return a list with two slots "starts" and "stops", each contains a
+#' GRangesList of windows around start and stop codons for the transcripts of
+#' interest
+#' @export
+#' @examples
+#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+#' txNames <- txNamesWithLeaders(txdb)
+#' getStartStopWindows(txdb, txNames)
+#'
+getStartStopWindows <- function(
+  txdb, txNames, start = TRUE, stop = TRUE, window_size = 30L) {
+  cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
   cdsTiled <- tile1(groupGRangesBy(unlist(cds, use.names = TRUE)))
 
   if (start) {
-    fiveUTRs <- fiveUTRsByTranscript(txdb, use.names=TRUE)[txNames]
-    ##get tiled cds
-    cdsHead <- phead(cdsTiled, 30L)
-
-    ##get tiled fiveUTRs
+    fiveUTRs <- GenomicFeatures::fiveUTRsByTranscript(
+      txdb, use.names=TRUE)[txNames]
+    cdsHead <- phead(cdsTiled, window_size)
     fiveTiled <- tile1(groupGRangesBy(unlist(fiveUTRs, use.names = TRUE)))
-    fiveTail <- ptail(fiveTiled, 30L)
-
+    fiveTail <- ptail(fiveTiled, window_size)
     merged <- unlist(c(fiveTail, cdsHead), use.names = FALSE)
-    start <- split(merged, names(merged))
+    start <- reduce(split(merged, names(merged)))
+  } else {
+    start <- NULL
   }
 
   if (stop) {
-    threeUTRs <- threeUTRsByTranscript(txdb, use.names=TRUE)[txNames]
-    ##get tiled cds
-    cdsTail <- ptail(cdsTiled, 30L)
-
-    ##get tiled threeUTRs
+    threeUTRs <- GenomicFeatures::threeUTRsByTranscript(
+      txdb, use.names=TRUE)[txNames]
+    cdsTail <- ptail(cdsTiled, window_size)
     threeTiled <- tile1(groupGRangesBy(unlist(threeUTRs, use.names = TRUE)))
-    threeHead <- phead(threeTiled, 30L)
-
+    threeHead <- phead(threeTiled, window_size)
     merged <- unlist(c(cdsTail, threeHead), use.names = FALSE)
-    stop <- split(merged, names(merged))
+    stop <- reduce(split(merged, names(merged)))
+  } else {
+    stop <- NULL
   }
   ss <- list(start, stop)
-  names(ss) <- c("start", "stop")
-
+  names(ss) <- c("starts", "stops")
   return(ss)
 }
 
-#' Get the start of each read
+
+#' Find if there is periodicity in the vector
 #'
-#' @param alignments the ribo-seq footprints
-#' @param read_length the read length to search for in alignments
-#' @return a GRanges object with a hit column
-get_5ends <- function(alignments, read_length) {
-
-  if(class(alignments) == "GAlignments"){
-    aln <- alignments[qwidth(alignments) == read_length]
-  } else {
-    aln <- alignments[width(alignments) == read_length]
-  }
-  plus <- aln[strand(aln) == "+"]
-  minus <- aln[strand(aln) == "-"]
-  ## get 5'ends separately for plus and minus strand
-  ends_plus <- GRanges(seqnames = seqnames(plus),
-                       ranges = IRanges(start = start(plus), width = rep(1, length(plus))),
-                       strand = strand(plus))
-  ends_minus <- GRanges(seqnames = seqnames(minus),
-                        ranges = IRanges(start = end(minus), width = rep(1, length(minus))),
-                        strand = strand(minus))
-  ends_uniq_plus <- unique(ends_plus)
-  ends_uniq_plus$hits<- countOverlaps(ends_uniq_plus, ends_plus, type="equal") # get the coverage
-  ends_uniq_minus <- unique(ends_minus)
-  ends_uniq_minus$hits<- countOverlaps(ends_uniq_minus, ends_minus, type="equal") # get the coverage
-  ### 5'ends
-  ends_uniq <- c(ends_uniq_plus, ends_uniq_minus)
-  return(ends_uniq)
-}
-
-#' Get top percentage of transcript riboseq reads
-#'
-#' @param ribo a list of lists with overlaps of transcripts and ribo-seq reads
-#' @param top_tx numeric(10), which top percentage of transcripts to use.
-#' @return a list of lists, with accepted lists in ribo
-#' @importFrom S4Vectors tail
-get_top_tx <- function(ribo, top_tx) {
-  idx <- ceiling(length(ribo)/(100/top_tx))
-  sums <- sapply(ribo,sum)
-  thr <- as.numeric(tail(sort(sums),idx+1)[1])
-  ribo <- ribo[sums >= thr]
-
-  return(ribo)
-}
-
-#' Find if there are periodicity in sample
-#'
-#' @param cds150_over a GRanges of tiled cds' to 150 length
-#' @param ends_uniq a GRanges object with 5' ends of reads
-#' @param top_tx numeric(10), which top percentage of transcripts to use.
+#' @param x (numeric) Vector of values to detect periodicity of 3 like in
+#' RiboSeq data.
 #' @return a logical, if it is periodic.
 #' @importFrom stats fft spec.pgram
-periodicity <- function(cds150_over, ends_uniq, top_tx) {
-  cds150_overlaps <- findOverlaps(cds150_over, ends_uniq)
-  cds150_over$riboseq <- rep(0, length(cds150_over))
-  cds150_over$riboseq[from(cds150_overlaps)] <-
-    ends_uniq[to(cds150_overlaps)]$hits
-  ## split cds150 per 150nt (seqnames), add up riboseq
-  ribo <- split(cds150_over$riboseq, ceiling(seq_along(cds150_over$riboseq)/150))
-  #meta <- Reduce("+", ribo) ## all tx
-  ribo <- get_top_tx(ribo, top_tx) ## top n% tx
-  meta <- Reduce("+", ribo) ## from base
-  ## FFT
-  amplitudes <- abs(fft(meta)) #!!!!!!!!!!!! WHAT happens here???
+#'
+isPeriodic <- function(x) {
+  amplitudes <- abs(fft(x))
   amp <- amplitudes[2:(length(amplitudes)/2+1)]
-
-  periods <- 1/spec.pgram(x = meta, plot = F)$freq
-  if ((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1)) {
-    periodic <- TRUE
-  } else {
-    periodic <- FALSE
-  }
-  return(periodic)
+  periods <- 1/spec.pgram(x = x, plot = F)$freq
+  return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
 }
 
-#' Get number of ribo reads per tile position of cds start window
-#' @param start a GRangesList or logical, of tiled cds
-#'  start windows of 60 length
-#' @param ends_uniq a GRanges object with 5' ends of reads
-#' @param top_tx numeric(10), which top percentage of transcripts to use.
-#' @return a list of reads per position
-start_ribo <- function(start, ends_uniq, top_tx) {
-  start_over <- unlist(start)
-  start_overlaps <- findOverlaps(start_over, ends_uniq)
-  start_over$riboseq <- rep(0, length(start_over))
-  start_over$riboseq[from(start_overlaps)] <-
-    ends_uniq[to(start_overlaps)]$hits
-  ## split start per 60nt (seqnames), add up riboseq
-  start_ribo <- split(start_over$riboseq,
-                      ceiling(seq_along(start_over$riboseq)/60))
-  #start_meta <- Reduce("+", start_ribo) ## all tx
-  start_ribo <- get_top_tx(start_ribo, top_tx) ## top n% tx
-  start_meta <- Reduce("+", start_ribo)
-  return(start_meta)
-}
 
-#' Get number of ribo reads per tile position of cds stop window
-#' @param stop a GRangesList or logical, of tiled cds
-#'  stop windows of 60 length
-#' @param ends_uniq a GRanges object with 5' ends of reads
-#' @param top_tx numeric(10), which top percentage of transcripts to use.
-#' @return a list of reads per position
-stop_ribo <- function(stop, ends_uniq, top_tx) {
-  stop_over <- unlist(stop)
-  stop_overlaps <- findOverlaps(stop_over, ends_uniq)
-  stop_over$riboseq <- rep(0, length(stop_over))
-  stop_over$riboseq[from(stop_overlaps)] <- ends_uniq[to(stop_overlaps)]$hits
-  ## split start per 60nt (seqnames), add up riboseq
-  stop_ribo <- split(stop_over$riboseq,
-                     ceiling(seq_along(stop_over$riboseq)/60))
-  #start_meta <- Reduce("+", start_ribo) ## all tx
-  stop_ribo <- get_top_tx(stop_ribo, top_tx) ## top n% tx
-  stop_meta <- Reduce("+", stop_ribo)
-  return(stop_meta)
-}
-
-#' Get the offset for specific ribo-seq read width
-#' @param df a data.frame with points to analyse,
-#'  from function get_start_stop
-#' @param feature a character, (start) or stop
+#' Get the offset for specific RiboSeq read width
+#' @param x a vector with points to analyse, assumes the zero is in the
+#' middle + 1
+#' @param feature (character) either "start" or "stop"
 #' @return a single numeric offset
-change_point_analysis <- function(df, feature="start") {
+#'
+changePointAnalysis <- function(x, feature = "start") {
+  meta <- x[1:40]
+  pos <- -(length(x)/2):(length(x)/2 - 1)
   if (feature == "start") {
-    meta <- df$count[1:40]
     means <- c()
     for (j in 15:35) {
       m <- mean(meta[j:40]) - mean(meta[1:(j-1)])
       means <- c(means, m)
     }
     shift <- which.max(abs(means)) + 14
-    offset <- df$codon[shift]
+    offset <- pos[shift]
   } else if (feature == "stop") {
-    meta <- df$count[1:40]
     shift <- which.max(meta)
-    offset <- df$codon[shift] + 3
+    offset <- pos[shift] + 6
   }
   return(offset)
 }

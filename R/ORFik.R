@@ -15,7 +15,7 @@
 #' }
 #'
 #' @useDynLib ORFik
-#' @import GenomicRanges
+#' @import GenomicRanges GenomicFeatures GenomicAlignments GenomeInfoDb
 #' @importFrom Rcpp sourceCpp
 #'
 "_PACKAGE"

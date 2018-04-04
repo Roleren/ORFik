@@ -2,41 +2,46 @@
 % Please edit documentation in R/shift_footprints.R
 \name{shiftFootprints}
 \alias{shiftFootprints}
-\title{Shifts footprints}
+\title{Shift footprints by selected offsets}
 \usage{
 shiftFootprints(footprints, selected_lengths, selected_shifts)
 }
 \arguments{
-\item{footprints}{a bam or bed file path, or a GAlignment object
-of ribo-seq reads}
+\item{footprints}{(GAlignments) object of RiboSeq reads}
 
-\item{selected_lengths}{Numeric vector of lengths of footprints you select for shifting.}
+\item{selected_lengths}{Numeric vector of lengths of footprints you select
+for shifting.}
 
-\item{selected_shifts}{Numeric vector of shifts for coresponding selected_lengths.
-eg. c(10, -10) with selected_lengths of c(31, 32) means length of 31 will be shifted left by 10.
-Footprints of length 32 will be shifted right by 10.}
+\item{selected_shifts}{Numeric vector of shifts for coresponding
+selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
+length of 31 will be shifted left by 10. Footprints of length 32 will be
+shifted right by 10.}
 }
 \value{
-A GRanges object of shifted footprints.
+A GRanges object of shifted footprints, sorted and resized to 1bp of
+p-site, with metacolumn "size" indicating footprint size before shifting and
+resizing.
 }
 \description{
-Function shifts footprints from bam file and loads them to memory as GRanges.
-Resizes them to single base in 5' end fashion,
-treated as p site. Takes account for junctions in cigars. Length of footprint is saved in
-'size' parameter of GRanges output. Footprints are also sorted according to their genomic
-position, ready for saving e.g. as bed file.
+Function shifts footprints (GRanges) using specified offsets for every of
+the specified lengths. Reads that do not conform to the specified lengths
+are filtered out and rejected. Reads are resized to single base in 5' end
+fashion, treated as p site.
+This function takes account for junctions in cigars of the reads. Length of
+the footprint is saved in size' parameter of GRanges output. Footprints are
+also sorted according to their genomic position, ready to be saved as a
+bed file.
 }
 \examples{
-gtf <- system.file("extdata", "example.gtf",
-                   package = "ORFik") ## location of the gtf file
-suppressWarnings(txdb <-
-                   GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
-bam <- system.file("extdata", "example.bam",
-                   package = "ORFik") ## location of the bam file
-footprints <-readFootprints(bam)
-shifts <- detectRibosomeShifts(footprints, txdb, start=TRUE,
-                               stop=FALSE, offset_plots=FALSE, top_tx=10)
-
+gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+footprints <- GenomicAlignments::readGAlignments(
+  riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
+    isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
+# detect the shifts automagically
+shifts <- detectRibosomeShifts(footprints, txdb)
+# shift the RiboSeq footprints
 shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
                                 shifts$offsets_start)
 }
