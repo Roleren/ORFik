@@ -29,7 +29,7 @@ is.gr_or_grl <- function(class) {
 #'  supposed GRangesList object
 #' @param type a character vector, is it gtf, cds, 5', 3', for messages.
 #' @param checkNULL should NULL classes be checked and return indeces of these?
-#'
+#' @return either NULL or indices (checkNULL == TRUE)
 validGRL <- function(class, type = "grl", checkNULL = FALSE) {
   if(length(class) != length(type)) stop("not equal length of classes",
                                          " and types, see validGRL")
@@ -115,7 +115,7 @@ fread.bed <- function(filePath) {
 
 #' Source bioconductor
 #'
-#' Helper function for quick update of bioconductor packages,
+#' Convenience function for quick update of bioconductor packages,
 #' @param packages either NULL if only source and no update/install
 #' or "all" if you want to update all your bioconductor packages
 #' or c(package1, package2, ...) for specific packages as a character vector

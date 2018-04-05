@@ -128,7 +128,7 @@ entropy <- function(grl, reads) {
   reg_counts<- lapply(indeces, function(x){
     rep(reg_counts[x], runLengths[x])
   })
-  unlrg_counts <- unlist(reg_counts, use.names = F)
+  unlrg_counts <- unlist(reg_counts, use.names = FALSE)
   MHx <- 1/unlrg_counts * log2(1 / unlrg_counts)
 
   # sum the mhx to groups

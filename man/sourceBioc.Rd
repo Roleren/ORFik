@@ -12,5 +12,5 @@ or "all" if you want to update all your bioconductor packages
 or c(package1, package2, ...) for specific packages as a character vector}
 }
 \description{
-Helper function for quick update of bioconductor packages,
+Convenience function for quick update of bioconductor packages,
 }

@@ -35,18 +35,22 @@ RFP5GAlign <- as(RFP5, "GAlignments")
 
 
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-                     ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                     ranges = IRanges(start = c(1, 10, 20),
+                                      end = c(5, 15, 25)),
                      strand = Rle(strand(rep("+", 3))))
 
 ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                      ranges = IRanges(start = c(20, 30, 40), end = c(25, 35, 45)),
+                      ranges = IRanges(start = c(20, 30, 40),
+                                       end = c(25, 35, 45)),
                       strand = Rle(strand(rep("+", 3))))
 
 ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
-                      ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                      ranges = IRanges(start = c(30, 40, 50),
+                                       end = c(35, 45, 55)),
                       strand = Rle(strand(rep("+", 3))))
 ORFranges4 <- GRanges(seqnames = Rle(rep("1", 3)),
-                      ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                      ranges = IRanges(start = c(170, 180, 190),
+                                       end = c(175, 185, 195)),
                       strand = Rle(strand(rep("-", 3))))
 ORFranges4 <- sort(ORFranges4, decreasing = TRUE)
 names(ORFranges) <- rep("tx1_1" ,3)
@@ -77,7 +81,7 @@ tx4 <- GRanges(seqnames = Rle(rep("1", 6)),
 tx4 <- sort(tx4, decreasing = TRUE)
 tx <- GRangesList(tx1 = tx1, tx2 = tx2, tx3 = tx3, tx4 = tx4)
 
-tx_len <- ORFik:::widthPerGroup(tx, TRUE)
+tx_len <- widthPerGroup(tx, TRUE)
 
 RNA  <- GRanges(seqnames = Rle(rep("1", 3)),
                 ranges = IRanges(start = c(1,250,400),
@@ -154,7 +158,7 @@ test_that("entropy works as intended", {
 
   entropy <- entropy(grl, RFP7)
   expect_is(entropy, "numeric")
-  expect_equal(round(entropy, 2), c(0.93, 0.99, 0.97, 0.94))
+  expect_equal(round(entropy, 2), c(0.93, 0.99, 0.97, 0.00))
 })
 
 test_that("orfScore works as intended", {
@@ -175,18 +179,18 @@ test_that("orfScore works as intended", {
 
 test_that("fractionLength works as intended", {
 
-  scores <- ORFik:::fractionLength(grl, tx_len)
+  scores <- fractionLength(grl, tx_len)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(0.09, 0.10, 0.10, 0.10))
 
   changedtx_len <- tx_len
   changedtx_len[2] <- 300
-  scores <- ORFik:::fractionLength(grl, changedtx_len)
+  scores <- fractionLength(grl, changedtx_len)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(0.09, 0.10, 0.10, 0.10))
 
   changedtx_len[1] <- 200
-  scores <- ORFik:::fractionLength(grl, changedtx_len)
+  scores <- fractionLength(grl, changedtx_len)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(0.08, 0.09, 0.09, 0.10))
 })
@@ -205,7 +209,7 @@ test_that("disengagementScore works as intended", {
 
   scores <- disengagementScore(grl, RFP7, GtfOrTx = tx)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.43, 0.80, 0.80, 1.00))
+  expect_equal(round(scores, 2), c(0.43, 0.80, 0.80, 0.14))
 })
 
 
@@ -220,7 +224,7 @@ test_that("ribosomeReleaseScore works as intended", {
 
   scores <- ribosomeReleaseScore(grl, RFP7, threeUTRs)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(8.82, 11.11, 11.11, 2.72))
+  expect_equal(round(scores, 2), c(8.82, 11.11, 11.11, 0.68))
 })
 
 test_that("ribosomeStallingScore works as intended", {
@@ -251,7 +255,7 @@ test_that("floss works as intended", {
 
   scores <- floss(grl, RFP7, cds, 26, 34)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.25, 0.08, 0.08, 0.08))
+  expect_equal(round(scores, 2), c(0.25, 0.08, 0.08, 0.00))
 })
 
 
@@ -268,7 +272,7 @@ test_that("translationalEff works as intended", {
 
   scores <- translationalEff(grl, RNA2, RFP7, tx)
   expect_is(scores, "numeric")
-  expect_equal(round(scores,2), c(7.06, 10.00, 10.00, 9.72))
+  expect_equal(round(scores,2), c(7.06, 10.00, 10.00, 0.00))
 })
 
 test_that("insideOutsideORF works as intended", {
@@ -283,23 +287,23 @@ test_that("insideOutsideORF works as intended", {
 
   scores <- insideOutsideORF(grl, RFP7, tx)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.57))
+  expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.14))
 })
 
 test_that("distToCds works as intended", {
 
   scores <- distToCds(grl, fiveUTRs, extension = 0)
   expect_is(scores, "numeric")
-  expect_equal(scores, c(19, 7, 1, 38))
+  expect_equal(scores, c(19, 7, 1, 19))
 
   scores <- distToCds(grl, fiveUTRs, cds, 0)
   expect_is(scores, "numeric")
-  expect_equal(scores, c(19, 7, 1, 38))
+  expect_equal(scores, c(19, 7, 1, 19))
   # TODO: Decide if this is correct behavior ?
   # My idea now is to keep it.
   scores <- distToCds(grl, fiveUTRs, cds, 5)
   expect_is(scores, "numeric")
-  expect_equal(scores, c(19, 7, 1, 43))
+  expect_equal(scores, c(19, 7, 1, 19))
 })
 
 
@@ -308,7 +312,7 @@ test_that("isInFrame works as intended", {
 
   inFrame <- isInFrame(scores)
   expect_is(inFrame, "numeric")
-  expect_equal(inFrame, c(0, 0, 0, 1))
+  expect_equal(inFrame, c(0, 0, 0, 0))
 })
 
 test_that("isOverlapping works as intended", {

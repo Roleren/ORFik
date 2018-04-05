@@ -18,6 +18,6 @@ If you want to have the unique orfs, not seperated by which
 isoform it came from, use this function.
 }
 \details{
-NB. You will lose the transcript and name information, since
+You will lose the transcript and name information, since
 they no longer map to a transcript, but are now general.
 }

@@ -14,6 +14,9 @@ supposed GRangesList object}
 
 \item{checkNULL}{should NULL classes be checked and return indeces of these?}
 }
+\value{
+either NULL or indices (checkNULL == TRUE)
+}
 \description{
 Helper Function to check valid GRangesList input
 }

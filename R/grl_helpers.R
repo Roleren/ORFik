@@ -121,9 +121,8 @@ sortPerGroup <- function(grl, ignore.strand = FALSE){
     grl[!indicesPos] <- gSort(grl[!indicesPos], decreasing = TRUE,
                               byStarts = FALSE)
     return(grl)
-  } else {
-    return(gSort(grl))
   }
+  return(gSort(grl))
 }
 
 
@@ -238,7 +237,7 @@ lastExonStartPerGroup = function(grl, keep.names = T){
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 #' @return an integer vector of counts
-numExonsPerGroup <- function(grl, keep.names = T){
+numExonsPerGroup <- function(grl, keep.names = TRUE){
   validGRL(class(grl))
 
   # Get Rle -> to logcal -> sum, that is groups

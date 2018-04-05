@@ -41,8 +41,9 @@ matchNaming <- function(gr, reference){
   ## now get a reference
   grTest <- unlist(reference[1], use.names = FALSE)
 
-  ## TODO: add possibily to add unknown columns, i.g. exon_rank etc.
-  ## Will try this now.
+  # TODO: This can still be optimized for strange cases.
+  # One case is that you can keep, even though ncol new > ncol old,
+  # if all are equal within group
   if(ncol(elementMetadata(grTest)) == 1 &&
      colnames(elementMetadata(grTest)) == "names") {
 
