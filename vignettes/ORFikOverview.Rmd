@@ -162,28 +162,28 @@ hitMapStop <- metaWindow(footprintsGR, windows$stop)
 
 Plot start/stop windows for length 29.
 ```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
-# if (requireNamespace("ggplot2")) {
-#   library(ggplot2)
-#   ggplot(hitMapStart, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
-#     geom_bar(stat = "identity") +
-#     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-#     labs(title = paste0("Length 29 over START of canonical CDS")) +
-#     xlab("\nshift from first START nucleotide [bp]") +
-#     ylab("Averaged counts") +
-#     guides(fill = FALSE)
-# }
+if (requireNamespace("ggplot2")) {
+  library(ggplot2)
+  ggplot(hitMapStart, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(title = paste0("Length 29 over START of canonical CDS")) +
+    xlab("\nshift from first START nucleotide [bp]") +
+    ylab("Averaged counts") +
+    guides(fill = FALSE)
+}
 ```
 
 ```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
-# if (requireNamespace("ggplot2")) {
-#   ggplot(hitMapStop, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
-#     geom_bar(stat = "identity") +
-#     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-#     labs(title = paste0("Length 29 over STOP of canonical CDS")) +
-#     xlab("\nshift from last STOP nucleotide [bp]") +
-#     ylab("Averaged counts") +
-#     guides(fill = FALSE)
-# }
+if (requireNamespace("ggplot2")) {
+  ggplot(hitMapStop, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(title = paste0("Length 29 over STOP of canonical CDS")) +
+    xlab("\nshift from last STOP nucleotide [bp]") +
+    ylab("Averaged counts") +
+    guides(fill = FALSE)
+}
 ```
 
 We can also use automatic detection of RiboSeq shifts using the code below. As
