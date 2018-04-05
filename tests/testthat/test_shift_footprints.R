@@ -1,5 +1,6 @@
-library(ORFik)
 context("shift footprints")
+library(ORFik)
+
 
 gtf <- system.file("extdata", "annotations.gtf",
         package = "ORFik") ## location of the gtf file

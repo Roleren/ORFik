@@ -28,11 +28,10 @@ a named vector of numeric values of scores, NA means that
 \description{
 Is defined as (RPFs over ORF)/(RPFs over 3' utrs),
 normalized by lengths
-, if RNA is added as argument, normalize by RNA counts over areas too
+, if RNA is added as argument, it will normalize by RNA counts
 to justify location of 3' utrs
 It can be seen as a ribosome stalling feature.
 A pseudo-count of one was added to both the ORF and downstream sums.
-See article: 10.1016/j.cell.2013.06.009
 }
 \examples{
 ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -44,6 +43,9 @@ threeUTRs <- GRangesList(tx1 = GRanges("1", IRanges(40, 50), "+"))
 RFP <- GRanges("1", IRanges(25, 25),"+")
 RNA <- GRanges("1", IRanges(1, 50),"+")
 ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+}
+\references{
+doi: 10.1016/j.cell.2013.06.009
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

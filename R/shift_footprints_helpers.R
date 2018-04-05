@@ -239,14 +239,15 @@ txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
 getStartStopWindows <- function(
   txdb, txNames, start = TRUE, stop = TRUE, window_size = 30L) {
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
-  cdsTiled <- tile1(groupGRangesBy(unlist(cds, use.names = TRUE)))
-
+  cdsTiled <- tile1(groupGRangesBy(unlistGrl(cds)))
+  cdsTiled <- removeMetaCols(cdsTiled) # so that all can match
   if (start) {
     fiveUTRs <- GenomicFeatures::fiveUTRsByTranscript(
       txdb, use.names=TRUE)[txNames]
-    cdsHead <- phead(cdsTiled, window_size)
-    fiveTiled <- tile1(groupGRangesBy(unlist(fiveUTRs, use.names = TRUE)))
-    fiveTail <- ptail(fiveTiled, window_size)
+    fiveUTRs <- removeMetaCols(fiveUTRs)
+    cdsHead <- heads(cdsTiled, window_size)
+    fiveTiled <- tile1(groupGRangesBy(unlistGrl(fiveUTRs)))
+    fiveTail <- tails(fiveTiled, window_size)
     merged <- unlist(c(fiveTail, cdsHead), use.names = FALSE)
     start <- reduce(split(merged, names(merged)))
   } else {
@@ -256,9 +257,10 @@ getStartStopWindows <- function(
   if (stop) {
     threeUTRs <- GenomicFeatures::threeUTRsByTranscript(
       txdb, use.names=TRUE)[txNames]
-    cdsTail <- ptail(cdsTiled, window_size)
-    threeTiled <- tile1(groupGRangesBy(unlist(threeUTRs, use.names = TRUE)))
-    threeHead <- phead(threeTiled, window_size)
+    threeUTRs <- removeMetaCols(threeUTRs)
+    cdsTail <- tails(cdsTiled, window_size)
+    threeTiled <- tile1(groupGRangesBy(unlistGrl(threeUTRs)))
+    threeHead <- heads(threeTiled, window_size)
     merged <- unlist(c(cdsTail, threeHead), use.names = FALSE)
     stop <- reduce(split(merged, names(merged)))
   } else {

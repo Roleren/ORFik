@@ -15,8 +15,8 @@ a numeric vector of integers
 \description{
 ig. second orf _2 -> 2
 }
-\details{
-See article:  10.1074/jbc.R116.733899
+\references{
+doi: 10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

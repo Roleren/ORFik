@@ -17,10 +17,20 @@ a matrix with 4 columns, the orfscore and score of
 each of the 3 tiles
 }
 \description{
-That is, of the 3 possible frame in an ORF
-Is the first one most important, by how much ?
-NB! Only support + and - strand, not *
-See article: 10.1002/embj.201488411
+That is, of the 3 possible frames in an ORF,
+ does the first frame have more reads.
+}
+\details{
+Function:
+rff is: reads fraction in specific frame
+ORFScore = log(rrf1 + rrf2 + rrf3)
+For all ORFs where rrf2 or rrf3 is bigger than rff1,
+negate the resulting value.
+ORFScore[rrf1Smaller] <- ORFScore[rrf1Smaller] *-1
+
+You get one value per orf:
+Positive values say that the first frame have the most reads,
+negative values say that the first frame does not have the most reads.
 }
 \examples{
 ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -32,6 +42,9 @@ grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 orfScore(grl, RFP)
 
+}
+\references{
+doi: 10.1002/embj.201488411
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

@@ -3,7 +3,7 @@
 #' Short for: Fragments per kilobase of transcript per million fragments
 #'  For ribo seq on orfs, send orfs as grl,
 #'  for rna seq always send transcripts as grl
-#' see article: 10.1038/nbt.1621
+#' @references doi: 10.1038/nbt.1621
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
 #'  ORFs are a special case (uORFs, potential new cds' etc).
@@ -37,7 +37,6 @@ fpkm <- function(grl, reads, pseudoCount = 0){
 #' @param cov A coverage object from coverage()
 #' @param y GRanges object for which coverage should be extracted
 #' @family features
-#' @export
 #' @examples
 #' #subsetCoverage(x)
 #' @return numeric vector of coverage of input GRanges object
@@ -46,11 +45,12 @@ subsetCoverage <- function(cov, y) {
   return(as.vector(cov1[ranges(y)]))
 }
 
-#' Calucalte Entropy value of input reads overlapping
-#' @description For example reads per orf.
+#' Calucalte Entropy value of overlapping input reads
+#'
+#' Calculates entropy of the read coverage over each GRanges group.
 #' The entropy interval per group is a real number in the interval (0:1)
 #' Where 0 is no variance in reads over group.
-#' @export
+#' I.g. c(0,0,0,0) has 0 entropy, since no reads hit.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} that the reads can map to
 #' @param reads a GAlignment object, ig. from ribo seq, or rna seq,
 #'  can also be GRanges or GRangesList
@@ -62,7 +62,7 @@ subsetCoverage <- function(cov, y) {
 #' names(ORF) <- rep("tx1", 3)
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)),"+")
-#' # NB: grl must have same names as cds, + _1 etc
+#' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' entropy(grl, RFP)
 #' # or on cds
 #' cdsORF <- GRanges("1", IRanges(35, 44),"+")
@@ -151,13 +151,17 @@ entropy <- function(grl, reads) {
 
 #' Fragment Length Organization Similarity Score
 #'
-#' Defined as: for riboseq reads between size start and stop,
+#' Defined as: for reads of width between start and stop,
 #' sum the fraction of riboseq with width in the interval start:stop
-#' for orfs.
-#' Divided by the fraction of rriboseq with width in the interval
-#' start:stop for coding sequences.
-#' A sum of ratios
-#' See article: 10.1016/j.celrep.2014.07.045
+#' that overlap orfs. I.g interval 28-32, sum all 28, then 29.
+#' Divided by the fraction of reads with width in the interval
+#' start:stop for coding sequences(cds).
+#'
+#' Function:
+#' SUM[start to stop]( (OrfReads[start:stop]/allOrfReads) /
+#'  (CdsReads[start:stop]/allCdsReads) )
+#'
+#' @references doi: 10.1016/j.celrep.2014.07.045
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment or GRanges object
 #' @param cds a \code{\link[GenomicRanges]{GRangesList}} of coding sequences
@@ -172,7 +176,7 @@ entropy <- function(grl, reads) {
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
-#' # nb: grl must have same names as cds, + _1 etc
+#' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' floss(grl, RFP, cds)
 #' # or change ribosome start/stop, more strict
 #' floss(grl, RFP, cds, 28, 32)
@@ -181,7 +185,7 @@ entropy <- function(grl, reads) {
 floss <- function(grl, RFP, cds, start = 26, end = 34){
   #TODO: add 0 to the ones that dont hit
   if (start > end) stop("start is bigger than end")
-  if (class(RFP) == "GRangesList"){
+  if (is.grl(class(RFP))){
     stop("RFP must be either GAlignment or GRanges type")
   }
   # for orfs
@@ -228,15 +232,16 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
     score <- tempScores
   }
   if (length(score) != length(grl) || anyNA(score)) stop("could not find\n
-                                        floss-score for all objects, most\n
-                                        likely objects are wrongly annotated.")
+                                                         floss-score for all objects, most\n
+                                                         likely objects are wrongly annotated.")
   return(score)
 }
 
 #' Translational efficiency
 #' @description Uses Rna-seq and Ribo-seq to get te of grl
-#' is defined as (density of RPFs within ORF)/(RNA expression).
-#' See article: 10.1126/science.1168978
+#' It is defined as:
+#' (density of RPFs within ORF) / (RNA expression of ORFs transcript).
+#' @references doi: 10.1126/science.1168978
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
 #'  ORFs are a special case (uORFs, potential new cds' etc).
@@ -245,11 +250,11 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' @param RFP ribo seq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param tx a GRangesList of the transcripts,
-#'  NB!!! if you used cage data, then
+#'  If you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
 #'  if so, call:
-#'  translationalEff(grl, RNA, RFP, tx= TxLen(Gtf, fiveUTRs))
+#'  translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
 #'  where fiveUTRs are the changed cageLeaders.
 #' @param with.fpkm logical F, if true return the fpkm values together with te
 #' @param pseudoCount an integer, 0,
@@ -266,7 +271,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' RNA <- GRanges("1", IRanges(1, 50),"+")
 #' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
-#' # nb: grl must have same names as tx, + _1 etc
+#' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
 #' te$fpkmRFP
 #' te$te
@@ -288,7 +293,8 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
 
 #' Fraction Length
 #' @description is defined as (length of grls)/(length of transcripts)
-#' see article: 10.1242/dev.098343
+#' ,so that each group in the grl is divided by the corresponding transcript.
+#' @references doi: 10.1242/dev.098343
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
@@ -296,11 +302,12 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
 #'  a named (tx names) vector of integers.
 #'  If you have the transcripts as GRangesList,
 #'  call ORFik:::widthPerGroup(tx, T)
-#'  NB!!! if you used cage data, then
+#'  If you used cage data, then
 #'  the tss for the the leaders have changed,
 #'  therefor the tx lengths have changed,
 #'  if so, call:
-#'  fractionLength(grl, tx_len = TxLen(Gtf, cageLeaders))
+#'  tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))
+#'  fractionLength(grl, tx_len)
 #' @family features
 #' @examples
 #' ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -308,7 +315,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0){
 #'                end = c(5, 15, 25)),
 #'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
-#' # nb: grl must have same names as tx, + _1 etc
+#' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
 #' fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
 #' @export
@@ -322,8 +329,8 @@ fractionLength <- function(grl, tx_len){
 
 #' Disengagement score (DS)
 #' @description is defined as (RPFs over ORF)/(RPFs downstream to tx end).
-#' A pseudo-count of one was added to both the ORF and downstream sums.
-#' See article: 10.1242/dev.098344
+#' A pseudo-count of one is added to both the ORF and downstream sums.
+#' @references doi: 10.1242/dev.098344
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
@@ -353,7 +360,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 
   if (class(GtfOrTx) == "TxDb") {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = T)
-  } else if (class(GtfOrTx) == "GRangesList") {
+  } else if (is.grl(GtfOrTx)) {
     tx <- GtfOrTx
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
@@ -374,11 +381,11 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #'
 #' Is defined as (RPFs over ORF)/(RPFs over 3' utrs),
 #' normalized by lengths
-#' , if RNA is added as argument, normalize by RNA counts over areas too
+#' , if RNA is added as argument, it will normalize by RNA counts
 #' to justify location of 3' utrs
 #' It can be seen as a ribosome stalling feature.
 #' A pseudo-count of one was added to both the ORF and downstream sums.
-#' See article: 10.1016/j.cell.2013.06.009
+#' @references doi: 10.1016/j.cell.2013.06.009
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually either leaders,
 #'  cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
@@ -406,8 +413,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   if (class(GtfOrThreeUtrs) == "TxDb") {
     threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
-                                        use.names = T)
-  } else if (class(GtfOrThreeUtrs) == "GRangesList") {
+                                       use.names = T)
+  } else if (is.grl(GtfOrThreeUtrs)) {
     threeUTRs <- GtfOrThreeUtrs
   } else {
     stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
@@ -442,7 +449,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' Is defined as (RPFs over ORF stop sites)/(RPFs over ORFs),
 #' normalized by lengths
 #' A pseudo-count of one was added to both the ORF and downstream sums.
-#' See article: 10.1016/j.cels.2017.08.004
+#' @references doi: 10.1016/j.cels.2017.08.004
 #'
 #' For a more accurate analysis see article:  10.1016/j.cels.2017.08.004.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
@@ -515,7 +522,6 @@ ribosomeStallingScore <- function(grl, RFP){
 #'  isInFrame, isOverlapping and rankInTx
 #' @importFrom data.table data.table
 #' @family features
-#' @export
 #' @return a data.table with scores, each column is one score type, name of
 #'  columns are the names of the scores, i.g \code{\link{floss}}
 #'  or \code{\link{fpkm}}
@@ -562,40 +568,40 @@ ribosomeStallingScore <- function(grl, RFP){
 #' }
 #'
 computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
-                        fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
-                        faFile = NULL, riboStart = 26, riboStop = 34,
-                        extension = NULL, orfFeatures = TRUE,
-                        cageFiveUTRs = NULL, includeNonVarying = TRUE){
+                                fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
+                                faFile = NULL, riboStart = 26, riboStop = 34,
+                                extension = NULL, orfFeatures = TRUE,
+                                cageFiveUTRs = NULL, includeNonVarying = TRUE){
   #### Check input and load data ####
   validExtension(extension, cageFiveUTRs)
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   checkRFP(class(RFP))
   checkRNA(class(RNA))
   tx_len <- NULL
   if (is.null(Gtf)) {
     validGRL(c(class(fiveUTRs), class(cds), class(threeUTRs)),
              c("fiveUTRs", "cds", "threeUTRs"))
-    if (class(tx) != "GRangesList") { stop("if Gtf is not given,\n
-                             tx must be specified as a GRangesList")
+    if (!is.grl(tx)) { stop("if Gtf is not given,\n
+                                    tx must be specified as a GRangesList")
     }
-  } else {
-    if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
+    } else {
+      if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
 
-    notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
-                              class(threeUTRs), class(tx)), c("fiveUTRs",
-                                "cds", "threeUTRs", "tx"), TRUE)
-    if (notIncluded[1]) {
-      fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
-    }
-    if (notIncluded[2]) {
-      cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
-    }
-    if (notIncluded[3]) {
-      threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
-    }
-    if (notIncluded[4]) {
-      tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
-    }
+      notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
+                                class(threeUTRs), class(tx)),
+                              c("fiveUTRs","cds", "threeUTRs", "tx"), TRUE)
+      if (notIncluded[1]) {
+        fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
+      }
+      if (notIncluded[2]) {
+        cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
+      }
+      if (notIncluded[3]) {
+        threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
+      }
+      if (notIncluded[4]) {
+        tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
+      }
   }
   if (!is.null(cageFiveUTRs)) {
     tx <- extendLeaders(tx, extension = cageFiveUTRs)
@@ -656,7 +662,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' Each feature have a link to an article describing feature,
 #' try ?floss
 #'
-#' NB: If you used cage-data. Your txDB object, must contain the
+#' If you used cage-data. Your txDB object, must contain the
 #'  reassigned leaders. If you used cage and dont have the reassigned
 #'  txdb, either reassign them with \code{\link{reassignTSSbyCage}}
 #'  or use the other function: \code{\link{computeFeaturesCage}}

@@ -16,11 +16,11 @@ currently supports human, zebrafish and mouse (m. musculus).
 You can also specify a pfm for your own species.
 Syntax of pfm is an rectangular integer matrix,
 where all columns must sum to the same value, normally 100.
-See example for information.}
+See example for more information.}
 
 \item{include.N}{logical (F), if TRUE, allow N bases to be counted as hits,
-score will be average of the other bases. If True N bases will be
-added to pfm, automaticly, so dont include them.}
+score will be average of the other bases. If True, N bases will be
+added to pfm, automaticly, so dont include them if you make your own pfm.}
 }
 \value{
 a numeric vector with values between 0 and 1
@@ -29,12 +29,10 @@ an integer vector, one score per orf
 }
 \description{
 The closer the sequence is to the kozak sequence
-The higher the score, based on the experimental pwms from paper.
+The higher the score, based on the experimental
+pwms from article referenced.
 Minimum score is 0 (worst correlation), max is 1 (the best
 base per column was chosen)
-}
-\details{
-See article: https://doi.org/10.1371/journal.pone.0108475
 }
 \examples{
  \dontrun{
@@ -67,6 +65,9 @@ See article: https://doi.org/10.1371/journal.pone.0108475
 
  }
  }
+}
+\references{
+doi: https://doi.org/10.1371/journal.pone.0108475
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

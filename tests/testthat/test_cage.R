@@ -1,5 +1,5 @@
-library(ORFik)
 context("CageData Integration")
+library(ORFik)
 
 library(GenomicFeatures)
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",

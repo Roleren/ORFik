@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_helpers.R
 \name{findCageUTRFivelen}
 \alias{findCageUTRFivelen}
-\title{get length of leaders ordered after oldTxNames}
+\title{Get length of leaders ordered after oldTxNames}
 \usage{
 findCageUTRFivelen(fiveUTRs, oldTxNames)
 }
@@ -10,6 +10,9 @@ findCageUTRFivelen(fiveUTRs, oldTxNames)
 \item{fiveUTRs}{a GRangesList object of leaders}
 
 \item{oldTxNames}{a character vector of names to group fiveUTRs by.}
+}
+\value{
+a GRangesList of reordered leaders.
 }
 \description{
 Normally only a helper function for ORFik

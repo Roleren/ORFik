@@ -19,14 +19,14 @@ possible outputs:
 1: 1 shifted from cds
 2: 2 shifted from cds
 }
-\details{
-See article:  10.1074/jbc.R116.733899
-}
 \examples{
 grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
 dist <- distToCds(grl, fiveUTRs, extension = 0)
 isInFrame <- isInFrame(dist)
+}
+\references{
+doi: 10.1074/jbc.R116.733899
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

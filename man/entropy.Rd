@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods.R
 \name{entropy}
 \alias{entropy}
-\title{Calucalte Entropy value of input reads overlapping}
+\title{Calucalte Entropy value of overlapping input reads}
 \usage{
 entropy(grl, reads)
 }
@@ -16,9 +16,10 @@ can also be GRanges or GRangesList}
 A numeric vector containing entropy per ORF
 }
 \description{
-For example reads per orf.
+Calculates entropy of the read coverage over each GRanges group.
 The entropy interval per group is a real number in the interval (0:1)
 Where 0 is no variance in reads over group.
+I.g. c(0,0,0,0) has 0 entropy, since no reads hit.
 }
 \examples{
 ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
@@ -27,7 +28,7 @@ ORF$names = "tx1_1"
 names(ORF) <- rep("tx1", 3)
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)),"+")
-# NB: grl must have same names as cds, + _1 etc
+# grl must have same names as cds + _1 etc, so that they can be matched.
 entropy(grl, RFP)
 # or on cds
 cdsORF <- GRanges("1", IRanges(35, 44),"+")

@@ -24,7 +24,6 @@ a numeric vector with the fpkm values
 Short for: Fragments per kilobase of transcript per million fragments
  For ribo seq on orfs, send orfs as grl,
  for rna seq always send transcripts as grl
-see article: 10.1038/nbt.1621
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
@@ -34,6 +33,9 @@ ORF <- GRanges(seqnames = "1",
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 fpkm(grl, RFP)
+}
+\references{
+doi: 10.1038/nbt.1621
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

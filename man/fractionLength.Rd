@@ -15,18 +15,19 @@ cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 a named (tx names) vector of integers.
 If you have the transcripts as GRangesList,
 call ORFik:::widthPerGroup(tx, T)
-NB!!! if you used cage data, then
+If you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
 if so, call:
-fractionLength(grl, tx_len = TxLen(Gtf, cageLeaders))}
+tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))
+fractionLength(grl, tx_len)}
 }
 \value{
 a numeric vector of ratios
 }
 \description{
 is defined as (length of grls)/(length of transcripts)
-see article: 10.1242/dev.098343
+,so that each group in the grl is divided by the corresponding transcript.
 }
 \examples{
 ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -34,9 +35,12 @@ ORF <- GRanges(seqnames = "1", ranges = IRanges(
                end = c(5, 15, 25)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-# nb: grl must have same names as tx, + _1 etc
+# grl must have same names as cds + _1 etc, so that they can be matched.
 tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
 fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
+}
+\references{
+doi: 10.1242/dev.098343
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

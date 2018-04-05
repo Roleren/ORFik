@@ -166,9 +166,7 @@ findORFs <- function(
 findMapORFs <- function(
   grl, seqs, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
   longestORF = FALSE, minimumLength = 0 ){
-
-  if (class(grl) != "GRangesList")
-    stop("Invalid type of grl, must be GRangesList.")
+  validGRL(class(grl))
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
   if (length(seqs) != length(grl))

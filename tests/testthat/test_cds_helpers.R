@@ -1,5 +1,5 @@
-library(ORFik)
 context("cds helpers")
+library(ORFik)
 
 ###########################NB########################
 # Until AnnotationDbi version 1.41.4 is released
