@@ -11,13 +11,15 @@ reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
 \item{fiveUTRs}{(GRangesList) The 5' leaders or transcript sequences}
 
 \item{cage}{Either a filePath for CageSeq file, or already loaded
-CageSeq peak data as GRanges}
+CageSeq peak data as GRanges.}
 
 \item{extension}{The maximum number of basses upstream of the TSS to search
 for CageSeq peak.}
 
-\item{filterValue}{The number of counts (score column in CageSeq data) to
-filter out low peaks.}
+\item{filterValue}{The minimum number of reads on cage position,
+for it to be counted as possible new tss.
+(represented in score column in CageSeq data) to
+If you already filtered, set it to 0.}
 
 \item{cds}{(GRangesList) CDS of relative fiveUTRs, applicable only if you
 want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that

@@ -109,7 +109,7 @@ txNames <- function(grl, unique = F){
 
   if (is.null(names(grl))) {
     if (!is.grl(class(grl))) {
-      otherPossibility <- unlist(grl, use.names = F)$names
+      otherPossibility <- unlist(grl, use.names = FALSE)$names
     } else {
       otherPossibility <- grl$names
     }
@@ -280,8 +280,8 @@ stopCodons <- function(grl, is.sorted = FALSE){
 #'  versions on different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
 orfID <- function(grl, with.tx = FALSE){
-  seqnames <- as.character(seqnames(heads(grl,1L)))
-  strands <- strandPerGroup(grl,F)
+  seqnames <- seqnamesPerGroup(grl, FALSE)
+  strands <- strandPerGroup(grl, FALSE)
 
   exonInfo <- paste(start(grl),width(grl))
   exonInfo <- paste(exonInfo, sep = '', collapse = ';')
@@ -300,7 +300,7 @@ orfID <- function(grl, with.tx = FALSE){
 #' If you want to have the unique orfs, not seperated by which
 #' isoform it came from, use this function.
 #'
-#' NB. You will lose the transcript and name information, since
+#' You will lose the transcript and name information, since
 #' they no longer map to a transcript, but are now general.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return a GRangesList of unique orfs

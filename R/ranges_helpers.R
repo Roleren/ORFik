@@ -370,11 +370,9 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL){
 #' @export
 #' @return a Rle, one list per group with # of hits per position.
 coveragePerTiling <- function(grl, reads){
-  tileBy1 <- tile1(grl)
-  unlTile <- unlist(tileBy1, use.names = FALSE)
-  if(!is.null(unlTile$names)){ # TODO: check if this is safe enough
-    names(unlTile) <- unlTile$names
-  }
+
+  unlTile <- unlistGrl(tile1(grl))
+
   # could make this more efficient by counting overlaps
   # only on untiled, then tile the ones that hit and count again
   counts <- countOverlaps(unlTile, reads)

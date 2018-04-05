@@ -22,7 +22,9 @@ Normally use function \code{\link{fpkm}}, if you want unusual normalization
 , you can use this.
 Short for: Fragments per kilobase of transcript per million fragments
 Normally used in Translations efficiency calculations
-see article: 10.1038/nbt.1621
+}
+\references{
+doi: 10.1038/nbt.1621
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

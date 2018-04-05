@@ -4,7 +4,7 @@
 \alias{numExonsPerGroup}
 \title{Get list of the number of exons per group}
 \usage{
-numExonsPerGroup(grl, keep.names = T)
+numExonsPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a GRangesList}

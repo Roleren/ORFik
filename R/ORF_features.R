@@ -120,13 +120,13 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
   lastExons <-  lastExonPerGroup(ORFs)
   orfsTx <- asTX(lastExons, fiveUTRs)
   # this is ok, since it is tx not genomic ->
-  orfEnds <- lastExonEndPerGroup(orfsTx, F)
+  orfEnds <- lastExonEndPerGroup(orfsTx, FALSE)
   if (extension > 0) {
     cdsStarts <- widthPerGroup(extendedLeadersWithoutCds[
-      txNames(lastExons)], F) + 1
+      txNames(lastExons)], FALSE) + 1
   } else {
     cdsStarts <- widthPerGroup(fiveUTRs[
-      txNames(lastExons)], F) + 1
+      txNames(lastExons)], FALSE) + 1
   }
   dists <- cdsStarts - orfEnds
 

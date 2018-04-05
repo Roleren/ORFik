@@ -65,9 +65,9 @@ cage <- GRanges(seqnames = c("1","1","2","2","3","3"),
                 strand = as.character(strand(fiveAsGR)[1:6]),
                 score = c(5, 10, 1, 2, 1, 2))
 
-test_that("matchSeqnames fixes seqname errors correctly", {
+test_that("matchSeqlevels fixes seqlevel discrepancies correctly", {
 
-  test_result <- ORFik:::matchSeqnames(cage, fiveUTRs)
+  test_result <- matchSeqlevels(cage, fiveUTRs)
 
   expect_is(test_result, "GRanges")
   expect_equal(length(test_result), 6)

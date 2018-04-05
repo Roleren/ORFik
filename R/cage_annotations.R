@@ -1,13 +1,3 @@
-#' Get Cage-Data from a file-path
-#' @param filePath The location of the cage file
-#' @return a GRanges object
-#'
-cageFromFile <- function(filePath) {
-  rawCage <- fread.bed(filePath)
-  message("Loaded CageSeq successfully")
-  return(rawCage)
-}
-
 
 #' Filter peak of cage-data by value
 #' @param rawCage The raw cage-data
@@ -16,20 +6,23 @@ cageFromFile <- function(filePath) {
 #' @return the filtered Granges object
 #'
 filterCage <- function(rawCage, filterValue = 1) {
+  if (filterValue == 0) {
+    return(rawCage)
+  }
   if (is.null(rawCage$score)) stop("Found no 'score' column in the CageSeq.")
   filteredCage <- rawCage[rawCage$score > filterValue, ] #filter on score
   return(filteredCage)
 }
 
-
 #' Match seqnames
 #'
-#' Check that seqnames of fiveUTRs and cage uses same standard, i.g chr1 vs 1.
+#' Check that seqlevels of fiveUTRs and cage uses
+#' the same standard, i.g chr1 vs 1.
 #' @param filteredCage Cage-data to check seqnames in
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @return filteredCage with matched seqnames convention
 #'
-matchSeqnames <- function(filteredCage, fiveUTRs) {
+matchSeqlevels <- function(filteredCage, fiveUTRs) {
   fiveSeqlevels <- seqlevels(unlist(fiveUTRs, use.names = FALSE))
   cageSeqlevels <- seqlevels(filteredCage)
   if (length(grep(pattern = "chr", fiveSeqlevels)) > 0 &&
@@ -87,15 +80,17 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds) {
             returning without using cds.")
     return(fiveUTRs)
   }
-  # get only the ones we need
-  # select first in every, they must be sorted!
+  ## get only the ones we need
+  ## select first in every, they must be sorted!
   firstExons <- firstExonPerGroup(cds[names(fiveUTRs)])
   gr <- unlist(firstExons, use.names = FALSE)
-  # fix mcols of cds, so that pc() will work
+  ## fix mcols of cds, so that pc() will work
   mcols(gr) <- as.data.frame(mcols(unlist(
     fiveUTRs, use.names = FALSE)))[1:length(gr),]
   grl <- relist(gr, firstExons)
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)
+  ## should we use reduceKeepAttr here ?, we will lose
+  ## exon_id if not.
   return(reduce(fiveUTRsWithCdsExons))
 }
 
@@ -178,7 +173,7 @@ assignFirstExons <- function(firstExons, fiveUTRs){
 #'
 addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 
-  fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
+  fiveAsgr <- unlistGrl(fiveUTRs)
   firstExons <- fiveAsgr[fiveAsgr$exon_rank == 1]
 
   maxPeakPosition$names <- names(firstExons[maxPeakPosition$to])
@@ -211,11 +206,13 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #'
 #' @param fiveUTRs (GRangesList) The 5' leaders or transcript sequences
 #' @param cage Either a filePath for CageSeq file, or already loaded
-#' CageSeq peak data as GRanges
+#' CageSeq peak data as GRanges.
 #' @param extension The maximum number of basses upstream of the TSS to search
 #' for CageSeq peak.
-#' @param filterValue The number of counts (score column in CageSeq data) to
-#' filter out low peaks.
+#' @param filterValue The minimum number of reads on cage position,
+#' for it to be counted as possible new tss.
+#' (represented in score column in CageSeq data) to
+#' If you already filtered, set it to 0.
 #' @param cds (GRangesList) CDS of relative fiveUTRs, applicable only if you
 #' want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
 #' can overlap into CDS's.
@@ -244,7 +241,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
                               filterValue = 1, cds = NULL) {
   validGRL(class(fiveUTRs), "fiveUTRs")
   if (class(cage) == "character") {
-    filteredCage <- filterCage(cageFromFile(cage),
+    filteredCage <- filterCage(fread.bed(cage),
                                filterValue) # get the cage data
   } else if (class(cage) == "GRanges") {
     filteredCage <- filterCage(cage, filterValue)
@@ -253,7 +250,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
          " filepath or GRanges object.")
   }
   # check that seqnames match
-  filteredCage <- matchSeqnames(filteredCage, fiveUTRs)
+  filteredCage <- matchSeqlevels(filteredCage, fiveUTRs)
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension)
   fiveUTRs <- assignFirstExons(
     addNewTSSOnLeaders(fiveUTRs, maxPeakPosition), fiveUTRs)

@@ -98,7 +98,7 @@ codonSumsPerGroup <- function(h, indeces, L, N, reg_len,
 #' , you can use this.
 #' Short for: Fragments per kilobase of transcript per million fragments
 #' Normally used in Translations efficiency calculations
-#' see article: 10.1038/nbt.1621
+#' @references doi: 10.1038/nbt.1621
 #' @param counts a list, # of read hits per group
 #' @param lengthSize a list of lengths per group
 #' @param librarySize a numeric of size 1, the # of reads in library
