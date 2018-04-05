@@ -1,5 +1,5 @@
-library(ORFik)
 context("features")
+library(ORFik)
 
 RFP <- GRanges(seqnames = Rle(rep("1", 5)),
                ranges = IRanges(start = c(1, 10, 20, 30, 40),

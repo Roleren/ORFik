@@ -7,7 +7,7 @@ is.grl <- function(class) {
   if (!is.character(class)) {
     class <- class(class)
   }
-  return(class == "GRangesList")
+  return((class == "GRangesList" || class == "CompressedGRangesList"))
 }
 
 

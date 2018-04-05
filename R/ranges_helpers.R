@@ -1,322 +1,3 @@
-#' Group GRanges
-#'
-#' Grouped by names or another column(other)
-#'  ig. if GRanges should be grouped by gene,
-#'  give gene column as other
-#' @param gr a GRanges object
-#' @param other a vector of unique names to group by
-#' @importFrom S4Vectors nrun
-#' @examples
-#' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-#'            ranges = IRanges(start = c(1, 10, 20),
-#'            end = c(5, 15, 25)),
-#'            strand = "+")
-#'
-#' ORFranges2 <- GRanges("1",
-#'                      ranges = IRanges(start = c(20, 30, 40),
-#'                                       end = c(25, 35, 45)),
-#'                      strand = "+")
-#' names(ORFranges) = rep("tx1_1",3)
-#' names(ORFranges2) = rep("tx1_2",3)
-#' grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
-#' gr <- unlist(grl, use.names = FALSE)
-#' ## now recreate the grl
-#' ## group by orf
-#' grltest <- groupGRangesBy(gr) # using the names to group
-#' identical(grl, grltest) ## they are identical
-#'
-#' ## group by transcript
-#' names(gr) <- txNames(gr)
-#' grltest <- groupGRangesBy(gr)
-#' identical(grl, grltest) ## they are not identical
-#'
-#' @export
-#' @return a GRangesList named after names(Granges) if other is NULL, else
-#' names are from unique(other)
-#'
-groupGRangesBy <- function(gr, other = NULL){
-  if (class(gr) != "GRanges") stop("gr must be GRanges Object")
-  if (is.null(other)) { # if not using other
-    if (is.null(names(gr))) stop("gr object have no names")
-    l <- S4Vectors::Rle(names(gr))
-  } else { # else use other
-    if (length(gr) != length(other))
-      stop(" in GroupGRangesByOther: lengths of gr and other does not match")
-    l <- S4Vectors::Rle(other)
-  }
-  grouping <- unlist(lapply(1:nrun(l), function(x){ rep(x, runLength(l)[x])}))
-  grl <- split(gr, grouping)
-  if (is.null(other)) {
-    names(grl) <- unique(names(gr))
-  } else {
-    names(grl) <- unique(other)
-  }
-
-  return(grl)
-}
-
-
-#' get list of widths per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @return an integer vector (named/unnamed) of widths
-#'
-widthPerGroup = function(grl, keep.names = TRUE){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(sum(width(grl)))
-  } else {
-    return(as.integer(sum(width(grl))))
-  }
-}
-
-
-#' get list of seqnames per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @importFrom S4Vectors phead
-#' @return a character vector or Rle of seqnames(if seqnames == T)
-#'
-seqnamesPerGroup <- function(grl, keep.names = T){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(seqnames(phead(grl, 1L)))
-  } else {
-    return(as.character(seqnames(phead(grl, 1L))))
-  }
-}
-
-
-#' Sort a GRangesList, helper.
-#'
-#' A helper for \code{\link{sortPerGroup}}.
-#' A faster, more versatile reimplementation of GenomicRanges::sort()
-#' Normally not used directly.
-#' Groups first each group, then either decreasing or increasing
-#' (on starts if byStarts == T, on ends if byStarts == F)
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param decreasing should the first in each group have max(start(group))
-#'   ->T or min-> default(F) ?
-#' @param byStarts a logical T, should it order by starts or ends F.
-#' @importFrom data.table as.data.table :=
-#' @return an equally named GRangesList, where each group is sorted within
-#' group.
-#'
-gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
-  if (length(grl) == 0) return(GRangesList())
-
-  DT <- as.data.table(grl)
-  group <- NULL # for not getting warning
-  if (decreasing) {
-    if (byStarts) {
-      DT <- DT[order(group, -start)]
-    } else {
-        DT <- DT[order(group, -end)]
-    }
-  } else {
-    if (byStarts) {
-      DT <- DT[order(group, start)]
-    } else {
-        DT <- DT[order(group, end)]
-    }
-  }
-  # test naming
-  testName <- names(unlist(grl[1], use.names = FALSE)[1])
-  if (is.null(testName)) {
-    DT[, group := NULL]
-    asgrl <- makeGRangesListFromDataFrame(
-      DT, split.field = "group_name",
-      keep.extra.columns = TRUE)
-  } else {
-    if (!any(grep(pattern = "_", testName))) {
-      DT[, group := gsub("_[0-9]*", "", DT$group_name)]
-    } else {
-        DT[, group := DT$group_name]
-    }
-    asgrl <- makeGRangesListFromDataFrame(
-      DT, split.field = "group_name",
-      names.field = "group", keep.extra.columns = TRUE)
-  }
-
-  asgrl <- asgrl[names(grl)]
-  return(asgrl)
-}
-
-
-#' Sort a GRangesList
-#'
-#' A faster, more versatile reimplementation of GenomicRanges::sort()
-#' for GRangesList, which works poorly for > 10k groups
-#' It sorts each group, where + strands increasing by start
-#' and - strands decreasing by ends.
-#'
-#' If you want unusual sorts, like reversed ordering,
-#' use \code{\link{gSort}} directly.
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param ignore.strand a boolean, should minus strands be sorted from highest
-#'  to lowest(T)
-#' @export
-#' @return an equally named GRangesList, where each group is
-#'  sorted within group.
-#'
-sortPerGroup <- function(grl, ignore.strand = FALSE){
-  if (!ignore.strand) {
-    indicesPos <- strandBool(grl)
-
-    grl[indicesPos] <- gSort(grl[indicesPos])
-    grl[!indicesPos] <- gSort(grl[!indicesPos], decreasing = TRUE,
-                              byStarts = FALSE)
-    return(grl)
-  } else {
-    return(gSort(grl))
-  }
-}
-
-
-#' get list of strands per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @importFrom S4Vectors phead
-#' @return a vector named/unnamed of characters
-#'
-strandPerGroup <- function(grl, keep.names = T){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(strand(phead(grl, 1L)))
-  } else {
-    return(as.character(strand(phead(grl, 1L))))
-  }
-}
-
-
-#' helper function to get a logical list of True/False, if GRangesList group have
-#' + strand = T, if - strand = F
-#' Also checks for * strands, so a good check for bugs
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
-#' @export
-#' @return a logical vector
-#'
-strandBool <- function(grl){
-  if (class(grl) == "GRanges") {
-    posIndices <- as.character(strand(grl)) == "+"
-  } else {
-    posIndices <- strandPerGroup(grl, FALSE) == "+"
-  }
-
-  sums <- sum(posIndices) + sum(!posIndices)
-  if (is.na(sums)) {
-    stop("could not get strands from grl object,\n
-          most likely NULL object was passed.")
-  }
-  if (sums != length(grl)) {
-    stop("grl contains * strands, set them to either + or -")
-  }
-  return(posIndices)
-}
-
-
-#' get first exon per GRangesList group
-#' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @importFrom S4Vectors phead
-#' @return a GRangesList of the first exon per group
-#'
-firstExonPerGroup <- function(grl){
-  validGRL(class(grl), "grl")
-  return(phead(grl, 1L))
-}
-
-
-#' get last exon per GRangesList group
-#' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @importFrom S4Vectors ptail
-#' @return a GRangesList of the last exon per group
-#'
-lastExonPerGroup <- function(grl){
-  validGRL(class(grl), "grl")
-  return(ptail(grl, 1L))
-}
-
-
-#' get first start per granges group
-#' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @return a Rle(keep.names = T), or integer vector(F)
-#'
-firstStartPerGroup <- function(grl, keep.names = T){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(start(firstExonPerGroup(grl)))
-  }else {
-    return(as.integer(start(firstExonPerGroup(grl))))
-  }
-}
-
-
-#' get first end per granges group
-#' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @return a Rle(keep.names = T), or integer vector(F)
-#'
-firstEndPerGroup <- function(grl, keep.names = T){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(end(firstExonPerGroup(grl)))
-  } else {
-    return(as.integer(end(firstExonPerGroup(grl))))
-  }
-}
-
-
-#' get last end per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @return a Rle(keep.names = T), or integer vector(F)
-#'
-lastExonEndPerGroup = function(grl,keep.names = T){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(end(lastExonPerGroup(grl)))
-  } else {
-    return(as.integer(end(lastExonPerGroup(grl))))
-  }
-}
-
-
-#' get last start per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param keep.names a boolean, keep names or not
-#' @return a Rle(keep.names = T), or integer vector(F)
-#'
-lastExonStartPerGroup = function(grl, keep.names = T){
-  validGRL(class(grl), "grl")
-  if (keep.names) {
-    return(start(lastExonPerGroup(grl)))
-  } else {
-    return(as.integer(start(lastExonPerGroup(grl))))
-  }
-}
-
-#' Get list of the number of exons per group
-#'
-#' Can also be used generaly to get number of GRanges object
-#'  per GRangesList group
-#' @param grl a GRangesList
-#' @param keep.names a boolean, keep names or not
-#' @return an integer vector of counts
-numExonsPerGroup <- function(grl, keep.names = T){
-  validGRL(class(grl))
-
-  # Get Rle -> to logcal -> sum, that is groups
-  exonsPerGroup <- sum(IRanges::LogicalList(strand(grl) == strand(grl)))
-  if(!keep.names) {
-    names(exonsPerGroup) <- NULL
-  }
-  return(exonsPerGroup)
-}
 
 #' Seqnames cleanup
 #'
@@ -326,7 +7,7 @@ numExonsPerGroup <- function(grl, keep.names = T){
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return a GRangesList with fixed seqnames
 fixSeqnames <- function(grl){
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
 
   temp <- unlist(grl)
   seqnamesTransformed <- as.character(seqnames(temp))
@@ -346,7 +27,7 @@ fixSeqnames <- function(grl){
 #' @importFrom S4Vectors nrun Rle
 #' @return an integer vector of indices for exon ranks
 makeExonRanks <- function(grl, byTranscript = F){
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
 
   if (byTranscript) {
     oldNames <- names(grl)
@@ -419,8 +100,11 @@ makeORFNames <- function(grl){
 #' @export
 #'
 tile1 <- function(grl){
-  ORFs <- unlist(grl, use.names = FALSE)
-  if (is.null(names(ORFs))) stop("Unlisted grl has no names.")
+  ORFs <- unlistGrl(grl)
+  if (is.null(names(ORFs)) ||
+      (length(unique(names(ORFs))) != length(names(grl)))) {
+    stop("Unlisted grl has no names.")
+  }
   ## Try to catch dangerous groupings, that is equally named groups
   if (sum(duplicated(names(ORFs)))) {
     if (!is.null(ORFs$names)) {
@@ -483,34 +167,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = F){
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
-#' Get Ribo-seq widths
-#'
-#' Input a ribo-seq object and get width of reads,
-#'  if input is p-shifted and GRanges, the "$score column" must
-#'  exist, and contain the original read widths.
-#' @param reads a GRanges or GAlignment object.
-#' @return an integer vector of widths
-riboSeqReadWidths <- function(reads){
 
-  if (class(reads) == "GRanges"){
-    rfpWidth <- width(reads)
-    is.one_based <- all(as.integer(rfpWidth) == rep(1, length(rfpWidth)))
-    if (is.one_based ) {
-      if (is.null(reads$score)) {
-        message("All widths are 1, If ribo-seq is p-shifted,\n
-             score column should contain widths of read,\n
-                will continue using 1-widths")
-      } else {
-        message("All widths are 1, using score column for widths, remove
-                 score column and run again if this is wrong.")
-        rfpWidth <- reads$score
-      }
-    }
-  } else {
-    rfpWidth <- qwidth(reads)
-  }
-  return(rfpWidth)
-}
 
 #' Reassign the start positions of the first exons per group in grl
 #' @description make sure your grl is sorted, since start of "-" strand
@@ -769,47 +426,6 @@ subset_to_frame <- function(x, frame){
     x[seq(length(x) + 1 - frame, 1, -3)]
   }
 }
-
-#' Match naming of GRangesList
-#'
-#' Given a GRangesList and a reference, make the naming convention and
-#' the number of metacolumns equal to reference
-#' @param gr a \code{\link[GenomicRanges]{GRangesList}}
-#'  or GRanges object
-#' @param reference a GRangesList of a reference
-#' @return a GRangesList
-matchNaming <- function(gr, reference){
-  ## First check if unlist should be T or F
-  if (is.grl(gr)) {
-    grTemp <- unlist(gr[1], use.names = FALSE)
-    if (is.null(names(grTemp))) {
-      gr <- unlist(gr, use.names = TRUE)
-    } else {
-      gr <- unlist(gr, use.names = FALSE)
-    }
-  }
-  ## now get a reference
-  grTest <- unlist(reference[1], use.names = FALSE)
-
-  ## add names column if reference have it
-  if (!is.null(grTest$names)) gr$names <- names(gr)
-  ## if reference have names, add them to gr
-  if (!is.null(names(grTest))) {
-    if (!any(grep(pattern = "_", names(grTest)[1]))) {
-      names(gr) <- txNames(gr)
-    }
-  }
-
-  ## TODO: add possibily to add unknown columns, i.g. exon_rank etc.
-
-  if (!is.null(gr$names)) {
-    return(groupGRangesBy(gr, gr$names))
-  } else {
-    return(groupGRangesBy(gr))
-  }
-}
-
-
 
 #' Reduce GRanges / GRangesList
 #'

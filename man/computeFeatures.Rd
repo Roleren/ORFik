@@ -44,7 +44,7 @@ Each feature have a link to an article describing feature,
 try ?floss
 }
 \details{
-NB: If you used cage-data. Your txDB object, must contain the
+If you used cage-data. Your txDB object, must contain the
  reassigned leaders. If you used cage and dont have the reassigned
  txdb, either reassign them with \code{\link{reassignTSSbyCage}}
  or use the other function: \code{\link{computeFeaturesCage}}

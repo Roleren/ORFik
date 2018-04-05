@@ -10,8 +10,11 @@ txLen(Gtf = NULL, changedFiveUTRs = NULL)
 \item{Gtf}{a TxDb object of a gtf file}
 
 \item{changedFiveUTRs}{a GRangesList object of leaders.
-NB! only add this if you used cage data or other things to change the
+Only add this if you used cage data or other things to change the
 leaders, therefor we need it to update transcript lengths.}
+}
+\value{
+a vector of transcript lengths
 }
 \description{
 A helper function for easy length retrieval

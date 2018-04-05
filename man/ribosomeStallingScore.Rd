@@ -21,10 +21,6 @@ a named vector of numeric values of scores
 Is defined as (RPFs over ORF stop sites)/(RPFs over ORFs),
 normalized by lengths
 A pseudo-count of one was added to both the ORF and downstream sums.
-See article: 10.1016/j.cels.2017.08.004
-}
-\details{
-For a more accurate analysis see article:  10.1016/j.cels.2017.08.004.
 }
 \examples{
 ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -34,6 +30,11 @@ ORF <- GRanges(seqnames = "1", ranges = IRanges(
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 ribosomeStallingScore(grl, RFP)
+}
+\references{
+doi: 10.1016/j.cels.2017.08.004
+
+For a more accurate analysis see article:  10.1016/j.cels.2017.08.004.
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

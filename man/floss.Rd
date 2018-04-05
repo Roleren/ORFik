@@ -21,13 +21,16 @@ floss(grl, RFP, cds, start = 26, end = 34)
 a vector of FLOSS of length same as grl
 }
 \description{
-Defined as: for riboseq reads between size start and stop,
+Defined as: for reads of width between start and stop,
 sum the fraction of riboseq with width in the interval start:stop
-for orfs.
-Divided by the fraction of rriboseq with width in the interval
-start:stop for coding sequences.
-A sum of ratios
-See article: 10.1016/j.celrep.2014.07.045
+that overlap orfs. I.g interval 28-32, sum all 28, then 29.
+Divided by the fraction of reads with width in the interval
+start:stop for coding sequences(cds).
+}
+\details{
+Function:
+SUM[start to stop]( (OrfReads[start:stop]/allOrfReads) /
+ (CdsReads[start:stop]/allCdsReads) )
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
@@ -37,10 +40,13 @@ ORF <- GRanges(seqnames = "1",
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
-# nb: grl must have same names as cds, + _1 etc
+# grl must have same names as cds + _1 etc, so that they can be matched.
 floss(grl, RFP, cds)
 # or change ribosome start/stop, more strict
 floss(grl, RFP, cds, 28, 32)
+}
+\references{
+doi: 10.1016/j.celrep.2014.07.045
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

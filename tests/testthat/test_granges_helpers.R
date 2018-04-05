@@ -1,5 +1,5 @@
-library(ORFik)
 context("GRanges Helpers")
+library(ORFik)
 
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                      ranges = IRanges(start = c(1, 10, 20),
@@ -142,6 +142,46 @@ test_that("extendLeaders works as intended", {
   expect_equal(length(reassigned), 2)
   expect_equal(firstStartPerGroup(reassigned, F), as.integer(c(-4, 145)))
   expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(105, 205)))
+})
+
+test_that("matchNaming works as intended", {
+
+  ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
+                       ranges = IRanges(start = c(1, 2, 3),
+                                        end = c(1, 2, 3)),
+                       strand = Rle(strand(rep("+", 3))))
+
+  ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+                        ranges = IRanges(start = c(4, 5, 7),
+                                         end = c(4, 5, 7)),
+                        strand = Rle(strand(rep("+", 3))))
+
+  names(ORFranges) = rep("tx1_1",3)
+  names(ORFranges2) = rep("tx1_2",3)
+  grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
+  gr <- unlist(grl, use.names = FALSE)
+  test_result <- ORFik:::matchNaming(gr, grl)
+  # should stay 0 meta columns
+  expect_equal(ncol(elementMetadata(unlist(test_result))), 0)
+  # create some example meta columns
+  gr2 <- gr
+  df <- DataFrame(matrix(NA, ncol = 3, nrow = length(gr2)))
+
+  colnames(df) <- c("orf_id", "orf_name", "exon_id")
+  class(df[,1]) <- "integer"
+  class(df[,2]) <- "character"
+  class(df[,3]) <- "integer"
+
+  elementMetadata(gr2) <- df
+  # should now loose all meta
+  test_result <- ORFik:::matchNaming(gr2, grl)
+  expect_equal(ncol(elementMetadata(unlist(test_result))), 0)
+
+
+  grl2 <- groupGRangesBy(gr2)
+  # should now get all meta data
+  test_result <- ORFik:::matchNaming(gr, grl2)
+  expect_equal(ncol(elementMetadata(unlist(test_result))), 3)
 })
 
 test_that("reduceKeepAttr works as intended", {

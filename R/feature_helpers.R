@@ -1,8 +1,9 @@
-#' get length of leaders ordered after oldTxNames
+#' Get length of leaders ordered after oldTxNames
 #'
 #' Normally only a helper function for ORFik
 #' @param fiveUTRs a GRangesList object of leaders
 #' @param oldTxNames a character vector of names to group fiveUTRs by.
+#' @return a GRangesList of reordered leaders.
 findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
   newfiveprimeLen <- widthPerGroup(fiveUTRs)
   return(newfiveprimeLen[match(oldTxNames,names(newfiveprimeLen))])
@@ -13,8 +14,9 @@ findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
 #' A helper function for easy length retrieval
 #' @param Gtf a TxDb object of a gtf file
 #' @param changedFiveUTRs a GRangesList object of leaders.
-#'  NB! only add this if you used cage data or other things to change the
+#'  Only add this if you used cage data or other things to change the
 #'  leaders, therefor we need it to update transcript lengths.
+#' @return a vector of transcript lengths
 txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
   tx_len_temp <- transcriptLengths(Gtf)[,c("tx_name","tx_len")]
   tx_len <- tx_len_temp[,"tx_len"]
@@ -139,7 +141,7 @@ validExtension <- function(extension, cageFiveUTRs){
   } else if (!is.numeric(extension) && !is.integer(extension)) {
       stop("extension must be numeric or integer")
   }
-  if (extension != 0 && class(cageFiveUTRs) != "GRangesList") {
+  if (extension != 0 && !is.grl(cageFiveUTRs)) {
     stop("if extension is not 0, then cageFiveUTRs must be defined")
   }
 }

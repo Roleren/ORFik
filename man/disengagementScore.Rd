@@ -23,8 +23,7 @@ a named vector of numeric values of scores
 }
 \description{
 is defined as (RPFs over ORF)/(RPFs downstream to tx end).
-A pseudo-count of one was added to both the ORF and downstream sums.
-See article: 10.1242/dev.098344
+A pseudo-count of one is added to both the ORF and downstream sums.
 }
 \examples{
 ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -38,6 +37,9 @@ ranges = IRanges(start = c(1, 25, 50),
                 end = c(1, 25, 50)),
 strand = "+")
 disengagementScore(grl, RFP, tx)
+}
+\references{
+doi: 10.1242/dev.098344
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

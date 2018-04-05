@@ -1,6 +1,6 @@
 TODO
 -----------------------
-
+    o Find out why font crashes in R 3.5.0 alpha in Vignette line 165 ggplot call
     o remove naming of ORFs with "_"
     o remove unnecesary type checking
     o make computeFeatures completely independent on CageSeq and as input txdb

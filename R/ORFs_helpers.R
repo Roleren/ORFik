@@ -57,8 +57,6 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
   }
 }
 
-
-
 #' Map orfs to genomic coordinates
 #'
 #' Creates GRangesList from the results of ORFs_as_List and
@@ -73,8 +71,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #'
 mapToGRanges <- function(grl, result) {
 
-  if (class(grl) != "GRangesList")
-    stop("Invalid type of grl, ", "must be GRangesList.")
+  validGRL(class(grl))
   if (is.null(names(grl))) stop("'grl' contains no names.")
   if (class(result) != "list") stop("Invalid type of result, must be list.")
   if (length(result) != 2)
@@ -91,35 +88,6 @@ mapToGRanges <- function(grl, result) {
                                             transcripts = grl[result$index])
   genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
   return(makeORFNames(genomicCoordinates))
-}
-
-
-#' Resizes down ORF to the desired length, removing inside. Preserves exons.
-#'
-#' @export
-#' @param grangesObj A GRanges object of ORF.
-#' @param orf_goal_length numeric. Desired length of ORF.
-#' @return GRanges object of resized ORF
-resizeORF <- function(grangesObj, orf_goal_length) {
-
-  if (!requireNamespace("biovizBase", quietly = TRUE)) {
-    stop("biovizBase needed for this function to work.
-         Please install it.", call. = FALSE)
-  }
-
-  length_diff <- (sum(width(grangesObj))/3 - orf_goal_length) * 3
-  is_even <- (length_diff %% 2) == 0
-  left_diff <- if (is_even) { length_diff/2 } else { (length_diff - 1)/2 }
-  right_diff <- if (is_even) { length_diff/2 } else { (length_diff + 1)/2 }
-
-  tiled <- tile(grangesObj, width = 1)
-  tiled <- biovizBase::flatGrl(tiled)
-  middle <- floor(length(tiled)/2)
-
-  tiled <- tiled[-c((middle - left_diff):(middle + right_diff - 1))]
-  tiled <- reduce(tiled)
-
-  return(tiled)
 }
 
 #' Get transcript names from orf names
@@ -253,7 +221,7 @@ startCodons <- function(grl, is.sorted = FALSE){
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStarts <- reduceKeepAttr(phead(tileBy1, 3L), keep.names = TRUE)
+    fixedStarts <- reduceKeepAttr(heads(tileBy1, 3L), keep.names = TRUE)
     grl[!validWidths] <- fixedStarts
   }
   # fix the others the easy way
@@ -287,7 +255,7 @@ stopCodons <- function(grl, is.sorted = FALSE){
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
     tileBy1 <- tile1(needToFix)
-    fixedStops <- reduceKeepAttr(ptail(tileBy1, 3L), keep.names = TRUE)
+    fixedStops <- reduceKeepAttr(tails(tileBy1, 3L), keep.names = TRUE)
     grl[!validWidths] <- fixedStops
   }
   # fix the others the easy way
@@ -310,10 +278,9 @@ stopCodons <- function(grl, is.sorted = FALSE){
 #' @param with.tx a boolean, include transcript names,
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
-#' @importFrom S4Vectors phead
 #' @return a character vector of ids, 1 per orf
 orfID <- function(grl, with.tx = FALSE){
-  seqnames <- as.character(seqnames(phead(grl,1L)))
+  seqnames <- as.character(seqnames(heads(grl,1L)))
   strands <- strandPerGroup(grl,F)
 
   exonInfo <- paste(start(grl),width(grl))

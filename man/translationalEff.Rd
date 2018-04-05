@@ -18,11 +18,11 @@ or GRangesList object}
 or GRangesList object}
 
 \item{tx}{a GRangesList of the transcripts,
-NB!!! if you used cage data, then
+If you used cage data, then
 the tss for the the leaders have changed,
 therefor the tx lengths have changed,
 if so, call:
-translationalEff(grl, RNA, RFP, tx= TxLen(Gtf, fiveUTRs))
+translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
 where fiveUTRs are the changed cageLeaders.}
 
 \item{with.fpkm}{logical F, if true return the fpkm values together with te}
@@ -37,8 +37,8 @@ a numeric vector of fpkm ratios, if with.fpkm is TRUE
 }
 \description{
 Uses Rna-seq and Ribo-seq to get te of grl
-is defined as (density of RPFs within ORF)/(RNA expression).
-See article: 10.1126/science.1168978
+It is defined as:
+(density of RPFs within ORF) / (RNA expression of ORFs transcript).
 }
 \examples{
 ORF <- GRanges(seqnames = "1", ranges = IRanges(
@@ -49,10 +49,13 @@ grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 RNA <- GRanges("1", IRanges(1, 50),"+")
 tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
-# nb: grl must have same names as tx, + _1 etc
+# grl must have same names as cds + _1 etc, so that they can be matched.
 te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
 te$fpkmRFP
 te$te
+}
+\references{
+doi: 10.1126/science.1168978
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},
