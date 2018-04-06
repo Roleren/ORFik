@@ -5,7 +5,7 @@
 \title{Get Start and Stop codon within specified windows over CDS.}
 \usage{
 getStartStopWindows(txdb, txNames, start = TRUE, stop = TRUE,
-  window_size = 30L)
+  window_size = 30L, cds = NULL)
 }
 \arguments{
 \item{txdb}{a txdb object of annotations}
@@ -18,6 +18,9 @@ getStartStopWindows(txdb, txNames, start = TRUE, stop = TRUE,
 
 \item{window_size}{(integer) size of the window to extract upstream of the
 start/stop codon and downstream}
+
+\item{cds}{a GRangesList with cds, a speedup if you already have them
+loaded.}
 }
 \value{
 a list with two slots "starts" and "stops", each contains a
