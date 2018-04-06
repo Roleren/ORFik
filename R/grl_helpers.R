@@ -15,7 +15,7 @@ downstreamN <- function(grl, firstN = 150L) {
 #' @param keep.names a boolean, keep names or not
 #' @return an integer vector (named/unnamed) of widths
 #'
-widthPerGroup = function(grl, keep.names = TRUE){
+widthPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
     return(sum(width(grl)))
@@ -31,7 +31,7 @@ widthPerGroup = function(grl, keep.names = TRUE){
 #' @importFrom IRanges heads
 #' @return a character vector or Rle of seqnames(if seqnames == T)
 #'
-seqnamesPerGroup <- function(grl, keep.names = T){
+seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
     return(seqnames(heads(grl, 1L)))
@@ -56,7 +56,7 @@ seqnamesPerGroup <- function(grl, keep.names = T){
 #' @return an equally named GRangesList, where each group is sorted within
 #' group.
 #'
-gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
+gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
   if (length(grl) == 0) return(GRangesList())
 
   DT <- as.data.table(grl)
@@ -99,19 +99,26 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE){
 
 #' Sort a GRangesList
 #'
-#' A faster, more versatile reimplementation of GenomicRanges::sort()
-#' for GRangesList, which works poorly for > 10k groups
-#' It sorts each group, where + strands increasing by start
-#' and - strands decreasing by ends.
+#' A faster, more versatile reimplementation of
+#' \code{\link[GenomicRanges]{sort}} for GRangesList, which works poorly for
+#' more than 10k groups. This function sorts each group, where "+" strands are
+#' increasing by starts and "-" strands are decreasing by ends.
 #'
-#' If you want unusual sorts, like reversed ordering,
-#' use \code{\link{gSort}} directly.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @param ignore.strand a boolean,if FALSE: should minus strands be
-#'  sorted from highest to lowest. If TRUE: from lowest to highest.
-#' @export
+#' @param ignore.strand a boolean, if FALSE: should minus strands be
+#' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.
 #' @return an equally named GRangesList, where each group is
 #'  sorted within group.
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(14, 7), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(1, 4), c(3, 9)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(gr_plus, gr_minus)
+#' sortPerGroup(grl)
 #'
 sortPerGroup <- function(grl, ignore.strand = FALSE){
   if (!ignore.strand) {
@@ -129,10 +136,10 @@ sortPerGroup <- function(grl, ignore.strand = FALSE){
 #' Get list of strands per granges group
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
-#' @importFrom IRanges heads
 #' @return a vector named/unnamed of characters
+#' @importFrom IRanges heads
 #'
-strandPerGroup <- function(grl, keep.names = T){
+strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
     return(strand(heads(grl, 1L)))
@@ -141,14 +148,15 @@ strandPerGroup <- function(grl, keep.names = T){
   }
 }
 
+
 #' Get first exon per GRangesList group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @importFrom IRanges heads
 #' @return a GRangesList of the first exon per group
+#' @importFrom IRanges heads
 #'
-firstExonPerGroup <- function(grl){
+firstExonPerGroup <- function(grl) {
   validGRL(class(grl))
   return(heads(grl, 1L))
 }
@@ -158,10 +166,10 @@ firstExonPerGroup <- function(grl){
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
-#' @importFrom IRanges tails
 #' @return a GRangesList of the last exon per group
+#' @importFrom IRanges tails
 #'
-lastExonPerGroup <- function(grl){
+lastExonPerGroup <- function(grl) {
   validGRL(class(grl), "grl")
   return(tails(grl, 1L))
 }
@@ -172,9 +180,9 @@ lastExonPerGroup <- function(grl){
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
-#' @return a Rle(keep.names = T), or integer vector(F)
+#' @return a Rle(keep.names = TRUE), or integer vector(FALSE)
 #'
-firstStartPerGroup <- function(grl, keep.names = T){
+firstStartPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
     return(start(firstExonPerGroup(grl)))
@@ -191,7 +199,7 @@ firstStartPerGroup <- function(grl, keep.names = T){
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
 #'
-firstEndPerGroup <- function(grl, keep.names = T){
+firstEndPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
     return(end(firstExonPerGroup(grl)))
@@ -206,7 +214,7 @@ firstEndPerGroup <- function(grl, keep.names = T){
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
 #'
-lastExonEndPerGroup = function(grl,keep.names = T){
+lastExonEndPerGroup = function(grl,keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
     return(end(lastExonPerGroup(grl)))
@@ -221,7 +229,7 @@ lastExonEndPerGroup = function(grl,keep.names = T){
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
 #'
-lastExonStartPerGroup = function(grl, keep.names = T){
+lastExonStartPerGroup = function(grl, keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
     return(start(lastExonPerGroup(grl)))
@@ -230,6 +238,7 @@ lastExonStartPerGroup = function(grl, keep.names = T){
   }
 }
 
+
 #' Get list of the number of exons per group
 #'
 #' Can also be used generaly to get number of GRanges object
@@ -237,7 +246,8 @@ lastExonStartPerGroup = function(grl, keep.names = T){
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 #' @return an integer vector of counts
-numExonsPerGroup <- function(grl, keep.names = TRUE){
+#'
+numExonsPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
 
   # Get Rle -> to logcal -> sum, that is groups
@@ -248,50 +258,53 @@ numExonsPerGroup <- function(grl, keep.names = TRUE){
   return(exonsPerGroup)
 }
 
+
 #' Safe unlist
 #'
-#' Same as AnnotationDbi::unlist2, keeps names correctly.
-#' One difference, if grl have no names, it will not
-#' make integer names, but keep them as null
+#' Same as \code{\link[AnnotationDbi]{unlist2}}, keeps names correctly.
+#' One difference is that if grl have no names, it will not
+#' make integer names, but keep them as null.
 #' @param grl a GRangesList
 #' @return a GRanges object
 #' @export
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
-#' ranges = IRanges(start = c(1, 10, 20),
-#'                 end = c(5, 15, 25)),
-#' strand = "+")
+#'                ranges = IRanges(start = c(1, 10, 20),
+#'                                 end = c(5, 15, 25)),
+#'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' unlistGrl(grl)
+#'
 unlistGrl <- function(grl) {
   validGRL(class(grl))
-
   unl <- unlist(grl[1], use.names = FALSE)
-
   return(unlist(grl, use.names = is.null(names(unl))))
 }
+
 
 #' Removes meta columns
 #'
 #' @param grl a GRangesList or GRanges object
 #' @return same type and structure as input without meta columns
-removeMetaCols <- function(grl){
+#'
+removeMetaCols <- function(grl) {
   wasGRL <- FALSE
   g <- character()
-  if (!is.gr_or_grl(class(grl)))
+  if (!is.gr_or_grl(class(grl))) {
     stop("Can only remove meta columns from GRangesList or GRanges objects")
+  }
 
   if (is.grl(class(grl))) {
     grouping <- numExonsPerGroup(grl)
 
-    for(i in 1:length(grouping)){
+    for (i in 1:length(grouping)) {
       g <- c(g, rep(names(grouping[i]), grouping[i]))
     }
     grl <- unlistGrl(grl)
     wasGRL <- TRUE
   }
   elementMetadata(grl)  <- S4Vectors::DataFrame(
-                             matrix(nrow = length(grl), ncol = 0))
+    matrix(nrow = length(grl), ncol = 0))
 
   if (wasGRL) {
     return(groupGRangesBy(grl, g))
@@ -299,4 +312,3 @@ removeMetaCols <- function(grl){
     return(grl)
   }
 }
-

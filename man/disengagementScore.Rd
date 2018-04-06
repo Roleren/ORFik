@@ -8,35 +8,31 @@ disengagementScore(grl, RFP, GtfOrTx)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
-with usually either leaders,
-cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
+with usually either leaders, cds', 3' utrs or ORFs.}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignment, GRanges
 or GRangesList object}
 
-\item{GtfOrTx}{if Gtf: a TxDb object of a gtf file,
-if tx: a GrangesList of transcripts, called from:
-exonsBy(Gtf, by = "tx", use.names = T)}
+\item{GtfOrTx}{if is a TxDb object of a gtf file, transcripts, called from:
+\code{exonsBy(Gtf, by = "tx", use.names = TRUE)}, if is a GRL is used as is}
 }
 \value{
 a named vector of numeric values of scores
 }
 \description{
-is defined as (RPFs over ORF)/(RPFs downstream to tx end).
+Disengagement score is defined as
+\preformatted{(RPFs over ORF)/(RPFs downstream to tx end)}
 A pseudo-count of one is added to both the ORF and downstream sums.
 }
 \examples{
-ORF <- GRanges(seqnames = "1", ranges = IRanges(
-               start = c(1, 10, 20),
-               end = c(5, 15, 25)),
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
 RFP <- GRanges("1",
-ranges = IRanges(start = c(1, 25, 50),
-                end = c(1, 25, 50)),
-strand = "+")
 disengagementScore(grl, RFP, tx)
+
 }
 \references{
 doi: 10.1242/dev.098344

@@ -17,3 +17,10 @@ Helper function to get a logical list of True/False, if GRangesList group have
 + strand = T, if - strand = F
 Also checks for * strands, so a good check for bugs
 }
+\examples{
+gr <- GRanges(Rle(c("chr2", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+              IRanges(1:10, width = 10:1),
+              Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)))
+strandBool(gr)
+
+}

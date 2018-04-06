@@ -22,7 +22,7 @@ extension is 1000}
 }
 \value{
 an integer vector, +1 means one base upstream of cds, -1 means
-  2nd base in cds, 0 means orf stops at cds start.
+2nd base in cds, 0 means orf stops at cds start.
 }
 \description{
 Matching is done by transcript names.
@@ -34,6 +34,7 @@ grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
 dist <- distToCds(grl, fiveUTRs, extension = 0)
 ## Now dist contains distances as vector
+
 }
 \references{
 doi: 10.1074/jbc.R116.733899

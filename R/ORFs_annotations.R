@@ -1,9 +1,10 @@
 #' Overlaps GRanges object with provided annotations.
 #'
 #' @param rel_orf - GRanges object of your ORF.
-#' @param tran - GRanges object of annotation (transcript or cds) that overlapped in
-#' some way rel_orf.
-#' @param isoform_names - A vector of strings that will be used instead of these defaults:
+#' @param tran - GRanges object of annotation (transcript or cds) that
+#' overlapped in some way rel_orf.
+#' @param isoform_names - A vector of strings that will be used instead of
+#' these defaults:
 #' 'perfect_match' - start and stop matches the tran object strand wise
 #' 'elong_START_match' - rel_orf is extension from the STOP side of the tran
 #' 'trunc_START_match' - rel_orf is truncation from the STOP side of the tran
@@ -17,22 +18,13 @@
 #' 'downstream' - rel_orf is downstream towards the tran
 #' 'none' - when none of the above options is true
 #' @return A string object of defined isoform towards transcript.
-#' @import GenomicRanges
-#' @export
-#' @examples
-#' #defineIsoform()
-defineIsoform <- function(rel_orf, tran, isoform_names = c("perfect_match",
-                                                            "elong_START_match",
-                                                            "trunc_START_match",
-                                                            "elong_STOP_match",
-                                                            "trunc_STOP_match",
-                                                            "overlap_inside",
-                                                            "overlap_both",
-                                                            "overlap_upstream",
-                                                            "overlap_downstream",
-                                                            "upstream",
-                                                            "downstram",
-                                                            "none")) {
+#'
+defineIsoform <- function(
+  rel_orf, tran, isoform_names = c(
+    "perfect_match", "elong_START_match", "trunc_START_match",
+    "elong_STOP_match", "trunc_STOP_match", "overlap_inside",
+    "overlap_both", "overlap_upstream", "overlap_downstream",
+    "upstream", "downstram", "none")) {
     stran <- as.vector(strand(rel_orf))[1]
     if (stran == "+") {
 
@@ -118,37 +110,35 @@ defineIsoform <- function(rel_orf, tran, isoform_names = c("perfect_match",
     return(isoform_names[12])
 }
 
+
 #' Overlaps GRanges object with provided annotations.
 #'
 #' It will return same list of GRanges, but with metdata columns:
 #' trainscript_id - id of transcripts that overlap with each ORF
 #' gene_id - id of gene that this transcript belongs to
-#' isoform - for coding protein alignment in relation to cds on coresponding transcript,
+#' isoform - for coding protein alignment in relation to cds on coresponding
+#' transcript,
 #' for non-coding transcripts alignment in relation to the transcript.
 #' @param ORFs - GRanges or GRangesList object of your ORFs.
 #' @param con - Path to gtf file with annotations.
-#' @return A GRanges object of your ORFs with metadata columns 'gene', 'transcript',
-#' 'isoform' and 'biotype'.
-#' @export
-#' @import GenomicRanges
-#' @import rtracklayer
-#' @import GenomicFeatures
+#' @return A GRanges object of your ORFs with metadata columns 'gene',
+#' 'transcript', isoform' and 'biotype'.
 #' @importFrom S4Vectors queryHits
 #' @importFrom S4Vectors subjectHits
-#' @examples
-#' #assignAnnotations()
-
+#'
 assignAnnotations <- function(ORFs, con) {
 
     message("Loading annotations from gtf file")
     txdb <- makeTxDbFromGFF(con, format = "gtf")
-    gtf_annot <- import(con, format = "gtf")
+    gtf_annot <- rtracklayer::import(con, format = "gtf")
     gtf_annot <- gtf_annot[gtf_annot$type == "transcript"]
-    transcript_df <- data.frame(gtf_annot$transcript_id, gtf_annot$gene_id, gtf_annot$transcript_biotype)
+    transcript_df <- data.frame(gtf_annot$transcript_id, gtf_annot$gene_id,
+                                gtf_annot$transcript_biotype)
     names(transcript_df) <- c("transcript_id", "gene_id", "transcript_biotype")
 
     # remove non unique transcript/biotype combinations
-    transcript_df <- transcript_df[!duplicated(transcript_df[c("transcript_id", "transcript_biotype")]), ]
+    transcript_df <- transcript_df[!duplicated(transcript_df[
+      c("transcript_id", "transcript_biotype")]), ]
 
     # find out overlaping transcripts
     transcripts <- exonsBy(txdb, by = "tx", use.names = T)
@@ -156,7 +146,8 @@ assignAnnotations <- function(ORFs, con) {
     t_names <- names(transcripts)
     t_names <- t_names[subjectHits(transcripts_hits)]
     # ORFs that have no overlap with transcripts
-    notranscript <- which(!(1:length(ORFs) %in% unique(queryHits(transcripts_hits))))
+    notranscript <- which(!(1:length(ORFs) %in%
+                              unique(queryHits(transcripts_hits))))
 
     # which transcript corespond to our table of annotations
     tran_matches <- match(t_names, transcript_df$transcript_id)
@@ -179,11 +170,13 @@ assignAnnotations <- function(ORFs, con) {
     other_coding <- newORFs[newORFs$transcript_biotype != "protein_coding"]
     message("Preparing annotations for ORFs overlapping coding regions...")
     for (i in 1:length(p_coding)) {
-        newIsoforms_p[i] <- defineIsoform(p_coding[i], cds[[p_coding[i]$transcript_id]])
+        newIsoforms_p[i] <- defineIsoform(p_coding[i],
+                                          cds[[p_coding[i]$transcript_id]])
     }
     message("Preparing annotations for ORFs overlapping non-coding regions...")
     for (i in 1:length(other_coding)) {
-        newIsoforms_o[i] <- defineIsoform(other_coding[i], transcripts[[other_coding[i]$transcript_id]])
+        newIsoforms_o[i] <- defineIsoform(
+          other_coding[i], transcripts[[other_coding[i]$transcript_id]])
     }
     p_coding$isoform <- newIsoforms_p
     other_coding$isoform <- newIsoforms_o

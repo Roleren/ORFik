@@ -18,4 +18,6 @@ TODO
     RiboSeq:
     o add examples to getStartStopWindows
     o parseCigar implement into C++
-    o
+
+    Features:
+    o better docs with inherit params

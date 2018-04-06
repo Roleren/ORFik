@@ -13,15 +13,16 @@ unlistGrl(grl)
 a GRanges object
 }
 \description{
-Same as AnnotationDbi::unlist2, keeps names correctly.
-One difference, if grl have no names, it will not
-make integer names, but keep them as null
+Same as \code{\link[AnnotationDbi]{unlist2}}, keeps names correctly.
+One difference is that if grl have no names, it will not
+make integer names, but keep them as null.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 10, 20),
-                end = c(5, 15, 25)),
-strand = "+")
+               ranges = IRanges(start = c(1, 10, 20),
+                                end = c(5, 15, 25)),
+               strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 unlistGrl(grl)
+
 }

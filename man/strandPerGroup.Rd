@@ -4,7 +4,7 @@
 \alias{strandPerGroup}
 \title{Get list of strands per granges group}
 \usage{
-strandPerGroup(grl, keep.names = T)
+strandPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

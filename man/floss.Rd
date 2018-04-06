@@ -9,9 +9,11 @@ floss(grl, RFP, cds, start = 26, end = 34)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with ORFs}
 
-\item{RFP}{ribozomal footprints, given as Galignment or GRanges object}
+\item{RFP}{ribosomal footprints, given as Galignment or GRanges object,
+must be already shifted and resized to the p-site}
 
-\item{cds}{a \code{\link[GenomicRanges]{GRangesList}} of coding sequences}
+\item{cds}{a \code{\link[GenomicRanges]{GRangesList}} of coding sequences,
+cds has to have names as grl so that they can be matched}
 
 \item{start}{usually 26, the start of the floss interval}
 
@@ -21,16 +23,17 @@ floss(grl, RFP, cds, start = 26, end = 34)
 a vector of FLOSS of length same as grl
 }
 \description{
-Defined as: for reads of width between start and stop,
-sum the fraction of riboseq with width in the interval start:stop
-that overlap orfs. I.g interval 28-32, sum all 28, then 29.
-Divided by the fraction of reads with width in the interval
-start:stop for coding sequences(cds).
+This feature is usually calcualted only for RiboSeq reads. For reads of
+width between \code{start} and \code{end},
+sum the fraction of RiboSeq reads (per widths)
+that overlap ORFs and normalize by CDS.
 }
 \details{
-Function:
-SUM[start to stop]( (OrfReads[start:stop]/allOrfReads) /
- (CdsReads[start:stop]/allCdsReads) )
+Pseudo explanation of the function:
+\preformatted{
+SUM[start to stop]( (grl[start:end][name]/grl) / (cds[start:end][name]/cds) )
+}
+Please read more in the article.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
@@ -38,12 +41,13 @@ ORF <- GRanges(seqnames = "1",
                end = c(10, 20, 32)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25),"+")
-cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44),"+"))
+RFP <- GRanges("1", IRanges(25, 25), "+")
+cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44), "+"))
 # grl must have same names as cds + _1 etc, so that they can be matched.
 floss(grl, RFP, cds)
 # or change ribosome start/stop, more strict
 floss(grl, RFP, cds, 28, 32)
+
 }
 \references{
 doi: 10.1016/j.celrep.2014.07.045

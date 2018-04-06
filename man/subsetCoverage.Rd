@@ -16,10 +16,7 @@ numeric vector of coverage of input GRanges object
 }
 \description{
 GRanges object should be beforehand
- tiled to size of 1. This subsetting takes account for strand.
-}
-\examples{
-#subsetCoverage(x)
+tiled to size of 1. This subsetting takes account for strand.
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

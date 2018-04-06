@@ -9,50 +9,51 @@ translationalEff(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
-ORFs are a special case (uORFs, potential new cds' etc).}
+ORFs as a special case (uORFs, potential new cds' etc).}
 
-\item{RNA}{rna seq reads as GAlignment, GRanges
+\item{RNA}{RnaSeq reads as GAlignment, GRanges
 or GRangesList object}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignment, GRanges
 or GRangesList object}
 
-\item{tx}{a GRangesList of the transcripts,
-If you used cage data, then
-the tss for the the leaders have changed,
-therefor the tx lengths have changed,
-if so, call:
+\item{tx}{a GRangesList of the transcripts. If you used cage data, then
+the tss for the the leaders have changed, therefor the tx lengths have
+changed. To account for that call:
+\code{
 translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
-where fiveUTRs are the changed cageLeaders.}
+} where cageFiveUTRs are the reannotated by CageSeq data leaders.}
 
-\item{with.fpkm}{logical F, if true return the fpkm values together with te}
+\item{with.fpkm}{logical F, if true return the fpkm values together with
+translational efficiency}
 
-\item{pseudoCount}{an integer, 0,
-set it to 1 if you want to avoid NA and inf values.
-It also helps against bias from low depth libraries.}
+\item{pseudoCount}{an integer, 0, set it to 1 if you want to avoid NA and
+inf values. It also helps against bias from low depth libraries.}
 }
 \value{
-a numeric vector of fpkm ratios, if with.fpkm is TRUE
- ,return a data.table with te and fpkm values
+a numeric vector of fpkm ratios, if with.fpkm is TRUE, return a
+data.table with te and fpkm values
 }
 \description{
-Uses Rna-seq and Ribo-seq to get te of grl
-It is defined as:
-(density of RPFs within ORF) / (RNA expression of ORFs transcript).
+Uses RnaSeq and RiboSeq to get translational efficiency of every element in
+\code{grl}. Translational efficiency is defined as:
+\preformatted{
+(density of RPF within ORF) / (RNA expression of ORFs transcript)
+}
 }
 \examples{
-ORF <- GRanges(seqnames = "1", ranges = IRanges(
-               start = c(1, 10, 20),
-               end = c(5, 15, 25)),
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25),"+")
-RNA <- GRanges("1", IRanges(1, 50),"+")
-tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+RFP <- GRanges("1", IRanges(25, 25), "+")
+RNA <- GRanges("1", IRanges(1, 50), "+")
+tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
 # grl must have same names as cds + _1 etc, so that they can be matched.
 te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE, pseudoCount = 1)
 te$fpkmRFP
 te$te
+
 }
 \references{
 doi: 10.1126/science.1168978

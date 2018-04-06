@@ -4,7 +4,7 @@
 \alias{lastExonEndPerGroup}
 \title{Get last end per granges group}
 \usage{
-lastExonEndPerGroup(grl, keep.names = T)
+lastExonEndPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

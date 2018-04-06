@@ -2,7 +2,7 @@
 % Please edit documentation in R/gr_helpers.R
 \name{riboSeqReadWidths}
 \alias{riboSeqReadWidths}
-\title{Get Ribo-seq widths}
+\title{Get RiboSeq widths}
 \usage{
 riboSeqReadWidths(reads)
 }
@@ -14,6 +14,6 @@ an integer vector of widths
 }
 \description{
 Input a ribo-seq object and get width of reads,
- if input is p-shifted and GRanges, the "$score column" must
- exist, and contain the original read widths.
+if input is p-shifted and GRanges, the "$score column" must
+exist, and contain the original read widths.
 }

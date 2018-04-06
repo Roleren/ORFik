@@ -12,10 +12,11 @@ defineIsoform(rel_orf, tran, isoform_names = c("perfect_match",
 \arguments{
 \item{rel_orf}{- GRanges object of your ORF.}
 
-\item{tran}{- GRanges object of annotation (transcript or cds) that overlapped in
-some way rel_orf.}
+\item{tran}{- GRanges object of annotation (transcript or cds) that
+overlapped in some way rel_orf.}
 
-\item{isoform_names}{- A vector of strings that will be used instead of these defaults:
+\item{isoform_names}{- A vector of strings that will be used instead of
+these defaults:
 'perfect_match' - start and stop matches the tran object strand wise
 'elong_START_match' - rel_orf is extension from the STOP side of the tran
 'trunc_START_match' - rel_orf is truncation from the STOP side of the tran
@@ -34,7 +35,4 @@ A string object of defined isoform towards transcript.
 }
 \description{
 Overlaps GRanges object with provided annotations.
-}
-\examples{
-#defineIsoform()
 }

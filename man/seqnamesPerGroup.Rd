@@ -4,7 +4,7 @@
 \alias{seqnamesPerGroup}
 \title{Get list of seqnames per granges group}
 \usage{
-seqnamesPerGroup(grl, keep.names = T)
+seqnamesPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

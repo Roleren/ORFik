@@ -57,6 +57,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
   }
 }
 
+
 #' Map orfs to genomic coordinates
 #'
 #' Creates GRangesList from the results of ORFs_as_List and
@@ -90,6 +91,7 @@ mapToGRanges <- function(grl, result) {
   return(makeORFNames(genomicCoordinates))
 }
 
+
 #' Get transcript names from orf names
 #'
 #' names must either be a column called names, or the names of the
@@ -102,7 +104,7 @@ mapToGRanges <- function(grl, result) {
 #' @export
 #' @return a character vector of transcript names,
 #'  without _* naming
-txNames <- function(grl, unique = F){
+txNames <- function(grl, unique = FALSE) {
   if (!is.gr_or_grl(class(grl))) {
     stop("grl must be GRangesList or GRanges Object")
   }
@@ -130,23 +132,23 @@ txNames <- function(grl, unique = F){
 }
 
 
-#' get the start sites from a GRangesList of orfs grouped by orfs
+#' Get the start sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGG, get the position of the A.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
+#' @return if asGR is False, a vector, if True a GRanges object
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
-#' @return if asGR is False, a vector, if True a GRanges object
+#'
 startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
-                          is.sorted = FALSE){
+                       is.sorted = FALSE) {
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
   }
   posIds <- strandBool(grl)
-
 
   startSites <- rep(NA, length(grl))
   startSites[posIds] <- firstStartPerGroup(grl[posIds], FALSE)
@@ -154,7 +156,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 
   if (asGR) {
     gr <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
-                  ranges = IRanges(startSites,startSites),
+                  ranges = IRanges(startSites, startSites),
                   strand = strandPerGroup(grl, FALSE))
     names(gr) <- names(grl)
     return(gr)
@@ -167,7 +169,8 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   return(startSites)
 }
 
-#' get the Stop sites from a GRangesList of orfs grouped by orfs
+
+#' Get the stop sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the position of the C.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
@@ -175,10 +178,11 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
 #' @param is.sorted a speedup, if you know the ranges are sorted
-#' @export
 #' @return if asGR is False, a vector, if True a GRanges object
+#' @export
+#'
 stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
-                         is.sorted = FALSE){
+                      is.sorted = FALSE) {
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
   }
@@ -203,14 +207,16 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   return(stopSites)
 }
 
+
 #' Get the Start codons(3 bases) from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the positions ATG.
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
-#' @export
 #' @return a GRangesList of start codons, since they might be split on exons
+#' @export
+#'
 startCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
@@ -237,15 +243,16 @@ startCodons <- function(grl, is.sorted = FALSE){
 }
 
 
-#' Get the Stop codons(3 bases) from a GRangesList of orfs grouped by orfs
+#' Get the Stop codons (3 bases) from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the positions TGC.
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
-#' @export
 #' @return a GRangesList of stop codons, since they might be split on exons
-stopCodons <- function(grl, is.sorted = FALSE){
+#' @export
+#'
+stopCodons <- function(grl, is.sorted = FALSE) {
   if (!is.sorted) {
     grl <- sortPerGroup(grl)
   }
@@ -270,6 +277,7 @@ stopCodons <- function(grl, is.sorted = FALSE){
   return(grl)
 }
 
+
 #' Get id's for orf
 #'
 #' These id's can be uniqued by isoform etc,
@@ -279,7 +287,8 @@ stopCodons <- function(grl, is.sorted = FALSE){
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
-orfID <- function(grl, with.tx = FALSE){
+#'
+orfID <- function(grl, with.tx = FALSE) {
   seqnames <- seqnamesPerGroup(grl, FALSE)
   strands <- strandPerGroup(grl, FALSE)
 
@@ -294,6 +303,7 @@ orfID <- function(grl, with.tx = FALSE){
   return(uorfID)
 }
 
+
 #' Get the unique set of orfs
 #'
 #' Some orfs might be found several times, from different isoforms
@@ -304,7 +314,8 @@ orfID <- function(grl, with.tx = FALSE){
 #' they no longer map to a transcript, but are now general.
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return a GRangesList of unique orfs
-uniqueORFs <- function(grl){
+#'
+uniqueORFs <- function(grl) {
   ids <- orfID(grl)
   grl <- grl[!duplicated(ids)]
   gr <- unlist(grl, use.names = FALSE)

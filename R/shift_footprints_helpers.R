@@ -77,7 +77,6 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE,
     cvg1 <- coverage(x1)
     cvg2 <- coverage(x2)
 
-
     uex_cvg <- RleList(as.list(rep(0, length(uex))))
     uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
     uex_cvg[!is_plus_ex] <- cvg2[uex[!is_plus_ex]]

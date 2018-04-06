@@ -6,6 +6,9 @@
 #' @return A string of START sies separatd with "|".
 #' @family findORFs
 #' @export
+#' @examples
+#' startDefinition
+#' startDefinition(1)
 #'
 startDefinition <- function(transl_table) {
   STARTdef <- c("ATG|TTG|CTG", #1 The Standard Code
@@ -46,6 +49,9 @@ startDefinition <- function(transl_table) {
 #' @return A string of STOP sies separatd with "|".
 #' @family findORFs
 #' @export
+#' @examples
+#' stopDefinition
+#' stopDefinition(1)
 #'
 stopDefinition <- function(transl_table) {
   STOPdef <- c("TAA|TAG|TGA", #1 The Standard Code

@@ -9,32 +9,30 @@ ribosomeStallingScore(grl, RFP)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
 with usually either leaders,
-cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
+cds', 3' utrs or ORFs.}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignment, GRanges
 or GRangesList object}
 }
 \value{
-a named vector of numeric values of scores
+a named vector of numeric values of RSS scores
 }
 \description{
-Is defined as (RPFs over ORF stop sites)/(RPFs over ORFs),
-normalized by lengths
+Is defined as \preformatted{(RPFs over ORF stop sites)/(RPFs over ORFs)}
+and normalized by lengths
 A pseudo-count of one was added to both the ORF and downstream sums.
 }
 \examples{
-ORF <- GRanges(seqnames = "1", ranges = IRanges(
-               start = c(1, 10, 20),
-               end = c(5, 15, 25)),
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25),"+")
+RFP <- GRanges("1", IRanges(25, 25), "+")
 ribosomeStallingScore(grl, RFP)
+
 }
 \references{
 doi: 10.1016/j.cels.2017.08.004
-
-For a more accurate analysis see article:  10.1016/j.cels.2017.08.004.
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

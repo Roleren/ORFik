@@ -4,10 +4,15 @@
 #' + strand = T, if - strand = F
 #' Also checks for * strands, so a good check for bugs
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
-#' @export
 #' @return a logical vector
+#' @export
+#' @examples
+#' gr <- GRanges(Rle(c("chr2", "chr2", "chr1", "chr3"), c(1, 3, 2, 4)),
+#'               IRanges(1:10, width = 10:1),
+#'               Rle(strand(c("-", "+", "*", "+", "-")), c(1, 2, 2, 3, 2)))
+#' strandBool(gr)
 #'
-strandBool <- function(grl){
+strandBool <- function(grl) {
   if (class(grl) == "GRanges") {
     posIndices <- as.character(strand(grl)) == "+"
   } else {
@@ -16,14 +21,15 @@ strandBool <- function(grl){
 
   sums <- sum(posIndices) + sum(!posIndices)
   if (is.na(sums)) {
-    stop("could not get strands from grl object,\n
-          most likely NULL object was passed.")
+    stop("could not get strands from grl object",
+         " most likely NULL object was passed.")
   }
   if (sums != length(grl)) {
     stop("grl contains * strands, set them to either + or -")
   }
   return(posIndices)
 }
+
 
 #' Match naming of GRangesList
 #'
@@ -33,10 +39,10 @@ strandBool <- function(grl){
 #'  or GRanges object
 #' @param reference a GRangesList of a reference
 #' @return a GRangesList
-matchNaming <- function(gr, reference){
+#'
+matchNaming <- function(gr, reference) {
   ## First check if unlist should be T or F
-  if (is.grl(gr))
-    gr <- unlistGrl(gr)
+  if (is.grl(gr)) gr <- unlistGrl(gr)
 
   ## now get a reference
   grTest <- unlist(reference[1], use.names = FALSE)
@@ -44,7 +50,7 @@ matchNaming <- function(gr, reference){
   # TODO: This can still be optimized for strange cases.
   # One case is that you can keep, even though ncol new > ncol old,
   # if all are equal within group
-  if(ncol(elementMetadata(grTest)) == 1 &&
+  if (ncol(elementMetadata(grTest)) == 1 &&
      colnames(elementMetadata(grTest)) == "names") {
 
   } else {
@@ -68,10 +74,9 @@ matchNaming <- function(gr, reference){
 
         colnames(df) <- colnames(refMeta)
         # set col classes
-        for(i in 1:ncol(df)){
+        for (i in 1:ncol(df)) {
           class(df[,i]) <- class(refMeta[,i])
         }
-
         elementMetadata(gr) <- df
       }
     }
