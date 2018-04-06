@@ -9,20 +9,27 @@ sortPerGroup(grl, ignore.strand = FALSE)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
 
-\item{ignore.strand}{a boolean,if FALSE: should minus strands be
-sorted from highest to lowest. If TRUE: from lowest to highest.}
+\item{ignore.strand}{a boolean, if FALSE: should minus strands be
+sorted from highest to lowest ends. If TRUE: from lowest to highest ends.}
 }
 \value{
 an equally named GRangesList, where each group is
  sorted within group.
 }
 \description{
-A faster, more versatile reimplementation of GenomicRanges::sort()
-for GRangesList, which works poorly for > 10k groups
-It sorts each group, where + strands increasing by start
-and - strands decreasing by ends.
+A faster, more versatile reimplementation of
+\code{\link[GenomicRanges]{sort}} for GRangesList, which works poorly for
+more than 10k groups. This function sorts each group, where "+" strands are
+increasing by starts and "-" strands are decreasing by ends.
 }
-\details{
-If you want unusual sorts, like reversed ordering,
-use \code{\link{gSort}} directly.
+\examples{
+gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+                   ranges = IRanges(c(14, 7), width = 3),
+                   strand = c("+", "+"))
+gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                    ranges = IRanges(c(1, 4), c(3, 9)),
+                    strand = c("-", "-"))
+grl <- GRangesList(gr_plus, gr_minus)
+sortPerGroup(grl)
+
 }

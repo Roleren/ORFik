@@ -19,6 +19,11 @@ Returns stop definition according to
 \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
 ncbi genetic code number for translation.
 }
+\examples{
+stopDefinition
+stopDefinition(1)
+
+}
 \seealso{
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}}, \code{\link{findORFs}},

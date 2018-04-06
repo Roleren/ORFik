@@ -4,7 +4,7 @@
 \alias{firstEndPerGroup}
 \title{Get first end per granges group}
 \usage{
-firstEndPerGroup(grl, keep.names = T)
+firstEndPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

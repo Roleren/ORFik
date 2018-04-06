@@ -12,16 +12,14 @@ assignAnnotations(ORFs, con)
 \item{con}{- Path to gtf file with annotations.}
 }
 \value{
-A GRanges object of your ORFs with metadata columns 'gene', 'transcript',
-'isoform' and 'biotype'.
+A GRanges object of your ORFs with metadata columns 'gene',
+'transcript', isoform' and 'biotype'.
 }
 \description{
 It will return same list of GRanges, but with metdata columns:
 trainscript_id - id of transcripts that overlap with each ORF
 gene_id - id of gene that this transcript belongs to
-isoform - for coding protein alignment in relation to cds on coresponding transcript,
+isoform - for coding protein alignment in relation to cds on coresponding
+transcript,
 for non-coding transcripts alignment in relation to the transcript.
-}
-\examples{
-#assignAnnotations()
 }

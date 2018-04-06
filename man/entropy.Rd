@@ -2,40 +2,43 @@
 % Please edit documentation in R/feature_methods.R
 \name{entropy}
 \alias{entropy}
-\title{Calucalte Entropy value of overlapping input reads}
+\title{Calucalte entropy value of overlapping input reads.}
 \usage{
 entropy(grl, reads)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} that the reads can map to}
+\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} that the reads will
+be overlapped with}
 
-\item{reads}{a GAlignment object, ig. from ribo seq, or rna seq,
-can also be GRanges or GRangesList}
+\item{reads}{a GAlignment object or GRanges or GRangesList, usualy data from
+RiboSeq or RnaSeq}
 }
 \value{
-A numeric vector containing entropy per ORF
+A numeric vector containing one entropy value per element in
+\code{grl}
 }
 \description{
-Calculates entropy of the read coverage over each GRanges group.
-The entropy interval per group is a real number in the interval (0:1)
-Where 0 is no variance in reads over group.
-I.g. c(0,0,0,0) has 0 entropy, since no reads hit.
+Calculates entropy of the \code{reads} coverage over each \code{grl} group.
+The entropy value per group is a real number in the interval (0:1),
+where 0 indicates no variance in reads over group.
+For example c(0,0,0,0) has 0 entropy, since no reads overlap.
 }
 \examples{
 ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
- end = c(10, 20, 32)), strand = "+")
-ORF$names = "tx1_1"
+                                     end = c(10, 20, 32)),
+               strand = "+",
+               names = "tx1_1")
 names(ORF) <- rep("tx1", 3)
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)),"+")
+RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
 # grl must have same names as cds + _1 etc, so that they can be matched.
 entropy(grl, RFP)
 # or on cds
-cdsORF <- GRanges("1", IRanges(35, 44),"+")
-cdsORF$names = "tx1"
+cdsORF <- GRanges("1", IRanges(35, 44), "+", names = "tx1")
 names(cdsORF) <- "tx1"
 cds <-  GRangesList(tx1 = cdsORF)
 entropy(cds, RFP)
+
 }
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},

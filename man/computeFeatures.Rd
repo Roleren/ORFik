@@ -10,14 +10,11 @@ computeFeatures(grl, RFP, RNA = NULL, Gtf = NULL, faFile = NULL,
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
-with usually ORFs, but can also be
-either leaders, cds', 3' utrs, etc.}
+with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges
-or GRangesList object}
+\item{RFP}{RiboSeq reads as GAlignment, GRanges or GRangesList object}
 
-\item{RNA}{rna seq reads as GAlignment, GRanges
-or GRangesList object}
+\item{RNA}{RnaSeq reads as GAlignment, GRanges or GRangesList object}
 
 \item{Gtf}{a TxDb object of a gtf file,}
 
@@ -27,66 +24,29 @@ or GRangesList object}
 
 \item{riboStop}{usually 34, the end of the floss interval}
 
-\item{orfFeatures}{a logical,  is the grl a list of orfs? Must be assigned.}
+\item{orfFeatures}{a logical, is the grl a list of orfs?}
 
-\item{includeNonVarying}{a logical T, if TRUE, include all features not dependent on
-Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
-isInFrame, isOverlapping and rankInTx}
+\item{includeNonVarying}{a logical, if TRUE, include all features not
+dependent on RiboSeq data and RNASeq data, that is: Kozak,
+fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of
- columns are the names of the scores, i.g \code{\link{floss}}
- or \code{\link{fpkm}}
+columns are the names of the scores, i.g \code{\link{floss}}
+or \code{\link{fpkm}}
 }
 \description{
-If you want to get all the features easily, run this function.
-Each feature have a link to an article describing feature,
-try ?floss
+If you want to get all the features easily, you can use this function.
+Each feature have a link to an article describing its creation and idea
+behind it. Look at the functions in the feature family to see all of them.
 }
 \details{
-If you used cage-data. Your txDB object, must contain the
- reassigned leaders. If you used cage and dont have the reassigned
- txdb, either reassign them with \code{\link{reassignTSSbyCage}}
- or use the other function: \code{\link{computeFeaturesCage}}
+If you used CageSeq to reannotate your leaders your txDB object, must contain
+the reassigned leaders. In the future release reasignment will create txdb
+objects for you, but currently this is not supported, therefore be carefull.
 }
 \examples{
- # we will find ORFs in the 5' utrs
- # and then calculate features on them
- \dontrun{
- if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  library(GenomicFeatures)
-  # Get the gtf txdb file
-  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-  package = "GenomicFeatures")
-  txdb <- loadDb(txdbFile)
-
-  # Extract sequences of fiveUTRs.
-  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)[1:10]
-  faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
-  # need to suppress warning because of bug in GenomicFeatures, will
-  # be fixed soon.
-  tx_seqs <- suppressWarnings(extractTranscriptSeqs(faFile, fiveUTRs))
-
-  # Find all ORFs on those transcripts and get their genomic coordinates
-  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
-  unlistedORFs <- unlist(fiveUTR_ORFs, use.names = TRUE)
-  # group GRanges by ORFs instead of Transcripts
-  fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)
-
-  # make some toy ribo seq and rna seq data
-  starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
-  RFP <- promoters(starts, upstream = 0, downstream = 1)
-  score(RFP) <- rep(29, length(RFP)) # the original read widths
-
-  # set RNA seq to duplicate transcripts
-  RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
-
-  computeFeatures(grl = fiveUTR_ORFs, RFP = RFP, RNA = RNA,
-   Gtf = txdb, faFile = faFile)
-
-}
-# See vignettes for more examples
-}
+# FIX or remove the @export
 
 }
 \seealso{

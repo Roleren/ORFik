@@ -220,20 +220,14 @@ All of the features are implemented based on scientific article published in
 per reviewed journal. `ORFik` supports seemingles calculation of all available 
 features. See example below.
 
-```{r eval = FALSE, echo = TRUE}
-  # a example without cage-seq data:
-  # we will find ORFs in the 5' utrs
-  # and then calculate features on them
-
+```{r eval = TRUE, echo = TRUE}
  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(GenomicFeatures)
 
   # Extract sequences of fiveUTRs.
   fiveUTRs <- fiveUTRs[1:10]
   faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
-  # need to suppress warning because of bug in GenomicFeatures, will
-  # be fixed soon.
-  tx_seqs <- suppressWarnings(extractTranscriptSeqs(faFile, fiveUTRs))
+  tx_seqs <- extractTranscriptSeqs(faFile, fiveUTRs)
 
   # Find all ORFs on those transcripts and get their genomic coordinates
   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
@@ -257,22 +251,24 @@ features. See example below.
 You will now get a data.table with one column per score, the columns are named after
 the different scores, you can now go further with prediction, or making plots.
 
-
 # GRanges and GRangesList utilities
 
-Blabla
+`ORFik` contains couple functions that can be utilized to speed up your coding.
+Check documentations for these functions: `unlistGrl`, `sortPerGroup`, 
+`strandBool`, `tile1`.
 
-# Grouping ORFs
+## Grouping ORFs
 
-Sometimes you want a GRangesList of orfs grouped by transcript, or you might want 
-each orf as groups in the GRangesList. To do this more easily you can use the function
-ORFik:::groupGRangesBy.
+Sometimes you want a GRangesList of ORFs grouped by transcript, or you might 
+want each ORF as groups in the GRangesList. To do this more easily you can use 
+the function `groupGRangesBy`.
 
 ```{r eval = TRUE, echo = TRUE}
 
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
   unlisted_ranges <- unlist(fiveUTR_ORFs, use.names = FALSE)
+  unlisted_ranges
   test_ranges <- groupGRangesBy(unlisted_ranges, names(unlisted_ranges))
   
   # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
@@ -281,61 +277,3 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
 }
 ```
-
-# Aligning ribo-seq data centered on p-sites
-
-Features like floss needs the ribo-seq data to be alligned for the p-site.
-To do this, you can either do it manually by using plots from `ORFik`, to 
-deduce the p-sites, or you can do it automaticly by using the package 
-shoelaces(recomended). (automatic p-site finding is soon included with `ORFik` using shoelaces) 
-
-Syntax of p-shifted bed files are:
-
-column 1: Seqname (the chromosome)
-column 2: start
-column 3: end
-column 4: width( all must be 1 width reads of the p-sites)
-column 5: the original read lengths (i.g 26-34)
-column 6: the strand ( + / - (* is not allowed))
-
-The files can also be compressed by the following formats:
-".gzip"
-".gz"
-".bgz"
-
-# Predicting functional orfs
-
-If you have found a set of orfs, and you have used the function ORFik:::computeFeatures
-to find the features for those orfs, you can try to predict which orfs to might be coding.
-To do this you can specify some cut-off for the features, so that most of the orfs get excluded.
-
-An example could be:
-
-For all orfs with ribo-seq fpkm < 1, filter out.
-For all orfs with kozak score < 5, filter out.
-For all orfs with ORFScore < 0.5, filter out.
-
-The more strict you are, the less orfs you get. This smaller set can
-be verified further with other ORF-tools, experiments or by proteomics.
-
-Now an example on Upstream open reading frames(uorfs):
-
-For all uorfs with ribo-seq fpkm bigger than coding sequences fpkm, keep them.
-
-Even though the uorf is translated, it does not mean it regulates a gene-product.
-Two ways to check this: 
-
-One of the features is if the orf goes into the cds of its transcript, 
-you can use it like this:
-For all uorfs with distance between orf and cds > 0,
-(which mean it does not goes into cds), filter out.
-Now you will only have uorfs going into cds.
-
-For all uorfs with distance to cds > 200, filter out.
-Since the distance is so high, the ribosome most likely can 
-reinitiate. But this also depends on the region between the uorf stop site, and
-coding sequence start site.
-
-Because of the small set of experimentally verified uorfs, it can be hard to know
-what are good features for uorfs, ribo-seq features like the ones in this package, 
-at least tries to predict what could be relevant.

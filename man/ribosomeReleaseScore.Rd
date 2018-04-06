@@ -9,40 +9,42 @@ ribosomeReleaseScore(grl, RFP, GtfOrThreeUtrs, RNA = NULL)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
 with usually either leaders,
-cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
+cds', 3' utrs or ORFs.}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignment, GRanges
 or GRangesList object}
 
-\item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file,
-if ThreeUtrs: a GrangesList of transcripts, called from:
-threeUTRsByTranscript(Gtf, use.names = T)}
+\item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file transcripts is
+called from:
+\code{threeUTRsByTranscript(Gtf, use.names = TRUE)}, if object is GRangesList
+it is used as is.}
 
-\item{RNA}{rna seq reads as GAlignment, GRanges
+\item{RNA}{RnaSeq reads as GAlignment, GRanges
 or GRangesList object}
 }
 \value{
 a named vector of numeric values of scores, NA means that
- no 3' utr was found for that transcript.
+no 3' utr was found for that transcript.
 }
 \description{
-Is defined as (RPFs over ORF)/(RPFs over 3' utrs),
-normalized by lengths
-, if RNA is added as argument, it will normalize by RNA counts
-to justify location of 3' utrs
-It can be seen as a ribosome stalling feature.
+Ribosome Release Score is defined as
+\preformatted{(RPFs over ORF)/(RPFs over 3' utrs)} and
+additionaly normalized by lengths.
+If RNA is added as argument, it will normalize by RNA counts
+to justify location of 3' utrs.
+It can be understood as a ribosome stalling feature.
 A pseudo-count of one was added to both the ORF and downstream sums.
 }
 \examples{
-ORF <- GRanges(seqnames = "1", ranges = IRanges(
-               start = c(1, 10, 20),
-               end = c(5, 15, 25)),
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 threeUTRs <- GRangesList(tx1 = GRanges("1", IRanges(40, 50), "+"))
-RFP <- GRanges("1", IRanges(25, 25),"+")
-RNA <- GRanges("1", IRanges(1, 50),"+")
+RFP <- GRanges("1", IRanges(25, 25), "+")
+RNA <- GRanges("1", IRanges(1, 50), "+")
 ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+
 }
 \references{
 doi: 10.1016/j.cell.2013.06.009

@@ -4,7 +4,7 @@
 \alias{firstStartPerGroup}
 \title{Get first start per granges group}
 \usage{
-firstStartPerGroup(grl, keep.names = T)
+firstStartPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
@@ -12,7 +12,7 @@ firstStartPerGroup(grl, keep.names = T)
 \item{keep.names}{a boolean, keep names or not}
 }
 \value{
-a Rle(keep.names = T), or integer vector(F)
+a Rle(keep.names = TRUE), or integer vector(FALSE)
 }
 \description{
 grl must be sorted, call ORFik:::sortPerGroup if needed

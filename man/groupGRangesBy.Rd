@@ -16,29 +16,28 @@ a GRangesList named after names(Granges) if other is NULL, else
 names are from unique(other)
 }
 \description{
-It will group / split the GRanges object by the argument other:
-I.g. if you want to group by gene, set other = gene_names
+It will group / split the GRanges object by the argument \code{other}.
+For example if you would like to to group GRanges object by gene,
+set other to gene names.
 }
 \details{
-if argument other is not specified it will use the names of
-the GRanges object.
-It will then be similar to split(gr, names(gr))
+If \code{other} is not specified function will try to use the names of the
+GRanges object. It will then be similar to \code{split(gr, names(gr))}.
 
-It is important that all groups are unique, else they will be
-grouped together.
+It is important that all groups in \code{other} are unique, otherwise
+duplicates will be grouped together.
 }
 \examples{
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-           ranges = IRanges(start = c(1, 10, 20),
-           end = c(5, 15, 25)),
-           strand = "+")
-
-ORFranges2 <- GRanges("1",
-                     ranges = IRanges(start = c(20, 30, 40),
-                                      end = c(25, 35, 45)),
+                     ranges = IRanges(start = c(1, 10, 20),
+                                      end = c(5, 15, 25)),
                      strand = "+")
-names(ORFranges) = rep("tx1_1",3)
-names(ORFranges2) = rep("tx1_2",3)
+ORFranges2 <- GRanges("1",
+                      ranges = IRanges(start = c(20, 30, 40),
+                                       end = c(25, 35, 45)),
+                      strand = "+")
+names(ORFranges) = rep("tx1_1", 3)
+names(ORFranges2) = rep("tx1_2", 3)
 grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
 gr <- unlist(grl, use.names = FALSE)
 ## now recreate the grl

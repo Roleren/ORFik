@@ -202,7 +202,8 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' TSS if it is within boundary of 5' leader range, specified by
 #' \code{extension} in bp. A max peak must also be higher than minimum
 #' CageSeq peak cutoff specified in \code{filterValue}. The new TSS will then
-#' be the position of the cage read, with highest read count in the interval.
+#' be the positioned where the cage read (with highest read count in the
+#' interval).
 #'
 #' @param fiveUTRs (GRangesList) The 5' leaders or transcript sequences
 #' @param cage Either a filePath for CageSeq file, or already loaded

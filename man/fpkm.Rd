@@ -2,28 +2,29 @@
 % Please edit documentation in R/feature_methods.R
 \name{fpkm}
 \alias{fpkm}
-\title{Create normalizations of counts}
+\title{Create normalizations of overlapping read counts.}
 \usage{
 fpkm(grl, reads, pseudoCount = 0)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
-ORFs are a special case (uORFs, potential new cds' etc).}
+ORFs as a special case (uORFs, potential new cds' etc).}
 
 \item{reads}{a GAlignment, GRanges or GRangesList object,
-usually of ribo-seq, rna seq, cage seq, etc.}
+usually of RiboSeq, RnaSeq, CageSeq, etc.}
 
-\item{pseudoCount}{an integer, 0,
-set it to 1 if you want to avoid NA and inf values.}
+\item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
+avoid NA and inf values.}
 }
 \value{
 a numeric vector with the fpkm values
 }
 \description{
-Short for: Fragments per kilobase of transcript per million fragments
- For ribo seq on orfs, send orfs as grl,
- for rna seq always send transcripts as grl
+FPKM is short for "Fragments Per Kilobase of transcript per Million
+fragments". When calculating RiboSeq data FPKM over ORFs use ORFs as
+\code{grl}. When calculating RNASeq data FPKM use full transcripts as
+\code{grl}.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
@@ -33,6 +34,7 @@ ORF <- GRanges(seqnames = "1",
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 fpkm(grl, RFP)
+
 }
 \references{
 doi: 10.1038/nbt.1621

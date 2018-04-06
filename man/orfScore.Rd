@@ -2,7 +2,7 @@
 % Please edit documentation in R/ORF_features.R
 \name{orfScore}
 \alias{orfScore}
-\title{Get ORF score for a GRangesList of ORFs}
+\title{Get ORFscore for a GRangesList of ORFs}
 \usage{
 orfScore(grl, RFP)
 }
@@ -17,29 +17,28 @@ a matrix with 4 columns, the orfscore and score of
 each of the 3 tiles
 }
 \description{
-That is, of the 3 possible frames in an ORF,
- does the first frame have more reads.
+ORFscore tries to check whether the first frame of the 3 possible frames in
+an ORF has more reads than second and third frame.
 }
 \details{
-Function:
-rff is: reads fraction in specific frame
-ORFScore = log(rrf1 + rrf2 + rrf3)
+Pseudocode:
+assume rff - is reads fraction in specific frame
+\preformatted{ORFScore = log(rrf1 + rrf2 + rrf3)}
 For all ORFs where rrf2 or rrf3 is bigger than rff1,
 negate the resulting value.
-ORFScore[rrf1Smaller] <- ORFScore[rrf1Smaller] *-1
+\preformatted{ORFScore[rrf1Smaller] <- ORFScore[rrf1Smaller] * -1}
 
-You get one value per orf:
+As result there is one value per ORF:
 Positive values say that the first frame have the most reads,
 negative values say that the first frame does not have the most reads.
 }
 \examples{
-ORF <- GRanges(seqnames = "1", ranges = IRanges(
-               start = c(1, 10, 20),
-               end = c(5, 15, 25)),
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                strand = "+")
 names(ORF) <- c("tx1", "tx1", "tx1")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25),"+")
+RFP <- GRanges("1", IRanges(25, 25), "+")
 orfScore(grl, RFP)
 
 }

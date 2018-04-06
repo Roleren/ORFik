@@ -4,7 +4,7 @@
 \alias{lastExonStartPerGroup}
 \title{Get last start per granges group}
 \usage{
-lastExonStartPerGroup(grl, keep.names = T)
+lastExonStartPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

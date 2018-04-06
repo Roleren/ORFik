@@ -34,7 +34,8 @@ postitions using max peaks from CageSeq data. A max peak is defined as new
 TSS if it is within boundary of 5' leader range, specified by
 \code{extension} in bp. A max peak must also be higher than minimum
 CageSeq peak cutoff specified in \code{filterValue}. The new TSS will then
-be the position of the cage read, with highest read count in the interval.
+be the positioned where the cage read (with highest read count in the
+interval).
 }
 \examples{
 # example 5' leader, notice exon_rank column

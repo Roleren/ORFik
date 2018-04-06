@@ -11,33 +11,34 @@ fractionLength(grl, tx_len)
 with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
-\item{tx_len}{the transcript lengths of the transcripts
+\item{tx_len}{the transcript lengths of the transcripts,
 a named (tx names) vector of integers.
 If you have the transcripts as GRangesList,
-call ORFik:::widthPerGroup(tx, T)
-If you used cage data, then
-the tss for the the leaders have changed,
-therefor the tx lengths have changed,
-if so, call:
-tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))
-fractionLength(grl, tx_len)}
+call \code{ORFik:::widthPerGroup(tx, TRUE)}.
+
+If you used CageSeq to reannotate leaders, then the tss for the the leaders
+have changed, therefore the tx lengths have changed. To account for that
+call: \code{tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))}
+and calculate graction length using \code{fractionLength(grl, tx_len)}.}
 }
 \value{
 a numeric vector of ratios
 }
 \description{
-is defined as (length of grls)/(length of transcripts)
-,so that each group in the grl is divided by the corresponding transcript.
+Fraction Length is defined as
+\preformatted{(lengths of grl)/(length of tx_len)}
+so that each group in
+the grl is divided by the corresponding transcript.
 }
 \examples{
-ORF <- GRanges(seqnames = "1", ranges = IRanges(
-               start = c(1, 10, 20),
-               end = c(5, 15, 25)),
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 # grl must have same names as cds + _1 etc, so that they can be matched.
-tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50),"+"))
+tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
 fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
+
 }
 \references{
 doi: 10.1242/dev.098343
