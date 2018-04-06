@@ -11,6 +11,7 @@
 #' @param windows (GRangesList) of transcripts or CDS or other ranges that will
 #' be subseting coverage of \code{x}
 #' @param ignore.strand (logical) Whether to consider all reads to be "*".
+#' @param is.sorted (logical), is windows already sorted.
 #' @return (RleList) of positional counts of \code{x} ranges overlapping each
 #' consecutive position of the elements of \code{windows}
 #' @examples
@@ -24,7 +25,8 @@
 #'   strand = "+")
 #' ORFik:::coverageByWindow(reads, cds)
 #'
-coverageByWindow <- function(x, windows, ignore.strand = FALSE) {
+coverageByWindow <- function(x, windows, ignore.strand = FALSE,
+                             is.sorted = FALSE) {
   if (!is.grl(windows)) {
     windows <- try(exonsBy(windows, by="tx", use.names=TRUE),
                    silent=TRUE)
@@ -47,7 +49,7 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE) {
 
   # sort windows
   if (is.null(names(windows))) names(windows) <- seq_along(windows)
-  windows <- sortPerGroup(windows)
+  if (!is.sorted) windows <- sortPerGroup(windows)
 
   ## 1) Compute unique exons ('uex').
 
@@ -65,6 +67,7 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE) {
 
   #There doesn't seem to be much benefit in doing this.
   #x <- subsetByOverlaps(x, windows, ignore.strand=TRUE)
+  is_plus_ex <- strandBool(uex) # stop on *
   if (ignore.strand) {
     cvg <- coverage(x)
     uex_cvg <- cvg[uex]  # parallel to 'uex'
@@ -73,21 +76,18 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE) {
     x2 <- x[strand(x) %in% c("-", "*")]
     cvg1 <- coverage(x1)
     cvg2 <- coverage(x2)
-    is_plus_ex <- strand(uex) == "+"
-    is_minus_ex <- strand(uex) == "-"
-    if (!identical(is_plus_ex, !is_minus_ex))
-      stop("'windows' has exons on the * strand. ",
-           "This is not supported at the moment.")
+
+
     uex_cvg <- RleList(as.list(rep(0, length(uex))))
     uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
-    uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+    uex_cvg[!is_plus_ex] <- cvg2[uex[!is_plus_ex]]
   }
 
   ## 3) Flip coverage for exons on minus strand.
 
   ## It feels like this is not as fast as it could be (the bottleneck being
   ## subsetting an Rle object which needs to be revisited at some point).
-  uex_cvg <- IRanges::revElements(uex_cvg, strand(uex) == "-")
+  uex_cvg <- IRanges::revElements(uex_cvg, !is_plus_ex)
 
   ## 4) Compute coverage by original exon ('ex_cvg').
 
@@ -141,7 +141,7 @@ metaWindow <- function(x, windows) {
   }
   if (window_size %% 2 != 0) stop("Width of the window has to be even number.")
   window_size <- (window_size)/2
-  cvg <- coverageByWindow(x, windows)
+  cvg <- coverageByWindow(x, windows, is.sorted = TRUE)
   cvg <- Reduce(`+`, cvg) / length(cvg)
 
   hitMap <- data.frame(avg_counts = as.vector(cvg),
@@ -226,6 +226,8 @@ txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
 #' @param stop (logical) whether to incude stop codons
 #' @param window_size (integer) size of the window to extract upstream of the
 #' start/stop codon and downstream
+#' @param cds a GRangesList with cds, a speedup if you already have them
+#'  loaded.
 #' @return a list with two slots "starts" and "stops", each contains a
 #' GRangesList of windows around start and stop codons for the transcripts of
 #' interest
@@ -237,8 +239,13 @@ txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
 #' getStartStopWindows(txdb, txNames)
 #'
 getStartStopWindows <- function(
-  txdb, txNames, start = TRUE, stop = TRUE, window_size = 30L) {
-  cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  txdb, txNames, start = TRUE, stop = TRUE, window_size = 30L, cds = NULL) {
+
+  if (is.null(cds)) {
+    cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  } else {
+    cds <- cds[txNames]
+  }
   cdsTiled <- tile1(cds)
   cdsTiled <- removeMetaCols(cdsTiled) # so that all can match
   if (start) {
@@ -249,7 +256,7 @@ getStartStopWindows <- function(
     fiveTiled <- tile1(fiveUTRs)
     fiveTail <- tails(fiveTiled, window_size)
     merged <- unlist(c(fiveTail, cdsHead), use.names = FALSE)
-    start <- reduce(split(merged, names(merged)))
+    start <- reduceKeepAttr(split(merged, names(merged)))
   } else {
     start <- NULL
   }
@@ -262,7 +269,7 @@ getStartStopWindows <- function(
     threeTiled <- tile1(threeUTRs)
     threeHead <- heads(threeTiled, window_size)
     merged <- unlist(c(cdsTail, threeHead), use.names = FALSE)
-    stop <- reduce(split(merged, names(merged)))
+    stop <- reduceKeepAttr(split(merged, names(merged)))
   } else {
     stop <- NULL
   }

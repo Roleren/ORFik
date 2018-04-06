@@ -143,11 +143,12 @@ detectRibosomeShifts <- function(
   if (length(txNames) == 0) stop("No transcript has leaders and trailers of",
                                  " specified minFiveUTR, minCDS, minThreeUTR")
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
-  cds <- reduce(downstreamN(cds, firstN = firstN))
+
 
   ## start stop windows
   ss <- getStartStopWindows(txdb, txNames, start = start, stop = stop,
-                            window_size = window_size)
+                            window_size = window_size, cds)
+  cds <- reduceKeepAttr(downstreamN(cds, firstN = firstN))
 
   all_lengths <- sort(unique(width(footprints)))
   selected_lengths <- c()
@@ -166,7 +167,7 @@ detectRibosomeShifts <- function(
       counts <- counts[seq_len(top_tx)]
     }
     if (length(counts) == 0) next
-    cvgCDS <- coverageByWindow(ends_uniq, cds[names(counts)])
+    cvgCDS <- coverageByWindow(ends_uniq, cds[names(counts)], is.sorted = TRUE)
     cvgCDS <- Reduce(`+`, cvgCDS)
     periodic <- isPeriodic(as.vector(cvgCDS))
     if (periodic) {

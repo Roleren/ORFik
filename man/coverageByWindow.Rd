@@ -4,7 +4,7 @@
 \alias{coverageByWindow}
 \title{Compute coverage for every GRangesList subset.}
 \usage{
-coverageByWindow(x, windows, ignore.strand = FALSE)
+coverageByWindow(x, windows, ignore.strand = FALSE, is.sorted = FALSE)
 }
 \arguments{
 \item{x}{the cigar of the reads}
@@ -13,6 +13,8 @@ coverageByWindow(x, windows, ignore.strand = FALSE)
 be subseting coverage of \code{x}}
 
 \item{ignore.strand}{(logical) Whether to consider all reads to be "*".}
+
+\item{is.sorted}{(logical), is windows already sorted.}
 }
 \value{
 (RleList) of positional counts of \code{x} ranges overlapping each
