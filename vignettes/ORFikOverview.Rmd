@@ -231,7 +231,7 @@ features. See example below.
 
   # Find all ORFs on those transcripts and get their genomic coordinates
   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
-  unlistedORFs <- unlist(fiveUTR_ORFs, use.names = TRUE)
+  unlistedORFs <- unlistGrl(fiveUTR_ORFs)
   # group GRanges by ORFs instead of Transcripts
   fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)
 
@@ -242,14 +242,51 @@ features. See example below.
 
   # set RNA seq to duplicate transcripts
   RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
-
-  computeFeatures(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
-                  Gtf = txdb, faFile = faFile)
+  # transcript database
+  txdb <- loadDb(txdbFile)
+  computeFeatures(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
+                  RNA = RNA, Gtf = txdb, faFile = faFile)
 }
 ```
-
 You will now get a data.table with one column per score, the columns are named after
 the different scores, you can now go further with prediction, or making plots.
+
+# Calculating Kozak sequence score for ORFs
+
+Instead of getting all features, we can also extract single features.
+
+To understand how strong the binding affinitity of an ORF promoter region might be, we can use kozak sequence score. The kozak functions supports
+several species. In the first example we use human kozak sequence,
+then we make a self defined kozak sequence.
+
+```{r eval = TRUE, echo = TRUE}
+  # In this example we will find kozak score of cds' 
+
+  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+
+    cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[1:10]
+
+    faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+
+    kozakSequenceScore(cds, faFile, species = "human")
+
+    # A few species are pre supported, if not, make your own input pfm.
+
+    # here is an example where the human pfm is sent in again, even though
+    # it is already supported.
+
+    pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
+                                 21,26,24,16,28,32,5,23,35,12,42,21,
+                                 25,24,22,33,22,19,28,17,27,47,16,34,
+                                 25,24,26,25,28,14,5,21,10,17,15,28)),
+                    ncol = 4))
+
+   kozakSequenceScore(cds, faFile, species = pfm)
+
+  }
+
+```
+
 
 # GRanges and GRangesList utilities
 

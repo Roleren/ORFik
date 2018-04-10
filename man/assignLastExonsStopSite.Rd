@@ -16,7 +16,7 @@ with new start values}
 the same GRangesList with new stop sites
 }
 \description{
-make sure your grl is sorted,
- since stop of "-" strand objects should be the
- min start in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+make sure your grl is sorted, since stop of "-" strand objects
+should be the min start in group, use ORFik:::sortPerGroup(grl) to get
+sorted grl.
 }

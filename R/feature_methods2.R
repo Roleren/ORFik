@@ -135,18 +135,21 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' Make a score for each ORFs start region by proximity to Kozak
 #'
 #' The closer the sequence is to the Kozak sequence
-#' the higher the score, based on the experimental pwms from article referenced.
+#' the higher the score, based on the experimental pwms
+#' from article referenced.
 #' Minimum score is 0 (worst correlation), max is 1 (the best
 #' base per column was chosen).
 #' @references doi: https://doi.org/10.1371/journal.pone.0108475
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
-#' @param faFile a FaFile from the fasta file, see ?FaFile
+#' @param faFile a FaFile from the fasta file, see ?FaFile.
+#'  Can also be path to fastaFile with fai file in same dir.
 #' @param species ("human"), which species to use,
 #' currently supports human, zebrafish and mouse (m. musculus).
 #' You can also specify a pfm for your own species.
 #' Syntax of pfm is an rectangular integer matrix,
 #' where all columns must sum to the same value, normally 100.
 #' See example for more information.
+#' Rows are in order: c("A", "C", "G", "T")
 #' @param include.N logical (F), if TRUE, allow N bases to be counted as hits,
 #' score will be average of the other bases. If True, N bases will be
 #' added to pfm, automaticly, so dont include them if you make your own pfm.
@@ -156,38 +159,25 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' @importFrom Biostrings PWM
 #' @export
 #' @examples
-#'  \dontrun{
-#'  # in this example we will find kozak score of cds'
-#'
-#'  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-#'    library(GenomicFeatures)
-#'    # Get the gtf txdb file
-#'    txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-#'    package = "GenomicFeatures")
-#'    txdb <- loadDb(txdbFile)
-#'    cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
-#'
-#'    faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
-#'
-#'    kozakSequenceScore(cds, faFile, species = "human")
-#'
-#'    # A few species are pre supported, if not, make your own input pfm.
-#'
-#'    # here is an example where the human pfm is sent in again, even though
-#'    # it is already supported.
-#'
-#'    pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
-#'                                 21,26,24,16,28,32,5,23,35,12,42,21,
-#'                                 25,24,22,33,22,19,28,17,27,47,16,34,
-#'                                 25,24,26,25,28,14,5,21,10,17,15,28)),
-#'                    ncol = 4))
-#'
-#'   kozakSequenceScore(cds, faFile, species = pfm)
-#'
-#'  }
-#'  }
+#' # Usually the ORFs are found in orfik, which makes names for you etc.
+#' # Here we make an example from scratch
+#' seqName <- "Chromosome"
+#' ORF1 <- GRanges(seqnames = seqName,
+#'                    ranges = IRanges(c(1007, 1096), width = 60),
+#'                    strand = c("+", "+"))
+#' ORF2 <- GRanges(seqnames = seqName,
+#'                     ranges = IRanges(c(400, 100), width = 30),
+#'                     strand = c("-", "-"))
+#' ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
+#' ORFs <- makeORFNames(ORFs) # need ORF names
+#' # get faFile for sequences
+#' faFile <- FaFile(system.file("extdata", "genome.fasta",
+#'   package = "ORFik"))
+#' kozakSequenceScore(ORFs, faFile)
+#' # For more details see vignettes.
 kozakSequenceScore <- function(grl, faFile, species = "human",
                                include.N = FALSE) {
+  faFile <- findFa(faFile)
   firstExons <- firstExonPerGroup(grl)
   kozakLocation <- promoters(firstExons, upstream = 9, downstream = 6)
 
@@ -244,8 +234,8 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
   mat <- t(matrix(unlist(subSplit, use.names = FALSE), ncol = length(s)))
 
   scores <- rep(0., length(s))
-  for (i in 1:ncol(mat)) {
-    for (n in 1:length(bases)) {
+  for (i in seq(ncol(mat))) {
+    for (n in seq_along(bases)) {
       match <- mat[, i] == bases[n]
       scores[match] <- scores[match] + pwm[n, i]
     }
@@ -257,8 +247,8 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #' Inside/Outside score (IO)
 #'
 #' Inside/Outside score is defined as
-#' \preformatted{(reads over ORF)/(reads downstream to tx end)}
-#' A pseudo-count of one was added to both the ORF and downstream sums.
+#' \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
+#' A pseudo-count of one was added to both the ORF and outside sums.
 #' @references doi: 10.1242/dev.098345
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually either leaders, cds', 3' utrs or ORFs
@@ -270,7 +260,27 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #' @importFrom data.table rbindlist
 #' @family features
 #' @export
+#' @examples
+#' # Check inside outside score of a ORF within a transcript
+#' ORF <- GRanges("1",
+#'                ranges = IRanges(start = c(20, 30, 40),
+#'                                   end = c(25, 35, 45)),
+#'                strand = "+")
 #'
+#' grl <- GRangesList(tx1_1 = ORF)
+#'
+#' tx1 <- GRanges(seqnames = "1",
+#'                ranges = IRanges(start = c(1, 10, 20, 30, 40, 50),
+#'                                 end = c(5, 15, 25, 35, 45, 200)),
+#'                strand = "+")
+#' tx <- GRangesList(tx1 = tx1)
+#' RFP <- GRanges(seqnames = "1",
+#'                   ranges = IRanges(start = c(1, 4, 30, 60, 80, 90),
+#'                                    end = c(30, 33, 63, 90, 110, 120)),
+#'                   strand = "+")
+#'
+#' insideOutsideORF(grl, RFP, tx)
+
 insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   overlapGrl <- countOverlaps(grl, RFP) + 1
 
@@ -306,7 +316,9 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
 
 #' Find frame for each orf relative to cds
 #'
-#' Input of this function, is the output of the function \code{\link{distToCds}}
+#' Input of this function, is the output of the function
+#' \code{\link{distToCds}}
+#'
 #' possible outputs:
 #' 0: orf is in frame with cds
 #' 1: 1 shifted from cds
@@ -317,6 +329,10 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
 #' @return a logical vector
 #' @family features
 #' @examples
+#' # simple example
+#' isInFrame(c(3,6,8,11,15))
+#'
+#' # GRangesList example
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
 #' dist <- distToCds(grl, fiveUTRs, extension = 0)
@@ -330,11 +346,16 @@ isInFrame <- function(dists){
 
 #' Find frame for each orf relative to cds
 #'
-#' Input of this function, is the output of the function \code{\link{distToCds}}
+#' Input of this function, is the output of the function
+#' \code{\link{distToCds}}
 #' @references doi: 10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @examples
+#' #' # simple example
+#' isOverlapping(c(-3,-6,8,11,15))
+#'
+#' # GRangesList example
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
 #' dist <- distToCds(grl, fiveUTRs, extension = 0)
@@ -354,7 +375,16 @@ isOverlapping <- function(dists) {
 #' @return a numeric vector of integers
 #' @family features
 #' @export
-#'
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' grl <- ORFik:::makeORFNames(grl)
+#' rankOrder(grl)
 rankOrder <- function(grl) {
   gr <- unlist(grl, use.names = FALSE)
 
@@ -365,33 +395,34 @@ rankOrder <- function(grl) {
       } else {
         orfName <- names(gr)
         if (length(orfName) > length(grl)) {
-          orfName <- names(groupGRangesBy(grl, names(gr)))
+          orfName <- names(groupGRangesBy(gr, names(gr)))
         }
       }
     } else {
       orfName <- gr$names
       if (length(orfName) > length(grl)) {
-        orfName <- names(groupGRangesBy(grl, gr$names))
+        orfName <- names(groupGRangesBy(gr, gr$names))
       }
     }
   } else {
     orfName <- names(grl)
-    if (anyNA(as.integer(gsub(".*_", "", orfName)))) {
+    if (suppressWarnings(anyNA(as.integer(gsub(".*_", "", orfName))))) {
       if (!is.null(gr$names)) {
-        orfName <- names(groupGRangesBy(grl, gr$names))
+        orfName <- names(groupGRangesBy(gr, gr$names))
       }
     }
   }
   if (length(orfName) > length(grl)) {
-    stop("did not find a valid column to find ranks, easiest way to fix is set",
-         " grl to: ORFik:::groupGRangesBy(grl, names), ",
+    stop("did not find a valid column to find ranks, easiest way to fix is",
+         " set grl to: ORFik:::groupGRangesBy(grl, names), ",
          "where names are the orf names with _* in them-")
   }
 
   if (is.null(orfName)) stop("grl must have column called names")
   ranks <- as.integer(gsub(".*_", "", orfName))
   if (anyNA(ranks)) {
-    stop("no valid names to find ranks, check for orf _* names eg. tx_1, tx_2.")
+    stop("no valid names to find ranks, check for orf _* names eg.",
+         "tx_1, tx_2.")
   }
   return(ranks)
 }

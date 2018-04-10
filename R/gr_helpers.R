@@ -48,7 +48,9 @@ groupGRangesBy <- function(gr, other = NULL) {
       stop(" in GroupGRangesByOther: lengths of gr and other does not match")
     l <- S4Vectors::Rle(other)
   }
-  grouping <- unlist(lapply(1:nrun(l), function(x) { rep(x, runLength(l)[x])}))
+  grouping <- unlist(lapply(seq(nrun(l)), function(x) {
+    rep(x, runLength(l)[x])
+    }))
   grl <- split(gr, grouping)
   if (is.null(other)) {
     names(grl) <- unique(names(gr))

@@ -9,6 +9,9 @@ checkRNA(class)
 \arguments{
 \item{class, }{the given class of RNA object}
 }
+\value{
+NULL, stop if unvalid object
+}
 \description{
 Helper Function to check valid RNA input
 }

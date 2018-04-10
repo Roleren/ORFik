@@ -23,8 +23,8 @@ consecutive position of the elements of \code{windows}
 \description{
 This is similar to \code{\link[GenomicFeatures]{coverageByTranscript}}, but
 it adds: automatic sorting of the windows, fix for some rare cases when
-subsetting fails on minus/plus strands and security that subseting of windows
-will always return values (zeros) istead of out of bounds error.
+subsetting fails on minus/plus strands and security that subseting of
+windows will always return values (zeros) istead of out of bounds error.
 }
 \details{
 Minus strand is already flipped so that the most 5' position on the window

@@ -2,13 +2,13 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{extendLeaders}
 \alias{extendLeaders}
-\title{Extend the leaders tss.}
+\title{Extend the leaders transcription start sites.}
 \usage{
 extendLeaders(grl, extension = 1000, cds = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}
-of 5' utrs or transcripts..}
+of 5' utrs or transcripts.}
 
 \item{extension}{an integer, how much to extend the leaders.
 Or a GRangesList where start / stops by strand are the positions
@@ -23,16 +23,14 @@ Do not add for transcripts, as they are already included.}
 an extended GRangeslist
 }
 \description{
-Either if you have the 5' utr sequences or the
- transcript sequences to extend,
- any way the 5' part will be extended.
- Remember to sort it, if not sorted beforehand.
- use ORFik:::sortPerGroup(grl) to get sorted grl.
+Will extend the leaders or transcripts upstream by extension.
+Requires the \code{grl} to be sorted beforehand,
+use \code{\link{sortPerGroup}} to get sorted grl.
 }
 \examples{
 library(GenomicFeatures)
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
-package = "GenomicFeatures")
+                          package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
 fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
 tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -40,7 +38,8 @@ cds <- cdsBy(txdb,"tx",use.names = TRUE)
 ## now try(extend upstream 1000, downstream 1st cds exons):
 extendLeaders(fiveUTRs, extension = 1000, cds)
 
-## when extending transcripts, don't include cds' ofcourse,
+## when extending transcripts, don't include cds' of course,
 ## since they are already there
 extendLeaders(tx, extension = 1000)
+
 }

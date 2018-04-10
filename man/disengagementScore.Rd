@@ -30,7 +30,7 @@ ORF <- GRanges(seqnames = "1",
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
 tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
-RFP <- GRanges("1",
+RFP <- GRanges("1", IRanges(c(1,10,20,30,40), width = 3), "+")
 disengagementScore(grl, RFP, tx)
 
 }

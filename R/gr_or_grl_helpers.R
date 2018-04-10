@@ -1,7 +1,7 @@
 #' Get logical list of strands
 #'
-#' Helper function to get a logical list of True/False, if GRangesList group have
-#' + strand = T, if - strand = F
+#' Helper function to get a logical list of True/False,
+#'  if GRangesList group have + strand = T, if - strand = F
 #' Also checks for * strands, so a good check for bugs
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
 #' @return a logical vector
@@ -74,7 +74,7 @@ matchNaming <- function(gr, reference) {
 
         colnames(df) <- colnames(refMeta)
         # set col classes
-        for (i in 1:ncol(df)) {
+        for (i in seq_along(ncol(df))) {
           class(df[,i]) <- class(refMeta[,i])
         }
         elementMetadata(gr) <- df

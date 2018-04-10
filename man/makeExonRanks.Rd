@@ -4,7 +4,7 @@
 \alias{makeExonRanks}
 \title{Make a meta column with exon ranks}
 \usage{
-makeExonRanks(grl, byTranscript = F)
+makeExonRanks(grl, byTranscript = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}

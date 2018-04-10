@@ -2,9 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{startDefinition}
 \alias{startDefinition}
-\title{Returns start definition according to
-\url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
-ncbi genetic code number for translation.}
+\title{Returns start definitions}
 \usage{
 startDefinition(transl_table)
 }
@@ -15,8 +13,9 @@ startDefinition(transl_table)
 A string of START sies separatd with "|".
 }
 \description{
-Returns start definition according to
-\url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
+According to:
+\url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
+index.cgi?chapter=tgencodes#SG1}
 ncbi genetic code number for translation.
 }
 \examples{

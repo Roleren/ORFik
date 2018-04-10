@@ -4,7 +4,7 @@
 \alias{translationalEff}
 \title{Translational efficiency}
 \usage{
-translationalEff(grl, RNA, RFP, tx, with.fpkm = F, pseudoCount = 0)
+translationalEff(grl, RNA, RFP, tx, with.fpkm = FALSE, pseudoCount = 0)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object

@@ -26,3 +26,9 @@ a character vector of valid tramscript names
 Filter transcripts to those whohave 5' UTR, CDS, 3' UTR of
 some lengths, pick the longest per gene.
 }
+\examples{
+gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+txNames <- txNamesWithLeaders(txdb)
+
+}

@@ -41,12 +41,25 @@ Each feature have a link to an article describing its creation and idea
 behind it. Look at the functions in the feature family to see all of them.
 }
 \details{
-If you used CageSeq to reannotate your leaders your txDB object, must contain
-the reassigned leaders. In the future release reasignment will create txdb
-objects for you, but currently this is not supported, therefore be carefull.
+If you used CageSeq to reannotate your leaders your txDB object, must
+contain the reassigned leaders. In the future release reasignment will
+create txdb objects for you, but currently this is not supported,
+therefore be carefull.
 }
 \examples{
-# FIX or remove the @export
+# Usually the ORFs are found in orfik, which makes names for you etc.
+# Here we make an example from scratch
+gtf <- system.file("extdata", "annotations.gtf",
+package = "ORFik") ## location of the gtf file
+suppressWarnings(txdb <-
+                  GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
+# use cds' as ORFs for this example
+ORFs <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+ORFs <- makeORFNames(ORFs) # need ORF names
+# make Ribo-seq data,
+RFP <- unlistGrl(firstExonPerGroup(ORFs))
+suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
+# For more details see vignettes.
 
 }
 \seealso{

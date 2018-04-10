@@ -65,7 +65,7 @@ subsetCoverage <- function(cov, y) {
 #' ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
 #'                                      end = c(10, 20, 32)),
 #'                strand = "+",
-#'                names = "tx1_1")
+#'                names = rep("tx1_1", 3))
 #' names(ORF) <- rep("tx1", 3)
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
@@ -112,8 +112,8 @@ entropy <- function(grl, reads) {
   })
 
   runLengths <- lengths(IRanges::RleList(h))
-  # get sequence from valid indeces
-  indeces <- seq_len(runLengths)
+  # get sequence from valid indeces, not same as seq_len().
+  indeces <- seq(runLengths)
   # stop here
   tripletSums <- codonSumsPerGroup(h, indeces, L, N, reg_len,
                                    runLengths, countList)
@@ -163,7 +163,7 @@ entropy <- function(grl, reads) {
 #'
 #' Pseudo explanation of the function:
 #' \preformatted{
-#' SUM[start to stop]( (grl[start:end][name]/grl) / (cds[start:end][name]/cds) )
+#' SUM[start to stop]((grl[start:end][name]/grl) / (cds[start:end][name]/cds))
 #' }
 #' Please read more in the article.
 #' @references doi: 10.1016/j.celrep.2014.07.045
@@ -191,7 +191,7 @@ entropy <- function(grl, reads) {
 #' floss(grl, RFP, cds, 28, 32)
 #'
 floss <- function(grl, RFP, cds, start = 26, end = 34){
-  #TODO: add 0 to the ones that dont hit
+
   if (start > end) stop("start is bigger than end")
   if (is.grl(class(RFP))) {
     stop("RFP must be either GAlignment or GRanges type")
@@ -208,13 +208,13 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   whichNoHit <- NULL # which ribo-seq did not hit grl
   if (length(unique(ORFGrouping)) != length(grl)) {
     whichNoHit <- S4Vectors::setdiff.Vector(
-      1:length(grl), unique(ORFGrouping))
+      seq_along(grl), unique(ORFGrouping))
   }
   orfFractions <- split(rfpValidMatch, ORFGrouping)
   listing<- IRanges::RleList(orfFractions)
   tableFracs <- table(listing)
   colnames(tableFracs) <- NULL
-  orfFractions <- lapply(1:length(listing), function(x) {
+  orfFractions <- lapply(seq_along(listing), function(x) {
     tableFracs[x,]/sum(tableFracs[x,])
   })
 
@@ -225,13 +225,14 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
   cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
   totalLength <- length(rfpValidMatchCDS)
-  cdsFractions <- sapply(cdsFractions, function(x) {
+  cdsFractions <- vapply(cdsFractions, FUN.VALUE = c(1.0), FUN = function(x) {
     length(x)/totalLength
   })
   cdsFractions <- as.double(cdsFractions)
   # floss score ->
-  score <- sapply(1:length(orfFractions), function(x) {
-    sum(abs(orfFractions[[x]] - cdsFractions)) * 0.5
+  score <- vapply(seq_along(orfFractions), FUN.VALUE = c(1.0),
+                  FUN = function(x) {
+                    sum(abs(orfFractions[[x]] - cdsFractions)) * 0.5
   })
   if (!is.null(whichNoHit)) {
     tempScores <- as.numeric(rep(NA, length(grl)))
@@ -290,7 +291,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' te$fpkmRFP
 #' te$te
 #'
-translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = F,
+translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
                              pseudoCount = 0) {
   tx <- tx[txNames(grl)]
   #normalize by tx lengths
@@ -364,7 +365,7 @@ fractionLength <- function(grl, tx_len){
 #'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
 #' tx <- GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
-#' RFP <- GRanges("1",
+#' RFP <- GRanges("1", IRanges(c(1,10,20,30,40), width = 3), "+")
 #' disengagementScore(grl, RFP, tx)
 #'
 disengagementScore <- function(grl, RFP, GtfOrTx){
@@ -378,7 +379,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
 
-  tx <- tx[txNames(grl, F)]
+  tx <- tx[txNames(grl, FALSE)]
 
   grlStops <- stopSites(grl, asGR = FALSE)
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
@@ -406,9 +407,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' @param RFP RiboSeq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param GtfOrThreeUtrs if Gtf: a TxDb object of a gtf file transcripts is
-#' called from:
-#' \code{threeUTRsByTranscript(Gtf, use.names = TRUE)}, if object is GRangesList
-#' it is used as is.
+#'  called from: \code{threeUTRsByTranscript(Gtf, use.names = TRUE)},
+#'  if object is GRangesList, it is presumed to be the 3' utrs
 #' @param RNA RnaSeq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @return a named vector of numeric values of scores, NA means that
@@ -428,7 +428,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
   if (class(GtfOrThreeUtrs) == "TxDb") {
     threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
-                                       use.names = T)
+                                       use.names = TRUE)
   } else if (is.grl(GtfOrThreeUtrs)) {
     threeUTRs <- GtfOrThreeUtrs
   } else {
@@ -531,9 +531,9 @@ ribosomeStallingScore <- function(grl, RFP){
 #' @param orfFeatures a logical,  is the grl a list of orfs? Must be assigned.
 #' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
 #'  include this, also extension must match with the extension used for these.
-#' @param includeNonVarying a logical T, if TRUE, include all features not dependent on
-#'  Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
-#'  isInFrame, isOverlapping and rankInTx
+#' @param includeNonVarying a logical T, if TRUE, include all features not
+#'  dependent on Ribo-seq data and RNA-seq data, that is: Kozak,
+#'  fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
 #' @importFrom data.table data.table
 #' @family features
 #' @return a data.table with scores, each column is one score type, name of
@@ -560,22 +560,22 @@ ribosomeStallingScore <- function(grl, RFP){
 #'
 #'   # Find all ORFs on those transcripts and get their genomic coordinates
 #'   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
-#'   unlistedORFs <- unlist(fiveUTR_ORFs, use.names = TRUE)
+#'   unlistedORFs <- unlistGrl(fiveUTR_ORFs)
 #'   # group GRanges by ORFs instead of Transcripts
 #'   fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)
 #'
 #'   # make some toy ribo seq and rna seq data
-#'   starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
+#'   starts <- unlistGrl(ORFik:::firstExonPerGroup(fiveUTR_ORFs))
 #'   RFP <- promoters(starts, upstream = 0, downstream = 1)
 #'   score(RFP) <- rep(29, length(RFP)) # the original read widths
 #'
 #'   # set RNA seq to duplicate transcripts
-#'   RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
+#'   RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 #'
 #'   cageNotUsed <- 0 # used to inform that no cage was used
 #'
-#'   computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
-#'    Gtf = txdb, faFile = faFile, extension = cageNotUsed)
+#'   computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
+#'    RNA = RNA, Gtf = txdb, faFile = faFile, extension = cageNotUsed)
 #'
 #' }
 #' # See vignettes for more examples
@@ -677,9 +677,10 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' Each feature have a link to an article describing its creation and idea
 #' behind it. Look at the functions in the feature family to see all of them.
 #'
-#' If you used CageSeq to reannotate your leaders your txDB object, must contain
-#' the reassigned leaders. In the future release reasignment will create txdb
-#' objects for you, but currently this is not supported, therefore be carefull.
+#' If you used CageSeq to reannotate your leaders your txDB object, must
+#' contain the reassigned leaders. In the future release reasignment will
+#' create txdb objects for you, but currently this is not supported,
+#' therefore be carefull.
 #'
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
@@ -700,7 +701,19 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' @export
 #' @family features
 #' @examples
-#' # FIX or remove the @export
+#' # Usually the ORFs are found in orfik, which makes names for you etc.
+#' # Here we make an example from scratch
+#' gtf <- system.file("extdata", "annotations.gtf",
+#' package = "ORFik") ## location of the gtf file
+#' suppressWarnings(txdb <-
+#'                   GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
+#' # use cds' as ORFs for this example
+#' ORFs <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+#' ORFs <- makeORFNames(ORFs) # need ORF names
+#' # make Ribo-seq data,
+#' RFP <- unlistGrl(firstExonPerGroup(ORFs))
+#' suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
+#' # For more details see vignettes.
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,

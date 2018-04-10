@@ -50,9 +50,9 @@ standard cage extension is 1000}
 \item{cageFiveUTRs}{a GRangesList, if you used cage-data to extend 5' utrs,
 include this, also extension must match with the extension used for these.}
 
-\item{includeNonVarying}{a logical T, if TRUE, include all features not dependent on
-Ribo-seq data and RNA-seq data, that is: Kozak, fractionLengths, distORFCDS,
-isInFrame, isOverlapping and rankInTx}
+\item{includeNonVarying}{a logical T, if TRUE, include all features not
+dependent on Ribo-seq data and RNA-seq data, that is: Kozak,
+fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of
@@ -92,22 +92,22 @@ try ?floss
 
   # Find all ORFs on those transcripts and get their genomic coordinates
   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
-  unlistedORFs <- unlist(fiveUTR_ORFs, use.names = TRUE)
+  unlistedORFs <- unlistGrl(fiveUTR_ORFs)
   # group GRanges by ORFs instead of Transcripts
   fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)
 
   # make some toy ribo seq and rna seq data
-  starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
+  starts <- unlistGrl(ORFik:::firstExonPerGroup(fiveUTR_ORFs))
   RFP <- promoters(starts, upstream = 0, downstream = 1)
   score(RFP) <- rep(29, length(RFP)) # the original read widths
 
   # set RNA seq to duplicate transcripts
-  RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
+  RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 
   cageNotUsed <- 0 # used to inform that no cage was used
 
-  computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP, RNA = RNA,
-   Gtf = txdb, faFile = faFile, extension = cageNotUsed)
+  computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
+   RNA = RNA, Gtf = txdb, faFile = faFile, extension = cageNotUsed)
 
 }
 # See vignettes for more examples

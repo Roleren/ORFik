@@ -26,7 +26,8 @@ want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
 can overlap into CDS's.}
 }
 \value{
-a GRangesList of newly assigned TSS for fiveUTRs, using CageSeq data.
+a GRangesList of newly assigned TSS for fiveUTRs,
+ using CageSeq data.
 }
 \description{
 Given a GRangesList of 5' UTRs or transcripts, reassign the start

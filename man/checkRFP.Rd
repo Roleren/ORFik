@@ -9,6 +9,9 @@ checkRFP(class)
 \arguments{
 \item{class, }{the given class of RFP object}
 }
+\value{
+NULL, stop if invalid object
+}
 \description{
 Helper Function to check valid RFP input
 }

@@ -39,7 +39,7 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE) {
     if (length(class) == 0) return(rep(TRUE, length(type)))
     type <- type[!indeces]
   }
-  for (classI in 1:length(class)) {
+  for (classI in seq_along(class)) {
     if (!is.grl(class[classI])) {
       messageI <- paste(type[classI], "must be given and be type GRangesList")
       stop(messageI)
@@ -119,7 +119,7 @@ fread.bed <- function(filePath) {
 #' @param packages either NULL if only source and no update/install
 #' or "all" if you want to update all your bioconductor packages
 #' or c(package1, package2, ...) for specific packages as a character vector
-#' @return NULL
+#' @return NULL, loading the packages requested, or just source
 #'
 sourceBioc <- function(packages = NULL) {
   source("https://bioconductor.org/biocLite.R")
@@ -131,4 +131,21 @@ sourceBioc <- function(packages = NULL) {
       biocLite(packages)
     }
   }
+}
+#' Convenience wrapper for Rsamtools FaFile
+#' @param faFile a character path or FaFile
+#' @importFrom Rsamtools FaFile
+#' @return a FaFile or BSgenome
+findFa <- function(faFile) {
+  if (is.character(faFile)) {
+    if (dir.exists(faFile)) {
+      return(FaFile(faFile))
+    } else {
+      stop("faFile does not name a valid fasta file")
+    }
+
+  } else if (class(faFile) == "FaFile" || class(faFile) == "BSgenome") {
+    return(faFile)
+  }
+  stop("faFile must be FaFile, BSgenome or valid filePath")
 }

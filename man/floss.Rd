@@ -31,7 +31,7 @@ that overlap ORFs and normalize by CDS.
 \details{
 Pseudo explanation of the function:
 \preformatted{
-SUM[start to stop]( (grl[start:end][name]/grl) / (cds[start:end][name]/cds) )
+SUM[start to stop]((grl[start:end][name]/grl) / (cds[start:end][name]/cds))
 }
 Please read more in the article.
 }

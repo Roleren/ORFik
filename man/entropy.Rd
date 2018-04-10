@@ -27,7 +27,7 @@ For example c(0,0,0,0) has 0 entropy, since no reads overlap.
 ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
                                      end = c(10, 20, 32)),
                strand = "+",
-               names = "tx1_1")
+               names = rep("tx1_1", 3))
 names(ORF) <- rep("tx1", 3)
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")

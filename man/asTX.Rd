@@ -11,10 +11,11 @@ asTX(grl, reference)
 the reference, grl must have column called names that gives
 grouping for result}
 
-\item{reference}{a GrangesList of ranges
-that include and are bigger or equal to grl
-ig. cds is grl and gene can be reference
-@export}
+\item{reference}{a GrangesList of ranges that include and are bigger or
+equal to grl ig. cds is grl and gene can be reference}
+}
+\value{
+a GRangesList in transcript coordinates
 }
 \description{
 Map genomic to transcript coordinates by reference

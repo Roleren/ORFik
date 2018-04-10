@@ -33,15 +33,3 @@ test_that("stopSites works as intended", {
   expect_equal(start(cds_stops)[1], 939291)
   expect_equal(start(cds_stops)[2], 245858562)
 })
-
-test_that("windowResize works as intended", {
-
-  cds_starts <- startSites(cds, asGR = T)
-  resized <- windowResize(cds_starts, window_size = 30)
-
-  expect_is(resized, "GRanges")
-  expect_equal(start(resized)[1], 925912)
-  expect_equal(end(resized)[1], 925972)
-  expect_equal(start(resized)[2], 245929871)
-  expect_equal(end(resized)[2], 245929931)
-})

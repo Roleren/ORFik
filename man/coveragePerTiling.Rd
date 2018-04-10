@@ -8,10 +8,9 @@ coveragePerTiling(grl, reads)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}}
-of 5' utrs or transcripts..}
+of 5' utrs or transcripts.}
 
-\item{reads}{a GAlignment or GRanges object of
-ribo-seq, RNA-seq etc}
+\item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc}
 }
 \value{
 a Rle, one list per group with # of hits per position.
@@ -21,10 +20,11 @@ It tiles each GRangesList group, and finds hits per position
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
-ranges = IRanges(start = c(1, 10, 20),
-                end = c(5, 15, 25)),
-strand = "+")
+               ranges = IRanges(start = c(1, 10, 20),
+                                end = c(5, 15, 25)),
+               strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25),"+")
-ribosomeStallingScore(grl, RFP)
+RFP <- GRanges("1", IRanges(25, 25), "+")
+coveragePerTiling(grl, RFP)
+
 }

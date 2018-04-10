@@ -67,7 +67,7 @@ codonSumsPerGroup <- function(h, indeces, L, N, reg_len,
     for (i in 2:length(L)) {
       acums[i] <-acums[i-1] + acums[i]
     }
-    unlacums <- unlist(lapply(1:(length(runLengths)-1), function(x) {
+    unlacums <- unlist(lapply(seq(length(runLengths)-1), function(x) {
       rep(acums[x], runLengths[x+1])
     }), use.names = FALSE)
     unlacums <- unlist(c(rep(1, runLengths[1]), unlacums))
@@ -78,7 +78,7 @@ codonSumsPerGroup <- function(h, indeces, L, N, reg_len,
   which_reads_start <- (unlacums + unlh * unlreg_len)
   which_reads_end <- (unlh * unlreg_len + (unlreg_len + unlacums -1))
   # the actual triplets ->
-  int_seqs <- lapply(1:length(which_reads_start), function(x) {
+  int_seqs <- lapply(seq_along(which_reads_start), function(x) {
     which_reads_start[x]:which_reads_end[x]
   })
 
@@ -119,6 +119,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize){
 
 #' Helper Function to check valid RNA input
 #' @param class, the given class of RNA object
+#' @return NULL, stop if unvalid object
 #'
 checkRNA <- function(class){
   if (is.null(class) || (class == "NULL")) {
@@ -135,6 +136,7 @@ checkRNA <- function(class){
 
 #' Helper Function to check valid RFP input
 #' @param class, the given class of RFP object
+#' @return NULL, stop if invalid object
 #'
 checkRFP <- function(class) {
   if (class != "GAlignments" & class != "GRanges") {
@@ -146,7 +148,7 @@ checkRFP <- function(class) {
 #' Helper function to check valid combinations of extension and cageFiveUTRs
 #' @param extension a numeric/integer to reassign 5' utrs.
 #' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
-#'
+#' @return NULL, stop if invalid object
 validExtension <- function(extension, cageFiveUTRs) {
   if (is.null(extension)) {
     stop("please specify extension, to avoid bugs ",

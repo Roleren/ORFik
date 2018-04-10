@@ -18,3 +18,14 @@ a GRangesList of start codons, since they might be split on exons
 In ATGTTTTGC, get the positions ATG.
 It takes care of exons boundaries, with exons < 3 length.
 }
+\examples{
+gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+                   ranges = IRanges(c(7, 14), width = 3),
+                   strand = c("+", "+"))
+gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                    ranges = IRanges(c(4, 1), c(9, 3)),
+                    strand = c("-", "-"))
+grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+startCodons(grl, is.sorted = FALSE)
+
+}

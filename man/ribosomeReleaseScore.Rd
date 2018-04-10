@@ -15,9 +15,8 @@ cds', 3' utrs or ORFs.}
 or GRangesList object}
 
 \item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file transcripts is
-called from:
-\code{threeUTRsByTranscript(Gtf, use.names = TRUE)}, if object is GRangesList
-it is used as is.}
+called from: \code{threeUTRsByTranscript(Gtf, use.names = TRUE)},
+if object is GRangesList, it is presumed to be the 3' utrs}
 
 \item{RNA}{RnaSeq reads as GAlignment, GRanges
 or GRangesList object}
