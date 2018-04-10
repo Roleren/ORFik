@@ -19,7 +19,3 @@ GRanges object reduced to only first frame
 Subset GRanges to get desired frame. GRanges object should be beforehand
 tiled to size of 1. This subsetting takes account for strand.
 }
-\examples{
-#subset_to_frame(x, 1)
-
-}

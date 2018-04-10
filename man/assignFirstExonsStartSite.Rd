@@ -9,13 +9,14 @@ assignFirstExonsStartSite(grl, newStarts)
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object}
 
-\item{newStarts}{an integer vector of same length as grl, with new start values}
+\item{newStarts}{an integer vector of same length as grl, with new start
+values}
 }
 \value{
 the same GRangesList with new start sites
 }
 \description{
 make sure your grl is sorted, since start of "-" strand
- objects should be the
- max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
+objects should be the
+max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 }

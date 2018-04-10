@@ -86,7 +86,7 @@ addFirstCdsOnLeaderEnds <- function(fiveUTRs, cds) {
   gr <- unlist(firstExons, use.names = FALSE)
   ## fix mcols of cds, so that pc() will work
   mcols(gr) <- as.data.frame(mcols(unlist(
-    fiveUTRs, use.names = FALSE)))[1:length(gr),]
+    fiveUTRs, use.names = FALSE)))[seq_along(gr),]
   grl <- relist(gr, firstExons)
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)
   ## should we use reduceKeepAttr here ?, we will lose
@@ -217,7 +217,8 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' @param cds (GRangesList) CDS of relative fiveUTRs, applicable only if you
 #' want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
 #' can overlap into CDS's.
-#' @return a GRangesList of newly assigned TSS for fiveUTRs, using CageSeq data.
+#' @return a GRangesList of newly assigned TSS for fiveUTRs,
+#'  using CageSeq data.
 #' @export
 #' @examples
 #' # example 5' leader, notice exon_rank column

@@ -17,3 +17,13 @@ grl must be grouped by transcript
 If a list of orfs are grouped by transcripts, but does not have
 ORF names, then create them and return the new GRangesList
 }
+\examples{
+gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+                   ranges = IRanges(c(7, 14), width = 3),
+                   strand = c("+", "+"))
+gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                    ranges = IRanges(c(4, 1), c(9, 3)),
+                    strand = c("-", "-"))
+grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+makeORFNames(grl)
+}

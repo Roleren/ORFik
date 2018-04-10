@@ -141,12 +141,12 @@ assignAnnotations <- function(ORFs, con) {
       c("transcript_id", "transcript_biotype")]), ]
 
     # find out overlaping transcripts
-    transcripts <- exonsBy(txdb, by = "tx", use.names = T)
+    transcripts <- exonsBy(txdb, by = "tx", use.names = TRUE)
     transcripts_hits <- findOverlaps(ORFs, transcripts, type = "any")
     t_names <- names(transcripts)
     t_names <- t_names[subjectHits(transcripts_hits)]
     # ORFs that have no overlap with transcripts
-    notranscript <- which(!(1:length(ORFs) %in%
+    notranscript <- which(!(seq_along(ORFs) %in%
                               unique(queryHits(transcripts_hits))))
 
     # which transcript corespond to our table of annotations
@@ -155,7 +155,8 @@ assignAnnotations <- function(ORFs, con) {
     newORFs <- ORFs[queryHits(transcripts_hits)]
     newORFs$transcript_id <- t_names
     newORFs$gene_id <- transcript_df$gene_id[tran_matches]
-    newORFs$transcript_biotype <- transcript_df$transcript_biotype[tran_matches]
+    newORFs$transcript_biotype <-
+      transcript_df$transcript_biotype[tran_matches]
 
     notranscriptORFs <- ORFs[notranscript]
     notranscriptORFs$transcript_id <- "none"
@@ -169,12 +170,12 @@ assignAnnotations <- function(ORFs, con) {
     p_coding <- newORFs[newORFs$transcript_biotype == "protein_coding"]
     other_coding <- newORFs[newORFs$transcript_biotype != "protein_coding"]
     message("Preparing annotations for ORFs overlapping coding regions...")
-    for (i in 1:length(p_coding)) {
+    for (i in seq_along(p_coding)) {
         newIsoforms_p[i] <- defineIsoform(p_coding[i],
                                           cds[[p_coding[i]$transcript_id]])
     }
     message("Preparing annotations for ORFs overlapping non-coding regions...")
-    for (i in 1:length(other_coding)) {
+    for (i in seq_along(other_coding)) {
         newIsoforms_o[i] <- defineIsoform(
           other_coding[i], transcripts[[other_coding[i]$transcript_id]])
     }

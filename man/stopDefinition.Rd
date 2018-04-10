@@ -2,9 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{stopDefinition}
 \alias{stopDefinition}
-\title{Returns stop definition according to
-\url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
-ncbi genetic code number for translation.}
+\title{Returns stop definitions}
 \usage{
 stopDefinition(transl_table)
 }
@@ -15,8 +13,9 @@ stopDefinition(transl_table)
 A string of STOP sies separatd with "|".
 }
 \description{
-Returns stop definition according to
-\url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
+According to:
+\url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
+index.cgi?chapter=tgencodes#SG1}
 ncbi genetic code number for translation.
 }
 \examples{

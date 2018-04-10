@@ -14,7 +14,16 @@ downstreamN <- function(grl, firstN = 150L) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return an integer vector (named/unnamed) of widths
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' widthPerGroup(grl)
 widthPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
@@ -30,7 +39,16 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 #' @param keep.names a boolean, keep names or not
 #' @importFrom IRanges heads
 #' @return a character vector or Rle of seqnames(if seqnames == T)
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' seqnamesPerGroup(grl)
 seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
@@ -100,8 +118,9 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' Sort a GRangesList
 #'
 #' A faster, more versatile reimplementation of
-#' \code{\link[GenomicRanges]{sort}} for GRangesList, which works poorly for
-#' more than 10k groups. This function sorts each group, where "+" strands are
+#' \code{\link[GenomicRanges]{sort.GenomicRanges}} for GRangesList,
+#' which works poorly for more than 10k groups.
+#' This function sorts each group, where "+" strands are
 #' increasing by starts and "-" strands are decreasing by ends.
 #'
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
@@ -117,7 +136,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
 #'                     ranges = IRanges(c(1, 4), c(3, 9)),
 #'                     strand = c("-", "-"))
-#' grl <- GRangesList(gr_plus, gr_minus)
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' sortPerGroup(grl)
 #'
 sortPerGroup <- function(grl, ignore.strand = FALSE){
@@ -138,7 +157,16 @@ sortPerGroup <- function(grl, ignore.strand = FALSE){
 #' @param keep.names a boolean, keep names or not
 #' @return a vector named/unnamed of characters
 #' @importFrom IRanges heads
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' strandPerGroup(grl)
 strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
@@ -155,7 +183,16 @@ strandPerGroup <- function(grl, keep.names = TRUE) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return a GRangesList of the first exon per group
 #' @importFrom IRanges heads
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' firstExonPerGroup(grl)
 firstExonPerGroup <- function(grl) {
   validGRL(class(grl))
   return(heads(grl, 1L))
@@ -168,7 +205,16 @@ firstExonPerGroup <- function(grl) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return a GRangesList of the last exon per group
 #' @importFrom IRanges tails
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' lastExonPerGroup(grl)
 lastExonPerGroup <- function(grl) {
   validGRL(class(grl), "grl")
   return(tails(grl, 1L))
@@ -181,7 +227,16 @@ lastExonPerGroup <- function(grl) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = TRUE), or integer vector(FALSE)
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' firstStartPerGroup(grl)
 firstStartPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -198,7 +253,16 @@ firstStartPerGroup <- function(grl, keep.names = TRUE) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' firstEndPerGroup(grl)
 firstEndPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -213,7 +277,16 @@ firstEndPerGroup <- function(grl, keep.names = TRUE) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' lastExonEndPerGroup(grl)
 lastExonEndPerGroup = function(grl,keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -228,7 +301,16 @@ lastExonEndPerGroup = function(grl,keep.names = TRUE) {
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' lastExonStartPerGroup(grl)
 lastExonStartPerGroup = function(grl, keep.names = TRUE) {
   validGRL(class(grl), "grl")
   if (keep.names) {
@@ -246,7 +328,16 @@ lastExonStartPerGroup = function(grl, keep.names = TRUE) {
 #' @param grl a GRangesList
 #' @param keep.names a boolean, keep names or not
 #' @return an integer vector of counts
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' numExonsPerGroup(grl)
 numExonsPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
 
@@ -297,7 +388,7 @@ removeMetaCols <- function(grl) {
   if (is.grl(class(grl))) {
     grouping <- numExonsPerGroup(grl)
 
-    for (i in 1:length(grouping)) {
+    for (i in seq_along(grouping)) {
       g <- c(g, rep(names(grouping[i]), grouping[i]))
     }
     grl <- unlistGrl(grl)

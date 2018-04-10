@@ -2,7 +2,7 @@
 % Please edit documentation in R/ORFs_helpers.R
 \name{stopCodons}
 \alias{stopCodons}
-\title{Get the Stop codons(3 bases) from a GRangesList of orfs grouped by orfs}
+\title{Get the Stop codons (3 bases) from a GRangesList of orfs grouped by orfs}
 \usage{
 stopCodons(grl, is.sorted = FALSE)
 }
@@ -17,4 +17,15 @@ a GRangesList of stop codons, since they might be split on exons
 \description{
 In ATGTTTTGC, get the positions TGC.
 It takes care of exons boundaries, with exons < 3 length.
+}
+\examples{
+gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+                   ranges = IRanges(c(7, 14), width = 3),
+                   strand = c("+", "+"))
+gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                    ranges = IRanges(c(4, 1), c(9, 3)),
+                    strand = c("-", "-"))
+grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+stopCodons(grl, is.sorted = FALSE)
+
 }

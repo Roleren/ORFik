@@ -2,8 +2,8 @@
 #'
 #' This is similar to \code{\link[GenomicFeatures]{coverageByTranscript}}, but
 #' it adds: automatic sorting of the windows, fix for some rare cases when
-#' subsetting fails on minus/plus strands and security that subseting of windows
-#' will always return values (zeros) istead of out of bounds error.
+#' subsetting fails on minus/plus strands and security that subseting of
+#' windows will always return values (zeros) istead of out of bounds error.
 #'
 #' Minus strand is already flipped so that the most 5' position on the window
 #' is the first position in the returned Rle.
@@ -146,7 +146,7 @@ metaWindow <- function(x, windows) {
   hitMap <- data.frame(avg_counts = as.vector(cvg),
                        position = -window_size:(window_size - 1),
                        frame = c(rev(rep_len(3:1, window_size)),
-                                 rep_len(1:3, window_size)))
+                                 rep_len(seq(3), window_size)))
   return(hitMap)
 }
 
@@ -196,6 +196,10 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 #' transcripts
 #' @return a character vector of valid tramscript names
 #' @export
+#' @examples
+#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+#' txNames <- txNamesWithLeaders(txdb)
 #'
 txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
                                minCDS = 150L, minThreeUTR = 30L) {
@@ -288,7 +292,7 @@ getStartStopWindows <- function(
 isPeriodic <- function(x) {
   amplitudes <- abs(fft(x))
   amp <- amplitudes[2:(length(amplitudes)/2+1)]
-  periods <- 1/spec.pgram(x = x, plot = F)$freq
+  periods <- 1/spec.pgram(x = x, plot = FALSE)$freq
   return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
 }
 
@@ -300,12 +304,12 @@ isPeriodic <- function(x) {
 #' @return a single numeric offset
 #'
 changePointAnalysis <- function(x, feature = "start") {
-  meta <- x[1:40]
+  meta <- x[seq(40)]
   pos <- -(length(x)/2):(length(x)/2 - 1)
   if (feature == "start") {
     means <- c()
     for (j in 15:35) {
-      m <- mean(meta[j:40]) - mean(meta[1:(j-1)])
+      m <- mean(meta[j:40]) - mean(meta[seq(j-1)])
       means <- c(means, m)
     }
     shift <- which.max(abs(means)) + 14

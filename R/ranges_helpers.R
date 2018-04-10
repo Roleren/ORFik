@@ -33,10 +33,10 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 
   if (byTranscript) {
     oldNames <- names(grl)
-    names(grl) <- 1:length(grl)
+    names(grl) <- seq_along(grl)
   }
   l <- Rle(names(unlist(grl, use.names = TRUE)))
-  t <- unlist(lapply(1:nrun(l), function(x) {
+  t <- unlist(lapply(seq(nrun(l)), function(x) {
     rep(x, runLength(l)[x])
   }))
 
@@ -69,7 +69,16 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #' ORF names, then create them and return the new GRangesList
 #' @param grl a \code{\link[GenomicRanges]{GRangesList}}
 #' @return (GRangesList) with ORF names, grouped by transcripts, sorted.
-#'
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' makeORFNames(grl)
 makeORFNames <- function(grl) {
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
   asGR <- unlist(grl, use.names = FALSE)
@@ -103,9 +112,8 @@ makeORFNames <- function(grl) {
 #'
 tile1 <- function(grl) {
   ORFs <- unlistGrl(grl)
-  if (is.null(names(ORFs)) ||
-      (length(unique(names(ORFs))) != length(names(grl)))) {
-    stop("Unlisted grl has no names.")
+  if (is.null(names(ORFs))) {
+    stop("grl does not have names.")
   }
   ## Try to catch dangerous groupings, that is equally named groups
   if (sum(duplicated(names(ORFs)))) {
@@ -146,7 +154,7 @@ tile1 <- function(grl) {
 #' grouping for result
 #' @param reference a GrangesList of ranges that include and are bigger or
 #' equal to grl ig. cds is grl and gene can be reference
-#'
+#' @return a GRangesList in transcript coordinates
 asTX <- function(grl, reference) {
   orfNames <- txNames(grl)
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
@@ -189,9 +197,11 @@ assignFirstExonsStartSite <- function(grl, newStarts) {
   dt[!duplicated(dt$group),]$start[posIndices] <- newStarts[posIndices]
   dt[!duplicated(dt$group),]$end[!posIndices] <- newStarts[!posIndices]
 
-  ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
-                                                      split.field = "group", names.field = "group_name",
-                                                      keep.extra.columns = TRUE)
+  ngrl <-
+    GenomicRanges::makeGRangesListFromDataFrame(dt,
+                                                split.field = "group",
+                                                names.field = "group_name",
+                                                keep.extra.columns = TRUE)
   names(ngrl) <- names(grl)
 
   return(ngrl)
@@ -218,9 +228,11 @@ assignLastExonsStopSite <- function(grl, newStops) {
   idx = dt[, .I[.N], by = group]
   dt[idx$V1]$end[posIndices] <- newStops[posIndices]
   dt[idx$V1]$start[!posIndices] <- newStops[!posIndices]
-  ngrl <- GenomicRanges::makeGRangesListFromDataFrame(dt,
-                                                      split.field = "group", names.field = "group_name",
-                                                      keep.extra.columns = TRUE)
+  ngrl <-
+    GenomicRanges::makeGRangesListFromDataFrame(dt,
+                                                split.field = "group",
+                                                names.field = "group_name",
+                                                keep.extra.columns = TRUE)
   names(ngrl) <- names(grl)
 
   return(ngrl)
@@ -262,7 +274,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
     downTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
     ir <- IRanges(start = downstreamOf[boundaryHits],
                   end = downstreamOf[boundaryHits])
-    irl <- split(ir, 1:length(ir))
+    irl <- split(ir, seq_along(ir))
     names(irl) <- names(tx[boundaryHits])
     ranges(downTx[boundaryHits]) <- irl
   }
@@ -295,11 +307,11 @@ upstreamOfPerGroup <- function(tx, upstreamOf) {
   neg <- negStarts > negGrlStarts
   # need to fix pos/neg with possible cage extensions
   outside <- which(sum(pos) == 0)
-  pos[outside] = T
+  pos[outside] = TRUE
   posTx <- tx[posIndices]
   posTx[outside] <- firstExonPerGroup(posTx[outside])
   outside <- which(sum(neg) == 0)
-  neg[outside] = T
+  neg[outside] = TRUE
   negTx <- tx[!posIndices]
   negTx[outside] <- firstExonPerGroup(negTx[outside])
 
@@ -386,6 +398,9 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 coveragePerTiling <- function(grl, reads) {
 
   unlTile <- unlistGrl(tile1(grl))
+  if (!is.null(unlTile$names)) { # for orf case
+    names(unlTile) <- unlTile$names
+  }
   # could make this more efficient by counting overlaps
   # only on untiled, then tile the ones that hit and count again
   counts <- countOverlaps(unlTile, reads)
@@ -393,7 +408,7 @@ coveragePerTiling <- function(grl, reads) {
   names(counts) <- NULL
   countList <- split(counts, names)
 
-  return(IRanges::RleList(countList)[names(grl)])
+  return(IRanges::RleList(countList))
 }
 
 

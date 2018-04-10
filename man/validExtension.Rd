@@ -11,6 +11,9 @@ validExtension(extension, cageFiveUTRs)
 
 \item{cageFiveUTRs}{a GRangesList, if you used cage-data to extend 5' utrs,}
 }
+\value{
+NULL, stop if invalid object
+}
 \description{
 Helper function to check valid combinations of extension and cageFiveUTRs
 }

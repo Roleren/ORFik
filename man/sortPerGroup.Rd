@@ -18,8 +18,9 @@ an equally named GRangesList, where each group is
 }
 \description{
 A faster, more versatile reimplementation of
-\code{\link[GenomicRanges]{sort}} for GRangesList, which works poorly for
-more than 10k groups. This function sorts each group, where "+" strands are
+\code{\link[GenomicRanges]{sort.GenomicRanges}} for GRangesList,
+which works poorly for more than 10k groups.
+This function sorts each group, where "+" strands are
 increasing by starts and "-" strands are decreasing by ends.
 }
 \examples{
@@ -29,7 +30,7 @@ gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
                     ranges = IRanges(c(1, 4), c(3, 9)),
                     strand = c("-", "-"))
-grl <- GRangesList(gr_plus, gr_minus)
+grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 sortPerGroup(grl)
 
 }

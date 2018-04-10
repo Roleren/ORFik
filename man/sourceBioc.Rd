@@ -11,6 +11,9 @@ sourceBioc(packages = NULL)
 or "all" if you want to update all your bioconductor packages
 or c(package1, package2, ...) for specific packages as a character vector}
 }
+\value{
+NULL, loading the packages requested, or just source
+}
 \description{
 Convenience function for quick update of bioconductor packages,
 }

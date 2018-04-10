@@ -1,5 +1,8 @@
-#' Returns start definition according to
-#' \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
+#' Returns start definitions
+#'
+#' According to:
+#' \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
+#' index.cgi?chapter=tgencodes#SG1}
 #' ncbi genetic code number for translation.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
@@ -14,14 +17,17 @@ startDefinition <- function(transl_table) {
   STARTdef <- c("ATG|TTG|CTG", #1 The Standard Code
                 "ATT|ATC|ATA|ATG|GTG", #2 The Vertebrate Mitochondrial Code
                 "ATA|ATG", #3 The Yeast Mitochondrial Code
-                "TTA|TTG|CTG|ATT|ATC|ATA|ATG|GTG", #4 Mold/Protozoan/Coelenterate Mitochondrial/Mycoplasma/Spiroplasma
-                "TTG|ATT|ATC|ATA|ATG|GTG", #5 The Invertebrate Mitochondrial Code
+                "TTA|TTG|CTG|ATT|ATC|ATA|ATG|GTG",
+                #4 Mold/Protozoan/Coelenterate Mitochondrial/Mycoplasma
+                "TTG|ATT|ATC|ATA|ATG|GTG",
+                #5 The Invertebrate Mitochondrial Code
                 "ATG", #6 The Ciliate, Dasycladacean and Hexamita Nuclear Code
                 "ATG", #7 ??? No info
                 "ATG", #8 ??? No info
                 "ATG|GTG", #9 The Echinoderm and Flatworm Mitochondrial Code
                 "ATG", #10 The Euplotid Nuclear Code
-                "TTG|CTG|ATT|ATC|ATA|ATG|GTG", #11 The Bacterial, Archaeal and Plant Plastid Code
+                "TTG|CTG|ATT|ATC|ATA|ATG|GTG",
+                #11 The Bacterial, Archaeal and Plant
                 "CTG|ATG", #12 The Alternative Yeast Nuclear Code
                 "TTG|ATA|ATG|GTG", #13 The Ascidian Mitochondrial Code
                 "ATG", #14 The Alternative Flatworm Mitochondrial Code
@@ -35,14 +41,17 @@ startDefinition <- function(transl_table) {
                 "ATG", #22 Scenedesmus obliquus Mitochondrial Code
                 "ATT|ATG|GTG", #23 Thraustochytrium Mitochondrial Code
                 "TTG|CTG|ATG|GTG", #24 Pterobranchia Mitochondrial Code
-                "TTG|ATG|GTG", #25 Candidate Division SR1 and Gracilibacteria Code
+                "TTG|ATG|GTG", #25 Candidate Division SR1 and G.bacteria Code
                 "CTG|ATG") #26 Pachysolen tannophilus Nuclear Code
   return(STARTdef[transl_table])
 }
 
 
-#' Returns stop definition according to
-#' \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=tgencodes#SG1}
+#' Returns stop definitions
+#'
+#' According to:
+#' \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
+#' index.cgi?chapter=tgencodes#SG1}
 #' ncbi genetic code number for translation.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
@@ -57,14 +66,14 @@ stopDefinition <- function(transl_table) {
   STOPdef <- c("TAA|TAG|TGA", #1 The Standard Code
                "TAA|TAG|AGA|AGG", #2 The Vertebrate Mitochondrial Code
                "TAA|TAG", #3 The Yeast Mitochondrial Code
-               "TAA|TAG", #4 Mold/Protozoan/Coelenterate Mitochondrial/Mycoplasma/Spiroplasma
+               "TAA|TAG", #4 Mold/Protozoan/Coelenterate Mitochondrial/Mplasma/
                "TAA|TAG", #5 The Invertebrate Mitochondrial Code
                "TGA", #6 The Ciliate, Dasycladacean and Hexamita Nuclear Code
                "TGA", #7 ??? No info
                "TGA", #8 ??? No info
                "TAA|TAG", #9 The Echinoderm and Flatworm Mitochondrial Code
                "TAA|TAG", #10 The Euplotid Nuclear Code
-               "TAA|TAG|TGA", #11 The Bacterial, Archaeal and Plant Plastid Code
+               "TAA|TAG|TGA", #11 The Bacterial, Archaeal and Plant Code
                "TAA|TAG|TGA", #12 The Alternative Yeast Nuclear Code
                "TAA|TAG", #13 The Ascidian Mitochondrial Code
                "TAG", #14 The Alternative Flatworm Mitochondrial Code
@@ -104,8 +113,8 @@ stopDefinition <- function(transl_table) {
 #' When FALSE will report all possible ORFs in all three reading frames.
 #' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
 #' counting 3bp for START and STOP codons. For example minimumLength = 8 will
-#' result in size of ORFs to be at least START + 8*3 [bp] + STOP. Use this param
-#' to restrict search.
+#' result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+#' Use this param to restrict search.
 #' @return (IRangesList) of ORFs locations incuding START and STOP codons
 #' grouped by input seqeunces.
 #' @export
@@ -130,7 +139,8 @@ findORFs <- function(
 
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
-                         longestORF = longestORF, minimumLength = minimumLength)
+                         longestORF = longestORF,
+                         minimumLength = minimumLength)
   return(split(IRanges(result$orf[[1]], result$orf[[2]]), result$index))
 }
 
@@ -180,7 +190,8 @@ findMapORFs <- function(
 
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
-                         longestORF = longestORF, minimumLength = minimumLength)
+                         longestORF = longestORF,
+                         minimumLength = minimumLength)
   return(mapToGRanges(grl, result))
 }
 
@@ -217,7 +228,7 @@ findORFsFasta <- function(
   gr <- findORFs_fasta(filePath, startCodon, stopCodon, longestORF,
                        minimumLength, is.circular)
   if (is.circular) {
-    isCircular(gr) <- rep(T, length(seqlevels(gr)))
+    isCircular(gr) <- rep(TRUE, length(seqlevels(gr)))
   }
   return(gr)
 }

@@ -13,8 +13,8 @@ strandBool(grl)
 a logical vector
 }
 \description{
-Helper function to get a logical list of True/False, if GRangesList group have
-+ strand = T, if - strand = F
+Helper function to get a logical list of True/False,
+ if GRangesList group have + strand = T, if - strand = F
 Also checks for * strands, so a good check for bugs
 }
 \examples{

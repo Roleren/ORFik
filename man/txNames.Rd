@@ -4,7 +4,7 @@
 \alias{txNames}
 \title{Get transcript names from orf names}
 \usage{
-txNames(grl, unique = F)
+txNames(grl, unique = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
@@ -21,4 +21,15 @@ a character vector of transcript names,
 \description{
 names must either be a column called names, or the names of the
 grl object
+}
+\examples{
+gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+                   ranges = IRanges(c(7, 14), width = 3),
+                   strand = c("+", "+"))
+gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                    ranges = IRanges(c(4, 1), c(9, 3)),
+                    strand = c("-", "-"))
+grl <- GRangesList(tx1_1 = gr_plus, tx2_1 = gr_minus)
+# there are 2 orfs, both the first on each transcript
+txNames(grl)
 }

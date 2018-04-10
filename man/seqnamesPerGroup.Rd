@@ -17,3 +17,13 @@ a character vector or Rle of seqnames(if seqnames == T)
 \description{
 Get list of seqnames per granges group
 }
+\examples{
+gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+                   ranges = IRanges(c(7, 14), width = 3),
+                   strand = c("+", "+"))
+gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                    ranges = IRanges(c(4, 1), c(9, 3)),
+                    strand = c("-", "-"))
+grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+seqnamesPerGroup(grl)
+}

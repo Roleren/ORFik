@@ -79,7 +79,7 @@ mapToGRanges <- function(grl, result) {
     stop("Invalid structure of result, must be list with 2 elements ",
          "read info for structure.")
   # Check that grl is sorted
-  grl <- sortPerGroup(grl, ignore.strand = T)
+  grl <- sortPerGroup(grl, ignore.strand = TRUE)
   # Create Ranges object from orf scanner result
   ranges = IRanges(start = unlist(result$orf[1], use.names = FALSE),
                    end = unlist(result$orf[2], use.names = FALSE))
@@ -104,6 +104,16 @@ mapToGRanges <- function(grl, result) {
 #' @export
 #' @return a character vector of transcript names,
 #'  without _* naming
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1_1 = gr_plus, tx2_1 = gr_minus)
+#' # there are 2 orfs, both the first on each transcript
+#' txNames(grl)
 txNames <- function(grl, unique = FALSE) {
   if (!is.gr_or_grl(class(grl))) {
     stop("grl must be GRangesList or GRanges Object")
@@ -142,6 +152,15 @@ txNames <- function(grl, unique = FALSE) {
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' startSites(grl, is.sorted = FALSE)
 #'
 startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                        is.sorted = FALSE) {
@@ -180,6 +199,15 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' stopSites(grl, is.sorted = FALSE)
 #'
 stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
                       is.sorted = FALSE) {
@@ -216,6 +244,15 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of start codons, since they might be split on exons
 #' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' startCodons(grl, is.sorted = FALSE)
 #'
 startCodons <- function(grl, is.sorted = FALSE){
   if (!is.sorted) {
@@ -251,6 +288,15 @@ startCodons <- function(grl, is.sorted = FALSE){
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of stop codons, since they might be split on exons
 #' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' stopCodons(grl, is.sorted = FALSE)
 #'
 stopCodons <- function(grl, is.sorted = FALSE) {
   if (!is.sorted) {

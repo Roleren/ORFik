@@ -26,8 +26,8 @@ When FALSE will report all possible ORFs in all three reading frames.}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 [bp] + STOP. Use this param
-to restrict search.}
+result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+Use this param to restrict search.}
 }
 \value{
 A GRangesList of ORFs.

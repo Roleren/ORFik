@@ -4,7 +4,7 @@
 \alias{txSeqsFromFa}
 \title{Get transcript sequence from a GrangesList and a faFile or BSgenome}
 \usage{
-txSeqsFromFa(grl, faFile, is.sorted = F)
+txSeqsFromFa(grl, faFile, is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a GRangesList object}

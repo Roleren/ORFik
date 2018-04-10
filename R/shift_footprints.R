@@ -46,7 +46,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
              " than selected_lengths!")
     }
 
-    for (i in 1:length(selected_lengths)) {
+    for (i in seq_along(selected_lengths)) {
         message("Shifting footprints of length ", selected_lengths[i])
         riboReadsW <- footprints[qwidth(footprints) == selected_lengths[i]]
         if (length(riboReadsW) == 0) {
