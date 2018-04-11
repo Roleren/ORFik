@@ -32,7 +32,7 @@ Imports:
   Biostrings (>= 2.47.12),
   stats,
   tools,
-  Rsamtools (>= 1.31.3)
+  Rsamtools (>= 1.31.3),
 RoxygenNote: 6.0.1
 Suggests:
   testthat,

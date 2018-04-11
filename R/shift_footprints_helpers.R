@@ -27,10 +27,10 @@
 #'
 coverageByWindow <- function(x, windows, ignore.strand = FALSE,
                              is.sorted = FALSE) {
-  if (!is.grl(windows)) {
+  if (!is.grl(class(windows))) {
     windows <- try(exonsBy(windows, by="tx", use.names=TRUE),
                    silent=TRUE)
-    if (methods::is(windows, "try-error"))
+    if (!is.grl(class(windows)))
       stop("failed to extract the exon ranges ", "from 'windows' with ",
            "exonsBy(windows, by=\"tx\", use.names=TRUE)")
   }

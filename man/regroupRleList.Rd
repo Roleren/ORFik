@@ -15,8 +15,8 @@ regroupRleList(rle, supergroups)
 A regrouped RleList
 }
 \description{
-Almost direct copy of IRanges:::regroupBySupergroup.
+Almost direct copy of IRanges regroupBySupergroup.
 But only works on rle and GRangesList.
 This function will be removed if
-IRanges:::regroupBySupergroup is exported.
+IRanges regroupBySupergroup is exported.
 }

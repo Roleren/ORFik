@@ -406,10 +406,10 @@ removeMetaCols <- function(grl) {
 
 #' Regroup rle from GRangesList
 #'
-#' Almost direct copy of IRanges:::regroupBySupergroup.
+#' Almost direct copy of IRanges regroupBySupergroup.
 #' But only works on rle and GRangesList.
 #' This function will be removed if
-#' IRanges:::regroupBySupergroup is exported.
+#' IRanges regroupBySupergroup is exported.
 #' @param rle A RleList to reduce groups on.
 #' @param supergroups A GRangesList to group by
 #' @return A regrouped RleList
