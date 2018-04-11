@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{findMapORFs}
 \alias{findMapORFs}
-\title{Find ORFs and imidiately map them to their genomic positions.}
+\title{Find ORFs and immediately map them to their genomic positions.}
 \usage{
 findMapORFs(grl, seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)

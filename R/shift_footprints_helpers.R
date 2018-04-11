@@ -91,16 +91,12 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE,
   ## 4) Compute coverage by original exon ('ex_cvg').
 
   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]  # reverse index
-  #stopifnot(identical(ex2uex[uex2ex], seq_along(uex2ex)))  # sanity
-  #stopifnot(identical(ex2uex[sm], ex2uex))  # sanity
-  #stopifnot(all(uex[ex2uex] == ex))  # sanity
-
   ex_cvg <- uex_cvg[ex2uex]  # parallel go 'ex'
 
   ## 5) Compute coverage of each transcript by concatenating coverage of its
   ##    exons.
 
-  ans <- IRanges:::regroupBySupergroup(ex_cvg, windows)
+  ans <- regroupRleList(ex_cvg, windows)
 
   ## 6) Propagate 'mcols(windows)'.
 

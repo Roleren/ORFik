@@ -50,7 +50,6 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE) {
   }
 }
 
-
 #' Converts different type of files to Granges
 #'
 #' column 5 will be set to score

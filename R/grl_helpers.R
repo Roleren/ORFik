@@ -403,3 +403,22 @@ removeMetaCols <- function(grl) {
     return(grl)
   }
 }
+
+#' Regroup rle from GRangesList
+#'
+#' Almost direct copy of IRanges:::regroupBySupergroup.
+#' But only works on rle and GRangesList.
+#' This function will be removed if
+#' IRanges:::regroupBySupergroup is exported.
+#' @param rle A RleList to reduce groups on.
+#' @param supergroups A GRangesList to group by
+#' @return A regrouped RleList
+regroupRleList<- function(rle, supergroups) {
+  supergroups <- PartitioningByEnd(supergroups)
+  ans_breakpoints <- end(PartitioningByEnd(rle))[end(supergroups)]
+
+  ans_partitioning <- PartitioningByEnd(ans_breakpoints,
+                                        names=names(supergroups))
+
+  return(relist(unlist(rle, use.names=FALSE), ans_partitioning))
+}

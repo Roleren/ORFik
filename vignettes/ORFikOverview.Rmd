@@ -304,13 +304,49 @@ the function `groupGRangesBy`.
 
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
-  unlisted_ranges <- unlist(fiveUTR_ORFs, use.names = FALSE)
+  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
   unlisted_ranges
   test_ranges <- groupGRangesBy(unlisted_ranges, names(unlisted_ranges))
   
   # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
   # we use the orfs exon column called ($names) to group, it is made by ORFik.
-  unlisted_ranges <- unlist(test_ranges, use.names = FALSE)
+  unlisted_ranges <- unlistGrl(test_ranges)
   test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
 }
 ```
+
+## Filtering example
+
+Lets say you found some ORFs, and you want to filter out some of them.
+ORFik provides several functions for filtering. A problem with the
+original GenomicRanges container, is that filtering on GRanges objects
+are much easier than on GRangesList objects, ORFik tries to fix this.
+
+In this example we will filter out all orfs as following:
+1. First group GRangesList by ORFs
+2. width < 60
+3. number of exons < 2
+4. strand is negative
+
+```{r eval = TRUE, echo = TRUE}
+
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  # lets use the fiveUTR_ORFs
+  #1. Group by ORFs
+  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
+  ORFs <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
+  length(ORFs)
+  #2. Remove widths < 60
+  ORFs <- ORFs[widthPerGroup(ORFs) >= 60]
+  length(ORFs)
+  #3. Keep only ORFs with at least 2 exons
+  ORFs <- ORFs[numExonsPerGroup(ORFs) > 1]
+  length(ORFs)
+  
+  #4. Keep only positive ORFs
+  ORFs <- ORFs[strandPerGroup(ORFs) == "+"]
+  # all remaining ORFs where on positive strand, so no change
+  length(ORFs)
+}
+```
+Many more operations are also supported for manipulation
