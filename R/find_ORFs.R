@@ -145,7 +145,7 @@ findORFs <- function(
 }
 
 
-#' Find ORFs and imidiately map them to their genomic positions.
+#' Find ORFs and immediately map them to their genomic positions.
 #'
 #' Finds ORFs on the sequences of interest, but returns relative positions to
 #' the positions of \code{grl} argument. For example, \code{grl} can be exons
