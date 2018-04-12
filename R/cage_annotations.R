@@ -118,7 +118,7 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
 #' Find max peak for each transcript,
 #' returns as data.table, without names, but with index
 #' @param cageOverlaps The cageOverlaps between cage and extended 5' leaders
-#' @param filteredrawCageData The filtered raw cage-data
+#' @param filteredCage The filtered raw cage-data
 #'  used to reassign 5' leaders
 #' @importFrom data.table as.data.table
 #' @return a data.table of max peaks
