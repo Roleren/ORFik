@@ -242,7 +242,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
                               filterValue = 1, cds = NULL) {
   validGRL(class(fiveUTRs), "fiveUTRs")
-  if (class(cage) == "character") {
+  if (is.character(cage)) {
     filteredCage <- filterCage(fread.bed(cage),
                                filterValue) # get the cage data
   } else if (class(cage) == "GRanges") {

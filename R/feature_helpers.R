@@ -63,10 +63,7 @@ codonSumsPerGroup <- function(h, indeces, L, N, reg_len,
   # gives a triplet reading, 1:3, 3,6
 
   if (length(L) > 1) { # if more than 1 hit total
-    acums <- L
-    for (i in 2:length(L)) {
-      acums[i] <-acums[i-1] + acums[i]
-    }
+    acums <- cumsum(as.numeric(L))
     unlacums <- unlist(lapply(seq(length(runLengths)-1), function(x) {
       rep(acums[x], runLengths[x+1])
     }), use.names = FALSE)

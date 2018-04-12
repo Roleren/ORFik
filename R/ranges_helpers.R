@@ -39,16 +39,18 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
   t <- unlist(lapply(seq(nrun(l)), function(x) {
     rep(x, runLength(l)[x])
   }))
-
+  if (length(t) == 1) {
+    return(1)
+  }
   Inds <- rep(1, length(t))
   if (!byTranscript) {
-    for (x in 2:length(t)) {
+    for (x in seq(2, length(t))) {
       if (t[x] == t[x - 1]) {
         Inds[x] <- Inds[x - 1] + 1
       }
     }
   } else {
-    for (x in 2:length(t)) {
+    for (x in seq(2, length(t))) {
       if (t[x] != t[x - 1]) {
         if (oldNames[t[x]] == oldNames[t[x] - 1]) {
           Inds[x] <- Inds[x - 1] + 1
@@ -81,8 +83,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #' makeORFNames(grl)
 makeORFNames <- function(grl) {
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
-  asGR <- unlist(grl, use.names = FALSE)
-  if (is.null(names(asGR))) asGR <- unlist(grl, use.names = TRUE)
+  asGR <- unlistGrl(grl)
   asGR$names <- paste0(names(asGR), "_", ranks)
   return(groupGRangesBy(asGR))
 }
