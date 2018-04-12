@@ -216,7 +216,7 @@ firstExonPerGroup <- function(grl) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' lastExonPerGroup(grl)
 lastExonPerGroup <- function(grl) {
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   return(tails(grl, 1L))
 }
 
@@ -238,7 +238,7 @@ lastExonPerGroup <- function(grl) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' firstStartPerGroup(grl)
 firstStartPerGroup <- function(grl, keep.names = TRUE) {
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   if (keep.names) {
     return(start(firstExonPerGroup(grl)))
   }else {
@@ -264,7 +264,7 @@ firstStartPerGroup <- function(grl, keep.names = TRUE) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' firstEndPerGroup(grl)
 firstEndPerGroup <- function(grl, keep.names = TRUE) {
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   if (keep.names) {
     return(end(firstExonPerGroup(grl)))
   } else {
@@ -288,7 +288,7 @@ firstEndPerGroup <- function(grl, keep.names = TRUE) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' lastExonEndPerGroup(grl)
 lastExonEndPerGroup = function(grl,keep.names = TRUE) {
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   if (keep.names) {
     return(end(lastExonPerGroup(grl)))
   } else {
@@ -312,7 +312,7 @@ lastExonEndPerGroup = function(grl,keep.names = TRUE) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' lastExonStartPerGroup(grl)
 lastExonStartPerGroup = function(grl, keep.names = TRUE) {
-  validGRL(class(grl), "grl")
+  validGRL(class(grl))
   if (keep.names) {
     return(start(lastExonPerGroup(grl)))
   } else {
