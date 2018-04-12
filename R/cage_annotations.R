@@ -123,9 +123,9 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
 #' @importFrom data.table as.data.table
 #' @return a data.table of max peaks
 #'
-findMaxPeaks <- function(cageOverlaps, cageData) {
+findMaxPeaks <- function(cageOverlaps, filteredCage) {
 
-  dt <- as.data.table(cageData)
+  dt <- as.data.table(filteredCage)
   dt <- dt[from(cageOverlaps)]
   dt$to <- to(cageOverlaps)
   if (nrow(dt) == 0) return(dt)
