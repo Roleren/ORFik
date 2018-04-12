@@ -139,10 +139,12 @@ footprintsGR
 ```
 
 Now, lets prepare annotations and focus on START and STOP codons.
-```{r eval = TRUE, echo = TRUE, warnings = FALSE} 
+```{r eval = TRUE, echo = TRUE, warnings = FALSE, message=FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+txdb <- suppressWarnings(GenomicFeatures::makeTxDbFromGFF(
+                           gtf_file, format = "gtf"))
 cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+cds[1]
 ```
 
 Filter cds to only those who have some minimum trailer and leader lengths, as 
@@ -220,7 +222,7 @@ All of the features are implemented based on scientific article published in
 per reviewed journal. `ORFik` supports seemingles calculation of all available 
 features. See example below.
 
-```{r eval = TRUE, echo = TRUE}
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(GenomicFeatures)
 

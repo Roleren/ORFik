@@ -5,7 +5,7 @@
 \title{Find max peak for each transcript,
 returns as data.table, without names, but with index}
 \usage{
-findMaxPeaks(cageOverlaps, filteredrawCageData)
+findMaxPeaks(cageOverlaps, cageData)
 }
 \arguments{
 \item{cageOverlaps}{The cageOverlaps between cage and extended 5' leaders}
