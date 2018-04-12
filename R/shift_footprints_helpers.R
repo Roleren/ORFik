@@ -304,8 +304,8 @@ changePointAnalysis <- function(x, feature = "start") {
   pos <- -(length(x)/2):(length(x)/2 - 1)
   if (feature == "start") {
     means <- c()
-    for (j in seq(15,35)) {
-      m <- mean(meta[seq(j,40)]) - mean(meta[seq(j-1)])
+    for (j in seq(15, 35)) {
+      m <- mean(meta[seq(j, 40)]) - mean(meta[seq(j - 1)])
       means <- c(means, m)
     }
     shift <- which.max(abs(means)) + 14
