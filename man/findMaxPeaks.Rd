@@ -10,7 +10,7 @@ findMaxPeaks(cageOverlaps, filteredCage)
 \arguments{
 \item{cageOverlaps}{The cageOverlaps between cage and extended 5' leaders}
 
-\item{filteredrawCageData}{The filtered raw cage-data
+\item{filteredCage}{The filtered raw cage-data
 used to reassign 5' leaders}
 }
 \value{
