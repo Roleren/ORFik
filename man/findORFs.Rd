@@ -12,10 +12,10 @@ findORFs(seqs, startCodon = startDefinition(1),
 Reading Frames.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link[=startDefinition]{startDefinition()}} for helper function.}
+[startDefinition()] for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link[=stopDefinition]{stopDefinition()}} for helper function.}
+[stopDefinition()] for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
 that are longest, all smaller overlapping ORFs will be ignored.
@@ -33,9 +33,9 @@ grouped by input seqeunces.
 \description{
 Find all Open Reading Frames (ORFs) on the input sequences
 in 5'- 3' direction, but within all three possible reading frames. For each
-sequence of the input vector \code{\link[IRanges:IRanges]{IRanges::IRanges()}} with START and
+sequence of the input vector \code{\link{IRanges}} with START and
 STOP positions (inclusive) will be returned as
-\code{\link[IRanges:IRangesList]{IRanges::IRangesList()}}. Returned coordinates are relative to the
+\code{\link{IRangesList}}. Returned coordinates are relative to the
 input sequences.
 }
 \examples{
@@ -49,8 +49,8 @@ findORFs(c("ATGTAA", "ATGATGTAA"))
 
 }
 \seealso{
-\code{\link[=findMapORFs]{findMapORFs()}}, \code{\link[=findORFsFasta]{findORFsFasta()}},
-\code{\link[=startDefinition]{startDefinition()}}, \code{\link[=stopDefinition]{stopDefinition()}}
+[findMapORFs()], [findORFsFasta()],
+[startDefinition()], [stopDefinition()]
 
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}},

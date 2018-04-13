@@ -7,7 +7,7 @@
 kozakSequenceScore(grl, faFile, species = "human", include.N = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} grouped by ORF}
+\item{grl}{a \code{\link{GRangesList}} grouped by ORF}
 
 \item{faFile}{a FaFile from the fasta file, see ?FaFile.
 Can also be path to fastaFile with fai file in same dir.}

@@ -7,7 +7,7 @@
 orfScore(grl, RFP)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object with ORFs}
+\item{grl}{a \code{\link{GRangesList}} object with ORFs}
 
 \item{RFP}{ribozomal footprints, given as Galignment object,
 Granges or GRangesList}

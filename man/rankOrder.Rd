@@ -7,7 +7,7 @@
 rankOrder(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object with ORFs}
+\item{grl}{a \code{\link{GRangesList}} object with ORFs}
 }
 \value{
 a numeric vector of integers

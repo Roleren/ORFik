@@ -16,7 +16,7 @@ an integer vector of counts
 }
 \description{
 Can also be used generaly to get number of GRanges object
-per GRangesList group
+ per GRangesList group
 }
 \examples{
 gr_plus <- GRanges(seqnames = c("chr1", "chr1"),

@@ -9,7 +9,7 @@
 Main goals:
 \enumerate{
 \item Finding Open Reading Frames (very fast) in the genome of interest or
-on the set of transcripts/sequences.
+ on the set of transcripts/sequences.
 \item Utilities for metaplots of RiboSeq coverage over gene START and STOP
 codons allowing to spot the shift.
 \item Shifting functions for the RiboSeq data.

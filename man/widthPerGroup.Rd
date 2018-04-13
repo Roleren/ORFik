@@ -7,7 +7,7 @@
 widthPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}}
+\item{grl}{a \code{\link{GRangesList}}}
 
 \item{keep.names}{a boolean, keep names or not}
 }

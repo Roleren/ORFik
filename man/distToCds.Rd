@@ -7,13 +7,13 @@
 distToCds(ORFs, fiveUTRs, cds = NULL, extension = NULL)
 }
 \arguments{
-\item{ORFs}{orfs as \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}},
+\item{ORFs}{orfs as \code{\link{GRangesList}},
 names of orfs must be transcript names}
 
-\item{fiveUTRs}{fiveUTRs as \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}},
+\item{fiveUTRs}{fiveUTRs as \code{\link{GRangesList}},
 must be original unchanged fiveUTRs}
 
-\item{cds}{cds' as \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}},
+\item{cds}{cds' as \code{\link{GRangesList}},
 only add if you used CageSeq to extend leaders}
 
 \item{extension}{Numeric that needs set to 0 if you did not use CageSeq

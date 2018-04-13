@@ -7,7 +7,7 @@
 fixSeqnames(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}}
+\item{grl}{a \code{\link{GRangesList}}}
 }
 \value{
 a GRangesList with fixed seqnames

@@ -7,19 +7,19 @@
 fractionLength(grl, tx_len)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
+\item{grl}{a \code{\link{GRangesList}} object
 with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
 \item{tx_len}{the transcript lengths of the transcripts,
 a named (tx names) vector of integers.
 If you have the transcripts as GRangesList,
-call \code{ORFik:::widthPerGroup(tx, TRUE)}.
+call `ORFik:::widthPerGroup(tx, TRUE)`.
 
 If you used CageSeq to reannotate leaders, then the tss for the the leaders
 have changed, therefore the tx lengths have changed. To account for that
-call: \code{tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))}
-and calculate graction length using \code{fractionLength(grl, tx_len)}.}
+call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
+and calculate graction length using `fractionLength(grl, tx_len)`.}
 }
 \value{
 a numeric vector of ratios

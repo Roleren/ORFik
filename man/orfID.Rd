@@ -7,7 +7,7 @@
 orfID(grl, with.tx = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}}
+\item{grl}{a \code{\link{GRangesList}}}
 
 \item{with.tx}{a boolean, include transcript names,
 if you want unique orfs, so that they dont have multiple

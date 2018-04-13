@@ -28,8 +28,8 @@ GRangesList of windows around start and stop codons for the transcripts of
 interest
 }
 \description{
-For each cds in \code{txdb} object, filtered by \code{txNames},
-get a window around start and stop codons within \code{window_size}
+For each cds in `txdb` object, filtered by `txNames`,
+get a window around start and stop codons within `window_size`
 downstream and upstream of the codon.
 }
 \examples{

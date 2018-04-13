@@ -17,6 +17,7 @@ using namespace Rcpp;
 Function GRangesC("GRanges", Environment::namespace_env("GenomicRanges"));
 Function IRangesC("IRanges", Environment::namespace_env("IRanges"));
 
+// Rule for undefined behavior is to return (space)
 char complement(char n)
 {
   switch (n) {
@@ -39,7 +40,7 @@ char complement(char n)
   case 'c':
     return 'g';
   }
-  assert(false);
+
   return ' ';
 }
 

@@ -7,7 +7,7 @@
 matchNaming(gr, reference)
 }
 \arguments{
-\item{gr}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}
+\item{gr}{a \code{\link{GRangesList}}
 or GRanges object}
 
 \item{reference}{a GRangesList of a reference}

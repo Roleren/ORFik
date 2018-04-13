@@ -7,7 +7,7 @@
 asTX(grl, reference)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} of ranges within
+\item{grl}{a \code{\link{GRangesList}} of ranges within
 the reference, grl must have column called names that gives
 grouping for result}
 

@@ -7,17 +7,17 @@
 mapToGRanges(grl, result)
 }
 \arguments{
-\item{grl}{A \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} of the original
+\item{grl}{A \code{\link{GRangesList}} of the original
 sequences that gave the orfs}
 
 \item{result}{List. A list of the results of finding uorfs
-list syntax is: result(1) contain grouping indeces, named index
-result(2) countains two columns of start and stops,  named orf}
+list syntax is: result[1] contain grouping indeces, named index
+result[2] countains two columns of start and stops,  named orf}
 }
 \value{
-A \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} of ORFs.
+A \code{\link{GRangesList}} of ORFs.
 }
 \description{
 Creates GRangesList from the results of ORFs_as_List and
-the GRangesList used to find the ORFs
+ the GRangesList used to find the ORFs
 }

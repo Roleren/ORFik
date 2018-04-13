@@ -10,7 +10,7 @@ computeFeaturesCage(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   cageFiveUTRs = NULL, includeNonVarying = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
+\item{grl}{a \code{\link{GRangesList}} object
 with usually ORFs, but can also be
 either leaders, cds', 3' utrs or  ORFs are a special case,
 see argument tx_len}
@@ -56,12 +56,12 @@ fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of
-columns are the names of the scores, i.g \code{\link[=floss]{floss()}}
-or \code{\link[=fpkm]{fpkm()}}
+ columns are the names of the scores, i.g [floss()]
+ or [fpkm()]
 }
 \description{
 Normally dont use this function, but instead use:
-\code{\link[=computeFeatures]{computeFeatures()}}
+[computeFeatures()]
 }
 \details{
 A specialized version if you used Cage data, and don't have

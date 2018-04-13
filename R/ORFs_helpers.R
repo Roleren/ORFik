@@ -62,12 +62,12 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #'
 #' Creates GRangesList from the results of ORFs_as_List and
 #'  the GRangesList used to find the ORFs
-#' @param grl A [GenomicRanges::GRangesList()] of the original
+#' @param grl A \code{\link{GRangesList}} of the original
 #'  sequences that gave the orfs
 #' @param result List. A list of the results of finding uorfs
-#' list syntax is: result(1) contain grouping indeces, named index
-#' result(2) countains two columns of start and stops,  named orf
-#' @return A [GenomicRanges::GRangesList()] of ORFs.
+#' list syntax is: result[1] contain grouping indeces, named index
+#' result[2] countains two columns of start and stops,  named orf
+#' @return A \code{\link{GRangesList}} of ORFs.
 #' @importFrom GenomicFeatures pmapFromTranscripts
 #'
 mapToGRanges <- function(grl, result) {
@@ -96,7 +96,7 @@ mapToGRanges <- function(grl, result) {
 #'
 #' names must either be a column called names, or the names of the
 #' grl object
-#' @param grl a [GenomicRanges::GRangesList()] grouped by ORF
+#' @param grl a \code{\link{GRangesList}} grouped by ORF
 #'  or GRanges object
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
@@ -145,7 +145,7 @@ txNames <- function(grl, unique = FALSE) {
 #' Get the start sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGG, get the position of the A.
-#' @param grl a [GenomicRanges::GRangesList()] object
+#' @param grl a \code{\link{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
@@ -192,7 +192,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' Get the stop sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the position of the C.
-#' @param grl a [GenomicRanges::GRangesList()] object
+#' @param grl a \code{\link{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names if asGR is False, do you still want
 #'  to keep a named vector
@@ -240,7 +240,7 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #'
 #' In ATGTTTTGC, get the positions ATG.
 #' It takes care of exons boundaries, with exons < 3 length.
-#' @param grl a [GenomicRanges::GRangesList()] object
+#' @param grl a \code{\link{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of start codons, since they might be split on exons
 #' @export
@@ -284,7 +284,7 @@ startCodons <- function(grl, is.sorted = FALSE){
 #'
 #' In ATGTTTTGC, get the positions TGC.
 #' It takes care of exons boundaries, with exons < 3 length.
-#' @param grl a [GenomicRanges::GRangesList()] object
+#' @param grl a \code{\link{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of stop codons, since they might be split on exons
 #' @export
@@ -328,7 +328,7 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #'
 #' These id's can be uniqued by isoform etc,
 #' this is not supported by GenomicRanges.
-#' @param grl a [GenomicRanges::GRangesList()]
+#' @param grl a \code{\link{GRangesList}}
 #' @param with.tx a boolean, include transcript names,
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
@@ -358,7 +358,7 @@ orfID <- function(grl, with.tx = FALSE) {
 #'
 #' You will lose the transcript and name information, since
 #' they no longer map to a transcript, but are now general.
-#' @param grl a [GenomicRanges::GRangesList()]
+#' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList of unique orfs
 #'
 uniqueORFs <- function(grl) {

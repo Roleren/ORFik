@@ -8,17 +8,17 @@ findMapORFs(grl, seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)
 }
 \arguments{
-\item{grl}{(\code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}) of sequences
+\item{grl}{(\code{\link{GRangesList}}) of sequences
 to search for ORFs, probably in genomic coordinates}
 
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
 Reading Frames.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link[=startDefinition]{startDefinition()}} for helper function.}
+[startDefinition()] for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link[=stopDefinition]{stopDefinition()}} for helper function.}
+[stopDefinition()] for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
 that are longest, all smaller overlapping ORFs will be ignored.
@@ -34,13 +34,13 @@ A GRangesList of ORFs.
 }
 \description{
 Finds ORFs on the sequences of interest, but returns relative positions to
-the positions of \code{grl} argument. For example, \code{grl} can be exons
-of known transcripts (with genomic coordinates), and \code{seq} sequences of
-those transcripts, in that case, \code{\link[=findMapORFs]{findMapORFs()}} will return
+the positions of `grl` argument. For example, `grl` can be exons
+of known transcripts (with genomic coordinates), and `seq` sequences of
+those transcripts, in that case, [findMapORFs()] will return
 genomic coordinates of ORFs found on transcript sequences.
 }
 \details{
-This function assumes that \code{seq} is in widths relative to \code{grl},
+This function assumes that `seq` is in widths relative to `grl`,
 and that their orders match.
 }
 \examples{
@@ -60,8 +60,8 @@ findMapORFs(grl, c(seqs, seqs))
 
 }
 \seealso{
-\code{\link[=findORFs]{findORFs()}}, \code{\link[=findORFsFasta]{findORFsFasta()}},
-\code{\link[=startDefinition]{startDefinition()}}, \code{\link[=stopDefinition]{stopDefinition()}}
+[findORFs()], [findORFsFasta()],
+[startDefinition()], [stopDefinition()]
 
 Other findORFs: \code{\link{findORFsFasta}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},

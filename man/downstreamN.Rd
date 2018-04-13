@@ -15,5 +15,5 @@ downstreamN(grl, firstN = 150L)
 a GRangesList of reads restricted to firstN and tiled by 1
 }
 \description{
-Will restrict GRangesList to \code{N} bp downstream from the first base.
+Will restrict GRangesList to `N` bp downstream from the first base.
 }

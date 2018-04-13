@@ -7,7 +7,7 @@
 gSort(grl, decreasing = FALSE, byStarts = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}}
+\item{grl}{a \code{\link{GRangesList}}}
 
 \item{decreasing}{should the first in each group have max(start(group))
 ->T or min-> default(F) ?}
@@ -19,7 +19,7 @@ an equally named GRangesList, where each group is sorted within
 group.
 }
 \description{
-A helper for \code{\link[=sortPerGroup]{sortPerGroup()}}.
+A helper for [sortPerGroup()].
 A faster, more versatile reimplementation of GenomicRanges::sort()
 Normally not used directly.
 Groups first each group, then either decreasing or increasing

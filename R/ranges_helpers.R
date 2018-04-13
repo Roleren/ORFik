@@ -3,7 +3,7 @@
 #' For many datasets, the fa file and the gtf file have different naming
 #' This functions tries to fix the naming to the GRanges standard
 #' chrX instead of X chr1 instead of 1 etc..
-#' @param grl a [GenomicRanges::GRangesList()]
+#' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList with fixed seqnames
 #'
 fixSeqnames <- function(grl) {
@@ -23,7 +23,7 @@ fixSeqnames <- function(grl) {
 #' Make a meta column with exon ranks
 #'
 #' Must be ordered, so that same transcripts are ordered together.
-#' @param grl a [GenomicRanges::GRangesList()]
+#' @param grl a \code{\link{GRangesList}}
 #' @param byTranscript if ORfs are by transcript, check duplicates
 #' @return an integer vector of indices for exon ranks
 #' @importFrom S4Vectors nrun Rle
@@ -69,7 +69,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #' grl must be grouped by transcript
 #' If a list of orfs are grouped by transcripts, but does not have
 #' ORF names, then create them and return the new GRangesList
-#' @param grl a [GenomicRanges::GRangesList()]
+#' @param grl a \code{\link{GRangesList}}
 #' @return (GRangesList) with ORF names, grouped by transcripts, sorted.
 #' @export
 #' @examples
@@ -96,7 +96,7 @@ makeORFNames <- function(grl) {
 #' This is not supported originally by GenomicRanges.
 #' As a precaution, this function requires the unlisted objects to
 #' have names.
-#' @param grl a [GenomicRanges::GRangesList()] object with names
+#' @param grl a \code{\link{GRangesList}} object with names
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @export
 #' @examples
@@ -150,7 +150,7 @@ tile1 <- function(grl) {
 
 
 #' Map genomic to transcript coordinates by reference
-#' @param grl a [GenomicRanges::GRangesList()] of ranges within
+#' @param grl a \code{\link{GRangesList}} of ranges within
 #' the reference, grl must have column called names that gives
 #' grouping for result
 #' @param reference a GrangesList of ranges that include and are bigger or
@@ -185,7 +185,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' @description make sure your grl is sorted, since start of "-" strand
 #' objects should be the
 #' max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
-#' @param grl a [GenomicRanges::GRangesList()] object
+#' @param grl a \code{\link{GRangesList}} object
 #' @param newStarts an integer vector of same length as grl, with new start
 #' values
 #' @return the same GRangesList with new start sites
@@ -213,7 +213,7 @@ assignFirstExonsStartSite <- function(grl, newStarts) {
 #' @description make sure your grl is sorted, since stop of "-" strand objects
 #' should be the min start in group, use ORFik:::sortPerGroup(grl) to get
 #' sorted grl.
-#' @param grl a [GenomicRanges::GRangesList()] object
+#' @param grl a \code{\link{GRangesList}} object
 #' @param newStops an integer vector of same length as grl,
 #'  with new start values
 #' @return the same GRangesList with new stop sites
@@ -250,7 +250,7 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
-#' @param tx a [GenomicRanges::GRangesList()],
+#' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
@@ -292,7 +292,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
 #'  of transformed tx's, depending on strand
-#' @param tx a [GenomicRanges::GRangesList()],
+#' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new stop point of last valid exon.
@@ -328,9 +328,9 @@ upstreamOfPerGroup <- function(tx, upstreamOf) {
 #' Extend the leaders transcription start sites.
 #'
 #' Will extend the leaders or transcripts upstream by extension.
-#' Requires the `grl` to be sorted beforehand,
-#' use [sortPerGroup()] to get sorted grl.
-#' @param grl a [GenomicRanges::GRangesList()]
+#' Requires the \code{grl} to be sorted beforehand,
+#' use \code{\link{sortPerGroup}} to get sorted grl.
+#' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param extension an integer, how much to extend the leaders.
 #' Or a GRangesList where start / stops by strand are the positions
@@ -382,7 +382,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group, and finds hits per position
-#' @param grl a [GenomicRanges::GRangesList()]
+#' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
 #' @return a Rle, one list per group with # of hits per position.
@@ -438,7 +438,7 @@ subset_to_frame <- function(x, frame) {
 #' since original reduce sorts all by ascending.
 #' If keep.names == FALSE, it's just the normal GenomicRanges::reduce
 #' with sorting negative strands descending for GRangesList.
-#' @param grl a [GenomicRanges::GRangesList()] or GRanges object
+#' @param grl a \code{\link{GRangesList}} or GRanges object
 #' @param drop.empty.ranges (FALSE) if a group is empty (width 0), delete it.
 #' @param min.gapwidth (1L) how long gap can it be to say they belong together
 #' @param with.revmap (FALSE) return info on which mapped to which

@@ -7,7 +7,7 @@
 entropy(grl, reads)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} that the reads will
+\item{grl}{a \code{\link{GRangesList}} that the reads will
 be overlapped with}
 
 \item{reads}{a GAlignment object or GRanges or GRangesList, usualy data from
@@ -15,10 +15,10 @@ RiboSeq or RnaSeq}
 }
 \value{
 A numeric vector containing one entropy value per element in
-\code{grl}
+`grl`
 }
 \description{
-Calculates entropy of the \code{reads} coverage over each \code{grl} group.
+Calculates entropy of the `reads` coverage over each `grl` group.
 The entropy value per group is a real number in the interval (0:1),
 where 0 indicates no variance in reads over group.
 For example c(0,0,0,0) has 0 entropy, since no reads overlap.

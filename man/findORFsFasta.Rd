@@ -12,10 +12,10 @@ findORFsFasta(filePath, startCodon = startDefinition(1),
 \item{filePath}{(character) Path to the fasta file.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link[=startDefinition]{startDefinition()}} for helper function.}
+[startDefinition()] for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link[=stopDefinition]{stopDefinition()}} for helper function.}
+[stopDefinition()] for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
 that are longest, all smaller overlapping ORFs will be ignored.
@@ -47,8 +47,8 @@ findORFsFasta(example_genome)
 
 }
 \seealso{
-\code{\link[=findORFs]{findORFs()}}, \code{\link[=findMapORFs]{findMapORFs()}},
-\code{\link[=startDefinition]{startDefinition()}}, \code{\link[=stopDefinition]{stopDefinition()}}
+[findORFs()], [findMapORFs()],
+[startDefinition()], [stopDefinition()]
 
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},

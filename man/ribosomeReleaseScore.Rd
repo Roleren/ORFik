@@ -7,7 +7,7 @@
 ribosomeReleaseScore(grl, RFP, GtfOrThreeUtrs, RNA = NULL)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
+\item{grl}{a \code{\link{GRangesList}} object
 with usually either leaders,
 cds', 3' utrs or ORFs.}
 
@@ -15,7 +15,7 @@ cds', 3' utrs or ORFs.}
 or GRangesList object}
 
 \item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file transcripts is
-called from: \code{threeUTRsByTranscript(Gtf, use.names = TRUE)},
+called from: `threeUTRsByTranscript(Gtf, use.names = TRUE)`,
 if object is GRangesList, it is presumed to be the 3' utrs}
 
 \item{RNA}{RnaSeq reads as GAlignment, GRanges

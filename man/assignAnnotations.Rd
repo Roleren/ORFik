@@ -7,13 +7,9 @@
 assignAnnotations(ORFs, con)
 }
 \arguments{
-\item{ORFs}{\itemize{
-\item GRanges or GRangesList object of your ORFs.
-}}
+\item{ORFs}{- GRanges or GRangesList object of your ORFs.}
 
-\item{con}{\itemize{
-\item Path to gtf file with annotations.
-}}
+\item{con}{- Path to gtf file with annotations.}
 }
 \value{
 A GRanges object of your ORFs with metadata columns 'gene',

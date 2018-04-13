@@ -7,7 +7,7 @@
 stopCodons(grl, is.sorted = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object}
+\item{grl}{a \code{\link{GRangesList}} object}
 
 \item{is.sorted}{a boolean, a speedup if you know the ranges are sorted}
 }

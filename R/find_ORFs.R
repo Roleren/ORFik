@@ -97,9 +97,9 @@ stopDefinition <- function(transl_table) {
 #'
 #' Find all Open Reading Frames (ORFs) on the input sequences
 #' in 5'- 3' direction, but within all three possible reading frames. For each
-#' sequence of the input vector [IRanges::IRanges()] with START and
+#' sequence of the input vector \code{\link{IRanges}} with START and
 #' STOP positions (inclusive) will be returned as
-#' [IRanges::IRangesList()]. Returned coordinates are relative to the
+#' \code{\link{IRangesList}}. Returned coordinates are relative to the
 #' input sequences.
 #'
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
@@ -156,7 +156,7 @@ findORFs <- function(
 #' This function assumes that `seq` is in widths relative to `grl`,
 #' and that their orders match.
 #'
-#' @param grl ([GenomicRanges::GRangesList()]) of sequences
+#' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
 #' @return A GRangesList of ORFs.
