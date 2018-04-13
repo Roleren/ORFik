@@ -7,7 +7,7 @@
 uniqueORFs(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}}
 }
 \value{
 a GRangesList of unique orfs

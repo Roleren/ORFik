@@ -7,7 +7,7 @@
 tile1(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object with names}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object with names}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1

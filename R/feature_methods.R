@@ -2,10 +2,10 @@
 #'
 #' FPKM is short for "Fragments Per Kilobase of transcript per Million
 #' fragments". When calculating RiboSeq data FPKM over ORFs use ORFs as
-#' \code{grl}. When calculating RNASeq data FPKM use full transcripts as
-#' \code{grl}.
+#' `grl`. When calculating RNASeq data FPKM use full transcripts as
+#' `grl`.
 #' @references doi: 10.1038/nbt.1621
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
 #'  ORFs as a special case (uORFs, potential new cds' etc).
 #' @param reads a GAlignment, GRanges or GRangesList object,
@@ -49,16 +49,16 @@ subsetCoverage <- function(cov, y) {
 
 #' Calucalte entropy value of overlapping input reads.
 #'
-#' Calculates entropy of the \code{reads} coverage over each \code{grl} group.
+#' Calculates entropy of the `reads` coverage over each `grl` group.
 #' The entropy value per group is a real number in the interval (0:1),
 #' where 0 indicates no variance in reads over group.
 #' For example c(0,0,0,0) has 0 entropy, since no reads overlap.
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} that the reads will
+#' @param grl a [GenomicRanges::GRangesList()] that the reads will
 #' be overlapped with
 #' @param reads a GAlignment object or GRanges or GRangesList, usualy data from
 #' RiboSeq or RnaSeq
 #' @return A numeric vector containing one entropy value per element in
-#' \code{grl}
+#' `grl`
 #' @family features
 #' @export
 #' @examples
@@ -157,7 +157,7 @@ entropy <- function(grl, reads) {
 #' Fragment Length Organization Similarity Score
 #'
 #' This feature is usually calcualted only for RiboSeq reads. For reads of
-#' width between \code{start} and \code{end},
+#' width between `start` and `end`,
 #' sum the fraction of RiboSeq reads (per widths)
 #' that overlap ORFs and normalize by CDS.
 #'
@@ -167,10 +167,10 @@ entropy <- function(grl, reads) {
 #' }
 #' Please read more in the article.
 #' @references doi: 10.1016/j.celrep.2014.07.045
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
+#' @param grl a [GenomicRanges::GRangesList()] object with ORFs
 #' @param RFP ribosomal footprints, given as Galignment or GRanges object,
 #' must be already shifted and resized to the p-site
-#' @param cds a \code{\link[GenomicRanges]{GRangesList}} of coding sequences,
+#' @param cds a [GenomicRanges::GRangesList()] of coding sequences,
 #' cds has to have names as grl so that they can be matched
 #' @param start usually 26, the start of the floss interval
 #' @param end usually 34, the end of the floss interval
@@ -251,12 +251,12 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' Translational efficiency
 #'
 #' Uses RnaSeq and RiboSeq to get translational efficiency of every element in
-#' \code{grl}. Translational efficiency is defined as:
+#' `grl`. Translational efficiency is defined as:
 #' \preformatted{
 #' (density of RPF within ORF) / (RNA expression of ORFs transcript)
 #' }
 #' @references doi: 10.1126/science.1168978
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
 #'  ORFs as a special case (uORFs, potential new cds' etc).
 #' @param RNA RnaSeq reads as GAlignment, GRanges
@@ -266,9 +266,9 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' @param tx a GRangesList of the transcripts. If you used cage data, then
 #' the tss for the the leaders have changed, therefor the tx lengths have
 #' changed. To account for that call:
-#' \code{
+#' `
 #' translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
-#' } where cageFiveUTRs are the reannotated by CageSeq data leaders.
+#' ` where cageFiveUTRs are the reannotated by CageSeq data leaders.
 #' @param with.fpkm logical F, if true return the fpkm values together with
 #' translational efficiency
 #' @param pseudoCount an integer, 0, set it to 1 if you want to avoid NA and
@@ -312,18 +312,18 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' so that each group in
 #' the grl is divided by the corresponding transcript.
 #' @references doi: 10.1242/dev.098343
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #' with usually either leaders,
 #' cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param tx_len the transcript lengths of the transcripts,
 #' a named (tx names) vector of integers.
 #' If you have the transcripts as GRangesList,
-#' call \code{ORFik:::widthPerGroup(tx, TRUE)}.
+#' call `ORFik:::widthPerGroup(tx, TRUE)`.
 #'
 #' If you used CageSeq to reannotate leaders, then the tss for the the leaders
 #' have changed, therefore the tx lengths have changed. To account for that
-#' call: \code{tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))}
-#' and calculate graction length using \code{fractionLength(grl, tx_len)}.
+#' call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
+#' and calculate graction length using `fractionLength(grl, tx_len)`.
 #' @return a numeric vector of ratios
 #' @family features
 #' @export
@@ -350,12 +350,12 @@ fractionLength <- function(grl, tx_len){
 #' \preformatted{(RPFs over ORF)/(RPFs downstream to tx end)}
 #' A pseudo-count of one is added to both the ORF and downstream sums.
 #' @references doi: 10.1242/dev.098344
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #' with usually either leaders, cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignment, GRanges
 #' or GRangesList object
 #' @param GtfOrTx if is a TxDb object of a gtf file, transcripts, called from:
-#'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}, if is a GRL is used as is
+#'  `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if is a GRL is used as is
 #' @return a named vector of numeric values of scores
 #' @export
 #' @family features
@@ -401,13 +401,13 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' It can be understood as a ribosome stalling feature.
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' @references doi: 10.1016/j.cell.2013.06.009
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  with usually either leaders,
 #'  cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignment, GRanges
 #'  or GRangesList object
 #' @param GtfOrThreeUtrs if Gtf: a TxDb object of a gtf file transcripts is
-#'  called from: \code{threeUTRsByTranscript(Gtf, use.names = TRUE)},
+#'  called from: `threeUTRsByTranscript(Gtf, use.names = TRUE)`,
 #'  if object is GRangesList, it is presumed to be the 3' utrs
 #' @param RNA RnaSeq reads as GAlignment, GRanges
 #'  or GRangesList object
@@ -466,7 +466,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' and normalized by lengths
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' @references doi: 10.1016/j.cels.2017.08.004
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  with usually either leaders,
 #'  cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignment, GRanges
@@ -497,7 +497,7 @@ ribosomeStallingScore <- function(grl, RFP){
 #' Get all possible features in ORFik
 #'
 #' Normally dont use this function, but instead use:
-#' \code{\link{computeFeatures}}
+#' [computeFeatures()]
 #'
 #' A specialized version if you used Cage data, and don't have
 #' a new txdb with reassigned leaders, transcripts and gene starts.
@@ -505,7 +505,7 @@ ribosomeStallingScore <- function(grl, RFP){
 #' instead.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  with usually ORFs, but can also be
 #'  either leaders, cds', 3' utrs or  ORFs are a special case,
 #'  see argument tx_len
@@ -537,8 +537,8 @@ ribosomeStallingScore <- function(grl, RFP){
 #' @importFrom data.table data.table
 #' @family features
 #' @return a data.table with scores, each column is one score type, name of
-#'  columns are the names of the scores, i.g \code{\link{floss}}
-#'  or \code{\link{fpkm}}
+#'  columns are the names of the scores, i.g [floss()]
+#'  or [fpkm()]
 #' @examples
 #'  # a small example without cage-seq data:
 #'  # we will find ORFs in the 5' utrs
@@ -682,7 +682,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' create txdb objects for you, but currently this is not supported,
 #' therefore be carefull.
 #'
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 #' @param RFP RiboSeq reads as GAlignment, GRanges or GRangesList object
 #' @param RNA RnaSeq reads as GAlignment, GRanges or GRangesList object
@@ -695,8 +695,8 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' dependent on RiboSeq data and RNASeq data, that is: Kozak,
 #' fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
 #' @return a data.table with scores, each column is one score type, name of
-#' columns are the names of the scores, i.g \code{\link{floss}}
-#' or \code{\link{fpkm}}
+#' columns are the names of the scores, i.g [floss()]
+#' or [fpkm()]
 #' @importFrom data.table data.table
 #' @export
 #' @family features

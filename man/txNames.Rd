@@ -7,7 +7,7 @@
 txNames(grl, unique = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} grouped by ORF
 or GRanges object}
 
 \item{unique}{a boolean, if true unique the names,
@@ -16,7 +16,7 @@ want the unique groups}
 }
 \value{
 a character vector of transcript names,
- without _* naming
+without _* naming
 }
 \description{
 names must either be a column called names, or the names of the

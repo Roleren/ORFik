@@ -7,7 +7,7 @@
 fractionLength(grl, tx_len)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
 with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 

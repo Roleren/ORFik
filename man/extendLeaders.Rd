@@ -7,7 +7,7 @@
 extendLeaders(grl, extension = 1000, cds = NULL)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}
 of 5' utrs or transcripts.}
 
 \item{extension}{an integer, how much to extend the leaders.
@@ -25,7 +25,7 @@ an extended GRangeslist
 \description{
 Will extend the leaders or transcripts upstream by extension.
 Requires the \code{grl} to be sorted beforehand,
-use \code{\link{sortPerGroup}} to get sorted grl.
+use \code{\link[=sortPerGroup]{sortPerGroup()}} to get sorted grl.
 }
 \examples{
 library(GenomicFeatures)

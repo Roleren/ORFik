@@ -96,8 +96,8 @@ codonSumsPerGroup <- function(h, indeces, L, N, reg_len,
 
 #' Create normalizations of counts
 #'
-#' A helper for \code{\link{fpkm}}
-#' Normally use function \code{\link{fpkm}}, if you want unusual normalization
+#' A helper for [fpkm()]
+#' Normally use function [fpkm()], if you want unusual normalization
 #' , you can use this.
 #' Short for: Fragments per kilobase of transcript per million fragments
 #' Normally used in Translations efficiency calculations

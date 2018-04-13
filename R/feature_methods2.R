@@ -14,7 +14,7 @@
 #' Positive values say that the first frame have the most reads,
 #' negative values say that the first frame does not have the most reads.
 #' @references doi: 10.1002/embj.201488411
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
+#' @param grl a [GenomicRanges::GRangesList()] object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
 #' @importFrom data.table .SD
@@ -82,11 +82,11 @@ orfScore <- function(grl, RFP) {
 #' This is applicable practically to the upstream (fiveUTRs) ORFs.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 #' @references doi: 10.1074/jbc.R116.733899
-#' @param ORFs orfs as \code{\link[GenomicRanges]{GRangesList}},
+#' @param ORFs orfs as [GenomicRanges::GRangesList()],
 #' names of orfs must be transcript names
-#' @param fiveUTRs fiveUTRs as \code{\link[GenomicRanges]{GRangesList}},
+#' @param fiveUTRs fiveUTRs as [GenomicRanges::GRangesList()],
 #' must be original unchanged fiveUTRs
-#' @param cds cds' as \code{\link[GenomicRanges]{GRangesList}},
+#' @param cds cds' as [GenomicRanges::GRangesList()],
 #' only add if you used CageSeq to extend leaders
 #' @param extension Numeric that needs set to 0 if you did not use CageSeq
 #' if you used CageSeq to change tss' when finding the orfs, standard cage
@@ -140,7 +140,7 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
 #' Minimum score is 0 (worst correlation), max is 1 (the best
 #' base per column was chosen).
 #' @references doi: https://doi.org/10.1371/journal.pone.0108475
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
+#' @param grl a [GenomicRanges::GRangesList()] grouped by ORF
 #' @param faFile a FaFile from the fasta file, see ?FaFile.
 #'  Can also be path to fastaFile with fai file in same dir.
 #' @param species ("human"), which species to use,
@@ -250,11 +250,11 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #' \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
 #' A pseudo-count of one was added to both the ORF and outside sums.
 #' @references doi: 10.1242/dev.098345
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object
+#' @param grl a [GenomicRanges::GRangesList()] object
 #'  with usually either leaders, cds', 3' utrs or ORFs
 #' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
 #' @param GtfOrTx if Gtf: a TxDb object of a gtf file that transcripts will be
-#' extracted with \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}, if
+#' extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
 #' a GrangesList will use as is
 #' @return a named vector of numeric values of scores
 #' @importFrom data.table rbindlist
@@ -317,7 +317,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
 #' Find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function
-#' \code{\link{distToCds}}
+#' [distToCds()]
 #'
 #' possible outputs:
 #' 0: orf is in frame with cds
@@ -347,7 +347,7 @@ isInFrame <- function(dists){
 #' Find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function
-#' \code{\link{distToCds}}
+#' [distToCds()]
 #' @references doi: 10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
@@ -371,7 +371,7 @@ isOverlapping <- function(dists) {
 #'
 #' @references doi: 10.1074/jbc.R116.733899
 #' @description ig. second orf _2 -> 2
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} object with ORFs
+#' @param grl a [GenomicRanges::GRangesList()] object with ORFs
 #' @return a numeric vector of integers
 #' @family features
 #' @export

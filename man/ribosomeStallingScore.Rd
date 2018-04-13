@@ -7,7 +7,7 @@
 ribosomeStallingScore(grl, RFP)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
 with usually either leaders,
 cds', 3' utrs or ORFs.}
 

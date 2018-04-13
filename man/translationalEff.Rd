@@ -7,7 +7,7 @@
 translationalEff(grl, RNA, RFP, tx, with.fpkm = FALSE, pseudoCount = 0)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
 ORFs as a special case (uORFs, potential new cds' etc).}
 
@@ -20,9 +20,7 @@ or GRangesList object}
 \item{tx}{a GRangesList of the transcripts. If you used cage data, then
 the tss for the the leaders have changed, therefor the tx lengths have
 changed. To account for that call:
-\code{
-translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
-} where cageFiveUTRs are the reannotated by CageSeq data leaders.}
+\code{translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))} where cageFiveUTRs are the reannotated by CageSeq data leaders.}
 
 \item{with.fpkm}{logical F, if true return the fpkm values together with
 translational efficiency}

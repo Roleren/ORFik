@@ -12,10 +12,10 @@ findORFsFasta(filePath, startCodon = startDefinition(1),
 \item{filePath}{(character) Path to the fasta file.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link{startDefinition}} for helper function.}
+\code{\link[=startDefinition]{startDefinition()}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link{stopDefinition}} for helper function.}
+\code{\link[=stopDefinition]{stopDefinition()}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
 that are longest, all smaller overlapping ORFs will be ignored.
@@ -23,7 +23,7 @@ When FALSE will report all possible ORFs in all three reading frames.}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP.
 Use this param to restrict search.}
 
 \item{is.circular}{(logical) Whether the genome in filePath is circular.
@@ -47,8 +47,8 @@ findORFsFasta(example_genome)
 
 }
 \seealso{
-\code{\link{findORFs}}, \code{\link{findMapORFs}},
-\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+\code{\link[=findORFs]{findORFs()}}, \code{\link[=findMapORFs]{findMapORFs()}},
+\code{\link[=startDefinition]{startDefinition()}}, \code{\link[=stopDefinition]{stopDefinition()}}
 
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},
