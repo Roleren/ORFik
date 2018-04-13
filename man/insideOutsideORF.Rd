@@ -13,7 +13,7 @@ with usually either leaders, cds', 3' utrs or ORFs}
 \item{RFP}{ribo seq reads as GAlignment, GRanges or GRangesList object}
 
 \item{GtfOrTx}{if Gtf: a TxDb object of a gtf file that transcripts will be
-extracted with \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}, if
+extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
 a GrangesList will use as is}
 }
 \value{

@@ -14,7 +14,7 @@ with usually either leaders, cds', 3' utrs or ORFs.}
 or GRangesList object}
 
 \item{GtfOrTx}{if is a TxDb object of a gtf file, transcripts, called from:
-\code{exonsBy(Gtf, by = "tx", use.names = TRUE)}, if is a GRL is used as is}
+`exonsBy(Gtf, by = "tx", use.names = TRUE)`, if is a GRL is used as is}
 }
 \value{
 a named vector of numeric values of scores

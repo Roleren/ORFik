@@ -1,6 +1,6 @@
 #' Restrict GRangesList
 #'
-#' Will restrict GRangesList to \code{N} bp downstream from the first base.
+#' Will restrict GRangesList to `N` bp downstream from the first base.
 #' @param grl (GRangesList)
 #' @param firstN (integer) Allow only this many bp downstream
 #' @return a GRangesList of reads restricted to firstN and tiled by 1
@@ -61,7 +61,7 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
 
 #' Sort a GRangesList, helper.
 #'
-#' A helper for \code{\link{sortPerGroup}}.
+#' A helper for [sortPerGroup()].
 #' A faster, more versatile reimplementation of GenomicRanges::sort()
 #' Normally not used directly.
 #' Groups first each group, then either decreasing or increasing
@@ -352,7 +352,7 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
 
 #' Safe unlist
 #'
-#' Same as \code{\link[AnnotationDbi]{unlist2}}, keeps names correctly.
+#' Same as [AnnotationDbi::unlist2()], keeps names correctly.
 #' One difference is that if grl have no names, it will not
 #' make integer names, but keep them as null.
 #' @param grl a GRangesList

@@ -1,6 +1,6 @@
 #' Compute coverage for every GRangesList subset.
 #'
-#' This is similar to \code{\link[GenomicFeatures]{coverageByTranscript}}, but
+#' This is similar to [GenomicFeatures::coverageByTranscript()], but
 #' it adds: automatic sorting of the windows, fix for some rare cases when
 #' subsetting fails on minus/plus strands and security that subseting of
 #' windows will always return values (zeros) istead of out of bounds error.
@@ -9,11 +9,11 @@
 #' is the first position in the returned Rle.
 #' @param x the cigar of the reads
 #' @param windows (GRangesList) of transcripts or CDS or other ranges that will
-#' be subseting coverage of \code{x}
+#' be subseting coverage of `x`
 #' @param ignore.strand (logical) Whether to consider all reads to be "*".
 #' @param is.sorted (logical), is windows already sorted.
-#' @return (RleList) of positional counts of \code{x} ranges overlapping each
-#' consecutive position of the elements of \code{windows}
+#' @return (RleList) of positional counts of `x` ranges overlapping each
+#' consecutive position of the elements of `windows`
 #' @examples
 #' cds <- GenomicRanges::GRangesList(
 #'   GenomicRanges::GRanges(seqnames = "chr1",
@@ -216,8 +216,8 @@ txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
 
 #' Get Start and Stop codon within specified windows over CDS.
 #'
-#' For each cds in \code{txdb} object, filtered by \code{txNames},
-#' get a window around start and stop codons within \code{window_size}
+#' For each cds in `txdb` object, filtered by `txNames`,
+#' get a window around start and stop codons within `window_size`
 #' downstream and upstream of the codon.
 #' @param txdb a txdb object of annotations
 #' @param txNames a character vector of the transcript names to use

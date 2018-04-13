@@ -432,7 +432,7 @@ subset_to_frame <- function(x, frame) {
 
 #' Reduce GRanges / GRangesList
 #'
-#' Extends function \code{\link[GenomicRanges]{reduce}}
+#' Extends function [GenomicRanges::reduce()]
 #' by trying to keep names and meta columns, if it is a
 #' GRangesList. It also does not loose sorting for GRangesList,
 #' since original reduce sorts all by ascending.

@@ -12,10 +12,10 @@ findORFs(seqs, startCodon = startDefinition(1),
 Reading Frames.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link{startDefinition}} for helper function.}
+[startDefinition()] for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link{stopDefinition}} for helper function.}
+[stopDefinition()] for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
 that are longest, all smaller overlapping ORFs will be ignored.
@@ -23,7 +23,7 @@ When FALSE will report all possible ORFs in all three reading frames.}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP.
 Use this param to restrict search.}
 }
 \value{
@@ -49,8 +49,8 @@ findORFs(c("ATGTAA", "ATGATGTAA"))
 
 }
 \seealso{
-\code{\link{findMapORFs}}, \code{\link{findORFsFasta}},
-\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+[findMapORFs()], [findORFsFasta()],
+[startDefinition()], [stopDefinition()]
 
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}},

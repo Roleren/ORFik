@@ -20,9 +20,9 @@ or GRangesList object}
 \item{tx}{a GRangesList of the transcripts. If you used cage data, then
 the tss for the the leaders have changed, therefor the tx lengths have
 changed. To account for that call:
-\code{
+`
 translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
-} where cageFiveUTRs are the reannotated by CageSeq data leaders.}
+` where cageFiveUTRs are the reannotated by CageSeq data leaders.}
 
 \item{with.fpkm}{logical F, if true return the fpkm values together with
 translational efficiency}
@@ -36,7 +36,7 @@ data.table with te and fpkm values
 }
 \description{
 Uses RnaSeq and RiboSeq to get translational efficiency of every element in
-\code{grl}. Translational efficiency is defined as:
+`grl`. Translational efficiency is defined as:
 \preformatted{
 (density of RPF within ORF) / (RNA expression of ORFs transcript)
 }

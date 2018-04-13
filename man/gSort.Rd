@@ -19,7 +19,7 @@ an equally named GRangesList, where each group is sorted within
 group.
 }
 \description{
-A helper for \code{\link{sortPerGroup}}.
+A helper for [sortPerGroup()].
 A faster, more versatile reimplementation of GenomicRanges::sort()
 Normally not used directly.
 Groups first each group, then either decreasing or increasing

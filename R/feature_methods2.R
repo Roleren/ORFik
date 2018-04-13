@@ -254,7 +254,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #'  with usually either leaders, cds', 3' utrs or ORFs
 #' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
 #' @param GtfOrTx if Gtf: a TxDb object of a gtf file that transcripts will be
-#' extracted with \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}, if
+#' extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
 #' a GrangesList will use as is
 #' @return a named vector of numeric values of scores
 #' @importFrom data.table rbindlist
@@ -317,7 +317,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
 #' Find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function
-#' \code{\link{distToCds}}
+#' [distToCds()]
 #'
 #' possible outputs:
 #' 0: orf is in frame with cds
@@ -347,7 +347,7 @@ isInFrame <- function(dists){
 #' Find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function
-#' \code{\link{distToCds}}
+#' [distToCds()]
 #' @references doi: 10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features

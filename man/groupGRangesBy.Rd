@@ -16,15 +16,15 @@ a GRangesList named after names(Granges) if other is NULL, else
 names are from unique(other)
 }
 \description{
-It will group / split the GRanges object by the argument \code{other}.
+It will group / split the GRanges object by the argument `other`.
 For example if you would like to to group GRanges object by gene,
 set other to gene names.
 }
 \details{
-If \code{other} is not specified function will try to use the names of the
-GRanges object. It will then be similar to \code{split(gr, names(gr))}.
+If `other` is not specified function will try to use the names of the
+GRanges object. It will then be similar to `split(gr, names(gr))`.
 
-It is important that all groups in \code{other} are unique, otherwise
+It is important that all groups in `other` are unique, otherwise
 duplicates will be grouped together.
 }
 \examples{

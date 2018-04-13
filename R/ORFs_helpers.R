@@ -8,8 +8,8 @@
 #'
 #' It assumes that ORFranges and transcriptRanges are not
 #' sorted when on minus strand. Should be like:
-#' [200, 600]
-#' [50, 100]
+#' (200, 600)
+#' (50, 100)
 #'
 #' @param ORFranges GRanges object of your Open Reading Frame.
 #' @param transcriptRanges GRanges object of transtript.

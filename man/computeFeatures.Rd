@@ -32,8 +32,8 @@ fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of
-columns are the names of the scores, i.g \code{\link{floss}}
-or \code{\link{fpkm}}
+columns are the names of the scores, i.g [floss()]
+or [fpkm()]
 }
 \description{
 If you want to get all the features easily, you can use this function.

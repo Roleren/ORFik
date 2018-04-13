@@ -10,18 +10,18 @@ coverageByWindow(x, windows, ignore.strand = FALSE, is.sorted = FALSE)
 \item{x}{the cigar of the reads}
 
 \item{windows}{(GRangesList) of transcripts or CDS or other ranges that will
-be subseting coverage of \code{x}}
+be subseting coverage of `x`}
 
 \item{ignore.strand}{(logical) Whether to consider all reads to be "*".}
 
 \item{is.sorted}{(logical), is windows already sorted.}
 }
 \value{
-(RleList) of positional counts of \code{x} ranges overlapping each
-consecutive position of the elements of \code{windows}
+(RleList) of positional counts of `x` ranges overlapping each
+consecutive position of the elements of `windows`
 }
 \description{
-This is similar to \code{\link[GenomicFeatures]{coverageByTranscript}}, but
+This is similar to [GenomicFeatures::coverageByTranscript()], but
 it adds: automatic sorting of the windows, fix for some rare cases when
 subsetting fails on minus/plus strands and security that subseting of
 windows will always return values (zeros) istead of out of bounds error.

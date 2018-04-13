@@ -14,7 +14,7 @@ a logical vector
 }
 \description{
 Input of this function, is the output of the function
-\code{\link{distToCds}}
+[distToCds()]
 }
 \details{
 possible outputs:

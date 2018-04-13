@@ -1,8 +1,8 @@
 #' Returns start definitions
 #'
 #' According to:
-#' \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
-#' index.cgi?chapter=tgencodes#SG1}
+#' <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
+#' index.cgi?chapter=tgencodes#SG1>
 #' ncbi genetic code number for translation.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
@@ -50,8 +50,8 @@ startDefinition <- function(transl_table) {
 #' Returns stop definitions
 #'
 #' According to:
-#' \url{http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
-#' index.cgi?chapter=tgencodes#SG1}
+#' <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
+#' index.cgi?chapter=tgencodes#SG1>
 #' ncbi genetic code number for translation.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
@@ -105,22 +105,22 @@ stopDefinition <- function(transl_table) {
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
 #' Reading Frames.
 #' @param startCodon (character) Possible START codons to search for. Check
-#' \code{\link{startDefinition}} for helper function.
+#' [startDefinition()] for helper function.
 #' @param stopCodon (character) Possible STOP codons to search for. Check
-#' \code{\link{stopDefinition}} for helper function.
+#' [stopDefinition()] for helper function.
 #' @param longestORF (logical) Default FALSE. When TRUE will only report ORFs
 #' that are longest, all smaller overlapping ORFs will be ignored.
 #' When FALSE will report all possible ORFs in all three reading frames.
 #' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
 #' counting 3bp for START and STOP codons. For example minimumLength = 8 will
-#' result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+#' result in size of ORFs to be at least START + 8*3 (bp) + STOP.
 #' Use this param to restrict search.
 #' @return (IRangesList) of ORFs locations incuding START and STOP codons
 #' grouped by input seqeunces.
 #' @export
 #' @family findORFs
-#' @seealso \code{\link{findMapORFs}}, \code{\link{findORFsFasta}},
-#' \code{\link{startDefinition}}, \code{\link{stopDefinition}}
+#' @seealso [findMapORFs()], [findORFsFasta()],
+#' [startDefinition()], [stopDefinition()]
 #' @examples
 #' findORFs("ATGTAA")
 #' findORFs("ATGTTAA") # not in frame anymore
@@ -148,12 +148,12 @@ findORFs <- function(
 #' Find ORFs and immediately map them to their genomic positions.
 #'
 #' Finds ORFs on the sequences of interest, but returns relative positions to
-#' the positions of \code{grl} argument. For example, \code{grl} can be exons
-#' of known transcripts (with genomic coordinates), and \code{seq} sequences of
-#' those transcripts, in that case, \code{\link{findMapORFs}} will return
+#' the positions of `grl` argument. For example, `grl` can be exons
+#' of known transcripts (with genomic coordinates), and `seq` sequences of
+#' those transcripts, in that case, [findMapORFs()] will return
 #' genomic coordinates of ORFs found on transcript sequences.
 #'
-#' This function assumes that \code{seq} is in widths relative to \code{grl},
+#' This function assumes that `seq` is in widths relative to `grl`,
 #' and that their orders match.
 #'
 #' @param grl (\code{\link{GRangesList}}) of sequences
@@ -162,8 +162,8 @@ findORFs <- function(
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
-#' @seealso \code{\link{findORFs}}, \code{\link{findORFsFasta}},
-#' \code{\link{startDefinition}}, \code{\link{stopDefinition}}
+#' @seealso [findORFs()], [findORFsFasta()],
+#' [startDefinition()], [stopDefinition()]
 #' @examples
 #' # This sequence has ORFs at 1-9 and 4-9
 #' seqs <- c("ATGATGTAA") # the dna sequence
@@ -211,8 +211,8 @@ findMapORFs <- function(
 #' relative to the fasta file.
 #' @export
 #' @family findORFs
-#' @seealso \code{\link{findORFs}}, \code{\link{findMapORFs}},
-#' \code{\link{startDefinition}}, \code{\link{stopDefinition}}
+#' @seealso [findORFs()], [findMapORFs()],
+#' [startDefinition()], [stopDefinition()]
 #' @examples
 #' # location of the example fasta file
 #' example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")

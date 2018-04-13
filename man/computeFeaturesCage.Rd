@@ -56,12 +56,12 @@ fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of
- columns are the names of the scores, i.g \code{\link{floss}}
- or \code{\link{fpkm}}
+ columns are the names of the scores, i.g [floss()]
+ or [fpkm()]
 }
 \description{
 Normally dont use this function, but instead use:
-\code{\link{computeFeatures}}
+[computeFeatures()]
 }
 \details{
 A specialized version if you used Cage data, and don't have
