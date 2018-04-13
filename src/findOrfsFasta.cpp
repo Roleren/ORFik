@@ -6,7 +6,6 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
-#include <cassert>
 
 #include <Rcpp.h>
 #include "findORFsHelpers.h"
