@@ -13,7 +13,7 @@ unlistGrl(grl)
 a GRanges object
 }
 \description{
-Same as \code{\link[AnnotationDbi]{unlist2}}, keeps names correctly.
+Same as \code{\link[AnnotationDbi:unlist2]{AnnotationDbi::unlist2()}}, keeps names correctly.
 One difference is that if grl have no names, it will not
 make integer names, but keep them as null.
 }

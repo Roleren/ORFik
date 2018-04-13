@@ -9,7 +9,7 @@ reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
   ignore.strand = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} or GRanges object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} or GRanges object}
 
 \item{keep.names}{(FALSE) keep the names and meta columns of the GRangesList}
 
@@ -27,7 +27,7 @@ reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
 A reduced GRangesList
 }
 \description{
-Extends function \code{\link[GenomicRanges]{reduce}}
+Extends function \code{\link[GenomicRanges:reduce]{GenomicRanges::reduce()}}
 by trying to keep names and meta columns, if it is a
 GRangesList. It also does not loose sorting for GRangesList,
 since original reduce sorts all by ascending.

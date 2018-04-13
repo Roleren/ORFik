@@ -3,7 +3,7 @@
 #' Helper function to get a logical list of True/False,
 #'  if GRangesList group have + strand = T, if - strand = F
 #' Also checks for * strands, so a good check for bugs
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}} or GRanges object
+#' @param grl a [GenomicRanges::GRangesList()] or GRanges object
 #' @return a logical vector
 #' @export
 #' @examples
@@ -35,7 +35,7 @@ strandBool <- function(grl) {
 #'
 #' Given a GRangesList and a reference, make the naming convention and
 #' the number of metacolumns equal to reference
-#' @param gr a \code{\link[GenomicRanges]{GRangesList}}
+#' @param gr a [GenomicRanges::GRangesList()]
 #'  or GRanges object
 #' @param reference a GRangesList of a reference
 #' @return a GRangesList

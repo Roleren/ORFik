@@ -21,7 +21,7 @@ be subseting coverage of \code{x}}
 consecutive position of the elements of \code{windows}
 }
 \description{
-This is similar to \code{\link[GenomicFeatures]{coverageByTranscript}}, but
+This is similar to \code{\link[GenomicFeatures:coverageByTranscript]{GenomicFeatures::coverageByTranscript()}}, but
 it adds: automatic sorting of the windows, fix for some rare cases when
 subsetting fails on minus/plus strands and security that subseting of
 windows will always return values (zeros) istead of out of bounds error.

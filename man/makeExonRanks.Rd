@@ -7,7 +7,7 @@
 makeExonRanks(grl, byTranscript = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}}
 
 \item{byTranscript}{if ORfs are by transcript, check duplicates}
 }

@@ -7,7 +7,7 @@
 coveragePerTiling(grl, reads)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}}
 of 5' utrs or transcripts.}
 
 \item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc}

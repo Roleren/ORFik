@@ -7,7 +7,7 @@
 upstreamOfPerGroup(tx, upstreamOf)
 }
 \arguments{
-\item{tx}{a \code{\link[GenomicRanges]{GRangesList}},
+\item{tx}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}},
 usually of Transcripts to be changed}
 
 \item{upstreamOf}{a vector of integers, for each group in tx, where
@@ -18,10 +18,10 @@ a GRangesList of upstream part
 }
 \description{
 Per group get the part upstream of position
- defined in upstreamOf
- upstream(tx, ORFik:::stopSites(cds, asGR = F))
- will return the 5' utrs per transcript, usually used for interesting
- parts of the transcripts, like upstream open reading frames(uorf).
- downstreamOf +/- 1 is start/end site
- of transformed tx's, depending on strand
+defined in upstreamOf
+upstream(tx, ORFik:::stopSites(cds, asGR = F))
+will return the 5' utrs per transcript, usually used for interesting
+parts of the transcripts, like upstream open reading frames(uorf).
+downstreamOf +/- 1 is start/end site
+of transformed tx's, depending on strand
 }

@@ -9,7 +9,7 @@ computeFeatures(grl, RFP, RNA = NULL, Gtf = NULL, faFile = NULL,
   includeNonVarying = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object
 with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 
 \item{RFP}{RiboSeq reads as GAlignment, GRanges or GRangesList object}
@@ -32,8 +32,8 @@ fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 }
 \value{
 a data.table with scores, each column is one score type, name of
-columns are the names of the scores, i.g \code{\link{floss}}
-or \code{\link{fpkm}}
+columns are the names of the scores, i.g \code{\link[=floss]{floss()}}
+or \code{\link[=fpkm]{fpkm()}}
 }
 \description{
 If you want to get all the features easily, you can use this function.

@@ -7,7 +7,7 @@
 stopSites(grl, asGR = FALSE, keep.names = FALSE, is.sorted = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList]{GenomicRanges::GRangesList()}} object}
 
 \item{asGR}{a boolean, return as GRanges object}
 

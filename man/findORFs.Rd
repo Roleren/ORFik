@@ -12,10 +12,10 @@ findORFs(seqs, startCodon = startDefinition(1),
 Reading Frames.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link{startDefinition}} for helper function.}
+\code{\link[=startDefinition]{startDefinition()}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link{stopDefinition}} for helper function.}
+\code{\link[=stopDefinition]{stopDefinition()}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
 that are longest, all smaller overlapping ORFs will be ignored.
@@ -23,7 +23,7 @@ When FALSE will report all possible ORFs in all three reading frames.}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 [bp] + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP.
 Use this param to restrict search.}
 }
 \value{
@@ -33,9 +33,9 @@ grouped by input seqeunces.
 \description{
 Find all Open Reading Frames (ORFs) on the input sequences
 in 5'- 3' direction, but within all three possible reading frames. For each
-sequence of the input vector \code{\link[IRanges]{IRanges}} with START and
+sequence of the input vector \code{\link[IRanges:IRanges]{IRanges::IRanges()}} with START and
 STOP positions (inclusive) will be returned as
-\code{\link[IRanges]{IRangesList}}. Returned coordinates are relative to the
+\code{\link[IRanges:IRangesList]{IRanges::IRangesList()}}. Returned coordinates are relative to the
 input sequences.
 }
 \examples{
@@ -49,8 +49,8 @@ findORFs(c("ATGTAA", "ATGATGTAA"))
 
 }
 \seealso{
-\code{\link{findMapORFs}}, \code{\link{findORFsFasta}},
-\code{\link{startDefinition}}, \code{\link{stopDefinition}}
+\code{\link[=findMapORFs]{findMapORFs()}}, \code{\link[=findORFsFasta]{findORFsFasta()}},
+\code{\link[=startDefinition]{startDefinition()}}, \code{\link[=stopDefinition]{stopDefinition()}}
 
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}},

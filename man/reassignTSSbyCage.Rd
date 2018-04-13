@@ -27,7 +27,7 @@ can overlap into CDS's.}
 }
 \value{
 a GRangesList of newly assigned TSS for fiveUTRs,
- using CageSeq data.
+using CageSeq data.
 }
 \description{
 Given a GRangesList of 5' UTRs or transcripts, reassign the start
