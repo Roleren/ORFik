@@ -7,7 +7,7 @@
 translationalEff(grl, RNA, RFP, tx, with.fpkm = FALSE, pseudoCount = 0)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
 ORFs as a special case (uORFs, potential new cds' etc).}
 

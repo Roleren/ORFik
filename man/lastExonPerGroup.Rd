@@ -7,7 +7,7 @@
 lastExonPerGroup(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
+\item{grl}{a \code{\link{GRangesList}}}
 }
 \value{
 a GRangesList of the last exon per group

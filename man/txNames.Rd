@@ -7,7 +7,7 @@
 txNames(grl, unique = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} grouped by ORF
+\item{grl}{a \code{\link{GRangesList}} grouped by ORF
 or GRanges object}
 
 \item{unique}{a boolean, if true unique the names,

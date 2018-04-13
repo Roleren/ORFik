@@ -7,7 +7,7 @@
 downstreamOfPerGroup(tx, downstreamOf)
 }
 \arguments{
-\item{tx}{a \code{\link[GenomicRanges]{GRangesList}},
+\item{tx}{a \code{\link{GRangesList}},
 usually of Transcripts to be changed}
 
 \item{downstreamOf}{a vector of integers, for each group in tx, where

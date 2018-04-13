@@ -7,7 +7,7 @@
 strandBool(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} or GRanges object}
+\item{grl}{a \code{\link{GRangesList}} or GRanges object}
 }
 \value{
 a logical vector

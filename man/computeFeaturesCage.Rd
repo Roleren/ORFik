@@ -10,7 +10,7 @@ computeFeaturesCage(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   cageFiveUTRs = NULL, includeNonVarying = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link{GRangesList}} object
 with usually ORFs, but can also be
 either leaders, cds', 3' utrs or  ORFs are a special case,
 see argument tx_len}

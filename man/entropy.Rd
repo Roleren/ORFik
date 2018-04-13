@@ -7,7 +7,7 @@
 entropy(grl, reads)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} that the reads will
+\item{grl}{a \code{\link{GRangesList}} that the reads will
 be overlapped with}
 
 \item{reads}{a GAlignment object or GRanges or GRangesList, usualy data from

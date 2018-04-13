@@ -7,7 +7,7 @@
 makeORFNames(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
+\item{grl}{a \code{\link{GRangesList}}}
 }
 \value{
 (GRangesList) with ORF names, grouped by transcripts, sorted.

@@ -11,7 +11,7 @@ downstreamN <- function(grl, firstN = 150L) {
 }
 
 #' Get list of widths per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return an integer vector (named/unnamed) of widths
 #' @export
@@ -35,7 +35,7 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 
 
 #' Get list of seqnames per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @importFrom IRanges heads
 #' @return a character vector or Rle of seqnames(if seqnames == T)
@@ -66,7 +66,7 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
 #' Normally not used directly.
 #' Groups first each group, then either decreasing or increasing
 #' (on starts if byStarts == T, on ends if byStarts == F)
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param decreasing should the first in each group have max(start(group))
 #'   ->T or min-> default(F) ?
 #' @param byStarts a logical T, should it order by starts or ends F.
@@ -118,12 +118,12 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' Sort a GRangesList
 #'
 #' A faster, more versatile reimplementation of
-#' \code{\link[GenomicRanges]{sort.GenomicRanges}} for GRangesList,
+#' \code{\link{sort.GenomicRanges}} for GRangesList,
 #' which works poorly for more than 10k groups.
 #' This function sorts each group, where "+" strands are
 #' increasing by starts and "-" strands are decreasing by ends.
 #'
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param ignore.strand a boolean, if FALSE: should minus strands be
 #' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.
 #' @return an equally named GRangesList, where each group is
@@ -153,7 +153,7 @@ sortPerGroup <- function(grl, ignore.strand = FALSE){
 
 
 #' Get list of strands per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a vector named/unnamed of characters
 #' @importFrom IRanges heads
@@ -180,7 +180,7 @@ strandPerGroup <- function(grl, keep.names = TRUE) {
 #' Get first exon per GRangesList group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList of the first exon per group
 #' @importFrom IRanges heads
 #' @export
@@ -202,7 +202,7 @@ firstExonPerGroup <- function(grl) {
 #' Get last exon per GRangesList group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList of the last exon per group
 #' @importFrom IRanges tails
 #' @export
@@ -224,7 +224,7 @@ lastExonPerGroup <- function(grl) {
 #' Get first start per granges group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = TRUE), or integer vector(FALSE)
 #' @export
@@ -250,7 +250,7 @@ firstStartPerGroup <- function(grl, keep.names = TRUE) {
 #' Get first end per granges group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
@@ -274,7 +274,7 @@ firstEndPerGroup <- function(grl, keep.names = TRUE) {
 
 
 #' Get last end per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
@@ -298,7 +298,7 @@ lastExonEndPerGroup = function(grl,keep.names = TRUE) {
 
 
 #' Get last start per granges group
-#' @param grl a \code{\link[GenomicRanges]{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export

@@ -7,7 +7,7 @@
 disengagementScore(grl, RFP, GtfOrTx)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs.}
 
 \item{RFP}{RiboSeq reads as GAlignment, GRanges

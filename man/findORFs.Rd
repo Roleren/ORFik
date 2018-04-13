@@ -33,9 +33,9 @@ grouped by input seqeunces.
 \description{
 Find all Open Reading Frames (ORFs) on the input sequences
 in 5'- 3' direction, but within all three possible reading frames. For each
-sequence of the input vector \code{\link[IRanges]{IRanges}} with START and
+sequence of the input vector \code{\link{IRanges}} with START and
 STOP positions (inclusive) will be returned as
-\code{\link[IRanges]{IRangesList}}. Returned coordinates are relative to the
+\code{\link{IRangesList}}. Returned coordinates are relative to the
 input sequences.
 }
 \examples{

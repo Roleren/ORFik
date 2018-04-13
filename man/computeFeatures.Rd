@@ -9,7 +9,7 @@ computeFeatures(grl, RFP, RNA = NULL, Gtf = NULL, faFile = NULL,
   includeNonVarying = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} object
+\item{grl}{a \code{\link{GRangesList}} object
 with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 
 \item{RFP}{RiboSeq reads as GAlignment, GRanges or GRangesList object}

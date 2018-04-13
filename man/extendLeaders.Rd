@@ -7,7 +7,7 @@
 extendLeaders(grl, extension = 1000, cds = NULL)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}
+\item{grl}{a \code{\link{GRangesList}}
 of 5' utrs or transcripts.}
 
 \item{extension}{an integer, how much to extend the leaders.

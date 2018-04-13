@@ -8,7 +8,7 @@ findMapORFs(grl, seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)
 }
 \arguments{
-\item{grl}{(\code{\link[GenomicRanges]{GRangesList}}) of sequences
+\item{grl}{(\code{\link{GRangesList}}) of sequences
 to search for ORFs, probably in genomic coordinates}
 
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open

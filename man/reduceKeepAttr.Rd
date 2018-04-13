@@ -9,7 +9,7 @@ reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
   ignore.strand = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}} or GRanges object}
+\item{grl}{a \code{\link{GRangesList}} or GRanges object}
 
 \item{keep.names}{(FALSE) keep the names and meta columns of the GRangesList}
 

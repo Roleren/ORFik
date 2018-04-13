@@ -7,7 +7,7 @@
 sortPerGroup(grl, ignore.strand = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
+\item{grl}{a \code{\link{GRangesList}}}
 
 \item{ignore.strand}{a boolean, if FALSE: should minus strands be
 sorted from highest to lowest ends. If TRUE: from lowest to highest ends.}
@@ -18,7 +18,7 @@ an equally named GRangesList, where each group is
 }
 \description{
 A faster, more versatile reimplementation of
-\code{\link[GenomicRanges]{sort.GenomicRanges}} for GRangesList,
+\code{\link{sort.GenomicRanges}} for GRangesList,
 which works poorly for more than 10k groups.
 This function sorts each group, where "+" strands are
 increasing by starts and "-" strands are decreasing by ends.

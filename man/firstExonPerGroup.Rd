@@ -7,7 +7,7 @@
 firstExonPerGroup(grl)
 }
 \arguments{
-\item{grl}{a \code{\link[GenomicRanges]{GRangesList}}}
+\item{grl}{a \code{\link{GRangesList}}}
 }
 \value{
 a GRangesList of the first exon per group
