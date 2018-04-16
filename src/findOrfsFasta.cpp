@@ -2,7 +2,6 @@
 // Cpp format: Webkit: 80 character max line
 
 #include <fstream>
-#include <iostream>
 #include <vector>
 #include <sstream>
 #include <algorithm>
