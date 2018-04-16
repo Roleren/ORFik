@@ -4,7 +4,6 @@
 // rename ORFs_as_List to findORFsC or smth
 
 #include <fstream>
-#include <iostream>
 #include <vector>
 #include <sstream>
 #include <algorithm>
