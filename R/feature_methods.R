@@ -79,7 +79,7 @@ subsetCoverage <- function(cov, y) {
 #'
 entropy <- function(grl, reads) {
   # Get count list of overlaps
-  countList <- coveragePerTiling(grl, reads)
+  countList <- coveragePerTiling(grl, reads, is.sorted = TRUE)
   names(countList) <- NULL
 
   # generate the entropy variables
@@ -369,7 +369,6 @@ fractionLength <- function(grl, tx_len){
 #' disengagementScore(grl, RFP, tx)
 #'
 disengagementScore <- function(grl, RFP, GtfOrTx){
-  overlapGrl <- countOverlaps(grl, RFP) + 1
 
   if (class(GtfOrTx) == "TxDb") {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
@@ -379,11 +378,10 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
 
-  tx <- tx[txNames(grl, FALSE)]
-
   grlStops <- stopSites(grl, asGR = FALSE)
-  downstreamTx <- downstreamOfPerGroup(tx, grlStops)
+  downstreamTx <- downstreamOfPerGroup(tx[txNames(grl, FALSE)], grlStops)
 
+  overlapGrl <- countOverlaps(grl, RFP) + 1
   overlapDownstream <- countOverlaps(downstreamTx, RFP) + 1
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
@@ -732,16 +730,13 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
   grl <- sortPerGroup(grl)
   tx_len <- widthPerGroup(tx, TRUE)
 
-  #### Get all features ####
-  floss <- floss(grl, RFP, cds, riboStart, riboStop)
-  entropyRFP <- entropy(grl, RFP)
+  #### Get all features, append 1 at a time, to save memory ####
+  scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
+  scores$entropyRFP <- entropy(grl, RFP)
+  scores$disengagementScores <- disengagementScore(grl, RFP, tx)
+  scores$RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+  scores$RSS <- ribosomeStallingScore(grl, RFP)
 
-  disengagementScores <- disengagementScore(grl, RFP, tx)
-  RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
-  RSS <- ribosomeStallingScore(grl, RFP)
-  scores <- data.table(floss = floss, entropyRFP = entropyRFP,
-                       disengagementScores = disengagementScores,
-                       RRS = RRS, RSS = RSS)
   if (includeNonVarying) {
     scores$fractionLengths <- fractionLength(grl, tx_len)
   }

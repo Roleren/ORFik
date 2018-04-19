@@ -17,6 +17,7 @@
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
+#' @param is.sorted logical (F), is grl sorted.
 #' @importFrom data.table .SD
 #' @importFrom data.table .N
 #' @family features
@@ -32,41 +33,53 @@
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' orfScore(grl, RFP)
 #'
-orfScore <- function(grl, RFP) {
-  # tile the orfs into a d.t for easy seperation
-  dt <- as.data.table(tile1(grl))
+orfScore <- function(grl, RFP, is.sorted = FALSE) {
+  if(length(grl) > 300000) { # faster version for big grl
+    cov <- coverageByWindow(RFP, grl, is.sorted = is.sorted,
+                            keep.names = FALSE)
+    len <- lengths(cov)
+    positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
+    countsTile1 <- sum(cov[positionFrame])
+    positionFrame <- lapply(len, function(x){seq.int(2, x, 3)})
+    countsTile2 <- sum(cov[positionFrame])
+    positionFrame <- lapply(len, function(x){seq.int(3, x, 3)})
+    countsTile3 <- sum(cov[positionFrame])
+  } else {
+    # tile the orfs into a d.t for easy seperation
+    dt <- as.data.table(tile1(grl))
 
-  group <- NULL
-  # seperate the three tiles, by the 3 frames
-  tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
-  grl1 <- makeGRangesListFromDataFrame(
-    tilex1, split.field = "group", names.field = "group_name")
-  tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
-  grl2 <- makeGRangesListFromDataFrame(
-    tilex2, split.field = "group", names.field = "group_name")
-  tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
-  grl3 <- makeGRangesListFromDataFrame(
-    tilex2, split.field = "group", names.field = "group_name")
+    group <- NULL
+    # seperate the three tiles, by the 3 frames
+    tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
+    grl1 <- makeGRangesListFromDataFrame(
+      tilex1, split.field = "group", names.field = "group_name")
+    tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
+    grl2 <- makeGRangesListFromDataFrame(
+      tilex2, split.field = "group", names.field = "group_name")
+    tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
+    grl3 <- makeGRangesListFromDataFrame(
+      tilex3, split.field = "group", names.field = "group_name")
 
-  countsTile1 <- countOverlaps(grl1, RFP)
-  countsTile2 <- countOverlaps(grl2, RFP)
-  countsTile3 <- countOverlaps(grl3, RFP)
+    countsTile1 <- countOverlaps(grl1, RFP)
+    countsTile2 <- countOverlaps(grl2, RFP)
+    countsTile3 <- countOverlaps(grl3, RFP)
+  }
 
   RP = countsTile1 + countsTile2 + countsTile3
 
   Ftotal <- RP/3
 
-  tile1 <- (countsTile1 - Ftotal)^2 / Ftotal
-  tile2 <- (countsTile2 - Ftotal)^2 / Ftotal
-  tile3 <- (countsTile3 - Ftotal)^2 / Ftotal
+  frame1 <- (countsTile1 - Ftotal)^2 / Ftotal
+  frame2 <- (countsTile2 - Ftotal)^2 / Ftotal
+  frame3 <- (countsTile3 - Ftotal)^2 / Ftotal
 
   dfORFs <- NULL
   dfORFs$frame_zero_RP <- countsTile1
   dfORFs$frame_one_RP <- countsTile2
   dfORFs$frame_two_RP <- countsTile3
 
-  ORFscore <- log2(tile1 + tile2 + tile3 + 1)
-  revORFscore <-  which(tile1 < tile2 | tile1 < tile3)
+  ORFscore <- log2(frame1 + frame2 + frame3 + 1)
+  revORFscore <-  which(frame1 < frame2 | frame1 < frame3)
   ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
   ORFscore[is.na(ORFscore)] <- 0
   dfORFs$ORFScores <- ORFscore
@@ -406,7 +419,8 @@ rankOrder <- function(grl) {
     }
   } else {
     orfName <- names(grl)
-    if (suppressWarnings(anyNA(as.integer(gsub(".*_", "", orfName))))) {
+    if (suppressWarnings(anyNA(as.integer(sub(".*_", "", orfName,
+                                              perl = TRUE))))) {
       if (!is.null(gr$names)) {
         orfName <- names(groupGRangesBy(gr, gr$names))
       }
@@ -419,7 +433,7 @@ rankOrder <- function(grl) {
   }
 
   if (is.null(orfName)) stop("grl must have column called names")
-  ranks <- as.integer(gsub(".*_", "", orfName))
+  ranks <- as.integer(sub(".*_", "", orfName, perl = TRUE))
   if (anyNA(ranks)) {
     stop("no valid names to find ranks, check for orf _* names eg.",
          "tx_1, tx_2.")

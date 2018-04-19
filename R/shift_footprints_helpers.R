@@ -12,6 +12,7 @@
 #' be subseting coverage of `x`
 #' @param ignore.strand (logical) Whether to consider all reads to be "*".
 #' @param is.sorted (logical), is windows already sorted.
+#' @param keep.names logical (T), keep names and meta cols
 #' @return (RleList) of positional counts of `x` ranges overlapping each
 #' consecutive position of the elements of `windows`
 #' @examples
@@ -26,7 +27,7 @@
 #' ORFik:::coverageByWindow(reads, cds)
 #'
 coverageByWindow <- function(x, windows, ignore.strand = FALSE,
-                             is.sorted = FALSE) {
+                             is.sorted = FALSE, keep.names = TRUE) {
   if (!is.grl(class(windows))) {
     windows <- try(exonsBy(windows, by="tx", use.names=TRUE),
                    silent=TRUE)
@@ -99,9 +100,13 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE,
   ans <- regroupRleList(ex_cvg, windows)
 
   ## 6) Propagate 'mcols(windows)'.
+  if (keep.names) {
+    mcols(ans) <- mcols(windows)
+  } else {
+    names(ans) <- NULL # can save up to 95% space
+  }
 
-  mcols(ans) <- mcols(windows)
-  ans
+  return(ans)
 }
 
 

@@ -262,6 +262,7 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #' @return a GRangesList of downstream part
 #'
 downstreamOfPerGroup <- function(tx, downstreamOf) {
+  # Needs speed update!
   posIndices <- strandBool(tx)
   posEnds <- end(tx[posIndices])
   negEnds <- start(tx[!posIndices])
@@ -387,9 +388,11 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group, and finds hits per position
+#' If grl is large (> 300K), it uses coverageByWindow.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
+#' @param is.sorted logical (F), is grl sorted.
 #' @return a Rle, one list per group with # of hits per position.
 #' @export
 #' @examples
@@ -401,7 +404,11 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' coveragePerTiling(grl, RFP)
 #'
-coveragePerTiling <- function(grl, reads) {
+coveragePerTiling <- function(grl, reads, is.sorted = F) {
+
+  if(length(grl) > 300000) { # faster version for big grl
+    return(coverageByWindow(reads, grl, is.sorted = is.sorted))
+  }
 
   unlTile <- unlistGrl(tile1(grl))
   if (!is.null(unlTile$names)) { # for orf case

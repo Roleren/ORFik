@@ -4,13 +4,15 @@
 \alias{orfScore}
 \title{Get ORFscore for a GRangesList of ORFs}
 \usage{
-orfScore(grl, RFP)
+orfScore(grl, RFP, is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with ORFs}
 
 \item{RFP}{ribozomal footprints, given as Galignment object,
 Granges or GRangesList}
+
+\item{is.sorted}{logical (F), is grl sorted.}
 }
 \value{
 a matrix with 4 columns, the orfscore and score of
