@@ -101,7 +101,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
       keep.extra.columns = TRUE)
   } else {
     if (!any(grep(pattern = "_", testName))) {
-      DT[, group := gsub("_[0-9]*", "", DT$group_name)]
+      DT[, group := sub("_[0-9]*", "", DT$group_name, perl = TRUE)]
     } else {
       DT[, group := DT$group_name]
     }
