@@ -534,6 +534,8 @@ ribosomeStallingScore <- function(grl, RFP){
 #' @param includeNonVarying a logical T, if TRUE, include all features not
 #'  dependent on Ribo-seq data and RNA-seq data, that is: Kozak,
 #'  fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
+#' @param grl.is.sorted logical (F), a speed up if you know argument grl
+#'  is sorted, set this to TRUE.
 #' @importFrom data.table data.table
 #' @family features
 #' @return a data.table with scores, each column is one score type, name of
@@ -585,13 +587,13 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                                 fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
                                 extension = NULL, orfFeatures = TRUE,
-                                cageFiveUTRs = NULL, includeNonVarying = TRUE){
+                                cageFiveUTRs = NULL, includeNonVarying = TRUE,
+                                grl.is.sorted = FALSE){
   #### Check input and load data ####
   validExtension(extension, cageFiveUTRs)
   validGRL(class(grl))
   checkRFP(class(RFP))
   checkRNA(class(RNA))
-  tx_len <- NULL
   if (is.null(Gtf)) {
     validGRL(c(class(fiveUTRs), class(cds), class(threeUTRs)),
              c("fiveUTRs", "cds", "threeUTRs"))
@@ -620,22 +622,19 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   if (!is.null(cageFiveUTRs)) {
     tx <- extendLeaders(tx, extension = cageFiveUTRs)
   }
+  if (!grl.is.sorted) {
+    grl <- sortPerGroup(grl)
+  }
 
-  grl <- sortPerGroup(grl)
-  tx_len <- widthPerGroup(tx, TRUE)
+  #### Get all features, append 1 at a time, to save memory ####
+  scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
+  scores$entropyRFP <- entropy(grl, RFP)
+  scores$disengagementScores <- disengagementScore(grl, RFP, tx)
+  scores$RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
+  scores$RSS <- ribosomeStallingScore(grl, RFP)
 
-  #### Get all features ####
-  floss <- floss(grl, RFP, cds, riboStart, riboStop)
-  entropyRFP <- entropy(grl, RFP)
-
-  disengagementScores <- disengagementScore(grl, RFP, tx)
-  RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
-  RSS <- ribosomeStallingScore(grl, RFP)
-  scores <- data.table(floss = floss, entropyRFP = entropyRFP,
-                       disengagementScores = disengagementScores,
-                       RRS = RRS, RSS = RSS)
   if (includeNonVarying) {
-    scores$fractionLengths <- fractionLength(grl, tx_len)
+    scores$fractionLengths <- fractionLength(grl, widthPerGroup(tx, TRUE))
   }
 
   if (!is.null(RNA)) { # if rna seq is included
@@ -657,7 +656,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
       } else {
         message("faFile not included, skipping kozak sequence score")
       }
-
+      # switch five with tx, is it possible to use ?
       distORFCDS <- distToCds(grl, fiveUTRs, cds, extension)
       scores$distORFCDS <- distORFCDS
       scores$inFrameCDS <- isInFrame(distORFCDS)

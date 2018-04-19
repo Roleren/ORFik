@@ -7,7 +7,7 @@
 computeFeaturesCage(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
   riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = TRUE,
-  cageFiveUTRs = NULL, includeNonVarying = TRUE)
+  cageFiveUTRs = NULL, includeNonVarying = TRUE, grl.is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -53,6 +53,9 @@ include this, also extension must match with the extension used for these.}
 \item{includeNonVarying}{a logical T, if TRUE, include all features not
 dependent on Ribo-seq data and RNA-seq data, that is: Kozak,
 fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
+
+\item{grl.is.sorted}{logical (F), a speed up if you know argument grl
+is sorted, set this to TRUE.}
 }
 \value{
 a data.table with scores, each column is one score type, name of

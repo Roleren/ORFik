@@ -4,10 +4,13 @@
 \alias{tile1}
 \title{Tile a GRangesList by 1}
 \usage{
-tile1(grl)
+tile1(grl, sort.on.return = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with names}
+
+\item{sort.on.return}{logical (T), should the groups be
+sorted before return.}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1
