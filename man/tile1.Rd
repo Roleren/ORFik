@@ -4,13 +4,16 @@
 \alias{tile1}
 \title{Tile a GRangesList by 1}
 \usage{
-tile1(grl, sort.on.return = TRUE)
+tile1(grl, sort.on.return = TRUE, matchNaming = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with names}
 
 \item{sort.on.return}{logical (T), should the groups be
 sorted before return.}
+
+\item{matchNaming}{logical (T), should groups keep unlisted names
+and meta data.(This make the list very big, for > 100K groups)}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1

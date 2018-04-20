@@ -99,6 +99,8 @@ makeORFNames <- function(grl) {
 #' @param grl a \code{\link{GRangesList}} object with names
 #' @param sort.on.return logical (T), should the groups be
 #'  sorted before return.
+#' @param matchNaming logical (T), should groups keep unlisted names
+#'  and meta data.(This make the list very big, for > 100K groups)
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @export
 #' @examples
@@ -113,7 +115,7 @@ makeORFNames <- function(grl) {
 #' grl <- GRangesList(tx1_1 = gr1, tx1_2 = gr2)
 #' tile1(grl)
 #'
-tile1 <- function(grl, sort.on.return = TRUE) {
+tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
   ORFs <- unlistGrl(grl)
   if (is.null(names(ORFs))) {
     stop("grl does not have names.")
@@ -144,7 +146,12 @@ tile1 <- function(grl, sort.on.return = TRUE) {
 
   tilex <- tile(ORFs, width =  1L)
   names(tilex) <- ORFs$names
-  tilex <- matchNaming(tilex, grl[1])
+  if (matchNaming) {
+    tilex <- matchNaming(tilex, grl[1])
+  } else {
+    tilex <- groupGRangesBy(unlistGrl(tilex))
+  }
+
   # only negative must be sorted
   if (sort.on.return) {
     posIndices <- strandBool(tilex)

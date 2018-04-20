@@ -46,7 +46,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
     countsTile3 <- sum(cov[positionFrame])
   } else {
     # tile the orfs into a d.t for easy seperation
-    dt <- as.data.table(tile1(grl))
+    dt <- as.data.table(tile1(grl, matchNaming = FALSE))
 
     group <- NULL
     # seperate the three tiles, by the 3 frames
