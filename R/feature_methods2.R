@@ -35,15 +35,26 @@
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
   if(length(grl) > 300000) { # faster version for big grl
-    cov <- coverageByWindow(RFP, grl, is.sorted = is.sorted,
-                            keep.names = FALSE)
+    # reduce to unique orfs
+    ids <- ORFik:::orfID(grl)
+
+    sortedOrder <- data.table::chgroup(ids)
+    orderedIDs <- ids[sortedOrder]
+    l <- S4Vectors::Rle(orderedIDs)
+    grouping <- unlist(lapply(seq.int(nrun(l)), function(x) {
+      rep(x, runLength(l)[x])
+    }))
+    reOrdering <- grouping[order(sortedOrder)]
+    # find coverage
+    cov <- coverageByWindow(RFP, ORFik:::uniqueORFs(grl),
+                            is.sorted = is.sorted, keep.names = FALSE)
     len <- lengths(cov)
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
-    countsTile1 <- sum(cov[positionFrame])
+    countsTile1 <- sum(cov[positionFrame])[reOrdering]
     positionFrame <- lapply(len, function(x){seq.int(2, x, 3)})
-    countsTile2 <- sum(cov[positionFrame])
+    countsTile2 <- sum(cov[positionFrame])[reOrdering]
     positionFrame <- lapply(len, function(x){seq.int(3, x, 3)})
-    countsTile3 <- sum(cov[positionFrame])
+    countsTile3 <- sum(cov[positionFrame])[reOrdering]
   } else {
     # tile the orfs into a d.t for easy seperation
     dt <- as.data.table(tile1(grl, matchNaming = FALSE))
@@ -52,13 +63,13 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
     # seperate the three tiles, by the 3 frames
     tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
     grl1 <- makeGRangesListFromDataFrame(
-      tilex1, split.field = "group", names.field = "group_name")
+      tilex1, split.field = "group")
     tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
     grl2 <- makeGRangesListFromDataFrame(
-      tilex2, split.field = "group", names.field = "group_name")
+      tilex2, split.field = "group")
     tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
     grl3 <- makeGRangesListFromDataFrame(
-      tilex3, split.field = "group", names.field = "group_name")
+      tilex3, split.field = "group")
 
     countsTile1 <- countOverlaps(grl1, RFP)
     countsTile2 <- countOverlaps(grl2, RFP)
@@ -311,14 +322,13 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
 
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
-  dtd <- as.data.table(downstreamTx)
-  dtu <- as.data.table(upstreamTx)
-  dtmerge <- data.table::rbindlist(l = list(dtu, dtd))
+
+  dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
+                                            as.data.table(downstreamTx)))
   group <- NULL # for avoiding warning
   txOutside <- makeGRangesListFromDataFrame(
-    dtmerge[order(group)], split.field = "group",
-    names.field = "group_name", keep.extra.columns = TRUE)
-  names(txOutside) <- names(tx)
+    dtmerge[order(group)], split.field = "group")
+  #names(txOutside) <- names(tx)
 
   overlapTxOutside <- countOverlaps(txOutside, RFP) + 1
   scores <- overlapGrl / overlapTxOutside
