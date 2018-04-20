@@ -40,7 +40,8 @@ ORF <- GRanges(seqnames = "1",
                strand = "+")
 names(ORF) <- c("tx1", "tx1", "tx1")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25), "+")
+RFP <- GRanges("1", IRanges(25, 25), "+") # 1 width position based
+score(RFP) <- 28 # original width
 orfScore(grl, RFP)
 
 }

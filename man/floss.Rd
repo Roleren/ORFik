@@ -41,12 +41,14 @@ ORF <- GRanges(seqnames = "1",
                end = c(10, 20, 32)),
                strand = "+")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25), "+")
+# RFP is 1 width position based GRanges
+RFP <- GRanges("1", IRanges(c(1, 25, 35, 38), width = 1), "+")
+score(RFP) <- c(28, 28, 28, 29) # original width in score col
 cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44), "+"))
 # grl must have same names as cds + _1 etc, so that they can be matched.
 floss(grl, RFP, cds)
 # or change ribosome start/stop, more strict
-floss(grl, RFP, cds, 28, 32)
+floss(grl, RFP, cds, 28, 28)
 
 }
 \references{

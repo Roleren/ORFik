@@ -30,13 +30,14 @@
 #'                strand = "+")
 #' names(ORF) <- c("tx1", "tx1", "tx1")
 #' grl <- GRangesList(tx1_1 = ORF)
-#' RFP <- GRanges("1", IRanges(25, 25), "+")
+#' RFP <- GRanges("1", IRanges(25, 25), "+") # 1 width position based
+#' score(RFP) <- 28 # original width
 #' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
   if(length(grl) > 300000) { # faster version for big grl
     # reduce to unique orfs
-    ids <- ORFik:::orfID(grl)
+    ids <- orfID(grl)
 
     sortedOrder <- data.table::chgroup(ids)
     orderedIDs <- ids[sortedOrder]
@@ -46,7 +47,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
     }))
     reOrdering <- grouping[order(sortedOrder)]
     # find coverage
-    cov <- coverageByWindow(RFP, ORFik:::uniqueORFs(grl),
+    cov <- coverageByWindow(RFP, uniqueORFs(grl),
                             is.sorted = is.sorted, keep.names = FALSE)
     len <- lengths(cov)
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})

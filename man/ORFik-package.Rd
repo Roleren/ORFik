@@ -38,7 +38,7 @@ Authors:
 
 Other contributors:
 \itemize{
-  \item Katazyna Chyzynska \email{katchyz@gmail.com} [contributor, data contributor]
+  \item Katarzyna Chyzynska \email{katchyz@gmail.com} [contributor, data contributor]
   \item Evind Valen \email{eivind.valen@gmail.com} [thesis advisor, funder]
 }
 
