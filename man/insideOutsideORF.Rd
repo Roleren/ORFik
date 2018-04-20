@@ -44,6 +44,7 @@ RFP <- GRanges(seqnames = "1",
                   strand = "+")
 
 insideOutsideORF(grl, RFP, tx)
+
 }
 \references{
 doi: 10.1242/dev.098345

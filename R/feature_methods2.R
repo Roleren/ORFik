@@ -304,7 +304,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #'                   strand = "+")
 #'
 #' insideOutsideORF(grl, RFP, tx)
-
+#'
 insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   overlapGrl <- countOverlaps(grl, RFP) + 1
 
