@@ -4,7 +4,7 @@
 \alias{coveragePerTiling}
 \title{Get coverage per group}
 \usage{
-coveragePerTiling(grl, reads, is.sorted = F)
+coveragePerTiling(grl, reads, is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}

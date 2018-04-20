@@ -404,7 +404,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' coveragePerTiling(grl, RFP)
 #'
-coveragePerTiling <- function(grl, reads, is.sorted = F) {
+coveragePerTiling <- function(grl, reads, is.sorted = FALSE) {
 
   if(length(grl) > 300000) { # faster version for big grl
     return(coverageByWindow(reads, grl, is.sorted = is.sorted))

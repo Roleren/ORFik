@@ -378,7 +378,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
 
-  grlStops <- stopSites(grl, asGR = FALSE)
+  grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl, FALSE)], grlStops)
 
   overlapGrl <- countOverlaps(grl, RFP) + 1
@@ -483,7 +483,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 ribosomeStallingScore <- function(grl, RFP){
   grl_len <- widthPerGroup(grl, FALSE)
   overlapGrl <- countOverlaps(grl, RFP)
-  stopCodons <- stopCodons(grl, TRUE)
+  stopCodons <- stopCodons(grl, is.sorted = TRUE)
   overlapStop <- countOverlaps(stopCodons, RFP)
 
   rss <- ((overlapStop + 1) / 3) / ((overlapGrl + 1) / grl_len)
@@ -644,7 +644,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     scores$fpkmRFP <- fpkm(grl, RFP)
   }
   if (orfFeatures) { # if features are found for orfs
-    scores$ORFScores <- orfScore(grl, RFP)$ORFScores
+    scores$ORFScores <- orfScore(grl, RFP, grl.is.sorted)$ORFScores
     scores$ioScore <- insideOutsideORF(grl, RFP, tx)
 
     if (includeNonVarying) {

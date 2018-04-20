@@ -306,8 +306,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   }
   tx <- tx[txNames(grl, FALSE)]
 
-  grlStarts <- startSites(grl, asGR = FALSE)
-  grlStops <- stopSites(grl, asGR = FALSE)
+  grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
+  grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
 
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
