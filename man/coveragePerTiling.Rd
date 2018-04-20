@@ -4,19 +4,22 @@
 \alias{coveragePerTiling}
 \title{Get coverage per group}
 \usage{
-coveragePerTiling(grl, reads)
+coveragePerTiling(grl, reads, is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}
 of 5' utrs or transcripts.}
 
 \item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc}
+
+\item{is.sorted}{logical (F), is grl sorted.}
 }
 \value{
 a Rle, one list per group with # of hits per position.
 }
 \description{
 It tiles each GRangesList group, and finds hits per position
+If grl is large (> 300K), it uses coverageByWindow.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

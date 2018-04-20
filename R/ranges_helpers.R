@@ -97,6 +97,10 @@ makeORFNames <- function(grl) {
 #' As a precaution, this function requires the unlisted objects to
 #' have names.
 #' @param grl a \code{\link{GRangesList}} object with names
+#' @param sort.on.return logical (T), should the groups be
+#'  sorted before return.
+#' @param matchNaming logical (T), should groups keep unlisted names
+#'  and meta data.(This make the list very big, for > 100K groups)
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @export
 #' @examples
@@ -111,7 +115,7 @@ makeORFNames <- function(grl) {
 #' grl <- GRangesList(tx1_1 = gr1, tx1_2 = gr2)
 #' tile1(grl)
 #'
-tile1 <- function(grl) {
+tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
   ORFs <- unlistGrl(grl)
   if (is.null(names(ORFs))) {
     stop("grl does not have names.")
@@ -132,6 +136,7 @@ tile1 <- function(grl) {
     }
   }
   # special case for only single grouped GRangesList
+  # This wastes a lot of memory for big lists!
   if (is.null(ORFs$names)) {
     if(length(ORFs) != length(grl)) {
       stop("wrong naming, could not find unique names")
@@ -141,10 +146,17 @@ tile1 <- function(grl) {
 
   tilex <- tile(ORFs, width =  1L)
   names(tilex) <- ORFs$names
-  tilex <- matchNaming(tilex, grl[1])
+  if (matchNaming) {
+    tilex <- matchNaming(tilex, grl[1])
+  } else {
+    tilex <- groupGRangesBy(unlistGrl(tilex))
+  }
+
   # only negative must be sorted
-  posIndices <- strandBool(tilex)
-  tilex[!posIndices] <- sortPerGroup(tilex[!posIndices])
+  if (sort.on.return) {
+    posIndices <- strandBool(tilex)
+    tilex[!posIndices] <- sortPerGroup(tilex[!posIndices])
+  }
   return(tilex)
 }
 
@@ -257,6 +269,7 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #' @return a GRangesList of downstream part
 #'
 downstreamOfPerGroup <- function(tx, downstreamOf) {
+  # Needs speed update!
   posIndices <- strandBool(tx)
   posEnds <- end(tx[posIndices])
   negEnds <- start(tx[!posIndices])
@@ -382,9 +395,11 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group, and finds hits per position
+#' If grl is large (> 300K), it uses coverageByWindow.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
+#' @param is.sorted logical (F), is grl sorted.
 #' @return a Rle, one list per group with # of hits per position.
 #' @export
 #' @examples
@@ -396,7 +411,11 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' coveragePerTiling(grl, RFP)
 #'
-coveragePerTiling <- function(grl, reads) {
+coveragePerTiling <- function(grl, reads, is.sorted = FALSE) {
+
+  if(length(grl) > 300000) { # faster version for big grl
+    return(coverageByWindow(reads, grl, is.sorted = is.sorted))
+  }
 
   unlTile <- unlistGrl(tile1(grl))
   if (!is.null(unlTile$names)) { # for orf case

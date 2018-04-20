@@ -1,11 +1,11 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 0.99.10
+Version: 0.99.11
 Authors@R: c(
   person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cre", "cph")),
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "dtc")),
-  person(given = "Katazyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
+  person(given = "Katarzyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
   person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")) )
 Description: Tools for manipulation of RiboSeq, RNASeq and CageSeq data. ORFik 
   is extremely fast through use of C, data.table and GenomicRanges. Package 

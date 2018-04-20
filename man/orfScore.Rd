@@ -4,13 +4,15 @@
 \alias{orfScore}
 \title{Get ORFscore for a GRangesList of ORFs}
 \usage{
-orfScore(grl, RFP)
+orfScore(grl, RFP, is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with ORFs}
 
 \item{RFP}{ribozomal footprints, given as Galignment object,
 Granges or GRangesList}
+
+\item{is.sorted}{logical (F), is grl sorted.}
 }
 \value{
 a matrix with 4 columns, the orfscore and score of
@@ -38,7 +40,8 @@ ORF <- GRanges(seqnames = "1",
                strand = "+")
 names(ORF) <- c("tx1", "tx1", "tx1")
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(25, 25), "+")
+RFP <- GRanges("1", IRanges(25, 25), "+") # 1 width position based
+score(RFP) <- 28 # original width
 orfScore(grl, RFP)
 
 }

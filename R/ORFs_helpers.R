@@ -120,6 +120,7 @@ txNames <- function(grl, unique = FALSE) {
   }
 
   if (is.null(names(grl))) {
+    # should the ! be removed here ?
     if (!is.grl(class(grl))) {
       otherPossibility <- unlist(grl, use.names = FALSE)$names
     } else {
@@ -130,15 +131,15 @@ txNames <- function(grl, unique = FALSE) {
       stop("grl have no valid orf names to convert")
     } else {
       if (unique) {
-        return(gsub("_[0-9]*", "", unique(otherPossibility)))
+        return(sub("_[0-9]*", "", unique(otherPossibility), perl = TRUE))
       }
-      return(gsub("_[0-9]*", "", otherPossibility))
+      return(sub("_[0-9]*", "", otherPossibility, perl = TRUE))
     }
   }
   if (unique) {
-    return(gsub("_[0-9]*", "", unique(names(grl))))
+    return(sub("_[0-9]*", "", unique(names(grl)), perl = TRUE))
   }
-  return(gsub("_[0-9]*", "", names(grl)))
+  return(sub("_[0-9]*", "", names(grl), perl = TRUE))
 }
 
 

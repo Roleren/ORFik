@@ -17,6 +17,7 @@
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @param RFP ribozomal footprints, given as Galignment object,
 #'  Granges or GRangesList
+#' @param is.sorted logical (F), is grl sorted.
 #' @importFrom data.table .SD
 #' @importFrom data.table .N
 #' @family features
@@ -29,44 +30,68 @@
 #'                strand = "+")
 #' names(ORF) <- c("tx1", "tx1", "tx1")
 #' grl <- GRangesList(tx1_1 = ORF)
-#' RFP <- GRanges("1", IRanges(25, 25), "+")
+#' RFP <- GRanges("1", IRanges(25, 25), "+") # 1 width position based
+#' score(RFP) <- 28 # original width
 #' orfScore(grl, RFP)
 #'
-orfScore <- function(grl, RFP) {
-  # tile the orfs into a d.t for easy seperation
-  dt <- as.data.table(tile1(grl))
+orfScore <- function(grl, RFP, is.sorted = FALSE) {
+  if(length(grl) > 300000) { # faster version for big grl
+    # reduce to unique orfs
+    ids <- orfID(grl)
 
-  group <- NULL
-  # seperate the three tiles, by the 3 frames
-  tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
-  grl1 <- makeGRangesListFromDataFrame(
-    tilex1, split.field = "group", names.field = "group_name")
-  tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
-  grl2 <- makeGRangesListFromDataFrame(
-    tilex2, split.field = "group", names.field = "group_name")
-  tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
-  grl3 <- makeGRangesListFromDataFrame(
-    tilex2, split.field = "group", names.field = "group_name")
+    sortedOrder <- data.table::chgroup(ids)
+    orderedIDs <- ids[sortedOrder]
+    l <- S4Vectors::Rle(orderedIDs)
+    grouping <- unlist(lapply(seq.int(nrun(l)), function(x) {
+      rep(x, runLength(l)[x])
+    }))
+    reOrdering <- grouping[order(sortedOrder)]
+    # find coverage
+    cov <- coverageByWindow(RFP, uniqueORFs(grl),
+                            is.sorted = is.sorted, keep.names = FALSE)
+    len <- lengths(cov)
+    positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
+    countsTile1 <- sum(cov[positionFrame])[reOrdering]
+    positionFrame <- lapply(len, function(x){seq.int(2, x, 3)})
+    countsTile2 <- sum(cov[positionFrame])[reOrdering]
+    positionFrame <- lapply(len, function(x){seq.int(3, x, 3)})
+    countsTile3 <- sum(cov[positionFrame])[reOrdering]
+  } else {
+    # tile the orfs into a d.t for easy seperation
+    dt <- as.data.table(tile1(grl, matchNaming = FALSE))
 
-  countsTile1 <- countOverlaps(grl1, RFP)
-  countsTile2 <- countOverlaps(grl2, RFP)
-  countsTile3 <- countOverlaps(grl3, RFP)
+    group <- NULL
+    # seperate the three tiles, by the 3 frames
+    tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
+    grl1 <- makeGRangesListFromDataFrame(
+      tilex1, split.field = "group")
+    tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
+    grl2 <- makeGRangesListFromDataFrame(
+      tilex2, split.field = "group")
+    tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
+    grl3 <- makeGRangesListFromDataFrame(
+      tilex3, split.field = "group")
+
+    countsTile1 <- countOverlaps(grl1, RFP)
+    countsTile2 <- countOverlaps(grl2, RFP)
+    countsTile3 <- countOverlaps(grl3, RFP)
+  }
 
   RP = countsTile1 + countsTile2 + countsTile3
 
   Ftotal <- RP/3
 
-  tile1 <- (countsTile1 - Ftotal)^2 / Ftotal
-  tile2 <- (countsTile2 - Ftotal)^2 / Ftotal
-  tile3 <- (countsTile3 - Ftotal)^2 / Ftotal
+  frame1 <- (countsTile1 - Ftotal)^2 / Ftotal
+  frame2 <- (countsTile2 - Ftotal)^2 / Ftotal
+  frame3 <- (countsTile3 - Ftotal)^2 / Ftotal
 
   dfORFs <- NULL
   dfORFs$frame_zero_RP <- countsTile1
   dfORFs$frame_one_RP <- countsTile2
   dfORFs$frame_two_RP <- countsTile3
 
-  ORFscore <- log2(tile1 + tile2 + tile3 + 1)
-  revORFscore <-  which(tile1 < tile2 | tile1 < tile3)
+  ORFscore <- log2(frame1 + frame2 + frame3 + 1)
+  revORFscore <-  which(frame1 < frame2 | frame1 < frame3)
   ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
   ORFscore[is.na(ORFscore)] <- 0
   dfORFs$ORFScores <- ORFscore
@@ -280,7 +305,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #'                   strand = "+")
 #'
 #' insideOutsideORF(grl, RFP, tx)
-
+#'
 insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   overlapGrl <- countOverlaps(grl, RFP) + 1
 
@@ -293,19 +318,18 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   }
   tx <- tx[txNames(grl, FALSE)]
 
-  grlStarts <- startSites(grl, asGR = FALSE)
-  grlStops <- stopSites(grl, asGR = FALSE)
+  grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
+  grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
 
   downstreamTx <- downstreamOfPerGroup(tx, grlStops)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
-  dtd <- as.data.table(downstreamTx)
-  dtu <- as.data.table(upstreamTx)
-  dtmerge <- data.table::rbindlist(l = list(dtu, dtd))
+
+  dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
+                                            as.data.table(downstreamTx)))
   group <- NULL # for avoiding warning
   txOutside <- makeGRangesListFromDataFrame(
-    dtmerge[order(group)], split.field = "group",
-    names.field = "group_name", keep.extra.columns = TRUE)
-  names(txOutside) <- names(tx)
+    dtmerge[order(group)], split.field = "group")
+  #names(txOutside) <- names(tx)
 
   overlapTxOutside <- countOverlaps(txOutside, RFP) + 1
   scores <- overlapGrl / overlapTxOutside
@@ -406,7 +430,8 @@ rankOrder <- function(grl) {
     }
   } else {
     orfName <- names(grl)
-    if (suppressWarnings(anyNA(as.integer(gsub(".*_", "", orfName))))) {
+    if (suppressWarnings(anyNA(as.integer(sub(".*_", "", orfName,
+                                              perl = TRUE))))) {
       if (!is.null(gr$names)) {
         orfName <- names(groupGRangesBy(gr, gr$names))
       }
@@ -419,7 +444,7 @@ rankOrder <- function(grl) {
   }
 
   if (is.null(orfName)) stop("grl must have column called names")
-  ranks <- as.integer(gsub(".*_", "", orfName))
+  ranks <- as.integer(sub(".*_", "", orfName, perl = TRUE))
   if (anyNA(ranks)) {
     stop("no valid names to find ranks, check for orf _* names eg.",
          "tx_1, tx_2.")
