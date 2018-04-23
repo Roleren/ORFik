@@ -79,7 +79,8 @@ subsetCoverage <- function(cov, y) {
 #'
 entropy <- function(grl, reads) {
   # Get count list of overlaps
-  countList <- coveragePerTiling(grl, reads, is.sorted = TRUE)
+  reOrdering <- uniqOrder(grl)
+  countList <- coveragePerTiling(uniqueGroups(grl), reads, is.sorted = TRUE)
   names(countList) <- NULL
 
   # generate the entropy variables
@@ -150,7 +151,7 @@ entropy <- function(grl, reads) {
   # non 0 entropy values set to HX / MHX
   entropy[validIndeces] <- Hx / MHx
   entropy[is.na(entropy)] <- 0
-  return(entropy)
+  return(entropy[reOrdering])
 }
 
 

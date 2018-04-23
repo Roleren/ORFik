@@ -443,7 +443,7 @@ test_that("stopCodons works as intended", {
   test_ranges <- stopCodons(grl, TRUE)
 })
 
-test_that("uniqueORFs works as intended", {
+test_that("uniqueGroups works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                        ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
@@ -464,7 +464,7 @@ test_that("uniqueORFs works as intended", {
   grl <- GRangesList(tx1_1 = ORFranges, tx2_1 = ORFranges2,
                      tx3_1 = ORFranges3)
 
-  test_ranges <- uniqueORFs(grl)
+  test_ranges <- uniqueGroups(grl)
 
   expect_is(test_ranges, "GRangesList")
   expect_equal(strandPerGroup(test_ranges,F)[1], "+")

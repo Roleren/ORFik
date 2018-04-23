@@ -351,8 +351,9 @@ orfID <- function(grl, with.tx = FALSE) {
 }
 
 
-#' Get the unique set of orfs
+#' Get the unique set of groups in a GRangesList
 #'
+#' Normally used for ORFs and leaders.
 #' Some orfs might be found several times, from different isoforms
 #' If you want to have the unique orfs, not seperated by which
 #' isoform it came from, use this function.
@@ -367,10 +368,9 @@ orfID <- function(grl, with.tx = FALSE) {
 #' gr2 <- GRanges("1", IRanges(20, 30), "+")
 #' # make a grl with duplicated ORFs (gr1 twice)
 #' grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
-#' uniqueORFs <- uniqueORFs(grl)
-#' length(grl)
-#' length(uniqueORFs)
-uniqueORFs <- function(grl) {
+#' uniqueGroups(grl)
+#'
+uniqueGroups <- function(grl) {
   ids <- orfID(grl)
   grl <- grl[!duplicated(ids)]
   gr <- unlist(grl, use.names = FALSE)
@@ -381,25 +381,29 @@ uniqueORFs <- function(grl) {
   return(grl)
 }
 
-#' Get map ordering from unique ORFs
+#' Get unique ordering for GRangesList groups
 #'
-#' If you use function uniqueORFs, you loose ordering
-#' from original set.
-#' This function is used to remember the original mapping.
-#' Usually used to cut down on number of calculations for features, etc.
+#' This function can be used to calculate unique numerical identifiers
+#' for each of the \code{\link{GRangesList}} elements. Elements of
+#' \code{\link{GRangesList}} are unique when the \code{\link{GRanges}}
+#' inside are not duplicated, so ranges differences matter as well as
+#' sorting of the ranges.
+#' @seealso uniqueGroups
 #' @param grl a \code{\link{GRangesList}}
-#' @return an integer vector
+#' @return an integer vector of indices of unique groups
 #' @export
 #' @examples
 #' gr1 <- GRanges("1", IRanges(1,10), "+")
 #' gr2 <- GRanges("1", IRanges(20, 30), "+")
 #' # make a grl with duplicated ORFs (gr1 twice)
 #' grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
-#' reOrdering <- mapORFOrdering(grl) # remember ordering
-#' uniqueORFs <- uniqueORFs(grl)
-#' # now map back
+#' uniqOrder(grl) # remember ordering
+#'
+#' # example on unique ORFs
+#' uniqueORFs <- uniqueGroups(grl)
+#' # now the orfs are unique, let's map back to original set:
 #' reMappedGrl <- uniqueORFs[reOrdering]
-mapORFOrdering <- function(grl){
+uniqOrder <- function(grl) {
   ids <- orfID(grl)
 
   sortedOrder <- data.table::chgroup(ids)
