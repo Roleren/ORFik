@@ -33,6 +33,7 @@ also sorted according to their genomic position, ready to be saved as a
 bed file.
 }
 \examples{
+\dontrun{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
@@ -44,4 +45,5 @@ shifts <- detectRibosomeShifts(footprints, txdb)
 # shift the RiboSeq footprints
 shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
                                 shifts$offsets_start)
+}
 }

@@ -20,6 +20,7 @@
 #' resizing.
 #' @export
 #' @examples
+#' \dontrun{
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
@@ -31,6 +32,7 @@
 #' # shift the RiboSeq footprints
 #' shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
 #'                                 shifts$offsets_start)
+#' }
 shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 
     selected_shifts <- -1 * selected_shifts
@@ -122,6 +124,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' coresponding offsets
 #' @export
 #' @examples
+#' \dontrun{
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
@@ -130,6 +133,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #'     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 #'
 #' detectRibosomeShifts(footprints, txdb, stop = TRUE)
+#' }
 #'
 detectRibosomeShifts <- function(
   footprints, txdb, start = TRUE, stop = FALSE,

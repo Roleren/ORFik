@@ -233,8 +233,8 @@ features. See example below.
   # Find all ORFs on those transcripts and get their genomic coordinates
   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
   unlistedORFs <- unlistGrl(fiveUTR_ORFs)
-  # group GRanges by ORFs instead of Transcripts
-  fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)
+  # group GRanges by ORFs instead of Transcripts, use 4 first ORFs
+  fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)[1:4]
 
   # make some toy ribo seq and rna seq data
   starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)

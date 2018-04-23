@@ -292,18 +292,10 @@ test_that("insideOutsideORF works as intended", {
 
 test_that("distToCds works as intended", {
 
-  scores <- distToCds(grl, fiveUTRs, extension = 0)
-  expect_is(scores, "numeric")
-  expect_equal(scores, c(19, 7, 1, 19))
-
-  scores <- distToCds(grl, fiveUTRs, cds, 0)
-  expect_is(scores, "numeric")
-  expect_equal(scores, c(19, 7, 1, 19))
-  # TODO: Decide if this is correct behavior ?
-  # My idea now is to keep it.
   scores <- distToCds(grl, fiveUTRs, cds, 5)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 19))
+
 })
 
 
@@ -331,33 +323,6 @@ test_that("rankOrder works as intended", {
 
 
 test_that("computeFeatures works as intended", {
-
-  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP5, RNA = RNA,
-                            tx = tx, fiveUTRs = fiveUTRs, cds = cds,
-                            threeUTRs = threeUTRs, riboStart = 26, riboStop = 34,
-                            extension = 5, cageFiveUTRs = fiveUTRs)
-  expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 15)
-  expect_equal(nrow(dt), 4)
-
-  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP5GAlign,
-                            RNA = RNAGAlign, tx = tx, fiveUTRs = fiveUTRs,
-                            cds = cds, threeUTRs = threeUTRs, riboStart = 26,
-                            riboStop = 34, extension = 5,
-                            cageFiveUTRs = fiveUTRs)
-  expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 15)
-  expect_equal(nrow(dt), 4)
-
-  # only nonvarying by Ribo-seq
-  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP5GAlign,
-                            RNA = RNAGAlign, tx = tx, fiveUTRs = fiveUTRs,
-                            cds = cds, threeUTRs = threeUTRs, riboStart = 26,
-                            riboStop = 34, extension = 5,
-                            cageFiveUTRs = fiveUTRs, includeNonVarying = FALSE)
-  expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 10)
-  expect_equal(nrow(dt), 4)
 
   # test from example table in orfik
   dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP7,

@@ -753,7 +753,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
     scores$fpkmRFP <- fpkm(grl, RFP)
   }
   if (orfFeatures) { # if features are found for orfs
-    scores$ORFScores <- orfScore(grl, RFP)$ORFScores
+    scores$ORFScores <- orfScore(grl, RFP, is.sorted = TRUE)$ORFScores
     scores$ioScore <- insideOutsideORF(grl, RFP, tx)
 
     if (includeNonVarying) {

@@ -55,6 +55,7 @@ and stop codons, so that you can verify visually whether this function
 detects correct shifts.
 }
 \examples{
+\dontrun{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
@@ -63,5 +64,6 @@ footprints <- GenomicAlignments::readGAlignments(
     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 
 detectRibosomeShifts(footprints, txdb, stop = TRUE)
+}
 
 }
