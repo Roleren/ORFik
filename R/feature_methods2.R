@@ -42,7 +42,7 @@
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
   if(length(grl) > 300000) { # faster version for big grl
     # reduce to unique orfs
-    reOrdering <- uniqOrder(grl)
+    reOrdering <- uniqueOrder(grl)
     # find coverage
     cov <- coverageByWindow(RFP, uniqueGroups(grl),
                             is.sorted = is.sorted, keep.names = FALSE)

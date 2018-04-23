@@ -13,14 +13,10 @@ uniqueGroups(grl)
 a GRangesList of unique orfs
 }
 \description{
-Normally used for ORFs and leaders.
-Some orfs might be found several times, from different isoforms
-If you want to have the unique orfs, not seperated by which
-isoform it came from, use this function.
-}
-\details{
-You will lose the transcript and name information, since
-they no longer map to a transcript, but are now general.
+Sometimes \code{\link{GRangesList}} groups might be identical,
+for example ORFs from different isoforms can have identical ranges.
+Use this function to reduce these groups to unique elements
+in \code{\link{GRangesList}} \code{grl}, without names and metacolumns.
 }
 \examples{
 gr1 <- GRanges("1", IRanges(1,10), "+")

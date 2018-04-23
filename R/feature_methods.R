@@ -79,7 +79,7 @@ subsetCoverage <- function(cov, y) {
 #'
 entropy <- function(grl, reads) {
   # Get count list of overlaps
-  reOrdering <- uniqOrder(grl)
+  reOrdering <- uniqueOrder(grl)
   countList <- coveragePerTiling(uniqueGroups(grl), reads, is.sorted = TRUE)
   names(countList) <- NULL
 

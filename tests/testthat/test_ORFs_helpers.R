@@ -473,3 +473,11 @@ test_that("uniqueGroups works as intended", {
 
 })
 
+test_that("uniqueOrder works as intended", {
+  gr1 <- GRanges("1", IRanges(1,10), "+")
+  gr2 <- GRanges("1", IRanges(20, 30), "+")
+  # make a grl with duplicated ORFs (gr1 twice)
+  grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
+  test_result <- uniqueOrder(grl) # remember ordering
+  identical(test_result, as.integer(c(1,2,1)))
+})
