@@ -79,7 +79,8 @@ subsetCoverage <- function(cov, y) {
 #'
 entropy <- function(grl, reads) {
   # Get count list of overlaps
-  countList <- coveragePerTiling(grl, reads, is.sorted = TRUE)
+  reOrdering <- uniqueOrder(grl)
+  countList <- coveragePerTiling(uniqueGroups(grl), reads, is.sorted = TRUE)
   names(countList) <- NULL
 
   # generate the entropy variables
@@ -145,12 +146,12 @@ entropy <- function(grl, reads) {
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
 
-  entropy <- rep(0.0, length(grl))
+  entropy <- rep(0.0, length(unique(reOrdering)))
 
   # non 0 entropy values set to HX / MHX
   entropy[validIndeces] <- Hx / MHx
   entropy[is.na(entropy)] <- 0
-  return(entropy)
+  return(entropy[reOrdering])
 }
 
 
@@ -712,7 +713,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' # make Ribo-seq data,
 #' RFP <- unlistGrl(firstExonPerGroup(ORFs))
 #' suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
-#' # For more details see vignettes.
+#' # For more thorough examples, see vignettes.
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,

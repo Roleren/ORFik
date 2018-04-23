@@ -42,6 +42,11 @@ names(ORF) <- c("tx1", "tx1", "tx1")
 grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25), "+") # 1 width position based
 score(RFP) <- 28 # original width
+orfScore(grl, RFP) # negative because more hits on frames 1,2 than 0.
+
+# example with positive result, more hits on frame 0 (in frame of ORF)
+RFP <- GRanges("1", IRanges(c(1, 1, 1, 25), width = 1), "+")
+score(RFP) <- c(28, 29, 31, 28) # original width
 orfScore(grl, RFP)
 
 }

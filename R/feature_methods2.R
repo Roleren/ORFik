@@ -32,30 +32,35 @@
 #' grl <- GRangesList(tx1_1 = ORF)
 #' RFP <- GRanges("1", IRanges(25, 25), "+") # 1 width position based
 #' score(RFP) <- 28 # original width
+#' orfScore(grl, RFP) # negative because more hits on frames 1,2 than 0.
+#'
+#' # example with positive result, more hits on frame 0 (in frame of ORF)
+#' RFP <- GRanges("1", IRanges(c(1, 1, 1, 25), width = 1), "+")
+#' score(RFP) <- c(28, 29, 31, 28) # original width
 #' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
   if(length(grl) > 300000) { # faster version for big grl
     # reduce to unique orfs
-    ids <- orfID(grl)
-
-    sortedOrder <- data.table::chgroup(ids)
-    orderedIDs <- ids[sortedOrder]
-    l <- S4Vectors::Rle(orderedIDs)
-    grouping <- unlist(lapply(seq.int(nrun(l)), function(x) {
-      rep(x, runLength(l)[x])
-    }))
-    reOrdering <- grouping[order(sortedOrder)]
+    reOrdering <- uniqueOrder(grl)
     # find coverage
-    cov <- coverageByWindow(RFP, uniqueORFs(grl),
+    cov <- coverageByWindow(RFP, uniqueGroups(grl),
                             is.sorted = is.sorted, keep.names = FALSE)
+    # only do ORFs that have hits
+    withHits <- sum(cov) > 0
+    cov <- cov[withHits]
+    countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(cov))
     len <- lengths(cov)
+    # use ORFik entropy style calculations in next iteration
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
-    countsTile1 <- sum(cov[positionFrame])[reOrdering]
+    countsTile1[withHits] <- sum(cov[positionFrame])
+    countsTile1 <- countsTile1[reOrdering] # correct order and size
     positionFrame <- lapply(len, function(x){seq.int(2, x, 3)})
-    countsTile2 <- sum(cov[positionFrame])[reOrdering]
+    countsTile2[withHits] <- sum(cov[positionFrame])
+    countsTile2 <- countsTile2[reOrdering]
     positionFrame <- lapply(len, function(x){seq.int(3, x, 3)})
-    countsTile3 <- sum(cov[positionFrame])[reOrdering]
+    countsTile3[withHits] <- sum(cov[positionFrame])
+    countsTile3 <- countsTile3[reOrdering]
   } else {
     # tile the orfs into a d.t for easy seperation
     dt <- as.data.table(tile1(grl, matchNaming = FALSE))

@@ -59,7 +59,7 @@ ORFs <- makeORFNames(ORFs) # need ORF names
 # make Ribo-seq data,
 RFP <- unlistGrl(firstExonPerGroup(ORFs))
 suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
-# For more details see vignettes.
+# For more thorough examples, see vignettes.
 
 }
 \seealso{
