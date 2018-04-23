@@ -146,7 +146,7 @@ entropy <- function(grl, reads) {
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
 
-  entropy <- rep(0.0, length(grl))
+  entropy <- rep(0.0, length(unique(reOrdering)))
 
   # non 0 entropy values set to HX / MHX
   entropy[validIndeces] <- Hx / MHx

@@ -29,7 +29,7 @@ uniqOrder(grl) # remember ordering
 # example on unique ORFs
 uniqueORFs <- uniqueGroups(grl)
 # now the orfs are unique, let's map back to original set:
-reMappedGrl <- uniqueORFs[reOrdering]
+reMappedGrl <- uniqueORFs[uniqOrder(grl)]
 }
 \seealso{
 uniqueGroups
