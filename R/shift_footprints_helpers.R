@@ -250,8 +250,8 @@ getStartStopWindows <- function(
   } else {
     cds <- cds[txNames]
   }
-  cdsTiled <- tile1(cds)
-  cdsTiled <- removeMetaCols(cdsTiled) # so that all can match
+  cdsTiled <- tile1(cds, matchNaming = FALSE)
+
   if (start) {
     fiveUTRs <- GenomicFeatures::fiveUTRsByTranscript(
       txdb, use.names=TRUE)[txNames]

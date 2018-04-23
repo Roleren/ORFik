@@ -193,8 +193,10 @@ test_that("findMapORFs works as intended for minus strand", {
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
   expect_equal(strandPerGroup(test_ranges,F)[1], "-")
-  expect_equal(as.integer(unlist(start(test_ranges))), c(10, 21, 1011, 1010, 1012))
-  expect_equal(as.integer(unlist(end(test_ranges))), c(19, 22, 1019, 1018, 1017))
+  expect_equal(as.integer(unlist(start(test_ranges))),
+               c(10, 21, 1011, 1010, 1012))
+  expect_equal(as.integer(unlist(end(test_ranges))),
+               c(19, 22, 1019, 1018, 1017))
   expect_equal(as.integer(unlist(width(test_ranges))), c(10, 2, 9, 9, 6))
   expect_equal(sum(widthPerGroup(test_ranges) %% 3), 0)
 })
@@ -479,5 +481,5 @@ test_that("uniqueOrder works as intended", {
   # make a grl with duplicated ORFs (gr1 twice)
   grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
   test_result <- uniqueOrder(grl) # remember ordering
-  identical(test_result, as.integer(c(1,2,1)))
+  expect_equal(test_result, as.integer(c(1,2,1)))
 })

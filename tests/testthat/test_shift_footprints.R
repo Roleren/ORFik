@@ -13,17 +13,14 @@ footprints <- GenomicAlignments::readGAlignments(
   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 
-test_that("detectRibosomeShifts works as intended", {
+test_that("ribosome shifting works as intended", {
 
   shifts <- detectRibosomeShifts(footprints, txdb)
   expect_is(shifts, "data.frame")
   expect_equal(shifts$fragment_length, c(28, 29, 30))
   expect_equal(shifts$offsets_start, c(-11, -12, -13))
-})
 
-
-test_that("shiftFootprints works as intended", {
-  shifts <- detectRibosomeShifts(footprints, txdb)
+  # shiftFootprints
   shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
                                   shifts$offsets_start)
 
