@@ -361,7 +361,15 @@ orfID <- function(grl, with.tx = FALSE) {
 #' they no longer map to a transcript, but are now general.
 #' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList of unique orfs
-#'
+#' @export
+#' @examples
+#' gr1 <- GRanges("1", IRanges(1,10), "+")
+#' gr2 <- GRanges("1", IRanges(20, 30), "+")
+#' # make a grl with duplicated ORFs (gr1 twice)
+#' grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
+#' uniqueORFs <- uniqueORFs(grl)
+#' length(grl)
+#' length(uniqueORFs)
 uniqueORFs <- function(grl) {
   ids <- orfID(grl)
   grl <- grl[!duplicated(ids)]
@@ -371,4 +379,35 @@ uniqueORFs <- function(grl) {
   grl <- relist(gr, grl)
   names(grl) <- seq(1, length(grl))
   return(grl)
+}
+
+#' Get map ordering from unique ORFs
+#'
+#' If you use function uniqueORFs, you loose ordering
+#' from original set.
+#' This function is used to remember the original mapping.
+#' Usually used to cut down on number of calculations for features, etc.
+#' @param grl a \code{\link{GRangesList}}
+#' @return an integer vector
+#' @export
+#' @examples
+#' gr1 <- GRanges("1", IRanges(1,10), "+")
+#' gr2 <- GRanges("1", IRanges(20, 30), "+")
+#' # make a grl with duplicated ORFs (gr1 twice)
+#' grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
+#' reOrdering <- mapORFOrdering(grl) # remember ordering
+#' uniqueORFs <- uniqueORFs(grl)
+#' # now map back
+#' reMappedGrl <- uniqueORFs[reOrdering]
+mapORFOrdering <- function(grl){
+  ids <- orfID(grl)
+
+  sortedOrder <- data.table::chgroup(ids)
+  orderedIDs <- ids[sortedOrder]
+  l <- S4Vectors::Rle(orderedIDs)
+  grouping <- unlist(lapply(seq.int(nrun(l)), function(x) {
+    rep(x, runLength(l)[x])
+  }))
+  reOrdering <- grouping[order(sortedOrder)]
+  return(reOrdering)
 }

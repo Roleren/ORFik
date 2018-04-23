@@ -712,7 +712,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' # make Ribo-seq data,
 #' RFP <- unlistGrl(firstExonPerGroup(ORFs))
 #' suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
-#' # For more details see vignettes.
+#' # For more thorough examples, see vignettes.
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,

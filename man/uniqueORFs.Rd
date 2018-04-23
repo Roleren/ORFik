@@ -21,3 +21,12 @@ isoform it came from, use this function.
 You will lose the transcript and name information, since
 they no longer map to a transcript, but are now general.
 }
+\examples{
+gr1 <- GRanges("1", IRanges(1,10), "+")
+gr2 <- GRanges("1", IRanges(20, 30), "+")
+# make a grl with duplicated ORFs (gr1 twice)
+grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
+uniqueORFs <- uniqueORFs(grl)
+length(grl)
+length(uniqueORFs)
+}
