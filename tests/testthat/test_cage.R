@@ -46,18 +46,6 @@ test_that("reassignTSSbyCage picks all needed peaks, no more, no less", {
 
 })
 
-test_that("reassignTSSbyCage picks all needed peaks, no more, no less", {
-
-  test_result <- reassignTSSbyCage(fiveUTRs[1:2], cage = cage, cds = cds )
-
-  expect_is(test_result, "GRangesList")
-  expect_is(strand(test_result), "CompressedRleList")
-  expect_is(seqnames(test_result), "CompressedRleList")
-  expect_equal(length(test_result), 2)
-  expect_equal(as.integer(unlist(start(test_result))), c(32670736, 32670736))
-  expect_equal(as.integer(unlist(end(test_result))), c(32671324, 32671564))
-
-})
 fiveAsGR <- unlist(fiveUTRs, use.names = TRUE)
 cage <- GRanges(seqnames = c("1","1","2","2","3","3"),
                 ranges =  IRanges(as.integer(start(fiveAsGR)[1 : 6] -500) ,
