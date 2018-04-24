@@ -21,7 +21,6 @@ a Rle, one list per group with # of hits per position.
 }
 \description{
 It tiles each GRangesList group, and finds hits per position
-If grl is large (> 10K groups), it uses coverageByWindow.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

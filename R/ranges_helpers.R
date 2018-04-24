@@ -395,7 +395,6 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group, and finds hits per position
-#' If grl is large (> 10K groups), it uses coverageByWindow.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
@@ -415,7 +414,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE) {
 
-  if(length(grl) > 10000) { # faster version for big grl
+  if (length(grl) > 10000) { # faster version for big grl
     return(coverageByWindow(reads, grl, is.sorted = is.sorted,
                             keep.names = keep.names))
   }

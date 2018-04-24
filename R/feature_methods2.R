@@ -40,7 +40,7 @@
 #' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
-  if(length(grl) > 50000) { # faster version for big grl
+  if (length(grl) > 50000) { # faster version for big grl
     # only do ORFs that have hits
     validIndices <- hasHits(grl, RFP)
     if (!any(validIndices)) { # no variance in countList, 0 entropy

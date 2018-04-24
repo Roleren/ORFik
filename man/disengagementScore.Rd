@@ -13,9 +13,10 @@ with usually either leaders, cds', 3' utrs or ORFs.}
 \item{RFP}{RiboSeq reads as GAlignment, GRanges
 or GRangesList object}
 
-\item{GtfOrTx}{if is a TxDb object of a gtf file or transcripts GRangesList
-called from: `exonsBy(Gtf, by = "tx", use.names = TRUE)`,
-if it is a GRL it is used as is}
+\item{GtfOrTx}{If it is \code{\link{TxDb}} object
+transcripts will be extracted using
+\code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
+Else it must be \code{\link{GRangesList}}}
 }
 \value{
 a named vector of numeric values of scores

@@ -78,7 +78,6 @@ subsetCoverage <- function(cov, y) {
 #' entropy(cds, RFP)
 #'
 entropy <- function(grl, reads) {
-  # This function is very confusing, will try to make it easier to read.
   # Get count list of groups with hits
   validIndices <- hasHits(grl, reads)
   if (!any(validIndices)) { # no variance in countList, 0 entropy
@@ -357,9 +356,10 @@ fractionLength <- function(grl, tx_len){
 #' with usually either leaders, cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignment, GRanges
 #' or GRangesList object
-#' @param GtfOrTx if is a TxDb object of a gtf file or transcripts GRangesList
-#'  called from: `exonsBy(Gtf, by = "tx", use.names = TRUE)`,
-#'  if it is a GRL it is used as is
+#' @param GtfOrTx If it is \code{\link{TxDb}} object
+#'  transcripts will be extracted using
+#'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
+#'  Else it must be \code{\link{GRangesList}}
 #' @return a named vector of numeric values of scores
 #' @export
 #' @family features
