@@ -78,21 +78,19 @@ subsetCoverage <- function(cov, y) {
 #' entropy(cds, RFP)
 #'
 entropy <- function(grl, reads) {
-  # Get count list of overlaps
+  # Get count list of groups with hits
+  validIndices <- hasHits(grl, reads)
+  if (!any(validIndices)) { # no variance in countList, 0 entropy
+    return(rep(0, length(validIndices)))
+  }
+  # get coverage per group
+  grl <- grl[validIndices]
   reOrdering <- uniqueOrder(grl)
-  countList <- coveragePerTiling(uniqueGroups(grl), reads, is.sorted = TRUE)
-  names(countList) <- NULL
+  countList <- coveragePerTiling(uniqueGroups(grl), reads, is.sorted = TRUE,
+                                 keep.names = FALSE)
 
   # generate the entropy variables
-  sums <- sum(countList)
-  if (sum(as.numeric(sums)) == 0) { # no variance in countList, 0 entropy
-    return(rep(0, length(grl)))
-  }
-  N <- unlist(sums, use.names = FALSE)
-  # get indeces where entropy is not 0
-  validIndeces <- N > 0
-  N <- N[validIndeces] # <- sums not 0
-  countList <- countList[validIndeces]
+  N <- unlist(sum(countList), use.names = FALSE)
 
   lengths <- lengths(countList)
   reg_len <- rep(3, length(lengths)) # tuplets per orf
@@ -109,12 +107,12 @@ entropy <- function(grl, reads) {
   # if h[1] is: c(1,2,3,4,5,6) and reg_len[1] is: c(3,3)
   # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
   h <- lapply(reg_counts, function(x) {
-    0:(x-1)
+    seq.int(0, x-1)
   })
 
   runLengths <- lengths(IRanges::RleList(h))
   # get sequence from valid indeces, not same as seq_len().
-  indeces <- seq(runLengths)
+  indeces <- seq_along(runLengths)
   # stop here
   tripletSums <- codonSumsPerGroup(h, indeces, L, N, reg_len,
                                    runLengths, countList)
@@ -146,12 +144,13 @@ entropy <- function(grl, reads) {
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
 
-  entropy <- rep(0.0, length(unique(reOrdering)))
-
+  entropy <- rep(0.0, length(validIndices))
   # non 0 entropy values set to HX / MHX
-  entropy[validIndeces] <- Hx / MHx
-  entropy[is.na(entropy)] <- 0
-  return(entropy[reOrdering])
+  tempEntro <- Hx / MHx
+  tempEntro[is.na(tempEntro)] <- 0.
+  tempEntro <- tempEntro[reOrdering] # order back from unique
+  entropy[validIndices] <- tempEntro # order back from hits
+  return(entropy)
 }
 
 
@@ -357,8 +356,10 @@ fractionLength <- function(grl, tx_len){
 #' with usually either leaders, cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignment, GRanges
 #' or GRangesList object
-#' @param GtfOrTx if is a TxDb object of a gtf file, transcripts, called from:
-#'  `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if is a GRL is used as is
+#' @param GtfOrTx If it is \code{\link{TxDb}} object
+#'  transcripts will be extracted using
+#'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
+#'  Else it must be \code{\link{GRangesList}}
 #' @return a named vector of numeric values of scores
 #' @export
 #' @family features
@@ -380,17 +381,25 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
+  # exclude non hits and set them to 0
+  validIndices <- hasHits(tx[txNames(grl)], RFP)
+  if (!any(validIndices)) { # if no hits
+    score <- countOverlaps(grl, RFP) + 1
+    names(score) <- NULL
+    return(score)
+  }
+  overlapDownstream <- rep(1, length(grl))
 
   grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
-  downstreamTx <- downstreamOfPerGroup(tx[txNames(grl, FALSE)], grlStops)
+  downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
+                                       grlStops[validIndices])
 
   overlapGrl <- countOverlaps(grl, RFP) + 1
-  overlapDownstream <- countOverlaps(downstreamTx, RFP) + 1
+  overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
   return(score)
 }
-
 
 #' Ribosome Release Score (RRS)
 #'
@@ -703,6 +712,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' @examples
 #' # Usually the ORFs are found in orfik, which makes names for you etc.
 #' # Here we make an example from scratch
+#' \dontrun{
 #' gtf <- system.file("extdata", "annotations.gtf",
 #' package = "ORFik") ## location of the gtf file
 #' suppressWarnings(txdb <-
@@ -714,6 +724,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' RFP <- unlistGrl(firstExonPerGroup(ORFs))
 #' suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
 #' # For more thorough examples, see vignettes.
+#' }
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,

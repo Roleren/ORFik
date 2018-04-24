@@ -40,27 +40,33 @@
 #' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
-  if(length(grl) > 300000) { # faster version for big grl
+  if (length(grl) > 50000) { # faster version for big grl
+    # only do ORFs that have hits
+    validIndices <- hasHits(grl, RFP)
+    if (!any(validIndices)) { # no variance in countList, 0 entropy
+      frame_zero_RP <- frame_one_RP <- frame_two_RP <-
+        ORFScores <- rep(0, length(grl))
+      return(data.table(frame_zero_RP, frame_one_RP, frame_two_RP, ORFScores))
+    }
     # reduce to unique orfs
+    grl <- grl[validIndices]
     reOrdering <- uniqueOrder(grl)
     # find coverage
     cov <- coverageByWindow(RFP, uniqueGroups(grl),
                             is.sorted = is.sorted, keep.names = FALSE)
-    # only do ORFs that have hits
-    withHits <- sum(cov) > 0
-    cov <- cov[withHits]
-    countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(cov))
+
+    countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(validIndices))
     len <- lengths(cov)
-    # use ORFik entropy style calculations in next iteration
+    # make the 3 frames
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
-    countsTile1[withHits] <- sum(cov[positionFrame])
-    countsTile1 <- countsTile1[reOrdering] # correct order and size
+    tempTile <- sum(cov[positionFrame])[reOrdering]
+    countsTile1[validIndices] <- tempTile # correct order and size
     positionFrame <- lapply(len, function(x){seq.int(2, x, 3)})
-    countsTile2[withHits] <- sum(cov[positionFrame])
-    countsTile2 <- countsTile2[reOrdering]
+    tempTile <- sum(cov[positionFrame])[reOrdering]
+    countsTile2[validIndices] <- tempTile
     positionFrame <- lapply(len, function(x){seq.int(3, x, 3)})
-    countsTile3[withHits] <- sum(cov[positionFrame])
-    countsTile3 <- countsTile3[reOrdering]
+    tempTile <- sum(cov[positionFrame])[reOrdering]
+    countsTile3[validIndices] <- tempTile
   } else {
     # tile the orfs into a d.t for easy seperation
     dt <- as.data.table(tile1(grl, matchNaming = FALSE))
@@ -321,7 +327,15 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
-  tx <- tx[txNames(grl, FALSE)]
+  # find tx with hits
+  tx <- tx[txNames(grl)]
+  validIndices <- hasHits(tx, RFP)
+  if (!any(validIndices)) { # if no hits
+    names(overlapGrl) <- NULL
+    return(overlapGrl)
+  }
+  tx <- tx[validIndices]
+  grl <- grl[validIndices]
 
   grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
   grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
@@ -334,9 +348,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   group <- NULL # for avoiding warning
   txOutside <- makeGRangesListFromDataFrame(
     dtmerge[order(group)], split.field = "group")
-  #names(txOutside) <- names(tx)
-
-  overlapTxOutside <- countOverlaps(txOutside, RFP) + 1
+  overlapTxOutside <- rep(1, length(validIndices))
+  overlapTxOutside[validIndices] <- countOverlaps(txOutside, RFP) + 1
   scores <- overlapGrl / overlapTxOutside
   names(scores) = NULL
   return(scores)
