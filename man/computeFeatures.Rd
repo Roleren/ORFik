@@ -49,6 +49,7 @@ therefore be carefull.
 \examples{
 # Usually the ORFs are found in orfik, which makes names for you etc.
 # Here we make an example from scratch
+\dontrun{
 gtf <- system.file("extdata", "annotations.gtf",
 package = "ORFik") ## location of the gtf file
 suppressWarnings(txdb <-
@@ -60,6 +61,7 @@ ORFs <- makeORFNames(ORFs) # need ORF names
 RFP <- unlistGrl(firstExonPerGroup(ORFs))
 suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
 # For more thorough examples, see vignettes.
+}
 
 }
 \seealso{

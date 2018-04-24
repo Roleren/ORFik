@@ -42,7 +42,7 @@
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
   if(length(grl) > 50000) { # faster version for big grl
     # only do ORFs that have hits
-    validIndices <- hasHits(grl, reads)
+    validIndices <- hasHits(grl, RFP)
     if (!any(validIndices)) { # no variance in countList, 0 entropy
       frame_zero_RP <- frame_one_RP <- frame_two_RP <-
         ORFScores <- rep(0, length(grl))
