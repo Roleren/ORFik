@@ -395,11 +395,12 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group, and finds hits per position
-#' If grl is large (> 300K), it uses coverageByWindow.
+#' If grl is large (> 10K groups), it uses coverageByWindow.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
 #' @param is.sorted logical (F), is grl sorted.
+#' @param keep.names logical (T), keep names or not.
 #' @return a Rle, one list per group with # of hits per position.
 #' @export
 #' @examples
@@ -411,13 +412,15 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' coveragePerTiling(grl, RFP)
 #'
-coveragePerTiling <- function(grl, reads, is.sorted = FALSE) {
+coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
+                              keep.names = TRUE) {
 
-  if(length(grl) > 300000) { # faster version for big grl
-    return(coverageByWindow(reads, grl, is.sorted = is.sorted))
+  if(length(grl) > 10000) { # faster version for big grl
+    return(coverageByWindow(reads, grl, is.sorted = is.sorted,
+                            keep.names = keep.names))
   }
 
-  unlTile <- unlistGrl(tile1(grl))
+  unlTile <- unlistGrl(tile1(grl, matchNaming = FALSE))
   if (!is.null(unlTile$names)) { # for orf case
     names(unlTile) <- unlTile$names
   }
@@ -427,7 +430,11 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE) {
   names <- names(counts)
   names(counts) <- NULL
   countList <- split(counts, names)
-
+  if (!keep.names) {
+    countList <- IRanges::RleList(countList)
+    names(countList) <- NULL
+    return(countList)
+  }
   return(IRanges::RleList(countList))
 }
 

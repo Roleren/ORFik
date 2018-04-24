@@ -103,7 +103,7 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE,
   if (keep.names) {
     mcols(ans) <- mcols(windows)
   } else {
-    names(ans) <- NULL # can save up to 95% space
+    names(ans) <- NULL # can save up to 95% space, increases with size.
   }
 
   return(ans)

@@ -113,6 +113,21 @@ fpkm_calc <- function(counts, lengthSize, librarySize){
            (as.numeric(lengthSize) * as.numeric(librarySize)))
 }
 
+#' Hits from reads
+#'
+#' Finding GRanges groups that have overlap hits with reads
+#' @param grl a GRanges or GRangesList
+#' @param reads a GAlignment or GRanges object with reads
+#' @param keep.names logical (F), keep names or not
+#' @return a list of logicals, T == hit, F == no hit
+#'
+hasHits <- function(grl, reads, keep.names = FALSE) {
+  overlaps <- countOverlaps(grl, reads)
+  if (!keep.names) {
+    names(overlaps) <- NULL
+  }
+  return(overlaps > 0)
+}
 
 #' Helper Function to check valid RNA input
 #' @param class, the given class of RNA object

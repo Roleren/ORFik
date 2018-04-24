@@ -144,10 +144,6 @@ threeUTRs <- GRangesList(tx1 = threeUTRs1, tx2 = threeUTRs2, tx4 = threeUTRs4)
 
 test_that("entropy works as intended", {
 
-  entropy <- entropy(grl, RFP)
-  expect_is(entropy, "numeric")
-  expect_equal(round(entropy, 2), c(1.00, 1.00, 0.93, 0.00))
-
   entropy <- entropy(grl, RFP2)
   expect_is(entropy, "numeric")
   expect_equal(entropy, c(0, 0, 0, 0))
@@ -163,10 +159,6 @@ test_that("entropy works as intended", {
 
 test_that("orfScore works as intended", {
 
-  scores <- orfScore(grl, RFP)
-  expect_is(scores, "list")
-  expect_equal(as.numeric(scores$ORFScores), c(0, 0, 0, 0))
-
   scores <- orfScore(grl, RFP4)
   expect_is(scores, "list")
   expect_equal(as.numeric(round(scores$ORFScores, 2)), c(1.58, 0.00, 0.00, 0.00))
@@ -178,10 +170,6 @@ test_that("orfScore works as intended", {
 })
 
 test_that("fractionLength works as intended", {
-
-  scores <- fractionLength(grl, tx_len)
-  expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.09, 0.10, 0.10, 0.10))
 
   changedtx_len <- tx_len
   changedtx_len[2] <- 300
@@ -202,10 +190,6 @@ test_that("disengagementScore works as intended", {
   scores <- disengagementScore(grl, RFP, GtfOrTx = tx)
   expect_is(scores, "numeric")
   expect_equal(scores, c(1, 2, 3, 1))
-
-  scores <- disengagementScore(grl, RFP2, GtfOrTx = tx)
-  expect_is(scores, "numeric")
-  expect_equal(scores, c(1, 1, 1, 1))
 
   scores <- disengagementScore(grl, RFP7, GtfOrTx = tx)
   expect_is(scores, "numeric")
@@ -245,10 +229,6 @@ test_that("ribosomeStallingScore works as intended", {
 
 test_that("floss works as intended", {
 
-  scores <- floss(grl, RFP5, cds, 26, 34)
-  expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.25, 0.08, 0.08, 0.00))
-
   scores <- floss(grl, RFP2, cds, 26, 34)
   expect_is(scores, "numeric")
   expect_equal(scores, c(0, 0, 0, 0))
@@ -280,10 +260,6 @@ test_that("insideOutsideORF works as intended", {
   scores <- insideOutsideORF(grl, RFP, tx)
   expect_is(scores, "numeric")
   expect_equal(scores, c(0.8, 0.8, 0.6, 1.0))
-
-  scores <- insideOutsideORF(grl, RFP2, tx)
-  expect_is(scores, "numeric")
-  expect_equal(scores, c(1, 1, 1, 1))
 
   scores <- insideOutsideORF(grl, RFP7, tx)
   expect_is(scores, "numeric")
