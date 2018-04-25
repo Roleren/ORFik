@@ -46,7 +46,6 @@ subsetCoverage <- function(cov, y) {
   return(as.vector(cov1[ranges(y)]))
 }
 
-
 #' Calucalte entropy value of overlapping input reads.
 #'
 #' Calculates entropy of the `reads` coverage over each `grl` group.
@@ -90,56 +89,40 @@ entropy <- function(grl, reads) {
                                  keep.names = FALSE)
 
   # generate the entropy variables
-  N <- unlist(sum(countList), use.names = FALSE)
+  # Number of hits per group
+  N <- sum(countList)
+  # length per group
+  L <- lengths(countList)
+  reg_len <- rep.int(3, length(L)) # tuples per orf, start on 3
 
-  lengths <- lengths(countList)
-  reg_len <- rep(3, length(lengths)) # tuplets per orf
-  L <- unlist(lengths)
   # which ORFs should not have tuplet length of 3
+  # is hits < length
   bool <- N <= L
   floors <- floor(L / N)
   reg_len[bool] <- floors[bool]
   reg_counts <- as.integer(L / reg_len) # number of tuplets per orf
+  runLengths <- reg_counts
 
-  # Need to reassign variables to equal length,
-  # to be able to vectorize
-  # h: The sequences we make the tuplets per orf,
-  # if h[1] is: c(1,2,3,4,5,6) and reg_len[1] is: c(3,3)
-  # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
-  h <- lapply(reg_counts, function(x) {
-    seq.int(0, x-1)
-  })
+  tripletSums <- codonSumsPerGroup(countList, reg_len, runLengths)
 
-  runLengths <- lengths(IRanges::RleList(h))
-  # get sequence from valid indeces, not same as seq_len().
-  indeces <- seq_along(runLengths)
-  # stop here
-  tripletSums <- codonSumsPerGroup(h, indeces, L, N, reg_len,
-                                   runLengths, countList)
-
-  N <- unlist(lapply(indeces, function(x) {
-    rep(N[x], reg_counts[x])
-  }), use.names = FALSE)
+  # expand N for easy vectorization
+  N <- rep.int(N, reg_counts)
 
   # entropy function, interval 0:1 real number
+  # Xi is the ratio of hits per postion per group
   Xi <-  tripletSums / N
-  validXi <- !is.nan(Xi * log2(Xi))
+  validXi <- !is.nan(Xi * log2(Xi)) # avoid log2(0)
   Hx <- rep(0, length(validXi))
   Hx[validXi] <- Xi[validXi] * log2(Xi[validXi])
 
   MHx <- rep(0, length(validXi))
 
-  reg_counts <- lapply(indeces, function(x) {
-    rep(reg_counts[x], runLengths[x])
-  })
-  unlrg_counts <- unlist(reg_counts, use.names = FALSE)
-  MHx <- 1/unlrg_counts * log2(1 / unlrg_counts)
+  reg_counts <- rep.int(reg_counts, runLengths)
+  MHx <- 1/reg_counts * log2(1 / reg_counts)
 
   # sum the mhx to groups
 
-  grouping <- unlist(lapply(indeces, function(x) {
-    rep(x, runLengths[x])
-  }), use.names = FALSE)
+  grouping <- rep.int(seq_along(runLengths), runLengths)
 
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
@@ -152,7 +135,6 @@ entropy <- function(grl, reads) {
   entropy[validIndices] <- tempEntro # order back from hits
   return(entropy)
 }
-
 
 #' Fragment Length Organization Similarity Score
 #'

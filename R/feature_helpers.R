@@ -41,56 +41,51 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
 #' Get hits per codon
 #'
 #' Helper for entropy function, normally not used directly
-#' @param h indices per tuple
-#' @param indeces whole list of indices
-#' @param L Lengths
-#' @param N hit sums
-#' @param reg_len size of runs
-#' @param runLengths integers per run
+#' Seperate each group into tuplets (codons)
+#' Gives sum for each tuplet within each group
+#' Example: c(1,0,0,1), with reg_len = 2, gives
+#' c(1,0) and c(0,1), these are summed and returned as list
 #' @param countList a Rle of count repetitions (000,1,00,1 etc)
+#' @param reg_len integer vector, size of runs
+#' @param runLengths integer vector, duplications per run
 #' @return a list of codon sums
 #'
-codonSumsPerGroup <- function(h, indeces, L, N, reg_len,
-                              runLengths, countList){
-  reg_len <- lapply(indeces, function(x) {
-    rep(reg_len[x], runLengths[x])
-  })
-
-  unlh <- unlist(h, use.names = FALSE)
-  unlreg_len <- unlist(reg_len, use.names = FALSE)
-
-  # make sequences for reads, start -> stop
-  # gives a triplet reading, 1:3, 3,6
-
-  if (length(L) > 1) { # if more than 1 hit total
-    acums <- cumsum(as.numeric(L))
-    unlacums <- unlist(lapply(seq(length(runLengths)-1), function(x) {
-      rep(acums[x], runLengths[x+1])
-    }), use.names = FALSE)
-    unlacums <- unlist(c(rep(1, runLengths[1]), unlacums))
+codonSumsPerGroup <- function(countList, reg_len,
+                              runLengths ){
+  # TODO: Check behavior on groups with lengths that are prime
+  # I have a suspicion, it fails to catch last position.
+  # cumulated sums starting a 1, repeated runLengths times.
+  len <- lengths(countList)
+  if (length(len) > 1) { # if more than 1 hit total
+    acums <- cumsum(as.numeric(len[seq.int(1, length(len)-1)]))
+    acums <- rep.int(c(1,acums), runLengths)
   } else { # special case for 1 group only
-    unlacums <- 1
+    acums <- 1
   }
 
-  which_reads_start <- (unlacums + unlh * unlreg_len)
-  which_reads_end <- (unlh * unlreg_len + (unlreg_len + unlacums -1))
+  # Need to reassign variables to equal length,
+  # to be able to vectorize
+  # h: The sequences we make the tuplets per orf,
+  # if h[1] is: c(0,1,2,3,4,5) and reg_len[1] is: c(3,3)
+  # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
+  reg_len <- rep.int(reg_len, runLengths)
+  h <- unlist(lapply(runLengths - 1, function(x) {
+    seq.int(0, x)
+  }), use.names = FALSE)
+
+  which_reads_start <- (acums + h * reg_len)
+  which_reads_end <- (h * reg_len + (reg_len + acums - 1))
   # the actual triplets ->
   int_seqs <- lapply(seq_along(which_reads_start), function(x) {
     which_reads_start[x]:which_reads_end[x]
   })
 
-  intcountList <- IntegerList(countList)
-  unlintcount <- unlist(unlist(intcountList, use.names = FALSE),
-                        use.names = FALSE)
+  unlintcount <- unlist(countList, use.names = FALSE)
   # get the assigned tuplets per orf, usually triplets
   triplets <- lapply(int_seqs, function(x) {
     unlintcount[x]
   })
-  tripletSums <- unlist(lapply(triplets, function(x) {
-    sum(x)
-  }), use.names = FALSE)
-
-  return(tripletSums)
+  return(sum(IntegerList(triplets)))
 }
 
 
