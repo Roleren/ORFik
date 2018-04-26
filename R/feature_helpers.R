@@ -80,7 +80,7 @@ codonSumsPerGroup <- function(countList, reg_len,
     which_reads_start[x]:which_reads_end[x]
   })
 
-  unlintcount <- unlist(countList, use.names = FALSE)
+  unlintcount <- unlist(IntegerList(countList), use.names = FALSE)
   # get the assigned tuplets per orf, usually triplets
   triplets <- lapply(int_seqs, function(x) {
     unlintcount[x]
