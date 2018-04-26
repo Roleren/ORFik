@@ -55,7 +55,7 @@ codonSumsPerGroup <- function(countList, reg_len,
   # TODO: Check behavior on groups with lengths that are prime
   # I have a suspicion, it fails to catch last position.
   # cumulated sums starting a 1, repeated runLengths times.
-  len <- lengths(countList)
+  len <- BiocGenerics::lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
     acums <- cumsum(as.numeric(len[seq.int(1, length(len)-1)]))
     acums <- rep.int(c(1,acums), runLengths)

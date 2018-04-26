@@ -92,7 +92,7 @@ entropy <- function(grl, reads) {
   # Number of hits per group
   N <- sum(countList)
   # length per group
-  L <- lengths(countList)
+  L <- BiocGenerics::lengths(countList)
   reg_len <- rep.int(3, length(L)) # tuples per orf, start on 3
 
   # which ORFs should not have tuplet length of 3

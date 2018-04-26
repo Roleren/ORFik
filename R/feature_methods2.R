@@ -56,7 +56,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
                             is.sorted = is.sorted, keep.names = FALSE)
 
     countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(validIndices))
-    len <- lengths(cov)
+    len <- BiocGenerics::lengths(cov)
     # make the 3 frames
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
     tempTile <- sum(cov[positionFrame])[reOrdering]
