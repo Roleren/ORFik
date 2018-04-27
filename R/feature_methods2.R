@@ -327,14 +327,15 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx) {
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
+
   # find tx with hits
-  tx <- tx[txNames(grl)]
   validIndices <- hasHits(tx, RFP)
+  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
   if (!any(validIndices)) { # if no hits
     names(overlapGrl) <- NULL
     return(overlapGrl)
   }
-  tx <- tx[validIndices]
+  tx <- tx[txNames(grl)][validIndices]
   grl <- grl[validIndices]
 
   grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)

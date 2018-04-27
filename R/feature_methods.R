@@ -364,7 +364,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
   # exclude non hits and set them to 0
-  validIndices <- hasHits(tx[txNames(grl)], RFP)
+  validIndices <- hasHits(tx, RFP)
+  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
   if (!any(validIndices)) { # if no hits
     score <- countOverlaps(grl, RFP) + 1
     names(score) <- NULL
@@ -372,9 +373,9 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
   }
   overlapDownstream <- rep(1, length(grl))
 
-  grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
+  grlStops <- stopSites(grl[validIndices], asGR = FALSE, is.sorted = TRUE)
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
-                                       grlStops[validIndices])
+                                       grlStops)
 
   overlapGrl <- countOverlaps(grl, RFP) + 1
   overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1

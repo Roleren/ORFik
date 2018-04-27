@@ -292,6 +292,17 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
     names(irl) <- names(tx[boundaryHits])
     ranges(downTx[boundaryHits]) <- irl
   }
+  # check boundaries within group exons
+  startSites <- startSites(downTx, FALSE, FALSE, TRUE)
+  posChecks <- startSites[posIndices] > downstreamOf[posIndices]
+  negChecks <- startSites[!posIndices] < downstreamOf[!posIndices]
+  if (any(posChecks)) {
+    downstreamOf[posIndices][posChecks] <- startSites[posIndices][posChecks]
+  }
+  if (any(negChecks)) {
+    downstreamOf[!posIndices][negChecks] <- startSites[!posIndices][negChecks]
+  }
+
   return(assignFirstExonsStartSite(downTx, downstreamOf))
 }
 
