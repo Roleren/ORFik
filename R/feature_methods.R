@@ -376,9 +376,19 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
   grlStops <- stopSites(grl[validIndices], asGR = FALSE, is.sorted = TRUE)
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
                                        grlStops)
+  # check for big lists
+  if (length(downstreamTx) > 5e5) {
+    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+    ordering <- uniqueOrder(downstreamTx)
+    downstreamTx <- uniqueGroups(downstreamTx)
+    overlapDownstream[validIndices] <- countOverlaps(downstreamTx,
+                                                     RFP)[ordering] + 1
+  } else {
+    overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1
+  }
 
   overlapGrl <- countOverlaps(grl, RFP) + 1
-  overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1
+
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
   return(score)

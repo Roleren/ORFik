@@ -294,8 +294,8 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
   }
   # check boundaries within group exons
   startSites <- startSites(downTx, FALSE, FALSE, TRUE)
-  posChecks <- startSites[posIndices] > downstreamOf[posIndices]
-  negChecks <- startSites[!posIndices] < downstreamOf[!posIndices]
+  posChecks <- startSites[posIndices] > downstreamOf[posIndices] & any(!pos)
+  negChecks <- startSites[!posIndices] < downstreamOf[!posIndices] & any(!neg)
   if (any(posChecks)) {
     downstreamOf[posIndices][posChecks] <- startSites[posIndices][posChecks]
   }
