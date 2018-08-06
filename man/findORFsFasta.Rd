@@ -5,8 +5,8 @@
 \title{Finds Open Reading Frames in fasta files.}
 \usage{
 findORFsFasta(filePath, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = TRUE, minimumLength = 0,
-  is.circular = FALSE)
+  stopCodon = stopDefinition(1), longestORF = TRUE,
+  minimumLength = 0, is.circular = FALSE)
 }
 \arguments{
 \item{filePath}{(character) Path to the fasta file.}
@@ -54,3 +54,4 @@ Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},
   \code{\link{stopDefinition}}
 }
+\concept{findORFs}

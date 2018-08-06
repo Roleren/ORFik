@@ -28,3 +28,4 @@ Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}}, \code{\link{findORFs}},
   \code{\link{startDefinition}}
 }
+\concept{findORFs}

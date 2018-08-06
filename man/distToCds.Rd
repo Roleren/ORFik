@@ -54,3 +54,4 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
+\concept{features}

@@ -4,7 +4,7 @@
 \alias{upstreamOfPerGroup}
 \title{Get rest of objects upstream}
 \usage{
-upstreamOfPerGroup(tx, upstreamOf)
+upstreamOfPerGroup(tx, upstreamOf, allowOutside = TRUE)
 }
 \arguments{
 \item{tx}{a \code{\link{GRangesList}},
@@ -12,6 +12,9 @@ usually of Transcripts to be changed}
 
 \item{upstreamOf}{a vector of integers, for each group in tx, where
 is the new stop point of last valid exon.}
+
+\item{allowOutside}{a logical (T), can upstreamOf extend outside
+range of tx, can set boundary as a false hit, so beware.}
 }
 \value{
 a GRangesList of upstream part
@@ -19,7 +22,7 @@ a GRangesList of upstream part
 \description{
 Per group get the part upstream of position
  defined in upstreamOf
- upstream(tx, ORFik:::stopSites(cds, asGR = F))
+ upstream(tx, startSites(cds, asGR = F))
  will return the 5' utrs per transcript, usually used for interesting
  parts of the transcripts, like upstream open reading frames(uorf).
  downstreamOf +/- 1 is start/end site

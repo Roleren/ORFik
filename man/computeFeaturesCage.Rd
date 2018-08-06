@@ -6,8 +6,9 @@
 \usage{
 computeFeaturesCage(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
-  riboStart = 26, riboStop = 34, extension = NULL, orfFeatures = TRUE,
-  cageFiveUTRs = NULL, includeNonVarying = TRUE, grl.is.sorted = FALSE)
+  riboStart = 26, riboStop = 34, extension = NULL,
+  orfFeatures = TRUE, cageFiveUTRs = NULL, includeNonVarying = TRUE,
+  grl.is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -132,3 +133,4 @@ Other features: \code{\link{computeFeatures}},
   \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
+\concept{features}

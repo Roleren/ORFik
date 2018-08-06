@@ -6,7 +6,7 @@
 \usage{
 computeFeatures(grl, RFP, RNA = NULL, Gtf = NULL, faFile = NULL,
   riboStart = 26, riboStop = 34, orfFeatures = TRUE,
-  includeNonVarying = TRUE)
+  includeNonVarying = TRUE, grl.is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -29,6 +29,9 @@ with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 \item{includeNonVarying}{a logical, if TRUE, include all features not
 dependent on RiboSeq data and RNASeq data, that is: Kozak,
 fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
+
+\item{grl.is.sorted}{logical (F), a speed up if you know argument grl
+is sorted, set this to TRUE.}
 }
 \value{
 a data.table with scores, each column is one score type, name of
@@ -49,7 +52,6 @@ therefore be carefull.
 \examples{
 # Usually the ORFs are found in orfik, which makes names for you etc.
 # Here we make an example from scratch
-\dontrun{
 gtf <- system.file("extdata", "annotations.gtf",
 package = "ORFik") ## location of the gtf file
 suppressWarnings(txdb <-
@@ -60,8 +62,7 @@ ORFs <- makeORFNames(ORFs) # need ORF names
 # make Ribo-seq data,
 RFP <- unlistGrl(firstExonPerGroup(ORFs))
 suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
-# For more thorough examples, see vignettes.
-}
+# For more details see vignettes.
 
 }
 \seealso{
@@ -79,3 +80,4 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
+\concept{features}

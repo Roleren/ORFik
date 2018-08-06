@@ -5,8 +5,8 @@
 \title{Reduce GRanges / GRangesList}
 \usage{
 reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
-  min.gapwidth = 1L, with.revmap = FALSE, with.inframe.attrib = FALSE,
-  ignore.strand = FALSE)
+  min.gapwidth = 1L, with.revmap = FALSE,
+  with.inframe.attrib = FALSE, ignore.strand = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} or GRanges object}

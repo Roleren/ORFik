@@ -259,11 +259,13 @@ test_that("insideOutsideORF works as intended", {
 
   scores <- insideOutsideORF(grl, RFP, tx)
   expect_is(scores, "numeric")
-  expect_equal(scores, c(1.0, 1.0, 0.6, 1.0))
+  expect_equal(round(scores, 2), c(1.33, 1.33, 0.75, 1.00))
 
   scores <- insideOutsideORF(grl, RFP7, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.14))
+  ds <- disengagementScore(grl, RFP7, GtfOrTx = tx)
+  expect_equal(scores, insideOutsideORF(grl, RFP7, tx, ds))
 })
 
 test_that("distToCds works as intended", {
@@ -287,7 +289,7 @@ test_that("isOverlapping works as intended", {
 
   overlaps <- isOverlapping(scores)
   expect_is(overlaps, "logical")
-  expect_equal(overlaps, c(F, F, F, F))
+  expect_equal(overlaps, c(FALSE, FALSE, FALSE, FALSE))
 })
 
 test_that("rankOrder works as intended", {

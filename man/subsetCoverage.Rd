@@ -33,3 +33,4 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{ribosomeStallingScore}},
   \code{\link{translationalEff}}
 }
+\concept{features}

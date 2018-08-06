@@ -73,3 +73,4 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{ribosomeStallingScore}},
   \code{\link{subsetCoverage}}
 }
+\concept{features}

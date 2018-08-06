@@ -8,17 +8,19 @@ library(ORFik)
 # remove this text when that happens.
 
 gene1 <- GRanges(Rle(c("1"), c(4)),
-                 IRanges(c(925942, 930155, 939040, 939275), width=c(72, 182, 90, 17)),
+                 IRanges(c(925942, 930155, 939040, 939275),
+                         width=c(72, 182, 90, 17)),
                  Rle(strand(c("+", "+", "+", "+"))))
 gene2 <- GRanges(Rle(c("1"), c(4)),
-                 IRanges(c(245929870, 245927931, 245863799, 245858562), width=c(32, 103, 88, 109)),
+                 IRanges(c(245929870, 245927931, 245863799, 245858562),
+                         width=c(32, 103, 88, 109)),
                  Rle(strand(c("-", "-", "-", "-"))))
 
 cds <- GRangesList("gene_plus_strand" = gene1, "gene_minus_strand" = gene2)
 
 test_that("startSites works as intended", {
 
-  cds_starts <- startSites(cds, asGR = T)
+  cds_starts <- startSites(cds, asGR = TRUE)
 
   expect_is(cds_starts, "GRanges")
   expect_equal(start(cds_starts)[1], 925942)
@@ -27,7 +29,7 @@ test_that("startSites works as intended", {
 
 test_that("stopSites works as intended", {
 
-  cds_stops <- stopSites(cds, asGR = T)
+  cds_stops <- stopSites(cds, asGR = TRUE)
 
   expect_is(cds_stops, "GRanges")
   expect_equal(start(cds_stops)[1], 939291)

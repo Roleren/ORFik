@@ -344,12 +344,12 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL) {
   grl <- grl[validIndices]
 
   grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
-  upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
+  upstreamTx <- upstreamOfPerGroup(tx, grlStarts, allowOutside = FALSE)
   overlapTxOutside <- rep(1, length(validIndices))
   if (!is.null(ds)) { # save time here if ds is defined
     downstreamCounts <- 1/(ds/overlapGrl)
     upstreamCounts <- rep(1, length(validIndices))
-    upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP) + 1
+    upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP)
     overlapTxOutside <- downstreamCounts + upstreamCounts
 
   } else { # else make ds again

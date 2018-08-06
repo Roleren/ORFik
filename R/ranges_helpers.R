@@ -183,6 +183,7 @@ asTX <- function(grl, reference) {
 #' @param grl a GRangesList object
 #' @param faFile FaFile or BSgenome used to find the transcripts,
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @export
 #' @return a DNAStringSet of the transcript sequences
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
@@ -256,7 +257,7 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #'
 #' Per group get the part downstream of position
 #'  defined in downstreamOf
-#'  downstreamOf(tx, ORFik:::stopSites(cds, asGR = F))
+#'  downstreamOf(tx, stopSites(cds, asGR = F))
 #'  will return the 3' utrs per transcript as GRangesList,
 #'  usually used for interesting
 #'  parts of the transcripts, like upstream open reading frames(uorf).
@@ -311,7 +312,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #'
 #' Per group get the part upstream of position
 #'  defined in upstreamOf
-#'  upstream(tx, ORFik:::stopSites(cds, asGR = F))
+#'  upstream(tx, startSites(cds, asGR = F))
 #'  will return the 5' utrs per transcript, usually used for interesting
 #'  parts of the transcripts, like upstream open reading frames(uorf).
 #'  downstreamOf +/- 1 is start/end site
@@ -320,9 +321,11 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the new stop point of last valid exon.
+#' @param allowOutside a logical (T), can upstreamOf extend outside
+#'  range of tx, can set boundary as a false hit, so beware.
 #' @return a GRangesList of upstream part
 #'
-upstreamOfPerGroup <- function(tx, upstreamOf) {
+upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
   posIndices <- strandBool(tx)
   posStarts <- start(tx[posIndices])
   negStarts <- end(tx[!posIndices])
@@ -330,22 +333,53 @@ upstreamOfPerGroup <- function(tx, upstreamOf) {
   negGrlStarts <- upstreamOf[!posIndices]
   pos <- posStarts < posGrlStarts
   neg <- negStarts > negGrlStarts
-  # need to fix pos/neg with possible cage extensions
-  outside <- which(sum(pos) == 0)
-  pos[outside] = TRUE
   posTx <- tx[posIndices]
-  posTx[outside] <- firstExonPerGroup(posTx[outside])
-  outside <- which(sum(neg) == 0)
-  neg[outside] = TRUE
   negTx <- tx[!posIndices]
-  negTx[outside] <- firstExonPerGroup(negTx[outside])
+
+  # need to fix pos/neg with possible cage extensions
+  if (allowOutside) {
+    outside <- which(sum(pos) == 0)
+    pos[outside] = TRUE
+    posTx[outside] <- firstExonPerGroup(posTx[outside])
+    outside <- which(sum(neg) == 0)
+    neg[outside] = TRUE
+    negTx[outside] <- firstExonPerGroup(negTx[outside])
+  }
 
   posTx <- posTx[pos]
   negTx <- negTx[neg]
   tx[posIndices] <- posTx
   tx[!posIndices] <- negTx
+  nonZero <- widthPerGroup(tx) > 0
+  if (all(!nonZero)) { # if no ranges exists
+    return(tx)
+  }
+  upstreamOf <- upstreamOf[nonZero]
+  posIndices <- posIndices[nonZero]
 
-  return(assignLastExonsStopSite(tx, upstreamOf))
+  stopSites <- stopSites(tx[nonZero], FALSE, FALSE, TRUE)
+  if (any(posIndices)){
+    posChecks <- stopSites[posIndices] < upstreamOf[posIndices] &
+      any(!pos[nonZero[posIndices]])
+  } else {
+    posChecks <- FALSE
+  }
+  if(any(!posIndices)){
+    negChecks <- stopSites[!posIndices] > upstreamOf[!posIndices] &
+      any(!neg[nonZero[!posIndices]])
+  } else {
+    negChecks <- FALSE
+    }
+
+  if (any(posChecks)) {
+    upstreamOf[posIndices][posChecks] <- stopSites[posIndices][posChecks]
+  }
+  if (any(negChecks)) {
+    upstreamOf[!posIndices][negChecks] <- stopSites[!posIndices][negChecks]
+  }
+
+  tx[nonZero] <- assignLastExonsStopSite(tx[nonZero], upstreamOf)
+  return(tx)
 }
 
 
