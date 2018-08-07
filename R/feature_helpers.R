@@ -41,8 +41,8 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
 #' Get hits per codon
 #'
 #' Helper for entropy function, normally not used directly
-#' Seperate each group into tuplets (codons)
-#' Gives sum for each tuplet within each group
+#' Seperate each group into tuples (abstract codons)
+#' Gives sum for each tuple within each group
 #' Example: c(1,0,0,1), with reg_len = 2, gives
 #' c(1,0) and c(0,1), these are summed and returned as list
 #' @param countList a Rle of count repetitions (000,1,00,1 etc)
@@ -52,9 +52,7 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
 #'
 codonSumsPerGroup <- function(countList, reg_len,
                               runLengths ){
-  # TODO: Check behavior on groups with lengths that are prime
-  # I have a suspicion, it fails to catch last position.
-  # cumulated sums starting a 1, repeated runLengths times.
+
   len <- BiocGenerics::lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
     acums <- cumsum(as.numeric(len[seq.int(1, length(len)-1)]))
