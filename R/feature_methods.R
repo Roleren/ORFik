@@ -46,7 +46,6 @@ subsetCoverage <- function(cov, y) {
   return(as.vector(cov1[ranges(y)]))
 }
 
-
 #' Calucalte entropy value of overlapping input reads.
 #'
 #' Calculates entropy of the `reads` coverage over each `grl` group.
@@ -90,56 +89,40 @@ entropy <- function(grl, reads) {
                                  keep.names = FALSE)
 
   # generate the entropy variables
-  N <- unlist(sum(countList), use.names = FALSE)
+  # Number of hits per group
+  N <- sum(countList)
+  # length per group
+  L <- BiocGenerics::lengths(countList)
+  reg_len <- rep.int(3, length(L)) # tuples per orf, start on 3
 
-  lengths <- lengths(countList)
-  reg_len <- rep(3, length(lengths)) # tuplets per orf
-  L <- unlist(lengths)
   # which ORFs should not have tuplet length of 3
+  # is hits < length
   bool <- N <= L
   floors <- floor(L / N)
   reg_len[bool] <- floors[bool]
   reg_counts <- as.integer(L / reg_len) # number of tuplets per orf
+  runLengths <- reg_counts
 
-  # Need to reassign variables to equal length,
-  # to be able to vectorize
-  # h: The sequences we make the tuplets per orf,
-  # if h[1] is: c(1,2,3,4,5,6) and reg_len[1] is: c(3,3)
-  # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
-  h <- lapply(reg_counts, function(x) {
-    seq.int(0, x-1)
-  })
+  tripletSums <- codonSumsPerGroup(countList, reg_len, runLengths)
 
-  runLengths <- lengths(IRanges::RleList(h))
-  # get sequence from valid indeces, not same as seq_len().
-  indeces <- seq_along(runLengths)
-  # stop here
-  tripletSums <- codonSumsPerGroup(h, indeces, L, N, reg_len,
-                                   runLengths, countList)
-
-  N <- unlist(lapply(indeces, function(x) {
-    rep(N[x], reg_counts[x])
-  }), use.names = FALSE)
+  # expand N for easy vectorization
+  N <- rep.int(N, reg_counts)
 
   # entropy function, interval 0:1 real number
+  # Xi is the ratio of hits per postion per group
   Xi <-  tripletSums / N
-  validXi <- !is.nan(Xi * log2(Xi))
+  validXi <- !is.nan(Xi * log2(Xi)) # avoid log2(0)
   Hx <- rep(0, length(validXi))
   Hx[validXi] <- Xi[validXi] * log2(Xi[validXi])
 
   MHx <- rep(0, length(validXi))
 
-  reg_counts <- lapply(indeces, function(x) {
-    rep(reg_counts[x], runLengths[x])
-  })
-  unlrg_counts <- unlist(reg_counts, use.names = FALSE)
-  MHx <- 1/unlrg_counts * log2(1 / unlrg_counts)
+  reg_counts <- rep.int(reg_counts, runLengths)
+  MHx <- 1/reg_counts * log2(1 / reg_counts)
 
   # sum the mhx to groups
 
-  grouping <- unlist(lapply(indeces, function(x) {
-    rep(x, runLengths[x])
-  }), use.names = FALSE)
+  grouping <- rep.int(seq_along(runLengths), runLengths)
 
   Hx <- sum(NumericList(split(Hx, grouping)))
   MHx <- sum(NumericList(split(MHx, grouping)))
@@ -152,7 +135,6 @@ entropy <- function(grl, reads) {
   entropy[validIndices] <- tempEntro # order back from hits
   return(entropy)
 }
-
 
 #' Fragment Length Organization Similarity Score
 #'
@@ -374,7 +356,7 @@ fractionLength <- function(grl, tx_len){
 #'
 disengagementScore <- function(grl, RFP, GtfOrTx){
 
-  if (class(GtfOrTx) == "TxDb") {
+  if (is(GtfOrTx,"TxDb")) {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
   } else if (is.grl(GtfOrTx)) {
     tx <- GtfOrTx
@@ -382,7 +364,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
   # exclude non hits and set them to 0
-  validIndices <- hasHits(tx[txNames(grl)], RFP)
+  validIndices <- hasHits(tx, RFP)
+  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
   if (!any(validIndices)) { # if no hits
     score <- countOverlaps(grl, RFP) + 1
     names(score) <- NULL
@@ -390,12 +373,22 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
   }
   overlapDownstream <- rep(1, length(grl))
 
-  grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
+  grlStops <- stopSites(grl[validIndices], asGR = FALSE, is.sorted = TRUE)
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
-                                       grlStops[validIndices])
+                                       grlStops)
+  # check for big lists
+  if (length(downstreamTx) > 5e5) {
+    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+    ordering <- uniqueOrder(downstreamTx)
+    downstreamTx <- uniqueGroups(downstreamTx)
+    overlapDownstream[validIndices] <- countOverlaps(downstreamTx,
+                                                     RFP)[ordering] + 1
+  } else {
+    overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1
+  }
 
   overlapGrl <- countOverlaps(grl, RFP) + 1
-  overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1
+
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
   return(score)
@@ -436,7 +429,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #'
 ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
-  if (class(GtfOrThreeUtrs) == "TxDb") {
+  if (is(GtfOrThreeUtrs,"TxDb")) {
     threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
                                        use.names = TRUE)
   } else if (is.grl(GtfOrThreeUtrs)) {
@@ -598,7 +591,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
                                 extension = NULL, orfFeatures = TRUE,
                                 cageFiveUTRs = NULL, includeNonVarying = TRUE,
-                                grl.is.sorted = FALSE){
+                                grl.is.sorted = FALSE) {
   #### Check input and load data ####
   validExtension(extension, cageFiveUTRs)
   validGRL(class(grl))
@@ -608,10 +601,10 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     validGRL(c(class(fiveUTRs), class(cds), class(threeUTRs)),
              c("fiveUTRs", "cds", "threeUTRs"))
     if (!is.grl(tx)) { stop("if Gtf is not given,\n
-                                    tx must be specified as a GRangesList")
+                            tx must be specified as a GRangesList")
     }
     } else {
-      if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
+      if(!is(Gtf,"TxDb")) stop("gtf must be TxDb object")
 
       notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
                                 class(threeUTRs), class(tx)),
@@ -638,40 +631,41 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 
   #### Get all features, append 1 at a time, to save memory ####
   scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
-  scores$entropyRFP <- entropy(grl, RFP)
-  scores$disengagementScores <- disengagementScore(grl, RFP, tx)
-  scores$RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
-  scores$RSS <- ribosomeStallingScore(grl, RFP)
+  scores[, entropyRFP := entropy(grl, RFP)]
+  scores[, disengagementScores := disengagementScore(grl, RFP, tx)]
+  scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)]
+  scores[, RSS := ribosomeStallingScore(grl, RFP)]
 
   if (includeNonVarying) {
-    scores$fractionLengths <- fractionLength(grl, widthPerGroup(tx, TRUE))
+    scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
   }
 
   if (!is.null(RNA)) { # if rna seq is included
-    te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
-    scores$te <- te$te
-    scores$fpkmRFP <- te$fpkmRFP
-    scores$fpkmRNA <- te$fpkmRNA
+    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
+    scores[, te := TE$te]
+    scores[, fpkmRFP := TE$fpkmRFP]
+    scores[, fpkmRNA := TE$fpkmRNA]
   } else {
-    scores$fpkmRFP <- fpkm(grl, RFP)
+    scores[, fpkmRFP := fpkm(grl, RFP)]
   }
   if (orfFeatures) { # if features are found for orfs
-    scores$ORFScores <- orfScore(grl, RFP, grl.is.sorted)$ORFScores
-    scores$ioScore <- insideOutsideORF(grl, RFP, tx)
+    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted)$ORFScores]
+    scores[, ioScore := insideOutsideORF(grl, RFP, tx,
+                                         scores$disengagementScores)]
 
     if (includeNonVarying) {
 
-      if (class(faFile) == "FaFile" || class(faFile) == "BSgenome") {
+      if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
       }
       # switch five with tx, is it possible to use ?
       distORFCDS <- distToCds(grl, fiveUTRs, cds, extension)
-      scores$distORFCDS <- distORFCDS
-      scores$inFrameCDS <- isInFrame(distORFCDS)
-      scores$isOverlappingCds <- isOverlapping(distORFCDS)
-      scores$rankInTx <- rankOrder(grl)
+      scores[, distORFCDS := distORFCDS]
+      scores[, inFrameCDS := isInFrame(distORFCDS)]
+      scores[, isOverlappingCds := isOverlapping(distORFCDS)]
+      scores[, rankInTx := rankOrder(grl)]
     }
   } else {
     message("orfFeatures set to False, dropping all orf features.")
@@ -703,6 +697,8 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' @param includeNonVarying a logical, if TRUE, include all features not
 #' dependent on RiboSeq data and RNASeq data, that is: Kozak,
 #' fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
+#' @param grl.is.sorted logical (F), a speed up if you know argument grl
+#'  is sorted, set this to TRUE.
 #' @return a data.table with scores, each column is one score type, name of
 #' columns are the names of the scores, i.g [floss()]
 #' or [fpkm()]
@@ -712,7 +708,6 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' @examples
 #' # Usually the ORFs are found in orfik, which makes names for you etc.
 #' # Here we make an example from scratch
-#' \dontrun{
 #' gtf <- system.file("extdata", "annotations.gtf",
 #' package = "ORFik") ## location of the gtf file
 #' suppressWarnings(txdb <-
@@ -723,17 +718,16 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 #' # make Ribo-seq data,
 #' RFP <- unlistGrl(firstExonPerGroup(ORFs))
 #' suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
-#' # For more thorough examples, see vignettes.
-#' }
+#' # For more details see vignettes.
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,
-                            includeNonVarying = TRUE){
+                            includeNonVarying = TRUE, grl.is.sorted = FALSE) {
   #### Check input and load data ####
   validGRL(class(grl), "grl")
   checkRFP(class(RFP))
   checkRNA(class(RNA))
-  if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
+  if(!is(Gtf,"TxDb")) stop("gtf must be TxDb object")
 
   # get transcript parts
   fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
@@ -741,45 +735,47 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
   threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
   tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
 
-  grl <- sortPerGroup(grl)
-  tx_len <- widthPerGroup(tx, TRUE)
+  if (!grl.is.sorted) {
+    grl <- sortPerGroup(grl)
+  }
 
   #### Get all features, append 1 at a time, to save memory ####
   scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
-  scores$entropyRFP <- entropy(grl, RFP)
-  scores$disengagementScores <- disengagementScore(grl, RFP, tx)
-  scores$RRS <- ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
-  scores$RSS <- ribosomeStallingScore(grl, RFP)
+  scores[, entropyRFP := entropy(grl, RFP)]
+  scores[, disengagementScores := disengagementScore(grl, RFP, tx)]
+  scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)]
+  scores[, RSS := ribosomeStallingScore(grl, RFP)]
 
   if (includeNonVarying) {
-    scores$fractionLengths <- fractionLength(grl, tx_len)
+    scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
   }
 
   if (!is.null(RNA)) { # if rna seq is included
-    te <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
-    scores$te <- te$te
-    scores$fpkmRFP <- te$fpkmRFP
-    scores$fpkmRNA <- te$fpkmRNA
+    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
+    scores[, te := TE$te]
+    scores[, fpkmRFP := TE$fpkmRFP]
+    scores[, fpkmRNA := TE$fpkmRNA]
   } else {
-    scores$fpkmRFP <- fpkm(grl, RFP)
+    scores[, fpkmRFP := fpkm(grl, RFP)]
   }
   if (orfFeatures) { # if features are found for orfs
-    scores$ORFScores <- orfScore(grl, RFP, is.sorted = TRUE)$ORFScores
-    scores$ioScore <- insideOutsideORF(grl, RFP, tx)
+    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted)$ORFScores]
+    scores[, ioScore := insideOutsideORF(grl, RFP, tx,
+                                         scores$disengagementScores)]
 
     if (includeNonVarying) {
 
-      if (class(faFile) == "FaFile" || class(faFile) == "BSgenome") {
+      if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
       }
-
-      distORFCDS <- distToCds(grl, fiveUTRs, extension = 0)
-      scores$distORFCDS <- distORFCDS
-      scores$inFrameCDS <- isInFrame(distORFCDS)
-      scores$isOverlappingCds <- isOverlapping(distORFCDS)
-      scores$rankInTx <- rankOrder(grl)
+      # switch five with tx, is it possible to use ?
+      distORFCDS <- distToCds(grl, fiveUTRs, cds, extension = 0)
+      scores[, distORFCDS := distORFCDS]
+      scores[, inFrameCDS := isInFrame(distORFCDS)]
+      scores[, isOverlappingCds := isOverlapping(distORFCDS)]
+      scores[, rankInTx := rankOrder(grl)]
     }
   } else {
     message("orfFeatures set to False, dropping all orf features.")

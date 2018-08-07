@@ -4,26 +4,22 @@
 \alias{codonSumsPerGroup}
 \title{Get hits per codon}
 \usage{
-codonSumsPerGroup(h, indeces, L, N, reg_len, runLengths, countList)
+codonSumsPerGroup(countList, reg_len, runLengths)
 }
 \arguments{
-\item{h}{indices per tuple}
-
-\item{indeces}{whole list of indices}
-
-\item{L}{Lengths}
-
-\item{N}{hit sums}
-
-\item{reg_len}{size of runs}
-
-\item{runLengths}{integers per run}
-
 \item{countList}{a Rle of count repetitions (000,1,00,1 etc)}
+
+\item{reg_len}{integer vector, size of runs}
+
+\item{runLengths}{integer vector, duplications per run}
 }
 \value{
 a list of codon sums
 }
 \description{
 Helper for entropy function, normally not used directly
+Seperate each group into tuples (abstract codons)
+Gives sum for each tuple within each group
+Example: c(1,0,0,1), with reg_len = 2, gives
+c(1,0) and c(0,1), these are summed and returned as list
 }

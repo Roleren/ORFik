@@ -123,7 +123,7 @@ findFa <- function(faFile) {
       stop("faFile does not name a valid fasta file")
     }
 
-  } else if (class(faFile) == "FaFile" || class(faFile) == "BSgenome") {
+  } else if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
     return(faFile)
   }
   stop("faFile must be FaFile, BSgenome or valid filePath")

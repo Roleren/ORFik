@@ -74,7 +74,7 @@ mapToGRanges <- function(grl, result) {
 
   validGRL(class(grl))
   if (is.null(names(grl))) stop("'grl' contains no names.")
-  if (class(result) != "list") stop("Invalid type of result, must be list.")
+  if (!is(result, "list")) stop("Invalid type of result, must be list.")
   if (length(result) != 2)
     stop("Invalid structure of result, must be list with 2 elements ",
          "read info for structure.")

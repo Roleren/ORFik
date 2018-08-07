@@ -5,7 +5,8 @@
 \title{Find Open Reading Frames.}
 \usage{
 findORFs(seqs, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = FALSE, minimumLength = 0)
+  stopCodon = stopDefinition(1), longestORF = FALSE,
+  minimumLength = 0)
 }
 \arguments{
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
@@ -57,3 +58,4 @@ Other findORFs: \code{\link{findMapORFs}},
   \code{\link{startDefinition}},
   \code{\link{stopDefinition}}
 }
+\concept{findORFs}

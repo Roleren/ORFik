@@ -13,7 +13,7 @@ ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
 names(ORFranges) = rep("tx1_1",3)
 names(ORFranges2) = rep("tx1_2",3)
 grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
-gr <- unlist(grl, use.names = F)
+gr <- unlist(grl, use.names = FALSE)
 
 cds1 <- ORFranges <- GRanges(seqnames = Rle(rep("1", 2)),
                              ranges = IRanges(start = c(100, 110),
@@ -99,7 +99,7 @@ test_that("assignLastExonsStopSite works as intended", {
   reassigned <- assignLastExonsStopSite(grl, newStops)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(lastExonEndPerGroup(reassigned, F), newStops)
+  expect_equal(lastExonEndPerGroup(reassigned, FALSE), newStops)
 })
 
 test_that("downstreamOfPerGroup works as intended", {
@@ -107,7 +107,7 @@ test_that("downstreamOfPerGroup works as intended", {
   reassigned <- downstreamOfPerGroup(tx = grl, downstreamOf)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(firstStartPerGroup(reassigned, F), downstreamOf)
+  expect_equal(firstStartPerGroup(reassigned, FALSE), downstreamOf)
 })
 
 test_that("upstreamOfPerGroup works as intended", {
@@ -115,7 +115,7 @@ test_that("upstreamOfPerGroup works as intended", {
   reassigned <- upstreamOfPerGroup(tx = grl, upstreamOf)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(lastExonEndPerGroup(reassigned, F), upstreamOf)
+  expect_equal(lastExonEndPerGroup(reassigned, FALSE), upstreamOf)
 })
 
 tx1 <-  GRanges(seqnames = Rle(rep("1", 5)),
@@ -133,15 +133,15 @@ test_that("asTX works as intended", {
   reassigned <- asTX(grl, txl)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(17, 29)))
+  expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(17, 29)))
 })
 
 test_that("extendLeaders works as intended", {
   reassigned <- extendLeaders(fiveUTRs, 5, cds)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(firstStartPerGroup(reassigned, F), as.integer(c(-4, 145)))
-  expect_equal(lastExonEndPerGroup(reassigned, F), as.integer(c(105, 205)))
+  expect_equal(firstStartPerGroup(reassigned, FALSE), as.integer(c(-4, 145)))
+  expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(105, 205)))
 })
 
 test_that("matchNaming works as intended", {

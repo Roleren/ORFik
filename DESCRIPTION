@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(
   person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cre", "cph")),
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "dtc")),
@@ -32,8 +32,9 @@ Imports:
   Biostrings (>= 2.47.12),
   stats,
   tools,
-  Rsamtools (>= 1.31.3)
-RoxygenNote: 6.0.1
+  Rsamtools (>= 1.31.3),
+  BiocGenerics (>= 0.25.3)
+RoxygenNote: 6.1.0
 Suggests:
   testthat,
   rmarkdown,

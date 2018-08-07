@@ -13,7 +13,7 @@
 #' strandBool(gr)
 #'
 strandBool <- function(grl) {
-  if (class(grl) == "GRanges") {
+  if (is(grl, "GRanges")) {
     posIndices <- as.character(strand(grl)) == "+"
   } else {
     posIndices <- strandPerGroup(grl, FALSE) == "+"

@@ -56,7 +56,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
                             is.sorted = is.sorted, keep.names = FALSE)
 
     countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(validIndices))
-    len <- lengths(cov)
+    len <- BiocGenerics::lengths(cov)
     # make the 3 frames
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
     tempTile <- sum(cov[positionFrame])[reOrdering]
@@ -223,7 +223,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
     stop("not all ranges had valid kozak sequences length, not 15")
   }
 
-  if(class(species) == "matrix"){
+  if(is(species, "matrix")){
     # self defined pfm
     pfm <- species
   } else if (species == "human") {
@@ -292,6 +292,8 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #' @param GtfOrTx if Gtf: a TxDb object of a gtf file that transcripts will be
 #' extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
 #' a GrangesList will use as is
+#' @param ds numeric vector (NULL), disengagement score. If you have already
+#'  calculated \code{\link{disengagementScore}}, input here to save time.
 #' @return a named vector of numeric values of scores
 #' @importFrom data.table rbindlist
 #' @family features
@@ -317,39 +319,52 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #'
 #' insideOutsideORF(grl, RFP, tx)
 #'
-insideOutsideORF <- function(grl, RFP, GtfOrTx) {
-  overlapGrl <- countOverlaps(grl, RFP) + 1
+insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL) {
 
-  if (class(GtfOrTx) == "TxDb") {
+  if (is(GtfOrTx, "TxDb")) {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
   } else if (is.grl(GtfOrTx)) {
     tx <- GtfOrTx
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
+  if (length(RFP) > 1e6) {
+    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+  }
+
+  overlapGrl <- countOverlaps(grl, RFP) + 1
   # find tx with hits
-  tx <- tx[txNames(grl)]
   validIndices <- hasHits(tx, RFP)
+  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
   if (!any(validIndices)) { # if no hits
     names(overlapGrl) <- NULL
     return(overlapGrl)
   }
-  tx <- tx[validIndices]
+  tx <- tx[txNames(grl)][validIndices]
   grl <- grl[validIndices]
 
   grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
-  grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
-
-  downstreamTx <- downstreamOfPerGroup(tx, grlStops)
-  upstreamTx <- upstreamOfPerGroup(tx, grlStarts)
-
-  dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
-                                            as.data.table(downstreamTx)))
-  group <- NULL # for avoiding warning
-  txOutside <- makeGRangesListFromDataFrame(
-    dtmerge[order(group)], split.field = "group")
+  upstreamTx <- upstreamOfPerGroup(tx, grlStarts, allowOutside = FALSE)
   overlapTxOutside <- rep(1, length(validIndices))
-  overlapTxOutside[validIndices] <- countOverlaps(txOutside, RFP) + 1
+  if (!is.null(ds)) { # save time here if ds is defined
+    downstreamCounts <- 1/(ds/overlapGrl)
+    upstreamCounts <- rep(1, length(validIndices))
+    upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP)
+    overlapTxOutside <- downstreamCounts + upstreamCounts
+
+  } else { # else make ds again
+    grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
+    downstreamTx <- downstreamOfPerGroup(tx, grlStops)
+
+    dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
+                                              as.data.table(downstreamTx)))
+    group <- NULL # for avoiding warning
+    txOutside <- makeGRangesListFromDataFrame(
+      dtmerge[order(group)], split.field = "group")
+
+    overlapTxOutside[validIndices] <- countOverlaps(txOutside, RFP) + 1
+  }
+
   scores <- overlapGrl / overlapTxOutside
   names(scores) = NULL
   return(scores)

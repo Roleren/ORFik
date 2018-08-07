@@ -9,10 +9,12 @@ ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
                      ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
                      strand = Rle(strand(rep("+", 3))))
 ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                      ranges = IRanges(start = c(10, 20, 30), end = c(15, 25, 35)),
+                      ranges = IRanges(start = c(10, 20, 30),
+                                       end = c(15, 25, 35)),
                       strand = Rle(strand(rep("+", 3))))
 ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
-                      ranges = IRanges(start = c(20, 30, 40), end = c(25, 35, 45)),
+                      ranges = IRanges(start = c(20, 30, 40),
+                                       end = c(25, 35, 45)),
                       strand = Rle(strand(rep("+", 3))))
 
 test_that("defineTrailer works as intended for plus strand", {
@@ -119,7 +121,7 @@ test_that("findORFs works as intended for plus strand", {
   test_ranges <- orfs_as_IRanges("ATGATGTAATAA",
                                  "ATG|TGA|GGG",
                                  "TAA|AAT|ATA",
-                                 longestORF = T,
+                                 longestORF = TRUE,
                                  minimumLength = 0)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(1, 2))
@@ -129,7 +131,7 @@ test_that("findORFs works as intended for plus strand", {
   test_ranges <- orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
                                  "ATG|TGA|GGG",
                                  "TAA|AAT|ATA",
-                                 longestORF = F,
+                                 longestORF = FALSE,
                                  minimumLength = 2)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(10, 13, 11, 14))
@@ -139,7 +141,7 @@ test_that("findORFs works as intended for plus strand", {
   test_ranges <- orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
                                  "ATG|TGA|GGG",
                                  "TAA|AAT|ATA",
-                                 longestORF = T,
+                                 longestORF = TRUE,
                                  minimumLength = 2)
   expect_is(test_ranges, "IRanges")
   expect_equal(start(test_ranges), c(10, 11))
@@ -149,7 +151,7 @@ test_that("findORFs works as intended for plus strand", {
   test_ranges <- orfs_as_IRanges("B",
                                  "ATG|TGA|GGG",
                                  "TAA|AAT|ATA",
-                                 longestORF = T,
+                                 longestORF = TRUE,
                                  minimumLength = 2)
   expect_is(test_ranges, "IRanges")
   expect_equal(length(test_ranges), 0)
@@ -186,7 +188,7 @@ test_that("findMapORFs works as intended for minus strand", {
   test_ranges <-findMapORFs(grl,seqs,
                             "ATG|TGG|GGG",
                             "TAA|AAT|ATA",
-                            longestORF = F,
+                            longestORF = FALSE,
                             minimumLength = 0)
 
   expect_is(test_ranges, "GRangesList")
@@ -226,7 +228,7 @@ test_that("mapToGRanges works as intended for strange exons positive strand", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(strandPerGroup(test_ranges,FALSE)[1], "+")
   expect_equal(as.integer(unlist(start(test_ranges))), c(1, 3, 5,1, 1000, 2000,
                                                          3000, 4000, 5000))
   expect_equal(as.integer(unlist(end(test_ranges))), c(1, 10, 10,1, 1000, 2000,
@@ -254,14 +256,14 @@ test_that("mapToGRanges works as intended for strange exons negative strand", {
   test_ranges <- findMapORFs(grl,seqs,
                              "ATG|TGG|GGG",
                              "TAA|AAT|ATA",
-                             longestORF = F,
+                             longestORF = FALSE,
                              minimumLength = 0)
 
   test_ranges <- sortPerGroup(test_ranges)
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "-")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "-")
   expect_equal(as.integer(unlist(start(test_ranges))), c(5, 5, 5000, 4000, 3000,
                                                          2000, 1000, 1))
   expect_equal(as.integer(unlist(end(test_ranges))), c(13, 10, 5000, 4000, 3000,
@@ -292,14 +294,14 @@ test_that("mapToGRanges works as intended for strange exons both strands", {
   test_ranges <- findMapORFs(grl,seqs,
                              "ATG|TGG|GGG",
                              "TAA|AAT|ATA",
-                             longestORF = F,
+                             longestORF = FALSE,
                              minimumLength = 0)
 
   test_ranges <- sortPerGroup(test_ranges)
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "-")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "-")
   expect_equal(as.integer(unlist(start(test_ranges))), c(5, 5, 5000, 4000,
                                                          3000, 2000, 1000, 1, 2003,
                                                          2008, 3030, 3000))
@@ -318,13 +320,13 @@ test_that("GRangesList sorting works as intended", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
   expect_equal(as.integer(unlist(start(test_ranges))), c(2000,
                                                          2008, 3030, 3000))
   expect_equal(as.integer(unlist(end(test_ranges))), c(2004,
                                                        2015, 3036, 3004))
 
-  test_ranges <- sortPerGroup(test_ranges, ignore.strand = T)
+  test_ranges <- sortPerGroup(test_ranges, ignore.strand = TRUE)
   expect_equal(as.integer(unlist(start(test_ranges))), c(2000,
                                                          2008, 3000, 3030))
   expect_equal(as.integer(unlist(end(test_ranges))), c(2004,
@@ -334,18 +336,22 @@ test_that("GRangesList sorting works as intended", {
 test_that("startCodons works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                       ranges = IRanges(start = c(1, 10, 20),
+                                        end = c(5, 15, 25)),
                        strand = Rle(strand(rep("+", 3))))
 
   ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(20, 30, 40), end = c(25, 35, 45)),
+                        ranges = IRanges(start = c(20, 30, 40),
+                                         end = c(25, 35, 45)),
                         strand = Rle(strand(rep("+", 3))))
 
   ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                        ranges = IRanges(start = c(30, 40, 50),
+                                         end = c(35, 45, 55)),
                         strand = Rle(strand(rep("+", 3))))
   ORFranges4 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(50, 40, 30), end = c(55, 45, 35)),
+                        ranges = IRanges(start = c(50, 40, 30),
+                                         end = c(55, 45, 35)),
                         strand = Rle(strand(rep("-", 3))))
   ORFranges5 <- GRanges(seqnames = Rle(rep("1", 4)),
                         ranges = IRanges(start = c(1000, 1002, 1004, 1006),
@@ -372,7 +378,7 @@ test_that("startCodons works as intended", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
   expect_equal(as.integer(unlist(start(test_ranges))), c(1,
                                                          20, 30, 53, 1000,
                                                          1002, 1004, 1002, 1004))
@@ -385,18 +391,22 @@ test_that("startCodons works as intended", {
 test_that("stopCodons works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                       ranges = IRanges(start = c(1, 10, 20),
+                                        end = c(5, 15, 25)),
                        strand = Rle(strand(rep("+", 3))))
 
   ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(20, 30, 40), end = c(25, 35, 45)),
+                        ranges = IRanges(start = c(20, 30, 40),
+                                         end = c(25, 35, 45)),
                         strand = Rle(strand(rep("+", 3))))
 
   ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                        ranges = IRanges(start = c(30, 40, 50),
+                                         end = c(35, 45, 55)),
                         strand = Rle(strand(rep("+", 3))))
   ORFranges4 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
+                        ranges = IRanges(start = c(30, 40, 50),
+                                         end = c(35, 45, 55)),
                         strand = Rle(strand(rep("-", 3))))
   ORFranges5 <- GRanges(seqnames = Rle(rep("1", 4)),
                         ranges = IRanges(start = c(1000, 1002, 1004, 1006),
@@ -423,7 +433,7 @@ test_that("stopCodons works as intended", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
   expect_equal(as.integer(unlist(start(test_ranges))), c(23,
                                                          43, 53, 30, 1002,
                                                          1004, 1006, 1003, 1006))
@@ -469,7 +479,7 @@ test_that("uniqueGroups works as intended", {
   test_ranges <- uniqueGroups(grl)
 
   expect_is(test_ranges, "GRangesList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "+")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
   expect_equal(length(test_ranges), 2)
   expect_equal(names(test_ranges),  c("1", "2"))
 

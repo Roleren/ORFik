@@ -4,7 +4,7 @@
 \alias{insideOutsideORF}
 \title{Inside/Outside score (IO)}
 \usage{
-insideOutsideORF(grl, RFP, GtfOrTx)
+insideOutsideORF(grl, RFP, GtfOrTx, ds = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -15,6 +15,9 @@ with usually either leaders, cds', 3' utrs or ORFs}
 \item{GtfOrTx}{if Gtf: a TxDb object of a gtf file that transcripts will be
 extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
 a GrangesList will use as is}
+
+\item{ds}{numeric vector (NULL), disengagement score. If you have already
+calculated \code{\link{disengagementScore}}, input here to save time.}
 }
 \value{
 a named vector of numeric values of scores
@@ -64,3 +67,4 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
+\concept{features}

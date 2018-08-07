@@ -245,8 +245,7 @@ features. See example below.
   RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
   # transcript database
   txdb <- loadDb(txdbFile)
-  computeFeatures(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
-                  RNA = RNA, Gtf = txdb, faFile = faFile)
+  computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, orfFeatures =  TRUE)
 }
 ```
 You will now get a data.table with one column per score, the columns are named after
@@ -350,4 +349,32 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   length(ORFs)
 }
 ```
+
+## ORF interest regions
+
+Specific part of the ORF are usually of interest, like start and stop codons.
+Here we run an example to show what ORFik can do for you.
+
+```{r eval = TRUE, echo = TRUE}
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  # let's use the ORFs from the previous examples
+  #1. Find the start and stop sites
+  startSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
+  stopSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
+  
+  #2. Lets find the start and stop codons,
+  # this takes care of potential 1 base exons etc. 
+  starts <- startCodons(fiveUTR_ORFs, is.sorted = TRUE)
+  starts
+  stops <- stopCodons(fiveUTR_ORFs, is.sorted = TRUE)
+  stops
+  
+  #3. Lets get the bases of the start and stop codons from the fasta file
+  # It's very important to check that ORFs are sorted here, else you could get 
+  # the end of the ORF instead of the beginning etc.
+  txSeqsFromFa(starts, faFile, is.sorted = TRUE)
+  txSeqsFromFa(stops, faFile, is.sorted = TRUE)
+  }
+```
+
 Many more operations are also supported for manipulation

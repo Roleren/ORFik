@@ -39,7 +39,7 @@
 #' identical(grl, grltest) ## they are not identical
 #'
 groupGRangesBy <- function(gr, other = NULL) {
-  if (class(gr) != "GRanges") stop("gr must be GRanges Object")
+  if (!is(gr, "GRanges")) stop("gr must be GRanges Object")
   if (is.null(other)) { # if not using other
     if (is.null(names(gr))) stop("gr object have no names")
     l <- S4Vectors::Rle(names(gr))
@@ -48,9 +48,7 @@ groupGRangesBy <- function(gr, other = NULL) {
       stop(" in GroupGRangesByOther: lengths of gr and other does not match")
     l <- S4Vectors::Rle(other)
   }
-  grouping <- unlist(lapply(seq.int(nrun(l)), function(x) {
-    rep(x, runLength(l)[x])
-    }))
+  grouping <- rep.int(seq.int(nrun(l)), runLength(l))
   grl <- split(gr, grouping)
   if (is.null(other)) {
     names(grl) <- unique(names(gr))
@@ -71,7 +69,7 @@ groupGRangesBy <- function(gr, other = NULL) {
 #'
 riboSeqReadWidths <- function(reads) {
 
-  if (class(reads) == "GRanges") {
+  if (is(reads, "GRanges")) {
     rfpWidth <- width(reads)
     is.one_based <- all(as.integer(rfpWidth) == rep(1, length(rfpWidth)))
     if (is.one_based ) {
