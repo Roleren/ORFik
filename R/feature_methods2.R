@@ -223,7 +223,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
     stop("not all ranges had valid kozak sequences length, not 15")
   }
 
-  if(class(species) == "matrix"){
+  if(is(species, "matrix")){
     # self defined pfm
     pfm <- species
   } else if (species == "human") {
@@ -321,7 +321,7 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
 #'
 insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL) {
 
-  if (class(GtfOrTx) == "TxDb") {
+  if (is(GtfOrTx, "TxDb")) {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
   } else if (is.grl(GtfOrTx)) {
     tx <- GtfOrTx

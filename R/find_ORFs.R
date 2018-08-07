@@ -222,7 +222,7 @@ findORFsFasta <- function(
   filePath, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
   longestORF = TRUE, minimumLength = 0, is.circular = FALSE) {
 
-  if (class(filePath) != "character")
+  if (!is(filePath, "character"))
     stop("'filepath' must be of type character.")
   if(!file.exists(filePath)) stop("'file' does not exist, check working dir!")
   gr <- findORFs_fasta(filePath, startCodon, stopCodon, longestORF,

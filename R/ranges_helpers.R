@@ -187,7 +187,7 @@ asTX <- function(grl, reference) {
 #' @return a DNAStringSet of the transcript sequences
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
-  if(!(class(faFile) == "FaFile" || class(faFile) == "BSgenome"))
+  if(!(is(faFile, "FaFile") || is(faFile, "BSgenome")))
     stop("only FaFile and BSgenome is valid input class")
   if(!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
@@ -415,7 +415,7 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
 #' extendLeaders(tx, extension = 1000)
 #'
 extendLeaders <- function(grl, extension = 1000, cds = NULL) {
-  if (class(extension) == "numeric" && length(extension) == 1) {
+  if (is(extension, "numeric") && length(extension) == 1) {
     posIndices <- strandBool(grl)
     promo <- promoters(unlist(firstExonPerGroup(grl), use.names = FALSE),
                        upstream = extension)

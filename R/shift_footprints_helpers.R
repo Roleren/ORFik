@@ -204,7 +204,7 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 #'
 txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
                                minCDS = 150L, minThreeUTR = 30L) {
-  if(class(txdb) != "TxDb") stop("txdb must be a TxDb object")
+  if(!is(txdb, "TxDb")) stop("txdb must be a TxDb object")
 
   tx <- data.table::setDT(
     GenomicFeatures::transcriptLengths(

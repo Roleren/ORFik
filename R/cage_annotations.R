@@ -247,7 +247,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
   if (is.character(cage)) {
     filteredCage <- filterCage(fread.bed(cage),
                                filterValue) # get the cage data
-  } else if (class(cage) == "GRanges") {
+  } else if (is(cage, "GRanges")) {
     filteredCage <- filterCage(cage, filterValue)
   } else {
     stop("Cage-file must be either a valid character",

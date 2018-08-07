@@ -356,7 +356,7 @@ fractionLength <- function(grl, tx_len){
 #'
 disengagementScore <- function(grl, RFP, GtfOrTx){
 
-  if (class(GtfOrTx) == "TxDb") {
+  if (is(GtfOrTx,"TxDb")) {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
   } else if (is.grl(GtfOrTx)) {
     tx <- GtfOrTx
@@ -429,7 +429,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
 #' ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #'
 ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
-  if (class(GtfOrThreeUtrs) == "TxDb") {
+  if (is(GtfOrThreeUtrs,"TxDb")) {
     threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
                                        use.names = TRUE)
   } else if (is.grl(GtfOrThreeUtrs)) {
@@ -604,7 +604,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                             tx must be specified as a GRangesList")
     }
     } else {
-      if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
+      if(!is(Gtf,"TxDb")) stop("gtf must be TxDb object")
 
       notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
                                 class(threeUTRs), class(tx)),
@@ -655,7 +655,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
 
     if (includeNonVarying) {
 
-      if (class(faFile) == "FaFile" || class(faFile) == "BSgenome") {
+      if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
@@ -727,7 +727,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
   validGRL(class(grl), "grl")
   checkRFP(class(RFP))
   checkRNA(class(RNA))
-  if(class(Gtf) != "TxDb") stop("gtf must be TxDb object")
+  if(!is(Gtf,"TxDb")) stop("gtf must be TxDb object")
 
   # get transcript parts
   fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
@@ -765,7 +765,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
 
     if (includeNonVarying) {
 
-      if (class(faFile) == "FaFile" || class(faFile) == "BSgenome") {
+      if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
         scores$kozak <- kozakSequenceScore(grl, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
