@@ -19,11 +19,10 @@ filterCage <- function(rawCage, filterValue = 1) {
 #' Check that seqlevels of fiveUTRs and cage uses
 #' the same standard, i.g chr1 vs 1.
 #' @param filteredCage Cage-data to check seqnames in
-#' @param fiveUTRs The 5' leader sequences as GRangesList
+#' @param fiveSeqlevels A vector of seqlevels for 5' UTRs (seqlevels(fiveUTRs))
 #' @return filteredCage with matched seqnames convention
 #'
-matchSeqlevels <- function(filteredCage, fiveUTRs) {
-  fiveSeqlevels <- seqlevels(unlist(fiveUTRs, use.names = FALSE))
+matchSeqlevels <- function(filteredCage, fiveSeqlevels) {
   cageSeqlevels <- seqlevels(filteredCage)
   if (length(grep(pattern = "chr", fiveSeqlevels)) > 0 &&
       length(grep(pattern = "chr", cageSeqlevels)) == 0) {
@@ -200,7 +199,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' Reassign all Transcript Start Sites (TSS)
 #'
 #' Given a GRangesList of 5' UTRs or transcripts, reassign the start
-#' postitions using max peaks from CageSeq data. A max peak is defined as new
+#' sites using max peaks from CageSeq data. A max peak is defined as new
 #' TSS if it is within boundary of 5' leader range, specified by
 #' `extension` in bp. A max peak must also be higher than minimum
 #' CageSeq peak cutoff specified in `filterValue`. The new TSS will then
@@ -214,7 +213,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' for CageSeq peak.
 #' @param filterValue The minimum number of reads on cage position,
 #' for it to be counted as possible new tss.
-#' (represented in score column in CageSeq data) to
+#' (represented in score column in CageSeq data)
 #' If you already filtered, set it to 0.
 #' @param cds (GRangesList) CDS of relative fiveUTRs, applicable only if you
 #' want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
@@ -254,10 +253,94 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
          " filepath or GRanges object.")
   }
   # check that seqnames match
-  filteredCage <- matchSeqlevels(filteredCage, fiveUTRs)
+  filteredCage <- matchSeqlevels(filteredCage, seqlevels(fiveUTRs))
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension)
   fiveUTRs <- assignFirstExons(
     addNewTSSOnLeaders(fiveUTRs, maxPeakPosition), fiveUTRs)
   if(!is.null(cds)) fiveUTRs <- addFirstCdsOnLeaderEnds(fiveUTRs, cds)
   return(fiveUTRs)
+}
+
+#' Input a txdb and reassign the TSS for each transcript by CAGE
+#'
+#'' Given a TxDb object, reassign the start site per transcript
+#' using max peaks from CageSeq data. A max peak is defined as new
+#' TSS if it is within boundary of 5' leader range, specified by
+#' `extension` in bp. A max peak must also be higher than minimum
+#' CageSeq peak cutoff specified in `filterValue`. The new TSS will then
+#' be the positioned where the cage read (with highest read count in the
+#' interval).
+#' @param txdb a TxDb object, normally from a gtf file.
+#' @param cage Either a filePath for CageSeq file, or already loaded
+#' CageSeq peak data as GRanges.
+#' @param extension The maximum number of basses upstream of the TSS to search
+#' for CageSeq peak.
+#' @param filterValue The minimum number of reads on cage position,
+#' for it to be counted as possible new tss.
+#' (represented in score column in CageSeq data)
+#' If you already filtered, set it to 0.
+#' @importFrom data.table setkeyv
+#' @export
+#' @examples
+#'  \dontrun{
+#'  library(GenomicFeatures)
+#'  # Get the gtf txdb file
+#'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'  package = "GenomicFeatures")
+#'  txdb <- loadDb(txdbFile)
+#'  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
+#'  package = "ORFik")
+#'  reassignTxDbByCage(txdb, cagePath)
+#'  }
+#' @return a TxDb obect of reassigned transcripts
+reassignTxDbByCage <- function(txdb, cage, extension = 1000,
+                               filterValue = 1) {
+  if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
+  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
+  fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue)
+  starts <- startSites(fiveUTRs, keep.names = TRUE)
+
+  txList <- as.list(txdb)
+  # find all transcripts with 5' UTRs
+  hitsTx <- txList$transcripts$tx_name %in% names(fiveUTRs)
+  idTx <- which(hitsTx)
+  # reassign starts for positive strand
+  txList$transcripts$tx_start[hitsTx][strandBool(fiveUTRs)] <-
+    starts[strandBool(fiveUTRs)]
+  txList$splicings$exon_start[(txList$splicings$tx_id %in% idTx) &
+                                (txList$splicings$exon_rank == 1) &
+                                (txList$splicings$exon_strand == "+")] <-
+    starts[strandBool(fiveUTRs)]
+  # reassign stops for negative strand
+  txList$transcripts$tx_end[hitsTx][!strandBool(fiveUTRs)] <-
+    starts[!strandBool(fiveUTRs)]
+  txList$splicings$exon_end[(txList$splicings$tx_id %in% idTx) &
+                              (txList$splicings$exon_rank == 1) &
+                              (txList$splicings$exon_strand == "-")] <-
+    starts[!strandBool(fiveUTRs)]
+
+  # remake exon ids
+  DT <- data.table(start = txList$splicings$exon_start,
+                   end = txList$splicings$exon_end,
+                   chr = txList$splicings$exon_chr,
+                   strand = txList$splicings$exon_strand,
+                   id = seq.int(1,length(txList$splicings$exon_start)))
+  setkeyv(DT, c("start", "end", "chr", "strand"))
+  d <- duplicated(DT[,.(start, end, chr, strand)])
+  c <- rep.int(1,length(d))
+  # find unique exon ids
+  for(x in seq.int(2,length(d))){
+    if (d[x]) {
+      c[x] <- c[x-1]
+    } else {
+      c[x] <- c[x-1]+1
+    }
+  }
+
+  # reassign exon ids
+  txList$splicings$exon_id <- as.integer(c[order(DT$id)])
+  # Since exons have changed, their official exon names can not be preserved.
+  txList$splicings$exon_name <- NULL
+
+  return(do.call(makeTxDb, txList))
 }

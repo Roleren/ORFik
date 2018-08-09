@@ -18,7 +18,7 @@ for CageSeq peak.}
 
 \item{filterValue}{The minimum number of reads on cage position,
 for it to be counted as possible new tss.
-(represented in score column in CageSeq data) to
+(represented in score column in CageSeq data)
 If you already filtered, set it to 0.}
 
 \item{cds}{(GRangesList) CDS of relative fiveUTRs, applicable only if you
@@ -31,7 +31,7 @@ a GRangesList of newly assigned TSS for fiveUTRs,
 }
 \description{
 Given a GRangesList of 5' UTRs or transcripts, reassign the start
-postitions using max peaks from CageSeq data. A max peak is defined as new
+sites using max peaks from CageSeq data. A max peak is defined as new
 TSS if it is within boundary of 5' leader range, specified by
 `extension` in bp. A max peak must also be higher than minimum
 CageSeq peak cutoff specified in `filterValue`. The new TSS will then

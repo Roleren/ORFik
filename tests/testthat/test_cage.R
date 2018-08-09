@@ -55,7 +55,7 @@ cage <- GRanges(seqnames = c("1","1","2","2","3","3"),
 
 test_that("matchSeqlevels fixes seqlevel discrepancies correctly", {
 
-  test_result <- matchSeqlevels(cage, fiveUTRs)
+  test_result <- matchSeqlevels(cage, seqlevels(fiveUTRs))
 
   expect_is(test_result, "GRanges")
   expect_equal(length(test_result), 6)

@@ -4,12 +4,12 @@
 \alias{matchSeqlevels}
 \title{Match seqnames}
 \usage{
-matchSeqlevels(filteredCage, fiveUTRs)
+matchSeqlevels(filteredCage, fiveSeqlevels)
 }
 \arguments{
 \item{filteredCage}{Cage-data to check seqnames in}
 
-\item{fiveUTRs}{The 5' leader sequences as GRangesList}
+\item{fiveSeqlevels}{A vector of seqlevels for 5' UTRs (seqlevels(fiveUTRs))}
 }
 \value{
 filteredCage with matched seqnames convention
