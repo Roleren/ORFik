@@ -9,7 +9,7 @@ findNewTSS(fiveUTRs, cageData, extension)
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
-\item{cageData}{The location of the cage-file}
+\item{cageData}{The CAGE as GRanges object}
 
 \item{extension}{The number of basses upstream to add on transcripts}
 }

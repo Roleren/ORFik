@@ -4,13 +4,17 @@
 \alias{filterCage}
 \title{Filter peak of cage-data by value}
 \usage{
-filterCage(rawCage, filterValue = 1)
+filterCage(rawCage, filterValue = 1, fiveUTRs = NULL)
 }
 \arguments{
 \item{rawCage}{The raw cage-data}
 
 \item{filterValue}{The number of counts(score) to filter on
 for a tss to pass as hit}
+
+\item{fiveUTRs}{a GRangesList (NULL), if added will filter out cage reads by
+these following rules:
+all reads in region (-5:-1, 1:5) for each tss will be removed, removes noise.}
 }
 \value{
 the filtered Granges object

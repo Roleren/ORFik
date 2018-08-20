@@ -499,7 +499,7 @@ ribosomeStallingScore <- function(grl, RFP){
 
 #' Get all possible features in ORFik
 #'
-#' Normally dont use this function, but instead use:
+#' Normally don't use this function, but instead use:
 #' [computeFeatures()]
 #'
 #' A specialized version if you used Cage data, and don't have

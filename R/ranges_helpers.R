@@ -1,25 +1,3 @@
-#' Seqnames cleanup
-#'
-#' For many datasets, the fa file and the gtf file have different naming
-#' This functions tries to fix the naming to the GRanges standard
-#' chrX instead of X chr1 instead of 1 etc..
-#' @param grl a \code{\link{GRangesList}}
-#' @return a GRangesList with fixed seqnames
-#'
-fixSeqnames <- function(grl) {
-  validGRL(class(grl))
-
-  temp <- unlist(grl)
-  seqnamesTransformed <- as.character(seqnames(temp))
-  indexes <- which(nchar(seqnamesTransformed) < 6)
-  temp <- temp[indexes]
-  seqlevels(temp) <- sub(replacement = "chrY", pattern = "Y", seqlevels(temp))
-  seqlevels(temp) <- sub(replacement = "chrX", pattern = "X", seqlevels(temp))
-  seqlevels(temp) <- as.character(unique(seqnames(unlist(temp))))
-  return(groupGRangesBy(temp))
-}
-
-
 #' Make a meta column with exon ranks
 #'
 #' Must be ordered, so that same transcripts are ordered together.
@@ -253,16 +231,16 @@ assignLastExonsStopSite <- function(grl, newStops) {
 }
 
 
-#' Get rest of objects downstream
+#' Get rest of objects downstream (exclusive)
 #'
-#' Per group get the part downstream of position
-#'  defined in downstreamOf
-#'  downstreamOf(tx, stopSites(cds, asGR = F))
+#' Per group get the part downstream of position.
+#'  downstreamOfPerGroup(tx, stopSites(cds, asGR = TRUE))
 #'  will return the 3' utrs per transcript as GRangesList,
 #'  usually used for interesting
-#'  parts of the transcripts, like upstream open reading frames(uorf).
-#'  downstreamOf +/- 1 is start/end site
-#'  of transformed tx's, depending on strand
+#'  parts of the transcripts.
+#'
+#' #' If you want to include the points given in the region,
+#' use downstreamFromPerGroup
 #' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param downstreamOf a vector of integers, for each group in tx, where
@@ -307,20 +285,62 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
   return(assignFirstExonsStartSite(downTx, downstreamOf))
 }
 
+#' Get rest of objects downstream (inclusive)
+#'
+#' Per group get the part downstream of position.
+#'  downstreamFromPerGroup(tx, startSites(threeUTRs, asGR = TRUE))
+#'  will return the  3' utrs per transcript as GRangesList,
+#'  usually used for interesting
+#'  parts of the transcripts.
+#'
+#' #' If you don't want to include the points given in the region,
+#' use \code{\link{downstreamOfPerGroup}}
+#' @param tx a \code{\link{GRangesList}},
+#'  usually of Transcripts to be changed
+#' @param downstreamFrom a vector of integers, for each group in tx, where
+#' is the new start point of first valid exon.
+#' @return a GRangesList of downstream part
+#'
+downstreamFromPerGroup <- function(tx, downstreamFrom) {
+  # Needs speed update!
+  posIndices <- strandBool(tx)
+  posEnds <- end(tx[posIndices])
+  negEnds <- start(tx[!posIndices])
+  posDown <- downstreamFrom[posIndices]
+  negDown <- downstreamFrom[!posIndices]
+  pos <- posEnds >= posDown
+  neg <- negEnds <= negDown
+  posTx <- tx[posIndices][pos]
+  negTx <- tx[!posIndices][neg]
+  downTx <- tx
+  downTx[posIndices] <- posTx
+  downTx[!posIndices] <- negTx
+  #check if anyone hits boundary, set those to boundary
+  if (anyNA(strandPerGroup(downTx, FALSE))) {
+    boundaryHits <- which(is.na(strandPerGroup(downTx, FALSE)))
+    downTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
+    ir <- IRanges(start = downstreamFrom[boundaryHits],
+                  end = downstreamFrom[boundaryHits])
+    irl <- split(ir, seq_along(ir))
+    names(irl) <- names(tx[boundaryHits])
+    ranges(downTx[boundaryHits]) <- irl
+  }
 
-#' Get rest of objects upstream
+  return(assignFirstExonsStartSite(downTx, downstreamFrom))
+}
+
+
+#' Get rest of objects upstream (exclusive)
 #'
 #' Per group get the part upstream of position
-#'  defined in upstreamOf
-#'  upstream(tx, startSites(cds, asGR = F))
+#'  upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
 #'  will return the 5' utrs per transcript, usually used for interesting
-#'  parts of the transcripts, like upstream open reading frames(uorf).
-#'  downstreamOf +/- 1 is start/end site
-#'  of transformed tx's, depending on strand
+#'  parts of the transcripts.
+#'
 #' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
-#'  is the new stop point of last valid exon.
+#'  is the the base after the new stop point of last valid exon.
 #' @param allowOutside a logical (T), can upstreamOf extend outside
 #'  range of tx, can set boundary as a false hit, so beware.
 #' @return a GRangesList of upstream part
@@ -432,7 +452,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 
   extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
   if(is.null(cds)) return (extendedLeaders)
-  return(addFirstCdsOnLeaderEnds(
+  return(addCdsOnLeaderEnds(
     extendedLeaders, cds))
 }
 

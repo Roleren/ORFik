@@ -42,7 +42,8 @@ doi: 10.1074/jbc.R116.733899
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},
   \code{\link{computeFeatures}},
-  \code{\link{disengagementScore}}, \code{\link{entropy}},
+  \code{\link{disengagementScore}},
+  \code{\link{distToTSS}}, \code{\link{entropy}},
   \code{\link{floss}}, \code{\link{fpkm_calc}},
   \code{\link{fpkm}}, \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},

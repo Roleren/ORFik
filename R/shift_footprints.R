@@ -171,10 +171,10 @@ detectRibosomeShifts <- function(
       counts <- counts[seq_len(top_tx)]
     }
     if (length(counts) == 0) next
+    # This is the slow line, we need to speed this up! ->
     cvgCDS <- coverageByWindow(ends_uniq, cds[names(counts)], is.sorted = TRUE)
     cvgCDS <- Reduce(`+`, cvgCDS)
-    periodic <- isPeriodic(as.vector(cvgCDS))
-    if (periodic) {
+    if (isPeriodic(as.vector(cvgCDS))) {
       selected_lengths <- c(selected_lengths, l)
       if (start) {
         start_meta <- metaWindow(ends_uniq, ss$starts)

@@ -9,10 +9,10 @@ extendsTSSexons(fiveUTRs, extension = 1000)
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
-\item{extension}{The number of basses upstream to add on transcripts}
+\item{extension}{The number of basses to extend transcripts upstream}
 }
 \value{
-granges object of first exons
+GRangesList object of fiveUTRs
 }
 \description{
 Extend first exon of each transcript with length specified

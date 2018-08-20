@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{downstreamOfPerGroup}
 \alias{downstreamOfPerGroup}
-\title{Get rest of objects downstream}
+\title{Get rest of objects downstream (exclusive)}
 \usage{
 downstreamOfPerGroup(tx, downstreamOf)
 }
@@ -17,12 +17,13 @@ is the new start point of first valid exon.}
 a GRangesList of downstream part
 }
 \description{
-Per group get the part downstream of position
- defined in downstreamOf
- downstreamOf(tx, stopSites(cds, asGR = F))
+Per group get the part downstream of position.
+ downstreamOfPerGroup(tx, stopSites(cds, asGR = TRUE))
  will return the 3' utrs per transcript as GRangesList,
  usually used for interesting
- parts of the transcripts, like upstream open reading frames(uorf).
- downstreamOf +/- 1 is start/end site
- of transformed tx's, depending on strand
+ parts of the transcripts.
+}
+\details{
+#' If you want to include the points given in the region,
+use downstreamFromPerGroup
 }
