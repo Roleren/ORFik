@@ -2,16 +2,20 @@
 % Please edit documentation in R/cage_annotations.R
 \name{restrictTSSByUpstreamLeader}
 \alias{restrictTSSByUpstreamLeader}
-\title{Restrict extension of 5' UTRs to closest upstream TSS}
+\title{Restrict extension of 5' UTRs to closest upstream leader end}
 \usage{
-restrictTSSByUpstreamLeader(fiveUTRs)
+restrictTSSByUpstreamLeader(fiveUTRs, shiftedfiveUTRs)
 }
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
+
+\item{shiftedfiveUTRs}{The 5' leader sequences as GRangesList
+shifted by CAGE}
 }
 \value{
 GRangesList object of restricted fiveUTRs
 }
 \description{
-That is minimum(CAGE extension, upstream TSS)
+Basicly this function restricts all startSites, to the upstream GRangesList
+ objects end. Usually leaders, for CAGE.
 }

@@ -62,10 +62,24 @@ test_that("filterCage filters correctly", {
   expect_equal(length(test_result), 5)
 })
 
+test_that("restrictTSSByUpstreamLeader filters correctly", {
+  f <- fiveUTRs[1]
+  start(f) <- IntegerList(start(f) - 800)
+  end(f) <- IntegerList(end(f) - 800)
+  ff <- c(fiveUTRs[1], f)
+  shifted <- extendsTSSexons(ff, 1000)
+  test_result <- restrictTSSByUpstreamLeader(ff, shifted)
+  expect_is(test_result, "GRangesList")
+  expect_equal(length(test_result), 2)
+
+  expect_equal(as.integer(start(test_result[1])), as.integer(end(ff[2])))
+})
+
+
 test_that("addNewTSSOnLeaders assigns new TSS correctly", {
-  test_result <- ORFik:::downstreamFromPerGroup(fiveUTRs[3], 32671324)
+  test_result <- downstreamFromPerGroup(fiveUTRs[3], 32671324)
 
   expect_is(test_result, "GRangesList")
-  test_result <- ORFik:::startSites(test_result, is.sorted = T)
+  test_result <- startSites(test_result, is.sorted = TRUE)
   expect_equal(test_result, 32671324)
 })

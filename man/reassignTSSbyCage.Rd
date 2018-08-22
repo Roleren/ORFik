@@ -4,7 +4,8 @@
 \alias{reassignTSSbyCage}
 \title{Reassign all Transcript Start Sites (TSS)}
 \usage{
-reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1)
+reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
+  restrictUpstreamToTx = FALSE)
 }
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or transcript sequences}
@@ -19,6 +20,10 @@ for CageSeq peak.}
 for it to be counted as possible new tss.
 (represented in score column in CageSeq data)
 If you already filtered, set it to 0.}
+
+\item{restrictUpstreamToTx}{a logical (FALSE), if you want to restrict
+leaders to not extend closer than 5 bases from closest upstream leader,
+set this to TRUE.}
 }
 \value{
 a GRangesList of newly assigned TSS for fiveUTRs,
@@ -53,3 +58,8 @@ cage <- GenomicRanges::GRanges(
 reassignTSSbyCage(fiveUTRs, cage)
 
 }
+\seealso{
+Other CAGE: \code{\link{assignTSSByCage}},
+  \code{\link{reassignTxDbByCage}}
+}
+\concept{CAGE}

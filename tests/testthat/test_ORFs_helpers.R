@@ -194,7 +194,7 @@ test_that("findMapORFs works as intended for minus strand", {
   expect_is(test_ranges, "GRangesList")
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
-  expect_equal(strandPerGroup(test_ranges,F)[1], "-")
+  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "-")
   expect_equal(as.integer(unlist(start(test_ranges))),
                c(10, 21, 1011, 1010, 1012))
   expect_equal(as.integer(unlist(end(test_ranges))),
@@ -222,7 +222,7 @@ test_that("mapToGRanges works as intended for strange exons positive strand", {
   test_ranges <- findMapORFs(grl,seqs,
                              "ATG|TGG|GGG",
                              "TAA|AAT|ATA",
-                             longestORF = F,
+                             longestORF = FALSE,
                              minimumLength = 0)
 
   expect_is(test_ranges, "GRangesList")

@@ -4,7 +4,7 @@
 \alias{findNewTSS}
 \title{Finds max peaks per trancsript from reads in the cagefile}
 \usage{
-findNewTSS(fiveUTRs, cageData, extension)
+findNewTSS(fiveUTRs, cageData, extension, restrictUpstreamToTx)
 }
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
@@ -12,6 +12,10 @@ findNewTSS(fiveUTRs, cageData, extension)
 \item{cageData}{The CAGE as GRanges object}
 
 \item{extension}{The number of basses upstream to add on transcripts}
+
+\item{restrictUpstreamToTx}{a logical (FALSE), if you want to restrict
+leaders to not extend closer than 5 bases from closest upstream leader,
+set this to TRUE.}
 }
 \value{
 a Hits object

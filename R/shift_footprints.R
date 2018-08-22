@@ -32,6 +32,7 @@
 #' # shift the RiboSeq footprints
 #' shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
 #'                                 shifts$offsets_start)
+#'                                 HAKON IS ANUS
 #' }
 shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 
@@ -172,7 +173,8 @@ detectRibosomeShifts <- function(
     }
     if (length(counts) == 0) next
     # This is the slow line, we need to speed this up! ->
-    cvgCDS <- coverageByWindow(ends_uniq, cds[names(counts)], is.sorted = TRUE)
+    cvgCDS <- coverageByWindow(ends_uniq, cds[names(counts)], is.sorted = TRUE,
+                               keep.names = FALSE)
     cvgCDS <- Reduce(`+`, cvgCDS)
     if (isPeriodic(as.vector(cvgCDS))) {
       selected_lengths <- c(selected_lengths, l)

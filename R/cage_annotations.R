@@ -9,6 +9,13 @@
 #' @return the filtered Granges object
 #'
 filterCage <- function(rawCage, filterValue = 1, fiveUTRs = NULL) {
+  if(tryCatch(seqlevelsStyle(rawCage) <- seqlevelsStyle(fiveUTRs),
+           error = function(e){TRUE}) == TRUE){
+    warning("seqlevels of CAGE/fiveUTRs is not following standard, check them.")
+  } else {
+    seqlevelsStyle(rawCage) <- seqlevelsStyle(fiveUTRs)
+  }
+
   if (filterValue == 0) {
     return(rawCage)
   }
@@ -17,7 +24,6 @@ filterCage <- function(rawCage, filterValue = 1, fiveUTRs = NULL) {
 
   if (!is.null(fiveUTRs)) {
     # check that seqnames match
-    seqlevelsStyle(filteredCage) <- seqlevelsStyle(fiveUTRs)
     tss <- startSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
     # remove all reads in region (-5:-1, 1:5) of tss
     filteredCage <- filteredCage[!((countOverlaps(filteredCage, tss,
@@ -49,22 +55,39 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
   return(relist(fiveAsgr, fiveUTRs))
 }
 
-#' Restrict extension of 5' UTRs to closest upstream TSS
+#' Restrict extension of 5' UTRs to closest upstream leader end
 #'
-#' That is minimum(CAGE extension, upstream TSS)
+#' Basicly this function restricts all startSites, to the upstream GRangesList
+#'  objects end. Usually leaders, for CAGE.
 #' @param fiveUTRs The 5' leader sequences as GRangesList
+#' @param shiftedfiveUTRs The 5' leader sequences as GRangesList
+#'  shifted by CAGE
 #' @return GRangesList object of restricted fiveUTRs
-restrictTSSByUpstreamLeader <- function(fiveUTRs){
-  #TODO
-  #find overlapping ranges
-  # fiveUTRs
-  # tss region
+restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs){
 
-  overlaps <- findOverlaps(fiveUTRs, IRanges(startSites(fiveUTRs, asGR = T, keep.names = F, is.sorted = T), width = 5))
-  overlaps <- overlaps[to(overlaps) != from(overlaps)]
-  # for each leader, with more than 1 overlapping tss, choose most downstream
+  startSitesGR <- startSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
+  stopSitesGR <- stopSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
 
+  overlaps <- findOverlaps(fiveUTRs, stopSitesGR)
+  overlapsShifted <- findOverlaps(shiftedfiveUTRs, stopSitesGR)
+  overlaps <- overlaps[from(overlaps) != to(overlaps)]
+  overlapsShifted <- overlapsShifted[from(overlapsShifted) !=
+                                       to(overlapsShifted)]
 
+  # remove overlaps also in overlapsShifted
+  overlapsShifted <- overlapsShifted[!(overlapsShifted %in% overlaps)]
+  # for all duplicates, choose closest
+  dt <- data.table(from = from(overlapsShifted), to = to(overlapsShifted))
+  dt$distance <- distance(startSitesGR[from(overlapsShifted)],
+                          stopSitesGR[to(overlapsShifted)])
+  minDT <- dt[, .I[which.min(distance)], by=from]
+
+  # assign closest
+  shiftedfiveUTRs[minDT$from]  <- downstreamFromPerGroup(
+    shiftedfiveUTRs[minDT$from],
+    start(stopSitesGR[to(overlapsShifted)[minDT$V1]]))
+
+  return(shiftedfiveUTRs)
 }
 
 #' Find max peak for each transcript,
@@ -94,13 +117,18 @@ findMaxPeaks <- function(cageOverlaps, filteredCage) {
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param cageData The CAGE as GRanges object
 #' @param extension The number of basses upstream to add on transcripts
+#' @param restrictUpstreamToTx a logical (FALSE), if you want to restrict
+#'  leaders to not extend closer than 5 bases from closest upstream leader,
+#'  set this to TRUE.
 #' @return a Hits object
 #'
-findNewTSS <- function(fiveUTRs, cageData, extension) {
+findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
 
   shiftedfiveUTRs <- extendsTSSexons(fiveUTRs, extension)
-  #TODO add function that remove hits upstream of closest upstream tx
-  #restrictTSSByUpstreamLeader()
+  if (restrictUpstreamToTx){
+    shiftedfiveUTRs <- restrictTSSByUpstreamLeader(fiveUTRs, shiftedfiveUTRs)
+  }
+
   cageOverlaps <- findOverlaps(query = cageData, subject = shiftedfiveUTRs)
   maxPeakPosition <- findMaxPeaks(cageOverlaps, cageData)
   return(maxPeakPosition)
@@ -117,9 +145,9 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
   newTSS <- startSites(fiveUTRs, asGR = FALSE, keep.names = FALSE,
                        is.sorted = TRUE)
   newTSS[maxPeakPosition$to[maxPeakPosition$strand == "+"]] <-
-    maxPeakPosition$start[maxPeakPosition$to[maxPeakPosition$strand == "+"]]
+    maxPeakPosition$start[maxPeakPosition$strand == "+"]
   newTSS[maxPeakPosition$to[maxPeakPosition$strand == "-"]] <-
-    maxPeakPosition$end[maxPeakPosition$to[maxPeakPosition$strand == "-"]]
+    maxPeakPosition$end[maxPeakPosition$strand == "-"]
   fiveUTRsNew <- downstreamFromPerGroup(fiveUTRs, newTSS)
 
   return(fiveUTRsNew)
@@ -145,8 +173,12 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' for it to be counted as possible new tss.
 #' (represented in score column in CageSeq data)
 #' If you already filtered, set it to 0.
+#' @param restrictUpstreamToTx a logical (FALSE), if you want to restrict
+#'  leaders to not extend closer than 5 bases from closest upstream leader,
+#'  set this to TRUE.
 #' @return a GRangesList of newly assigned TSS for fiveUTRs,
 #'  using CageSeq data.
+#' @family CAGE
 #' @export
 #' @examples
 #' # example 5' leader, notice exon_rank column
@@ -168,7 +200,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
 #' reassignTSSbyCage(fiveUTRs, cage)
 #'
 reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
-                              filterValue = 1) {
+                              filterValue = 1, restrictUpstreamToTx = FALSE) {
   validGRL(class(fiveUTRs), "fiveUTRs")
   if (is.character(cage)) {
     filteredCage <- filterCage(fread.bed(cage),
@@ -180,7 +212,8 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
          " filepath or GRanges object.")
   }
 
-  maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension)
+  maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension,
+                                restrictUpstreamToTx)
   fiveUTRs <- addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
   return(fiveUTRs)
 }
@@ -203,7 +236,11 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #' for it to be counted as possible new tss.
 #' (represented in score column in CageSeq data)
 #' If you already filtered, set it to 0.
+#' @param restrictUpstreamToTx a logical (FALSE), if you want to restrict
+#'  leaders to not extend closer than 5 bases from closest upstream leader,
+#'  set this to TRUE.
 #' @importFrom data.table setkeyv
+#' @family CAGE
 #' @export
 #' @examples
 #'  \dontrun{
@@ -218,53 +255,99 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #'  }
 #' @return a TxDb obect of reassigned transcripts
 reassignTxDbByCage <- function(txdb, cage, extension = 1000,
-                               filterValue = 1) {
+                               filterValue = 1, restrictUpstreamToTx = FALSE) {
   if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
-  fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue)
-  starts <- startSites(fiveUTRs, keep.names = TRUE)
+  fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue,
+                                restrictUpstreamToTx)
 
   txList <- as.list(txdb)
   # find all transcripts with 5' UTRs
-  hitsTx <- txList$transcripts$tx_name %in% names(fiveUTRs)
-  idTx <- which(hitsTx)
-  # reassign starts for positive strand
-  txList$transcripts$tx_start[hitsTx][strandBool(fiveUTRs)] <-
-    starts[strandBool(fiveUTRs)]
-  txList$splicings$exon_start[(txList$splicings$tx_id %in% idTx) &
-                                (txList$splicings$exon_rank == 1) &
-                                (txList$splicings$exon_strand == "+")] <-
-    starts[strandBool(fiveUTRs)]
-  # reassign stops for negative strand
-  txList$transcripts$tx_end[hitsTx][!strandBool(fiveUTRs)] <-
-    starts[!strandBool(fiveUTRs)]
-  txList$splicings$exon_end[(txList$splicings$tx_id %in% idTx) &
-                              (txList$splicings$exon_rank == 1) &
-                              (txList$splicings$exon_strand == "-")] <-
-    starts[!strandBool(fiveUTRs)]
-
-  # remake exon ids
-  DT <- data.table(start = txList$splicings$exon_start,
-                   end = txList$splicings$exon_end,
-                   chr = txList$splicings$exon_chr,
-                   strand = txList$splicings$exon_strand,
-                   id = seq.int(1,length(txList$splicings$exon_start)))
-  setkeyv(DT, c("start", "end", "chr", "strand"))
-  d <- duplicated(DT[,.(start, end, chr, strand)])
-  c <- rep.int(1,length(d))
-  # find unique exon ids
-  for(x in seq.int(2,length(d))){
-    if (d[x]) {
-      c[x] <- c[x-1]
-    } else {
-      c[x] <- c[x-1]+1
-    }
-  }
+  txList <- updateTxdbStartSites(txList, fiveUTRs)
 
   # reassign exon ids
-  txList$splicings$exon_id <- as.integer(c[order(DT$id)])
+  txList$splicings$exon_id <- remakeTxdbExonIds(txList)
   # Since exons have changed, their official exon names can not be preserved.
   txList$splicings$exon_name <- NULL
 
   return(do.call(makeTxDb, txList))
+}
+
+#' Input a txdb and add a 5' leader for each transcript, that does not have one.
+#'
+#' For all cds in txdb, that does not have a 5' leader:
+#' Start at 1 base upstream of cds and use CAGE, to assign leader start.
+#' All these leaders will be 1 exon based, if you really want exon
+#' splits, you can use exon prediction tools, or run sequencing experiments.
+#'
+#' Given a TxDb object, reassign the start site per transcript
+#' using max peaks from CageSeq data. A max peak is defined as new
+#' TSS if it is within boundary of 5' leader range, specified by
+#' `extension` in bp. A max peak must also be higher than minimum
+#' CageSeq peak cutoff specified in `filterValue`. The new TSS will then
+#' be the positioned where the cage read (with highest read count in the
+#' interval).
+#' @param txdb a TxDb object, normally from a gtf file.
+#' @param cage Either a filePath for CageSeq file, or already loaded
+#' CageSeq peak data as GRanges.
+#' @param extension The maximum number of basses upstream of the TSS to search
+#' for CageSeq peak.
+#' @param filterValue The minimum number of reads on cage position,
+#' for it to be counted as possible new tss.
+#' (represented in score column in CageSeq data)
+#' If you already filtered, set it to 0.
+#' @param restrictUpstreamToTx a logical (FALSE), if you want to restrict
+#'  leaders to not extend closer than 5 bases from closest upstream leader,
+#'  set this to TRUE.
+#' @importFrom data.table setkeyv
+#' @family CAGE
+#' @export
+#' @examples
+#'  \dontrun{
+#'  library(GenomicFeatures)
+#'  # Get the gtf txdb file
+#'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'  package = "GenomicFeatures")
+#'  txdb <- loadDb(txdbFile)
+#'  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
+#'  package = "ORFik")
+#'  reassignTxDbByCage(txdb, cagePath)
+#'  }
+#' @return a TxDb obect of reassigned transcripts
+assignTSSByCage <- function(txdb, cage, extension = 1000,
+                             filterValue = 1, restrictUpstreamToTx = FALSE){
+  if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
+  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
+
+  cds <- cdsBy(txdb,"tx",use.names = TRUE)
+  cds01 <- cds[!(names(cds) %in% names(fiveUTRs))]
+  extension <- 1000
+  cdsStartSites <- ORFik:::startSites(cds01, is.sorted = TRUE)
+  positiveStrands <- ORFik:::strandBool(cds01)
+  cdsStartSites[positiveStrands] <- cdsStartSites[positiveStrands] - 1
+  cdsStartSites[!positiveStrands] <- cdsStartSites[!positiveStrands] + 1
+  leaderEnds <- cdsStartSites
+
+  undefinedLeaders <- GRanges(seqnamesPerGroup(cds01, keep.names = FALSE),
+                              leaderEnds, strandPerGroup(cds01,
+                                                         keep.names = FALSE))
+  names(undefinedLeaders) <- names(cds01)
+  #make exon_rank col as integer
+  undefinedLeaders$exon_rank <- rep.int(1L,length(undefinedLeaders))
+  #make GRangesListfrom GRanges
+  undefinedLeaders <- groupGRangesBy(undefinedLeaders)
+  newLeaders <- reassignTSSbyCage(undefinedLeaders, cage, filterValue,
+                                  extension, restrictUpstreamToTx)
+
+  txList <- as.list(txdb)
+  # find all transcripts with 5' UTRs
+  txList <- updateTxdbStartSites(txList, fiveUTRs)
+
+  # reassign exon ids
+  txList$splicings$exon_id <- remakeTxdbExonIds(txList)
+  # Since exons have changed, their official exon names can not be preserved.
+  txList$splicings$exon_name <- NULL
+
+  return(do.call(makeTxDb, txList))
+
 }

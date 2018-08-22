@@ -111,6 +111,49 @@ fread.bed <- function(filePath) {
   return(bed)
 }
 
+#' Convert a GRanges Object to 1 width reads
+#'
+#' There are 3 ways of doing this
+#' 1. Take 5' ends, reduce away rest (5prime)
+#' 2. Tile and include all(tileAll)
+#' 3. Take middle point per GRanges
+#' @param gr GRanges Object to reduce
+#' @param method the method to reduce, see info. (5prime defualt)
+#' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
+#'  sums up the hits per position.
+#' @return  Converted GRanges object
+convertToOneBasedRanges <- function(gr, method = "5prime",
+                                    addScoreColumn = FALSE){
+  if (method == "5prime") {
+    gr <- resize(gr, width = 1)
+  } else if(method == "tileAll") {
+    gr <- unlist(tile(gr, width = 1), use.names = FALSE)
+
+  } else if(method == "middle") {
+    ranges(gr) <- IRanges(start(gr) + ceiling((end(gr)-start(gr))/2),
+                          width = 1)
+  } else stop("method not defined")
+
+  if (addScoreColumn) {
+    pos <- strandBool(gr)
+    posGr <- gr[pos]
+    dt <- as.data.table(posGr)[, .N, .(seqnames, start)]
+    posGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$start, width = 1),
+                  strand = dt$strand)
+    score <- dt$N
+    negGr <- gr[!pos]
+    dt <- as.data.table(posGr)[, .N, .(seqnames, end)]
+    negGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$end, width = 1),
+                     strand = dt$strand)
+    score <- c(score, dt$N)
+
+    gr <- c(posGr, negGr)
+    gr$score <-score
+  }
+
+  return(gr)
+}
+
 #' Convenience wrapper for Rsamtools FaFile
 #' @param faFile a character path or FaFile
 #' @importFrom Rsamtools FaFile
