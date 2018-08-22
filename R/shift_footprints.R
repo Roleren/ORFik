@@ -32,7 +32,6 @@
 #' # shift the RiboSeq footprints
 #' shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
 #'                                 shifts$offsets_start)
-#'                                 HAKON IS ANUS
 #' }
 shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 

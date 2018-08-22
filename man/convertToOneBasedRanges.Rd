@@ -20,6 +20,6 @@ Converted GRanges object
 \description{
 There are 3 ways of doing this
 1. Take 5' ends, reduce away rest (5prime)
-2. Tile and include all(tileAll)
-3. Take middle point per GRanges
+2. Tile and include all (tileAll)
+3. Take middle point per GRanges (middle)
 }

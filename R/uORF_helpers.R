@@ -92,7 +92,7 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
 #'   score = 10)
 #'
 #' # finally reassign TSS for fiveUTRs
-#' reassignTSSbyCage(fiveUTRs, cage)
+#' uORFSearchSpace(fiveUTRs, cage)
 #'
 uORFSearchSpace <- function(fiveUTRs, cage, extension = 1000,
                             filterValue = 1, cds = NULL){

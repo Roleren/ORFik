@@ -18,12 +18,12 @@ a GRangesList of downstream part
 }
 \description{
 Per group get the part downstream of position.
- downstreamFromPerGroup(tx, startSites(threeUTRs, asGR = TRUE))
- will return the  3' utrs per transcript as GRangesList,
- usually used for interesting
- parts of the transcripts.
+downstreamFromPerGroup(tx, startSites(threeUTRs, asGR = TRUE))
+will return the  3' utrs per transcript as GRangesList,
+usually used for interesting
+parts of the transcripts.
 }
 \details{
-#' If you don't want to include the points given in the region,
+If you don't want to include the points given in the region,
 use \code{\link{downstreamOfPerGroup}}
 }

@@ -21,7 +21,7 @@ a GRangesList of upstream part
 }
 \description{
 Per group get the part upstream of position
- upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
- will return the 5' utrs per transcript, usually used for interesting
- parts of the transcripts.
+upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
+will return the 5' utrs per transcript, usually used for interesting
+parts of the transcripts.
 }

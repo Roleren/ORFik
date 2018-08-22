@@ -115,8 +115,8 @@ fread.bed <- function(filePath) {
 #'
 #' There are 3 ways of doing this
 #' 1. Take 5' ends, reduce away rest (5prime)
-#' 2. Tile and include all(tileAll)
-#' 3. Take middle point per GRanges
+#' 2. Tile and include all (tileAll)
+#' 3. Take middle point per GRanges (middle)
 #' @param gr GRanges Object to reduce
 #' @param method the method to reduce, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that

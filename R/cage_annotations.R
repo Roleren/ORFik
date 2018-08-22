@@ -220,7 +220,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 
 #' Input a txdb and reassign the TSS for each transcript by CAGE
 #'
-#'' Given a TxDb object, reassign the start site per transcript
+#' Given a TxDb object, reassign the start site per transcript
 #' using max peaks from CageSeq data. A max peak is defined as new
 #' TSS if it is within boundary of 5' leader range, specified by
 #' `extension` in bp. A max peak must also be higher than minimum

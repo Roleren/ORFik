@@ -434,7 +434,7 @@ isInFrame <- function(dists){
 #' @param dists a vector of distances between ORF and cds
 #' @family features
 #' @examples
-#' #' # simple example
+#' # simple example
 #' isOverlapping(c(-3,-6,8,11,15))
 #'
 #' # GRangesList example

@@ -234,12 +234,12 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #' Get rest of objects downstream (exclusive)
 #'
 #' Per group get the part downstream of position.
-#'  downstreamOfPerGroup(tx, stopSites(cds, asGR = TRUE))
-#'  will return the 3' utrs per transcript as GRangesList,
-#'  usually used for interesting
-#'  parts of the transcripts.
+#' downstreamOfPerGroup(tx, stopSites(cds, asGR = TRUE))
+#' will return the 3' utrs per transcript as GRangesList,
+#' usually used for interesting
+#' parts of the transcripts.
 #'
-#' #' If you want to include the points given in the region,
+#' If you want to include the points given in the region,
 #' use downstreamFromPerGroup
 #' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
@@ -288,12 +288,12 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #' Get rest of objects downstream (inclusive)
 #'
 #' Per group get the part downstream of position.
-#'  downstreamFromPerGroup(tx, startSites(threeUTRs, asGR = TRUE))
-#'  will return the  3' utrs per transcript as GRangesList,
-#'  usually used for interesting
-#'  parts of the transcripts.
+#' downstreamFromPerGroup(tx, startSites(threeUTRs, asGR = TRUE))
+#' will return the  3' utrs per transcript as GRangesList,
+#' usually used for interesting
+#' parts of the transcripts.
 #'
-#' #' If you don't want to include the points given in the region,
+#' If you don't want to include the points given in the region,
 #' use \code{\link{downstreamOfPerGroup}}
 #' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
@@ -333,9 +333,9 @@ downstreamFromPerGroup <- function(tx, downstreamFrom) {
 #' Get rest of objects upstream (exclusive)
 #'
 #' Per group get the part upstream of position
-#'  upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
-#'  will return the 5' utrs per transcript, usually used for interesting
-#'  parts of the transcripts.
+#' upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
+#' will return the 5' utrs per transcript, usually used for interesting
+#' parts of the transcripts.
 #'
 #' @param tx a \code{\link{GRangesList}},
 #'  usually of Transcripts to be changed
@@ -452,8 +452,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 
   extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
   if(is.null(cds)) return (extendedLeaders)
-  return(addCdsOnLeaderEnds(
-    extendedLeaders, cds))
+  return(addCdsOnLeaderEnds(extendedLeaders, cds))
 }
 
 

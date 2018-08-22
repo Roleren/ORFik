@@ -56,6 +56,6 @@ cage <- GenomicRanges::GRanges(
   score = 10)
 
 # finally reassign TSS for fiveUTRs
-reassignTSSbyCage(fiveUTRs, cage)
+uORFSearchSpace(fiveUTRs, cage)
 
 }

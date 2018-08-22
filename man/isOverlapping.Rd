@@ -17,7 +17,7 @@ Input of this function, is the output of the function
 [distToCds()]
 }
 \examples{
-#' # simple example
+# simple example
 isOverlapping(c(-3,-6,8,11,15))
 
 # GRangesList example
