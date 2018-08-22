@@ -17,7 +17,7 @@ Input of this function, is the output of the function
 [distToCds()]
 }
 \examples{
-#' # simple example
+# simple example
 isOverlapping(c(-3,-6,8,11,15))
 
 # GRangesList example
@@ -33,9 +33,10 @@ doi: 10.1074/jbc.R116.733899
 Other features: \code{\link{computeFeaturesCage}},
   \code{\link{computeFeatures}},
   \code{\link{disengagementScore}},
-  \code{\link{distToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm_calc}},
-  \code{\link{fpkm}}, \code{\link{fractionLength}},
+  \code{\link{distToCds}}, \code{\link{distToTSS}},
+  \code{\link{entropy}}, \code{\link{floss}},
+  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
   \code{\link{rankOrder}},

@@ -39,7 +39,7 @@ test_that("groupGRangesBy works as intended", {
   grltest <- groupGRangesBy(gr)
   expect_is(grltest,"GRangesList")
   expect_equal(length(grltest), 2)
-  expect_equal(length(unlist(grl[1], use.names = F)), 3)
+  expect_equal(length(unlist(grl[1], use.names = FALSE)), 3)
 })
 
 test_that("tile1 works as intended", {
@@ -56,7 +56,7 @@ test_that("tile1 works as intended", {
 
 test_that("widthPerGroup works as intended", {
 
-  widths <- widthPerGroup(grl, F)
+  widths <- widthPerGroup(grl, FALSE)
   expect_is(widths,"integer")
   expect_equal(widths, c(17,18))
 })
@@ -91,7 +91,7 @@ test_that("assignFirstExonsStartSite works as intended", {
   reassigned <- assignFirstExonsStartSite(grl, newStarts)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(firstStartPerGroup(reassigned, F), newStarts)
+  expect_equal(firstStartPerGroup(reassigned, FALSE), newStarts)
 })
 
 test_that("assignLastExonsStopSite works as intended", {
@@ -100,6 +100,16 @@ test_that("assignLastExonsStopSite works as intended", {
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), newStops)
+})
+txTst <- GRangesList(GRanges("1", IRanges(c(1,3,5), width = 1), "+"),
+                     GRanges("1", IRanges(c(5,3,1), width = 1), "-"))
+
+test_that("downstreamFromPerGroup works as intended", {
+  downstreamFrom <- as.integer(c(3, 3))
+  reassigned <- downstreamFromPerGroup(txTst, downstreamFrom)
+  expect_is(reassigned,"GRangesList")
+  expect_equal(length(reassigned), 2)
+  expect_equal(firstStartPerGroup(reassigned, FALSE), downstreamFrom)
 })
 
 test_that("downstreamOfPerGroup works as intended", {
@@ -141,7 +151,7 @@ test_that("extendLeaders works as intended", {
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
   expect_equal(firstStartPerGroup(reassigned, FALSE), as.integer(c(-4, 145)))
-  expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(105, 205)))
+  expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(115, 215)))
 })
 
 test_that("matchNaming works as intended", {

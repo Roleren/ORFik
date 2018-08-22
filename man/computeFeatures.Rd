@@ -68,9 +68,10 @@ suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
 \seealso{
 Other features: \code{\link{computeFeaturesCage}},
   \code{\link{disengagementScore}},
-  \code{\link{distToCds}}, \code{\link{entropy}},
-  \code{\link{floss}}, \code{\link{fpkm_calc}},
-  \code{\link{fpkm}}, \code{\link{fractionLength}},
+  \code{\link{distToCds}}, \code{\link{distToTSS}},
+  \code{\link{entropy}}, \code{\link{floss}},
+  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
+  \code{\link{fractionLength}},
   \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
   \code{\link{isOverlapping}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},

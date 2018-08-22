@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{upstreamOfPerGroup}
 \alias{upstreamOfPerGroup}
-\title{Get rest of objects upstream}
+\title{Get rest of objects upstream (exclusive)}
 \usage{
 upstreamOfPerGroup(tx, upstreamOf, allowOutside = TRUE)
 }
@@ -11,7 +11,7 @@ upstreamOfPerGroup(tx, upstreamOf, allowOutside = TRUE)
 usually of Transcripts to be changed}
 
 \item{upstreamOf}{a vector of integers, for each group in tx, where
-is the new stop point of last valid exon.}
+is the the base after the new stop point of last valid exon.}
 
 \item{allowOutside}{a logical (T), can upstreamOf extend outside
 range of tx, can set boundary as a false hit, so beware.}
@@ -21,10 +21,7 @@ a GRangesList of upstream part
 }
 \description{
 Per group get the part upstream of position
- defined in upstreamOf
- upstream(tx, startSites(cds, asGR = F))
- will return the 5' utrs per transcript, usually used for interesting
- parts of the transcripts, like upstream open reading frames(uorf).
- downstreamOf +/- 1 is start/end site
- of transformed tx's, depending on strand
+upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
+will return the 5' utrs per transcript, usually used for interesting
+parts of the transcripts.
 }
