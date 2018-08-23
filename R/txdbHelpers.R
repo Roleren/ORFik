@@ -22,12 +22,59 @@ remakeTxdbExonIds <- function(txList){
   return(as.integer(c[order(DT$id)]))
 }
 
+#' Update exon ranks of exon data.frame
+#'
+#' @param exons a data.frame, call of as.list(txdb)$splicings
+#' @return a data.frame, modified call of as.list(txdb)
+updateTxdbRanks <- function(exons){
+
+  exons$exon_rank <-  unlist(lapply(runLength(Rle(exons$tx_id)),
+                         function(x) seq.int(1,x)), use.names = FALSE)
+  return(exons)
+
+}
+
+#' Remove exons in txList that are not in fiveUTRs
+#'
+#' @param txList a list, call of as.list(txdb)
+#' @param fiveUTRs a GRangesList of 5' leaders
+#' @return a list, modified call of as.list(txdb)
+removeTxdbExons <- function(txList, fiveUTRs){
+  # remove old "dead" exons
+  # get fiveUTR exons
+  gr <- unlistGrl(fiveUTRs)
+  dt <- as.data.table(gr)
+  dt$names <- names(gr)
+  # find the ones that does not start on 1
+  d <-  dt[, .I[which.min(exon_rank)], by=names]
+  d$ranks <- dt$exon_rank[d$V1]
+  d <- d[ranks > 1,]
+  if(nrow(d) == 0) return(txList)
+  # delete these in txList
+  rankHits <- (txList$transcripts$tx_name[txList$splicings$tx_id] %in% d$names)
+  e <- setDT(txList$splicings[rankHits,])
+  f <- data.table(rank = e$exon_rank,
+                  names = txList$transcripts$tx_name[e$tx_id])
+  f$minRank <- rep.int(d$ranks, runLength(Rle(f$names)))
+  f$remove <- f$minRank > f$rank
+  # e <- e[!f$remove]
+  # e <- ORFik:::updateTxdbRanks(e)
+
+  txList$splicings <- txList$splicings[-which(rankHits)[f$remove],]
+  txList$splicings <- updateTxdbRanks(txList$splicings)
+
+  return(txList)
+}
+
 #' Update start sites of leaders
 #'
 #' @param txList a list, call of as.list(txdb)
 #' @param fiveUTRs a GRangesList of 5' leaders
 #' @return a list, modified call of as.list(txdb)
 updateTxdbStartSites <- function(txList, fiveUTRs){
+
+  txList <- removeTxdbExons(txList, fiveUTRs)
+
   starts <- startSites(fiveUTRs, keep.names = TRUE)
 
   # find all transcripts with 5' UTRs
@@ -50,6 +97,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs){
                               (txList$splicings$exon_rank == 1) &
                               (txList$splicings$exon_strand == "-")] <-
     starts[!strandBool(fiveUTRs)]
+
 
   return(txList)
 }
