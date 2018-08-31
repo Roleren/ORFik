@@ -170,6 +170,26 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
   if(!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
+#' Get window region of tx around point of gr
+#'
+#' If downstreamFrom is 20, it means the window will start -20 downstream of
+#' gr start site. It will keep exon structure of tx
+#' @param gr a GRanges object (startSites and others, must be single point)
+#' @param tx a GRangesList of transcripts or (container region)
+#' @param downstream an integer, relative region to get downstream from
+#' @param upstream an integer vector, relative region to get upstream from.
+#' @return a GRanges/GRangesList object if exon/introns
+#'
+windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L){
+  g <- asTX(gr, tx)
+
+  start(g) <- pmax(start(g) - downstream, 1L)
+  if (upstream != 0) {
+    end(g) <- pmin(end(g) + upstream, widthPerGroup(tx[names(gr)], FALSE))
+  }
+
+  return(pmapFromTranscripts(g, tx[names(gr)]))
+}
 
 
 #' Reassign the start positions of the first exons per group in grl
@@ -455,6 +475,43 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
   return(addCdsOnLeaderEnds(extendedLeaders, cds))
 }
 
+#' Get overlaps and convert to coverage list
+#'
+#' @param gr a \code{\link{GRanges}}
+#'  of 5' utrs or transcripts.
+#' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
+#' @param keep.names logical (T), keep names or not.
+#' @param type a string (NULL), argument for countOverlaps.
+#' @return a Rle, one list per group with # of hits per position.
+#' @export
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#'                ranges = IRanges(start = c(1, 10, 20),
+#'                                 end = c(5, 15, 25)),
+#'                strand = "+")
+#' names(ORF) <- "tx1"
+#' reads <- GRanges("1", IRanges(25, 25), "+")
+#' overlapsToCoverage(ORF, reads)
+#'
+overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = NULL){
+  # could make this more efficient by counting overlaps
+  # only on untiled, then tile the ones that hit and count again
+  if (is.null(type)) {
+    counts <- countOverlaps(gr, reads)
+  } else {
+    counts <- countOverlaps(gr, reads, type = type)
+  }
+  names <- names(counts)
+  names(counts) <- NULL
+  countList <- split(counts, names)
+  if (!keep.names) {
+    countList <- IRanges::RleList(countList)
+    names(countList) <- NULL
+    return(countList)
+  }
+  return(IRanges::RleList(countList))
+}
+
 
 #' Get coverage per group
 #'
@@ -487,18 +544,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!is.null(unlTile$names)) { # for orf case
     names(unlTile) <- unlTile$names
   }
-  # could make this more efficient by counting overlaps
-  # only on untiled, then tile the ones that hit and count again
-  counts <- countOverlaps(unlTile, reads)
-  names <- names(counts)
-  names(counts) <- NULL
-  countList <- split(counts, names)
-  if (!keep.names) {
-    countList <- IRanges::RleList(countList)
-    names(countList) <- NULL
-    return(countList)
-  }
-  return(IRanges::RleList(countList))
+  return(overlapsToCoverage(unlTile, reads, keep.names = keep.names))
 }
 
 
@@ -512,9 +558,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #'
 subset_to_frame <- function(x, frame) {
   if (as.vector(strand(x) == "+")[1]) {
-    x[seq(frame, length(x), 3)]
+    x[seq.int(frame, length(x), 3)]
   } else {
-    x[seq(length(x) + 1 - frame, 1, -3)]
+    x[seq.int(length(x) + 1 - frame, 1, -3)]
   }
 }
 

@@ -61,22 +61,33 @@ groupGRangesBy <- function(gr, other = NULL) {
 
 #' Get RiboSeq widths
 #'
-#' Input a ribo-seq object and get width of reads,
-#' if input is p-shifted and GRanges, the "$score column" must
-#' exist, and contain the original read widths.
+#' Input a ribo-seq object and get width of reads, this is to avoid
+#' confusion between width, qwidth and meta column containing original read
+#' width.
+#'
+#' If input is p-shifted and GRanges, the "$score" or "$size" colum" must
+#' exist, and contain the original read widths. ORFik P-shifting creates a
+#' $size column, other softwares like shoelaces creates a score column
 #' @param reads a GRanges or GAlignment object.
 #' @return an integer vector of widths
 #'
-riboSeqReadWidths <- function(reads) {
+readWidths <- function(reads) {
 
   if (is(reads, "GRanges")) {
     rfpWidth <- width(reads)
     is.one_based <- all(as.integer(rfpWidth) == rep(1, length(rfpWidth)))
     if (is.one_based ) {
       if (is.null(reads$score)) {
-        message("All widths are 1, If ribo-seq is p-shifted, ",
-                "score column should contain widths of read, ",
-                "will continue using 1-widths")
+        if(is.null(reads$size)){
+          message("All widths are 1, If ribo-seq is p-shifted, ",
+                  "score or size meta column should contain widths of read, ",
+                  "will continue using 1-widths")
+        } else {
+          message("All widths are 1, using size column for widths, remove ",
+                  "size column and run again if this is wrong.")
+          rfpWidth <- reads$size
+        }
+
       } else {
         message("All widths are 1, using score column for widths, remove ",
                 "score column and run again if this is wrong.")

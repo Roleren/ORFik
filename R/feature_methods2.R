@@ -1,3 +1,70 @@
+#' Get inition score for a GRangesList of ORFs
+#'
+#' initiationScore tries to check how much each TIS region resembles, the
+#' average of the CDS TIS regions.
+#'
+#' As result there is one value per ORF:
+#' 1.000: means that ORF had no reads
+#' 0.000: means that ORF is identical to average of CDS
+#' 1.999: means that orf is maximum different than average of CDS
+#' @references doi: 10.1186/s12915-017-0416-0
+#' @param grl a \code{\link{GRangesList}} object with ORFs
+#' @param cds a \code{\link{GRangesList}} object with coding sequences
+#' @param tx a GrangesList of transcripts covering grl.
+#' @param footprints ribozomal footprints, given as Galignment object or
+#'  Granges
+#' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
+#' @family features
+#' @return an integer vector, 1 score per ORF
+#' @export
+#' @importFrom BiocGenerics Reduce
+#' @examples
+#' # Good hiting ORF
+#' ORF <- GRanges(seqnames = "1",
+#'                ranges = IRanges(start = c(21), end = c(40)),
+#'                strand = "+")
+#' names(ORF) <- c("tx1")
+#' grl <- GRangesList(tx1 = ORF)
+#' # 1 width position based
+#' RFP <- GRanges("1", IRanges(c(20, 23, 50, 50, 50, 53, 53, 56, 59),
+#'  c(20, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
+#' score(RFP) <- 28 # original width
+#' cds <- GRanges(seqnames = "1",
+#'                ranges = IRanges(start = c(50), end = c(80)),
+#'                strand = "+")
+#' cds <- GRangesList(tx1 = cds)
+#' tx <- GRanges(seqnames = "1",
+#'                ranges = IRanges(1,85),
+#'                strand = "+")
+#' tx <- GRangesList(tx1 = tx)
+#'
+#' initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
+#'
+initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
+  # train average cds model
+  df <- ORFik:::riboTISCoverageProportion(cds, tx, footprints, average = TRUE,
+                                  onlyProportion = FALSE, pShifted = pShifted)
+  cdsProp <- split(Rle(df$prop), df$length)
+  names(cdsProp) <- NULL
+
+  # get ORF models
+  prop <- ORFik:::riboTISCoverageProportion(grl, tx, footprints,
+                  average = FALSE, onlyProportion = TRUE, pShifted = pShifted,
+                  keep.names = TRUE)
+  names <- names(prop[[1]])
+  names(prop[[1]]) <- NULL
+  dif <- lapply(seq.int(1:length(prop)), function(x)
+    abs(prop[[x]] - cdsProp[x]))
+  dif2 <- lapply(seq.int(1:length(prop)), function(x) sum(dif[[x]]))
+
+  tempAns <- Reduce("+", dif2)/length(dif2)
+
+  ans <- rep.int(1, length(grl))
+  ans[names(grl) %in% names] <- tempAns
+  return(ans)
+}
+
+
 #' Get ORFscore for a GRangesList of ORFs
 #'
 #' ORFscore tries to check whether the first frame of the 3 possible frames in
@@ -433,6 +500,8 @@ isInFrame <- function(dists){
 #' @references doi: 10.1074/jbc.R116.733899
 #' @param dists a vector of distances between ORF and cds
 #' @family features
+#' @return a logical vector
+#' @export
 #' @examples
 #' # simple example
 #' isOverlapping(c(-3,-6,8,11,15))
@@ -442,8 +511,6 @@ isInFrame <- function(dists){
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
 #' dist <- distToCds(grl, fiveUTRs, extension = 0)
 #' isOverlapping <- isOverlapping(dist)
-#' @export
-#' @return a logical vector
 isOverlapping <- function(dists) {
   return(dists < 0)
 }

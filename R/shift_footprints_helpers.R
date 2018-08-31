@@ -122,6 +122,7 @@ coverageByWindow <- function(x, windows, ignore.strand = FALSE,
 #' @return A data.frame with average counts (avg_counts) of reads mapped to
 #' positions (position) specified in windows along with frame (frame).
 #' @export
+#' @importFrom BiocGenerics Reduce
 #' @examples
 #' windows <- GenomicRanges::GRangesList(
 #'   GenomicRanges::GRanges(seqnames = "chr1",

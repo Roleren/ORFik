@@ -299,7 +299,6 @@ test_that("rankOrder works as intended", {
   expect_equal(ranks, c(1, 2, 3, 1))
 })
 
-
 test_that("computeFeatures works as intended", {
 
   # test from example table in orfik
