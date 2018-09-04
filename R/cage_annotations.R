@@ -321,9 +321,12 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
 
   cds <- cdsBy(txdb,"tx",use.names = TRUE)
   cds01 <- cds[!(names(cds) %in% names(fiveUTRs))]
+  if(length(cds01) == 0) {
+    return(txdb)
+  }
   extension <- 1000
-  cdsStartSites <- ORFik:::startSites(cds01, is.sorted = TRUE)
-  positiveStrands <- ORFik:::strandBool(cds01)
+  cdsStartSites <- startSites(cds01, is.sorted = TRUE)
+  positiveStrands <- strandBool(cds01)
   cdsStartSites[positiveStrands] <- cdsStartSites[positiveStrands] - 1
   cdsStartSites[!positiveStrands] <- cdsStartSites[!positiveStrands] + 1
   leaderEnds <- cdsStartSites
@@ -341,7 +344,7 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
 
   txList <- as.list(txdb)
   # find all transcripts with 5' UTRs
-  txList <- updateTxdbStartSites(txList, fiveUTRs)
+  txList <- updateTxdbStartSites(txList, newLeaders)
 
   # reassign exon ids
   txList$splicings$exon_id <- remakeTxdbExonIds(txList)
