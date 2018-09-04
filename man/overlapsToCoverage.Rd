@@ -4,7 +4,7 @@
 \alias{overlapsToCoverage}
 \title{Get overlaps and convert to coverage list}
 \usage{
-overlapsToCoverage(gr, reads, keep.names = TRUE, type = NULL)
+overlapsToCoverage(gr, reads, keep.names = TRUE, type = "any")
 }
 \arguments{
 \item{gr}{a \code{\link{GRanges}}
@@ -14,7 +14,7 @@ of 5' utrs or transcripts.}
 
 \item{keep.names}{logical (T), keep names or not.}
 
-\item{type}{a string (NULL), argument for countOverlaps.}
+\item{type}{a string (any), argument for countOverlaps.}
 }
 \value{
 a Rle, one list per group with # of hits per position.

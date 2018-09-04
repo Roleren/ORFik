@@ -148,10 +148,10 @@ detectRibosomeShifts <- function(
   if (length(txNames) == 0) stop("No transcript has leaders and trailers of",
                                  " specified minFiveUTR, minCDS, minThreeUTR")
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
-
+  seqMatch <- unique(seqnames(footprints)) %in%
+    unique(seqnamesPerGroup(cds, FALSE))
   # reduce data set to only matching seqlevels
-  cds <- keepSeqlevels(cds, unique(seqnames(footprints))[unique(seqnames(
-                       footprints)) %in% unique(seqnamesPerGroup(cds, FALSE))],
+  cds <- keepSeqlevels(cds, unique(seqnames(footprints))[seqMatch],
                        pruning.mode = "coarse")
 
   txNames <- txNames[txNames %in% names(cds)]

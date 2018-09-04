@@ -78,7 +78,7 @@ readWidths <- function(reads) {
     is.one_based <- all(as.integer(rfpWidth) == rep(1, length(rfpWidth)))
     if (is.one_based ) {
       if (is.null(reads$score)) {
-        if(is.null(reads$size)){
+        if (is.null(reads$size)) {
           message("All widths are 1, If ribo-seq is p-shifted, ",
                   "score or size meta column should contain widths of read, ",
                   "will continue using 1-widths")

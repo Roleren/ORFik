@@ -180,7 +180,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' @param upstream an integer vector, relative region to get upstream from.
 #' @return a GRanges/GRangesList object if exon/introns
 #'
-windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L){
+windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
   g <- asTX(gr, tx)
 
   start(g) <- pmax(start(g) - downstream, 1L)
@@ -481,7 +481,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #'  of 5' utrs or transcripts.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
 #' @param keep.names logical (T), keep names or not.
-#' @param type a string (NULL), argument for countOverlaps.
+#' @param type a string (any), argument for countOverlaps.
 #' @return a Rle, one list per group with # of hits per position.
 #' @export
 #' @examples
@@ -493,14 +493,11 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' reads <- GRanges("1", IRanges(25, 25), "+")
 #' overlapsToCoverage(ORF, reads)
 #'
-overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = NULL){
+overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
   # could make this more efficient by counting overlaps
   # only on untiled, then tile the ones that hit and count again
-  if (is.null(type)) {
-    counts <- countOverlaps(gr, reads)
-  } else {
-    counts <- countOverlaps(gr, reads, type = type)
-  }
+  counts <- countOverlaps(gr, reads, type = type)
+
   names <- names(counts)
   names(counts) <- NULL
   countList <- split(counts, names)

@@ -206,10 +206,9 @@ validExtension <- function(extension, cageFiveUTRs) {
 #'
 riboTISCoverageProportion <- function(grl, tx, footprints,
                                       onlyProportion = FALSE, average = FALSE,
-                                        pShifted = TRUE, keep.names = FALSE) {
-  upStart <- if (pShifted) 5 else 20
-  downStop <- if (pShifted) 20 else 5
-
+                                      pShifted = TRUE, keep.names = FALSE,
+                                      upStart = if (pShifted) 5 else 20,
+                                      downStop = if (pShifted) 20 else 5) {
   windowSize <- upStart + downStop + 1
   window <- windowPerGroup(startSites(grl, TRUE, FALSE, TRUE), tx, upStart,
                            downStop)

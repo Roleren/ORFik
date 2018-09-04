@@ -5,7 +5,9 @@
 \title{Find proportion of reads per position in ORF TIS window}
 \usage{
 riboTISCoverageProportion(grl, tx, footprints, onlyProportion = FALSE,
-  average = FALSE, pShifted = TRUE, keep.names = FALSE)
+  average = FALSE, pShifted = TRUE, keep.names = FALSE,
+  upStart = if (pShifted) 5 else 20, downStop = if (pShifted) 20 else
+  5)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
