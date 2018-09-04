@@ -336,7 +336,7 @@ test_that("initiationScore works as intended", {
   tx <- GRangesList(tx1 = tx)
 
   test_result <- initiationScore(cds, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(test_result, 0) # cds should score itself 0
+  expect_equal(round(test_result,2), -1.00) # cds should score itself 0
   test_result <- initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), 1.14) # ok scoring ORF
+  expect_equal(round(test_result,2), 0.14) # ok scoring ORF
 })

@@ -6,9 +6,9 @@
 #' Since this features uses a distance matrix for scoring, values are
 #' distributed like this:
 #' As result there is one value per ORF:
-#' 1.000: means that ORF had no reads
-#' 0.000: means that ORF is identical to average of CDS
-#' 1.999: means that orf is maximum different than average of CDS
+#' 0.000: means that ORF had no reads
+#' -1.000: means that ORF is identical to average of CDS
+#' 1.000: means that orf is maximum different than average of CDS
 #' @references doi: 10.1186/s12915-017-0416-0
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @param cds a \code{\link{GRangesList}} object with coding sequences
@@ -59,9 +59,9 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
     abs(prop[[x]] - cdsProp[x]))
   dif2 <- lapply(seq.int(1:length(prop)), function(x) sum(dif[[x]]))
 
-  tempAns <- Reduce("+", dif2)/length(dif2)
+  tempAns <- Reduce("+", dif2)/length(dif2) - 1
 
-  ans <- rep.int(1, length(grl))
+  ans <- rep.int(0, length(grl))
   ans[names(grl) %in% names] <- tempAns
   return(ans)
 }

@@ -29,9 +29,9 @@ average of the CDS TIS regions.
 Since this features uses a distance matrix for scoring, values are
 distributed like this:
 As result there is one value per ORF:
-1.000: means that ORF had no reads
-0.000: means that ORF is identical to average of CDS
-1.999: means that orf is maximum different than average of CDS
+0.000: means that ORF had no reads
+-1.000: means that ORF is identical to average of CDS
+1.000: means that orf is maximum different than average of CDS
 }
 \examples{
 # Good hiting ORF
