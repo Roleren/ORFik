@@ -152,7 +152,7 @@ detectRibosomeShifts <- function(
   # reduce data set to only matching seqlevels
   cds <- keepSeqlevels(cds, unique(seqnames(footprints))[unique(seqnames(
                        footprints)) %in% unique(seqnamesPerGroup(cds, FALSE))],
-                        pruning.mode = "coarse")
+                       pruning.mode = "coarse")
 
   txNames <- txNames[txNames %in% names(cds)]
   footprints <- keepSeqlevels(footprints, unique(seqnamesPerGroup(cds, FALSE)),
