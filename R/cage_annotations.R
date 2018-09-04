@@ -321,7 +321,7 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
 
   cds <- cdsBy(txdb,"tx",use.names = TRUE)
   cds01 <- cds[!(names(cds) %in% names(fiveUTRs))]
-  if(length(cds01) == 0) {
+  if (length(cds01) == 0) {
     return(txdb)
   }
   extension <- 1000
