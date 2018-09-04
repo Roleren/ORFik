@@ -13,7 +13,7 @@ initiationScore(grl, cds, tx, footprints, pShifted = TRUE)
 
 \item{tx}{a GrangesList of transcripts covering grl.}
 
-\item{footprints}{ribozomal footprints, given as Galignment object or
+\item{footprints}{ribosomal footprints, given as Galignment object or
 Granges}
 
 \item{pShifted}{a logical (TRUE), are riboseq reads p-shifted?}
@@ -26,6 +26,8 @@ initiationScore tries to check how much each TIS region resembles, the
 average of the CDS TIS regions.
 }
 \details{
+Since this features uses a distance matrix for scoring, values are
+distributed like this:
 As result there is one value per ORF:
 1.000: means that ORF had no reads
 0.000: means that ORF is identical to average of CDS
@@ -39,8 +41,8 @@ ORF <- GRanges(seqnames = "1",
 names(ORF) <- c("tx1")
 grl <- GRangesList(tx1 = ORF)
 # 1 width position based
-RFP <- GRanges("1", IRanges(c(20, 23, 50, 50, 50, 53, 53, 56, 59),
- c(20, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
+RFP <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+ c(21, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
 score(RFP) <- 28 # original width
 cds <- GRanges(seqnames = "1",
                ranges = IRanges(start = c(50), end = c(80)),

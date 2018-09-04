@@ -3,6 +3,8 @@
 #' initiationScore tries to check how much each TIS region resembles, the
 #' average of the CDS TIS regions.
 #'
+#' Since this features uses a distance matrix for scoring, values are
+#' distributed like this:
 #' As result there is one value per ORF:
 #' 1.000: means that ORF had no reads
 #' 0.000: means that ORF is identical to average of CDS
@@ -11,7 +13,7 @@
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @param cds a \code{\link{GRangesList}} object with coding sequences
 #' @param tx a GrangesList of transcripts covering grl.
-#' @param footprints ribozomal footprints, given as Galignment object or
+#' @param footprints ribosomal footprints, given as Galignment object or
 #'  Granges
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
 #' @family features
@@ -26,8 +28,8 @@
 #' names(ORF) <- c("tx1")
 #' grl <- GRangesList(tx1 = ORF)
 #' # 1 width position based
-#' RFP <- GRanges("1", IRanges(c(20, 23, 50, 50, 50, 53, 53, 56, 59),
-#'  c(20, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
+#' RFP <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+#'  c(21, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
 #' score(RFP) <- 28 # original width
 #' cds <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(50), end = c(80)),
@@ -42,15 +44,15 @@
 #'
 initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
   # train average cds model
-  df <- ORFik:::riboTISCoverageProportion(cds, tx, footprints, average = TRUE,
+  df <- riboTISCoverageProportion(cds, tx, footprints, average = TRUE,
                                   onlyProportion = FALSE, pShifted = pShifted)
   cdsProp <- split(Rle(df$prop), df$length)
   names(cdsProp) <- NULL
 
   # get ORF models
-  prop <- ORFik:::riboTISCoverageProportion(grl, tx, footprints,
-                  average = FALSE, onlyProportion = TRUE, pShifted = pShifted,
-                  keep.names = TRUE)
+  prop <- riboTISCoverageProportion(grl, tx, footprints, average = FALSE,
+                                    onlyProportion = TRUE, pShifted = pShifted,
+                                    keep.names = TRUE)
   names <- names(prop[[1]])
   names(prop[[1]]) <- NULL
   dif <- lapply(seq.int(1:length(prop)), function(x)

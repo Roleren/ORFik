@@ -116,14 +116,11 @@ fpkm_calc <- function(counts, lengthSize, librarySize){
 #' @return a character vector of start regions
 startRegionString <- function(grl, tx, faFile, groupBy = NULL){
   gr <- startSites(grl, TRUE, TRUE, TRUE)
-  if (is.null(groupBy)) {
-    grl <- groupGRangesBy(windowPerGroup(grl, tx, 20, 20))
-  } else {
-    grl <- groupGRangesBy(windowPerGroup(grl, tx, 20, 20), groupBy)
-  }
 
-  return(as.character(txSeqsFromFa(gr,
-                            faFile, is.sorted = TRUE)))
+  grl <- groupGRangesBy(windowPerGroup(grl, tx, 20, 20), groupBy)
+
+
+  return(as.character(txSeqsFromFa(grl, faFile, is.sorted = TRUE)))
 }
 
 #' Hits from reads
@@ -192,9 +189,8 @@ validExtension <- function(extension, cageFiveUTRs) {
 #' Proportion defined as:
 #' average count per position in -20,20 normalized by counts per gene
 #'
-#' This pattern can be trained on CDS, to find other ORFs
-#' When detecting new ORFs, this CDS training can be used
-#' together with the "function" as a feature in your feature set.
+#' This pattern can be averaged on CDS's, to find other ORFs.
+#' When detecting new ORFs, this CDS average can be used as a template.
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually new ORFs, but can also be
 #'  either leaders, cds', 3'UTRs.
@@ -212,17 +208,13 @@ validExtension <- function(extension, cageFiveUTRs) {
 #'
 riboTISCoverageProportion <- function(grl, tx, footprints,
                                       onlyProportion = FALSE, average = FALSE,
-                                      pShifted = TRUE, keep.names = FALSE){
-  if(pShifted){
-    upStart <- 5
-    downStop <- 20
-  } else {
-    upStart <- 20
-    downStop <- 5
-  }
+                                        pShifted = TRUE, keep.names = FALSE){
+  upStart <- if (pShifted) 5 else 20
+  downStop <- if (pShifted) 20 else 5
+
   windowSize <- upStart + downStop + 1
-  window <- windowPerGroup(startSites(grl,TRUE, FALSE, TRUE),
-                                   tx, upStart, downStop)
+  window <- windowPerGroup(startSites(grl, TRUE, FALSE, TRUE), tx, upStart,
+                           downStop)
   noHits <- widthPerGroup(window) < windowSize
   if (all(noHits)) {
     warning("no grl had valid window size!")
@@ -244,8 +236,7 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
   for (l in allLengths) {
     ends_uniq <- gr[rwidth == l]
 
-    cvg <- overlapsToCoverage(unlTile, ends_uniq, FALSE,
-                                      type = "within")
+    cvg <- overlapsToCoverage(unlTile, ends_uniq, FALSE, type = "within")
 
     cvg <- cvg /sum(cvg)
     cvg[is.nan(unlist(sum(runValue(cvg)), use.names = FALSE))] <-

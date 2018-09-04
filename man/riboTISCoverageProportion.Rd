@@ -35,7 +35,6 @@ Proportion defined as:
 average count per position in -20,20 normalized by counts per gene
 }
 \details{
-This pattern can be trained on CDS, to find other ORFs
-When detecting new ORFs, this CDS training can be used
-together with the "function" as a feature in your feature set.
+This pattern can be averaged on CDS's, to find other ORFs.
+When detecting new ORFs, this CDS average can be used as a template.
 }
