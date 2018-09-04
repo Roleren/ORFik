@@ -5,7 +5,7 @@
 #' @param oldTxNames a character vector of names to group fiveUTRs by.
 #' @return a GRangesList of reordered leaders.
 #'
-findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
+findCageUTRFivelen <- function(fiveUTRs, oldTxNames) {
   newfiveprimeLen <- widthPerGroup(fiveUTRs)
   return(newfiveprimeLen[match(oldTxNames, names(newfiveprimeLen))])
 }
@@ -20,7 +20,7 @@ findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
 #' leaders, therefor we need it to update transcript lengths.
 #' @return a vector of transcript lengths
 #'
-txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
+txLen <- function(Gtf = NULL, changedFiveUTRs = NULL) {
   tx_len_temp <- transcriptLengths(Gtf)[, c("tx_name", "tx_len")]
   tx_len <- tx_len_temp[, "tx_len"]
 
@@ -51,7 +51,7 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
 #' @return a list of codon sums
 #'
 codonSumsPerGroup <- function(countList, reg_len,
-                              runLengths ){
+                              runLengths ) {
 
   len <- BiocGenerics::lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
@@ -101,7 +101,7 @@ codonSumsPerGroup <- function(countList, reg_len,
 #' @family features
 #' @return a numeric vector
 #'
-fpkm_calc <- function(counts, lengthSize, librarySize){
+fpkm_calc <- function(counts, lengthSize, librarySize) {
   return((as.numeric(counts) * (10^9)) /
            (as.numeric(lengthSize) * as.numeric(librarySize)))
 }
@@ -114,11 +114,9 @@ fpkm_calc <- function(counts, lengthSize, librarySize){
 #'  Can also be path to fastaFile with fai file in same dir.
 #' @param groupBy (NULL) column to group grl by, if NULL group by names(gr)
 #' @return a character vector of start regions
-startRegionString <- function(grl, tx, faFile, groupBy = NULL){
+startRegionString <- function(grl, tx, faFile, groupBy = NULL) {
   gr <- startSites(grl, TRUE, TRUE, TRUE)
-
   grl <- groupGRangesBy(windowPerGroup(grl, tx, 20, 20), groupBy)
-
 
   return(as.character(txSeqsFromFa(grl, faFile, is.sorted = TRUE)))
 }
@@ -208,7 +206,7 @@ validExtension <- function(extension, cageFiveUTRs) {
 #'
 riboTISCoverageProportion <- function(grl, tx, footprints,
                                       onlyProportion = FALSE, average = FALSE,
-                                        pShifted = TRUE, keep.names = FALSE){
+                                        pShifted = TRUE, keep.names = FALSE) {
   upStart <- if (pShifted) 5 else 20
   downStop <- if (pShifted) 20 else 5
 
