@@ -39,6 +39,7 @@ updateTxdbRanks <- function(exons){
 #' @param txList a list, call of as.list(txdb)
 #' @param fiveUTRs a GRangesList of 5' leaders
 #' @return a list, modified call of as.list(txdb)
+#' @importFrom data.table setDT
 removeTxdbExons <- function(txList, fiveUTRs){
   # remove old "dead" exons
   # get fiveUTR exons

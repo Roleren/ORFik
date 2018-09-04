@@ -122,6 +122,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' periodicity.
 #' @return a data.frame with lengths of footprints and their predicted
 #' coresponding offsets
+#' @importFrom BiocGenerics Reduce
 #' @export
 #' @examples
 #' \dontrun{
@@ -140,35 +141,44 @@ detectRibosomeShifts <- function(
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   firstN = 150L) {
   window_size = 30L
-  footprints <- granges(footprints)
+
 
   txNames <- txNamesWithLeaders(txdb, minFiveUTR = minFiveUTR,
                                 minCDS = minCDS, minThreeUTR = minThreeUTR)
   if (length(txNames) == 0) stop("No transcript has leaders and trailers of",
                                  " specified minFiveUTR, minCDS, minThreeUTR")
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  seqMatch <- unique(seqnames(footprints)) %in%
+    unique(seqnamesPerGroup(cds, FALSE))
+  # reduce data set to only matching seqlevels
+  cds <- keepSeqlevels(cds, unique(seqnames(footprints))[seqMatch],
+                       pruning.mode = "coarse")
 
-
+  txNames <- txNames[txNames %in% names(cds)]
+  footprints <- keepSeqlevels(footprints, unique(seqnamesPerGroup(cds, FALSE)),
+                              pruning.mode = "coarse")
+  if (length(cds) == 0 | length(footprints) == 0) {
+    stop("txdb and footprints did not have any matched seqnames")
+  }
   ## start stop windows
   ss <- getStartStopWindows(txdb, txNames, start = start, stop = stop,
                             window_size = window_size, cds)
   cds <- reduceKeepAttr(downstreamN(cds, firstN = firstN))
-
-  all_lengths <- sort(unique(width(footprints)))
+  rWidth <- readWidths(footprints)
+  all_lengths <- sort(unique(rWidth))
   selected_lengths <- c()
   offsets_start <- c()
   offsets_stop <- c()
-
+  footprints <- resize(granges(footprints), 1L)
   for (l in all_lengths) {
-    ends_uniq <- resize(footprints[width(footprints) == l], 1)
+    ends_uniq <- footprints[rWidth == l]
 
     # get top_tx of covered tx
     counts <- countOverlaps(cds, ends_uniq)
     counts <- counts[counts > 1]
     if (length(counts) > 1000) {
       counts <- sort(counts, decreasing = TRUE)
-      top_tx <- floor(top_tx * length(counts) / 100)
-      counts <- counts[seq_len(top_tx)]
+      counts <- counts[seq_len(floor(top_tx * length(counts) / 100))]
     }
     if (length(counts) == 0) next
     # This is the slow line, we need to speed this up! ->

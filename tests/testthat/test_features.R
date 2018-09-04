@@ -299,7 +299,6 @@ test_that("rankOrder works as intended", {
   expect_equal(ranks, c(1, 2, 3, 1))
 })
 
-
 test_that("computeFeatures works as intended", {
 
   # test from example table in orfik
@@ -315,3 +314,29 @@ test_that("computeFeatures works as intended", {
   expect_equal(dt, featureExamples) # should be equal to saved version
 })
 
+test_that("initiationScore works as intended", {
+
+  # test from example table in orfik
+  ORF <- GRanges(seqnames = "1",
+                 ranges = IRanges(start = c(21), end = c(40)),
+                 strand = "+")
+  names(ORF) <- c("tx1")
+  grl <- GRangesList(tx1 = ORF)
+  # 1 width position based
+  RFP <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+                              c(21, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
+  score(RFP) <- 28 # original width
+  cds <- GRanges(seqnames = "1",
+                 ranges = IRanges(start = c(50), end = c(80)),
+                 strand = "+")
+  cds <- GRangesList(tx1 = cds)
+  tx <- GRanges(seqnames = "1",
+                ranges = IRanges(1,85),
+                strand = "+")
+  tx <- GRangesList(tx1 = tx)
+
+  test_result <- initiationScore(cds, cds, tx, RFP, pShifted = TRUE)
+  expect_equal(round(test_result,2), -1.00) # cds should score itself 0
+  test_result <- initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
+  expect_equal(round(test_result,2), 0.14) # ok scoring ORF
+})

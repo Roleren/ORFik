@@ -182,7 +182,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   }
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
-  rfpWidth <- riboSeqReadWidths(RFP[to(overlaps)])
+  rfpWidth <- readWidths(RFP[to(overlaps)])
   rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
   rfpValidMatch <- rfpWidth[rfpPassFilter]
   ORFGrouping <- from(overlaps)[rfpPassFilter]
@@ -204,7 +204,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 
   # for cds
   overlapsCds <- findOverlaps(cds, RFP)
-  rfpWidth <- riboSeqReadWidths(RFP[to(overlapsCds)])
+  rfpWidth <- readWidths(RFP[to(overlapsCds)])
   rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
   rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
   cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)

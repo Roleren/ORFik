@@ -218,4 +218,24 @@ test_that("reduceKeepAttr works as intended", {
 })
 
 
+test_that("windowPerGroup works as intended", {
 
+  gr <- GRanges(seqnames = "1", ranges = IRanges(start = c(40),end = c(40)),
+                strand = "+")
+
+  txgr <- GRanges(seqnames = "1", ranges = IRanges(start = c(20, 45, 100),
+                                                   end = c(40, 70, 100)),
+                  strand = "+")
+
+  names(gr) = rep("tx1",1)
+  names(txgr) = c(rep("tx1",2), "tx2")
+  tx <- groupGRangesBy(txgr)
+
+  test_result <- windowPerGroup(gr, tx, 20, 20)
+
+  expect_equal(as.integer(unlist(start(test_result), use.names = FALSE)),
+               c(20,45))
+  expect_equal(as.integer(unlist(end(test_result), use.names = FALSE)),
+               c(40, 64))
+
+})

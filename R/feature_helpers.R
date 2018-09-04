@@ -5,7 +5,7 @@
 #' @param oldTxNames a character vector of names to group fiveUTRs by.
 #' @return a GRangesList of reordered leaders.
 #'
-findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
+findCageUTRFivelen <- function(fiveUTRs, oldTxNames) {
   newfiveprimeLen <- widthPerGroup(fiveUTRs)
   return(newfiveprimeLen[match(oldTxNames, names(newfiveprimeLen))])
 }
@@ -20,7 +20,7 @@ findCageUTRFivelen <- function(fiveUTRs, oldTxNames){
 #' leaders, therefor we need it to update transcript lengths.
 #' @return a vector of transcript lengths
 #'
-txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
+txLen <- function(Gtf = NULL, changedFiveUTRs = NULL) {
   tx_len_temp <- transcriptLengths(Gtf)[, c("tx_name", "tx_len")]
   tx_len <- tx_len_temp[, "tx_len"]
 
@@ -51,7 +51,7 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL){
 #' @return a list of codon sums
 #'
 codonSumsPerGroup <- function(countList, reg_len,
-                              runLengths ){
+                              runLengths ) {
 
   len <- BiocGenerics::lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
@@ -101,9 +101,24 @@ codonSumsPerGroup <- function(countList, reg_len,
 #' @family features
 #' @return a numeric vector
 #'
-fpkm_calc <- function(counts, lengthSize, librarySize){
+fpkm_calc <- function(counts, lengthSize, librarySize) {
   return((as.numeric(counts) * (10^9)) /
            (as.numeric(lengthSize) * as.numeric(librarySize)))
+}
+
+#' Get -20,20 start region as DNA characters per gr group
+#'
+#' @param grl a GRangesList to find regions
+#' @param tx a GRangesList of transcripts containing grl
+#' @param faFile a FaFile from the fasta file, see ?FaFile.
+#'  Can also be path to fastaFile with fai file in same dir.
+#' @param groupBy (NULL) column to group grl by, if NULL group by names(gr)
+#' @return a character vector of start regions
+startRegionString <- function(grl, tx, faFile, groupBy = NULL) {
+  gr <- startSites(grl, TRUE, TRUE, TRUE)
+  grl <- groupGRangesBy(windowPerGroup(grl, tx, 20, 20), groupBy)
+
+  return(as.character(txSeqsFromFa(grl, faFile, is.sorted = TRUE)))
 }
 
 #' Hits from reads
@@ -166,3 +181,87 @@ validExtension <- function(extension, cageFiveUTRs) {
     stop("if extension is not 0, then cageFiveUTRs must be defined")
   }
 }
+
+#' Find proportion of reads per position in ORF TIS window
+#'
+#' Proportion defined as:
+#' average count per position in -20,20 normalized by counts per gene
+#'
+#' This pattern can be averaged on CDS's, to find other ORFs.
+#' When detecting new ORFs, this CDS average can be used as a template.
+#' @param grl a \code{\link{GRangesList}} object
+#'  with usually new ORFs, but can also be
+#'  either leaders, cds', 3'UTRs.
+#' @param tx a GrangesList of transcripts covering grl.
+#' @param footprints ribo seq reads as GAlignment, GRanges
+#'  or GRangesList object.
+#' @param onlyProportion a logical (FALSE), return whole data.frame or only
+#'  proportions
+#' @param average a logical (FALSE), take average over coverage in all grl ?
+#' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
+#' @param keep.names a logical(FALSE), only applies when onlyProportion
+#'  is TRUE.
+#' @return a data.frame with lengths by coverage / vector of proportions
+#' @importFrom BiocGenerics Reduce
+#'
+riboTISCoverageProportion <- function(grl, tx, footprints,
+                                      onlyProportion = FALSE, average = FALSE,
+                                      pShifted = TRUE, keep.names = FALSE,
+                                      upStart = if (pShifted) 5 else 20,
+                                      downStop = if (pShifted) 20 else 5) {
+  windowSize <- upStart + downStop + 1
+  window <- windowPerGroup(startSites(grl, TRUE, FALSE, TRUE), tx, upStart,
+                           downStop)
+  noHits <- widthPerGroup(window) < windowSize
+  if (all(noHits)) {
+    warning("no grl had valid window size!")
+    return(RleList(Rle(values = 0, lengths = windowSize)))
+  }
+  window <- window[!noHits]
+  rwidth <- readWidths(footprints)
+  footprints <- footprints[rwidth < 31 & rwidth > 26]
+  rwidth <- readWidths(footprints)
+  allLengths <- sort(unique(rwidth))
+  gr <- resize(granges(footprints), 1)
+  lengthProportions <- c()
+
+  unlTile <- unlistGrl(tile1(window, matchNaming = FALSE))
+  if (!is.null(unlTile$names)) { # for orf case
+    names(unlTile) <- unlTile$names
+  }
+
+  for (l in allLengths) {
+    ends_uniq <- gr[rwidth == l]
+
+    cvg <- overlapsToCoverage(unlTile, ends_uniq, FALSE, type = "within")
+
+    cvg <- cvg /sum(cvg)
+    cvg[is.nan(unlist(sum(runValue(cvg)), use.names = FALSE))] <-
+      RleList(Rle(values = 0, lengths = windowSize))
+    if (average) {
+      cvg <- Reduce(`+`, cvg)
+      lengthProportions <- c(lengthProportions, as.vector(cvg/sum(cvg)))
+    } else {
+      lengthProportions <- c(lengthProportions, cvg)
+    }
+  }
+  if (!onlyProportion) {
+    if (average) {
+      lengths <- unlist(lapply(allLengths, function(x){rep.int(x,windowSize)}),
+                        use.names = FALSE)
+      df <- data.frame(prop = lengthProportions, length = lengths,
+                       pos = rep(seq.int(-upStart, downStop),
+                                 length(allLengths)))
+      return(df)
+    } else {
+      warning("Can only return proportion when average == FALSE")
+      return(lengthProportions)
+    }
+  } else {
+    if (keep.names & !average) {
+      names(lengthProportions[[1]]) <- names(window)
+    }
+    return(lengthProportions)
+  }
+}
+
