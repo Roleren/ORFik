@@ -253,7 +253,7 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
       lengths <- unlist(lapply(allLengths, function(x){rep.int(x,windowSize)}),
                         use.names = FALSE)
       df <- data.frame(prop = lengthProportions, length = lengths,
-                       pos = rep(seq.int(-upStart,downStop),
+                       pos = rep(seq.int(-upStart, downStop),
                                  length(allLengths)))
       return(df)
     } else {

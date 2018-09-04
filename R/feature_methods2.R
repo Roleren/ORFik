@@ -1,4 +1,4 @@
-#' Get inition score for a GRangesList of ORFs
+#' Get initiation score for a GRangesList of ORFs
 #'
 #' initiationScore tries to check how much each TIS region resembles, the
 #' average of the CDS TIS regions.

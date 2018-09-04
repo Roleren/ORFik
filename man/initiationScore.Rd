@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_methods2.R
 \name{initiationScore}
 \alias{initiationScore}
-\title{Get inition score for a GRangesList of ORFs}
+\title{Get initiation score for a GRangesList of ORFs}
 \usage{
 initiationScore(grl, cds, tx, footprints, pShifted = TRUE)
 }
