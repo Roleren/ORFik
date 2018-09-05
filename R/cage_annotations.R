@@ -11,7 +11,7 @@
 filterCage <- function(rawCage, filterValue = 1, fiveUTRs = NULL) {
   if(tryCatch(seqlevelsStyle(rawCage) <- seqlevelsStyle(fiveUTRs),
            error = function(e){TRUE}) == TRUE){
-    warning("seqlevels of CAGE/fiveUTRs is not following standard, check them.")
+    warning("seqlevels of CAGE/fiveUTRs are not standardized, check them.")
   } else {
     seqlevelsStyle(rawCage) <- seqlevelsStyle(fiveUTRs)
   }
@@ -63,7 +63,7 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
 #' @param shiftedfiveUTRs The 5' leader sequences as GRangesList
 #'  shifted by CAGE
 #' @return GRangesList object of restricted fiveUTRs
-restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs){
+restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs) {
 
   startSitesGR <- startSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
   stopSitesGR <- stopSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
@@ -140,7 +140,7 @@ findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
 #' @param maxPeakPosition The max peak for each 5' leader found by cage
 #' @return a GRanges object of first exons
 #'
-addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition){
+addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition) {
 
   newTSS <- startSites(fiveUTRs, asGR = FALSE, keep.names = FALSE,
                        is.sorted = TRUE)
@@ -214,8 +214,8 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension,
                                 restrictUpstreamToTx)
-  fiveUTRs <- addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
-  return(fiveUTRs)
+
+  return(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition))
 }
 
 #' Input a txdb and reassign the TSS for each transcript by CAGE
@@ -315,7 +315,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #'  }
 #' @return a TxDb obect of reassigned transcripts
 assignTSSByCage <- function(txdb, cage, extension = 1000,
-                             filterValue = 1, restrictUpstreamToTx = FALSE){
+                            filterValue = 1, restrictUpstreamToTx = FALSE) {
   if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
 
@@ -324,7 +324,7 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   if (length(cds01) == 0) {
     return(txdb)
   }
-  extension <- 1000
+
   cdsStartSites <- startSites(cds01, is.sorted = TRUE)
   positiveStrands <- strandBool(cds01)
   cdsStartSites[positiveStrands] <- cdsStartSites[positiveStrands] - 1
@@ -339,8 +339,8 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   undefinedLeaders$exon_rank <- rep.int(1L,length(undefinedLeaders))
   #make GRangesListfrom GRanges
   undefinedLeaders <- groupGRangesBy(undefinedLeaders)
-  newLeaders <- reassignTSSbyCage(undefinedLeaders, cage, filterValue,
-                                  extension, restrictUpstreamToTx)
+  newLeaders <- reassignTSSbyCage(undefinedLeaders, cage, extension,
+                                  filterValue, restrictUpstreamToTx)
 
   txList <- as.list(txdb)
   # find all transcripts with 5' UTRs
@@ -352,5 +352,4 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   txList$splicings$exon_name <- NULL
 
   return(do.call(makeTxDb, txList))
-
 }
