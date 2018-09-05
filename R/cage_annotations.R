@@ -315,7 +315,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #'  }
 #' @return a TxDb obect of reassigned transcripts
 assignTSSByCage <- function(txdb, cage, extension = 1000,
-                             filterValue = 1, restrictUpstreamToTx = FALSE) {
+                            filterValue = 1, restrictUpstreamToTx = FALSE) {
   if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
 
