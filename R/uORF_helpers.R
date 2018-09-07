@@ -32,17 +32,14 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
   if(onlyFirstExon) {
     firstExons <- firstExonPerGroup(cds[names(fiveUTRs)])
     gr <- unlist(firstExons, use.names = FALSE)
-    ## fix mcols of cds, so that pc() will work
-    mcols(gr) <- as.data.frame(mcols(unlist(
-      fiveUTRs, use.names = FALSE)))[seq_along(gr),]
-    grl <- relist(gr, firstExons)
   } else {
     gr <- unlist(cds[names(fiveUTRs)], use.names = FALSE)
-    ## fix mcols of cds, so that pc() will work
-    mcols(gr) <- as.data.frame(mcols(unlist(
-      fiveUTRs, use.names = FALSE)))[seq_along(gr),]
-    grl <- relist(gr, cds)
   }
+
+  ## fix mcols of cds, so that pc() will work
+  mcols(gr) <- as.data.frame(mcols(unlist(
+    fiveUTRs, use.names = FALSE)))[seq_along(gr),]
+  grl <- relist(gr, cds[names(fiveUTRs)])
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)
   ## should we use reduceKeepAttr here ?, we will lose
   ## exon_id if not.
