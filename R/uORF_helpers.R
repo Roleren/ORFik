@@ -29,7 +29,7 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
   }
   ## get only the ones we need
   ## select first in every, they must be sorted!
-  if(onlyFirstExon) {
+  if (onlyFirstExon) {
     firstExons <- firstExonPerGroup(cds[names(fiveUTRs)])
     gr <- unlist(firstExons, use.names = FALSE)
     mcols(gr) <- as.data.frame(mcols(unlist(
