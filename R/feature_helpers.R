@@ -201,6 +201,10 @@ validExtension <- function(extension, cageFiveUTRs) {
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
 #' @param keep.names a logical(FALSE), only applies when onlyProportion
 #'  is TRUE.
+#' @param upStart upstream region boundary (5 or 20 as standard), relative
+#'  (5, mean 5 upstream from TIS)
+#' @param downStop downstream region boundary (5 or 20 as standard), relative
+#'  (5, mean 5 downstream from TIS)
 #' @return a data.frame with lengths by coverage / vector of proportions
 #' @importFrom BiocGenerics Reduce
 #'
