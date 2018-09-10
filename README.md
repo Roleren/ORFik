@@ -19,8 +19,9 @@ ORFik is an R package containing various functions for analysis of Ribo-Seq, RNA
 #### Installation
 Package is available from bioconductor (3.7, R version >= 3.5.0)
 ```r
-source("https://bioconductor.org/biocLite.R")
-biocLite("ORFik")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("ORFik")
 ```
 
 Development version on bioconductor (3.8, R version >= 3.5.0)
