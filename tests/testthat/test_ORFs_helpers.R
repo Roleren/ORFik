@@ -94,12 +94,12 @@ test_that("findORFsFasta works as intended", {
 
   test_result <- findORFsFasta(filePath)
   expect_is(test_result, "GRanges")
-  expect_equal(length(test_result), 2)
+  expect_equal(length(test_result), 3990)
 
   ## allow circular
   test_result <- findORFsFasta(filePath, is.circular = TRUE)
   expect_is(test_result, "GRanges")
-  expect_equal(length(test_result), 2)
+  expect_equal(length(test_result), 3998)
 
 })
 

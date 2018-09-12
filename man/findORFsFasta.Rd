@@ -5,7 +5,7 @@
 \title{Finds Open Reading Frames in fasta files.}
 \usage{
 findORFsFasta(filePath, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = TRUE,
+  stopCodon = stopDefinition(1), longestORF = FALSE,
   minimumLength = 0, is.circular = FALSE)
 }
 \arguments{
@@ -17,9 +17,12 @@ findORFsFasta(filePath, startCodon = startDefinition(1),
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
 [stopDefinition()] for helper function.}
 
-\item{longestORF}{(logical) Default FALSE. When TRUE will only report ORFs
-that are longest, all smaller overlapping ORFs will be ignored.
-When FALSE will report all possible ORFs in all three reading frames.}
+\item{longestORF}{(logical) Default FALSE. When TRUE will only report the
+longest ORFs per seqlevel (1 in + and in in - direction),
+all smaller ORFs will be ignored.
+When FALSE will report all possible ORFs in all three reading frames.
+If you want longest ORF per unique (seqname, strand, stopcodon), use
+[longestORFs()]}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will

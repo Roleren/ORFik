@@ -412,3 +412,28 @@ uniqueOrder <- function(grl) {
   reOrdering <- grouping[order(sortedOrder)]
   return(reOrdering)
 }
+
+#' Get longest ORF per stop site
+#'
+#' Rule: if seqname, strand and stop site is equal, take longest one.
+#' Else keep.
+#'
+#' @param grl a \code{\link{GRangesList}} of ORFs
+#' @return a \code{\link{GRangesList}}
+#' @export
+#' @importFrom data.table .I
+#' @examples
+#' ORF1 = GRanges("1", IRanges(10,21), "+")
+#' ORF2 = GRanges("1", IRanges(1,21), "+") # <- longest
+#' grl <- GRangesList(ORF1 = ORF1, ORF2 = ORF2)
+#' longestORFs(grl) # get only longest
+longestORFs <- function(grl) {
+  stops <- stopSites(grl, is.sorted = TRUE)
+  widths <- widthPerGroup(grl, FALSE)
+  seqnames <- seqnamesPerGroup(grl, FALSE)
+  strands <- strandPerGroup(grl, FALSE)
+  dt <- data.table(seqnames, strands, stops, widths)
+  longestORFs <- dt[, .I[which.max(widths)],
+                    by = .(seqnames, strands, stops)]$V1
+  return(grl[longestORFs])
+}
