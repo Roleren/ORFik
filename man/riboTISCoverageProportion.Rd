@@ -28,6 +28,12 @@ proportions}
 
 \item{keep.names}{a logical(FALSE), only applies when onlyProportion
 is TRUE.}
+
+\item{upStart}{upstream region boundary (5 or 20 as standard), relative
+(5, mean 5 upstream from TIS)}
+
+\item{downStop}{downstream region boundary (5 or 20 as standard), relative
+(5, mean 5 downstream from TIS)}
 }
 \value{
 a data.frame with lengths by coverage / vector of proportions

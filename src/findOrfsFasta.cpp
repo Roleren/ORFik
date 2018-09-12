@@ -59,23 +59,26 @@ S4 findORFs_fasta(std::string file,
                        bool isCircular)
 {
   std::vector<int> all_orfs;
-  std::vector<int> Seqnames;
+  std::vector<std::string> Seqnames;
   std::vector<int> strands;
   std::ifstream in(file.c_str());
   in.get(); // remove first '>'
   std::string rec;
   int n = 0;
+  int chromoLength;
   while (getline(in, rec, '>')) { // For each chromosome
     int newLineLoc = rec.find('\n');
     std::string header = rec.substr(0, newLineLoc);
+    header = header.substr(0, header.find(' '));
     std::string fastaSeq = rec.substr(newLineLoc + 1,
                                       rec.length() - newLineLoc - 2);
+    chromoLength = fastaSeq.length() + 1;
     // get all orfs for start to stop
     std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
                                              stopCodon, longestORF,
                                              minimumLength);
     all_orfs.insert(all_orfs.end(), ORFdef.begin(), ORFdef.end());
-    Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, ++n);
+    Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, header);
     strands.insert(strands.end(), ORFdef.size() / 2, 1);
 
     //Definitions if isCircular is TRUE
@@ -108,7 +111,7 @@ S4 findORFs_fasta(std::string file,
       }
       all_orfs.insert(all_orfs.end(), ORFdefOverlap.begin(),
                       ORFdefOverlap.end());
-      Seqnames.insert(Seqnames.end(), ORFdefOverlap.size() / 2, n);
+      Seqnames.insert(Seqnames.end(), ORFdefOverlap.size() / 2, header);
       strands.insert(strands.end(), ORFdefOverlap.size() / 2, 1);
     }
 
@@ -120,8 +123,11 @@ S4 findORFs_fasta(std::string file,
     ORFdef = orfs_as_vector(fastaSeq, startCodon,
                             stopCodon, longestORF,
                             minimumLength); // <-get all orfs for start to stop
-    all_orfs.insert(all_orfs.end(), ORFdef.begin(), ORFdef.end());
-    Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, n);
+    //Following standard, negative strand should have stop <= start
+    for(size_t i = 0; i < ORFdef.size(); i++)
+      ORFdef[i] = chromoLength - ORFdef[i];
+    all_orfs.insert(all_orfs.end(), ORFdef.rbegin(), ORFdef.rend());
+    Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, header);
     strands.insert(strands.end(), ORFdef.size() / 2, -1);
 
     if (isCircular) {
@@ -145,9 +151,11 @@ S4 findORFs_fasta(std::string file,
           }
         }
       }
+      for(size_t i = 0; i < ORFdefOverlapMin.size(); i++)
+        ORFdefOverlapMin[i] = chromoLength - ORFdefOverlapMin[i];
       all_orfs.insert(all_orfs.end(),
-                      ORFdefOverlapMin.begin(), ORFdefOverlapMin.end());
-      Seqnames.insert(Seqnames.end(), ORFdefOverlapMin.size() / 2, n);
+                      ORFdefOverlapMin.rbegin(), ORFdefOverlapMin.rend());
+      Seqnames.insert(Seqnames.end(), ORFdefOverlapMin.size() / 2, header);
       strands.insert(strands.end(), ORFdefOverlapMin.size() / 2, -1);
     }
   }

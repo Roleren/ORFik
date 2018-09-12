@@ -38,7 +38,15 @@ Searches through each fasta header and reports all ORFs found for sense (+)
 and antisense strand (-) in all frames. Name of the header will be used as
 seqnames of reported ORFs.
 Each fasta header is treated separately, and name of the sequence will
-be used as seqname in returned GRanges object.
+be used as seqname in returned GRanges object. This supports circluar
+genomes.
+}
+\details{
+Remember if you have a fasta file of transcripts (transcript coordinates),
+delete all negative stranded ORFs afterwards by:
+orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
+Seqnames are created from header by format: >name info, so name must be
+first after "biggern than" and space between name and info.
 }
 \examples{
 # location of the example fasta file
