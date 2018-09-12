@@ -16,7 +16,8 @@ A string of STOP sies separatd with "|".
 According to:
 <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
 index.cgi?chapter=tgencodes#SG1>
-ncbi genetic code number for translation.
+ncbi genetic code number for translation. This version is a cleaned up
+version, unknown indices removed.
 }
 \examples{
 stopDefinition

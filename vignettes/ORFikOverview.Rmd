@@ -205,7 +205,7 @@ shiftedFootprints
 
 # Gene identity functions for ORFs or genes
 
-`ORFik` contains couple functions of gene identity that can be used to predict 
+`ORFik` contains functions of gene identity that can be used to predict 
 which ORFs are potentially coding and functional.
 
 - FLOSS `floss`,   
@@ -218,7 +218,7 @@ which ORFs are potentially coding and functional.
 - other  
 
 All of the features are implemented based on scientific article published in
-per reviewed journal. `ORFik` supports seemingles calculation of all available 
+peer reviewed journal. `ORFik` supports seemingles calculation of all available 
 features. See example below.
 
 ```{r eval = TRUE, echo = TRUE, warning = FALSE}

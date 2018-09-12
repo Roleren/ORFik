@@ -3,7 +3,8 @@
 #' According to:
 #' <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
 #' index.cgi?chapter=tgencodes#SG1>
-#' ncbi genetic code number for translation.
+#' ncbi genetic code number for translation. This version is a cleaned up
+#' version, unknown indices removed.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
 #' @return A string of START sies separatd with "|".
@@ -22,8 +23,6 @@ startDefinition <- function(transl_table) {
                 "TTG|ATT|ATC|ATA|ATG|GTG",
                 #5 The Invertebrate Mitochondrial Code
                 "ATG", #6 The Ciliate, Dasycladacean and Hexamita Nuclear Code
-                "ATG", #7 ??? No info
-                "ATG", #8 ??? No info
                 "ATG|GTG", #9 The Echinoderm and Flatworm Mitochondrial Code
                 "ATG", #10 The Euplotid Nuclear Code
                 "TTG|CTG|ATT|ATC|ATA|ATG|GTG",
@@ -31,12 +30,7 @@ startDefinition <- function(transl_table) {
                 "CTG|ATG", #12 The Alternative Yeast Nuclear Code
                 "TTG|ATA|ATG|GTG", #13 The Ascidian Mitochondrial Code
                 "ATG", #14 The Alternative Flatworm Mitochondrial Code
-                "ATG", #15 ??? No info
                 "ATG", #16 Chlorophycean Mitochondrial Code
-                "ATG", #17 ??? No info
-                "ATG", #18 ??? No info
-                "ATG", #19 ??? No info
-                "ATG", #20 ??? No info
                 "ATG|GTG", #21 Trematode Mitochondrial Code
                 "ATG", #22 Scenedesmus obliquus Mitochondrial Code
                 "ATT|ATG|GTG", #23 Thraustochytrium Mitochondrial Code
@@ -52,7 +46,8 @@ startDefinition <- function(transl_table) {
 #' According to:
 #' <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
 #' index.cgi?chapter=tgencodes#SG1>
-#' ncbi genetic code number for translation.
+#' ncbi genetic code number for translation. This version is a cleaned up
+#' version, unknown indices removed.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
 #' @return A string of STOP sies separatd with "|".
@@ -69,20 +64,13 @@ stopDefinition <- function(transl_table) {
                "TAA|TAG", #4 Mold/Protozoan/Coelenterate Mitochondrial/Mplasma/
                "TAA|TAG", #5 The Invertebrate Mitochondrial Code
                "TGA", #6 The Ciliate, Dasycladacean and Hexamita Nuclear Code
-               "TGA", #7 ??? No info
-               "TGA", #8 ??? No info
                "TAA|TAG", #9 The Echinoderm and Flatworm Mitochondrial Code
                "TAA|TAG", #10 The Euplotid Nuclear Code
                "TAA|TAG|TGA", #11 The Bacterial, Archaeal and Plant Code
                "TAA|TAG|TGA", #12 The Alternative Yeast Nuclear Code
                "TAA|TAG", #13 The Ascidian Mitochondrial Code
                "TAG", #14 The Alternative Flatworm Mitochondrial Code
-               "TGA", #15 ??? No info
                "TGA", #16 Chlorophycean Mitochondrial Code
-               "TGA", #17 ??? No info
-               "TGA", #18 ??? No info
-               "TGA", #19 ??? No info
-               "TGA", #20 ??? No info
                "TAA|TAG", #21 Trematode Mitochondrial Code
                "TCA|TAA|TGA", #22 Scenedesmus obliquus Mitochondrial Code
                "TTA|TAA|TAG|TGA", #23 Thraustochytrium Mitochondrial Code
@@ -202,7 +190,14 @@ findMapORFs <- function(
 #' and antisense strand (-) in all frames. Name of the header will be used as
 #' seqnames of reported ORFs.
 #' Each fasta header is treated separately, and name of the sequence will
-#' be used as seqname in returned GRanges object.
+#' be used as seqname in returned GRanges object. This supports circluar
+#' genomes.
+#'
+#' Remember if you have a fasta file of transcripts (transcript coordinates),
+#' delete all negative stranded ORFs afterwards by:
+#' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
+#' Seqnames are created from header by format: >name info, so name must be
+#' first after "biggern than" and space between name and info.
 #' @param filePath (character) Path to the fasta file.
 #' @inheritParams findORFs
 #' @param is.circular (logical) Whether the genome in filePath is circular.
@@ -224,6 +219,7 @@ findORFsFasta <- function(
 
   if (!is(filePath, "character"))
     stop("'filepath' must be of type character.")
+  filePath <- path.expand(filePath)
   if(!file.exists(filePath)) stop("'file' does not exist, check working dir!")
   gr <- findORFs_fasta(filePath, startCodon, stopCodon, longestORF,
                        minimumLength, is.circular)
