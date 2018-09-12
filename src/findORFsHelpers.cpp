@@ -168,8 +168,6 @@ std::vector<int> orfs_as_vector(std::string &main_string, std::string s,
   int max_size = main_string.length(); //maximun number of orfs = third of total
 
   vi res = find_matched_startends(tempStarts, tempEnds, max_size);
-  //for(auto u : res)
-  //  D(u);
   int tempMax = 0;
   int nHits = 0; //How many uorfs have current max length
   int cl; //length of current orf
@@ -192,7 +190,6 @@ std::vector<int> orfs_as_vector(std::string &main_string, std::string s,
         }
       }
       else { //if longestORF == false
-        //D(" hit" );
         maxUORF[nHits * 2] = res[i];
         maxUORF[(nHits * 2) + 1] = res[i + 1];
         nHits++;
