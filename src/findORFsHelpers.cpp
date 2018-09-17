@@ -66,22 +66,25 @@ vi return_outputs_of_substring(string& main_string, string& substring)
   return (z);
 }
 //Find all orf in either frame 0,1 or 2.
-vi find_orfs_in_specific_frame(vi &frameS, vi &frameE, int max_size)
+vi find_orfs_in_specific_frame(const vi &frameS,const vi &frameE,
+                               const int max_size)
 {
   vi res(max_size * 2, -1);
   int counter = 0;
+  //For each valid start u, find valid stop v that is greater than u.
 
+  //binary search for end that is > start
   for (auto& u : frameS) {
+    if (u == -1)
+      continue;
 
-    if (u != -1) {
-      for (auto& v : frameE) {
-        if ((v != -1) && v > u) {
-          res[counter] = u + 1;
-          res[counter + 1] = v + 1;
-          counter = counter + 2;
-          break;
-        }
-      }
+    std::cout << "hey" << std::endl;
+    auto it = std::lower_bound(frameE.begin(), frameE.end(), u + 1);
+    if (it != frameE.end()) {
+      auto& v = *it;
+      res[counter] = u + 1;
+      res[counter + 1] = v + 1;
+      counter = counter + 2;
     }
   }
   res.resize(counter);

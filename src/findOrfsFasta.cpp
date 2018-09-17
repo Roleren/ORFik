@@ -73,6 +73,8 @@ S4 findORFs_fasta(std::string file,
     std::string fastaSeq = rec.substr(newLineLoc + 1,
                                       rec.length() - newLineLoc - 2);
     chromoLength = fastaSeq.length() + 1;
+    std::cout << header << std::endl;
+    std::cout << chromoLength << std::endl;
     // get all orfs for start to stop
     std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
                                              stopCodon, longestORF,
