@@ -67,7 +67,7 @@ vi return_outputs_of_substring(string& main_string, string& substring)
 }
 //Find all orf in either frame 0,1 or 2.
 vi find_orfs_in_specific_frame(const vi &frameS,const vi &frameE,
-                               const int max_size)
+                               const int endSize, const int max_size)
 {
   vi res(max_size * 2, -1);
   int counter = 0;
@@ -76,10 +76,9 @@ vi find_orfs_in_specific_frame(const vi &frameS,const vi &frameE,
   //binary search for end that is > start
   for (auto& u : frameS) {
     if (u == -1)
-      continue;
-
-    std::cout << "hey" << std::endl;
-    auto it = std::lower_bound(frameE.begin(), frameE.end(), u + 1);
+      break;
+    auto it = std::lower_bound(frameE.begin(),
+                               frameE.begin() + endSize, u + 1);
     if (it != frameE.end()) {
       auto& v = *it;
       res[counter] = u + 1;
@@ -133,11 +132,11 @@ vi find_matched_startends(vi& starts, vi& ends, int max_size)
   }
 
   vi tempRes;
-  vi res = find_orfs_in_specific_frame(sFrame0, eFrame0, max_size);
+  vi res = find_orfs_in_specific_frame(sFrame0, eFrame0, zeroC, max_size);
   tempRes.insert(tempRes.end(), res.begin(), res.end());
-  res = find_orfs_in_specific_frame(sFrame1, eFrame1, max_size);
+  res = find_orfs_in_specific_frame(sFrame1, eFrame1, oneC, max_size);
   tempRes.insert(tempRes.end(), res.begin(), res.end());
-  res = find_orfs_in_specific_frame(sFrame2, eFrame2, max_size);
+  res = find_orfs_in_specific_frame(sFrame2, eFrame2, twoC, max_size);
   tempRes.insert(tempRes.end(), res.begin(), res.end());
 
   return tempRes;
@@ -159,8 +158,9 @@ vi get_all_hits(string& main_string, string s)
 }
 
 // Return ranges as vector, only for internal c++ use!!
-std::vector<int> orfs_as_vector(std::string &main_string, std::string s,
-                                     std::string e, bool longestORF, int minimumLength)
+std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
+                                const std::string e,const bool longestORF,
+                                int minimumLength)
 {
 
   minimumLength = 6 + (minimumLength * 3) - 1;
@@ -212,7 +212,7 @@ std::vector<int> orfs_as_vector(std::string &main_string, std::string s,
 
 // Now used in the fast version of orf finding, use _as_IRanges for direct use in R.
 IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
-                            std::string e, bool longestORF, int minimumLength)
+                             std::string e, bool longestORF, int minimumLength)
 {
 
   vi maxUORF =  orfs_as_vector(main_string, s,
@@ -241,8 +241,8 @@ IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
 //Minimum length filters the list to only contain orfs longer...
 //or equal to this number of triplets
 // [[Rcpp::export]]
-S4 orfs_as_IRanges(std::string &main_string, std::string s,
-                           std::string e, bool longestORF,
+S4 orfs_as_IRanges(std::string &main_string,const std::string s,
+                           const std::string e,const bool longestORF,
                            int minimumLength)
 {
   size_t minLength = 6 + (minimumLength * 3) - 1;

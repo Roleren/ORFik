@@ -100,8 +100,8 @@ stopDefinition <- function(transl_table) {
 #' longest ORFs per seqlevel (1 in + and in in - direction),
 #' all smaller ORFs will be ignored.
 #' When FALSE will report all possible ORFs in all three reading frames.
-#' If you want longest ORF per unique (seqname, strand, stopcodon), use
-#' [longestORFs()]
+#' If you want longest ORF per unique (seqname, strand, stopcodon) combination,
+#' use [longestORFs()]
 #' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
 #' counting 3bp for START and STOP codons. For example minimumLength = 8 will
 #' result in size of ORFs to be at least START + 8*3 (bp) + STOP.
@@ -145,7 +145,7 @@ findORFs <- function(
 #' genomic coordinates of ORFs found on transcript sequences.
 #'
 #' This function assumes that `seq` is in widths relative to `grl`,
-#' and that their orders match.
+#' and that their orders match. 1st seq is 1st grl object, etc.
 #'
 #' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
