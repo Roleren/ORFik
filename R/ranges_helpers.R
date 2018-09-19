@@ -48,6 +48,8 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #' If a list of orfs are grouped by transcripts, but does not have
 #' ORF names, then create them and return the new GRangesList
 #' @param grl a \code{\link{GRangesList}}
+#' @param groupByTx logical (T), should output GRangesList be grouped by
+#' transcripts (T) or by ORFs (F)?
 #' @return (GRangesList) with ORF names, grouped by transcripts, sorted.
 #' @export
 #' @examples
@@ -59,11 +61,15 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #'                     strand = c("-", "-"))
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' makeORFNames(grl)
-makeORFNames <- function(grl) {
+makeORFNames <- function(grl, groupByTx = TRUE) {
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
   asGR <- unlistGrl(grl)
   asGR$names <- paste0(names(asGR), "_", ranks)
-  return(groupGRangesBy(asGR))
+  if (groupByTx) {
+    return(groupGRangesBy(asGR))
+  } else {
+    return(groupGRangesBy(asGR, asGR$names))
+  }
 }
 
 
@@ -612,4 +618,27 @@ reduceKeepAttr <- function(grl, keep.names = FALSE,
   } else { # return original
     return(reduced)
   }
+}
+
+#' Faster more secure version of mapFromTranscript
+#'
+#' Fixes a bug in function, and should have 10x speedup
+#' Also removes hit column for you
+#'
+#' @param ranges IRanges of ranges within grl
+#' @param grl the "transcripts" that contain ranges, GRangesList
+#' @param indices integer vector of which index of grl ranges are from:
+#' (c(1,1,2)) means first two ranges are from grl[1], third from grl[2])
+#' @return A GrangesList of ranges mapped from transcripts
+pmapFromTranscriptF <- function(ranges, grl, indices) {
+  names <- names(grl)
+  names(grl) <- NULL
+  genomicCoordinates <- pmapFromTranscripts(x = ranges,
+                                            transcripts = grl[indices])
+  names(genomicCoordinates) <- names[indices]
+
+  genomicCoordinates <- genomicCoordinates[width(genomicCoordinates) > 0];
+  a <- unlistGrl(genomicCoordinates);
+  a$hit <- NULL;
+  return(relist(a, genomicCoordinates))
 }

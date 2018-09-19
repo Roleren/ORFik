@@ -196,10 +196,10 @@ test_that("findMapORFs works as intended for minus strand", {
   expect_is(seqnames(test_ranges),"CompressedRleList")
   expect_equal(strandPerGroup(test_ranges, FALSE)[1], "-")
   expect_equal(as.integer(unlist(start(test_ranges))),
-               c(10, 21, 1011, 1010, 1012))
+               c(21, 10, 1011, 1010, 1012))
   expect_equal(as.integer(unlist(end(test_ranges))),
-               c(19, 22, 1019, 1018, 1017))
-  expect_equal(as.integer(unlist(width(test_ranges))), c(10, 2, 9, 9, 6))
+               c(22, 19, 1019, 1018, 1017))
+  expect_equal(as.integer(unlist(width(test_ranges))), c(2, 10, 9, 9, 6))
   expect_equal(sum(widthPerGroup(test_ranges) %% 3), 0)
 })
 

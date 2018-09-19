@@ -62,15 +62,20 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #'
 #' Creates GRangesList from the results of ORFs_as_List and
 #'  the GRangesList used to find the ORFs
+#'
+#' There is no check on invalid matches, so be carefull if you use this
+#' function directly.
 #' @param grl A \code{\link{GRangesList}} of the original
 #'  sequences that gave the orfs
 #' @param result List. A list of the results of finding uorfs
 #' list syntax is: result[1] contain grouping indeces, named index
 #' result[2] countains two columns of start and stops,  named orf
+#' @param groupByTx logical (T), should output GRangesList be grouped by
+#' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
 #' @importFrom GenomicFeatures pmapFromTranscripts
 #'
-mapToGRanges <- function(grl, result) {
+mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 
   validGRL(class(grl))
   if (is.null(names(grl))) stop("'grl' contains no names.")
@@ -85,13 +90,9 @@ mapToGRanges <- function(grl, result) {
                    end = unlist(result$orf[2], use.names = FALSE))
 
   # map transcripts to genomic coordinates, reduce away false hits
-  names <- names(grl)
-  names(grl) <- NULL
-  genomicCoordinates <- pmapFromTranscripts(x = ranges,
-                                            transcripts = grl[result$index])
-  names(genomicCoordinates) <- names[result$index]
-  genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
-  return(makeORFNames(genomicCoordinates))
+  genomicCoordinates <- pmapFromTranscriptF(ranges, grl, result$index)
+
+  return(makeORFNames(genomicCoordinates, groupByTx))
 }
 
 

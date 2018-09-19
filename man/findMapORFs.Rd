@@ -6,7 +6,7 @@
 \usage{
 findMapORFs(grl, seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = FALSE,
-  minimumLength = 0)
+  minimumLength = 0, groupByTx = TRUE)
 }
 \arguments{
 \item{grl}{(\code{\link{GRangesList}}) of sequences
@@ -32,6 +32,9 @@ use [longestORFs()]}
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
 result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
+
+\item{groupByTx}{logical (T), should output GRangesList be grouped by
+transcripts (T) or by ORFs (F)?}
 }
 \value{
 A GRangesList of ORFs.

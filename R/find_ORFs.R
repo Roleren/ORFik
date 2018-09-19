@@ -150,6 +150,8 @@ findORFs <- function(
 #' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
+#' @param groupByTx logical (T), should output GRangesList be grouped by
+#' transcripts (T) or by ORFs (F)?
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
@@ -172,7 +174,7 @@ findORFs <- function(
 #'
 findMapORFs <- function(
   grl, seqs, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
-  longestORF = FALSE, minimumLength = 0 ){
+  longestORF = FALSE, minimumLength = 0, groupByTx = TRUE){
   validGRL(class(grl))
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -183,7 +185,7 @@ findMapORFs <- function(
                          startCodon = startCodon, stopCodon = stopCodon,
                          longestORF = longestORF,
                          minimumLength = minimumLength)
-  return(mapToGRanges(grl, result))
+  return(mapToGRanges(grl, result, groupByTx))
 }
 
 

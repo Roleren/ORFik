@@ -4,10 +4,13 @@
 \alias{makeORFNames}
 \title{Make ORF names per orf}
 \usage{
-makeORFNames(grl)
+makeORFNames(grl, groupByTx = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
+
+\item{groupByTx}{logical (T), should output GRangesList be grouped by
+transcripts (T) or by ORFs (F)?}
 }
 \value{
 (GRangesList) with ORF names, grouped by transcripts, sorted.
