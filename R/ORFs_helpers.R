@@ -79,14 +79,17 @@ mapToGRanges <- function(grl, result) {
     stop("Invalid structure of result, must be list with 2 elements ",
          "read info for structure.")
   # Check that grl is sorted
-  grl <- sortPerGroup(grl, ignore.strand = TRUE)
+  grl <- sortPerGroup(grl, ignore.strand = FALSE)
   # Create Ranges object from orf scanner result
   ranges = IRanges(start = unlist(result$orf[1], use.names = FALSE),
                    end = unlist(result$orf[2], use.names = FALSE))
 
   # map transcripts to genomic coordinates, reduce away false hits
+  names <- names(grl)
+  names(grl) <- NULL
   genomicCoordinates <- pmapFromTranscripts(x = ranges,
                                             transcripts = grl[result$index])
+  names(genomicCoordinates) <- names[result$index]
   genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
   return(makeORFNames(genomicCoordinates))
 }

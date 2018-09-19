@@ -27,7 +27,7 @@ use [longestORFs()]}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 (bp) + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
 }
 \value{
