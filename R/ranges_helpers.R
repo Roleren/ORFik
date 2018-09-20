@@ -64,7 +64,8 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 makeORFNames <- function(grl, groupByTx = TRUE) {
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
   asGR <- unlistGrl(grl)
-  asGR$names <- paste0(names(asGR), "_", ranks)
+  mcols(x = asGR) <- DataFrame(row.names = names(asGR),
+                               names = paste0(names(asGR), "_", ranks))
   if (groupByTx) {
     return(groupGRangesBy(asGR))
   } else {
