@@ -20,15 +20,15 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
   if (length(t) == 1) {
     return(1)
   }
-  Inds <- rep(1, length(t))
+  Inds <- rep.int(1, length(t))
   if (!byTranscript) {
-    for (x in seq(2, length(t))) {
+    for (x in seq.int(2, length(t))) {
       if (t[x] == t[x - 1]) {
         Inds[x] <- Inds[x - 1] + 1
       }
     }
   } else {
-    for (x in seq(2, length(t))) {
+    for (x in seq.int(2, length(t))) {
       if (t[x] != t[x - 1]) {
         if (oldNames[t[x]] == oldNames[t[x] - 1]) {
           Inds[x] <- Inds[x - 1] + 1
