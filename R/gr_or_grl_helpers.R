@@ -83,7 +83,9 @@ matchNaming <- function(gr, reference) {
   }
   ## Name column is special case:
   ## add names column if reference have it
-  if (!is.null(grTest$names)) gr$names <- names(gr)
+  if (!is.null(grTest$names)) mcols(gr) <- DataFrame(row.names = names(gr),
+                                                     mcols(gr),
+                                                     names = names(gr))
   ## if reference have names, add them to gr
   if (!is.null(names(grTest))) {
     if (!any(grep(pattern = "_", names(grTest)[1]))) {

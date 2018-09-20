@@ -64,8 +64,8 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 makeORFNames <- function(grl, groupByTx = TRUE) {
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
   asGR <- unlistGrl(grl)
-  mcols(x = asGR) <- DataFrame(row.names = names(asGR),
-                               names = paste0(names(asGR), "_", ranks))
+  mcols(asGR) <- DataFrame(row.names = names(asGR),
+                           names = paste0(names(asGR), "_", ranks))
   if (groupByTx) {
     return(groupGRangesBy(asGR))
   } else {
@@ -117,7 +117,8 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
                 need a column called 'names' that are unique,\n
                 or change names of groups so they are unique")
       }
-      ORFs$names <- names(ORFs)
+      mcols(ORFs) <- DataFrame(row.names = names(ORFs),  mcols(ORFs),
+                               names = names(ORFs))
     }
   }
   # special case for only single grouped GRangesList
@@ -126,7 +127,8 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
     if(length(ORFs) != length(grl)) {
       stop("wrong naming, could not find unique names")
     }
-    ORFs$names <- names(grl)
+    mcols(ORFs) <- DataFrame(row.names = names(ORFs),  mcols(ORFs),
+                             names = names(grl))
   }
 
   tilex <- tile(ORFs, width =  1L)
