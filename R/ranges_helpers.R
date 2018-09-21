@@ -51,6 +51,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #' @param groupByTx logical (T), should output GRangesList be grouped by
 #' transcripts (T) or by ORFs (F)?
 #' @return (GRangesList) with ORF names, grouped by transcripts, sorted.
+#' @importFrom S4Vectors DataFrame
 #' @export
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
@@ -87,6 +88,7 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' @param matchNaming logical (T), should groups keep unlisted names
 #'  and meta data.(This make the list very big, for > 100K groups)
 #' @return a GRangesList grouped by original group, tiled to 1
+#' @importFrom S4Vectors DataFrame
 #' @export
 #' @examples
 #' gr1 <- GRanges("1", ranges = IRanges(start = c(1, 10, 20),
