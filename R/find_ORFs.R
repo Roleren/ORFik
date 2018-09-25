@@ -84,14 +84,24 @@ stopDefinition <- function(transl_table) {
 #' Find Open Reading Frames.
 #'
 #' Find all Open Reading Frames (ORFs) on the input sequences
-#' in 5'- 3' direction, but within all three possible reading frames. For each
-#' sequence of the input vector \code{\link{IRanges}} with START and
+#' in ONLY 5'- 3' direction (+), but within all three possible reading frames.
+#' For each sequence of the input vector \code{\link{IRanges}} with START and
 #' STOP positions (inclusive) will be returned as
 #' \code{\link{IRangesList}}. Returned coordinates are relative to the
 #' input sequences.
 #'
+#' If you want antisence strand too, do:
+#'
+#' #positive strands
+#' pos <- findORFs(hDataStr, startCodon = "ATG", minimumLength = 9)
+#' #negative strands (DNAStringSet only if character)
+#' neg <- findORFs(reverseComplement(DNAStringSet(hDataStr)))
+#  #merge together
+#' relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
+#'  skeleton = merge(pos, neg))
+#'
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
-#' Reading Frames.
+#' Reading Frames. Can be both uppercase or lowercase.
 #' @param startCodon (character) Possible START codons to search for. Check
 #' [startDefinition()] for helper function.
 #' @param stopCodon (character) Possible STOP codons to search for. Check
@@ -127,6 +137,11 @@ findORFs <- function(
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
+  if (is.character(seqs) & substr(seqs[1], 1,1) %in%
+      c("a", "t", "c", "g", "n")) {
+    startCodon <- tolower(startCodon)
+    stopCodon <- tolower(stopCodon)
+  }
 
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
@@ -191,9 +206,9 @@ findMapORFs <- function(
 
 #' Finds Open Reading Frames in fasta files.
 #'
-#' Searches through each fasta header and reports all ORFs found for sense (+)
-#' and antisense strand (-) in all frames. Name of the header will be used as
-#' seqnames of reported ORFs.
+#' Searches through each fasta header and reports all ORFs found for BOTH
+#' sense (+) and antisense strand (-) in all frames. Name of the header will
+#' be used as seqnames of reported ORFs.
 #' Each fasta header is treated separately, and name of the sequence will
 #' be used as seqname in returned GRanges object. This supports circluar
 #' genomes.
@@ -203,7 +218,8 @@ findMapORFs <- function(
 #' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
 #' Seqnames are created from header by format: >name info, so name must be
 #' first after "biggern than" and space between name and info.
-#' @param filePath (character) Path to the fasta file.
+#' @param filePath (character) Path to the fasta file. Sequences must be
+#' uppercase! Alternative if lowercase, set start and stop codons to "atg" etc.
 #' @inheritParams findORFs
 #' @param is.circular (logical) Whether the genome in filePath is circular.
 #' Prokaryotic genomes are usually circular.
