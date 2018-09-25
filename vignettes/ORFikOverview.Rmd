@@ -379,7 +379,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 
 Many more operations are also supported for manipulation
 
-## When to use which ORFfinding function
+# When to use which ORFfinding function
 
 Here the different ORFfinding functions will be shown for it's specific use.
 
@@ -388,7 +388,7 @@ Remember if using character: if the annotation uses variation of lowercase and
 uppercase, then the first found type will be used. Normally you want to use 
 uppercase, since lowercase means that there is a repeat region. 
 
-findORFs will give you only 5' to 3' direction, so if you want both direction,
+findORFs will give you only 5' to 3' direction, so if you want both directions,
 you can do (for double stranded):
 ```{r eval = TRUE, echo = TRUE}
   library(Biostrings)
@@ -416,10 +416,10 @@ If you get both (+/-) strand and only want (+) ORFs, do:
 ```{r eval = TRUE, echo = TRUE}
   res[strandBool(res)]
 ```
-# Finding ORFs on transcripts
+## Finding ORFs on transcripts
 If you want to find ORFs in transcripts, use findMapORFs. It supports automatic
 exon splitting if transcripts are spliced.
 
 
-# Circular Genomes
+## Circular Genomes
 If you want to find ORFs on circular genomes, use findORFsFasta
