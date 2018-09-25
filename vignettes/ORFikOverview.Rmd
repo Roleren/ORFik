@@ -378,3 +378,48 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 ```
 
 Many more operations are also supported for manipulation
+
+## When to use which ORFfinding function
+
+Here the different ORFfinding functions will be shown for it's specific use.
+
+If you have a DNAStringSet or a character vector use findORFs.
+Remember if using character: if the annotation uses variation of lowercase and 
+uppercase, then the first found type will be used. Normally you want to use 
+uppercase, since lowercase means that there is a repeat region. 
+
+findORFs will give you only 5' to 3' direction, so if you want both direction,
+you can do (for double stranded):
+```{r eval = TRUE, echo = TRUE}
+  library(Biostrings)
+  library(S4Vectors)
+  seqs <- "ATGAAATGAAGTAAATCAAAACAT" # strand with ORFs in both directions
+    # positive strands
+  pos <- findORFs(seqs, startCodon = "ATG", minimumLength = 0)
+  # negative strands
+  neg <- findORFs(reverseComplement(DNAStringSet(seqs)),
+                  startCodon = "ATG", minimumLength = 0)
+  # make GRanges since we want strand information
+  pos <- GRanges(pos, strand = "+")
+  neg <- GRanges(neg, strand = "-")
+  # as GRanges
+  res <- c(pos, neg)
+  # or merge together and make GRangesList
+  res <- split(res, seq.int(1, length(pos) + length(neg)))
+  res
+```
+
+Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
+normally only used for genomes.
+
+If you get both (+/-) strand and only want (+) ORFs, do:
+```{r eval = TRUE, echo = TRUE}
+  res[strandBool(res)]
+```
+# Finding ORFs on transcripts
+If you want to find ORFs in transcripts, use findMapORFs. It supports automatic
+exon splitting if transcripts are spliced.
+
+
+# Circular Genomes
+If you want to find ORFs on circular genomes, use findORFsFasta
