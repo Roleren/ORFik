@@ -13,7 +13,7 @@ findMapORFs(grl, seqs, startCodon = startDefinition(1),
 to search for ORFs, probably in genomic coordinates}
 
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
-Reading Frames.}
+Reading Frames. Can be both uppercase or lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
 [startDefinition()] for helper function.}

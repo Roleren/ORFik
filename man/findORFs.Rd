@@ -10,7 +10,7 @@ findORFs(seqs, startCodon = startDefinition(1),
 }
 \arguments{
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
-Reading Frames.}
+Reading Frames. Can be both uppercase or lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
 [startDefinition()] for helper function.}
@@ -36,11 +36,21 @@ grouped by input seqeunces.
 }
 \description{
 Find all Open Reading Frames (ORFs) on the input sequences
-in 5'- 3' direction, but within all three possible reading frames. For each
-sequence of the input vector \code{\link{IRanges}} with START and
+in ONLY 5'- 3' direction (+), but within all three possible reading frames.
+For each sequence of the input vector \code{\link{IRanges}} with START and
 STOP positions (inclusive) will be returned as
 \code{\link{IRangesList}}. Returned coordinates are relative to the
 input sequences.
+}
+\details{
+If you want antisence strand too, do:
+
+#positive strands
+pos <- findORFs(hDataStr, startCodon = "ATG", minimumLength = 9)
+#negative strands (DNAStringSet only if character)
+neg <- findORFs(reverseComplement(DNAStringSet(hDataStr)))
+relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
+ skeleton = merge(pos, neg))
 }
 \examples{
 findORFs("ATGTAA")

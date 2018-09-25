@@ -5,6 +5,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <locale>
 
 #include <Rcpp.h>
 #include "findORFsHelpers.h"
@@ -73,6 +74,16 @@ S4 findORFs_fasta(std::string file,
     std::string fastaSeq = rec.substr(newLineLoc + 1,
                                       rec.length() - newLineLoc - 2);
     chromoLength = fastaSeq.length() + 1;
+    // Check if sequences is lowercase
+    if (n == 0) {
+      std::locale loc;
+      if (std::islower(fastaSeq.at(0), loc)) {
+        std::transform(startCodon.begin(), startCodon.end(),
+                       startCodon.begin(), ::tolower);
+        std::transform(stopCodon.begin(), stopCodon.end(),
+                         stopCodon.begin(), ::tolower);
+      }
+    }
 
     // get all orfs for start to stop
     std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
@@ -159,6 +170,7 @@ S4 findORFs_fasta(std::string file,
       Seqnames.insert(Seqnames.end(), ORFdefOverlapMin.size() / 2, header);
       strands.insert(strands.end(), ORFdefOverlapMin.size() / 2, -1);
     }
+    n++;
   }
 
   // all_orfs is an interlaced vector. We de-interlace it into two vectors.

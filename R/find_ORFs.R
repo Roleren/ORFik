@@ -222,7 +222,9 @@ findMapORFs <- function(
 #' uppercase! Alternative if lowercase, set start and stop codons to "atg" etc.
 #' @inheritParams findORFs
 #' @param is.circular (logical) Whether the genome in filePath is circular.
-#' Prokaryotic genomes are usually circular.
+#' Prokaryotic genomes are usually circular. Be carefull if you want to
+#' extract sequences, remember that seqlengths must be set, else it does not
+#' know what last base in sequence is before loop ends!
 #' @return (GRanges) object of ORFs mapped from fasta file. Positions are
 #' relative to the fasta file.
 #' @export

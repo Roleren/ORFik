@@ -9,7 +9,8 @@ findORFsFasta(filePath, startCodon = startDefinition(1),
   minimumLength = 0, is.circular = FALSE)
 }
 \arguments{
-\item{filePath}{(character) Path to the fasta file.}
+\item{filePath}{(character) Path to the fasta file. Sequences must be
+uppercase! Alternative if lowercase, set start and stop codons to "atg" etc.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
 [startDefinition()] for helper function.}
@@ -30,16 +31,18 @@ result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
 
 \item{is.circular}{(logical) Whether the genome in filePath is circular.
-Prokaryotic genomes are usually circular.}
+Prokaryotic genomes are usually circular. Be carefull if you want to
+extract sequences, remember that seqlengths must be set, else it does not
+know what last base in sequence is before loop ends!}
 }
 \value{
 (GRanges) object of ORFs mapped from fasta file. Positions are
 relative to the fasta file.
 }
 \description{
-Searches through each fasta header and reports all ORFs found for sense (+)
-and antisense strand (-) in all frames. Name of the header will be used as
-seqnames of reported ORFs.
+Searches through each fasta header and reports all ORFs found for BOTH
+sense (+) and antisense strand (-) in all frames. Name of the header will
+be used as seqnames of reported ORFs.
 Each fasta header is treated separately, and name of the sequence will
 be used as seqname in returned GRanges object. This supports circluar
 genomes.
