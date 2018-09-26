@@ -23,7 +23,7 @@ longest ORFs per seqlevel (1 in + and in in - direction),
 all smaller ORFs will be ignored.
 When FALSE will report all possible ORFs in all three reading frames.
 If you want longest ORF per unique (seqname, strand, stopcodon) combination,
-use [longestORFs()]}
+use \code{\link{longestORFs}}}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
@@ -44,13 +44,14 @@ input sequences.
 }
 \details{
 If you want antisence strand too, do:
-
+\code{
 #positive strands
-pos <- findORFs(hDataStr, startCodon = "ATG", minimumLength = 9)
+pos <- findORFs(seqs)
 #negative strands (DNAStringSet only if character)
-neg <- findORFs(reverseComplement(DNAStringSet(hDataStr)))
+neg <- findORFs(reverseComplement(DNAStringSet(seqs)))
 relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
- skeleton = merge(pos, neg))
+       skeleton = merge(pos, neg))
+}
 }
 \examples{
 findORFs("ATGTAA")

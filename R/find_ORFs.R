@@ -91,14 +91,15 @@ stopDefinition <- function(transl_table) {
 #' input sequences.
 #'
 #' If you want antisence strand too, do:
-#'
+#' \code{
 #' #positive strands
-#' pos <- findORFs(hDataStr, startCodon = "ATG", minimumLength = 9)
+#' pos <- findORFs(seqs)
 #' #negative strands (DNAStringSet only if character)
-#' neg <- findORFs(reverseComplement(DNAStringSet(hDataStr)))
+#' neg <- findORFs(reverseComplement(DNAStringSet(seqs)))
 #  #merge together
 #' relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
-#'  skeleton = merge(pos, neg))
+#'        skeleton = merge(pos, neg))
+#' }
 #'
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
 #' Reading Frames. Can be both uppercase or lowercase.
@@ -111,7 +112,7 @@ stopDefinition <- function(transl_table) {
 #' all smaller ORFs will be ignored.
 #' When FALSE will report all possible ORFs in all three reading frames.
 #' If you want longest ORF per unique (seqname, strand, stopcodon) combination,
-#' use [longestORFs()]
+#' use \code{\link{longestORFs}}
 #' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
 #' counting 3bp for START and STOP codons. For example minimumLength = 8 will
 #' result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.

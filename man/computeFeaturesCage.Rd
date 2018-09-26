@@ -6,9 +6,8 @@
 \usage{
 computeFeaturesCage(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
   fiveUTRs = NULL, cds = NULL, threeUTRs = NULL, faFile = NULL,
-  riboStart = 26, riboStop = 34, extension = NULL,
-  orfFeatures = TRUE, cageFiveUTRs = NULL, includeNonVarying = TRUE,
-  grl.is.sorted = FALSE)
+  riboStart = 26, riboStop = 34, orfFeatures = TRUE,
+  includeNonVarying = TRUE, grl.is.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -29,7 +28,8 @@ normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 only add this if you are not including Gtf file
 You do not need to reassign these to the cage peaks, it will do it for you.}
 
-\item{fiveUTRs}{fiveUTRs as GRangesList, must be original unchanged fiveUTRs}
+\item{fiveUTRs}{fiveUTRs as GRangesList, if you used cage-data to
+extend 5' utrs, remember to input CAGE assigned version and not original!}
 
 \item{cds}{a GRangesList of coding sequences}
 
@@ -42,14 +42,7 @@ normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 
 \item{riboStop}{usually 34, the end of the floss interval}
 
-\item{extension}{a numeric/integer needs to be set! set to 0 if you did not
-use cage, if you used cage to change tss' when finding the orfs,
-standard cage extension is 1000}
-
 \item{orfFeatures}{a logical,  is the grl a list of orfs? Must be assigned.}
-
-\item{cageFiveUTRs}{a GRangesList, if you used cage-data to extend 5' utrs,
-include this, also extension must match with the extension used for these.}
 
 \item{includeNonVarying}{a logical T, if TRUE, include all features not
 dependent on Ribo-seq data and RNA-seq data, that is: Kozak,
@@ -64,14 +57,17 @@ a data.table with scores, each column is one score type, name of
  or [fpkm()]
 }
 \description{
-Normally don't use this function, but instead use:
+If you have a txdb with correct lists, use:
 [computeFeatures()]
 }
 \details{
 A specialized version if you used Cage data, and don't have
 a new txdb with reassigned leaders, transcripts and gene starts.
+It is 2x faster for test data.
 If you do have a txdb with cage reassignments, use computeFeatures
 instead.
+The point of this function is to give you the ability to input
+transcript etc directly into the function, and not load them from txdb.
 Each feature have a link to an article describing feature,
 try ?floss
 }
@@ -108,10 +104,8 @@ try ?floss
   # set RNA seq to duplicate transcripts
   RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 
-  cageNotUsed <- 0 # used to inform that no cage was used
-
   computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
-   RNA = RNA, Gtf = txdb, faFile = faFile, extension = cageNotUsed)
+   RNA = RNA, Gtf = txdb, faFile = faFile)
 
 }
 # See vignettes for more examples

@@ -215,12 +215,9 @@ distToTSS <- function(ORFs, fiveUTRs){
 #' @param ORFs orfs as \code{\link{GRangesList}},
 #' names of orfs must be transcript names
 #' @param fiveUTRs fiveUTRs as \code{\link{GRangesList}},
-#' must be original unchanged fiveUTRs
+#' remember to use CAGE version of 5' if you did CAGE reassignment!
 #' @param cds cds' as \code{\link{GRangesList}},
-#' only add if you used CageSeq to extend leaders
-#' @param extension Numeric that needs set to 0 if you did not use CageSeq
-#' if you used CageSeq to change tss' when finding the orfs, standard cage
-#' extension is 1000.
+#' only add if you have ORFs going into CDS.
 #' @return an integer vector, +1 means one base upstream of cds, -1 means
 #' 2nd base in cds, 0 means orf stops at cds start.
 #' @family features
@@ -228,37 +225,24 @@ distToTSS <- function(ORFs, fiveUTRs){
 #' @examples
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1, 10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1, 20), "+"))
-#' distToCds(grl, fiveUTRs, extension = 0)
+#' distToCds(grl, fiveUTRs)
 #'
-distToCds <- function(ORFs, fiveUTRs, cds = NULL, extension = NULL){
+distToCds <- function(ORFs, fiveUTRs, cds = NULL){
   validGRL(class(ORFs), "ORFs")
-  if (is.null(extension)) stop("Please specify extension, to avoid bugs, ",
-                               "if you did not use cage, set it to 0, ",
-                               "standard cage extension is 1000.")
-  if (extension > 0) {
-    if (!is.grl(cds)) {
-      stop("cds must be GRangesList Object ",
-           "when extension > 0, cds must be included")
-    }
-    extendedLeadersWithoutCds <- extendLeaders(fiveUTRs, extension)
-    fiveUTRs <- addCdsOnLeaderEnds(
-      extendedLeadersWithoutCds, cds)
-    }
 
-  lastExons <-  lastExonPerGroup(ORFs)
+  cdsStarts <- widthPerGroup(fiveUTRs[
+    txNames(ORFs)], FALSE) + 1
+
+  lastExons <- lastExonPerGroup(ORFs)
+  if (is.grl(cds)) {
+    fiveUTRs <- addCdsOnLeaderEnds(fiveUTRs, cds)
+  }
   orfsTx <- asTX(lastExons, fiveUTRs)
+
   # this is ok, since it is tx not genomic ->
   orfEnds <- lastExonEndPerGroup(orfsTx, FALSE)
-  if (extension > 0) {
-    cdsStarts <- widthPerGroup(extendedLeadersWithoutCds[
-      txNames(lastExons)], FALSE) + 1
-  } else {
-    cdsStarts <- widthPerGroup(fiveUTRs[
-      txNames(lastExons)], FALSE) + 1
-  }
-  dists <- cdsStarts - orfEnds
 
-  return(dists)
+  return(cdsStarts - orfEnds)
 }
 
 

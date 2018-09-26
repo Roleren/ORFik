@@ -381,7 +381,8 @@ Many more operations are also supported for manipulation
 
 # When to use which ORFfinding function
 
-Here the different ORFfinding functions will be shown for it's specific use.
+ORFik supports multiple ORF finding functions,here we describe their specific
+use.
 
 If you have a DNAStringSet or a character vector use findORFs.
 Remember if using character: if the annotation uses variation of lowercase and 
@@ -394,7 +395,7 @@ you can do (for double stranded):
   library(Biostrings)
   library(S4Vectors)
   seqs <- "ATGAAATGAAGTAAATCAAAACAT" # strand with ORFs in both directions
-    # positive strands
+  # positive strands
   pos <- findORFs(seqs, startCodon = "ATG", minimumLength = 0)
   # negative strands
   neg <- findORFs(reverseComplement(DNAStringSet(seqs)),
@@ -410,16 +411,17 @@ you can do (for double stranded):
 ```
 
 Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
-normally only used for genomes.
+normally used for genomes.
 
+If you have transcriptomes, you dont want the (-) strand.
 If you get both (+/-) strand and only want (+) ORFs, do:
 ```{r eval = TRUE, echo = TRUE}
   res[strandBool(res)]
 ```
-## Finding ORFs on transcripts
-If you want to find ORFs in transcripts, use findMapORFs. It supports automatic
-exon splitting if transcripts are spliced.
+## Finding ORFs in spliced transcripts
+If you want to find ORFs in spliced transcripts, use \code{\link{findMapORFs}}.
+It supports automatic exon splitting, see above for example.
 
 
 ## Circular Genomes
-If you want to find ORFs on circular genomes, use findORFsFasta
+If you want to find ORFs on circular genomes, use \code{\link{findORFsFasta}}

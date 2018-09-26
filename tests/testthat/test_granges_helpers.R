@@ -34,6 +34,17 @@ fiveUTRs2 <- GRanges(seqnames = Rle(rep("1", 2)),
                      strand = Rle(strand(rep("+", 2))))
 fiveUTRs <- GRangesList(tx1 = fiveUTRs1, tx2 = fiveUTRs2)
 
+tx1 <-  GRanges(seqnames = Rle(rep("1", 5)),
+                ranges = IRanges(start = c(1, 10, 20, 30, 40),
+                                 end = c(5, 15, 25, 35, 45)),
+                strand = Rle(strand(rep("+", 5))))
+
+tx2 <- GRanges(seqnames = Rle(rep("1", 5)),
+               ranges = IRanges(start = c(20, 30, 40, 50, 60),
+                                end = c(25, 35, 45, 55, 65)),
+               strand = Rle(strand(rep("+", 5))))
+txl <- GRangesList(tx1 = tx1, tx2 = tx2)
+
 test_that("groupGRangesBy works as intended", {
 
   grltest <- groupGRangesBy(gr)
@@ -127,17 +138,6 @@ test_that("upstreamOfPerGroup works as intended", {
   expect_equal(length(reassigned), 2)
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), upstreamOf)
 })
-
-tx1 <-  GRanges(seqnames = Rle(rep("1", 5)),
-                ranges = IRanges(start = c(1, 10, 20, 30, 40),
-                                 end = c(5, 15, 25, 35, 45)),
-                strand = Rle(strand(rep("+", 5))))
-
-tx2 <- GRanges(seqnames = Rle(rep("1", 5)),
-               ranges = IRanges(start = c(20, 30, 40, 50, 60),
-                                end = c(25, 35, 45, 55, 65)),
-               strand = Rle(strand(rep("+", 5))))
-txl <- GRangesList(tx1 = tx1, tx2 = tx2)
 
 test_that("asTX works as intended", {
   reassigned <- asTX(grl, txl)

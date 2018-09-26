@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{pmapFromTranscriptF}
 \alias{pmapFromTranscriptF}
-\title{Faster more secure version of mapFromTranscript}
+\title{Faster more secure version of mapFromTranscripts}
 \usage{
 pmapFromTranscriptF(ranges, grl, indices)
 }
