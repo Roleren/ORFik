@@ -69,7 +69,7 @@ bedToGR <- function(x, bed6 = TRUE){
   ends <- x[, 3]
   gr <- GRanges(x[, 1], IRanges(starts, ends),
                 strand = x[, 6])
-  score(gr) <- x[, 5]
+  mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = x[, 5])
   if (ncol(x) > 6) mcols(gr) <- x[, 7:ncol(x)]
   return(gr)
 }
@@ -145,10 +145,11 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     dt <- as.data.table(posGr)[, .N, .(seqnames, end)]
     negGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$end, width = 1),
                      strand = dt$strand)
-    score <- c(score, dt$N)
+    score <- as.integer(c(score, dt$N))
 
     gr <- c(posGr, negGr)
-    gr$score <-score
+    gr$score <- NULL
+    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = score)
   }
 
   return(gr)
