@@ -10,24 +10,24 @@ findORFs(seqs, startCodon = startDefinition(1),
 }
 \arguments{
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
-Reading Frames.}
+Reading Frames. Can be both uppercase or lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-[startDefinition()] for helper function.}
+\code{\link{startDefinition}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-[stopDefinition()] for helper function.}
+\code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report the
 longest ORFs per seqlevel (1 in + and in in - direction),
 all smaller ORFs will be ignored.
 When FALSE will report all possible ORFs in all three reading frames.
-If you want longest ORF per unique (seqname, strand, stopcodon), use
-[longestORFs()]}
+If you want longest ORF per unique (seqname, strand, stopcodon) combination,
+use \code{\link{longestORFs}}}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 (bp) + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
 }
 \value{
@@ -36,11 +36,22 @@ grouped by input seqeunces.
 }
 \description{
 Find all Open Reading Frames (ORFs) on the input sequences
-in 5'- 3' direction, but within all three possible reading frames. For each
-sequence of the input vector \code{\link{IRanges}} with START and
+in ONLY 5'- 3' direction (+), but within all three possible reading frames.
+For each sequence of the input vector \code{\link{IRanges}} with START and
 STOP positions (inclusive) will be returned as
 \code{\link{IRangesList}}. Returned coordinates are relative to the
 input sequences.
+}
+\details{
+If you want antisence strand too, do:
+\code{
+#positive strands
+pos <- findORFs(seqs)
+#negative strands (DNAStringSet only if character)
+neg <- findORFs(reverseComplement(DNAStringSet(seqs)))
+relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
+       skeleton = merge(pos, neg))
+}
 }
 \examples{
 findORFs("ATGTAA")

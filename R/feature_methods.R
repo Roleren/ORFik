@@ -499,13 +499,16 @@ ribosomeStallingScore <- function(grl, RFP){
 
 #' Get all possible features in ORFik
 #'
-#' Normally don't use this function, but instead use:
+#' If you have a txdb with correct lists, use:
 #' [computeFeatures()]
 #'
 #' A specialized version if you used Cage data, and don't have
 #' a new txdb with reassigned leaders, transcripts and gene starts.
+#' It is 2x faster for test data.
 #' If you do have a txdb with cage reassignments, use computeFeatures
 #' instead.
+#' The point of this function is to give you the ability to input
+#' transcript etc directly into the function, and not load them from txdb.
 #' Each feature have a link to an article describing feature,
 #' try ?floss
 #' @param grl a \code{\link{GRangesList}} object
@@ -521,19 +524,15 @@ ribosomeStallingScore <- function(grl, RFP){
 #'  normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 #'  only add this if you are not including Gtf file
 #'  You do not need to reassign these to the cage peaks, it will do it for you.
-#' @param fiveUTRs fiveUTRs as GRangesList, must be original unchanged fiveUTRs
+#' @param fiveUTRs fiveUTRs as GRangesList, if you used cage-data to
+#'  extend 5' utrs, remember to input CAGE assigned version and not original!
 #' @param cds a GRangesList of coding sequences
 #' @param threeUTRs  a GrangesList of transcript 3' utrs,
 #'  normally called from: threeUTRsByTranscript(Gtf, use.names = T)
 #' @param faFile a FaFile or BSgenome from the fasta file, see ?FaFile
 #' @param riboStart usually 26, the start of the floss interval, see ?floss
 #' @param riboStop usually 34, the end of the floss interval
-#' @param extension a numeric/integer needs to be set! set to 0 if you did not
-#'  use cage, if you used cage to change tss' when finding the orfs,
-#'  standard cage extension is 1000
 #' @param orfFeatures a logical,  is the grl a list of orfs? Must be assigned.
-#' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
-#'  include this, also extension must match with the extension used for these.
 #' @param includeNonVarying a logical T, if TRUE, include all features not
 #'  dependent on Ribo-seq data and RNA-seq data, that is: Kozak,
 #'  fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
@@ -577,10 +576,8 @@ ribosomeStallingScore <- function(grl, RFP){
 #'   # set RNA seq to duplicate transcripts
 #'   RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 #'
-#'   cageNotUsed <- 0 # used to inform that no cage was used
-#'
 #'   computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
-#'    RNA = RNA, Gtf = txdb, faFile = faFile, extension = cageNotUsed)
+#'    RNA = RNA, Gtf = txdb, faFile = faFile)
 #'
 #' }
 #' # See vignettes for more examples
@@ -589,11 +586,9 @@ ribosomeStallingScore <- function(grl, RFP){
 computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                                 fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
-                                extension = NULL, orfFeatures = TRUE,
-                                cageFiveUTRs = NULL, includeNonVarying = TRUE,
+                                orfFeatures = TRUE, includeNonVarying = TRUE,
                                 grl.is.sorted = FALSE) {
   #### Check input and load data ####
-  validExtension(extension, cageFiveUTRs)
   validGRL(class(grl))
   checkRFP(class(RFP))
   checkRNA(class(RNA))
@@ -621,9 +616,6 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
       if (notIncluded[4]) {
         tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
       }
-  }
-  if (!is.null(cageFiveUTRs)) {
-    tx <- extendLeaders(tx, extension = cageFiveUTRs)
   }
   if (!grl.is.sorted) {
     grl <- sortPerGroup(grl)
@@ -661,7 +653,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
         message("faFile not included, skipping kozak sequence score")
       }
       # switch five with tx, is it possible to use ?
-      distORFCDS <- distToCds(grl, fiveUTRs, cds, extension)
+      distORFCDS <- distToCds(grl, fiveUTRs, cds)
       scores[, distORFCDS := distORFCDS]
       scores[, inFrameCDS := isInFrame(distORFCDS)]
       scores[, isOverlappingCds := isOverlapping(distORFCDS)]
@@ -771,7 +763,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
         message("faFile not included, skipping kozak sequence score")
       }
       # switch five with tx, is it possible to use ?
-      distORFCDS <- distToCds(grl, fiveUTRs, cds, extension = 0)
+      distORFCDS <- distToCds(grl, fiveUTRs, cds)
       scores[, distORFCDS := distORFCDS]
       scores[, inFrameCDS := isInFrame(distORFCDS)]
       scores[, isOverlappingCds := isOverlapping(distORFCDS)]

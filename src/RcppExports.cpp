@@ -37,15 +37,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // orfs_as_IRanges
-S4 orfs_as_IRanges(std::string& main_string, std::string s, std::string e, bool longestORF, int minimumLength);
+S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, const bool longestORF, int minimumLength);
 RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string& >::type main_string(main_stringSEXP);
-    Rcpp::traits::input_parameter< std::string >::type s(sSEXP);
-    Rcpp::traits::input_parameter< std::string >::type e(eSEXP);
-    Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type s(sSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type e(eSEXP);
+    Rcpp::traits::input_parameter< const bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
     rcpp_result_gen = Rcpp::wrap(orfs_as_IRanges(main_string, s, e, longestORF, minimumLength));
     return rcpp_result_gen;

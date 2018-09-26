@@ -4,21 +4,17 @@
 \alias{distToCds}
 \title{Get distances between ORF ends and starts of their transcripts cds'.}
 \usage{
-distToCds(ORFs, fiveUTRs, cds = NULL, extension = NULL)
+distToCds(ORFs, fiveUTRs, cds = NULL)
 }
 \arguments{
 \item{ORFs}{orfs as \code{\link{GRangesList}},
 names of orfs must be transcript names}
 
 \item{fiveUTRs}{fiveUTRs as \code{\link{GRangesList}},
-must be original unchanged fiveUTRs}
+remember to use CAGE version of 5' if you did CAGE reassignment!}
 
 \item{cds}{cds' as \code{\link{GRangesList}},
-only add if you used CageSeq to extend leaders}
-
-\item{extension}{Numeric that needs set to 0 if you did not use CageSeq
-if you used CageSeq to change tss' when finding the orfs, standard cage
-extension is 1000.}
+only add if you have ORFs going into CDS.}
 }
 \value{
 an integer vector, +1 means one base upstream of cds, -1 means
@@ -33,7 +29,7 @@ The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 \examples{
 grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1, 10), "+"))
 fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1, 20), "+"))
-distToCds(grl, fiveUTRs, extension = 0)
+distToCds(grl, fiveUTRs)
 
 }
 \references{

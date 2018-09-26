@@ -62,15 +62,20 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #'
 #' Creates GRangesList from the results of ORFs_as_List and
 #'  the GRangesList used to find the ORFs
+#'
+#' There is no check on invalid matches, so be carefull if you use this
+#' function directly.
 #' @param grl A \code{\link{GRangesList}} of the original
 #'  sequences that gave the orfs
 #' @param result List. A list of the results of finding uorfs
 #' list syntax is: result[1] contain grouping indeces, named index
 #' result[2] countains two columns of start and stops,  named orf
+#' @param groupByTx logical (T), should output GRangesList be grouped by
+#' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
 #' @importFrom GenomicFeatures pmapFromTranscripts
 #'
-mapToGRanges <- function(grl, result) {
+mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 
   validGRL(class(grl))
   if (is.null(names(grl))) stop("'grl' contains no names.")
@@ -79,16 +84,15 @@ mapToGRanges <- function(grl, result) {
     stop("Invalid structure of result, must be list with 2 elements ",
          "read info for structure.")
   # Check that grl is sorted
-  grl <- sortPerGroup(grl, ignore.strand = TRUE)
+  grl <- sortPerGroup(grl, ignore.strand = FALSE)
   # Create Ranges object from orf scanner result
   ranges = IRanges(start = unlist(result$orf[1], use.names = FALSE),
                    end = unlist(result$orf[2], use.names = FALSE))
 
   # map transcripts to genomic coordinates, reduce away false hits
-  genomicCoordinates <- pmapFromTranscripts(x = ranges,
-                                            transcripts = grl[result$index])
-  genomicCoordinates <- reduce(genomicCoordinates, drop.empty.ranges = TRUE)
-  return(makeORFNames(genomicCoordinates))
+  genomicCoordinates <- pmapFromTranscriptF(ranges, grl, result$index)
+
+  return(makeORFNames(genomicCoordinates, groupByTx))
 }
 
 

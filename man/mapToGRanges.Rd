@@ -4,7 +4,7 @@
 \alias{mapToGRanges}
 \title{Map orfs to genomic coordinates}
 \usage{
-mapToGRanges(grl, result)
+mapToGRanges(grl, result, groupByTx = TRUE)
 }
 \arguments{
 \item{grl}{A \code{\link{GRangesList}} of the original
@@ -13,6 +13,9 @@ sequences that gave the orfs}
 \item{result}{List. A list of the results of finding uorfs
 list syntax is: result[1] contain grouping indeces, named index
 result[2] countains two columns of start and stops,  named orf}
+
+\item{groupByTx}{logical (T), should output GRangesList be grouped by
+transcripts (T) or by ORFs (F)?}
 }
 \value{
 A \code{\link{GRangesList}} of ORFs.
@@ -20,4 +23,8 @@ A \code{\link{GRangesList}} of ORFs.
 \description{
 Creates GRangesList from the results of ORFs_as_List and
  the GRangesList used to find the ORFs
+}
+\details{
+There is no check on invalid matches, so be carefull if you use this
+function directly.
 }

@@ -84,27 +84,38 @@ stopDefinition <- function(transl_table) {
 #' Find Open Reading Frames.
 #'
 #' Find all Open Reading Frames (ORFs) on the input sequences
-#' in 5'- 3' direction, but within all three possible reading frames. For each
-#' sequence of the input vector \code{\link{IRanges}} with START and
+#' in ONLY 5'- 3' direction (+), but within all three possible reading frames.
+#' For each sequence of the input vector \code{\link{IRanges}} with START and
 #' STOP positions (inclusive) will be returned as
 #' \code{\link{IRangesList}}. Returned coordinates are relative to the
 #' input sequences.
 #'
+#' If you want antisence strand too, do:
+#' \code{
+#' #positive strands
+#' pos <- findORFs(seqs)
+#' #negative strands (DNAStringSet only if character)
+#' neg <- findORFs(reverseComplement(DNAStringSet(seqs)))
+#  #merge together
+#' relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
+#'        skeleton = merge(pos, neg))
+#' }
+#'
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
-#' Reading Frames.
+#' Reading Frames. Can be both uppercase or lowercase.
 #' @param startCodon (character) Possible START codons to search for. Check
-#' [startDefinition()] for helper function.
+#' \code{\link{startDefinition}} for helper function.
 #' @param stopCodon (character) Possible STOP codons to search for. Check
-#' [stopDefinition()] for helper function.
+#'  \code{\link{stopDefinition}} for helper function.
 #' @param longestORF (logical) Default FALSE. When TRUE will only report the
 #' longest ORFs per seqlevel (1 in + and in in - direction),
 #' all smaller ORFs will be ignored.
 #' When FALSE will report all possible ORFs in all three reading frames.
-#' If you want longest ORF per unique (seqname, strand, stopcodon), use
-#' [longestORFs()]
+#' If you want longest ORF per unique (seqname, strand, stopcodon) combination,
+#' use \code{\link{longestORFs}}
 #' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
 #' counting 3bp for START and STOP codons. For example minimumLength = 8 will
-#' result in size of ORFs to be at least START + 8*3 (bp) + STOP.
+#' result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 #' Use this param to restrict search.
 #' @return (IRangesList) of ORFs locations incuding START and STOP codons
 #' grouped by input seqeunces.
@@ -127,6 +138,11 @@ findORFs <- function(
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
+  if (is.character(seqs) & substr(seqs[1], 1,1) %in%
+      c("a", "t", "c", "g", "n")) {
+    startCodon <- tolower(startCodon)
+    stopCodon <- tolower(stopCodon)
+  }
 
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
@@ -145,11 +161,13 @@ findORFs <- function(
 #' genomic coordinates of ORFs found on transcript sequences.
 #'
 #' This function assumes that `seq` is in widths relative to `grl`,
-#' and that their orders match.
+#' and that their orders match. 1st seq is 1st grl object, etc.
 #'
 #' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
+#' @param groupByTx logical (T), should output GRangesList be grouped by
+#' transcripts (T) or by ORFs (F)?
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
@@ -172,7 +190,7 @@ findORFs <- function(
 #'
 findMapORFs <- function(
   grl, seqs, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
-  longestORF = FALSE, minimumLength = 0 ){
+  longestORF = FALSE, minimumLength = 0, groupByTx = TRUE){
   validGRL(class(grl))
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -183,15 +201,15 @@ findMapORFs <- function(
                          startCodon = startCodon, stopCodon = stopCodon,
                          longestORF = longestORF,
                          minimumLength = minimumLength)
-  return(mapToGRanges(grl, result))
+  return(mapToGRanges(grl, result, groupByTx))
 }
 
 
 #' Finds Open Reading Frames in fasta files.
 #'
-#' Searches through each fasta header and reports all ORFs found for sense (+)
-#' and antisense strand (-) in all frames. Name of the header will be used as
-#' seqnames of reported ORFs.
+#' Searches through each fasta header and reports all ORFs found for BOTH
+#' sense (+) and antisense strand (-) in all frames. Name of the header will
+#' be used as seqnames of reported ORFs.
 #' Each fasta header is treated separately, and name of the sequence will
 #' be used as seqname in returned GRanges object. This supports circluar
 #' genomes.
@@ -201,10 +219,13 @@ findMapORFs <- function(
 #' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
 #' Seqnames are created from header by format: >name info, so name must be
 #' first after "biggern than" and space between name and info.
-#' @param filePath (character) Path to the fasta file.
+#' @param filePath (character) Path to the fasta file. Can be both uppercase or
+#' lowercase.
 #' @inheritParams findORFs
 #' @param is.circular (logical) Whether the genome in filePath is circular.
-#' Prokaryotic genomes are usually circular.
+#' Prokaryotic genomes are usually circular. Be carefull if you want to
+#' extract sequences, remember that seqlengths must be set, else it does not
+#' know what last base in sequence is before loop ends!
 #' @return (GRanges) object of ORFs mapped from fasta file. Positions are
 #' relative to the fasta file.
 #' @export

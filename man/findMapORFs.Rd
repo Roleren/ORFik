@@ -6,32 +6,35 @@
 \usage{
 findMapORFs(grl, seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = FALSE,
-  minimumLength = 0)
+  minimumLength = 0, groupByTx = TRUE)
 }
 \arguments{
 \item{grl}{(\code{\link{GRangesList}}) of sequences
 to search for ORFs, probably in genomic coordinates}
 
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
-Reading Frames.}
+Reading Frames. Can be both uppercase or lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-[startDefinition()] for helper function.}
+\code{\link{startDefinition}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-[stopDefinition()] for helper function.}
+\code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report the
 longest ORFs per seqlevel (1 in + and in in - direction),
 all smaller ORFs will be ignored.
 When FALSE will report all possible ORFs in all three reading frames.
-If you want longest ORF per unique (seqname, strand, stopcodon), use
-[longestORFs()]}
+If you want longest ORF per unique (seqname, strand, stopcodon) combination,
+use \code{\link{longestORFs}}}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 (bp) + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
+
+\item{groupByTx}{logical (T), should output GRangesList be grouped by
+transcripts (T) or by ORFs (F)?}
 }
 \value{
 A GRangesList of ORFs.
@@ -45,7 +48,7 @@ genomic coordinates of ORFs found on transcript sequences.
 }
 \details{
 This function assumes that `seq` is in widths relative to `grl`,
-and that their orders match.
+and that their orders match. 1st seq is 1st grl object, etc.
 }
 \examples{
 # This sequence has ORFs at 1-9 and 4-9

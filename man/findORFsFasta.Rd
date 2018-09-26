@@ -9,37 +9,40 @@ findORFsFasta(filePath, startCodon = startDefinition(1),
   minimumLength = 0, is.circular = FALSE)
 }
 \arguments{
-\item{filePath}{(character) Path to the fasta file.}
+\item{filePath}{(character) Path to the fasta file. Can be both uppercase or
+lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-[startDefinition()] for helper function.}
+\code{\link{startDefinition}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-[stopDefinition()] for helper function.}
+\code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report the
 longest ORFs per seqlevel (1 in + and in in - direction),
 all smaller ORFs will be ignored.
 When FALSE will report all possible ORFs in all three reading frames.
-If you want longest ORF per unique (seqname, strand, stopcodon), use
-[longestORFs()]}
+If you want longest ORF per unique (seqname, strand, stopcodon) combination,
+use \code{\link{longestORFs}}}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 (bp) + STOP.
+result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
 
 \item{is.circular}{(logical) Whether the genome in filePath is circular.
-Prokaryotic genomes are usually circular.}
+Prokaryotic genomes are usually circular. Be carefull if you want to
+extract sequences, remember that seqlengths must be set, else it does not
+know what last base in sequence is before loop ends!}
 }
 \value{
 (GRanges) object of ORFs mapped from fasta file. Positions are
 relative to the fasta file.
 }
 \description{
-Searches through each fasta header and reports all ORFs found for sense (+)
-and antisense strand (-) in all frames. Name of the header will be used as
-seqnames of reported ORFs.
+Searches through each fasta header and reports all ORFs found for BOTH
+sense (+) and antisense strand (-) in all frames. Name of the header will
+be used as seqnames of reported ORFs.
 Each fasta header is treated separately, and name of the sequence will
 be used as seqname in returned GRanges object. This supports circluar
 genomes.
