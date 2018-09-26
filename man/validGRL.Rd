@@ -20,3 +20,10 @@ either NULL or indices (checkNULL == TRUE)
 \description{
 Helper Function to check valid GRangesList input
 }
+\seealso{
+Other utils: \code{\link{bedToGR}},
+  \code{\link{convertToOneBasedRanges}},
+  \code{\link{findFa}}, \code{\link{fread.bed}},
+  \code{\link{is.gr_or_grl}}, \code{\link{is.grl}}
+}
+\concept{utils}

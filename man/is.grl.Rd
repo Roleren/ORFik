@@ -16,3 +16,10 @@ a boolean
 \description{
 Helper function to check for GRangesList
 }
+\seealso{
+Other utils: \code{\link{bedToGR}},
+  \code{\link{convertToOneBasedRanges}},
+  \code{\link{findFa}}, \code{\link{fread.bed}},
+  \code{\link{is.gr_or_grl}}, \code{\link{validGRL}}
+}
+\concept{utils}

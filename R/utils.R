@@ -2,6 +2,7 @@
 #' @param class the class you want to check if is GRL,
 #' either a character from class or the object itself.
 #' @return a boolean
+#' @family utils
 #'
 is.grl <- function(class) {
   if (!is.character(class)) {
@@ -15,6 +16,7 @@ is.grl <- function(class) {
 #' @param class the class you want to check if is GRL or GR,
 #'  either a character from class or the object itself.
 #' @return a boolean
+#' @family utils
 #'
 is.gr_or_grl <- function(class) {
   if (!is.character(class)) {
@@ -30,6 +32,8 @@ is.gr_or_grl <- function(class) {
 #' @param type a character vector, is it gtf, cds, 5', 3', for messages.
 #' @param checkNULL should NULL classes be checked and return indeces of these?
 #' @return either NULL or indices (checkNULL == TRUE)
+#' @family utils
+#'
 validGRL <- function(class, type = "grl", checkNULL = FALSE) {
   if(length(class) != length(type)) stop("not equal length of classes",
                                          " and types, see validGRL")
@@ -58,6 +62,7 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE) {
 #'  to convert to GRanges
 #' @param bed6 If bed6, no meta column is added
 #' @return a GRanges object from bed
+#' @family utils
 #'
 bedToGR <- function(x, bed6 = TRUE){
 
@@ -85,6 +90,7 @@ bedToGR <- function(x, bed6 = TRUE){
 #' @importFrom rtracklayer import.bed
 #' @return a GRanges object
 #' @export
+#' @family utils
 #' @examples
 #' # path to example CageSeq data from hg19 heart sample
 #' cageData <- system.file("extdata", "cage-seq-heart.bed.bgz",
@@ -122,6 +128,8 @@ fread.bed <- function(filePath) {
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per position.
 #' @return  Converted GRanges object
+#' @family utils
+#'
 convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE){
   if (method == "5prime") {
@@ -159,6 +167,8 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' @param faFile a character path or FaFile
 #' @importFrom Rsamtools FaFile
 #' @return a FaFile or BSgenome
+#' @family utils
+#'
 findFa <- function(faFile) {
   if (is.character(faFile)) {
     if (dir.exists(faFile)) {
