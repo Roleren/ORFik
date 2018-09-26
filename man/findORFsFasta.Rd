@@ -9,14 +9,14 @@ findORFsFasta(filePath, startCodon = startDefinition(1),
   minimumLength = 0, is.circular = FALSE)
 }
 \arguments{
-\item{filePath}{(character) Path to the fasta file. Sequences must be
-uppercase! Alternative if lowercase, set start and stop codons to "atg" etc.}
+\item{filePath}{(character) Path to the fasta file. Can be both uppercase or
+lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-[startDefinition()] for helper function.}
+\code{\link{startDefinition}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-[stopDefinition()] for helper function.}
+\code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report the
 longest ORFs per seqlevel (1 in + and in in - direction),

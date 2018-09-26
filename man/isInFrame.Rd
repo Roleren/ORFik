@@ -29,7 +29,7 @@ isInFrame(c(3,6,8,11,15))
 # GRangesList example
 grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
-dist <- distToCds(grl, fiveUTRs, extension = 0)
+dist <- distToCds(grl, fiveUTRs)
 isInFrame <- isInFrame(dist)
 }
 \references{

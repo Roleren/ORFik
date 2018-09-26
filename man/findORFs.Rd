@@ -13,10 +13,10 @@ findORFs(seqs, startCodon = startDefinition(1),
 Reading Frames. Can be both uppercase or lowercase.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
-[startDefinition()] for helper function.}
+\code{\link{startDefinition}} for helper function.}
 
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
-[stopDefinition()] for helper function.}
+\code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default FALSE. When TRUE will only report the
 longest ORFs per seqlevel (1 in + and in in - direction),

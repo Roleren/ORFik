@@ -104,9 +104,9 @@ stopDefinition <- function(transl_table) {
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
 #' Reading Frames. Can be both uppercase or lowercase.
 #' @param startCodon (character) Possible START codons to search for. Check
-#' [startDefinition()] for helper function.
+#' \code{\link{startDefinition}} for helper function.
 #' @param stopCodon (character) Possible STOP codons to search for. Check
-#' [stopDefinition()] for helper function.
+#'  \code{\link{stopDefinition}} for helper function.
 #' @param longestORF (logical) Default FALSE. When TRUE will only report the
 #' longest ORFs per seqlevel (1 in + and in in - direction),
 #' all smaller ORFs will be ignored.
@@ -219,8 +219,8 @@ findMapORFs <- function(
 #' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
 #' Seqnames are created from header by format: >name info, so name must be
 #' first after "biggern than" and space between name and info.
-#' @param filePath (character) Path to the fasta file. Sequences must be
-#' uppercase! Alternative if lowercase, set start and stop codons to "atg" etc.
+#' @param filePath (character) Path to the fasta file. Can be both uppercase or
+#' lowercase.
 #' @inheritParams findORFs
 #' @param is.circular (logical) Whether the genome in filePath is circular.
 #' Prokaryotic genomes are usually circular. Be carefull if you want to

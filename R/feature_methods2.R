@@ -285,8 +285,7 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 #' ORFs <- makeORFNames(ORFs) # need ORF names
 #' # get faFile for sequences
-#' faFile <- FaFile(system.file("extdata", "genome.fasta",
-#'   package = "ORFik"))
+#' faFile <- FaFile(system.file("extdata", "genome.fasta", package = "ORFik"))
 #' kozakSequenceScore(ORFs, faFile)
 #' # For more details see vignettes.
 kozakSequenceScore <- function(grl, faFile, species = "human",
@@ -470,7 +469,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL) {
 #' # GRangesList example
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
-#' dist <- distToCds(grl, fiveUTRs, extension = 0)
+#' dist <- distToCds(grl, fiveUTRs)
 #' isInFrame <- isInFrame(dist)
 #' @export
 #'
@@ -495,7 +494,7 @@ isInFrame <- function(dists){
 #' # GRangesList example
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(1,10), "+"))
 #' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(1,20), "+"))
-#' dist <- distToCds(grl, fiveUTRs, extension = 0)
+#' dist <- distToCds(grl, fiveUTRs)
 #' isOverlapping <- isOverlapping(dist)
 isOverlapping <- function(dists) {
   return(dists < 0)

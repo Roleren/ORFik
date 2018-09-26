@@ -49,8 +49,7 @@ ORF2 <- GRanges(seqnames = seqName,
 ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 ORFs <- makeORFNames(ORFs) # need ORF names
 # get faFile for sequences
-faFile <- FaFile(system.file("extdata", "genome.fasta",
-  package = "ORFik"))
+faFile <- FaFile(system.file("extdata", "genome.fasta", package = "ORFik"))
 kozakSequenceScore(ORFs, faFile)
 # For more details see vignettes.
 }
