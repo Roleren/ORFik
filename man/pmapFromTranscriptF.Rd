@@ -21,3 +21,11 @@ A GrangesList of ranges mapped from transcripts
 Fixes a bug in function, and should have 10x speedup
 Also removes hit column for you
 }
+\seealso{
+Other ExtendGenomicRanges: \code{\link{asTX}},
+  \code{\link{coveragePerTiling}},
+  \code{\link{overlapsToCoverage}},
+  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
+  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+}
+\concept{ExtendGenomicRanges}

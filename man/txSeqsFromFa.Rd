@@ -17,5 +17,14 @@ txSeqsFromFa(grl, faFile, is.sorted = FALSE)
 a DNAStringSet of the transcript sequences
 }
 \description{
-A small safety wrapper around GenomicFeatures::extractTranscriptSeqs
+A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 }
+\seealso{
+Other ExtendGenomicRanges: \code{\link{asTX}},
+  \code{\link{coveragePerTiling}},
+  \code{\link{overlapsToCoverage}},
+  \code{\link{pmapFromTranscriptF}},
+  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
+  \code{\link{windowPerGroup}}
+}
+\concept{ExtendGenomicRanges}

@@ -19,6 +19,7 @@
 #' @import IRanges
 #' @import GenomicRanges
 #' @importFrom S4Vectors runValue
+#' @family ORFHelpers
 #' @examples
 #' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
 #'                      ranges = IRanges(start = c(1, 10, 20),
@@ -74,6 +75,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
 #' @importFrom GenomicFeatures pmapFromTranscripts
+#' @family ORFHelpers
 #'
 mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 
@@ -108,6 +110,7 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' @export
 #' @return a character vector of transcript names,
 #'  without _* naming
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -118,6 +121,7 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' grl <- GRangesList(tx1_1 = gr_plus, tx2_1 = gr_minus)
 #' # there are 2 orfs, both the first on each transcript
 #' txNames(grl)
+#'
 txNames <- function(grl, unique = FALSE) {
   if (!is.gr_or_grl(class(grl))) {
     stop("grl must be GRangesList or GRanges Object")
@@ -157,6 +161,7 @@ txNames <- function(grl, unique = FALSE) {
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -204,6 +209,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -249,6 +255,7 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of start codons, since they might be split on exons
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -293,6 +300,7 @@ startCodons <- function(grl, is.sorted = FALSE){
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of stop codons, since they might be split on exons
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -338,6 +346,7 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
+#' @family ORFHelpers
 #'
 orfID <- function(grl, with.tx = FALSE) {
   seqnames <- seqnamesPerGroup(grl, FALSE)
@@ -364,6 +373,7 @@ orfID <- function(grl, with.tx = FALSE) {
 #' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList of unique orfs
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr1 <- GRanges("1", IRanges(1,10), "+")
 #' gr2 <- GRanges("1", IRanges(20, 30), "+")
@@ -393,6 +403,7 @@ uniqueGroups <- function(grl) {
 #' @param grl a \code{\link{GRangesList}}
 #' @return an integer vector of indices of unique groups
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr1 <- GRanges("1", IRanges(1,10), "+")
 #' gr2 <- GRanges("1", IRanges(20, 30), "+")
@@ -426,6 +437,7 @@ uniqueOrder <- function(grl) {
 #' @return a \code{\link{GRangesList}}
 #' @export
 #' @importFrom data.table .I
+#' @family ORFHelpers
 #' @examples
 #' ORF1 = GRanges("1", IRanges(10,21), "+")
 #' ORF2 = GRanges("1", IRanges(1,21), "+") # <- longest

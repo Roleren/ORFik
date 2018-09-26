@@ -25,3 +25,10 @@ upstreamOfPerGroup(tx, startSites(cds, asGR = TRUE))
 will return the 5' utrs per transcript, usually used for interesting
 parts of the transcripts.
 }
+\seealso{
+Other GRangesPositions: \code{\link{assignFirstExonsStartSite}},
+  \code{\link{assignLastExonsStopSite}},
+  \code{\link{downstreamFromPerGroup}},
+  \code{\link{downstreamOfPerGroup}}
+}
+\concept{GRangesPositions}

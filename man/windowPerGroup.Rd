@@ -22,3 +22,12 @@ a GRanges/GRangesList object if exon/introns
 If downstreamFrom is 20, it means the window will start -20 downstream of
 gr start site. It will keep exon structure of tx
 }
+\seealso{
+Other ExtendGenomicRanges: \code{\link{asTX}},
+  \code{\link{coveragePerTiling}},
+  \code{\link{overlapsToCoverage}},
+  \code{\link{pmapFromTranscriptF}},
+  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
+  \code{\link{txSeqsFromFa}}
+}
+\concept{ExtendGenomicRanges}

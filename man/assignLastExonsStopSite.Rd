@@ -20,3 +20,10 @@ make sure your grl is sorted, since stop of "-" strand objects
 should be the min start in group, use ORFik:::sortPerGroup(grl) to get
 sorted grl.
 }
+\seealso{
+Other GRangesPositions: \code{\link{assignFirstExonsStartSite}},
+  \code{\link{downstreamFromPerGroup}},
+  \code{\link{downstreamOfPerGroup}},
+  \code{\link{upstreamOfPerGroup}}
+}
+\concept{GRangesPositions}

@@ -6,6 +6,8 @@
 #' @param newStarts an integer vector of same length as grl, with new start
 #' values
 #' @return the same GRangesList with new start sites
+#' @family GRangesPositions
+#'
 assignFirstExonsStartSite <- function(grl, newStarts) {
   if (length(grl) != length(newStarts)) stop("length of grl and newStarts ",
                                              "are not equal!")
@@ -35,6 +37,7 @@ assignFirstExonsStartSite <- function(grl, newStarts) {
 #'  with new start values
 #' @return the same GRangesList with new stop sites
 #' @importFrom data.table .N .I
+#' @family GRangesPositions
 #'
 assignLastExonsStopSite <- function(grl, newStops) {
   if (length(grl) != length(newStops)) stop("length of grl and newStops ",
@@ -72,6 +75,7 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
 #' @return a GRangesList of downstream part
+#' @family GRangesPositions
 #'
 downstreamOfPerGroup <- function(tx, downstreamOf) {
   # Needs speed update!
@@ -126,6 +130,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #' @param downstreamFrom a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
 #' @return a GRangesList of downstream part
+#' @family GRangesPositions
 #'
 downstreamFromPerGroup <- function(tx, downstreamFrom) {
   # Needs speed update!
@@ -170,6 +175,7 @@ downstreamFromPerGroup <- function(tx, downstreamFrom) {
 #' @param allowOutside a logical (T), can upstreamOf extend outside
 #'  range of tx, can set boundary as a false hit, so beware.
 #' @return a GRangesList of upstream part
+#' @family GRangesPositions
 #'
 upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
   posIndices <- strandBool(tx)
