@@ -131,12 +131,24 @@ test_that("downstreamOfPerGroup works as intended", {
   expect_equal(firstStartPerGroup(reassigned, FALSE), downstreamOf)
 })
 
+test_that("upstreamFromPerGroup works as intended", {
+  upstreamFrom <- as.integer(c(10, 20, 41))
+  reassigned <- upstreamFromPerGroup(tx = grl[c(1,1,2)], upstreamFrom)
+  expect_is(reassigned,"GRangesList")
+  expect_equal(stopSites(reassigned, is.sorted = T), upstreamFrom)
+})
+
 test_that("upstreamOfPerGroup works as intended", {
   upstreamOf <- as.integer(c(12, 32))
   reassigned <- upstreamOfPerGroup(tx = grl, upstreamOf)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), upstreamOf)
+  upstreamOf <- 20
+  reassigned <- upstreamOfPerGroup(txl[1], 20)
+  expect_equal(stopSites(reassigned), 15)
+  reassigned2 <- upstreamOfPerGroup(txl[1], 20, FALSE)
+  expect_equal(stopSites(reassigned2), 15)
 })
 
 test_that("asTX works as intended", {

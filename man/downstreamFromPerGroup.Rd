@@ -31,6 +31,7 @@ use \code{\link{downstreamOfPerGroup}}
 Other GRangesPositions: \code{\link{assignFirstExonsStartSite}},
   \code{\link{assignLastExonsStopSite}},
   \code{\link{downstreamOfPerGroup}},
+  \code{\link{upstreamFromPerGroup}},
   \code{\link{upstreamOfPerGroup}}
 }
 \concept{GRangesPositions}

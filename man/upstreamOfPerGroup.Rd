@@ -29,6 +29,7 @@ parts of the transcripts.
 Other GRangesPositions: \code{\link{assignFirstExonsStartSite}},
   \code{\link{assignLastExonsStopSite}},
   \code{\link{downstreamFromPerGroup}},
-  \code{\link{downstreamOfPerGroup}}
+  \code{\link{downstreamOfPerGroup}},
+  \code{\link{upstreamFromPerGroup}}
 }
 \concept{GRangesPositions}

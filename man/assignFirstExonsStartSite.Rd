@@ -24,6 +24,7 @@ max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 Other GRangesPositions: \code{\link{assignLastExonsStopSite}},
   \code{\link{downstreamFromPerGroup}},
   \code{\link{downstreamOfPerGroup}},
+  \code{\link{upstreamFromPerGroup}},
   \code{\link{upstreamOfPerGroup}}
 }
 \concept{GRangesPositions}

@@ -24,6 +24,7 @@ sorted grl.
 Other GRangesPositions: \code{\link{assignFirstExonsStartSite}},
   \code{\link{downstreamFromPerGroup}},
   \code{\link{downstreamOfPerGroup}},
+  \code{\link{upstreamFromPerGroup}},
   \code{\link{upstreamOfPerGroup}}
 }
 \concept{GRangesPositions}
