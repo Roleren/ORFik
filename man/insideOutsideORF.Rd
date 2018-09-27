@@ -4,7 +4,7 @@
 \alias{insideOutsideORF}
 \title{Inside/Outside score (IO)}
 \usage{
-insideOutsideORF(grl, RFP, GtfOrTx, ds = NULL)
+insideOutsideORF(grl, RFP, GtfOrTx, ds = NULL, RFP.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -18,6 +18,10 @@ a GrangesList will use as is}
 
 \item{ds}{numeric vector (NULL), disengagement score. If you have already
 calculated \code{\link{disengagementScore}}, input here to save time.}
+
+\item{RFP.sorted}{logical (F), have you ran this line:
+\code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
+Normally not touched, for internal optimization purposes.}
 }
 \value{
 a named vector of numeric values of scores

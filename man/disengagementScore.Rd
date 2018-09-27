@@ -4,7 +4,7 @@
 \alias{disengagementScore}
 \title{Disengagement score (DS)}
 \usage{
-disengagementScore(grl, RFP, GtfOrTx)
+disengagementScore(grl, RFP, GtfOrTx, RFP.sorted = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -17,6 +17,10 @@ or GRangesList object}
 transcripts will be extracted using
 \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
 Else it must be \code{\link{GRangesList}}}
+
+\item{RFP.sorted}{logical (F), have you ran this line:
+\code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
+Normally not touched, for internal optimization purposes.}
 }
 \value{
 a named vector of numeric values of scores

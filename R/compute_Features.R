@@ -214,13 +214,18 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   if (!grl.is.sorted) {
     grl <- sortPerGroup(grl)
   }
+  if (length(RFP) > 1e6) { # speedup on big riboseq libraries
+    rfp <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+  } else {
+    rfp <- RFP
+  }
 
   #### Get all features, append 1 at a time, to save memory ####
   scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
-  scores[, entropyRFP := entropy(grl, RFP)]
-  scores[, disengagementScores := disengagementScore(grl, RFP, tx)]
-  scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)]
-  scores[, RSS := ribosomeStallingScore(grl, RFP)]
+  scores[, entropyRFP := entropy(grl, rfp)]
+  scores[, disengagementScores := disengagementScore(grl, rfp, tx, TRUE)]
+  scores[, RRS := ribosomeReleaseScore(grl, rfp, threeUTRs, RNA)]
+  scores[, RSS := ribosomeStallingScore(grl, rfp)]
 
   if (includeNonVarying) {
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
@@ -235,9 +240,9 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     scores[, fpkmRFP := fpkm(grl, RFP)]
   }
   if (orfFeatures) { # if features are found for orfs
-    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted)$ORFScores]
-    scores[, ioScore := insideOutsideORF(grl, RFP, tx,
-                                         scores$disengagementScores)]
+    scores[, ORFScores := orfScore(grl, rfp, grl.is.sorted)$ORFScores]
+    scores[, ioScore := insideOutsideORF(grl, rfp, tx,
+                                         scores$disengagementScores, TRUE)]
 
     if (includeNonVarying) {
 

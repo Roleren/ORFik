@@ -287,6 +287,9 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #'  transcripts will be extracted using
 #'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
 #'  Else it must be \code{\link{GRangesList}}
+#' @param RFP.sorted logical (F), have you ran this line:
+#' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
+#' Normally not touched, for internal optimization purposes.
 #' @return a named vector of numeric values of scores
 #' @export
 #' @family features
@@ -299,8 +302,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' RFP <- GRanges("1", IRanges(c(1,10,20,30,40), width = 3), "+")
 #' disengagementScore(grl, RFP, tx)
 #'
-disengagementScore <- function(grl, RFP, GtfOrTx){
-
+disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE){
   if (is(GtfOrTx,"TxDb")) {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
   } else if (is.grl(GtfOrTx)) {
@@ -323,7 +325,9 @@ disengagementScore <- function(grl, RFP, GtfOrTx){
                                        grlStops)
   # check for big lists
   if (length(downstreamTx) > 5e5) {
-    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+    if(!RFP.sorted){
+      RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+    }
     ordering <- uniqueOrder(downstreamTx)
     downstreamTx <- uniqueGroups(downstreamTx)
     overlapDownstream[validIndices] <- countOverlaps(downstreamTx,
@@ -454,6 +458,9 @@ ribosomeStallingScore <- function(grl, RFP){
 #' a GrangesList will use as is
 #' @param ds numeric vector (NULL), disengagement score. If you have already
 #'  calculated \code{\link{disengagementScore}}, input here to save time.
+#' @param RFP.sorted logical (F), have you ran this line:
+#' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
+#' Normally not touched, for internal optimization purposes.
 #' @return a named vector of numeric values of scores
 #' @importFrom data.table rbindlist
 #' @family features
@@ -479,7 +486,8 @@ ribosomeStallingScore <- function(grl, RFP){
 #'
 #' insideOutsideORF(grl, RFP, tx)
 #'
-insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL) {
+insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
+                             RFP.sorted = FALSE) {
 
   if (is(GtfOrTx, "TxDb")) {
     tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
@@ -488,7 +496,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL) {
   } else {
     stop("GtfOrTx is neithter of type TxDb or GRangesList")
   }
-  if (length(RFP) > 1e6) {
+  if (length(RFP) > 1e6 & !RFP.sorted) {
     RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
   }
 
