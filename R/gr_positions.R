@@ -200,37 +200,26 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
   upTx <- tx
   upTx[posIndices] <- posTx[pos]
   upTx[!posIndices] <- negTx[neg]
-  # Check bases -1 from start, so must set to boundary, could set it to empty,
-  # should discuss this. Problem is that countOverlaps deletes empty GRL's..
-  # if (anyNA(strandPerGroup(upTx, FALSE))) {
-  #   boundaryHits <- which(is.na(strandPerGroup(upTx, FALSE)))
-  #   upTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
-  #   ir <- IRanges(start = upstreamOf[boundaryHits],
-  #                 end = upstreamOf[boundaryHits])
-  #   irl <- split(ir, seq_along(ir))
-  #   names(irl) <- names(tx[boundaryHits])
-  #   ranges(upTx[boundaryHits]) <- irl
-  # }
-
 
   nonZero <- widthPerGroup(upTx) > 0
   if (all(!nonZero)) { # if no ranges exists
     return(upTx)
   }
   upstreamOf <- upstreamOf[nonZero]
+  oldPosIndices <- posIndices
   posIndices <- posIndices[nonZero]
 
   stopSites <- stopSites(upTx[nonZero], FALSE, FALSE, TRUE)
   # check boundaries within group exons
   if (any(posIndices)){
     posChecks <- stopSites[posIndices] < upstreamOf[posIndices] &
-      any(!pos[nonZero[posIndices]])
+      any(!pos[nonZero[oldPosIndices]])
   } else {
     posChecks <- FALSE
   }
   if(any(!posIndices)){
     negChecks <- stopSites[!posIndices] > upstreamOf[!posIndices] &
-      any(!neg[nonZero[!posIndices]])
+      any(!neg[nonZero[!oldPosIndices]])
   } else {
     negChecks <- FALSE
   }
