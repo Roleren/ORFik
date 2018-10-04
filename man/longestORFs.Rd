@@ -7,14 +7,17 @@
 longestORFs(grl)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} of ORFs}
+\item{grl}{a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges of ORFs}
 }
 \value{
-a \code{\link{GRangesList}}
+a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges
+(same as input)
 }
 \description{
 Rule: if seqname, strand and stop site is equal, take longest one.
 Else keep.
+If IRangesList or IRanges, seqnames are groups, if GRanges or GRangesList
+seqnames are the seqlevels (e.g. chromosomes/transcripts)
 }
 \examples{
 ORF1 = GRanges("1", IRanges(10,21), "+")

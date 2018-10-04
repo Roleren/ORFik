@@ -67,10 +67,10 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' There is no check on invalid matches, so be carefull if you use this
 #' function directly.
 #' @param grl A \code{\link{GRangesList}} of the original
-#'  sequences that gave the orfs
-#' @param result List. A list of the results of finding uorfs
-#' list syntax is: result[1] contain grouping indeces, named index
-#' result[2] countains two columns of start and stops,  named orf
+#'  sequences that gave the orfs in Genomic coordinates.
+#' @param result IRangesList A list of the results of finding uorfs
+#' list syntax is: Per list group in IRangesList is per grl index. In
+#' transcript coordinates. The names are grl index as character.
 #' @param groupByTx logical (T), should output GRangesList be grouped by
 #' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
@@ -78,21 +78,19 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' @family ORFHelpers
 #'
 mapToGRanges <- function(grl, result, groupByTx = TRUE) {
-
+  if(length(result) == 0) return(GRangesList())
   validGRL(class(grl))
   if (is.null(names(grl))) stop("'grl' contains no names.")
-  if (!is(result, "list")) stop("Invalid type of result, must be list.")
-  if (length(result) != 2)
-    stop("Invalid structure of result, must be list with 2 elements ",
-         "read info for structure.")
+  if (!is(result, "IRangesList")) stop("Invalid type of result, must be IRL.")
+  if (is.null(names(result))) stop("result IRL has no names")
   # Check that grl is sorted
   grl <- sortPerGroup(grl, ignore.strand = FALSE)
   # Create Ranges object from orf scanner result
-  ranges = IRanges(start = unlist(result$orf[1], use.names = FALSE),
-                   end = unlist(result$orf[2], use.names = FALSE))
-
+  ranges = unlist(result, use.names = TRUE)
+  index <- as.integer(names(ranges))
+  names(ranges) <- NULL
   # map transcripts to genomic coordinates, reduce away false hits
-  genomicCoordinates <- pmapFromTranscriptF(ranges, grl, result$index)
+  genomicCoordinates <- pmapFromTranscriptF(ranges, grl, index)
 
   return(makeORFNames(genomicCoordinates, groupByTx))
 }
@@ -432,9 +430,12 @@ uniqueOrder <- function(grl) {
 #'
 #' Rule: if seqname, strand and stop site is equal, take longest one.
 #' Else keep.
+#' If IRangesList or IRanges, seqnames are groups, if GRanges or GRangesList
+#' seqnames are the seqlevels (e.g. chromosomes/transcripts)
 #'
-#' @param grl a \code{\link{GRangesList}} of ORFs
-#' @return a \code{\link{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges of ORFs
+#' @return a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges
+#' (same as input)
 #' @export
 #' @importFrom data.table .I
 #' @family ORFHelpers
@@ -444,12 +445,37 @@ uniqueOrder <- function(grl) {
 #' grl <- GRangesList(ORF1 = ORF1, ORF2 = ORF2)
 #' longestORFs(grl) # get only longest
 longestORFs <- function(grl) {
-  stops <- stopSites(grl, is.sorted = TRUE)
-  widths <- widthPerGroup(grl, FALSE)
-  seqnames <- seqnamesPerGroup(grl, FALSE)
-  strands <- strandPerGroup(grl, FALSE)
+  if(length(grl) == 0) return(grl) # if empty
+
+  if (is.grl(class(grl))) { # only for GRangesList
+    stops <- stopSites(grl, is.sorted = TRUE)
+    widths <- widthPerGroup(grl, FALSE)
+    seqnames <- seqnamesPerGroup(grl, FALSE)
+    strands <- strandPerGroup(grl, FALSE)
+  } else { # GRanges, IRanges or IRangesList
+    stops <- unlist(end(grl), use.names = FALSE)
+    widths <- unlist(width(grl), use.names = FALSE)
+
+    if (is.gr_or_grl(class(grl))) { # GRanges
+      seqnames <- as.character(seqnames(grl))
+      strands <- as.character(strand(grl))
+      stops[strands == "-"] <- start(grl)[strands == "-"]
+    } else { # IRanges or IRangesList
+      strands <- rep("+", length(widths))
+      if (is(grl, "IRanges")) {
+        seqnames <- rep.int(1, length(widths))
+      } else if (is(grl, "IRangesList")) {
+        seqnames <- rep.int(seq.int(length(grl)), BiocGenerics::lengths(grl))
+      }
+    }
+  }
   dt <- data.table(seqnames, strands, stops, widths)
   longestORFs <- dt[, .I[which.max(widths)],
                     by = .(seqnames, strands, stops)]$V1
+  if (is(grl, "IRangesList")) {
+    ir <- unlist(grl, use.names = FALSE)
+    ir <- ir[longestORFs]
+    return(split(ir, seqnames[longestORFs]))
+  }
   return(grl[longestORFs])
 }

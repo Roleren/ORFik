@@ -92,12 +92,13 @@ test_that("findORFsFasta works as intended", {
   filePath <- system.file("extdata", "genome.fasta",
                           package = "ORFik")
 
-  test_result <- findORFsFasta(filePath)
+  test_result <- findORFsFasta(filePath, longestORF = FALSE)
   expect_is(test_result, "GRanges")
   expect_equal(length(test_result), 3990)
 
   ## allow circular
-  test_result <- findORFsFasta(filePath, is.circular = TRUE)
+  test_result <- findORFsFasta(filePath, longestORF = FALSE,
+                               is.circular = TRUE)
   expect_is(test_result, "GRanges")
   expect_equal(length(test_result), 3998)
 
@@ -108,52 +109,36 @@ test_that("findORFsFasta works as intended", {
 test_that("findORFs works as intended for plus strand", {
 
   #longestORF F with different frames
-  test_ranges <- orfs_as_IRanges("ATGGGTAATA",
-                                 "ATG|TGG|GGG",
-                                 "TAA|AAT|ATA",
-                                 longestORF = FALSE,
-                                 minimumLength = 0)
-  expect_is(test_ranges, "IRanges")
-  expect_equal(start(test_ranges), c(1, 2, 3))
-  expect_equal(end(test_ranges), c(9, 10, 8))
+  test_ranges <- findORFs("ATGGGTAATA", "ATG|TGG|GGG", "TAA|AAT|ATA",
+                          longestORF = FALSE, minimumLength = 0)
+  expect_is(test_ranges, "IRangesList")
+  expect_equal(unlist(start(test_ranges), use.names = FALSE), c(1, 2, 3))
+  expect_equal(unlist(end(test_ranges), use.names = FALSE), c(9, 10, 8))
 
   #longestORF T
-  test_ranges <- orfs_as_IRanges("ATGATGTAATAA",
-                                 "ATG|TGA|GGG",
-                                 "TAA|AAT|ATA",
-                                 longestORF = TRUE,
-                                 minimumLength = 0)
-  expect_is(test_ranges, "IRanges")
-  expect_equal(start(test_ranges), c(1, 2))
-  expect_equal(end(test_ranges), c(9, 10))
+  test_ranges <- findORFs("ATGATGTAATAA", "ATG|TGA|GGG", "TAA|AAT|ATA",
+                          longestORF = TRUE, minimumLength = 0)
+  expect_is(test_ranges, "IRangesList")
+  expect_equal(unlist(start(test_ranges), use.names = FALSE), c(1, 2))
+  expect_equal(unlist(end(test_ranges), use.names = FALSE), c(9, 10))
 
   #longestORF F with minimum size 12 -> 6 + 3*2
-  test_ranges <- orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
-                                 "ATG|TGA|GGG",
-                                 "TAA|AAT|ATA",
-                                 longestORF = FALSE,
-                                 minimumLength = 2)
-  expect_is(test_ranges, "IRanges")
-  expect_equal(start(test_ranges), c(10, 13, 11, 14))
-  expect_equal(end(test_ranges), c(24, 24, 25, 25))
+  test_ranges <- findORFs("ATGTGGAATATGATGATGATGTAATAA", "ATG|TGA|GGG",
+                          "TAA|AAT|ATA", longestORF = FALSE, minimumLength = 2)
+  expect_is(test_ranges, "IRangesList")
+  expect_equal(unlist(start(test_ranges), use.names = FALSE), c(10, 13, 11, 14))
+  expect_equal(unlist(end(test_ranges), use.names = FALSE), c(24, 24, 25, 25))
 
   #longestORF T with minimum size 12 -> 6 + 3*2
-  test_ranges <- orfs_as_IRanges("ATGTGGAATATGATGATGATGTAATAA",
-                                 "ATG|TGA|GGG",
-                                 "TAA|AAT|ATA",
-                                 longestORF = TRUE,
-                                 minimumLength = 2)
-  expect_is(test_ranges, "IRanges")
-  expect_equal(start(test_ranges), c(10, 11))
-  expect_equal(end(test_ranges), c(24, 25))
+  test_ranges <- findORFs("ATGTGGAATATGATGATGATGTAATAA", "ATG|TGA|GGG",
+                          "TAA|AAT|ATA", longestORF = TRUE, minimumLength = 2)
+  expect_is(test_ranges, "IRangesList")
+  expect_equal(unlist(start(test_ranges), use.names = FALSE), c(10, 11))
+  expect_equal(unlist(end(test_ranges), use.names = FALSE), c(24, 25))
 
   #find nothing
-  test_ranges <- orfs_as_IRanges("B",
-                                 "ATG|TGA|GGG",
-                                 "TAA|AAT|ATA",
-                                 longestORF = TRUE,
-                                 minimumLength = 2)
-  expect_is(test_ranges, "IRanges")
+  test_ranges <- findORFs("B", "ATG|TGA|GGG", "TAA|AAT|ATA", minimumLength = 2)
+  expect_is(test_ranges, "IRangesList")
   expect_equal(length(test_ranges), 0)
 
 })

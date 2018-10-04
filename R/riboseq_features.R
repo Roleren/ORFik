@@ -106,7 +106,6 @@ entropy <- function(grl, reads) {
   MHx <- 1/reg_counts * log2(1 / reg_counts)
 
   # sum the mhx to groups
-
   grouping <- rep.int(seq_along(runLengths), runLengths)
 
   Hx <- sum(NumericList(split(Hx, grouping)))

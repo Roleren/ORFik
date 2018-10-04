@@ -8,11 +8,11 @@ mapToGRanges(grl, result, groupByTx = TRUE)
 }
 \arguments{
 \item{grl}{A \code{\link{GRangesList}} of the original
-sequences that gave the orfs}
+sequences that gave the orfs in Genomic coordinates.}
 
-\item{result}{List. A list of the results of finding uorfs
-list syntax is: result[1] contain grouping indeces, named index
-result[2] countains two columns of start and stops,  named orf}
+\item{result}{IRangesList A list of the results of finding uorfs
+list syntax is: Per list group in IRangesList is per grl index. In
+transcript coordinates. The names are grl index as character.}
 
 \item{groupByTx}{logical (T), should output GRangesList be grouped by
 transcripts (T) or by ORFs (F)?}

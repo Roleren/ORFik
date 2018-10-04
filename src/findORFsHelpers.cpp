@@ -159,8 +159,7 @@ vi get_all_hits(string& main_string, string s)
 
 // Return ranges as vector, only for internal c++ use!!
 std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
-                                const std::string e,const bool longestORF,
-                                int minimumLength)
+                                const std::string e, int minimumLength)
 {
 
   minimumLength = 6 + (minimumLength * 3) - 1;
@@ -171,7 +170,6 @@ std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
   int max_size = main_string.length(); //maximun number of orfs = third of total
 
   vi res = find_matched_startends(tempStarts, tempEnds, max_size);
-  int tempMax = 0;
   int nHits = 0; //How many uorfs have current max length
   int cl; //length of current orf
 
@@ -179,30 +177,11 @@ std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
   for (size_t i = 0; i < res.size(); i = i + 2) {
     cl = (res[i + 1] - res[i]);
     if (cl >= minimumLength) {
-      if (longestORF) {
-        if (cl > tempMax) {
-          tempMax = res[i + 1] - res[i];
-          maxUORF[0] = res[i];
-          maxUORF[1] = res[i + 1];
-          nHits = 1;
-        }
-        else if (cl == tempMax) {
-          maxUORF[nHits * 2] = res[i];
-          maxUORF[(nHits * 2) + 1] = res[i + 1];
-          nHits++;
-        }
-      }
-      else { //if longestORF == false
-        maxUORF[nHits * 2] = res[i];
-        maxUORF[(nHits * 2) + 1] = res[i + 1];
-        nHits++;
-      }
-    }
-  }
+      maxUORF[nHits * 2] = res[i];
+      maxUORF[(nHits * 2) + 1] = res[i + 1];
+      nHits++;
 
-  if (tempMax == 0 && longestORF == true) {
-    vi a;
-    return a;
+    }
   }
   //Resize
   maxUORF.resize(nHits*2);
@@ -210,13 +189,13 @@ std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
   return maxUORF; //Returns as matrix
 }
 
-// Now used in the fast version of orf finding, use _as_IRanges for direct use in R.
+// Now used in the fast version of orf finding, use _as_IRanges for
+// direct use in R.
 IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
-                             std::string e, bool longestORF, int minimumLength)
+                             std::string e, int minimumLength)
 {
 
-  vi maxUORF =  orfs_as_vector(main_string, s,
-                                       e, longestORF, minimumLength);
+  vi maxUORF =  orfs_as_vector(main_string, s, e, minimumLength);
   int uorfSize = maxUORF.size();
 
   if (uorfSize == 0) {
@@ -237,13 +216,11 @@ IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
 //main_string is a dna sequence[ATCG] as string
 //s is start codons allowed, seperated by "|"
 //e is end codons (stop codons) allowed
-//longest ORF is a bool returning only the longest or all orfs
 //Minimum length filters the list to only contain orfs longer...
 //or equal to this number of triplets
 // [[Rcpp::export]]
 S4 orfs_as_IRanges(std::string &main_string,const std::string s,
-                           const std::string e,const bool longestORF,
-                           int minimumLength)
+                           const std::string e, int minimumLength)
 {
   size_t minLength = 6 + (minimumLength * 3) - 1;
   if (main_string.length() < 6 ||
@@ -251,8 +228,7 @@ S4 orfs_as_IRanges(std::string &main_string,const std::string s,
     S4 I("IRanges");
     return I;
   }
-  IntegerMatrix mat = orfs_as_matrix(main_string, s, e,
-                                             longestORF, minimumLength);
+  IntegerMatrix mat = orfs_as_matrix(main_string, s, e, minimumLength);
 
   if (mat.ncol() == 0) {
     S4 I("IRanges");

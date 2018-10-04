@@ -5,12 +5,15 @@
 \title{Find Open Reading Frames.}
 \usage{
 findORFs(seqs, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = FALSE,
+  stopCodon = stopDefinition(1), longestORF = TRUE,
   minimumLength = 0)
 }
 \arguments{
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
-Reading Frames. Can be both uppercase or lowercase.}
+Reading Frames. Can be both uppercase or lowercase. Easiest call to get seqs
+if you want only regions from a fasta/fasta index pair is:
+seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
+regions.}
 
 \item{startCodon}{(character) Possible START codons to search for. Check
 \code{\link{startDefinition}} for helper function.}
@@ -18,12 +21,9 @@ Reading Frames. Can be both uppercase or lowercase.}
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
 \code{\link{stopDefinition}} for helper function.}
 
-\item{longestORF}{(logical) Default FALSE. When TRUE will only report the
-longest ORFs per seqlevel (1 in + and in in - direction),
-all smaller ORFs will be ignored.
-When FALSE will report all possible ORFs in all three reading frames.
-If you want longest ORF per unique (seqname, strand, stopcodon) combination,
-use \code{\link{longestORFs}}}
+\item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
+unique (seqname, strand, stopcodon) combination, you can also use function
+\code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
@@ -61,6 +61,7 @@ findORFs("ATGATGTAA") # two ORFs
 findORFs("ATGATGTAA", longestORF = TRUE) # only longest of two above
 
 findORFs(c("ATGTAA", "ATGATGTAA"))
+
 
 }
 \seealso{

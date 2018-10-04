@@ -55,7 +55,6 @@ char complement(char n)
 S4 findORFs_fasta(std::string file,
                        std::string startCodon,
                        std::string stopCodon,
-                       bool longestORF,
                        int minimumLength,
                        bool isCircular)
 {
@@ -87,8 +86,7 @@ S4 findORFs_fasta(std::string file,
 
     // get all orfs for start to stop
     std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
-                                             stopCodon, longestORF,
-                                             minimumLength);
+                                             stopCodon, minimumLength);
     all_orfs.insert(all_orfs.end(), ORFdef.begin(), ORFdef.end());
     Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, header);
     strands.insert(strands.end(), ORFdef.size() / 2, 1);
@@ -105,10 +103,8 @@ S4 findORFs_fasta(std::string file,
       startStopBoundary = fastaSeq.substr(
         rescaleStart, rescaleStop);
       startStopBoundary.append(fastaSeq.substr(0, rescaleStop));
-      ORFdefBoundary = orfs_as_vector(startStopBoundary,
-                                                       startCodon,
-                                                       stopCodon, longestORF,
-                                                       minimumLength);
+      ORFdefBoundary = orfs_as_vector(startStopBoundary, startCodon,
+                                      stopCodon, minimumLength);
       // now filter out wrong ones, the ones that does not contain point
       // 4000 in range start/stop
       std::vector<int> ORFdefOverlap; // <- vector only for valid ones
@@ -133,8 +129,8 @@ S4 findORFs_fasta(std::string file,
                    complement);
 
     ORFdef = orfs_as_vector(fastaSeq, startCodon,
-                            stopCodon, longestORF,
-                            minimumLength); // <-get all orfs for start to stop
+                            stopCodon, minimumLength);
+    // <-get all orfs for start to stop
     //Following standard, negative strand should have stop <= start
     for(size_t i = 0; i < ORFdef.size(); i++)
       ORFdef[i] = chromoLength - ORFdef[i];
@@ -148,8 +144,7 @@ S4 findORFs_fasta(std::string file,
       startStopBoundary = fastaSeq.substr(rescaleStart, rescaleStop);
       startStopBoundary.append(fastaSeq.substr(0, rescaleStop));
       ORFdefBoundary = orfs_as_vector(startStopBoundary, startCodon,
-                                      stopCodon, longestORF,
-                                      minimumLength);
+                                      stopCodon, minimumLength);
 
       // now filter out wrong ones, the ones that does
       // not contain point 4000 in range start/stop

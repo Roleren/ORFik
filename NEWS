@@ -1,0 +1,12 @@
+CHANGES IN VERSION 1.1.12
+-------------------------
+
+NEW FEATURES
+
+    o The function longestORFs, find longest ORF per
+      (stopcodon, strand, seqnames) combination.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The orf finding function now find the longest orf per stop codon if
+      you set longestORF = TRUE in findORFS, findMapORFs and findORFsFasta
