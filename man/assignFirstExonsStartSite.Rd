@@ -21,10 +21,10 @@ objects should be the
 max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 }
 \seealso{
-Other GRangesPositions: \code{\link{assignLastExonsStopSite}},
+Other GRanges: \code{\link{assignLastExonsStopSite}},
   \code{\link{downstreamFromPerGroup}},
   \code{\link{downstreamOfPerGroup}},
   \code{\link{upstreamFromPerGroup}},
   \code{\link{upstreamOfPerGroup}}
 }
-\concept{GRangesPositions}
+\concept{GRanges}

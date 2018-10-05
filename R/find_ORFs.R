@@ -149,7 +149,7 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
                          startCodon = startCodon, stopCodon = stopCodon,
                          minimumLength = minimumLength)
 
-  if(longestORF) return(longestORFs(split(IRanges(result$orf[[1]],
+  if (longestORF) return(longestORFs(split(IRanges(result$orf[[1]],
                                                   result$orf[[2]]),
                                           result$index)))
   return(split(IRanges(result$orf[[1]], result$orf[[2]]), result$index))
@@ -205,7 +205,7 @@ findMapORFs <- function(grl, seqs, startCodon =  startDefinition(1),
                          startCodon = startCodon, stopCodon = stopCodon,
                          minimumLength = minimumLength)
   result <- split(IRanges(result$orf[[1]], result$orf[[2]]), result$index)
-  if(longestORF) result <- longestORFs(result)
+  if (longestORF) result <- longestORFs(result)
 
   return(mapToGRanges(grl, result, groupByTx))
 }
