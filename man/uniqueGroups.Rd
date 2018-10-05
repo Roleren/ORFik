@@ -26,3 +26,12 @@ grl <- GRangesList(tx1_1 = gr1, tx2_1 = gr2, tx3_1 = gr1)
 uniqueGroups(grl)
 
 }
+\seealso{
+Other ORFHelpers: \code{\link{defineTrailer}},
+  \code{\link{longestORFs}}, \code{\link{mapToGRanges}},
+  \code{\link{orfID}}, \code{\link{startCodons}},
+  \code{\link{startSites}}, \code{\link{stopCodons}},
+  \code{\link{stopSites}}, \code{\link{txNames}},
+  \code{\link{uniqueOrder}}
+}
+\concept{ORFHelpers}

@@ -5,7 +5,7 @@
 \title{Finds Open Reading Frames in fasta files.}
 \usage{
 findORFsFasta(filePath, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = FALSE,
+  stopCodon = stopDefinition(1), longestORF = TRUE,
   minimumLength = 0, is.circular = FALSE)
 }
 \arguments{
@@ -18,12 +18,9 @@ lowercase.}
 \item{stopCodon}{(character) Possible STOP codons to search for. Check
 \code{\link{stopDefinition}} for helper function.}
 
-\item{longestORF}{(logical) Default FALSE. When TRUE will only report the
-longest ORFs per seqlevel (1 in + and in in - direction),
-all smaller ORFs will be ignored.
-When FALSE will report all possible ORFs in all three reading frames.
-If you want longest ORF per unique (seqname, strand, stopcodon) combination,
-use \code{\link{longestORFs}}}
+\item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
+unique (seqname, strand, stopcodon) combination, you can also use function
+\code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
 counting 3bp for START and STOP codons. For example minimumLength = 8 will
@@ -40,6 +37,8 @@ know what last base in sequence is before loop ends!}
 relative to the fasta file.
 }
 \description{
+Should be used for procaryote genomes or transcript sequences as fasta.
+Makes no sence for eukaryotes, since it contains splicing.
 Searches through each fasta header and reports all ORFs found for BOTH
 sense (+) and antisense strand (-) in all frames. Name of the header will
 be used as seqnames of reported ORFs.
@@ -50,7 +49,7 @@ genomes.
 \details{
 Remember if you have a fasta file of transcripts (transcript coordinates),
 delete all negative stranded ORFs afterwards by:
-orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
+orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then.
 Seqnames are created from header by format: >name info, so name must be
 first after "biggern than" and space between name and info.
 }

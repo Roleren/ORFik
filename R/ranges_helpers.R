@@ -93,6 +93,7 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @importFrom S4Vectors DataFrame
 #' @export
+#' @family ExtendGenomicRanges
 #' @examples
 #' gr1 <- GRanges("1", ranges = IRanges(start = c(1, 10, 20),
 #'                                      end = c(5, 15, 25)),
@@ -160,6 +161,8 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
 #' @param reference a GrangesList of ranges that include and are bigger or
 #' equal to grl ig. cds is grl and gene can be reference
 #' @return a GRangesList in transcript coordinates
+#' @family ExtendGenomicRanges
+#'
 asTX <- function(grl, reference) {
   orfNames <- txNames(grl)
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
@@ -180,6 +183,8 @@ asTX <- function(grl, reference) {
 #' @param indices integer vector of which index of grl ranges are from:
 #' (c(1,1,2)) means first two ranges are from grl[1], third from grl[2])
 #' @return A GrangesList of ranges mapped from transcripts
+#' @family ExtendGenomicRanges
+#'
 pmapFromTranscriptF <- function(ranges, grl, indices) {
   names <- names(grl)
   names(grl) <- NULL
@@ -196,12 +201,13 @@ pmapFromTranscriptF <- function(ranges, grl, indices) {
 
 #' Get transcript sequence from a GrangesList and a faFile or BSgenome
 #'
-#' A small safety wrapper around GenomicFeatures::extractTranscriptSeqs
+#' A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 #' @param grl a GRangesList object
 #' @param faFile FaFile or BSgenome used to find the transcripts,
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
 #' @return a DNAStringSet of the transcript sequences
+#' @family ExtendGenomicRanges
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
   if(!(is(faFile, "FaFile") || is(faFile, "BSgenome")))
@@ -219,6 +225,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' @param downstream an integer, relative region to get downstream from
 #' @param upstream an integer vector, relative region to get upstream from.
 #' @return a GRanges/GRangesList object if exon/introns
+#' @family ExtendGenomicRanges
 #'
 windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
   g <- asTX(gr, tx)
@@ -294,6 +301,7 @@ extendLeaders <- function(grl, extension = 1000, cds = NULL) {
 #' @param type a string (any), argument for countOverlaps.
 #' @return a Rle, one list per group with # of hits per position.
 #' @export
+#' @family ExtendGenomicRanges
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(1, 10, 20),
@@ -330,6 +338,7 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #' @param keep.names logical (T), keep names or not.
 #' @return a Rle, one list per group with # of hits per position.
 #' @export
+#' @family ExtendGenomicRanges
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(1, 10, 20),
@@ -374,7 +383,7 @@ subset_to_frame <- function(x, frame) {
 
 #' Reduce GRanges / GRangesList
 #'
-#' Extends function [GenomicRanges::reduce()]
+#' Extends function \code{\link{reduce}}
 #' by trying to keep names and meta columns, if it is a
 #' GRangesList. It also does not loose sorting for GRangesList,
 #' since original reduce sorts all by ascending.
@@ -389,6 +398,7 @@ subset_to_frame <- function(x, frame) {
 #' @param keep.names (FALSE) keep the names and meta columns of the GRangesList
 #' @return A reduced GRangesList
 #' @export
+#' @family ExtendGenomicRanges
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(1, 2, 3), end = c(1, 2, 3)),

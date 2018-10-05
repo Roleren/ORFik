@@ -164,23 +164,20 @@ checkRFP <- function(class) {
   }
 }
 
-
-#' Helper function to check valid combinations of extension and cageFiveUTRs
-#' @param extension a numeric/integer to reassign 5' utrs.
-#' @param cageFiveUTRs a GRangesList, if you used cage-data to extend 5' utrs,
-#' @return NULL, stop if invalid object
-validExtension <- function(extension, cageFiveUTRs) {
-  if (is.null(extension)) {
-    stop("please specify extension, to avoid bugs ",
-         "if you did not use cage, set it to 0, ",
-         "standard cage extension is 1000")
-  } else if (!is.numeric(extension) && !is.integer(extension)) {
-      stop("extension must be numeric or integer")
-  }
-  if (extension != 0 && !is.grl(cageFiveUTRs)) {
-    stop("if extension is not 0, then cageFiveUTRs must be defined")
-  }
+#' Subset GRanges to get coverage.
+#'
+#' GRanges object should be beforehand
+#' tiled to size of 1. This subsetting takes account for strand.
+#' @param cov A coverage object from coverage()
+#' @param y GRanges object for which coverage should be extracted
+#' @return numeric vector of coverage of input GRanges object
+#' @family features
+#'
+subsetCoverage <- function(cov, y) {
+  cov1 <- cov[[as.vector(seqnames(y)[1])]]
+  return(as.vector(cov1[ranges(y)]))
 }
+
 
 #' Find proportion of reads per position in ORF TIS window
 #'

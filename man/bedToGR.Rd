@@ -19,3 +19,10 @@ a GRanges object from bed
 column 5 will be set to score
 Only Accepts bed files for now, standard format from Fantom5
 }
+\seealso{
+Other utils: \code{\link{convertToOneBasedRanges}},
+  \code{\link{findFa}}, \code{\link{fread.bed}},
+  \code{\link{is.gr_or_grl}}, \code{\link{is.grl}},
+  \code{\link{validGRL}}
+}
+\concept{utils}

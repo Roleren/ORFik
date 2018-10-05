@@ -264,7 +264,7 @@ test_that("insideOutsideORF works as intended", {
   scores <- insideOutsideORF(grl, RFP7, tx)
   expect_is(scores, "numeric")
   expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.14))
-  ds <- disengagementScore(grl, RFP7, GtfOrTx = tx)
+  ds <- disengagementScore(grl, RFP7, tx)
   expect_equal(scores, insideOutsideORF(grl, RFP7, tx, ds))
 })
 

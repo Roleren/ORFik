@@ -94,6 +94,8 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
   }
   # test naming
   testName <- names(unlist(grl[1], use.names = FALSE)[1])
+
+  #TODO: Make test for non unique names here. Maybe we should support it.
   if (is.null(testName)) {
     DT[, group := NULL]
     asgrl <- makeGRangesListFromDataFrame(
@@ -123,6 +125,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' This function sorts each group, where "+" strands are
 #' increasing by starts and "-" strands are decreasing by ends.
 #'
+#' Note: will not work if groups have equal names.
 #' @param grl a \code{\link{GRangesList}}
 #' @param ignore.strand a boolean, if FALSE: should minus strands be
 #' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.

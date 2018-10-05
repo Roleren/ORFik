@@ -19,6 +19,7 @@
 #' @import IRanges
 #' @import GenomicRanges
 #' @importFrom S4Vectors runValue
+#' @family ORFHelpers
 #' @examples
 #' ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
 #'                      ranges = IRanges(start = c(1, 10, 20),
@@ -66,31 +67,30 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' There is no check on invalid matches, so be carefull if you use this
 #' function directly.
 #' @param grl A \code{\link{GRangesList}} of the original
-#'  sequences that gave the orfs
-#' @param result List. A list of the results of finding uorfs
-#' list syntax is: result[1] contain grouping indeces, named index
-#' result[2] countains two columns of start and stops,  named orf
+#'  sequences that gave the orfs in Genomic coordinates.
+#' @param result IRangesList A list of the results of finding uorfs
+#' list syntax is: Per list group in IRangesList is per grl index. In
+#' transcript coordinates. The names are grl index as character.
 #' @param groupByTx logical (T), should output GRangesList be grouped by
 #' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
 #' @importFrom GenomicFeatures pmapFromTranscripts
+#' @family ORFHelpers
 #'
 mapToGRanges <- function(grl, result, groupByTx = TRUE) {
-
+  if(length(result) == 0) return(GRangesList())
   validGRL(class(grl))
   if (is.null(names(grl))) stop("'grl' contains no names.")
-  if (!is(result, "list")) stop("Invalid type of result, must be list.")
-  if (length(result) != 2)
-    stop("Invalid structure of result, must be list with 2 elements ",
-         "read info for structure.")
+  if (!is(result, "IRangesList")) stop("Invalid type of result, must be IRL.")
+  if (is.null(names(result))) stop("result IRL has no names")
   # Check that grl is sorted
   grl <- sortPerGroup(grl, ignore.strand = FALSE)
   # Create Ranges object from orf scanner result
-  ranges = IRanges(start = unlist(result$orf[1], use.names = FALSE),
-                   end = unlist(result$orf[2], use.names = FALSE))
-
+  ranges = unlist(result, use.names = TRUE)
+  index <- as.integer(names(ranges))
+  names(ranges) <- NULL
   # map transcripts to genomic coordinates, reduce away false hits
-  genomicCoordinates <- pmapFromTranscriptF(ranges, grl, result$index)
+  genomicCoordinates <- pmapFromTranscriptF(ranges, grl, index)
 
   return(makeORFNames(genomicCoordinates, groupByTx))
 }
@@ -108,6 +108,7 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' @export
 #' @return a character vector of transcript names,
 #'  without _* naming
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -118,6 +119,7 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' grl <- GRangesList(tx1_1 = gr_plus, tx2_1 = gr_minus)
 #' # there are 2 orfs, both the first on each transcript
 #' txNames(grl)
+#'
 txNames <- function(grl, unique = FALSE) {
   if (!is.gr_or_grl(class(grl))) {
     stop("grl must be GRangesList or GRanges Object")
@@ -157,6 +159,7 @@ txNames <- function(grl, unique = FALSE) {
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -204,6 +207,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -249,6 +253,7 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of start codons, since they might be split on exons
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -293,6 +298,7 @@ startCodons <- function(grl, is.sorted = FALSE){
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of stop codons, since they might be split on exons
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
 #'                    ranges = IRanges(c(7, 14), width = 3),
@@ -338,6 +344,7 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #'  if you want unique orfs, so that they dont have multiple
 #'  versions on different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
+#' @family ORFHelpers
 #'
 orfID <- function(grl, with.tx = FALSE) {
   seqnames <- seqnamesPerGroup(grl, FALSE)
@@ -364,6 +371,7 @@ orfID <- function(grl, with.tx = FALSE) {
 #' @param grl a \code{\link{GRangesList}}
 #' @return a GRangesList of unique orfs
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr1 <- GRanges("1", IRanges(1,10), "+")
 #' gr2 <- GRanges("1", IRanges(20, 30), "+")
@@ -393,6 +401,7 @@ uniqueGroups <- function(grl) {
 #' @param grl a \code{\link{GRangesList}}
 #' @return an integer vector of indices of unique groups
 #' @export
+#' @family ORFHelpers
 #' @examples
 #' gr1 <- GRanges("1", IRanges(1,10), "+")
 #' gr2 <- GRanges("1", IRanges(20, 30), "+")
@@ -421,23 +430,52 @@ uniqueOrder <- function(grl) {
 #'
 #' Rule: if seqname, strand and stop site is equal, take longest one.
 #' Else keep.
+#' If IRangesList or IRanges, seqnames are groups, if GRanges or GRangesList
+#' seqnames are the seqlevels (e.g. chromosomes/transcripts)
 #'
-#' @param grl a \code{\link{GRangesList}} of ORFs
-#' @return a \code{\link{GRangesList}}
+#' @param grl a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges of ORFs
+#' @return a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges
+#' (same as input)
 #' @export
 #' @importFrom data.table .I
+#' @family ORFHelpers
 #' @examples
 #' ORF1 = GRanges("1", IRanges(10,21), "+")
 #' ORF2 = GRanges("1", IRanges(1,21), "+") # <- longest
 #' grl <- GRangesList(ORF1 = ORF1, ORF2 = ORF2)
 #' longestORFs(grl) # get only longest
 longestORFs <- function(grl) {
-  stops <- stopSites(grl, is.sorted = TRUE)
-  widths <- widthPerGroup(grl, FALSE)
-  seqnames <- seqnamesPerGroup(grl, FALSE)
-  strands <- strandPerGroup(grl, FALSE)
+  if(length(grl) == 0) return(grl) # if empty
+
+  if (is.grl(class(grl))) { # only for GRangesList
+    stops <- stopSites(grl, is.sorted = TRUE)
+    widths <- widthPerGroup(grl, FALSE)
+    seqnames <- seqnamesPerGroup(grl, FALSE)
+    strands <- strandPerGroup(grl, FALSE)
+  } else { # GRanges, IRanges or IRangesList
+    stops <- unlist(end(grl), use.names = FALSE)
+    widths <- unlist(width(grl), use.names = FALSE)
+
+    if (is.gr_or_grl(class(grl))) { # GRanges
+      seqnames <- as.character(seqnames(grl))
+      strands <- as.character(strand(grl))
+      stops[strands == "-"] <- start(grl)[strands == "-"]
+    } else { # IRanges or IRangesList
+      strands <- rep("+", length(widths))
+      if (is(grl, "IRanges")) {
+        seqnames <- rep.int(1, length(widths))
+      } else if (is(grl, "IRangesList")) {
+        seqnames <- rep.int(seq.int(length(grl)), BiocGenerics::lengths(grl))
+      }
+    }
+  }
   dt <- data.table(seqnames, strands, stops, widths)
   longestORFs <- dt[, .I[which.max(widths)],
                     by = .(seqnames, strands, stops)]$V1
+  if (is(grl, "IRangesList")) {
+    ir <- unlist(grl, use.names = FALSE)
+    ir <- ir[longestORFs]
+    return(split(ir, seqnames[longestORFs]))
+  }
   return(grl[longestORFs])
 }

@@ -6,6 +6,8 @@
 #' @param newStarts an integer vector of same length as grl, with new start
 #' values
 #' @return the same GRangesList with new start sites
+#' @family GRanges
+#'
 assignFirstExonsStartSite <- function(grl, newStarts) {
   if (length(grl) != length(newStarts)) stop("length of grl and newStarts ",
                                              "are not equal!")
@@ -35,6 +37,7 @@ assignFirstExonsStartSite <- function(grl, newStarts) {
 #'  with new start values
 #' @return the same GRangesList with new stop sites
 #' @importFrom data.table .N .I
+#' @family GRanges
 #'
 assignLastExonsStopSite <- function(grl, newStops) {
   if (length(grl) != length(newStops)) stop("length of grl and newStops ",
@@ -72,6 +75,7 @@ assignLastExonsStopSite <- function(grl, newStops) {
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
 #' @return a GRangesList of downstream part
+#' @family GRanges
 #'
 downstreamOfPerGroup <- function(tx, downstreamOf) {
   # Needs speed update!
@@ -126,6 +130,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #' @param downstreamFrom a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
 #' @return a GRangesList of downstream part
+#' @family GRanges
 #'
 downstreamFromPerGroup <- function(tx, downstreamFrom) {
   # Needs speed update!
@@ -170,6 +175,7 @@ downstreamFromPerGroup <- function(tx, downstreamFrom) {
 #' @param allowOutside a logical (T), can upstreamOf extend outside
 #'  range of tx, can set boundary as a false hit, so beware.
 #' @return a GRangesList of upstream part
+#' @family GRanges
 #'
 upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
   posIndices <- strandBool(tx)
@@ -182,7 +188,7 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
   posTx <- tx[posIndices]
   negTx <- tx[!posIndices]
 
-  # need to fix pos/neg with possible cage extensions
+  # Usually from pos/neg with possible cage extensions
   if (allowOutside) {
     outside <- which(sum(pos) == 0)
     pos[outside] = TRUE
@@ -191,28 +197,29 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
     neg[outside] = TRUE
     negTx[outside] <- firstExonPerGroup(negTx[outside])
   }
+  upTx <- tx
+  upTx[posIndices] <- posTx[pos]
+  upTx[!posIndices] <- negTx[neg]
 
-  posTx <- posTx[pos]
-  negTx <- negTx[neg]
-  tx[posIndices] <- posTx
-  tx[!posIndices] <- negTx
-  nonZero <- widthPerGroup(tx) > 0
+  nonZero <- widthPerGroup(upTx) > 0
   if (all(!nonZero)) { # if no ranges exists
-    return(tx)
+    return(upTx)
   }
   upstreamOf <- upstreamOf[nonZero]
+  oldPosIndices <- posIndices
   posIndices <- posIndices[nonZero]
 
-  stopSites <- stopSites(tx[nonZero], FALSE, FALSE, TRUE)
+  stopSites <- stopSites(upTx[nonZero], FALSE, FALSE, TRUE)
+  # check boundaries within group exons
   if (any(posIndices)){
     posChecks <- stopSites[posIndices] < upstreamOf[posIndices] &
-      any(!pos[nonZero[posIndices]])
+      any(!pos[nonZero[oldPosIndices]])
   } else {
     posChecks <- FALSE
   }
   if(any(!posIndices)){
     negChecks <- stopSites[!posIndices] > upstreamOf[!posIndices] &
-      any(!neg[nonZero[!posIndices]])
+      any(!neg[nonZero[!oldPosIndices]])
   } else {
     negChecks <- FALSE
   }
@@ -224,6 +231,48 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE) {
     upstreamOf[!posIndices][negChecks] <- stopSites[!posIndices][negChecks]
   }
 
-  tx[nonZero] <- assignLastExonsStopSite(tx[nonZero], upstreamOf)
-  return(tx)
+  upTx[nonZero] <- assignLastExonsStopSite(upTx[nonZero], upstreamOf)
+  return(upTx)
+}
+
+#' Get rest of objects upstream (inclusive)
+#'
+#' Per group get the part upstream of position.
+#' upstreamFromPerGroup(tx, stopSites(fiveUTRs, asGR = TRUE))
+#' will return the  5' utrs per transcript as GRangesList,
+#' usually used for interesting
+#' parts of the transcripts.
+#'
+#' If you don't want to include the points given in the region,
+#' use \code{\link{upstreamOfPerGroup}}
+#' @param tx a \code{\link{GRangesList}},
+#'  usually of Transcripts to be changed
+#' @param upstreamFrom a vector of integers, for each group in tx, where
+#' is the new start point of first valid exon.
+#' @return a GRangesList of upstream part
+#' @family GRanges
+#'
+upstreamFromPerGroup <- function(tx, upstreamFrom) {
+  posIndices <- strandBool(tx)
+  posStarts <- start(tx[posIndices])
+  negStarts <- end(tx[!posIndices])
+  posGrlStarts <- upstreamFrom[posIndices]
+  negGrlStarts <- upstreamFrom[!posIndices]
+  pos <- posStarts <= posGrlStarts
+  neg <- negStarts >= negGrlStarts
+  upTx <- tx
+  upTx[posIndices] <- upTx[posIndices][pos]
+  upTx[!posIndices] <- upTx[!posIndices][neg]
+  # check if any hits boundary, set those to boundary
+  if (anyNA(strandPerGroup(upTx, FALSE))) {
+    boundaryHits <- which(is.na(strandPerGroup(upTx, FALSE)))
+    upTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
+    ir <- IRanges(start = upstreamFrom[boundaryHits],
+                  end = upstreamFrom[boundaryHits])
+    irl <- split(ir, seq_along(ir))
+    names(irl) <- names(tx[boundaryHits])
+    ranges(upTx[boundaryHits]) <- irl
+  }
+
+  return(assignLastExonsStopSite(upTx, upstreamFrom))
 }

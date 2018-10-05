@@ -385,9 +385,7 @@ ORFik supports multiple ORF finding functions,here we describe their specific
 use.
 
 If you have a DNAStringSet or a character vector use findORFs.
-Remember if using character: if the annotation uses variation of lowercase and 
-uppercase, then the first found type will be used. Normally you want to use 
-uppercase, since lowercase means that there is a repeat region. 
+DNAStringSet is safer since all characters are forced to uppercase. 
 
 findORFs will give you only 5' to 3' direction, so if you want both directions,
 you can do (for double stranded):
@@ -423,5 +421,10 @@ If you want to find ORFs in spliced transcripts, use \code{\link{findMapORFs}}.
 It supports automatic exon splitting, see above for example.
 
 
-## Circular Genomes
+## Procaryote and Circular Genomes
 If you want to find ORFs on circular genomes, use \code{\link{findORFsFasta}}
+
+# conclusion:
+Eucaryote splicing: findMapORFs
+Procaryote/circular: findORFsFasta
+Direct ORFs from character vector: findORFs 

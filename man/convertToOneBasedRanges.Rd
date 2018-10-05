@@ -23,3 +23,9 @@ There are 3 ways of doing this
 2. Tile and include all (tileAll)
 3. Take middle point per GRanges (middle)
 }
+\seealso{
+Other utils: \code{\link{bedToGR}}, \code{\link{findFa}},
+  \code{\link{fread.bed}}, \code{\link{is.gr_or_grl}},
+  \code{\link{is.grl}}, \code{\link{validGRL}}
+}
+\concept{utils}

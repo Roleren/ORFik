@@ -21,7 +21,6 @@ List orfs_as_List(
     CharacterVector fastaSeqs,
     std::string startCodon,
     std::string stopCodon,
-    bool longestORF,
     int minimumLength)
 {
   std::vector<int> result_index; // index of input that output belongs to
@@ -29,9 +28,8 @@ List orfs_as_List(
 
   for (int i = 0; i < fastaSeqs.size(); i++) {
     std::string fastaSeq = static_cast<std::string>(fastaSeqs[i]);
-    std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
-                                                     stopCodon,longestORF,
-                                                     minimumLength);
+    std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon, stopCodon,
+                                             minimumLength);
 
     all_orfs.insert(all_orfs.end(), ORFdef.begin(), ORFdef.end());
     result_index.insert(result_index.end(), ORFdef.size() / 2, i + 1);

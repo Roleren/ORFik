@@ -102,17 +102,17 @@ stopDefinition <- function(transl_table) {
 #' }
 #'
 #' @param seqs (DNAStringSet or character) DNA sequences to search for Open
-#' Reading Frames. Can be both uppercase or lowercase.
+#' Reading Frames. Can be both uppercase or lowercase. Easiest call to get seqs
+#' if you want only regions from a fasta/fasta index pair is:
+#' seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
+#' regions.
 #' @param startCodon (character) Possible START codons to search for. Check
 #' \code{\link{startDefinition}} for helper function.
 #' @param stopCodon (character) Possible STOP codons to search for. Check
-#'  \code{\link{stopDefinition}} for helper function.
-#' @param longestORF (logical) Default FALSE. When TRUE will only report the
-#' longest ORFs per seqlevel (1 in + and in in - direction),
-#' all smaller ORFs will be ignored.
-#' When FALSE will report all possible ORFs in all three reading frames.
-#' If you want longest ORF per unique (seqname, strand, stopcodon) combination,
-#' use \code{\link{longestORFs}}
+#' \code{\link{stopDefinition}} for helper function.
+#' @param longestORF (logical) Default TRUE. Keep only the longest ORF per
+#' unique (seqname, strand, stopcodon) combination, you can also use function
+#' \code{\link{longestORFs}} after creation of ORFs for same result.
 #' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
 #' counting 3bp for START and STOP codons. For example minimumLength = 8 will
 #' result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
@@ -132,9 +132,10 @@ stopDefinition <- function(transl_table) {
 #'
 #' findORFs(c("ATGTAA", "ATGATGTAA"))
 #'
-findORFs <- function(
-  seqs, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
-  longestORF = FALSE, minimumLength = 0 ){
+#'
+findORFs <- function(seqs, startCodon =  startDefinition(1),
+                     stopCodon = stopDefinition(1), longestORF = TRUE,
+                     minimumLength = 0 ){
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -146,8 +147,11 @@ findORFs <- function(
 
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
-                         longestORF = longestORF,
                          minimumLength = minimumLength)
+
+  if (longestORF) return(longestORFs(split(IRanges(result$orf[[1]],
+                                                  result$orf[[2]]),
+                                          result$index)))
   return(split(IRanges(result$orf[[1]], result$orf[[2]]), result$index))
 }
 
@@ -167,7 +171,7 @@ findORFs <- function(
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
 #' @param groupByTx logical (T), should output GRangesList be grouped by
-#' transcripts (T) or by ORFs (F)?
+#' orfs per transcript (T) or by exons per ORF (F)?
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
@@ -188,9 +192,9 @@ findORFs <- function(
 #' names(grl) <- c("tx1", "tx2")
 #' findMapORFs(grl, c(seqs, seqs))
 #'
-findMapORFs <- function(
-  grl, seqs, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
-  longestORF = FALSE, minimumLength = 0, groupByTx = TRUE){
+findMapORFs <- function(grl, seqs, startCodon =  startDefinition(1),
+                        stopCodon = stopDefinition(1), longestORF = TRUE,
+                        minimumLength = 0, groupByTx = TRUE){
   validGRL(class(grl))
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -199,14 +203,18 @@ findMapORFs <- function(
 
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
-                         longestORF = longestORF,
                          minimumLength = minimumLength)
+  result <- split(IRanges(result$orf[[1]], result$orf[[2]]), result$index)
+  if (longestORF) result <- longestORFs(result)
+
   return(mapToGRanges(grl, result, groupByTx))
 }
 
 
 #' Finds Open Reading Frames in fasta files.
 #'
+#' Should be used for procaryote genomes or transcript sequences as fasta.
+#' Makes no sence for eukaryotes, since it contains splicing.
 #' Searches through each fasta header and reports all ORFs found for BOTH
 #' sense (+) and antisense strand (-) in all frames. Name of the header will
 #' be used as seqnames of reported ORFs.
@@ -216,7 +224,7 @@ findMapORFs <- function(
 #'
 #' Remember if you have a fasta file of transcripts (transcript coordinates),
 #' delete all negative stranded ORFs afterwards by:
-#' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then
+#' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then.
 #' Seqnames are created from header by format: >name info, so name must be
 #' first after "biggern than" and space between name and info.
 #' @param filePath (character) Path to the fasta file. Can be both uppercase or
@@ -237,16 +245,19 @@ findMapORFs <- function(
 #' example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")
 #' findORFsFasta(example_genome)
 #'
-findORFsFasta <- function(
-  filePath, startCodon =  startDefinition(1), stopCodon = stopDefinition(1),
-  longestORF = FALSE, minimumLength = 0, is.circular = FALSE) {
+findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
+                          stopCodon = stopDefinition(1), longestORF = TRUE,
+                          minimumLength = 0, is.circular = FALSE) {
 
   if (!is(filePath, "character"))
     stop("'filepath' must be of type character.")
   filePath <- path.expand(filePath)
   if(!file.exists(filePath)) stop("'file' does not exist, check working dir!")
-  gr <- findORFs_fasta(filePath, startCodon, stopCodon, longestORF,
-                       minimumLength, is.circular)
+  gr <- findORFs_fasta(filePath, startCodon, stopCodon, minimumLength,
+                       is.circular)
+  if (longestORF) {
+    gr <- longestORFs(gr)
+  }
   if (is.circular) {
     isCircular(gr) <- rep(TRUE, length(seqlevels(gr)))
   }

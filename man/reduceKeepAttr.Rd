@@ -27,7 +27,7 @@ reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
 A reduced GRangesList
 }
 \description{
-Extends function [GenomicRanges::reduce()]
+Extends function \code{\link{reduce}}
 by trying to keep names and meta columns, if it is a
 GRangesList. It also does not loose sorting for GRangesList,
 since original reduce sorts all by ascending.
@@ -45,3 +45,11 @@ grl <- GRangesList(tx1_1 = ORF)
 reduceKeepAttr(grl, keep.names = TRUE)
 
 }
+\seealso{
+Other ExtendGenomicRanges: \code{\link{asTX}},
+  \code{\link{coveragePerTiling}},
+  \code{\link{overlapsToCoverage}},
+  \code{\link{pmapFromTranscriptF}}, \code{\link{tile1}},
+  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+}
+\concept{ExtendGenomicRanges}

@@ -27,3 +27,11 @@ parts of the transcripts.
 If you want to include the points given in the region,
 use downstreamFromPerGroup
 }
+\seealso{
+Other GRanges: \code{\link{assignFirstExonsStartSite}},
+  \code{\link{assignLastExonsStopSite}},
+  \code{\link{downstreamFromPerGroup}},
+  \code{\link{upstreamFromPerGroup}},
+  \code{\link{upstreamOfPerGroup}}
+}
+\concept{GRanges}

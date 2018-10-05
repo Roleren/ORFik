@@ -6,56 +6,53 @@
 using namespace Rcpp;
 
 // orfs_as_List
-List orfs_as_List(CharacterVector fastaSeqs, std::string startCodon, std::string stopCodon, bool longestORF, int minimumLength);
-RcppExport SEXP _ORFik_orfs_as_List(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
+List orfs_as_List(CharacterVector fastaSeqs, std::string startCodon, std::string stopCodon, int minimumLength);
+RcppExport SEXP _ORFik_orfs_as_List(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP minimumLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type fastaSeqs(fastaSeqsSEXP);
     Rcpp::traits::input_parameter< std::string >::type startCodon(startCodonSEXP);
     Rcpp::traits::input_parameter< std::string >::type stopCodon(stopCodonSEXP);
-    Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(orfs_as_List(fastaSeqs, startCodon, stopCodon, longestORF, minimumLength));
+    rcpp_result_gen = Rcpp::wrap(orfs_as_List(fastaSeqs, startCodon, stopCodon, minimumLength));
     return rcpp_result_gen;
 END_RCPP
 }
 // findORFs_fasta
-S4 findORFs_fasta(std::string file, std::string startCodon, std::string stopCodon, bool longestORF, int minimumLength, bool isCircular);
-RcppExport SEXP _ORFik_findORFs_fasta(SEXP fileSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP, SEXP isCircularSEXP) {
+S4 findORFs_fasta(std::string file, std::string startCodon, std::string stopCodon, int minimumLength, bool isCircular);
+RcppExport SEXP _ORFik_findORFs_fasta(SEXP fileSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP minimumLengthSEXP, SEXP isCircularSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
     Rcpp::traits::input_parameter< std::string >::type startCodon(startCodonSEXP);
     Rcpp::traits::input_parameter< std::string >::type stopCodon(stopCodonSEXP);
-    Rcpp::traits::input_parameter< bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
     Rcpp::traits::input_parameter< bool >::type isCircular(isCircularSEXP);
-    rcpp_result_gen = Rcpp::wrap(findORFs_fasta(file, startCodon, stopCodon, longestORF, minimumLength, isCircular));
+    rcpp_result_gen = Rcpp::wrap(findORFs_fasta(file, startCodon, stopCodon, minimumLength, isCircular));
     return rcpp_result_gen;
 END_RCPP
 }
 // orfs_as_IRanges
-S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, const bool longestORF, int minimumLength);
-RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP longestORFSEXP, SEXP minimumLengthSEXP) {
+S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, int minimumLength);
+RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP minimumLengthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string& >::type main_string(main_stringSEXP);
     Rcpp::traits::input_parameter< const std::string >::type s(sSEXP);
     Rcpp::traits::input_parameter< const std::string >::type e(eSEXP);
-    Rcpp::traits::input_parameter< const bool >::type longestORF(longestORFSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(orfs_as_IRanges(main_string, s, e, longestORF, minimumLength));
+    rcpp_result_gen = Rcpp::wrap(orfs_as_IRanges(main_string, s, e, minimumLength));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 5},
-    {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 6},
-    {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 5},
+    {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
+    {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
+    {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {NULL, NULL, 0}
 };
 

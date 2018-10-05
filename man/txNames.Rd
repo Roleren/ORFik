@@ -32,4 +32,14 @@ gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
 grl <- GRangesList(tx1_1 = gr_plus, tx2_1 = gr_minus)
 # there are 2 orfs, both the first on each transcript
 txNames(grl)
+
 }
+\seealso{
+Other ORFHelpers: \code{\link{defineTrailer}},
+  \code{\link{longestORFs}}, \code{\link{mapToGRanges}},
+  \code{\link{orfID}}, \code{\link{startCodons}},
+  \code{\link{startSites}}, \code{\link{stopCodons}},
+  \code{\link{stopSites}}, \code{\link{uniqueGroups}},
+  \code{\link{uniqueOrder}}
+}
+\concept{ORFHelpers}

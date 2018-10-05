@@ -20,3 +20,11 @@ a GRangesList in transcript coordinates
 \description{
 Map genomic to transcript coordinates by reference
 }
+\seealso{
+Other ExtendGenomicRanges: \code{\link{coveragePerTiling}},
+  \code{\link{overlapsToCoverage}},
+  \code{\link{pmapFromTranscriptF}},
+  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
+  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+}
+\concept{ExtendGenomicRanges}
