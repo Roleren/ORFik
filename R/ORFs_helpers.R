@@ -475,7 +475,9 @@ longestORFs <- function(grl) {
   if (is(grl, "IRangesList")) {
     ir <- unlist(grl, use.names = FALSE)
     ir <- ir[longestORFs]
-    return(split(ir, seqnames[longestORFs]))
+    irl <- split(ir, seqnames[longestORFs])
+    names(irl) <- names(grl)
+    return(irl)
   }
   return(grl[longestORFs])
 }
