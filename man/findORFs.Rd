@@ -31,8 +31,11 @@ result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
 Use this param to restrict search.}
 }
 \value{
-(IRangesList) of ORFs locations incuding START and STOP codons
-grouped by input seqeunces.
+(IRangesList) of ORFs locations by START and STOP sites
+grouped by input seqeunces. In a list of sequences, only the indices of
+the sequences that had ORFs will be returned, e.g. 3 sequences where only
+1 and 3 has ORFs, will return size 2 IRangesList with names c("1", "3").
+If there are a total of 0 ORFs, an empty IRangesList will be returned.
 }
 \description{
 Find all Open Reading Frames (ORFs) on the input sequences
@@ -61,7 +64,6 @@ findORFs("ATGATGTAA") # two ORFs
 findORFs("ATGATGTAA", longestORF = TRUE) # only longest of two above
 
 findORFs(c("ATGTAA", "ATGATGTAA"))
-
 
 }
 \seealso{

@@ -221,7 +221,7 @@ All of the features are implemented based on scientific article published in
 peer reviewed journal. `ORFik` supports seemingles calculation of all available 
 features. See example below.
 
-```{r eval = TRUE, echo = TRUE, warning = FALSE}
+```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(GenomicFeatures)
 
@@ -245,7 +245,9 @@ features. See example below.
   RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
   # transcript database
   txdb <- loadDb(txdbFile)
-  computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, orfFeatures =  TRUE)
+  dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile,
+                  orfFeatures =  TRUE)
+  print(dt)
 }
 ```
 You will now get a data.table with one column per score, the columns are named after
@@ -417,12 +419,12 @@ If you get both (+/-) strand and only want (+) ORFs, do:
   res[strandBool(res)]
 ```
 ## Finding ORFs in spliced transcripts
-If you want to find ORFs in spliced transcripts, use \code{\link{findMapORFs}}.
+If you want to find ORFs in spliced transcripts, use findMapORFs.
 It supports automatic exon splitting, see above for example.
 
 
 ## Procaryote and Circular Genomes
-If you want to find ORFs on circular genomes, use \code{\link{findORFsFasta}}
+If you want to find ORFs on circular genomes, use findORFsFasta.
 
 # conclusion:
 Eucaryote splicing: findMapORFs

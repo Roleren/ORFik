@@ -186,6 +186,7 @@ asTX <- function(grl, reference) {
 #' @family ExtendGenomicRanges
 #'
 pmapFromTranscriptF <- function(ranges, grl, indices) {
+  if (length(ranges) != length(indices)) stop("length of ranges != indices")
   names <- names(grl)
   names(grl) <- NULL
   genomicCoordinates <- pmapFromTranscripts(x = ranges,
@@ -226,16 +227,18 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' @param upstream an integer vector, relative region to get upstream from.
 #' @return a GRanges/GRangesList object if exon/introns
 #' @family ExtendGenomicRanges
+#' @importFrom data.table chmatch
 #'
 windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
   g <- asTX(gr, tx)
 
   start(g) <- pmax(start(g) - downstream, 1L)
+  indices <- chmatch(txNames(gr), names(tx))
   if (upstream != 0) {
-    end(g) <- pmin(end(g) + upstream, widthPerGroup(tx[names(gr)], FALSE))
+    end(g) <- pmin(end(g) + upstream, widthPerGroup(tx[indices], FALSE))
   }
 
-  return(pmapFromTranscripts(g, tx[names(gr)]))
+  return(pmapFromTranscriptF(g, tx, indices))
 }
 
 #' Extend the leaders transcription start sites.

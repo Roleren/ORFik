@@ -103,7 +103,7 @@ fread.bed <- function(filePath) {
     if (file.exists(filePath)) {
       if (any(file_ext(filePath) == c("gzip", "gz", "bgz"))) {
         bed <- bedToGR(setDF(
-          fread(paste("gunzip -c", filePath), sep = "\t")))
+          fread(cmd = paste("gunzip -c", filePath), sep = "\t")))
       } else if (file_ext(filePath) == "bed"){
         bed <- bedToGR(setDF(fread(filePath, sep = "\t")))
       } else {
