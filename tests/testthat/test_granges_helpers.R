@@ -135,7 +135,7 @@ test_that("upstreamFromPerGroup works as intended", {
   upstreamFrom <- as.integer(c(10, 20, 41))
   reassigned <- upstreamFromPerGroup(tx = grl[c(1,1,2)], upstreamFrom)
   expect_is(reassigned,"GRangesList")
-  expect_equal(stopSites(reassigned, is.sorted = T), upstreamFrom)
+  expect_equal(stopSites(reassigned, is.sorted = TRUE), upstreamFrom)
 })
 
 test_that("upstreamOfPerGroup works as intended", {

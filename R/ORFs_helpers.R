@@ -465,7 +465,7 @@ longestORFs <- function(grl) {
       if (is(grl, "IRanges")) {
         seqnames <- rep.int(1, length(widths))
       } else if (is(grl, "IRangesList")) {
-        seqnames <- rep.int(seq.int(length(grl)), BiocGenerics::lengths(grl))
+        seqnames <- rep.int(seq.int(length(grl)), lengths(grl))
       }
     }
   }
