@@ -53,7 +53,7 @@ txLen <- function(Gtf = NULL, changedFiveUTRs = NULL) {
 codonSumsPerGroup <- function(countList, reg_len,
                               runLengths ) {
 
-  len <- BiocGenerics::lengths(countList)
+  len <- lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
     acums <- cumsum(as.numeric(len[seq.int(1, length(len)-1)]))
     acums <- rep.int(c(1,acums), runLengths)

@@ -5,6 +5,20 @@
 
 using namespace Rcpp;
 
+// orfs_as_IRanges
+S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, int minimumLength);
+RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP minimumLengthSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string& >::type main_string(main_stringSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type s(sSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type e(eSEXP);
+    Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
+    rcpp_result_gen = Rcpp::wrap(orfs_as_IRanges(main_string, s, e, minimumLength));
+    return rcpp_result_gen;
+END_RCPP
+}
 // orfs_as_List
 List orfs_as_List(CharacterVector fastaSeqs, std::string startCodon, std::string stopCodon, int minimumLength);
 RcppExport SEXP _ORFik_orfs_as_List(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP minimumLengthSEXP) {
@@ -34,25 +48,11 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// orfs_as_IRanges
-S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, int minimumLength);
-RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP minimumLengthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string& >::type main_string(main_stringSEXP);
-    Rcpp::traits::input_parameter< const std::string >::type s(sSEXP);
-    Rcpp::traits::input_parameter< const std::string >::type e(eSEXP);
-    Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
-    rcpp_result_gen = Rcpp::wrap(orfs_as_IRanges(main_string, s, e, minimumLength));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
-    {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {NULL, NULL, 0}
 };
 

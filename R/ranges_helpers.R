@@ -13,7 +13,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
     oldNames <- names(grl)
     names(grl) <- seq_along(grl)
     l <- width(grl) - width(grl)
-    t <- unlist(l + seq.int(1,length(grl)), use.names = F)
+    t <- unlist(l + seq.int(1,length(grl)), use.names = FALSE)
   } else {
     l <- Rle(names(unlist(grl, use.names = TRUE)))
     t <- unlist(lapply(seq(nrun(l)), function(x) {
