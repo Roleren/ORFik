@@ -22,6 +22,14 @@ a GRanges/GRangesList object if exon/introns
 If downstreamFrom is 20, it means the window will start -20 downstream of
 gr start site. It will keep exon structure of tx
 }
+\examples{
+# find 2nd codon of an ORF on a spliced transcript
+ORF <- GRanges("1", c(3), "+") # start site
+names(ORF) <- "tx1_1" # ORF 1 on tx1
+tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
+windowPerGroup(ORF, tx, 5, -3) # <- 2nd codon
+
+}
 \seealso{
 Other ExtendGenomicRanges: \code{\link{asTX}},
   \code{\link{coveragePerTiling}},

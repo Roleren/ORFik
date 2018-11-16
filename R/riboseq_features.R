@@ -582,6 +582,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #' initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
 #'
 initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
+  if(length(grl) == 0) stop("grl must have length > 0")
   # train average cds model
   df <- riboTISCoverageProportion(cds, tx, footprints, average = TRUE,
                                   onlyProportion = FALSE, pShifted = pShifted)
@@ -594,9 +595,9 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
                                     keep.names = TRUE)
   names <- names(prop[[1]])
   names(prop[[1]]) <- NULL
-  dif <- lapply(seq.int(1:length(prop)), function(x)
+  dif <- lapply(seq.int(length(prop)), function(x)
     abs(prop[[x]] - cdsProp[x]))
-  dif2 <- lapply(seq.int(1:length(prop)), function(x) sum(dif[[x]]))
+  dif2 <- lapply(seq.int(length(prop)), function(x) sum(dif[[x]]))
 
   tempAns <- Reduce("+", dif2)/length(dif2) - 1
 
@@ -630,8 +631,8 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
 #' @importFrom data.table .N
 #' @family features
 #' @export
-#' @return a matrix with 4 columns, the orfscore and score of
-#' each of the 3 tiles
+#' @return a matrix with 4 columns, the orfscore (ORFScores) and score of
+#' each of the 3 tiles (frame_zero_RP, frame_one_RP, frame_two_RP)
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
@@ -664,7 +665,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
                             is.sorted = is.sorted, keep.names = FALSE)
 
     countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(validIndices))
-    len <- BiocGenerics::lengths(cov)
+    len <- lengths(cov)
     # make the 3 frames
     positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
     tempTile <- sum(cov[positionFrame])[reOrdering]

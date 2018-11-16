@@ -226,16 +226,26 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' @param downstream an integer, relative region to get downstream from
 #' @param upstream an integer vector, relative region to get upstream from.
 #' @return a GRanges/GRangesList object if exon/introns
+#' @export
 #' @family ExtendGenomicRanges
 #' @importFrom data.table chmatch
+#' @examples
+#' # find 2nd codon of an ORF on a spliced transcript
+#' ORF <- GRanges("1", c(3), "+") # start site
+#' names(ORF) <- "tx1_1" # ORF 1 on tx1
+#' tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
+#' windowPerGroup(ORF, tx, 5, -3) # <- 2nd codon
 #'
 windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
   g <- asTX(gr, tx)
 
-  start(g) <- pmax(start(g) - downstream, 1L)
+  starts <- pmax(start(g) - upstream, 1L)
   indices <- chmatch(txNames(gr), names(tx))
   if (upstream != 0) {
-    end(g) <- pmin(end(g) + upstream, widthPerGroup(tx[indices], FALSE))
+    ends <- pmin(end(g) + downstream, widthPerGroup(tx[indices], FALSE))
+    ranges(g) <- IRanges(starts, ends)
+  } else {
+    starts(g) <- starts
   }
 
   return(pmapFromTranscriptF(g, tx, indices))

@@ -7,9 +7,10 @@
 filterCage(rawCage, filterValue = 1, fiveUTRs = NULL)
 }
 \arguments{
-\item{rawCage}{The raw cage-data}
+\item{rawCage}{The raw cage-data, as GRanges. Must contain a score column,
+with the count hits per position.}
 
-\item{filterValue}{The number of counts(score) to filter on
+\item{filterValue}{The integer of counts(score) to filter on
 for a tss to pass as hit}
 
 \item{fiveUTRs}{a GRangesList (NULL), if added will filter out cage reads by
