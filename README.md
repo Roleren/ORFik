@@ -58,4 +58,4 @@ browseVignettes("ORFik")
 
 #### Feedback
 
-Please feel free to provide feedback or desired functionality. My contact address is kornellabun@@gmail.com.
+Please feel free to provide feedback or desired functionality. My contact address is kornellabun@gmail.com.
