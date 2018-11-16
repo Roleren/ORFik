@@ -1,7 +1,7 @@
 ORFik: R package for discovery of novel genes.
 ==============================================================================
 
-This package is still under development, although this version is stable and can be used already.
+This package is still under development, although this version is stable and can be used.
 
 #### About
 
@@ -17,14 +17,14 @@ ORFik is an R package containing various functions for analysis of Ribo-Seq, RNA
 
 
 #### Installation
-Package is available from bioconductor (3.7, R version >= 3.5.0)
+Package is available from bioconductor (3.8, R version >= 3.5.0)
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
 BiocManager::install("ORFik")
 ```
 
-Development version on bioconductor (3.8, R version >= 3.5.0)
+Development version on bioconductor (3.9, R version >= 3.6.0)
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
@@ -58,4 +58,4 @@ browseVignettes("ORFik")
 
 #### Feedback
 
-Please feel free to provide feedback or desired functionality. My contact address is kornellabun at gmail.com.
+Please feel free to provide feedback or desired functionality. My contact address is kornellabun@@gmail.com.
