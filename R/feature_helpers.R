@@ -211,8 +211,8 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
                                       upStart = if (pShifted) 5 else 20,
                                       downStop = if (pShifted) 20 else 5) {
   windowSize <- upStart + downStop + 1
-  window <- windowPerGroup(startSites(grl, TRUE, FALSE, TRUE), tx, upStart,
-                           downStop)
+  window <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE), tx, downStop,
+                           upStart)
   noHits <- widthPerGroup(window) < windowSize
   if (all(noHits)) {
     warning("no grl had valid window size!")
@@ -223,7 +223,9 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
   footprints <- footprints[rwidth < 31 & rwidth > 26]
   rwidth <- readWidths(footprints)
   allLengths <- sort(unique(rwidth))
-  gr <- resize(granges(footprints), 1)
+  if (!(is.gr_or_grl(footprints) & unique(width(footprints)) == 1)) {
+    footprints <- resize(granges(footprints), 1)
+  }
   lengthProportions <- c()
 
   unlTile <- unlistGrl(tile1(window, matchNaming = FALSE))
@@ -232,7 +234,7 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
   }
 
   for (l in allLengths) {
-    ends_uniq <- gr[rwidth == l]
+    ends_uniq <- footprints[rwidth == l]
 
     cvg <- overlapsToCoverage(unlTile, ends_uniq, FALSE, type = "within")
 

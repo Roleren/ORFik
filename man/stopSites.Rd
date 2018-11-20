@@ -11,8 +11,7 @@ stopSites(grl, asGR = FALSE, keep.names = FALSE, is.sorted = FALSE)
 
 \item{asGR}{a boolean, return as GRanges object}
 
-\item{keep.names}{if asGR is False, do you still want
-to keep a named vector}
+\item{keep.names}{a logical (FALSE), keep names of input.}
 
 \item{is.sorted}{a speedup, if you know the ranges are sorted}
 }

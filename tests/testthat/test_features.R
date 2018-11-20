@@ -337,7 +337,7 @@ test_that("initiationScore works as intended", {
   test_result <- initiationScore(cds, cds, tx, RFP, pShifted = TRUE)
   expect_equal(round(test_result,2), -1.00) # cds should score itself -1
   test_result <- initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), -0.80) # ok scoring ORF
+  expect_equal(round(test_result,2), -0.43) # ok scoring ORF
   test_result <- initiationScore(neg_control, cds, tx, RFP, pShifted = TRUE)
   expect_equal(round(test_result,2), 0) # neg should score 0
 })

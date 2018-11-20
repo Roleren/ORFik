@@ -154,10 +154,9 @@ txNames <- function(grl, unique = FALSE) {
 #' In ATGTTTTGG, get the position of the A.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
-#' @param keep.names if asGR is False, do you still want
-#'  to keep a named vector
-#' @return if asGR is False, a vector, if True a GRanges object
+#' @param keep.names a logical (FALSE), keep names of input.
 #' @param is.sorted a speedup, if you know the ranges are sorted
+#' @return if asGR is False, a vector, if True a GRanges object
 #' @export
 #' @family ORFHelpers
 #' @examples
@@ -182,16 +181,12 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   startSites[!posIds] <- firstEndPerGroup(grl[!posIds], FALSE)
 
   if (asGR) {
-    gr <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
-                  ranges = IRanges(startSites, startSites),
+    startSites <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
+                  ranges = startSites,
                   strand = strandPerGroup(grl, FALSE))
-    names(gr) <- names(grl)
-    return(gr)
   }
-
   if (keep.names) {
     names(startSites) <- names(grl)
-    return(startSites)
   }
   return(startSites)
 }
@@ -202,8 +197,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' In ATGTTTTGC, get the position of the C.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
-#' @param keep.names if asGR is False, do you still want
-#'  to keep a named vector
+#' @param keep.names a logical (FALSE), keep names of input.
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @export
@@ -230,16 +224,12 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   stopSites[!posIds] <- lastExonStartPerGroup(grl[!posIds], FALSE)
 
   if (asGR) {
-    gr <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
-                ranges = IRanges(stopSites,stopSites),
+    stopSites <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
+                  ranges = stopSites,
                   strand = strandPerGroup(grl, FALSE))
-    names(gr) <- names(grl)
-    return(gr)
   }
-
   if (keep.names) {
     names(stopSites) <- names(grl)
-    return(stopSites)
   }
   return(stopSites)
 }
