@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.3.1
+Version: 1.3.2
 Encoding: UTF-8
 Authors@R: c(
   person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cre", "cph")),
@@ -11,7 +11,7 @@ Authors@R: c(
 Description: Tools for manipulation of RiboSeq, RNASeq and CageSeq data. ORFik 
   is extremely fast through use of C, data.table and GenomicRanges. Package 
   allows to reassign starts of the transcripts with the use of CageSeq data,
-  automatic shifting of RiboSeq reads, finding of Open Reading Frames for the 
+  automatic shifting of RiboSeq reads, finding of Open Reading Frames for
   whole genomes and many more.
 biocViews: Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage, Alignment, DataImport
 License: MIT + file LICENSE
