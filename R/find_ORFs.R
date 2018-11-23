@@ -137,7 +137,7 @@ stopDefinition <- function(transl_table) {
 #'
 findORFs <- function(seqs, startCodon =  startDefinition(1),
                      stopCodon = stopDefinition(1), longestORF = TRUE,
-                     minimumLength = 0 ){
+                     minimumLength = 0L){
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")

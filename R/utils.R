@@ -25,6 +25,20 @@ is.gr_or_grl <- function(class) {
   return(is.grl(class) || class == "GRanges")
 }
 
+#' Check if all requirements for an ORFik ORF is accepted.
+#' @param grl a GRangesList or GRanges to check
+#' @return a logical (TRUE/FALSE)
+is.ORF <- function(grl){
+  if (is.gr_or_grl(class(grl))){
+     if (is.grl(grl)) {
+       names <- unlist(grl[1], use.names = FALSE)$names
+     } else {
+         names <-grl[1]$names
+     }
+    return(any(grep("_", names)))
+  }
+  return(FALSE)
+}
 
 #' Helper Function to check valid GRangesList input
 #' @param class as character vector the given class of
@@ -123,6 +137,9 @@ fread.bed <- function(filePath) {
 #' 1. Take 5' ends, reduce away rest (5prime)
 #' 2. Tile and include all (tileAll)
 #' 3. Take middle point per GRanges (middle)
+#'
+#' Many other ways to do this have their own functions, like startCodons and
+#' stopCodons.
 #' @param gr GRanges Object to reduce
 #' @param method the method to reduce, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
@@ -168,6 +185,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' @importFrom Rsamtools FaFile
 #' @return a FaFile or BSgenome
 #' @family utils
+#' @importFrom methods is
 #'
 findFa <- function(faFile) {
   if (is.character(faFile)) {

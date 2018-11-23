@@ -34,7 +34,8 @@ Imports:
   stats,
   tools,
   Rsamtools (>= 1.35.0),
-  BiocGenerics (>= 0.29.1)
+  BiocGenerics (>= 0.29.1),
+  methods (>= 3.6.0)
 RoxygenNote: 6.1.1
 Suggests:
   testthat,

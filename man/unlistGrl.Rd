@@ -14,8 +14,9 @@ a GRanges object
 }
 \description{
 Same as [AnnotationDbi::unlist2()], keeps names correctly.
-One difference is that if grl have no names, it will not
-make integer names, but keep them as null.
+Two differences is that if grl have no names, it will not
+make integer names, but keep them as null. Also if the GRangesList has names
+, and also the GRanges groups, then the GRanges group names will be kept.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

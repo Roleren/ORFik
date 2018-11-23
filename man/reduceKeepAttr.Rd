@@ -29,7 +29,7 @@ A reduced GRangesList
 \description{
 Extends function \code{\link{reduce}}
 by trying to keep names and meta columns, if it is a
-GRangesList. It also does not loose sorting for GRangesList,
+GRangesList. It also does not lose sorting for GRangesList,
 since original reduce sorts all by ascending.
 If keep.names == FALSE, it's just the normal GenomicRanges::reduce
 with sorting negative strands descending for GRangesList.

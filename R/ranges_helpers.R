@@ -1,5 +1,6 @@
-#' Make a meta column with exon ranks
+#' Make grouping for exon structures.
 #'
+#' Either by transcript or by original groupings.
 #' Must be ordered, so that same transcripts are ordered together.
 #' @param grl a \code{\link{GRangesList}}
 #' @param byTranscript if ORfs are by transcript, check duplicates
@@ -8,40 +9,24 @@
 #'
 makeExonRanks <- function(grl, byTranscript = FALSE) {
   validGRL(class(grl))
+  g <- groupings(grl)
 
   if (byTranscript) {
+    inds <- rep.int(1L, length(g))
     oldNames <- names(grl)
-    names(grl) <- seq_along(grl)
-    l <- width(grl) - width(grl)
-    t <- unlist(l + seq.int(1,length(grl)), use.names = FALSE)
-  } else {
-    l <- Rle(names(unlist(grl, use.names = TRUE)))
-    t <- unlist(lapply(seq(nrun(l)), function(x) {
-      rep(x, runLength(l)[x])
-    }))
-  }
-  if (length(t) == 1) {
-    return(1)
-  }
-  Inds <- rep.int(1, length(t))
-  if (!byTranscript) {
-    for (x in seq.int(2, length(t))) {
-      if (t[x] == t[x - 1]) {
-        Inds[x] <- Inds[x - 1] + 1
-      }
-    }
-  } else {
-    for (x in seq.int(2, length(t))) {
-      if (t[x] != t[x - 1]) {
-        if (oldNames[t[x]] == oldNames[t[x] - 1]) {
-          Inds[x] <- Inds[x - 1] + 1
+    for (x in seq.int(2L, length(g))) {
+      if (g[x] != g[x - 1L]) {
+        if (oldNames[g[x]] == oldNames[g[x] - 1L]) {
+          inds[x] <- inds[x - 1L] + 1L
         }
       } else{
-        Inds[x] <- Inds[x - 1]
+        inds[x] <- inds[x - 1L]
       }
     }
+    return(inds)
   }
-  return(Inds)
+
+  return(g)
 }
 
 
@@ -78,13 +63,12 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 }
 
 
-#' Tile a GRangesList by 1
+#' Tile each GRangesList group to 1-base resolution.
 #'
 #' Will tile a GRangesList into single bp resolution, each group of the list
-#' will be splited by positions of 1. Returned values are sorted.
+#' will be splited by positions of 1. Returned values are sorted as the same
+#' groups as the original GRangesList, except they are in bp resolutions.
 #' This is not supported originally by GenomicRanges.
-#' As a precaution, this function requires the unlisted objects to
-#' have names.
 #' @param grl a \code{\link{GRangesList}} object with names
 #' @param sort.on.return logical (T), should the groups be
 #'  sorted before return.
@@ -107,42 +91,28 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' tile1(grl)
 #'
 tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
-  ORFs <- unlistGrl(grl)
-  if (is.null(names(ORFs))) {
-    stop("grl does not have names.")
-  }
-  ## Try to catch dangerous groupings, that is equally named groups
-  if (sum(duplicated(names(ORFs)))) {
-    if (!is.null(ORFs$names)) {
-      names(ORFs) <- ORFs$names
-    } else{
-      nametest <- unlist(grl, use.names = TRUE)
-      dups <- sum(duplicated(names(nametest)))
-      if (dups != sum(duplicated(names(ORFs)))) {
-        stop("duplicated ORF names,\n
-                need a column called 'names' that are unique,\n
-                or change names of groups so they are unique")
-      }
-      mcols(ORFs) <- DataFrame(row.names = names(ORFs),  mcols(ORFs),
-                               names = names(ORFs))
-    }
-  }
-  # special case for only single grouped GRangesList
-  # This wastes a lot of memory for big lists!
-  if (is.null(ORFs$names)) {
-    if(length(ORFs) != length(grl)) {
-      stop("wrong naming, could not find unique names")
-    }
-    mcols(ORFs) <- DataFrame(row.names = names(ORFs),  mcols(ORFs),
-                             names = names(grl))
-  }
-
+  if (!is.grl(grl)) stop("grl must be a GRangesList")
+  # optimize by removing all unecessary data
+  ORFs <- unlist(grl, use.names = FALSE)
+  mcols(ORFs) <- NULL
+  names(ORFs) <- NULL
   tilex <- tile(ORFs, width =  1L)
-  names(tilex) <- ORFs$names
+  grouping <- groupings(grl)
+  names(tilex) <- grouping
+
   if (matchNaming) {
+    if (!is.null(names(grl))) {
+      names(tilex) <- names(grl)[as.integer(grouping)]
+    }
     tilex <- matchNaming(tilex, grl[1])
   } else {
-    tilex <- groupGRangesBy(unlistGrl(tilex))
+    tilex <- unlistGrl(tilex)
+    grouping <- names(tilex)
+    if (!is.null(names(grl))) {
+      grouping <- names(grl)[as.integer(grouping)]
+    }
+    names(tilex) <- NULL
+    tilex <- groupGRangesBy(tilex, grouping)
   }
 
   # only negative must be sorted
@@ -182,7 +152,8 @@ asTX <- function(grl, reference) {
 #' @param grl the "transcripts" that contain ranges, GRangesList
 #' @param indices integer vector of which index of grl ranges are from:
 #' (c(1,1,2)) means first two ranges are from grl[1], third from grl[2])
-#' @return A GrangesList of ranges mapped from transcripts
+#' @return A GrangesList of ranges mapped from transcripts, names are
+#'  re-used from the grl (the transcripts).
 #' @family ExtendGenomicRanges
 #'
 pmapFromTranscriptF <- function(ranges, grl, indices) {
@@ -225,7 +196,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' @param tx a GRangesList of transcripts or (container region)
 #' @param downstream an integer, relative region to get downstream from
 #' @param upstream an integer vector, relative region to get upstream from.
-#' @return a GRanges/GRangesList object if exon/introns
+#' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
 #' @family ExtendGenomicRanges
 #' @importFrom data.table chmatch
@@ -398,7 +369,7 @@ subset_to_frame <- function(x, frame) {
 #'
 #' Extends function \code{\link{reduce}}
 #' by trying to keep names and meta columns, if it is a
-#' GRangesList. It also does not loose sorting for GRangesList,
+#' GRangesList. It also does not lose sorting for GRangesList,
 #' since original reduce sorts all by ascending.
 #' If keep.names == FALSE, it's just the normal GenomicRanges::reduce
 #' with sorting negative strands descending for GRangesList.

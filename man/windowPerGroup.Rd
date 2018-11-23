@@ -16,7 +16,7 @@ windowPerGroup(gr, tx, downstream = 0L, upstream = 0L)
 \item{upstream}{an integer vector, relative region to get upstream from.}
 }
 \value{
-a GRanges/GRangesList object if exon/introns
+a GRanges, or GRangesList object if any group had > 1 exon.
 }
 \description{
 If downstreamFrom is 20, it means the window will start -20 downstream of

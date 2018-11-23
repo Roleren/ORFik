@@ -258,10 +258,12 @@ getStartStopWindows <- function(
       txdb, use.names=TRUE)[txNames]
     fiveUTRs <- removeMetaCols(fiveUTRs)
     cdsHead <- heads(cdsTiled, window_size)
-    fiveTiled <- tile1(fiveUTRs)
+    fiveTiled <- tile1(fiveUTRs, matchNaming = FALSE)
     fiveTail <- tails(fiveTiled, window_size)
-    merged <- unlist(c(fiveTail, cdsHead), use.names = FALSE)
-    start <- reduceKeepAttr(split(merged, names(merged)))
+    partitions <- c(fiveTail, cdsHead)
+    merged <- unlist(partitions, use.names = FALSE)
+    start <- reduceKeepAttr(split(merged,
+      names(partitions)[groupings(partitions)]))
   } else {
     start <- NULL
   }
@@ -271,10 +273,11 @@ getStartStopWindows <- function(
       txdb, use.names=TRUE)[txNames]
     threeUTRs <- removeMetaCols(threeUTRs)
     cdsTail <- tails(cdsTiled, window_size)
-    threeTiled <- tile1(threeUTRs)
-    threeHead <- heads(threeTiled, window_size)
-    merged <- unlist(c(cdsTail, threeHead), use.names = FALSE)
-    stop <- reduceKeepAttr(split(merged, names(merged)))
+    threeHead <- downstreamN(threeUTRs, window_size)
+    partitions <- c(cdsTail, threeHead)
+    merged <- unlist(partitions, use.names = FALSE)
+    stop <- reduceKeepAttr(split(merged,
+      names(partitions)[groupings(partitions)]))
   } else {
     stop <- NULL
   }
@@ -306,7 +309,7 @@ isPeriodic <- function(x) {
 #' @return a single numeric offset
 #'
 changePointAnalysis <- function(x, feature = "start") {
-  meta <- x[seq(40)]
+  meta <- x[seq.int(40)]
   pos <- -(length(x)/2):(length(x)/2 - 1)
   if (feature == "start") {
     means <- c()

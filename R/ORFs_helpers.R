@@ -263,8 +263,7 @@ startCodons <- function(grl, is.sorted = FALSE){
   validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
-    tileBy1 <- tile1(needToFix)
-    fixedStarts <- reduceKeepAttr(heads(tileBy1, 3L), keep.names = TRUE)
+    fixedStarts <- reduceKeepAttr(downstreamN(needToFix, 3L))
     grl[!validWidths] <- fixedStarts
   }
   # fix the others the easy way
@@ -308,8 +307,8 @@ stopCodons <- function(grl, is.sorted = FALSE) {
   validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
-    tileBy1 <- tile1(needToFix)
-    fixedStops <- reduceKeepAttr(tails(tileBy1, 3L), keep.names = TRUE)
+    tileBy1 <- tile1(needToFix, matchNaming = FALSE)
+    fixedStops <- reduceKeepAttr(tails(tileBy1, 3L))
     grl[!validWidths] <- fixedStops
   }
   # fix the others the easy way
@@ -376,7 +375,7 @@ uniqueGroups <- function(grl) {
   names(gr) <- NULL
   gr$names <- NULL
   grl <- relist(gr, grl)
-  names(grl) <- seq(1, length(grl))
+  names(grl) <- seq.int(1, length(grl))
   return(grl)
 }
 

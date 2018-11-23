@@ -41,7 +41,6 @@ strandBool <- function(grl) {
 #' @return a GRangesList
 #'
 matchNaming <- function(gr, reference) {
-  ## First check if unlist should be T or F
   if (is.grl(gr)) gr <- unlistGrl(gr)
 
   ## now get a reference
@@ -50,50 +49,10 @@ matchNaming <- function(gr, reference) {
   # TODO: This can still be optimized for strange cases.
   # One case is that you can keep, even though ncol new > ncol old,
   # if all are equal within group
-  if (ncol(elementMetadata(grTest)) == 1 &&
-     colnames(elementMetadata(grTest)) == "names") {
+  mcols(gr) <- DataFrame(row.names = names(gr),
+                         rep(mcols(grTest[1]), length(gr)))
 
-  } else {
-    equalMetaCols <- ncol(elementMetadata(grTest)) ==
-      ncol(elementMetadata(gr))
-    if (equalMetaCols) {
-      equalMetaCols <- all(colnames(elementMetadata(grTest)) ==
-                             colnames(elementMetadata(gr)))
-    }
-
-    if (!equalMetaCols) {
-      refMeta <- elementMetadata(unlist(reference, use.names = FALSE))
-      grMeta <- elementMetadata(gr)
-      # if same number of elements just replace
-      if (nrow(refMeta) == nrow(grMeta)) {
-        elementMetadata(gr) <- refMeta
-      } else {
-        # else set them to NA
-        df <- S4Vectors::DataFrame(matrix(NA,
-                ncol = ncol(refMeta), nrow = length(gr)))
-
-        colnames(df) <- colnames(refMeta)
-        # set col classes
-        for (i in seq_along(ncol(df))) {
-          class(df[,i]) <- class(refMeta[,i])
-        }
-        elementMetadata(gr) <- df
-      }
-    }
-  }
-  ## Name column is special case:
-  ## add names column if reference have it
-  if (!is.null(grTest$names)) mcols(gr) <- DataFrame(row.names = names(gr),
-                                                     mcols(gr),
-                                                     names = names(gr))
-  ## if reference have names, add them to gr
-  if (!is.null(names(grTest))) {
-    if (!any(grep(pattern = "_", names(grTest)[1]))) {
-      names(gr) <- txNames(gr)
-    }
-  }
-
-  if (!is.null(gr$names)) {
+  if (is.ORF(grTest) | any(grep(names(reference[1]), pattern = "_"))) {
     return(groupGRangesBy(gr, gr$names))
   } else {
     return(groupGRangesBy(gr))

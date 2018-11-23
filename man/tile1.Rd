@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{tile1}
 \alias{tile1}
-\title{Tile a GRangesList by 1}
+\title{Tile each GRangesList group to 1-base resolution.}
 \usage{
 tile1(grl, sort.on.return = TRUE, matchNaming = TRUE)
 }
@@ -20,10 +20,9 @@ a GRangesList grouped by original group, tiled to 1
 }
 \description{
 Will tile a GRangesList into single bp resolution, each group of the list
-will be splited by positions of 1. Returned values are sorted.
+will be splited by positions of 1. Returned values are sorted as the same
+groups as the original GRangesList, except they are in bp resolutions.
 This is not supported originally by GenomicRanges.
-As a precaution, this function requires the unlisted objects to
-have names.
 }
 \examples{
 gr1 <- GRanges("1", ranges = IRanges(start = c(1, 10, 20),
