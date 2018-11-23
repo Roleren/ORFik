@@ -19,7 +19,7 @@ an equally named GRangesList, where each group is
 \description{
 A faster, more versatile reimplementation of
 \code{\link{sort.GenomicRanges}} for GRangesList,
-which works poorly for more than 10k groups.
+needed since the original works poorly for more than 10k groups.
 This function sorts each group, where "+" strands are
 increasing by starts and "-" strands are decreasing by ends.
 }

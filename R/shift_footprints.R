@@ -163,12 +163,11 @@ detectRibosomeShifts <- function(
   ## start stop windows
   ss <- getStartStopWindows(txdb, txNames, start = start, stop = stop,
                             window_size = window_size, cds)
-  cds <- reduceKeepAttr(downstreamN(cds, firstN = firstN))
+  cdsN <- downstreamN(cds, firstN = firstN)
+  cds <- reduceKeepAttr(cdsN)
   rWidth <- readWidths(footprints)
   all_lengths <- sort(unique(rWidth))
-  selected_lengths <- c()
-  offsets_start <- c()
-  offsets_stop <- c()
+  selected_lengths <- offsets_start <- offsets_stop <- c()
   footprints <- resize(granges(footprints), 1L)
   for (l in all_lengths) {
     ends_uniq <- footprints[rWidth == l]
@@ -181,9 +180,8 @@ detectRibosomeShifts <- function(
       counts <- counts[seq_len(floor(top_tx * length(counts) / 100))]
     }
     if (length(counts) == 0) next
-    # This is the slow line, we need to speed this up! ->
-    cvgCDS <- coverageByWindow(ends_uniq, cds[names(counts)], is.sorted = TRUE,
-                               keep.names = FALSE)
+    cvgCDS <- overlapsToCoverage(unlistGrl(cdsN[names(counts)]),
+                                 ends_uniq, type = "within")
     cvgCDS <- Reduce(`+`, cvgCDS)
     if (isPeriodic(as.vector(cvgCDS))) {
       selected_lengths <- c(selected_lengths, l)

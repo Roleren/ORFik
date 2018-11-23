@@ -120,7 +120,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #'
 #' A faster, more versatile reimplementation of
 #' \code{\link{sort.GenomicRanges}} for GRangesList,
-#' which works poorly for more than 10k groups.
+#' needed since the original works poorly for more than 10k groups.
 #' This function sorts each group, where "+" strands are
 #' increasing by starts and "-" strands are decreasing by ends.
 #'
@@ -394,25 +394,6 @@ removeMetaCols <- function(grl) {
     names(grl) <- names
   }
   return(grl)
-}
-
-#' Regroup rle from GRangesList
-#'
-#' Almost direct copy of IRanges regroupBySupergroup.
-#' But only works on rle and GRangesList.
-#' This function will be removed if
-#' IRanges regroupBySupergroup is exported.
-#' @param rle A RleList to reduce groups on.
-#' @param supergroups A GRangesList to group by
-#' @return A regrouped RleList
-regroupRleList<- function(rle, supergroups) {
-  supergroups <- PartitioningByEnd(supergroups)
-  ans_breakpoints <- end(PartitioningByEnd(rle))[end(supergroups)]
-
-  ans_partitioning <- PartitioningByEnd(ans_breakpoints,
-                                        names=names(supergroups))
-
-  return(relist(unlist(rle, use.names=FALSE), ans_partitioning))
 }
 
 #' Get number of ranges per group as an iterator

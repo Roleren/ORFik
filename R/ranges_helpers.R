@@ -216,7 +216,7 @@ windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
     ends <- pmin(end(g) + downstream, widthPerGroup(tx[indices], FALSE))
     ranges(g) <- IRanges(starts, ends)
   } else {
-    starts(g) <- starts
+    start(g) <- starts
   }
 
   return(pmapFromTranscriptF(g, tx, indices))
@@ -336,14 +336,13 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE) {
 
   if (length(grl) > 10000) { # faster version for big grl
-    return(coverageByWindow(reads, grl, is.sorted = is.sorted,
-                            keep.names = keep.names))
+    if (!is.sorted) grl <- sortPerGroup(grl)
+    cov <- coverageByTranscript(reads, grl)
+    if (!keep.names) names(cov) <- NULL
+    return(cov)
   }
 
   unlTile <- unlistGrl(tile1(grl, matchNaming = FALSE))
-  if (!is.null(unlTile$names)) { # for orf case
-    names(unlTile) <- unlTile$names
-  }
   return(overlapsToCoverage(unlTile, reads, keep.names = keep.names))
 }
 
