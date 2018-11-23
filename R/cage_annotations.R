@@ -1,7 +1,8 @@
 
 #' Filter peak of cage-data by value
-#' @param rawCage The raw cage-data
-#' @param filterValue The number of counts(score) to filter on
+#' @param rawCage The raw cage-data, as GRanges. Must contain a score column,
+#'  with the count hits per position.
+#' @param filterValue The integer of counts(score) to filter on
 #'  for a tss to pass as hit
 #' @param fiveUTRs a GRangesList (NULL), if added will filter out cage reads by
 #' these following rules:

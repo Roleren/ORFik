@@ -15,7 +15,8 @@ pmapFromTranscriptF(ranges, grl, indices)
 (c(1,1,2)) means first two ranges are from grl[1], third from grl[2])}
 }
 \value{
-A GrangesList of ranges mapped from transcripts
+A GrangesList of ranges mapped from transcripts, names are
+ re-used from the grl (the transcripts).
 }
 \description{
 Fixes a bug in function, and should have 10x speedup

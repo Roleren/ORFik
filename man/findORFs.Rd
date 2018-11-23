@@ -6,7 +6,7 @@
 \usage{
 findORFs(seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = TRUE,
-  minimumLength = 0)
+  minimumLength = 0L)
 }
 \arguments{
 \item{seqs}{(DNAStringSet or character) DNA sequences to search for Open

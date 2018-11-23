@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{makeExonRanks}
 \alias{makeExonRanks}
-\title{Make a meta column with exon ranks}
+\title{Make grouping for exon structures.}
 \usage{
 makeExonRanks(grl, byTranscript = FALSE)
 }
@@ -15,5 +15,6 @@ makeExonRanks(grl, byTranscript = FALSE)
 an integer vector of indices for exon ranks
 }
 \description{
+Either by transcript or by original groupings.
 Must be ordered, so that same transcripts are ordered together.
 }

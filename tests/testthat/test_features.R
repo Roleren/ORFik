@@ -317,25 +317,27 @@ test_that("initiationScore works as intended", {
 
   # test from example table in orfik
   ORF <- GRanges(seqnames = "1",
-                 ranges = IRanges(start = c(21), end = c(40)),
+                 ranges = IRanges(start = 21, end = 40),
                  strand = "+")
   names(ORF) <- c("tx1")
   grl <- GRangesList(tx1 = ORF)
   # 1 width position based
-  RFP <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
-                              c(21, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
+  RFP <- GRanges("1", c(21, 24, 50, 50, 50, 53, 53, 56, 59), "+")
   score(RFP) <- 28 # original width
   cds <- GRanges(seqnames = "1",
-                 ranges = IRanges(start = c(50), end = c(80)),
+                 ranges = IRanges(start = 50, end = 80),
                  strand = "+")
   cds <- GRangesList(tx1 = cds)
   tx <- GRanges(seqnames = "1",
-                ranges = IRanges(1,85),
+                ranges = IRanges(1,102),
                 strand = "+")
   tx <- GRangesList(tx1 = tx)
+  neg_control <- GRangesList(tx1 = GRanges("1", 82, "+"))
 
   test_result <- initiationScore(cds, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), -1.00) # cds should score itself 0
+  expect_equal(round(test_result,2), -1.00) # cds should score itself -1
   test_result <- initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), 0.14) # ok scoring ORF
+  expect_equal(round(test_result,2), -0.43) # ok scoring ORF
+  test_result <- initiationScore(neg_control, cds, tx, RFP, pShifted = TRUE)
+  expect_equal(round(test_result,2), 0) # neg should score 0
 })

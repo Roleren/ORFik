@@ -10,34 +10,6 @@ findCageUTRFivelen <- function(fiveUTRs, oldTxNames) {
   return(newfiveprimeLen[match(oldTxNames, names(newfiveprimeLen))])
 }
 
-
-#' Get transcript lengths
-#'
-#' A helper function for easy length retrieval
-#' @param Gtf a TxDb object of a gtf file
-#' @param changedFiveUTRs a GRangesList object of leaders.
-#' Only add this if you used cage data or other things to change the
-#' leaders, therefor we need it to update transcript lengths.
-#' @return a vector of transcript lengths
-#'
-txLen <- function(Gtf = NULL, changedFiveUTRs = NULL) {
-  tx_len_temp <- transcriptLengths(Gtf)[, c("tx_name", "tx_len")]
-  tx_len <- tx_len_temp[, "tx_len"]
-
-  if (!is.null(changedFiveUTRs)) {
-    if (!is.null(Gtf)) {
-      new5Length <- findCageUTRFivelen(changedFiveUTRs, tx_len_temp$tx_name)
-      tx_len_temp <- transcriptLengths(Gtf, TRUE, TRUE, TRUE)
-      tx_len_temp$utr5_len <- new5Length
-      tx_len <- tx_len_temp$utr5_len +
-      tx_len_temp$cds_len + tx_len_temp$utr3_len
-    }
-  }
-  names(tx_len) <- tx_len_temp$tx_name
-  return(tx_len)
-}
-
-
 #' Get hits per codon
 #'
 #' Helper for entropy function, normally not used directly
@@ -211,28 +183,39 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
                                       upStart = if (pShifted) 5 else 20,
                                       downStop = if (pShifted) 20 else 5) {
   windowSize <- upStart + downStop + 1
-  window <- windowPerGroup(startSites(grl, TRUE, FALSE, TRUE), tx, upStart,
-                           downStop)
+  window <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE), tx, downStop,
+                           upStart)
   noHits <- widthPerGroup(window) < windowSize
   if (all(noHits)) {
     warning("no grl had valid window size!")
     return(RleList(Rle(values = 0, lengths = windowSize)))
   }
   window <- window[!noHits]
+  # fix names, find a better way to store this, should be a function.
+  if (is.ORF(grl)) {
+    names(window) <- names(grl[!noHits])
+    g <- unlist(window, use.names = TRUE)
+    names(g) <- sub("\\..*", "", names(g), perl = TRUE)
+    mcols(g) <- DataFrame(row.names = names(g), names = names(g))
+    window <- groupGRangesBy(g)
+  }
+
+  unlTile <- tile1(window, matchNaming = FALSE)
+  if(length(unlTile) != length(window)) stop("Bad naming, most likely _
+                                             is not used for ORF correctly")
+  unlTile <- unlistGrl(unlTile)
+
   rwidth <- readWidths(footprints)
   footprints <- footprints[rwidth < 31 & rwidth > 26]
   rwidth <- readWidths(footprints)
   allLengths <- sort(unique(rwidth))
-  gr <- resize(granges(footprints), 1)
-  lengthProportions <- c()
-
-  unlTile <- unlistGrl(tile1(window, matchNaming = FALSE))
-  if (!is.null(unlTile$names)) { # for orf case
-    names(unlTile) <- unlTile$names
+  if (!(is.gr_or_grl(footprints) & unique(width(footprints)) == 1)) {
+    footprints <- resize(granges(footprints), 1)
   }
 
+  lengthProportions <- c()
   for (l in allLengths) {
-    ends_uniq <- gr[rwidth == l]
+    ends_uniq <- footprints[rwidth == l]
 
     cvg <- overlapsToCoverage(unlTile, ends_uniq, FALSE, type = "within")
 
@@ -265,4 +248,3 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
     return(lengthProportions)
   }
 }
-

@@ -9,7 +9,7 @@ downstreamN(grl, firstN = 150L)
 \arguments{
 \item{grl}{(GRangesList)}
 
-\item{firstN}{(integer) Allow only this many bp downstream}
+\item{firstN}{(integer) Allow only this many bp downstream, maximum.}
 }
 \value{
 a GRangesList of reads restricted to firstN and tiled by 1

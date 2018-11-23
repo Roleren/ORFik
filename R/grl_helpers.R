@@ -2,12 +2,11 @@
 #'
 #' Will restrict GRangesList to `N` bp downstream from the first base.
 #' @param grl (GRangesList)
-#' @param firstN (integer) Allow only this many bp downstream
+#' @param firstN (integer) Allow only this many bp downstream, maximum.
 #' @return a GRangesList of reads restricted to firstN and tiled by 1
 #'
 downstreamN <- function(grl, firstN = 150L) {
-  grl <- tile1(grl)
-  return(heads(grl, firstN))
+  return(heads(tile1(grl, matchNaming = FALSE), firstN))
 }
 
 #' Get list of widths per granges group
@@ -121,7 +120,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #'
 #' A faster, more versatile reimplementation of
 #' \code{\link{sort.GenomicRanges}} for GRangesList,
-#' which works poorly for more than 10k groups.
+#' needed since the original works poorly for more than 10k groups.
 #' This function sorts each group, where "+" strands are
 #' increasing by starts and "-" strands are decreasing by ends.
 #'
@@ -290,7 +289,7 @@ firstEndPerGroup <- function(grl, keep.names = TRUE) {
 #'                     strand = c("-", "-"))
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' lastExonEndPerGroup(grl)
-lastExonEndPerGroup = function(grl,keep.names = TRUE) {
+lastExonEndPerGroup <- function(grl,keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
     return(end(lastExonPerGroup(grl)))
@@ -314,7 +313,7 @@ lastExonEndPerGroup = function(grl,keep.names = TRUE) {
 #'                     strand = c("-", "-"))
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' lastExonStartPerGroup(grl)
-lastExonStartPerGroup = function(grl, keep.names = TRUE) {
+lastExonStartPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
     return(start(lastExonPerGroup(grl)))
@@ -343,21 +342,16 @@ lastExonStartPerGroup = function(grl, keep.names = TRUE) {
 #' numExonsPerGroup(grl)
 numExonsPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
-
-  # Get Rle -> to logcal -> sum, that is groups
-  exonsPerGroup <- sum(IRanges::LogicalList(strand(grl) == strand(grl)))
-  if(!keep.names) {
-    names(exonsPerGroup) <- NULL
-  }
-  return(exonsPerGroup)
+  return(lengths(grl, keep.names))
 }
 
 
 #' Safe unlist
 #'
 #' Same as [AnnotationDbi::unlist2()], keeps names correctly.
-#' One difference is that if grl have no names, it will not
-#' make integer names, but keep them as null.
+#' Two differences is that if grl have no names, it will not
+#' make integer names, but keep them as null. Also if the GRangesList has names
+#' , and also the GRanges groups, then the GRanges group names will be kept.
 #' @param grl a GRangesList
 #' @return a GRanges object
 #' @export
@@ -383,45 +377,35 @@ unlistGrl <- function(grl) {
 #'
 removeMetaCols <- function(grl) {
   wasGRL <- FALSE
-  g <- character()
   if (!is.gr_or_grl(class(grl))) {
     stop("Can only remove meta columns from GRangesList or GRanges objects")
   }
-
   if (is.grl(class(grl))) {
-    grouping <- numExonsPerGroup(grl)
-
-    for (i in seq_along(grouping)) {
-      g <- c(g, rep(names(grouping[i]), grouping[i]))
-    }
-    grl <- unlistGrl(grl)
+    g <- groupings(grl)
+    names <- names(grl)
+    grl <- unlist(grl, use.names = FALSE)
     wasGRL <- TRUE
   }
   elementMetadata(grl)  <- S4Vectors::DataFrame(
     matrix(nrow = length(grl), ncol = 0))
 
   if (wasGRL) {
-    return(groupGRangesBy(grl, g))
-  } else {
-    return(grl)
+    grl <- groupGRangesBy(grl, g)
+    names(grl) <- names
   }
+  return(grl)
 }
 
-#' Regroup rle from GRangesList
+#' Get number of ranges per group as an iterator
 #'
-#' Almost direct copy of IRanges regroupBySupergroup.
-#' But only works on rle and GRangesList.
-#' This function will be removed if
-#' IRanges regroupBySupergroup is exported.
-#' @param rle A RleList to reduce groups on.
-#' @param supergroups A GRangesList to group by
-#' @return A regrouped RleList
-regroupRleList<- function(rle, supergroups) {
-  supergroups <- PartitioningByEnd(supergroups)
-  ans_breakpoints <- end(PartitioningByEnd(rle))[end(supergroups)]
-
-  ans_partitioning <- PartitioningByEnd(ans_breakpoints,
-                                        names=names(supergroups))
-
-  return(relist(unlist(rle, use.names=FALSE), ans_partitioning))
+#' @param grl GRangesList
+#' @return an integer vector
+#' @examples
+#' grl <- GRangesList(GRanges("1", c(1, 3, 5), "+"),
+#'                    GRanges("1", c(19, 21, 23), "+"))
+#' ORFik:::groupings(grl)
+#'
+groupings <- function(grl){
+  l <- lengths(grl, use.names = FALSE)
+  return(rep.int(seq.int(length(l)), l))
 }
