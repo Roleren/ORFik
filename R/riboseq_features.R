@@ -582,7 +582,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #' initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
 #'
 initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
-  if(length(grl) == 0) stop("grl must have length > 0")
+  if (length(grl) == 0) stop("grl must have length > 0")
   # train average cds model
   df <- riboTISCoverageProportion(cds, tx, footprints, average = TRUE,
                                   onlyProportion = FALSE, pShifted = pShifted)
