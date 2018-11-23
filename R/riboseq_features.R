@@ -661,7 +661,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
     grl <- grl[validIndices]
     reOrdering <- uniqueOrder(grl)
     # find coverage
-    cov <- coverageByWindow(RFP, uniqueGroups(grl),
+    cov <- coveragePerTiling(reads = RFP, grl = uniqueGroups(grl),
                             is.sorted = is.sorted, keep.names = FALSE)
 
     countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(validIndices))

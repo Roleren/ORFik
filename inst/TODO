@@ -1,12 +1,10 @@
 TODO
 -----------------------
 
-    o remove naming of ORFs with "_"
-    o remove unnecesary type checking
+    o remove naming of ORFs with "_" (will keep this for now)
+    o remove unnecesary type checking ("started doing this now")
     o split files into smaller files, tests too
     o remove whole utils file?
-    o create upstreamFrom function
-    o understand why coverageByWindow is so slow
 
     CageSeq:
     o remove cageFromFile etc. so that we don't load the data for the user
@@ -16,4 +14,4 @@ TODO
     o parseCigar implement into C++ (this is not the slow part thought)
 
     Features:
-    o better docs with inherit params
+    o better docs with inherit params (I think this is done now)
