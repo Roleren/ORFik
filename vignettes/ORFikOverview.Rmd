@@ -426,7 +426,47 @@ It supports automatic exon splitting, see above for example.
 ## Procaryote and Circular Genomes
 If you want to find ORFs on circular genomes, use findORFsFasta.
 
-# conclusion:
+## Conclusion:
 Eucaryote splicing: findMapORFs
 Procaryote/circular: findORFsFasta
 Direct ORFs from character vector: findORFs 
+
+# Using ORFik in your package or scripts
+
+The focus of ORFik for development is to be a swiss army knife for 
+transcriptomics. If you need functions for splicing, getting windows of exons
+per transcript, periodic windows of exons, speicific parts of exons etc, 
+ORFik can help you with this. 
+
+Let's do an example where ORFik shines.
+Objective: We have three transcripts, we also have a library of ribo-seq.
+This library was treated with cyclohexamide, so we know ribo-seq reads can
+stack up close to the stop codon of the CDS. Lets say we only want to keep 
+transcripts, where the cds stop region (defined as last 9 bases of cds), has
+maximum 33% of the reads. To only keep transcripts with a good spread of reads 
+over the CDS. How would you make this filter ?
+
+```{r eval = TRUE, echo = TRUE}
+  cds <- GRanges("chr1", IRanges(c(1, 10, 20, 30, 40, 50, 60, 70, 80),
+                                 c(5, 15, 25, 35, 45, 55, 65, 75, 85)),
+                 "+")
+  names(cds) <- c(rep("tx1", 3), rep("tx2", 3), rep("tx3", 3))
+  cds <- groupGRangesBy(cds)
+  ribo <- GRanges("chr1", c(1, rep.int(23, 4), 30, 34, 34, 43, 60, 64, 71, 74),
+                  "+")
+  # We could do a simplification and use the ORFik entropy function
+  entropy(cds, ribo) 
+```
+We see that ORF 1, has a low(bad) entropy, but we do not know where the reads 
+are stacked up.
+So lets make a new filter by using ORFiks utility functions, that will work.
+```{r eval = TRUE, echo = TRUE}
+  tile <- tile1(cds, F, F) # tile them to 1 based positions
+  tails <- tails(tile, 9)
+  stopOverlap <- countOverlaps(tails, ribo)
+  allOverlap <- countOverlaps(cds, ribo)
+  fractions <- (stopOverlap + 1) / (allOverlap + 1) # pseudocount 1
+  cdsToRemove <- fractions > 1/2 # filter with pseudocounts (1+1)/(3+1) 
+  cdsToRemove
+```
+We now easily made a stop codon filter for our coding sequences.
