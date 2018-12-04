@@ -4,27 +4,27 @@
 \alias{distToTSS}
 \title{Get distances between ORF Start and TSS of its transcript}
 \usage{
-distToTSS(ORFs, fiveUTRs)
+distToTSS(ORFs, tx)
 }
 \arguments{
 \item{ORFs}{orfs as \code{\link{GRangesList}},
 names of orfs must be txname_[rank]}
 
-\item{fiveUTRs}{5' leaders as \code{\link{GRangesList}}.}
+\item{tx}{transcripts as \code{\link{GRangesList}}.}
 }
 \value{
 an integer vector, 1 means on TSS, 2 means second base of Tx.
 }
 \description{
 Matching is done by transcript names.
-This is applicable practically to the upstream (fiveUTRs) ORFs.
-If ORF is not within specified search space in fiveUTRs, this function
+This is applicable practically to any region in Transcript
+If ORF is not within specified search space in tx, this function
 will crash.
 }
 \examples{
 grl <- GRangesList(tx1_1 = GRanges("1", IRanges(5, 10), "+"))
-fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(2, 20), "+"))
-distToTSS(grl, fiveUTRs)
+tx <- GRangesList(tx1 = GRanges("1", IRanges(2, 20), "+"))
+distToTSS(grl, tx)
 
 }
 \references{

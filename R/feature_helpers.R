@@ -1,15 +1,3 @@
-#' Get length of leaders ordered after oldTxNames
-#'
-#' Normally only a helper function for ORFik
-#' @param fiveUTRs a GRangesList object of leaders
-#' @param oldTxNames a character vector of names to group fiveUTRs by.
-#' @return a GRangesList of reordered leaders.
-#'
-findCageUTRFivelen <- function(fiveUTRs, oldTxNames) {
-  newfiveprimeLen <- widthPerGroup(fiveUTRs)
-  return(newfiveprimeLen[match(oldTxNames, names(newfiveprimeLen))])
-}
-
 #' Get hits per codon
 #'
 #' Helper for entropy function, normally not used directly
@@ -17,7 +5,7 @@ findCageUTRFivelen <- function(fiveUTRs, oldTxNames) {
 #' Gives sum for each tuple within each group
 #' Example: c(1,0,0,1), with reg_len = 2, gives
 #' c(1,0) and c(0,1), these are summed and returned as list
-#' @param countList a Rle of count repetitions (000,1,00,1 etc)
+#' @param countList a Rle of count repetitions (000, 1, 00, 1 etc)
 #' @param reg_len integer vector, size of runs
 #' @param runLengths integer vector, duplications per run
 #' @return a list of codon sums
@@ -33,8 +21,7 @@ codonSumsPerGroup <- function(countList, reg_len,
     acums <- 1
   }
 
-  # Need to reassign variables to equal length,
-  # to be able to vectorize
+  # Need to reassign variables to equal length, to be able to vectorize
   # h: The sequences we make the tuplets per orf,
   # if h[1] is: c(0,1,2,3,4,5) and reg_len[1] is: c(3,3)
   # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
@@ -78,7 +65,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize) {
            (as.numeric(lengthSize) * as.numeric(librarySize)))
 }
 
-#' Get -20,20 start region as DNA characters per gr group
+#' Get -20,20 start region as DNA characters per GRanges group
 #'
 #' @param grl a GRangesList to find regions
 #' @param tx a GRangesList of transcripts containing grl
@@ -96,6 +83,7 @@ startRegionString <- function(grl, tx, faFile, groupBy = NULL) {
 #' Hits from reads
 #'
 #' Finding GRanges groups that have overlap hits with reads
+#' Similar to %over%.
 #' @param grl a GRanges or GRangesList
 #' @param reads a GAlignment or GRanges object with reads
 #' @param keep.names logical (F), keep names or not

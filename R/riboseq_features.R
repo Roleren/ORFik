@@ -1,8 +1,8 @@
 #' Create normalizations of overlapping read counts.
 #'
 #' FPKM is short for "Fragments Per Kilobase of transcript per Million
-#' fragments". When calculating RiboSeq data FPKM over ORFs use ORFs as
-#' `grl`. When calculating RNASeq data FPKM use full transcripts as
+#' fragments". When calculating RiboSeq data FPKM over ORFs, use ORFs as
+#' `grl`. When calculating RNASeq data FPKM, use full transcripts as
 #' `grl`.
 #' @references doi: 10.1038/nbt.1621
 #' @param grl a \code{\link{GRangesList}} object
@@ -31,7 +31,7 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
   return(fpkm_calc(overlaps, grl_len, librarySize) + pseudoCount)
 }
 
-#' Calucalte entropy value of overlapping input reads.
+#' Calucalte entropy value of overlapping input reads per GRanges.
 #'
 #' Calculates entropy of the `reads` coverage over each `grl` group.
 #' The entropy value per group is a real number in the interval (0:1),
@@ -85,7 +85,7 @@ entropy <- function(grl, reads) {
   bool <- N <= L
   floors <- floor(L / N)
   reg_len[bool] <- floors[bool]
-  reg_counts <- as.integer(L / reg_len) # number of tuplets per orf
+  reg_counts <- as.integer(L / reg_len) # number of tuples per orf
   runLengths <- reg_counts
 
   tripletSums <- codonSumsPerGroup(countList, reg_len, runLengths)
@@ -631,7 +631,7 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
 #' @importFrom data.table .N
 #' @family features
 #' @export
-#' @return a matrix with 4 columns, the orfscore (ORFScores) and score of
+#' @return a data.table with 4 columns, the orfscore (ORFScores) and score of
 #' each of the 3 tiles (frame_zero_RP, frame_one_RP, frame_two_RP)
 #' @examples
 #' ORF <- GRanges(seqnames = "1",
@@ -705,8 +705,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
   frame2 <- (countsTile2 - Ftotal)^2 / Ftotal
   frame3 <- (countsTile3 - Ftotal)^2 / Ftotal
 
-  dfORFs <- NULL
-  dfORFs$frame_zero_RP <- countsTile1
+  dfORFs <- data.table(frame_zero_RP = countsTile1)
   dfORFs$frame_one_RP <- countsTile2
   dfORFs$frame_two_RP <- countsTile3
 

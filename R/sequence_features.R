@@ -1,34 +1,34 @@
 #' Get distances between ORF Start and TSS of its transcript
 #'
 #' Matching is done by transcript names.
-#' This is applicable practically to the upstream (fiveUTRs) ORFs.
-#' If ORF is not within specified search space in fiveUTRs, this function
+#' This is applicable practically to any region in Transcript
+#' If ORF is not within specified search space in tx, this function
 #' will crash.
 #' @references doi: 10.1074/jbc.R116.733899
 #' @param ORFs orfs as \code{\link{GRangesList}},
 #' names of orfs must be txname_[rank]
-#' @param fiveUTRs 5' leaders as \code{\link{GRangesList}}.
+#' @param tx transcripts as \code{\link{GRangesList}}.
 #' @return an integer vector, 1 means on TSS, 2 means second base of Tx.
 #' @family features
 #' @export
 #' @examples
 #' grl <- GRangesList(tx1_1 = GRanges("1", IRanges(5, 10), "+"))
-#' fiveUTRs <- GRangesList(tx1 = GRanges("1", IRanges(2, 20), "+"))
-#' distToTSS(grl, fiveUTRs)
+#' tx <- GRangesList(tx1 = GRanges("1", IRanges(2, 20), "+"))
+#' distToTSS(grl, tx)
 #'
-distToTSS <- function(ORFs, fiveUTRs){
+distToTSS <- function(ORFs, tx){
   validGRL(class(ORFs), "ORFs")
 
   startSites <-  startSites(ORFs, asGR = TRUE, keep.names = TRUE,
                             is.sorted = TRUE)
-  return(start(asTX(startSites, fiveUTRs)))
+  return(start(asTX(startSites, tx)))
 }
 
 #' Get distances between ORF ends and starts of their transcripts cds'.
 #'
 #' Will calculate distance between each ORF end and begining of the
 #' corresponding cds. Matching is done by transcript names.
-#' This is applicable practically to the upstream (fiveUTRs) ORFs.
+#' This is applicable practically to the upstream (fiveUTRs) ORFs only.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 #' @references doi: 10.1074/jbc.R116.733899
 #' @param ORFs orfs as \code{\link{GRangesList}},
@@ -291,7 +291,7 @@ rankOrder <- function(grl) {
 
 #' Fraction Length
 #' @description Fraction Length is defined as
-#' \preformatted{(lengths of grl)/(length of tx_len)}
+#' \preformatted{(widths of grl)/tx_len}
 #' so that each group in
 #' the grl is divided by the corresponding transcript.
 #' @references doi: 10.1242/dev.098343

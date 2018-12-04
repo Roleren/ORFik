@@ -67,9 +67,6 @@ findMapORFs(grl, c(seqs, seqs))
 
 }
 \seealso{
-[findORFs()], [findORFsFasta()],
-[startDefinition()], [stopDefinition()]
-
 Other findORFs: \code{\link{findORFsFasta}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},
   \code{\link{stopDefinition}}

@@ -422,14 +422,13 @@ If you get both (+/-) strand and only want (+) ORFs, do:
 If you want to find ORFs in spliced transcripts, use findMapORFs.
 It supports automatic exon splitting, see above for example.
 
-
 ## Procaryote and Circular Genomes
 If you want to find ORFs on circular genomes, use findORFsFasta.
 
-## Conclusion:
-Eucaryote splicing: findMapORFs
-Procaryote/circular: findORFsFasta
-Direct ORFs from character vector: findORFs 
+## Input conclusion:
+Eucaryote splicing: findMapORFs, GRangesList (exons) and char (splice joined)
+Procaryote/circular: findORFsFasta, fasta file
+Direct ORFs from character vector: findORFs, char vector
 
 # Using ORFik in your package or scripts
 
@@ -455,7 +454,7 @@ over the CDS. How would you make this filter ?
   ribo <- GRanges("chr1", c(1, rep.int(23, 4), 30, 34, 34, 43, 60, 64, 71, 74),
                   "+")
   # We could do a simplification and use the ORFik entropy function
-  entropy(cds, ribo) 
+  entropy(cds, ribo) # <- spread of reads
 ```
 We see that ORF 1, has a low(bad) entropy, but we do not know where the reads 
 are stacked up.

@@ -44,14 +44,12 @@ Each feature have a link to an article describing its creation and idea
 behind it. Look at the functions in the feature family to see all of them.
 }
 \details{
-If you used CageSeq to reannotate your leaders your txDB object, must
-contain the reassigned leaders. In the future release reasignment will
-create txdb objects for you, but currently this is not supported,
-therefore be carefull.
+If you used CageSeq to reannotate your leaders, your txDB object must
+contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
 }
 \examples{
-# Usually the ORFs are found in orfik, which makes names for you etc.
 # Here we make an example from scratch
+# Usually the ORFs are found in orfik, which makes names for you etc.
 gtf <- system.file("extdata", "annotations.gtf",
 package = "ORFik") ## location of the gtf file
 suppressWarnings(txdb <-

@@ -38,7 +38,7 @@ relative to the fasta file.
 }
 \description{
 Should be used for procaryote genomes or transcript sequences as fasta.
-Makes no sence for eukaryotes, since it contains splicing.
+Makes no sence for eukaryote whole genomes, since it contains splicing.
 Searches through each fasta header and reports all ORFs found for BOTH
 sense (+) and antisense strand (-) in all frames. Name of the header will
 be used as seqnames of reported ORFs.
@@ -60,9 +60,6 @@ findORFsFasta(example_genome)
 
 }
 \seealso{
-[findORFs()], [findMapORFs()],
-[startDefinition()], [stopDefinition()]
-
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFs}}, \code{\link{startDefinition}},
   \code{\link{stopDefinition}}

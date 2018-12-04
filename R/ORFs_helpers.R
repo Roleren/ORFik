@@ -237,7 +237,7 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 
 #' Get the Start codons(3 bases) from a GRangesList of orfs grouped by orfs
 #'
-#' In ATGTTTTGC, get the positions ATG.
+#' In ATGTTTTGA, get the positions ATG.
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
@@ -281,7 +281,7 @@ startCodons <- function(grl, is.sorted = FALSE){
 
 #' Get the Stop codons (3 bases) from a GRangesList of orfs grouped by orfs
 #'
-#' In ATGTTTTGC, get the positions TGC.
+#' In ATGTTTTGA, get the positions TGA.
 #' It takes care of exons boundaries, with exons < 3 length.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
@@ -324,7 +324,7 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 }
 
 
-#' Get id's for orf
+#' Get id's for each orf
 #'
 #' These id's can be uniqued by isoform etc,
 #' this is not supported by GenomicRanges.

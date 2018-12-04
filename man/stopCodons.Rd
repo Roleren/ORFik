@@ -15,7 +15,7 @@ stopCodons(grl, is.sorted = FALSE)
 a GRangesList of stop codons, since they might be split on exons
 }
 \description{
-In ATGTTTTGC, get the positions TGC.
+In ATGTTTTGA, get the positions TGA.
 It takes care of exons boundaries, with exons < 3 length.
 }
 \examples{

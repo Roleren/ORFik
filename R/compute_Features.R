@@ -5,10 +5,8 @@
 #' Each feature have a link to an article describing its creation and idea
 #' behind it. Look at the functions in the feature family to see all of them.
 #'
-#' If you used CageSeq to reannotate your leaders your txDB object, must
-#' contain the reassigned leaders. In the future release reasignment will
-#' create txdb objects for you, but currently this is not supported,
-#' therefore be carefull.
+#' If you used CageSeq to reannotate your leaders, your txDB object must
+#' contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
 #'
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
@@ -31,8 +29,8 @@
 #' @export
 #' @family features
 #' @examples
-#' # Usually the ORFs are found in orfik, which makes names for you etc.
 #' # Here we make an example from scratch
+#' # Usually the ORFs are found in orfik, which makes names for you etc.
 #' gtf <- system.file("extdata", "annotations.gtf",
 #' package = "ORFik") ## location of the gtf file
 #' suppressWarnings(txdb <-
@@ -110,14 +108,12 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
 
 #' Get all possible features in ORFik
 #'
-#' If you have a txdb with correct lists, use:
+#' If you have a txdb with correctly reassigned transcripts, use:
 #' [computeFeatures()]
 #'
 #' A specialized version if you don't have a correct txdb, for example with
 #' CAGE reassigned leaders while txdb is not updated.
 #' It is 2x faster for tested data.
-#' If you do have a txdb with e.g. cage reassignments, use computeFeatures
-#' instead.
 #' The point of this function is to give you the ability to input
 #' transcript etc directly into the function, and not load them from txdb.
 #' Each feature have a link to an article describing feature,

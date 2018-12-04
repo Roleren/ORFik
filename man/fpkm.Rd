@@ -22,8 +22,8 @@ a numeric vector with the fpkm values
 }
 \description{
 FPKM is short for "Fragments Per Kilobase of transcript per Million
-fragments". When calculating RiboSeq data FPKM over ORFs use ORFs as
-`grl`. When calculating RNASeq data FPKM use full transcripts as
+fragments". When calculating RiboSeq data FPKM over ORFs, use ORFs as
+`grl`. When calculating RNASeq data FPKM, use full transcripts as
 `grl`.
 }
 \examples{

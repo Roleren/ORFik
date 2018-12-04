@@ -60,7 +60,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 
         riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
         riboReadsW$size <- sizes  #move footprint length to size
-        riboReadsW <- resize(riboReadsW, 1)  #resize to 5' only
+        riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
 
         cigars <- riboReadsW[is_cigar]
         notCigars <- riboReadsW[!is_cigar]

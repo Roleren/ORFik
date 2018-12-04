@@ -23,7 +23,7 @@ an integer vector, +1 means one base upstream of cds, -1 means
 \description{
 Will calculate distance between each ORF end and begining of the
 corresponding cds. Matching is done by transcript names.
-This is applicable practically to the upstream (fiveUTRs) ORFs.
+This is applicable practically to the upstream (fiveUTRs) ORFs only.
 The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 }
 \examples{

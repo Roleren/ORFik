@@ -26,7 +26,7 @@ a numeric vector of ratios
 }
 \description{
 Fraction Length is defined as
-\preformatted{(lengths of grl)/(length of tx_len)}
+\preformatted{(widths of grl)/tx_len}
 so that each group in
 the grl is divided by the corresponding transcript.
 }

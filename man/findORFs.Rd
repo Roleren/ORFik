@@ -67,9 +67,6 @@ findORFs(c("ATGTAA", "ATGATGTAA"))
 
 }
 \seealso{
-[findMapORFs()], [findORFsFasta()],
-[startDefinition()], [stopDefinition()]
-
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}},
   \code{\link{startDefinition}},

@@ -9,7 +9,7 @@ parseCigar(cigar, shift, is_plus_strand)
 \arguments{
 \item{cigar}{the cigar of the reads}
 
-\item{shift}{the shift as numeric}
+\item{shift}{the shift as integer}
 
 \item{is_plus_strand}{logical}
 }
