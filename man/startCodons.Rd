@@ -15,7 +15,7 @@ startCodons(grl, is.sorted = FALSE)
 a GRangesList of start codons, since they might be split on exons
 }
 \description{
-In ATGTTTTGC, get the positions ATG.
+In ATGTTTTGA, get the positions ATG.
 It takes care of exons boundaries, with exons < 3 length.
 }
 \examples{

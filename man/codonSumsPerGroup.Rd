@@ -7,7 +7,7 @@
 codonSumsPerGroup(countList, reg_len, runLengths)
 }
 \arguments{
-\item{countList}{a Rle of count repetitions (000,1,00,1 etc)}
+\item{countList}{a Rle of count repetitions (000, 1, 00, 1 etc)}
 
 \item{reg_len}{integer vector, size of runs}
 

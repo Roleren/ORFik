@@ -10,13 +10,13 @@ remakeTxdbExonIds <- function(txList){
                    id = seq.int(1,length(txList$splicings$exon_start)))
   setkeyv(DT, c("start", "end", "chr", "strand"))
   d <- duplicated(DT[,.(start, end, chr, strand)])
-  c <- rep.int(1,length(d))
+  c <- rep.int(1L, length(d))
   # find unique exon ids
-  for(x in seq.int(2,length(d))){
+  for(x in seq.int(2, length(d))){
     if (d[x]) {
-      c[x] <- c[x-1]
+      c[x] <- c[x-1L]
     } else {
-      c[x] <- c[x-1]+1
+      c[x] <- c[x-1L] + 1L
     }
   }
   return(as.integer(c[order(DT$id)]))
@@ -29,7 +29,7 @@ remakeTxdbExonIds <- function(txList){
 updateTxdbRanks <- function(exons){
 
   exons$exon_rank <-  unlist(lapply(runLength(Rle(exons$tx_id)),
-                         function(x) seq.int(1,x)), use.names = FALSE)
+                         function(x) seq.int(1L, x)), use.names = FALSE)
   return(exons)
 
 }
@@ -49,7 +49,7 @@ removeTxdbExons <- function(txList, fiveUTRs){
   # find the ones that does not start on 1
   d <-  dt[, .I[which.min(exon_rank)], by=names]
   d$ranks <- dt$exon_rank[d$V1]
-  d <- d[ranks > 1,]
+  d <- d[ranks > 1L,]
   if(nrow(d) == 0) return(txList)
   # delete these in txList
   rankHits <- (txList$transcripts$tx_name[txList$splicings$tx_id] %in% d$names)
@@ -58,8 +58,6 @@ removeTxdbExons <- function(txList, fiveUTRs){
                   names = txList$transcripts$tx_name[e$tx_id])
   f$minRank <- rep.int(d$ranks, runLength(Rle(f$names)))
   f$remove <- f$minRank > f$rank
-  # e <- e[!f$remove]
-  # e <- ORFik:::updateTxdbRanks(e)
 
   txList$splicings <- txList$splicings[-which(rankHits)[f$remove],]
   txList$splicings <- updateTxdbRanks(txList$splicings)

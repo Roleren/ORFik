@@ -18,4 +18,5 @@ a list of logicals, T == hit, F == no hit
 }
 \description{
 Finding GRanges groups that have overlap hits with reads
+Similar to %over%.
 }

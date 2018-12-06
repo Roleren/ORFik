@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_helpers.R
 \name{startRegionString}
 \alias{startRegionString}
-\title{Get -20,20 start region as DNA characters per gr group}
+\title{Get -20,20 start region as DNA characters per GRanges group}
 \usage{
 startRegionString(grl, tx, faFile, groupBy = NULL)
 }
@@ -20,5 +20,5 @@ Can also be path to fastaFile with fai file in same dir.}
 a character vector of start regions
 }
 \description{
-Get -20,20 start region as DNA characters per gr group
+Get -20,20 start region as DNA characters per GRanges group
 }

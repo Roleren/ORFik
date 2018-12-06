@@ -44,7 +44,7 @@ metaWindow <- function(x, windows) {
 #' Shift ribo-seq reads using cigar string
 #'
 #' @param cigar the cigar of the reads
-#' @param shift the shift as numeric
+#' @param shift the shift as integer
 #' @param is_plus_strand logical
 #' @return the shifted read
 #'
@@ -52,10 +52,10 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
   c_signs <- unlist(explodeCigarOps(cigar))
   c_counts <- unlist(explodeCigarOpLengths(cigar))
 
-  i = ifelse(is_plus_strand, 0, length(c_signs) + 1)
-  increment = ifelse(is_plus_strand, 1, -1)
-  limit = 0
-  plusShift = 0
+  i = ifelse(is_plus_strand, 0L, length(c_signs) + 1L)
+  increment = ifelse(is_plus_strand, 1L, -1L)
+  limit = 0L
+  plusShift = 0L
   while (shift >= limit) {
     i = i + increment
     if (c_signs[i] == "M") {
@@ -197,12 +197,12 @@ isPeriodic <- function(x) {
 #' @return a single numeric offset
 #'
 changePointAnalysis <- function(x, feature = "start") {
-  meta <- x[seq.int(40)]
+  meta <- x[seq.int(40L)]
   pos <- -(length(x)/2):(length(x)/2 - 1)
   if (feature == "start") {
     means <- c()
-    for (j in seq(15, 35)) {
-      m <- mean(meta[seq(j, 40)]) - mean(meta[seq(j - 1)])
+    for (j in seq.int(15L, 35L)) {
+      m <- mean(meta[seq.int(j, 40L)]) - mean(meta[seq.int(j - 1L)])
       means <- c(means, m)
     }
     shift <- which.max(abs(means)) + 14

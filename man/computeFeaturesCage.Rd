@@ -53,15 +53,13 @@ a data.table with scores, each column is one score type, name of
  or [fpkm()]
 }
 \description{
-If you have a txdb with correct lists, use:
+If you have a txdb with correctly reassigned transcripts, use:
 [computeFeatures()]
 }
 \details{
 A specialized version if you don't have a correct txdb, for example with
 CAGE reassigned leaders while txdb is not updated.
 It is 2x faster for tested data.
-If you do have a txdb with e.g. cage reassignments, use computeFeatures
-instead.
 The point of this function is to give you the ability to input
 transcript etc directly into the function, and not load them from txdb.
 Each feature have a link to an article describing feature,

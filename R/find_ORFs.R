@@ -124,8 +124,6 @@ stopDefinition <- function(transl_table) {
 #' If there are a total of 0 ORFs, an empty IRangesList will be returned.
 #' @export
 #' @family findORFs
-#' @seealso [findMapORFs()], [findORFsFasta()],
-#' [startDefinition()], [stopDefinition()]
 #' @examples
 #' findORFs("ATGTAA")
 #' findORFs("ATGTTAA") # not in frame anymore
@@ -177,8 +175,6 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
-#' @seealso [findORFs()], [findORFsFasta()],
-#' [startDefinition()], [stopDefinition()]
 #' @examples
 #' # This sequence has ORFs at 1-9 and 4-9
 #' seqs <- c("ATGATGTAA") # the dna sequence
@@ -216,7 +212,7 @@ findMapORFs <- function(grl, seqs, startCodon =  startDefinition(1),
 #' Finds Open Reading Frames in fasta files.
 #'
 #' Should be used for procaryote genomes or transcript sequences as fasta.
-#' Makes no sence for eukaryotes, since it contains splicing.
+#' Makes no sence for eukaryote whole genomes, since it contains splicing.
 #' Searches through each fasta header and reports all ORFs found for BOTH
 #' sense (+) and antisense strand (-) in all frames. Name of the header will
 #' be used as seqnames of reported ORFs.
@@ -240,8 +236,6 @@ findMapORFs <- function(grl, seqs, startCodon =  startDefinition(1),
 #' relative to the fasta file.
 #' @export
 #' @family findORFs
-#' @seealso [findORFs()], [findMapORFs()],
-#' [startDefinition()], [stopDefinition()]
 #' @examples
 #' # location of the example fasta file
 #' example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")

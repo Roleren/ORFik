@@ -160,11 +160,11 @@ test_that("entropy works as intended", {
 test_that("orfScore works as intended", {
 
   scores <- orfScore(grl, RFP4)
-  expect_is(scores, "list")
+  expect_is(scores, "data.table")
   expect_equal(as.numeric(round(scores$ORFScores, 2)), c(1.58, 0.00, 0.00, 0.00))
 
   scores <- orfScore(grl, RFP7)
-  expect_is(scores, "list")
+  expect_is(scores, "data.table")
   expect_equal(as.numeric(round(scores$ORFScores, 2)), c(0.00, 0.00, 0.36, 0.00))
 
 })

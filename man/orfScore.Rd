@@ -15,7 +15,7 @@ Granges or GRangesList}
 \item{is.sorted}{logical (F), is grl sorted.}
 }
 \value{
-a matrix with 4 columns, the orfscore (ORFScores) and score of
+a data.table with 4 columns, the orfscore (ORFScores) and score of
 each of the 3 tiles (frame_zero_RP, frame_one_RP, frame_two_RP)
 }
 \description{

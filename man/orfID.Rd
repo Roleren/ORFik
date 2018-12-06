@@ -2,7 +2,7 @@
 % Please edit documentation in R/ORFs_helpers.R
 \name{orfID}
 \alias{orfID}
-\title{Get id's for orf}
+\title{Get id's for each orf}
 \usage{
 orfID(grl, with.tx = FALSE)
 }
