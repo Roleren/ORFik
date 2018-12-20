@@ -83,3 +83,10 @@ test_that("addNewTSSOnLeaders assigns new TSS correctly", {
   test_result <- startSites(test_result, is.sorted = TRUE)
   expect_equal(test_result, 32671324)
 })
+
+test_that("reassignTSSbyCage removes correct leaders", {
+
+  test_result <- reassignTSSbyCage(fiveUTRs[c(1:2,8)], cage = cage,
+                                   removeUnused = TRUE)
+  expect_equal(length(test_result), 2)
+})

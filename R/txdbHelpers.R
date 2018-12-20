@@ -1,7 +1,7 @@
 #' Get new exon ids
 #' @param txList a list, call of as.list(txdb)
 #' @return a new valid ordered list of exon ids (integer)
-remakeTxdbExonIds <- function(txList){
+remakeTxdbExonIds <- function(txList) {
   # remake exon ids
   DT <- data.table(start = txList$splicings$exon_start,
                    end = txList$splicings$exon_end,
@@ -26,7 +26,7 @@ remakeTxdbExonIds <- function(txList){
 #'
 #' @param exons a data.frame, call of as.list(txdb)$splicings
 #' @return a data.frame, modified call of as.list(txdb)
-updateTxdbRanks <- function(exons){
+updateTxdbRanks <- function(exons) {
 
   exons$exon_rank <-  unlist(lapply(runLength(Rle(exons$tx_id)),
                          function(x) seq.int(1L, x)), use.names = FALSE)
@@ -40,7 +40,7 @@ updateTxdbRanks <- function(exons){
 #' @param fiveUTRs a GRangesList of 5' leaders
 #' @return a list, modified call of as.list(txdb)
 #' @importFrom data.table setDT
-removeTxdbExons <- function(txList, fiveUTRs){
+removeTxdbExons <- function(txList, fiveUTRs) {
   # remove old "dead" exons
   # get fiveUTR exons
   gr <- unlistGrl(fiveUTRs)
@@ -65,13 +65,36 @@ removeTxdbExons <- function(txList, fiveUTRs){
   return(txList)
 }
 
+#' Remove specific transcripts in txdb List
+#'
+#' Remove all transcripts, except the ones in fiveUTRs.
+#' @inheritParams updateTxdbStartSites
+#' @return a txList
+removeTxdbTranscripts <- function(txList, fiveUTRs) {
+  # Transcripts
+  match <- txList$transcripts$tx_name %in% names(fiveUTRs)
+  ids <- which(match)
+  txList$transcripts <- txList$transcripts[match, ]
+  # Splicing
+  match <- txList$splicings$tx_id %in% ids
+  txList$splicings <- txList$splicings[match, ]
+  # Genes
+  match <- txList$genes$tx_id %in% ids
+  txList$genes <- txList$genes[match, ]
+  return(txList)
+}
+
 #' Update start sites of leaders
 #'
 #' @param txList a list, call of as.list(txdb)
 #' @param fiveUTRs a GRangesList of 5' leaders
+#' @param removeUnused logical (FALSE), remove leaders that did not have any
+#' cage support. (standard is to set them to original annotation)
 #' @return a list, modified call of as.list(txdb)
-updateTxdbStartSites <- function(txList, fiveUTRs){
-
+updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
+  if (removeUnused) {
+    txList <- removeTxdbTranscripts(txList, fiveUTRs)
+  }
   txList <- removeTxdbExons(txList, fiveUTRs)
 
   starts <- startSites(fiveUTRs, keep.names = TRUE)

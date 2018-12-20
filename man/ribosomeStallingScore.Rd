@@ -48,6 +48,8 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
   \code{\link{rankOrder}},
   \code{\link{ribosomeReleaseScore}},
+  \code{\link{startCodonCoverage}},
+  \code{\link{startRegionCoverage}},
   \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }

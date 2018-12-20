@@ -5,7 +5,7 @@
 \title{Reassign all Transcript Start Sites (TSS)}
 \usage{
 reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE)
+  restrictUpstreamToTx = FALSE, removeUnused = FALSE)
 }
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or transcript sequences}
@@ -24,6 +24,9 @@ If you already filtered, set it to 0.}
 \item{restrictUpstreamToTx}{a logical (FALSE), if you want to restrict
 leaders to not extend closer than 5 bases from closest upstream leader,
 set this to TRUE.}
+
+\item{removeUnused}{logical (FALSE), remove leaders that did not have any
+cage support. (standard is to set them to original annotation)}
 }
 \value{
 a GRangesList of newly assigned TSS for fiveUTRs,
@@ -36,7 +39,13 @@ TSS if it is within boundary of 5' leader range, specified by
 `extension` in bp. A max peak must also be higher than minimum
 CageSeq peak cutoff specified in `filterValue`. The new TSS will then
 be the positioned where the cage read (with highest read count in the
-interval).
+interval). If removeUnused is TRUE, leaders without cage hits, will be
+removed, if FALSE the original TSS will be used.
+}
+\details{
+Note: If you used cageR, you will get reads of a probability region, with
+always score of 1. Remember then to set filterValue to 0. And you should use
+the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 }
 \examples{
 # example 5' leader, notice exon_rank column
