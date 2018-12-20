@@ -172,7 +172,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #' interval). If removeUnused is TRUE, leaders without cage hits, will be
 #' removed, if FALSE the original TSS will be used.
 #'
-#' Note: If you used cageR, you will get reads of a probability region, with
+#' Note: If you used CAGEr, you will get reads of a probability region, with
 #' always score of 1. Remember then to set filterValue to 0. And you should use
 #' the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 #' @param fiveUTRs (GRangesList) The 5' leaders or transcript sequences
@@ -241,7 +241,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #' be the positioned where the cage read (with highest read count in the
 #' interval).
 #'
-#' Note: If you used cageR, you will get reads of a probability region, with
+#' Note: If you used CAGEr, you will get reads of a probability region, with
 #' always score of 1. Remember then to set filterValue to 0. And you should use
 #' the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 #' @param txdb a TxDb object, normally from a gtf file.

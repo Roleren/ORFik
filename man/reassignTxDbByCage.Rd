@@ -41,7 +41,7 @@ be the positioned where the cage read (with highest read count in the
 interval).
 }
 \details{
-Note: If you used cageR, you will get reads of a probability region, with
+Note: If you used CAGEr, you will get reads of a probability region, with
 always score of 1. Remember then to set filterValue to 0. And you should use
 the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 }
