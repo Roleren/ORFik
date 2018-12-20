@@ -537,6 +537,36 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
   return(scores)
 }
 
+#' Start codon coverage
+#'
+#' Get the number of reads in start codon for each ORF
+#' @param grl a \code{\link{GRangesList}} object
+#'  with usually either leaders, cds', 3' utrs or ORFs
+#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
+#' @param is.sorted logical (F), is grl sorted.
+#' @family features
+#' @return an numeric vector of counts
+startCodonCoverage <- function(grl, RFP, is.sorted = TRUE) {
+  return(countOverlaps(startCodons(grl, is.sorted), RFP))
+}
+
+#' Start region coverage
+#'
+#' Get the number of reads in the start region of each ORF.
+#' @param grl a \code{\link{GRangesList}} object
+#'  with usually either leaders, cds', 3' utrs or ORFs
+#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
+#' @param is.sorted logical (T), is grl sorted.
+#' @param window integer (10), how many bases downstream to use.
+#' @family features
+#' @return an numeric vector of counts
+startRegionCoverage <- function(grl, RFP, is.sorted = TRUE, window = 10L) {
+  if (!is.sorted) grl <- sortPerGroup(grl)
+  region <- downstreamN(grl, window)
+
+  return(countOverlaps(region, RFP))
+}
+
 #' Get initiation score for a GRangesList of ORFs
 #'
 #' initiationScore tries to check how much each TIS region resembles, the

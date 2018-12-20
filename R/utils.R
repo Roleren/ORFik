@@ -81,15 +81,15 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE) {
 bedToGR <- function(x, bed6 = TRUE){
 
   if (!bed6) {
-    gr <- GRanges(x[, 1], IRanges(x[, 2] + 1, x[, 3]))
+    gr <- GRanges(x[, 1L], IRanges(x[, 2L] + 1L, x[, 3L]))
     return(gr)
   }
-  starts <- x[, 2] + 1
-  ends <- x[, 3]
-  gr <- GRanges(x[, 1], IRanges(starts, ends),
-                strand = x[, 6])
-  mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = x[, 5])
-  if (ncol(x) > 6) mcols(gr) <- x[, 7:ncol(x)]
+  starts <- x[, 2L] + 1L
+  ends <- x[, 3L]
+  gr <- GRanges(x[, 1L], IRanges(starts, ends),
+                strand = x[, 6L])
+  mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = x[, 5L])
+  if (ncol(x) > 6L) mcols(gr) <- x[, 7L:ncol(x)]
   return(gr)
 }
 

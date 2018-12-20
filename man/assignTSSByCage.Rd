@@ -5,11 +5,9 @@
 \title{Input a txdb and add a 5' leader for each transcript, that does not have one.}
 \usage{
 assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE)
+  restrictUpstreamToTx = FALSE, removeUnused = FALSE)
 }
 \arguments{
-\item{txdb}{a TxDb object, normally from a gtf file.}
-
 \item{cage}{Either a filePath for CageSeq file, or already loaded
 CageSeq peak data as GRanges.}
 
@@ -24,6 +22,9 @@ If you already filtered, set it to 0.}
 \item{restrictUpstreamToTx}{a logical (FALSE), if you want to restrict
 leaders to not extend closer than 5 bases from closest upstream leader,
 set this to TRUE.}
+
+\item{removeUnused}{logical (FALSE), remove leaders that did not have any
+cage support. (standard is to set them to original annotation)}
 }
 \value{
 a TxDb obect of reassigned transcripts
@@ -31,8 +32,8 @@ a TxDb obect of reassigned transcripts
 \description{
 For all cds in txdb, that does not have a 5' leader:
 Start at 1 base upstream of cds and use CAGE, to assign leader start.
-All these leaders will be 1 exon based, if you really want exon
-splits, you can use exon prediction tools, or run sequencing experiments.
+All these leaders will be 1 exon based, if you really want exon splicings,
+you can use exon prediction tools, or run sequencing experiments.
 }
 \details{
 Given a TxDb object, reassign the start site per transcript

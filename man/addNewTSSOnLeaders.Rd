@@ -5,12 +5,15 @@
 \title{add cage max peaks as new transcript start sites for each 5' leader
 (*) strands are not supported, since direction must be known.}
 \usage{
-addNewTSSOnLeaders(fiveUTRs, maxPeakPosition)
+addNewTSSOnLeaders(fiveUTRs, maxPeakPosition, removeUnused)
 }
 \arguments{
 \item{fiveUTRs}{The 5' leader sequences as GRangesList}
 
 \item{maxPeakPosition}{The max peak for each 5' leader found by cage}
+
+\item{removeUnused}{logical (FALSE), remove leaders that did not have any
+cage support. (standard is to set them to original annotation)}
 }
 \value{
 a GRanges object of first exons

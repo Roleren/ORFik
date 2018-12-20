@@ -4,12 +4,15 @@
 \alias{updateTxdbStartSites}
 \title{Update start sites of leaders}
 \usage{
-updateTxdbStartSites(txList, fiveUTRs)
+updateTxdbStartSites(txList, fiveUTRs, removeUnused)
 }
 \arguments{
 \item{txList}{a list, call of as.list(txdb)}
 
 \item{fiveUTRs}{a GRangesList of 5' leaders}
+
+\item{removeUnused}{logical (FALSE), remove leaders that did not have any
+cage support. (standard is to set them to original annotation)}
 }
 \value{
 a list, modified call of as.list(txdb)

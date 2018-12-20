@@ -4,10 +4,10 @@
 \alias{filterCage}
 \title{Filter peak of cage-data by value}
 \usage{
-filterCage(rawCage, filterValue = 1, fiveUTRs = NULL)
+filterCage(cage, filterValue = 1, fiveUTRs = NULL)
 }
 \arguments{
-\item{rawCage}{The raw cage-data, as GRanges. Must contain a score column,
+\item{cage}{The raw cage-data, as GRanges. Must contain a score column,
 with the count hits per position.}
 
 \item{filterValue}{The integer of counts(score) to filter on

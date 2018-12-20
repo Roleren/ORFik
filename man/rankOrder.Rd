@@ -43,6 +43,8 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
   \code{\link{ribosomeReleaseScore}},
   \code{\link{ribosomeStallingScore}},
+  \code{\link{startCodonCoverage}},
+  \code{\link{startRegionCoverage}},
   \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }

@@ -5,7 +5,7 @@
 \title{Input a txdb and reassign the TSS for each transcript by CAGE}
 \usage{
 reassignTxDbByCage(txdb, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE)
+  restrictUpstreamToTx = FALSE, removeUnused = FALSE)
 }
 \arguments{
 \item{txdb}{a TxDb object, normally from a gtf file.}
@@ -24,6 +24,9 @@ If you already filtered, set it to 0.}
 \item{restrictUpstreamToTx}{a logical (FALSE), if you want to restrict
 leaders to not extend closer than 5 bases from closest upstream leader,
 set this to TRUE.}
+
+\item{removeUnused}{logical (FALSE), remove leaders that did not have any
+cage support. (standard is to set them to original annotation)}
 }
 \value{
 a TxDb obect of reassigned transcripts
@@ -36,6 +39,11 @@ TSS if it is within boundary of 5' leader range, specified by
 CageSeq peak cutoff specified in `filterValue`. The new TSS will then
 be the positioned where the cage read (with highest read count in the
 interval).
+}
+\details{
+Note: If you used CAGEr, you will get reads of a probability region, with
+always score of 1. Remember then to set filterValue to 0. And you should use
+the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 }
 \examples{
  \dontrun{
