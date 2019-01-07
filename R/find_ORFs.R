@@ -101,22 +101,22 @@ stopDefinition <- function(transl_table) {
 #'        skeleton = merge(pos, neg))
 #' }
 #'
-#' @param seqs (DNAStringSet or character) DNA sequences to search for Open
-#' Reading Frames. Can be both uppercase or lowercase. Easiest call to get seqs
-#' if you want only regions from a fasta/fasta index pair is:
+#' @param seqs (DNAStringSet or character vector) - DNA/RNA sequences to search
+#' for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
+#' get seqs if you want only regions from a fasta/fasta index pair is:
 #' seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-#' regions.
-#' @param startCodon (character) Possible START codons to search for. Check
-#' \code{\link{startDefinition}} for helper function.
-#' @param stopCodon (character) Possible STOP codons to search for. Check
-#' \code{\link{stopDefinition}} for helper function.
+#' regions and faFile is a FaFile.
+#' @param startCodon (character vector) Possible START codons to search for.
+#' Check \code{\link{startDefinition}} for helper function.
+#' @param stopCodon (character vector) Possible STOP codons to search for.
+#' Check \code{\link{stopDefinition}} for helper function.
 #' @param longestORF (logical) Default TRUE. Keep only the longest ORF per
 #' unique (seqname, strand, stopcodon) combination, you can also use function
 #' \code{\link{longestORFs}} after creation of ORFs for same result.
-#' @param minimumLength (integer) Default is 0. Minimum length of ORF, without
-#' counting 3bp for START and STOP codons. For example minimumLength = 8 will
-#' result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
-#' Use this param to restrict search.
+#' @param minimumLength (integer) Default is 0. Which is START + STOP = 6 bp.
+#' Minimum length of ORF, without counting 3bp for START and STOP codons.
+#' For example minimumLength = 8 will result in size of ORFs to be at least
+#' START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.
 #' @return (IRangesList) of ORFs locations by START and STOP sites
 #' grouped by input seqeunces. In a list of sequences, only the indices of
 #' the sequences that had ORFs will be returned, e.g. 3 sequences where only
@@ -135,7 +135,7 @@ stopDefinition <- function(transl_table) {
 #'
 findORFs <- function(seqs, startCodon =  startDefinition(1),
                      stopCodon = stopDefinition(1), longestORF = TRUE,
-                     minimumLength = 0L){
+                     minimumLength = 0){
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -161,7 +161,7 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' Finds ORFs on the sequences of interest, but returns relative positions to
 #' the positions of `grl` argument. For example, `grl` can be exons
 #' of known transcripts (with genomic coordinates), and `seq` sequences of
-#' those transcripts, in that case, [findMapORFs()] will return
+#' those transcripts, in that case, this function will return
 #' genomic coordinates of ORFs found on transcript sequences.
 #'
 #' This function assumes that `seq` is in widths relative to `grl`,
@@ -202,6 +202,7 @@ findMapORFs <- function(grl, seqs, startCodon =  startDefinition(1),
   result <- orfs_as_List(fastaSeqs = as.character(seqs, use.names = FALSE),
                          startCodon = startCodon, stopCodon = stopCodon,
                          minimumLength = minimumLength)
+
   result <- split(IRanges(result$orf[[1]], result$orf[[2]]), result$index)
   if (longestORF) result <- longestORFs(result)
 
@@ -248,7 +249,7 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
   if (!is(filePath, "character"))
     stop("'filepath' must be of type character.")
   filePath <- path.expand(filePath)
-  if(!file.exists(filePath)) stop("'file' does not exist, check working dir!")
+  if (!file.exists(filePath)) stop("'file' does not exist, check working dir!")
   gr <- findORFs_fasta(filePath, startCodon, stopCodon, minimumLength,
                        is.circular)
   if (longestORF) {

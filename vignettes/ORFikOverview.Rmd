@@ -460,7 +460,7 @@ We see that ORF 1, has a low(bad) entropy, but we do not know where the reads
 are stacked up.
 So lets make a new filter by using ORFiks utility functions, that will work.
 ```{r eval = TRUE, echo = TRUE}
-  tile <- tile1(cds, F, F) # tile them to 1 based positions
+  tile <- tile1(cds, FALSE, FALSE) # tile them to 1 based positions
   tails <- tails(tile, 9)
   stopOverlap <- countOverlaps(tails, ribo)
   allOverlap <- countOverlaps(cds, ribo)

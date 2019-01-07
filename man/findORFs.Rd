@@ -6,29 +6,29 @@
 \usage{
 findORFs(seqs, startCodon = startDefinition(1),
   stopCodon = stopDefinition(1), longestORF = TRUE,
-  minimumLength = 0L)
+  minimumLength = 0)
 }
 \arguments{
-\item{seqs}{(DNAStringSet or character) DNA sequences to search for Open
-Reading Frames. Can be both uppercase or lowercase. Easiest call to get seqs
-if you want only regions from a fasta/fasta index pair is:
+\item{seqs}{(DNAStringSet or character vector) - DNA/RNA sequences to search
+for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
+get seqs if you want only regions from a fasta/fasta index pair is:
 seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-regions.}
+regions and faFile is a FaFile.}
 
-\item{startCodon}{(character) Possible START codons to search for. Check
-\code{\link{startDefinition}} for helper function.}
+\item{startCodon}{(character vector) Possible START codons to search for.
+Check \code{\link{startDefinition}} for helper function.}
 
-\item{stopCodon}{(character) Possible STOP codons to search for. Check
-\code{\link{stopDefinition}} for helper function.}
+\item{stopCodon}{(character vector) Possible STOP codons to search for.
+Check \code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
 unique (seqname, strand, stopcodon) combination, you can also use function
 \code{\link{longestORFs}} after creation of ORFs for same result.}
 
-\item{minimumLength}{(integer) Default is 0. Minimum length of ORF, without
-counting 3bp for START and STOP codons. For example minimumLength = 8 will
-result in size of ORFs to be at least START + 8*3 (bp) + STOP = 30 bases.
-Use this param to restrict search.}
+\item{minimumLength}{(integer) Default is 0. Which is START + STOP = 6 bp.
+Minimum length of ORF, without counting 3bp for START and STOP codons.
+For example minimumLength = 8 will result in size of ORFs to be at least
+START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.}
 }
 \value{
 (IRangesList) of ORFs locations by START and STOP sites
