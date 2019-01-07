@@ -13,7 +13,7 @@ Description: Tools for manipulation of RiboSeq, RNASeq and CageSeq data. ORFik
   allows to reassign starts of the transcripts with the use of CageSeq data,
   automatic shifting of RiboSeq reads, finding of Open Reading Frames for
   whole genomes and much more.
-biocViews: Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage, Alignment, DataImport
+biocViews: ImmunoOncology, Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage, Alignment, DataImport
 License: MIT + file LICENSE
 LazyData: TRUE
 BugReports: https://github.com/JokingHero/ORFik/issues
