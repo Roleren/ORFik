@@ -104,7 +104,7 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
     if (!is.null(names(grl))) {
       names(tilex) <- names(grl)[as.integer(grouping)]
     }
-    tilex <- matchNaming(tilex, grl[1])
+    tilex <- matchNaming(tilex, grl[1L])
   } else {
     tilex <- unlistGrl(tilex)
     grouping <- names(tilex)
@@ -160,11 +160,12 @@ pmapFromTranscriptF <- function(ranges, grl, indices) {
   if (length(ranges) != length(indices)) stop("length of ranges != indices")
   names <- names(grl)
   names(grl) <- NULL
+
   genomicCoordinates <- pmapFromTranscripts(x = ranges,
                                             transcripts = grl[indices])
   names(genomicCoordinates) <- names[indices]
 
-  genomicCoordinates <- genomicCoordinates[width(genomicCoordinates) > 0]
+  genomicCoordinates <- genomicCoordinates[width(genomicCoordinates) > 0L]
   a <- unlistGrl(genomicCoordinates)
   a$hit <- NULL
   return(relist(a, genomicCoordinates))
@@ -212,7 +213,7 @@ windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
 
   starts <- pmax(start(g) - upstream, 1L)
   indices <- chmatch(txNames(gr), names(tx))
-  if (upstream != 0) {
+  if (upstream != 0L) {
     ends <- pmin(end(g) + downstream, widthPerGroup(tx[indices], FALSE))
     ranges(g) <- IRanges(starts, ends)
   } else {
@@ -255,8 +256,8 @@ windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
 #' ## since they are already there
 #' extendLeaders(tx, extension = 1000)
 #'
-extendLeaders <- function(grl, extension = 1000, cds = NULL) {
-  if (is(extension, "numeric") && length(extension) == 1) {
+extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
+  if (is(extension, "numeric") && length(extension) == 1L) {
     posIndices <- strandBool(grl)
     promo <- promoters(unlist(firstExonPerGroup(grl), use.names = FALSE),
                        upstream = extension)

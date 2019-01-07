@@ -8,6 +8,8 @@ assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
   restrictUpstreamToTx = FALSE, removeUnused = FALSE)
 }
 \arguments{
+\item{txdb}{a TxDb object, normally from a gtf file.}
+
 \item{cage}{Either a filePath for CageSeq file, or already loaded
 CageSeq peak data as GRanges.}
 

@@ -50,7 +50,6 @@ char complement(char n)
 // TODO: We should add the seqinfo from the fasta here, so that especially
 //  if genome is circular, we add lengths of chromosomes
 // We could also add name of genome from name of fasta file
-// And get the real seqnames
 // [[Rcpp::export]]
 S4 findORFs_fasta(std::string file,
                        std::string startCodon,
@@ -58,7 +57,7 @@ S4 findORFs_fasta(std::string file,
                        int minimumLength,
                        bool isCircular)
 {
-  std::vector<int> all_orfs;
+  vi all_orfs;
   std::vector<std::string> Seqnames;
   std::vector<int> strands;
   std::ifstream in(file.c_str());
@@ -85,29 +84,29 @@ S4 findORFs_fasta(std::string file,
     }
 
     // get all orfs for start to stop
-    std::vector<int> ORFdef = orfs_as_vector(fastaSeq, startCodon,
+    vi ORFdef = orfs_as_vector(fastaSeq, startCodon,
                                              stopCodon, minimumLength);
     all_orfs.insert(all_orfs.end(), ORFdef.begin(), ORFdef.end());
     Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, header);
     strands.insert(strands.end(), ORFdef.size() / 2, 1);
 
     //Definitions if isCircular is TRUE
-    int rescaleStart = fastaSeq.length() - 4000;
-    int rescaleStop = 4000;
+    int length = static_cast<int>(fastaSeq.length());
+    const int rescaleStart = std::max(length - 4000, length / 2);
+    const int rescaleStop = std::min(4000, rescaleStart - 1);
     std::string startStopBoundary;
-    std::vector<int> ORFdefBoundary;
+    vi ORFdefBoundary;
 
     if (isCircular) {
       // Now do stop/start boundary, +/-4000, only keep the ones
       // who are overlapping start/stop boundary
-      startStopBoundary = fastaSeq.substr(
-        rescaleStart, rescaleStop);
+      startStopBoundary = fastaSeq.substr(rescaleStart, rescaleStop);
       startStopBoundary.append(fastaSeq.substr(0, rescaleStop));
       ORFdefBoundary = orfs_as_vector(startStopBoundary, startCodon,
                                       stopCodon, minimumLength);
       // now filter out wrong ones, the ones that does not contain point
       // 4000 in range start/stop
-      std::vector<int> ORFdefOverlap; // <- vector only for valid ones
+      vi ORFdefOverlap; // <- vector only for valid ones
 
       for (size_t i = 0; i < ORFdefBoundary.size() / 2; i++) {
         if (ORFdefBoundary[2 * i] < rescaleStop) { // start
@@ -148,18 +147,21 @@ S4 findORFs_fasta(std::string file,
 
       // now filter out wrong ones, the ones that does
       // not contain point 4000 in range start/stop
-      std::vector<int> ORFdefOverlapMin; // <- vector only for valid ones
+      vi ORFdefOverlapMin; // <- vector only for valid ones
 
       for (size_t i = 0; i < ORFdefBoundary.size() / 2; i++) {
         if (ORFdefBoundary[2 * i] < rescaleStop) { // start
           if (ORFdefBoundary[2 * i + 1] >= rescaleStop) { // stop
             ORFdefOverlapMin.push_back(ORFdefBoundary[2 * i] + rescaleStart);
-            ORFdefOverlapMin.push_back(ORFdefBoundary[2 * i + 1] + rescaleStart);
+            ORFdefOverlapMin.push_back(
+              ORFdefBoundary[2 * i + 1] + rescaleStart);
           }
         }
       }
-      for(size_t i = 0; i < ORFdefOverlapMin.size(); i++)
+
+      for(size_t i = 0; i < ORFdefOverlapMin.size(); i++){
         ORFdefOverlapMin[i] = chromoLength - ORFdefOverlapMin[i];
+      }
       all_orfs.insert(all_orfs.end(),
                       ORFdefOverlapMin.rbegin(), ORFdefOverlapMin.rend());
       Seqnames.insert(Seqnames.end(), ORFdefOverlapMin.size() / 2, header);
@@ -167,7 +169,6 @@ S4 findORFs_fasta(std::string file,
     }
     n++;
   }
-
   // all_orfs is an interlaced vector. We de-interlace it into two vectors.
   std::vector<vi> result_value(2);
   result_value[0].resize(all_orfs.size() / 2);

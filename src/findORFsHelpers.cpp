@@ -17,27 +17,33 @@ using namespace Rcpp;
 Function IRangesA("IRanges", Environment::namespace_env("IRanges"));
 
 ////////////--Functions--/////////////
-vi get_index_list(vi z, string& working_string, string& substring)
+// z - scoring list
+// return: indices of all z >= substring length
+vi get_index_list(const vi z, const  string& working_string,
+                  const string& substring)
 {
-  int counter = 0;
-  size_t subSize = substring.size();
-  int subSizeInt = static_cast<int>(subSize);
+  size_t counter = 0;
+  const size_t subSize = substring.size();
+  const int subSizeInt = static_cast<unsigned int>(subSize);
   for (size_t i = subSize; i < working_string.size(); ++i)
     if (z[i] >= subSizeInt)
       counter++;
-    vi indeces(counter, 0);
-    counter = 0;
 
-    for (size_t i = subSize; i < working_string.size(); ++i)
-      if (z[i] >= subSizeInt)
-        indeces[counter++] = i - substring.size();
-      return indeces;
+
+  vi indeces(counter, 0);
+  counter = 0;
+
+  for (size_t i = subSize; i < working_string.size(); ++i)
+    if (z[i] >= subSizeInt)
+      indeces[counter++] = i - subSize;
+  return indeces;
 }
 
-//The string-searching algorithm
-void calc_z(string& s, vi& z)
+// The string-searching algorithm
+// s - the string to search, z - the scoring vector
+void calc_z(const string& s, vi& z)
 {
-  int len = s.size();
+  const int len = s.size();
   z.resize(len);
 
   int l = 0, r = 0;
@@ -54,23 +60,24 @@ void calc_z(string& s, vi& z)
         --r;
     }
 }
+
 //returns a list of indeces for searched substring given mainstring
-vi return_outputs_of_substring(string& main_string, string& substring)
+vi return_outputs_of_substring(string& main_string, const string& substring)
 {
 
   string working_string = substring + main_string;
   vi z;
   calc_z(working_string, z);
-
   z = get_index_list(z, working_string, substring);
   return (z);
 }
+
 //Find all orf in either frame 0,1 or 2.
 vi find_orfs_in_specific_frame(const vi &frameS,const vi &frameE,
                                const int endSize, const int max_size)
 {
   vi res(max_size * 2, -1);
-  int counter = 0;
+  unsigned int counter = 0;
   //For each valid start u, find valid stop v that is greater than u.
 
   //binary search for end that is > start
@@ -90,7 +97,7 @@ vi find_orfs_in_specific_frame(const vi &frameS,const vi &frameE,
   return res;
 }
 // Combine all three frames
-vi find_matched_startends(vi& starts, vi& ends, int max_size)
+vi find_matched_startends(const vi& starts, const vi& ends, const int max_size)
 {
 
   //the 3 possible frames of orfs
@@ -158,16 +165,14 @@ vi get_all_hits(string& main_string, string s)
 }
 
 // Return ranges as vector, only for internal c++ use!!
-std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
+vi orfs_as_vector(std::string &main_string, const std::string s,
                                 const std::string e, int minimumLength)
 {
-
   minimumLength = 6 + (minimumLength * 3) - 1;
 
   vi tempStarts = get_all_hits(main_string, s); //Get starts
   vi tempEnds = get_all_hits(main_string, e); //Get ends
-
-  int max_size = main_string.length(); //maximun number of orfs = third of total
+  size_t max_size = main_string.length(); //maximun number of orfs
 
   vi res = find_matched_startends(tempStarts, tempEnds, max_size);
   int nHits = 0; //How many uorfs have current max length
@@ -180,7 +185,6 @@ std::vector<int> orfs_as_vector(std::string &main_string,const std::string s,
       maxUORF[nHits * 2] = res[i];
       maxUORF[(nHits * 2) + 1] = res[i + 1];
       nHits++;
-
     }
   }
   //Resize
@@ -196,7 +200,7 @@ IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
 {
 
   vi maxUORF =  orfs_as_vector(main_string, s, e, minimumLength);
-  int uorfSize = maxUORF.size();
+  size_t uorfSize = maxUORF.size();
 
   if (uorfSize == 0) {
     IntegerMatrix a;
@@ -219,7 +223,7 @@ IntegerMatrix orfs_as_matrix(std::string &main_string, std::string s,
 //Minimum length filters the list to only contain orfs longer...
 //or equal to this number of triplets
 // [[Rcpp::export]]
-S4 orfs_as_IRanges(std::string &main_string,const std::string s,
+S4 orfs_as_IRanges(std::string &main_string, const std::string s,
                            const std::string e, int minimumLength)
 {
   size_t minLength = 6 + (minimumLength * 3) - 1;

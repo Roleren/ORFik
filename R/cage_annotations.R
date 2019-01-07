@@ -295,7 +295,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' CageSeq peak cutoff specified in `filterValue`. The new TSS will then
 #' be the positioned where the cage read (with highest read count in the
 #' interval).
-#' @inheritParams reassignTSSbyCage
+#' @inheritParams reassignTxDbByCage
 #' @importFrom data.table setkeyv
 #' @family CAGE
 #' @export

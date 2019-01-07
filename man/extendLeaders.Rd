@@ -4,7 +4,7 @@
 \alias{extendLeaders}
 \title{Extend the leaders transcription start sites.}
 \usage{
-extendLeaders(grl, extension = 1000, cds = NULL)
+extendLeaders(grl, extension = 1000L, cds = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}

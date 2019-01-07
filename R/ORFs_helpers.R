@@ -83,6 +83,7 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
   if (is.null(names(grl))) stop("'grl' contains no names.")
   if (!is(result, "IRangesList")) stop("Invalid type of result, must be IRL.")
   if (is.null(names(result))) stop("result IRL has no names")
+
   # Check that grl is sorted
   grl <- sortPerGroup(grl, ignore.strand = FALSE)
   # Create Ranges object from orf scanner result
@@ -90,6 +91,7 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
   index <- as.integer(names(ranges))
   names(ranges) <- NULL
   # map transcripts to genomic coordinates, reduce away false hits
+
   genomicCoordinates <- pmapFromTranscriptF(ranges, grl, index)
 
   return(makeORFNames(genomicCoordinates, groupByTx))
@@ -182,7 +184,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 
   if (asGR) {
     startSites <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
-                          ranges = startSites,
+                          ranges = IRanges(startSites, width = 1),
                           strand = strandPerGroup(grl, FALSE))
   }
   if (keep.names) {
@@ -195,10 +197,7 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' Get the stop sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGC, get the position of the C.
-#' @param grl a \code{\link{GRangesList}} object
-#' @param asGR a boolean, return as GRanges object
-#' @param keep.names a logical (FALSE), keep names of input.
-#' @param is.sorted a speedup, if you know the ranges are sorted
+#' @inheritParams startSites
 #' @return if asGR is False, a vector, if True a GRanges object
 #' @export
 #' @family ORFHelpers
@@ -225,7 +224,7 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 
   if (asGR) {
     stopSites <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
-                         ranges = stopSites,
+                         ranges = IRanges(stopSites, width = 1),
                          strand = strandPerGroup(grl, FALSE))
   }
   if (keep.names) {
