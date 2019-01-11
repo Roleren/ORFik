@@ -35,7 +35,6 @@ overlapsToCoverage(ORF, reads)
 \seealso{
 Other ExtendGenomicRanges: \code{\link{asTX}},
   \code{\link{coveragePerTiling}},
-  \code{\link{pmapFromTranscriptF}},
   \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
   \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
 }
