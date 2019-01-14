@@ -15,22 +15,25 @@ pmapFromTranscriptF(x, transcripts, removeEmpty = FALSE)
 to 0.}
 }
 \value{
-a GRangesList of mapped reads
+a GRangesList of mapped reads, names from ranges are kept.
 }
 \description{
 This version tries to fix the shortcommings of GenomicFeature's version.
 Much faster and uses less memory.
 Implemented as dynamic program optimized c++ code.
 }
+\details{
+The length of x must be the same as length of transcripts. Only exception is
+if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
+to transcript 3 etc.
+}
 \examples{
 ranges <- IRanges(start = c( 5, 6), end = c(10, 10))
 seqnames = rep("chr1", 2)
 strands = rep("-", 2)
 grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
-             c(1,1))
+             c(1, 1))
 ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
-x <- ranges
-transcripts <- grl
 pmapFromTranscriptF(ranges, grl, TRUE)
 
 }
