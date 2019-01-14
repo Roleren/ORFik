@@ -1,3 +1,21 @@
+ORFik 1.0.0
+-----------------------
+
+    o first release of ORFik - find Open Reading Frames, automatic RiboSeq
+    footprint shifts, reassignment of Transcription Start Sites with the use of
+    CageSeq, plethora of gene identity functions from scientific publications
+
+
+CHANGES IN VERSION 1.1.12
+-----------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Remade many function to handle no names correctly, like tile1 will now
+    work even for GRangesList without names. Documentation is more logical, and
+    removed coverageByWindow, since GenomicFeatures::coverageByTranscripts now
+    works correctly.
+
 CHANGES IN VERSION 1.1.12
 -------------------------
 
