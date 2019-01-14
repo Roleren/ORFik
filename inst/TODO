@@ -12,6 +12,3 @@ TODO
 
     RiboSeq:
     o parseCigar implement into C++ (this is not the slow part thought)
-
-    Features:
-    o better docs with inherit params (I think this is done now)

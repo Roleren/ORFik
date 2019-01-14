@@ -48,11 +48,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pmapFromTranscriptsCPP
+List pmapFromTranscriptsCPP(const std::vector<int>& xStart, const std::vector<int>& xEnd, const std::vector<int>& transcriptStart, const std::vector<int>& transcriptEnd, const std::vector<int>& indices, const char& direction, const bool removeEmpty);
+RcppExport SEXP _ORFik_pmapFromTranscriptsCPP(SEXP xStartSEXP, SEXP xEndSEXP, SEXP transcriptStartSEXP, SEXP transcriptEndSEXP, SEXP indicesSEXP, SEXP directionSEXP, SEXP removeEmptySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type xStart(xStartSEXP);
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type xEnd(xEndSEXP);
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type transcriptStart(transcriptStartSEXP);
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type transcriptEnd(transcriptEndSEXP);
+    Rcpp::traits::input_parameter< const std::vector<int>& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const char& >::type direction(directionSEXP);
+    Rcpp::traits::input_parameter< const bool >::type removeEmpty(removeEmptySEXP);
+    rcpp_result_gen = Rcpp::wrap(pmapFromTranscriptsCPP(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
+    {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {NULL, NULL, 0}
 };
 

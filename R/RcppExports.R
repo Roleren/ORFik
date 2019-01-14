@@ -13,3 +13,7 @@ findORFs_fasta <- function(file, startCodon, stopCodon, minimumLength, isCircula
     .Call('_ORFik_findORFs_fasta', PACKAGE = 'ORFik', file, startCodon, stopCodon, minimumLength, isCircular)
 }
 
+pmapFromTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty) {
+    .Call('_ORFik_pmapFromTranscriptsCPP', PACKAGE = 'ORFik', xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty)
+}
+

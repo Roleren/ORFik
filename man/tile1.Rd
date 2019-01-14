@@ -41,7 +41,6 @@ tile1(grl)
 Other ExtendGenomicRanges: \code{\link{asTX}},
   \code{\link{coveragePerTiling}},
   \code{\link{overlapsToCoverage}},
-  \code{\link{pmapFromTranscriptF}},
   \code{\link{reduceKeepAttr}}, \code{\link{txSeqsFromFa}},
   \code{\link{windowPerGroup}}
 }

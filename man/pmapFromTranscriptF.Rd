@@ -2,31 +2,38 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{pmapFromTranscriptF}
 \alias{pmapFromTranscriptF}
-\title{Faster more secure version of mapFromTranscripts}
+\title{Faster pmapFromTranscript}
 \usage{
-pmapFromTranscriptF(ranges, grl, indices)
+pmapFromTranscriptF(x, transcripts, removeEmpty = FALSE)
 }
 \arguments{
-\item{ranges}{IRanges of ranges within grl}
+\item{x}{IRangesList/IRanges to map to genomic coordinates}
 
-\item{grl}{the "transcripts" that contain ranges, GRangesList}
+\item{transcripts}{a GRangesList to map agains}
 
-\item{indices}{integer vector of which index of grl ranges are from:
-(c(1,1,2)) means first two ranges are from grl[1], third from grl[2])}
+\item{removeEmpty}{a logical, remove non hit exons, else they are set
+to 0.}
 }
 \value{
-A GrangesList of ranges mapped from transcripts, names are
- re-used from the grl (the transcripts).
+a GRangesList of mapped reads, names from ranges are kept.
 }
 \description{
-Fixes a bug in function, and should have 10x speedup
-Also removes hit column for you
+This version tries to fix the shortcommings of GenomicFeature's version.
+Much faster and uses less memory.
+Implemented as dynamic program optimized c++ code.
 }
-\seealso{
-Other ExtendGenomicRanges: \code{\link{asTX}},
-  \code{\link{coveragePerTiling}},
-  \code{\link{overlapsToCoverage}},
-  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
-  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+\details{
+The length of x must be the same as length of transcripts. Only exception is
+if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
+to transcript 3 etc.
 }
-\concept{ExtendGenomicRanges}
+\examples{
+ranges <- IRanges(start = c( 5, 6), end = c(10, 10))
+seqnames = rep("chr1", 2)
+strands = rep("-", 2)
+grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
+             c(1, 1))
+ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
+pmapFromTranscriptF(ranges, grl, TRUE)
+
+}

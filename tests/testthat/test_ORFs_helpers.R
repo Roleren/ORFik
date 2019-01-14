@@ -287,14 +287,38 @@ test_that("mapToGRanges works as intended for strange exons both strands", {
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
   expect_equal(strandPerGroup(test_ranges, FALSE)[1], "-")
-  expect_equal(as.integer(unlist(start(test_ranges))), c(5, 5, 5000, 4000,
-                                                         3000, 2000, 1000, 1, 2003,
-                                                         2008, 3030, 3000))
-  expect_equal(as.integer(unlist(end(test_ranges))), c(13, 10, 5000, 4000,
-                                                       3000, 2000, 1000, 1, 2004,
-                                                       2014, 3033, 3004))
+  expect_equal(as.integer(unlist(start(test_ranges))),
+               c(5, 5, 5000, 4000, 3000, 2000, 1000, 1, 2003,
+                 2008, 3030, 3000))
+  expect_equal(as.integer(unlist(end(test_ranges))),
+               c(13, 10, 5000, 4000, 3000, 2000, 1000, 1, 2004,
+                 2014, 3033, 3004))
   expect_equal(sum(widthPerGroup(test_ranges) %% 3), 0)
 })
+
+test_that("pmapFromTranscriptsF works as intended", {
+            xStart = c(1, 5, 10, 1000, 5, 6, 1, 1)
+            xEnd = c(6, 8, 12, 2000, 10, 10, 3, 1)
+            TS = c(1,5, 1000, 1005, 1008, 2000, 2003, 4000, 5000, 7000, 85, 70,
+                   101, 9)
+            TE = c(3, 9, 1003, 1006, 1010, 2001, 2020, 4500, 6000, 8000, 89,
+                   82, 105, 9)
+            indices = c(1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 7)
+            strand = c(rep("+", 10), rep("-", 3), "+")
+            seqnames = rep("1", length(TS))
+            result <- split(IRanges(xStart, xEnd), c(seq.int(1, 5), 5, 6, 7))
+            transcripts <- split(GRanges(seqnames, IRanges(TS, TE), strand),
+                                 indices)
+            test_ranges <- pmapFromTranscriptF(result, transcripts,  TRUE)
+            expect_is(test_ranges, "GRangesList")
+            expect_equal(start(unlistGrl(test_ranges)),
+                         c(1, 5, 1005, 1008, 2010, 5498, 7000, 85, 78, 78,
+                           103, 9))
+            expect_equal(end(unlistGrl(test_ranges)),
+                         c(3, 7, 1006, 1009, 2012, 6000, 7497, 85, 82, 82,
+                           105, 9))
+})
+
 
 
 test_that("GRangesList sorting works as intended", {
@@ -364,12 +388,10 @@ test_that("startCodons works as intended", {
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
   expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
-  expect_equal(as.integer(unlist(start(test_ranges))), c(1,
-                                                         20, 30, 53, 1000,
-                                                         1002, 1004, 1002, 1004))
-  expect_equal(as.integer(unlist(end(test_ranges))), c(3,
-                                                       22, 32, 55, 1000,
-                                                       1002, 1004, 1002, 1005))
+  expect_equal(as.integer(unlist(start(test_ranges))),
+               c(1, 20, 30, 53, 1000, 1002, 1004, 1002, 1004))
+  expect_equal(as.integer(unlist(end(test_ranges))),
+               c(3, 22, 32, 55, 1000, 1002, 1004, 1002, 1005))
 
 })
 
@@ -419,12 +441,12 @@ test_that("stopCodons works as intended", {
   expect_is(strand(test_ranges),"CompressedRleList")
   expect_is(seqnames(test_ranges),"CompressedRleList")
   expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
-  expect_equal(as.integer(unlist(start(test_ranges))), c(23,
-                                                         43, 53, 30, 1002,
-                                                         1004, 1006, 1003, 1006))
-  expect_equal(as.integer(unlist(end(test_ranges))), c(25,
-                                                       45, 55, 32, 1002,
-                                                       1004, 1006, 1004, 1006))
+  expect_equal(as.integer(unlist(start(test_ranges))), c(23,43, 53, 30, 1002,
+                                                         1004, 1006, 1003,
+                                                         1006))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(25,45, 55, 32, 1002,
+                                                       1004, 1006, 1004,
+                                                       1006))
 
   # check with meta columns
   ORFranges$names <- rep("tx1_1" ,3)
@@ -443,11 +465,13 @@ test_that("stopCodons works as intended", {
 test_that("uniqueGroups works as intended", {
 
   ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-                       ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                       ranges = IRanges(start = c(1, 10, 20),
+                                        end = c(5, 15, 25)),
                        strand = Rle(strand(rep("+", 3))),
                        names = paste0("tx1_", rep(1, 3)))
   ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                        ranges = IRanges(start = c(1, 10, 20),
+                                         end = c(5, 15, 25)),
                         strand = Rle(strand(rep("+", 3))),
                         names = paste0("tx2_", rep(1, 3)))
   ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),

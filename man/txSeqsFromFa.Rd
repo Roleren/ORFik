@@ -23,7 +23,6 @@ A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 Other ExtendGenomicRanges: \code{\link{asTX}},
   \code{\link{coveragePerTiling}},
   \code{\link{overlapsToCoverage}},
-  \code{\link{pmapFromTranscriptF}},
   \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
   \code{\link{windowPerGroup}}
 }

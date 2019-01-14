@@ -35,7 +35,6 @@ coveragePerTiling(grl, RFP)
 \seealso{
 Other ExtendGenomicRanges: \code{\link{asTX}},
   \code{\link{overlapsToCoverage}},
-  \code{\link{pmapFromTranscriptF}},
   \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
   \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
 }
