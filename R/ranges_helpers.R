@@ -306,7 +306,7 @@ windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
   starts <- pmax(start(g) - upstream, 1L)
   indices <- chmatch(txNames(gr), names(tx))
   if (downstream != 0L) {
-    ends <- pmin(pmax(end(g) + downstream, start(g)-1),
+    ends <- pmin(pmax(end(g) + downstream, starts - 1),
                  widthPerGroup(tx[indices], FALSE))
     ranges(g) <- IRanges(starts, ends)
   } else {
