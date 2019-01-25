@@ -7,7 +7,7 @@
 pmapFromTranscriptF(x, transcripts, removeEmpty = FALSE)
 }
 \arguments{
-\item{x}{IRangesList/IRanges to map to genomic coordinates}
+\item{x}{IRangesList/IRanges/GRanges to map to genomic coordinates}
 
 \item{transcripts}{a GRangesList to map agains}
 
