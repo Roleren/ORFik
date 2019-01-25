@@ -152,7 +152,7 @@ asTX <- function(grl, reference) {
 #' The length of x must be the same as length of transcripts. Only exception is
 #' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
 #' to transcript 3 etc.
-#' @param x IRangesList/IRanges to map to genomic coordinates
+#' @param x IRangesList/IRanges/GRanges to map to genomic coordinates
 #' @param transcripts a GRangesList to map agains
 #' @param removeEmpty a logical, remove non hit exons, else they are set
 #'  to 0.
@@ -168,11 +168,11 @@ asTX <- function(grl, reference) {
 #' pmapFromTranscriptF(ranges, grl, TRUE)
 #'
 pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
-  if (is.null(names(x))){
-    if(length(x) != length(transcripts))
+  if (is.null(names(x))) {
+    if (length(x) != length(transcripts))
       stop("invalid names of ranges, when length(x) != length(transcripts)")
-    names(x) <- seq.int(1, length(x))
   }
+  if (is(x, "GRanges")) x <- ranges(x)
   if (is(x, "IRangesList")) {
     # Create Ranges object from orf scanner result
     x = unlist(x, use.names = TRUE)
@@ -185,7 +185,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
       indices <- strtoi(names(x))
     }
     names(x) <- NULL
-  } else stop("x must either be IRanges or IRangesList")
+  } else stop("x must either be IRanges, IRangesList or GRanges")
 
   if (!is.logical(removeEmpty)) stop("removeEmpty must be logical")
   removeEmpty <- as.logical(removeEmpty)
@@ -263,16 +263,28 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' @family ExtendGenomicRanges
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
-  if(!(is(faFile, "FaFile") || is(faFile, "BSgenome")))
+  if (!(is(faFile, "FaFile") || is(faFile, "BSgenome")))
     stop("only FaFile and BSgenome is valid input class")
-  if(!is.sorted) grl <- sortPerGroup(grl)
+  if (!any(seqlevels(grl) %in% seqlevels(faFile)))
+    stop("FaFile had no matching seqlevels to ranges object")
+  if (!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
 #' Get window region of tx around point of gr
 #'
-#' If downstreamFrom is 20, it means the window will start -20 downstream of
-#' gr start site. It will keep exon structure of tx
+#' If downstream is 20, it means the window will start 20 downstream of
+#' gr start site (-20 in relative transcript coordinates.)
+#' If upstream is 20, it means the window will start 20 upstream of
+#' gr start site (+20 in relative transcript coordinates.)
+#' It will keep exon structure of tx, so if -20 is on next exon, the previous
+#' exon is of course deleted.
+#'
+#' If a region has a part that goes out of bounds,
+#' it will set that side to the bound.
+#' If region has no hit in bound, a width 0 GRanges object is returned.
+#' This is usefull for things like countOverlaps, since 0 hits will then always
+#' be returned for the correct object.
 #' @param gr a GRanges object (startSites and others, must be single point)
 #' @param tx a GRangesList of transcripts or (container region)
 #' @param downstream an integer, relative region to get downstream from
@@ -293,8 +305,9 @@ windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
 
   starts <- pmax(start(g) - upstream, 1L)
   indices <- chmatch(txNames(gr), names(tx))
-  if (upstream != 0L) {
-    ends <- pmin(end(g) + downstream, widthPerGroup(tx[indices], FALSE))
+  if (downstream != 0L) {
+    ends <- pmin(pmax(end(g) + downstream, starts - 1),
+                 widthPerGroup(tx[indices], FALSE))
     ranges(g) <- IRanges(starts, ends)
   } else {
     start(g) <- starts

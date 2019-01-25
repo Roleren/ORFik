@@ -19,8 +19,19 @@ windowPerGroup(gr, tx, downstream = 0L, upstream = 0L)
 a GRanges, or GRangesList object if any group had > 1 exon.
 }
 \description{
-If downstreamFrom is 20, it means the window will start -20 downstream of
-gr start site. It will keep exon structure of tx
+If downstream is 20, it means the window will start 20 downstream of
+gr start site (-20 in relative transcript coordinates.)
+If upstream is 20, it means the window will start 20 upstream of
+gr start site (+20 in relative transcript coordinates.)
+It will keep exon structure of tx, so if -20 is on next exon, the previous
+exon is of course deleted.
+}
+\details{
+If a region has a part that goes out of bounds,
+it will set that side to the bound.
+If region has no hit in bound, a width 0 GRanges object is returned.
+This is usefull for things like countOverlaps, since 0 hits will then always
+be returned for the correct object.
 }
 \examples{
 # find 2nd codon of an ORF on a spliced transcript
