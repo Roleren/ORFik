@@ -18,7 +18,9 @@ equal to grl ig. cds is grl and gene can be reference}
 a GRangesList in transcript coordinates
 }
 \description{
-Map genomic to transcript coordinates by reference
+Similar to GenomicFeatures' pmapToTranscripts, but in this version the
+grl ranges are compared to reference ranges with same name, not
+by index. And it has a security fix.
 }
 \seealso{
 Other ExtendGenomicRanges: \code{\link{coveragePerTiling}},

@@ -4,10 +4,14 @@
 \alias{kozakSequenceScore}
 \title{Make a score for each ORFs start region by proximity to Kozak}
 \usage{
-kozakSequenceScore(grl, faFile, species = "human", include.N = FALSE)
+kozakSequenceScore(grl, tx, faFile, species = "human",
+  include.N = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} grouped by ORF}
+
+\item{tx}{a \code{\link{GRangesList}}, the reference area for ORFs, each ORF
+must have a coresponding tx.}
 
 \item{faFile}{a FaFile from the fasta file, see ?FaFile.
 Can also be path to fastaFile with fai file in same dir.}
@@ -36,6 +40,12 @@ from article referenced.
 Minimum score is 0 (worst correlation), max is 1 (the best
 base per column was chosen).
 }
+\details{
+Ranges that does not have minimum 15 length (the kozak requirement as a
+sliding window of size 15 around grl start),
+will be set to score 0. Since they should not have the posibility to make
+a ribosome binding.
+}
 \examples{
 # Usually the ORFs are found in orfik, which makes names for you etc.
 # Here we make an example from scratch
@@ -48,9 +58,10 @@ ORF2 <- GRanges(seqnames = seqName,
                     strand = c("-", "-"))
 ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 ORFs <- makeORFNames(ORFs) # need ORF names
+tx <- extendLeaders(ORFs, 100)
 # get faFile for sequences
 faFile <- FaFile(system.file("extdata", "genome.fasta", package = "ORFik"))
-kozakSequenceScore(ORFs, faFile)
+kozakSequenceScore(ORFs, tx, faFile)
 # For more details see vignettes.
 }
 \references{

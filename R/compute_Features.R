@@ -89,7 +89,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
     if (includeNonVarying) {
 
       if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
-        scores$kozak <- kozakSequenceScore(grl, faFile)
+        scores$kozak <- kozakSequenceScore(grl, tx, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
       }
@@ -243,7 +243,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
     if (includeNonVarying) {
 
       if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
-        scores$kozak <- kozakSequenceScore(grl, faFile)
+        scores$kozak <- kozakSequenceScore(grl, tx, faFile)
       } else {
         message("faFile not included, skipping kozak sequence score")
       }

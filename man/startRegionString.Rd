@@ -2,23 +2,26 @@
 % Please edit documentation in R/feature_helpers.R
 \name{startRegionString}
 \alias{startRegionString}
-\title{Get -20,20 start region as DNA characters per GRanges group}
+\title{Get start region as DNA-strings per GRanges group}
 \usage{
-startRegionString(grl, tx, faFile, groupBy = NULL)
+startRegionString(grl, tx, faFile, upstream = 20, downstream = 20)
 }
 \arguments{
-\item{grl}{a GRangesList to find regions}
+\item{grl}{a \code{\link{GRangesList}} of ranges to find regions in.}
 
-\item{tx}{a GRangesList of transcripts containing grl}
+\item{tx}{a GRangesList of transcripts or (container region)}
 
 \item{faFile}{a FaFile from the fasta file, see ?FaFile.
 Can also be path to fastaFile with fai file in same dir.}
 
-\item{groupBy}{(NULL) column to group grl by, if NULL group by names(gr)}
+\item{upstream}{an integer vector, relative region to get upstream from.}
+
+\item{downstream}{an integer, relative region to get downstream from}
 }
 \value{
 a character vector of start regions
 }
 \description{
-Get -20,20 start region as DNA characters per GRanges group
+One window per start site, if upstream and downstream are both 0, then
+only the startsite is returned.
 }

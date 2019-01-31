@@ -72,8 +72,15 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' from article referenced.
 #' Minimum score is 0 (worst correlation), max is 1 (the best
 #' base per column was chosen).
+#'
+#' Ranges that does not have minimum 15 length (the kozak requirement as a
+#' sliding window of size 15 around grl start),
+#' will be set to score 0. Since they should not have the posibility to make
+#' a ribosome binding.
 #' @references doi: https://doi.org/10.1371/journal.pone.0108475
 #' @param grl a \code{\link{GRangesList}} grouped by ORF
+#' @param tx a \code{\link{GRangesList}}, the reference area for ORFs, each ORF
+#'  must have a coresponding tx.
 #' @param faFile a FaFile from the fasta file, see ?FaFile.
 #'  Can also be path to fastaFile with fai file in same dir.
 #' @param species ("human"), which species to use,
@@ -103,21 +110,19 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #'                     strand = c("-", "-"))
 #' ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 #' ORFs <- makeORFNames(ORFs) # need ORF names
+#' tx <- extendLeaders(ORFs, 100)
 #' # get faFile for sequences
 #' faFile <- FaFile(system.file("extdata", "genome.fasta", package = "ORFik"))
-#' kozakSequenceScore(ORFs, faFile)
+#' kozakSequenceScore(ORFs, tx, faFile)
 #' # For more details see vignettes.
-kozakSequenceScore <- function(grl, faFile, species = "human",
+kozakSequenceScore <- function(grl, tx, faFile, species = "human",
                                include.N = FALSE) {
-  faFile <- findFa(faFile)
-  firstExons <- firstExonPerGroup(grl)
-  kozakLocation <- promoters(firstExons, upstream = 9, downstream = 6)
 
-  sequences <- as.character(txSeqsFromFa(kozakLocation,
-                                         faFile, is.sorted = TRUE))
-  if (!all(nchar(sequences) == 15)) {
-    stop("not all ranges had valid kozak sequences length, not 15")
-  }
+  sequences <- startRegionString(grl, tx, faFile, 9, 5)
+
+  validSeqs <- which(nchar(sequences) == 15)
+  if (length(validSeqs) == 0) return(rep(0., length(sequences)))
+  sequences <- sequences[validSeqs]
 
   if(is(species, "matrix")){
     # self defined pfm
@@ -165,20 +170,22 @@ kozakSequenceScore <- function(grl, faFile, species = "human",
   # this will not when ATG is on start of chr
   mat <- t(matrix(unlist(subSplit, use.names = FALSE), ncol = length(s)))
 
-  scores <- rep(0., length(s))
+  scores <- rep(0., length(sequences))
   for (i in seq(ncol(mat))) {
     for (n in seq_along(bases)) {
       match <- mat[, i] == bases[n]
       scores[match] <- scores[match] + pwm[n, i]
     }
   }
+  finalScores <- rep(0., length(grl))
+  finalScores[validSeqs] <- scores
   return(scores)
 }
 
 #' Find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function
-#' [distToCds()]
+#' [distToCds()], or any other relative ORF frame.
 #'
 #' possible outputs:
 #' 0: orf is in frame with cds
@@ -306,7 +313,7 @@ rankOrder <- function(grl) {
 #' If you used CageSeq to reannotate leaders, then the tss for the the leaders
 #' have changed, therefore the tx lengths have changed. To account for that
 #' call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
-#' and calculate graction length using `fractionLength(grl, tx_len)`.
+#' and calculate fraction length using `fractionLength(grl, tx_len)`.
 #' @return a numeric vector of ratios
 #' @family features
 #' @export

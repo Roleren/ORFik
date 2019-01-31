@@ -125,6 +125,10 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
 
 
 #' Map genomic to transcript coordinates by reference
+#'
+#' Similar to GenomicFeatures' pmapToTranscripts, but in this version the
+#' grl ranges are compared to reference ranges with same name, not
+#' by index. And it has a security fix.
 #' @param grl a \code{\link{GRangesList}} of ranges within
 #' the reference, grl must have column called names that gives
 #' grouping for result
@@ -287,8 +291,8 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' be returned for the correct object.
 #' @param gr a GRanges object (startSites and others, must be single point)
 #' @param tx a GRangesList of transcripts or (container region)
-#' @param downstream an integer, relative region to get downstream from
 #' @param upstream an integer vector, relative region to get upstream from.
+#' @param downstream an integer, relative region to get downstream from
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
 #' @family ExtendGenomicRanges
@@ -298,13 +302,15 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' ORF <- GRanges("1", c(3), "+") # start site
 #' names(ORF) <- "tx1_1" # ORF 1 on tx1
 #' tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
-#' windowPerGroup(ORF, tx, 5, -3) # <- 2nd codon
+#' windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 #'
-windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
+windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   g <- asTX(gr, tx)
-
-  starts <- pmax(start(g) - upstream, 1L)
   indices <- chmatch(txNames(gr), names(tx))
+
+  txEnds <- widthPerGroup(tx[indices], FALSE)
+  starts <- pmin(pmax(start(g) - upstream, 1L), txEnds)
+
   if (downstream != 0L) {
     ends <- pmin(pmax(end(g) + downstream, starts - 1),
                  widthPerGroup(tx[indices], FALSE))
@@ -324,8 +330,7 @@ windowPerGroup <- function(gr, tx, downstream = 0L, upstream = 0L) {
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
-#' @param grl a \code{\link{GRangesList}}
-#'  of 5' utrs or transcripts.
+#' @param grl a \code{\link{GRangesList}} of 5' utrs or transcripts.
 #' @param extension an integer, how much to extend the leaders.
 #' Or a GRangesList where start / stops by strand are the positions
 #' to use as new starts.
@@ -415,7 +420,7 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
 #' @param is.sorted logical (F), is grl sorted.
 #' @param keep.names logical (T), keep names or not.
-#' @return a Rle, one list per group with # of hits per position.
+#' @return a RleList, one integer-Rle per group with # of hits per position.
 #' @export
 #' @family ExtendGenomicRanges
 #' @examples

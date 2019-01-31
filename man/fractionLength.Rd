@@ -19,7 +19,7 @@ call `ORFik:::widthPerGroup(tx, TRUE)`.
 If you used CageSeq to reannotate leaders, then the tss for the the leaders
 have changed, therefore the tx lengths have changed. To account for that
 call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
-and calculate graction length using `fractionLength(grl, tx_len)`.}
+and calculate fraction length using `fractionLength(grl, tx_len)`.}
 }
 \value{
 a numeric vector of ratios
