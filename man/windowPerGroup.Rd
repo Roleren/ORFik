@@ -4,16 +4,16 @@
 \alias{windowPerGroup}
 \title{Get window region of tx around point of gr}
 \usage{
-windowPerGroup(gr, tx, downstream = 0L, upstream = 0L)
+windowPerGroup(gr, tx, upstream = 0L, downstream = 0L)
 }
 \arguments{
 \item{gr}{a GRanges object (startSites and others, must be single point)}
 
 \item{tx}{a GRangesList of transcripts or (container region)}
 
-\item{downstream}{an integer, relative region to get downstream from}
-
 \item{upstream}{an integer vector, relative region to get upstream from.}
+
+\item{downstream}{an integer, relative region to get downstream from}
 }
 \value{
 a GRanges, or GRangesList object if any group had > 1 exon.
@@ -38,7 +38,7 @@ be returned for the correct object.
 ORF <- GRanges("1", c(3), "+") # start site
 names(ORF) <- "tx1_1" # ORF 1 on tx1
 tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
-windowPerGroup(ORF, tx, 5, -3) # <- 2nd codon
+windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 
 }
 \seealso{

@@ -7,8 +7,7 @@
 extendLeaders(grl, extension = 1000L, cds = NULL)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}
-of 5' utrs or transcripts.}
+\item{grl}{a \code{\link{GRangesList}} of 5' utrs or transcripts.}
 
 \item{extension}{an integer, how much to extend the leaders.
 Or a GRangesList where start / stops by strand are the positions

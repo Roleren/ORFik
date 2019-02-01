@@ -15,8 +15,8 @@ codonSumsPerGroup <- function(countList, reg_len,
 
   len <- lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
-    acums <- cumsum(as.numeric(len[seq.int(1, length(len)-1)]))
-    acums <- rep.int(c(1,acums), runLengths)
+    acums <- cumsum(as.numeric(len[seq.int(1, length(len) - 1)]))
+    acums <- rep.int(c(1, acums), runLengths)
   } else { # special case for 1 group only
     acums <- 1
   }
@@ -65,17 +65,19 @@ fpkm_calc <- function(counts, lengthSize, librarySize) {
            (as.numeric(lengthSize) * as.numeric(librarySize)))
 }
 
-#' Get -20,20 start region as DNA characters per GRanges group
+#' Get start region as DNA-strings per GRanges group
 #'
-#' @param grl a GRangesList to find regions
-#' @param tx a GRangesList of transcripts containing grl
+#' One window per start site, if upstream and downstream are both 0, then
+#' only the startsite is returned.
+#' @param grl a \code{\link{GRangesList}} of ranges to find regions in.
+#' @inheritParams windowPerGroup
 #' @param faFile a FaFile from the fasta file, see ?FaFile.
 #'  Can also be path to fastaFile with fai file in same dir.
-#' @param groupBy (NULL) column to group grl by, if NULL group by names(gr)
 #' @return a character vector of start regions
-startRegionString <- function(grl, tx, faFile, groupBy = NULL) {
+startRegionString <- function(grl, tx, faFile, upstream = 20,
+                              downstream = 20) {
   gr <- startSites(grl, TRUE, TRUE, TRUE)
-  grl <- groupGRangesBy(windowPerGroup(grl, tx, 20, 20), groupBy)
+  grl <- windowPerGroup(gr, tx, upstream, downstream)
 
   return(as.character(txSeqsFromFa(grl, faFile, is.sorted = TRUE)))
 }
@@ -171,8 +173,8 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
                                       upStart = if (pShifted) 5 else 20,
                                       downStop = if (pShifted) 20 else 5) {
   windowSize <- upStart + downStop + 1
-  window <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE), tx, downStop,
-                           upStart)
+  window <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE), tx,
+                           upStart, downStop)
   noHits <- widthPerGroup(window) < windowSize
   if (all(noHits)) {
     warning("no grl had valid window size!")

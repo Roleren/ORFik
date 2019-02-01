@@ -14,7 +14,7 @@ a logical vector
 }
 \description{
 Input of this function, is the output of the function
-[distToCds()]
+[distToCds()], or any other relative ORF frame.
 }
 \details{
 possible outputs:

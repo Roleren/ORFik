@@ -267,10 +267,10 @@ then we make a self defined kozak sequence.
   if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 
     cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[1:10]
-
+    tx <-  exonsBy(txdb, by = "tx", use.names = TRUE)[names(cds)]
     faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
 
-    kozakSequenceScore(cds, faFile, species = "human")
+    kozakSequenceScore(cds, tx, faFile, species = "human")
 
     # A few species are pre supported, if not, make your own input pfm.
 
@@ -283,7 +283,7 @@ then we make a self defined kozak sequence.
                                  25,24,26,25,28,14,5,21,10,17,15,28)),
                     ncol = 4))
 
-   kozakSequenceScore(cds, faFile, species = pfm)
+   kozakSequenceScore(cds, tx, faFile, species = pfm)
 
   }
 
@@ -458,7 +458,7 @@ over the CDS. How would you make this filter ?
 ```
 We see that ORF 1, has a low(bad) entropy, but we do not know where the reads 
 are stacked up.
-So lets make a new filter by using ORFiks utility functions, that will work.
+So lets make a new filter by using ORFiks utility functions:
 ```{r eval = TRUE, echo = TRUE}
   tile <- tile1(cds, FALSE, FALSE) # tile them to 1 based positions
   tails <- tails(tile, 9)

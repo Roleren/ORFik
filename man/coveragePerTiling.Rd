@@ -17,7 +17,7 @@ of 5' utrs or transcripts.}
 \item{keep.names}{logical (T), keep names or not.}
 }
 \value{
-a Rle, one list per group with # of hits per position.
+a RleList, one integer-Rle per group with # of hits per position.
 }
 \description{
 It tiles each GRangesList group, and finds hits per position
