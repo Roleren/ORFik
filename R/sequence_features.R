@@ -210,8 +210,8 @@ gcContent <- function(seqs, fa) {
   if (is(seqs, "GRangesList")) {
     seqs <- txSeqsFromFa(seqs, fa)
   }
-  alf <- alphabetFrequency(seqs, as.prob=TRUE)
-  return(rowSums(alf[,c("G", "C")]))
+  alf <- alphabetFrequency(seqs, as.prob = TRUE)
+  return(rowSums(alf[, c("G", "C")]))
 }
 
 #' Find frame for each orf relative to cds

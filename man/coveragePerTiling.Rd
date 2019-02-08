@@ -23,7 +23,7 @@ a RleList, one integer-Rle per group with # of hits per position.
 It tiles each GRangesList group, and finds hits per position
 }
 \details{
-This is a safer speedup of coverageByTranscript in GenomicFeatures.
+This is a safer speedup of coverageByTranscript from GenomicFeatures
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
