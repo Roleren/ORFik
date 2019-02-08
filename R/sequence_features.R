@@ -24,10 +24,10 @@ distToTSS <- function(ORFs, tx){
   return(start(asTX(startSites, tx)))
 }
 
-#' Get distances between ORF ends and starts of their transcripts cds'.
+#' Get distances between ORF ends and starts of their transcripts cds.
 #'
 #' Will calculate distance between each ORF end and begining of the
-#' corresponding cds. Matching is done by transcript names.
+#' corresponding cds (main ORF). Matching is done by transcript names.
 #' This is applicable practically to the upstream (fiveUTRs) ORFs only.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 #' @references doi: 10.1074/jbc.R116.733899
@@ -182,6 +182,38 @@ kozakSequenceScore <- function(grl, tx, faFile, species = "human",
   return(scores)
 }
 
+#' Get GC content
+#'
+#' 0.5 means 50% of bases are G or C.
+#' @param seqs a character vector of ranges, or ranges as GRangesList
+#' @param fa fasta index file  .fai file, either path to it, or the loaded
+#' FaFile, default (NULL), only set if you give ranges as GRangesList
+#' @return a numeric vector of gc content scores
+#' @importFrom Biostrings alphabetFrequency
+#' @export
+#' @examples
+#' # Usually the ORFs are found in orfik, which makes names for you etc.
+#' # Here we make an example from scratch
+#' seqName <- "Chromosome"
+#' ORF1 <- GRanges(seqnames = seqName,
+#'                    ranges = IRanges(c(1007, 1096), width = 60),
+#'                    strand = c("+", "+"))
+#' ORF2 <- GRanges(seqnames = seqName,
+#'                     ranges = IRanges(c(400, 100), width = 30),
+#'                     strand = c("-", "-"))
+#' ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
+#' ORFs <- makeORFNames(ORFs) # need ORF names
+#' # get path to FaFile for sequences
+#' faFile <- system.file("extdata", "genome.fasta", package = "ORFik")
+#' gcContent(ORFs, faFile)
+gcContent <- function(seqs, fa) {
+  if (is(seqs, "GRangesList")) {
+    seqs <- txSeqsFromFa(seqs, fa)
+  }
+  alf <- alphabetFrequency(seqs, as.prob=TRUE)
+  return(rowSums(alf[,c("G", "C")]))
+}
+
 #' Find frame for each orf relative to cds
 #'
 #' Input of this function, is the output of the function
@@ -237,8 +269,10 @@ isOverlapping <- function(dists) {
 
 #' ORF rank in transcripts
 #'
+#' Creates an ordering of ORFs per transcript, so that ORF with the most
+#' upstream start codon is 1, second most upstream start codon is 2, etc.
+#' Must input a grl made from ORFik, txNames_2 -> 2.
 #' @references doi: 10.1074/jbc.R116.733899
-#' @description ig. second orf _2 -> 2
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @return a numeric vector of integers
 #' @family features

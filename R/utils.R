@@ -189,12 +189,11 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #'
 findFa <- function(faFile) {
   if (is.character(faFile)) {
-    if (dir.exists(faFile)) {
+    if (file.exists(faFile)) {
       return(FaFile(faFile))
     } else {
-      stop("faFile does not name a valid fasta file")
+      stop("faFile does not name a valid fasta/index file")
     }
-
   } else if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
     return(faFile)
   }

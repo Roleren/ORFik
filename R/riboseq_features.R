@@ -286,7 +286,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #'  transcripts will be extracted using
 #'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
 #'  Else it must be \code{\link{GRangesList}}
-#' @param RFP.sorted logical (F), have you ran this line:
+#' @param RFP.sorted logical (F), an optimizer, have you ran this line:
 #' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 #' Normally not touched, for internal optimization purposes.
 #' @return a named vector of numeric values of scores
@@ -537,33 +537,23 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
   return(scores)
 }
 
-#' Start codon coverage
-#'
-#' Get the number of reads in start codon for each ORF
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually either leaders, cds', 3' utrs or ORFs
-#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
-#' @param is.sorted logical (F), is grl sorted.
-#' @family features
-#' @return an numeric vector of counts
-startCodonCoverage <- function(grl, RFP, is.sorted = TRUE) {
-  return(countOverlaps(startCodons(grl, is.sorted), RFP))
-}
-
 #' Start region coverage
 #'
-#' Get the number of reads in the start region of each ORF.
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually either leaders, cds', 3' utrs or ORFs
+#' Get the number of reads in the start region of each ORF. If you want the
+#' start codon coverage only, set upstream = 0. Standard is 2 upstream
+#' and 2 downstream, a width 5 window centered at start site. since
+#' p-shifting is not 100% accurate, this window is usually the reads from the
+#' start site.
+#'
+#' If tx is null, then upstream will be force to 0 and downstream to
+#' a maximum of grl width. Since there is no reference for splicing.
 #' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
-#' @param is.sorted logical (T), is grl sorted.
-#' @param window integer (10), how many bases downstream to use.
+#' @inheritParams startRegion
 #' @family features
-#' @return an numeric vector of counts
-startRegionCoverage <- function(grl, RFP, is.sorted = TRUE, window = 10L) {
-  if (!is.sorted) grl <- sortPerGroup(grl)
-  region <- downstreamN(grl, window)
-
+#' @return a numeric vector of counts
+startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
+                                upstream = 2L, downstream = 2L) {
+  region <- startRegion(grl, tx, is.sorted, upstream, downstream)
   return(countOverlaps(region, RFP))
 }
 
@@ -629,7 +619,7 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
     abs(prop[[x]] - cdsProp[x]))
   dif2 <- lapply(seq.int(length(prop)), function(x) sum(dif[[x]]))
 
-  tempAns <- Reduce("+", dif2)/length(dif2) - 1
+  tempAns <- Reduce("+", dif2) / length(dif2) - 1
 
   ans <- rep.int(0, length(grl))
   ans[names(grl) %in% names] <- tempAns

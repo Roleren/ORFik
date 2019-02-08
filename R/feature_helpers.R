@@ -12,7 +12,6 @@
 #'
 codonSumsPerGroup <- function(countList, reg_len,
                               runLengths ) {
-
   len <- lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
     acums <- cumsum(as.numeric(len[seq.int(1, length(len) - 1)]))
@@ -76,9 +75,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize) {
 #' @return a character vector of start regions
 startRegionString <- function(grl, tx, faFile, upstream = 20,
                               downstream = 20) {
-  gr <- startSites(grl, TRUE, TRUE, TRUE)
-  grl <- windowPerGroup(gr, tx, upstream, downstream)
-
+  grl <- startRegion(grl, tx, is.sorted = TRUE, upstream, downstream)
   return(as.character(txSeqsFromFa(grl, faFile, is.sorted = TRUE)))
 }
 
@@ -172,9 +169,9 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
                                       pShifted = TRUE, keep.names = FALSE,
                                       upStart = if (pShifted) 5 else 20,
                                       downStop = if (pShifted) 20 else 5) {
+  if(!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
   windowSize <- upStart + downStop + 1
-  window <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE), tx,
-                           upStart, downStop)
+  window <- startRegion(grl, tx, TRUE, upStart, downStop)
   noHits <- widthPerGroup(window) < windowSize
   if (all(noHits)) {
     warning("no grl had valid window size!")

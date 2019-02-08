@@ -2,18 +2,20 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{windowPerGroup}
 \alias{windowPerGroup}
-\title{Get window region of tx around point of gr}
+\title{Get window region of GRanges object}
 \usage{
 windowPerGroup(gr, tx, upstream = 0L, downstream = 0L)
 }
 \arguments{
 \item{gr}{a GRanges object (startSites and others, must be single point)}
 
-\item{tx}{a GRangesList of transcripts or (container region)}
+\item{tx}{a GRangesList of transcripts or (container region), names of
+tx must contain all gr names. The names of gr can also be the ORFik orf
+names. that is "txName_id"}
 
-\item{upstream}{an integer vector, relative region to get upstream from.}
+\item{upstream}{an integer (0), relative region to get upstream from.}
 
-\item{downstream}{an integer, relative region to get downstream from}
+\item{downstream}{an integer (0), relative region to get downstream from}
 }
 \value{
 a GRanges, or GRangesList object if any group had > 1 exon.
@@ -28,10 +30,11 @@ exon is of course deleted.
 }
 \details{
 If a region has a part that goes out of bounds,
-it will set that side to the bound.
+it will set that position to the edge.
 If region has no hit in bound, a width 0 GRanges object is returned.
 This is usefull for things like countOverlaps, since 0 hits will then always
-be returned for the correct object.
+be returned for the correct object. If you don't want the 0 width windows,
+use \code{reduce()}
 }
 \examples{
 # find 2nd codon of an ORF on a spliced transcript

@@ -462,33 +462,43 @@ test_that("stopCodons works as intended", {
   test_ranges <- stopCodons(grl, TRUE)
 })
 
+ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
+                     ranges = IRanges(start = c(1, 10, 20), end = c(5, 15, 25)),
+                     strand = Rle(strand(rep("+", 3))))
+ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
+                      ranges = IRanges(start = c(10, 20, 30),
+                                       end = c(15, 25, 35)),
+                      strand = Rle(strand(rep("+", 3))))
+ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
+                      ranges = IRanges(start = c(20, 30, 40),
+                                       end = c(25, 35, 45)),
+                      strand = Rle(strand(rep("+", 3))))
+ORFranges$names <- rep("tx1_1" ,3)
+ORFranges2$names <- rep("tx1_2", 3)
+ORFranges3$names <- rep("tx1_3", 3)
+orfs <- c(ORFranges,ORFranges2,ORFranges3)
+grl <- groupGRangesBy(orfs, orfs$names)
+
+test_that("startRegion works as intended", {
+  transcriptRanges <- GRanges(seqnames = Rle(rep("1", 5)),
+                              ranges = IRanges(start = c(1, 10, 20, 30, 40),
+                                               end = c(5, 15, 25, 35, 45)),
+                              strand = Rle(strand(rep("+", 5))))
+  transcriptRanges <- groupGRangesBy(transcriptRanges,
+                                     rep("tx1", length(transcriptRanges)))
+
+  test_ranges <- startRegion(grl, transcriptRanges)
+  expect_equal(as.integer(unlist(start(test_ranges))), c(1, 4, 10, 14, 20))
+  test_ranges <- startRegion(grl)
+  expect_equal(as.integer(unlist(end(test_ranges))), c(3, 5, 12, 15, 22))
+})
+
 test_that("uniqueGroups works as intended", {
-
-  ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),
-                       ranges = IRanges(start = c(1, 10, 20),
-                                        end = c(5, 15, 25)),
-                       strand = Rle(strand(rep("+", 3))),
-                       names = paste0("tx1_", rep(1, 3)))
-  ORFranges2 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(1, 10, 20),
-                                         end = c(5, 15, 25)),
-                        strand = Rle(strand(rep("+", 3))),
-                        names = paste0("tx2_", rep(1, 3)))
-  ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
-                        ranges = IRanges(start = c(30, 40, 50), end = c(35, 45, 55)),
-                        strand = Rle(strand(rep("-", 3))),
-                        names = paste0("tx3_", rep(1, 3)))
-
-  names(ORFranges) <- rep("tx1_1" ,3)
-  names(ORFranges2) <- rep("tx2_1", 3)
-  names(ORFranges3) <- rep("tx3_1", 3)
-  grl <- GRangesList(tx1_1 = ORFranges, tx2_1 = ORFranges2,
-                     tx3_1 = ORFranges3)
-
+  grl[3] <- grl[1]
   test_ranges <- uniqueGroups(grl)
 
   expect_is(test_ranges, "GRangesList")
-  expect_equal(strandPerGroup(test_ranges, FALSE)[1], "+")
+  expect_equal(strandPerGroup(test_ranges, FALSE), c("+", "+"))
   expect_equal(length(test_ranges), 2)
   expect_equal(names(test_ranges),  c("1", "2"))
 

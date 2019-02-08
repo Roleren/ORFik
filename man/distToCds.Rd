@@ -2,7 +2,7 @@
 % Please edit documentation in R/sequence_features.R
 \name{distToCds}
 \alias{distToCds}
-\title{Get distances between ORF ends and starts of their transcripts cds'.}
+\title{Get distances between ORF ends and starts of their transcripts cds.}
 \usage{
 distToCds(ORFs, fiveUTRs, cds = NULL)
 }
@@ -22,7 +22,7 @@ an integer vector, +1 means one base upstream of cds, -1 means
 }
 \description{
 Will calculate distance between each ORF end and begining of the
-corresponding cds. Matching is done by transcript names.
+corresponding cds (main ORF). Matching is done by transcript names.
 This is applicable practically to the upstream (fiveUTRs) ORFs only.
 The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 }
@@ -49,9 +49,8 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{rankOrder}},
   \code{\link{ribosomeReleaseScore}},
   \code{\link{ribosomeStallingScore}},
-  \code{\link{startCodonCoverage}},
   \code{\link{startRegionCoverage}},
-  \code{\link{subsetCoverage}},
+  \code{\link{startRegion}}, \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
 \concept{features}

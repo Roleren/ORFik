@@ -50,6 +50,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #'                     strand = c("-", "-"))
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' makeORFNames(grl)
+#'
 makeORFNames <- function(grl, groupByTx = TRUE) {
   ranks <- makeExonRanks(grl, byTranscript = TRUE)
   asGR <- unlistGrl(grl)
@@ -61,7 +62,6 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
     return(groupGRangesBy(asGR, asGR$names))
   }
 }
-
 
 #' Tile each GRangesList group to 1-base resolution.
 #'
@@ -267,15 +267,14 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' @family ExtendGenomicRanges
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
-  if (!(is(faFile, "FaFile") || is(faFile, "BSgenome")))
-    stop("only FaFile and BSgenome is valid input class")
+  faFile <- findFa(faFile)
   if (!any(seqlevels(grl) %in% seqlevels(faFile)))
     stop("FaFile had no matching seqlevels to ranges object")
   if (!is.sorted) grl <- sortPerGroup(grl)
   return(extractTranscriptSeqs(faFile, transcripts = grl))
 }
 
-#' Get window region of tx around point of gr
+#' Get window region of GRanges object
 #'
 #' If downstream is 20, it means the window will start 20 downstream of
 #' gr start site (-20 in relative transcript coordinates.)
@@ -285,14 +284,17 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' exon is of course deleted.
 #'
 #' If a region has a part that goes out of bounds,
-#' it will set that side to the bound.
+#' it will set that position to the edge.
 #' If region has no hit in bound, a width 0 GRanges object is returned.
 #' This is usefull for things like countOverlaps, since 0 hits will then always
-#' be returned for the correct object.
+#' be returned for the correct object. If you don't want the 0 width windows,
+#' use \code{reduce()}
 #' @param gr a GRanges object (startSites and others, must be single point)
-#' @param tx a GRangesList of transcripts or (container region)
-#' @param upstream an integer vector, relative region to get upstream from.
-#' @param downstream an integer, relative region to get downstream from
+#' @param tx a GRangesList of transcripts or (container region), names of
+#'  tx must contain all gr names. The names of gr can also be the ORFik orf
+#'  names. that is "txName_id"
+#' @param upstream an integer (0), relative region to get upstream from.
+#' @param downstream an integer (0), relative region to get downstream from
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
 #' @family ExtendGenomicRanges
@@ -330,7 +332,8 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
-#' @param grl a \code{\link{GRangesList}} of 5' utrs or transcripts.
+#' @param grl usually a \code{\link{GRangesList}} of 5' utrs or transcripts.
+#' Can be used for any extension of groups.
 #' @param extension an integer, how much to extend the leaders.
 #' Or a GRangesList where start / stops by strand are the positions
 #' to use as new starts.
@@ -378,9 +381,8 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
 
 #' Get overlaps and convert to coverage list
 #'
-#' @param gr a \code{\link{GRanges}}
-#'  of 5' utrs or transcripts.
-#' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
+#' @param gr a \code{\link{GRanges}} object, to get coverage of.
+#' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc.
 #' @param keep.names logical (T), keep names or not.
 #' @param type a string (any), argument for countOverlaps.
 #' @return a Rle, one list per group with # of hits per position.
@@ -415,11 +417,12 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group, and finds hits per position
+#'
+#' This is a safer speedup of coverageByTranscript in GenomicFeatures.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
-#' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc
 #' @param is.sorted logical (F), is grl sorted.
-#' @param keep.names logical (T), keep names or not.
+#' @inheritParams overlapsToCoverage
 #' @return a RleList, one integer-Rle per group with # of hits per position.
 #' @export
 #' @family ExtendGenomicRanges
@@ -450,10 +453,10 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' Subset GRanges to get desired frame. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.
 #'
-#’ @export
 #' @param x A tiled to size of 1 GRanges object
 #' @param frame A numeric indicating which frame to extract
 #' @return GRanges object reduced to only first frame
+#' @export
 #'
 subset_to_frame <- function(x, frame) {
   if (as.vector(strand(x) == "+")[1]) {
