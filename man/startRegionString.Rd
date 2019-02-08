@@ -9,14 +9,16 @@ startRegionString(grl, tx, faFile, upstream = 20, downstream = 20)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} of ranges to find regions in.}
 
-\item{tx}{a GRangesList of transcripts or (container region)}
+\item{tx}{a GRangesList of transcripts or (container region), names of
+tx must contain all gr names. The names of gr can also be the ORFik orf
+names. that is "txName_id"}
 
 \item{faFile}{a FaFile from the fasta file, see ?FaFile.
 Can also be path to fastaFile with fai file in same dir.}
 
-\item{upstream}{an integer vector, relative region to get upstream from.}
+\item{upstream}{an integer (0), relative region to get upstream from.}
 
-\item{downstream}{an integer, relative region to get downstream from}
+\item{downstream}{an integer (0), relative region to get downstream from}
 }
 \value{
 a character vector of start regions

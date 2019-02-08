@@ -13,7 +13,9 @@ rankOrder(grl)
 a numeric vector of integers
 }
 \description{
-ig. second orf _2 -> 2
+Creates an ordering of ORFs per transcript, so that ORF with the most
+upstream start codon is 1, second most upstream start codon is 2, etc.
+Must input a grl made from ORFik, txNames_2 -> 2.
 }
 \examples{
 gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
@@ -43,9 +45,8 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
   \code{\link{ribosomeReleaseScore}},
   \code{\link{ribosomeStallingScore}},
-  \code{\link{startCodonCoverage}},
   \code{\link{startRegionCoverage}},
-  \code{\link{subsetCoverage}},
+  \code{\link{startRegion}}, \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
 \concept{features}

@@ -10,7 +10,7 @@ coveragePerTiling(grl, reads, is.sorted = FALSE, keep.names = TRUE)
 \item{grl}{a \code{\link{GRangesList}}
 of 5' utrs or transcripts.}
 
-\item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc}
+\item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc.}
 
 \item{is.sorted}{logical (F), is grl sorted.}
 
@@ -21,6 +21,9 @@ a RleList, one integer-Rle per group with # of hits per position.
 }
 \description{
 It tiles each GRangesList group, and finds hits per position
+}
+\details{
+This is a safer speedup of coverageByTranscript from GenomicFeatures
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

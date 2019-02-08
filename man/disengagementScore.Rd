@@ -18,7 +18,7 @@ transcripts will be extracted using
 \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
 Else it must be \code{\link{GRangesList}}}
 
-\item{RFP.sorted}{logical (F), have you ran this line:
+\item{RFP.sorted}{logical (F), an optimizer, have you ran this line:
 \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 Normally not touched, for internal optimization purposes.}
 }
@@ -56,9 +56,8 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{rankOrder}},
   \code{\link{ribosomeReleaseScore}},
   \code{\link{ribosomeStallingScore}},
-  \code{\link{startCodonCoverage}},
   \code{\link{startRegionCoverage}},
-  \code{\link{subsetCoverage}},
+  \code{\link{startRegion}}, \code{\link{subsetCoverage}},
   \code{\link{translationalEff}}
 }
 \concept{features}

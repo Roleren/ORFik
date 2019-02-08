@@ -33,8 +33,7 @@ Other features: \code{\link{computeFeaturesCage}},
   \code{\link{rankOrder}},
   \code{\link{ribosomeReleaseScore}},
   \code{\link{ribosomeStallingScore}},
-  \code{\link{startCodonCoverage}},
   \code{\link{startRegionCoverage}},
-  \code{\link{translationalEff}}
+  \code{\link{startRegion}}, \code{\link{translationalEff}}
 }
 \concept{features}

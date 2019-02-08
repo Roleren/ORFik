@@ -29,4 +29,5 @@ gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
                     strand = c("-", "-"))
 grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 makeORFNames(grl)
+
 }

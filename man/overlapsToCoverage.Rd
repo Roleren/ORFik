@@ -7,10 +7,9 @@
 overlapsToCoverage(gr, reads, keep.names = TRUE, type = "any")
 }
 \arguments{
-\item{gr}{a \code{\link{GRanges}}
-of 5' utrs or transcripts.}
+\item{gr}{a \code{\link{GRanges}} object, to get coverage of.}
 
-\item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc}
+\item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc.}
 
 \item{keep.names}{logical (T), keep names or not.}
 
