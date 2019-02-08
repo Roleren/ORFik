@@ -169,7 +169,7 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
                                       pShifted = TRUE, keep.names = FALSE,
                                       upStart = if (pShifted) 5 else 20,
                                       downStop = if (pShifted) 20 else 5) {
-  if(!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
+  if (!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
   windowSize <- upStart + downStop + 1
   window <- startRegion(grl, tx, TRUE, upStart, downStop)
   noHits <- widthPerGroup(window) < windowSize
