@@ -35,7 +35,7 @@ downstream and upstream of the codon.
 \examples{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
-txNames <- txNamesWithLeaders(txdb)
+txNames <- filterTranscripts(txdb)
 getStartStopWindows(txdb, txNames)
 
 }

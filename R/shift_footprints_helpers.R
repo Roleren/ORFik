@@ -1,46 +1,3 @@
-#' Calculate metaplot coverage of reads around input GRangesList object.
-#'
-#' Sums up coverage over set of GRanges objects that.
-#' @param x GRanges object of your reads.
-#' You should resize them beforehand to width of 1 to focus on
-#' 5' ends of footprints.
-#' @param windows GRanges object of your CDSs start or stop postions. Its width
-#' has to be even number as we will assume in the middle is position zero which
-#' is included in the downstream window.
-#' @return A data.frame with average counts (avg_counts) of reads mapped to
-#' positions (position) specified in windows along with frame (frame).
-#' @export
-#' @importFrom BiocGenerics Reduce
-#' @examples
-#' windows <- GenomicRanges::GRangesList(
-#'   GenomicRanges::GRanges(seqnames = "chr1",
-#'                          ranges = IRanges::IRanges(c(50, 100), c(80, 200)),
-#'                          strand = "-"))
-#' x <- GenomicRanges::GRanges(
-#'   seqnames = "chr1",
-#'   ranges =  IRanges::IRanges(c(100, 180), c(200, 300)),
-#'   strand = "-")
-#' metaWindow(x, windows)
-#'
-metaWindow <- function(x, windows) {
-
-  window_size <- unique(sum(width(windows)))
-  if (length(window_size) != 1) {
-    stop("All input 'windows' should have the same sum(width(windows))")
-  }
-  if (window_size %% 2 != 0) stop("Width of the window has to be even number.")
-  window_size <- (window_size)/2
-  cvg <- coverageByTranscript(x, windows)
-  cvg <- Reduce(`+`, cvg) / length(cvg)
-
-  hitMap <- data.frame(avg_counts = as.vector(cvg),
-                       position = -window_size:(window_size - 1),
-                       frame = c(rev(rep_len(3:1, window_size)),
-                                 rep_len(seq(3), window_size)))
-  return(hitMap)
-}
-
-
 #' Shift ribo-seq reads using cigar string
 #'
 #' @param cigar the cigar of the reads
@@ -73,10 +30,15 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 }
 
 
-#' Get the transcripts that have minimum lengths of leaders and cds.
+#' Get the transcripts that have minimum lengths of leaders, cds and trailer.
 #'
-#' Filter transcripts to those whohave 5' UTR, CDS, 3' UTR of
-#' some lengths, pick the longest per gene.
+#' Filter transcripts to those who have 5' UTR, CDS, 3' UTR of some lengths,
+#' pick the longest per gene.
+#'
+#' If a transcript does not have a 3' UTR, then the length is 0,
+#' so they will be filtered out. So only transcripts with leaders, cds and
+#' 3' UTRs will be returned. You can set the integer to 0, that will return all
+#' within that group.
 #' @param txdb a TxDb object from gtf
 #' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
 #' transcripts
@@ -89,9 +51,9 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 #' @examples
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
-#' txNames <- txNamesWithLeaders(txdb)
+#' txNames <- filterTranscripts(txdb)
 #'
-txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
+filterTranscripts <- function(txdb, minFiveUTR = 30L,
                                minCDS = 150L, minThreeUTR = 30L) {
   if(!is(txdb, "TxDb")) stop("txdb must be a TxDb object")
 
@@ -128,7 +90,7 @@ txNamesWithLeaders <- function(txdb, minFiveUTR = 30L,
 #' @examples
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
-#' txNames <- txNamesWithLeaders(txdb)
+#' txNames <- filterTranscripts(txdb)
 #' getStartStopWindows(txdb, txNames)
 #'
 getStartStopWindows <- function(
@@ -177,6 +139,8 @@ getStartStopWindows <- function(
 
 #' Find if there is periodicity in the vector
 #'
+#' The values 2.9 and 3.1 as amplitude region, have beenchosen from testing for
+#' optimal values
 #' @param x (numeric) Vector of values to detect periodicity of 3 like in
 #' RiboSeq data.
 #' @return a logical, if it is periodic.

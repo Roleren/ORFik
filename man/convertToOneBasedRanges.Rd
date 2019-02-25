@@ -18,10 +18,11 @@ sums up the hits per position.}
 Converted GRanges object
 }
 \description{
-There are 3 ways of doing this
+There are 4 ways of doing this
 1. Take 5' ends, reduce away rest (5prime)
-2. Tile and include all (tileAll)
-3. Take middle point per GRanges (middle)
+2. Take 3' ends, reduce away rest (3prime)
+3. Tile and include all (tileAll)
+4. Take middle point per GRanges (middle)
 }
 \details{
 Many other ways to do this have their own functions, like startCodons and

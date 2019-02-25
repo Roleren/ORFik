@@ -133,10 +133,11 @@ fread.bed <- function(filePath) {
 
 #' Convert a GRanges Object to 1 width reads
 #'
-#' There are 3 ways of doing this
+#' There are 4 ways of doing this
 #' 1. Take 5' ends, reduce away rest (5prime)
-#' 2. Tile and include all (tileAll)
-#' 3. Take middle point per GRanges (middle)
+#' 2. Take 3' ends, reduce away rest (3prime)
+#' 3. Tile and include all (tileAll)
+#' 4. Take middle point per GRanges (middle)
 #'
 #' Many other ways to do this have their own functions, like startCodons and
 #' stopCodons.
@@ -150,11 +151,13 @@ fread.bed <- function(filePath) {
 convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE){
   if (method == "5prime") {
-    gr <- resize(gr, width = 1)
+    gr <- resize(gr, width = 1, fix = "start")
+  } else if(method == "3prime") {
+    gr <- resize(gr, width = 1, fix = "end")
   } else if(method == "tileAll") {
     gr <- unlist(tile(gr, width = 1), use.names = FALSE)
 
-  } else if(method == "middle") {
+  }  else if(method == "middle") {
     ranges(gr) <- IRanges(start(gr) + ceiling((end(gr)-start(gr))/2),
                           width = 1)
   } else stop("method not defined")
@@ -164,19 +167,18 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     posGr <- gr[pos]
     dt <- as.data.table(posGr)[, .N, .(seqnames, start)]
     posGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$start, width = 1),
-                  strand = dt$strand)
+                  strand = "+")
     score <- dt$N
     negGr <- gr[!pos]
-    dt <- as.data.table(posGr)[, .N, .(seqnames, end)]
+    dt <- as.data.table(negGr)[, .N, .(seqnames, end)]
     negGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$end, width = 1),
-                     strand = dt$strand)
+                     strand = "-")
     score <- as.integer(c(score, dt$N))
 
     gr <- c(posGr, negGr)
     gr$score <- NULL
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = score)
   }
-
   return(gr)
 }
 

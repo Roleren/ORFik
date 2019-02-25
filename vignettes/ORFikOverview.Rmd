@@ -150,8 +150,8 @@ Filter cds to only those who have some minimum trailer and leader lengths, as
 well as cds. And get start and stop codons with extra window of 30bp around 
 them.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-txNames <- txNamesWithLeaders(txdb)
-windows <- getStartStopWindows(txdb, txNames)
+txNames <- filterTranscripts(txdb)
+windows <- getStartStopWindows(txdb, txNames, cds = cds)
 windows
 ```
 
@@ -163,28 +163,11 @@ hitMapStop <- metaWindow(footprintsGR, windows$stop)
 
 Plot start/stop windows for length 29.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-if (requireNamespace("ggplot2")) {
-  library(ggplot2)
-  ggplot(hitMapStart, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
-    geom_bar(stat = "identity") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    labs(title = paste0("Length 29 over START of canonical CDS")) +
-    xlab("\nshift from first START nucleotide [bp]") +
-    ylab("Averaged counts") +
-    guides(fill = FALSE)
-}
+ORFik:::pSitePlot(hitMapStart)
 ```
 
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-if (requireNamespace("ggplot2")) {
-  ggplot(hitMapStop, aes(x = factor(position), y = avg_counts, fill = factor(frame))) +
-    geom_bar(stat = "identity") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    labs(title = paste0("Length 29 over STOP of canonical CDS")) +
-    xlab("\nshift from last STOP nucleotide [bp]") +
-    ylab("Averaged counts") +
-    guides(fill = FALSE)
-}
+ORFik:::pSitePlot(hitMapStop, region = "stop")
 ```
 
 We can also use automatic detection of RiboSeq shifts using the code below. As
@@ -207,6 +190,10 @@ shiftedFootprints
 
 `ORFik` contains functions of gene identity that can be used to predict 
 which ORFs are potentially coding and functional.
+
+There are 2 main categories:
+- Sequence features (kozak, gc-content, etc.)
+- Read features (reads as: ribo-seq, RNA-seq, TCP-seq, shape-seq etc)
 
 - FLOSS `floss`,   
 - coverage `coverage`,  
@@ -248,6 +235,7 @@ features. See example below.
   dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile,
                   orfFeatures =  TRUE)
   print(dt)
+  dt
 }
 ```
 You will now get a data.table with one column per score, the columns are named after

@@ -116,7 +116,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' transcripts to use for estimation of the shifts. By default we take top 10%
 #' top covered transcripts as they represent less noisy dataset. This is only
 #' applicable when there are more than 1000 transcripts.
-#' @inheritParams txNamesWithLeaders
+#' @inheritParams filterTranscripts
 #' @param firstN (integer) Represents how many bases of the transcripts
 #' downstream of start codons to use for initial estimation of the
 #' periodicity.
@@ -143,7 +143,7 @@ detectRibosomeShifts <- function(
   window_size = 30L
 
 
-  txNames <- txNamesWithLeaders(txdb, minFiveUTR = minFiveUTR,
+  txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR,
                                 minCDS = minCDS, minThreeUTR = minThreeUTR)
   if (length(txNames) == 0) stop("No transcript has leaders and trailers of",
                                  " specified minFiveUTR, minCDS, minThreeUTR")
@@ -187,12 +187,12 @@ detectRibosomeShifts <- function(
       selected_lengths <- c(selected_lengths, l)
       if (start) {
         start_meta <- metaWindow(ends_uniq, ss$starts)
-        offset <- changePointAnalysis(start_meta$avg_counts, feature = "start")
+        offset <- changePointAnalysis(start_meta$counts, feature = "start")
         offsets_start <- c(offsets_start, offset)
       }
       if (stop) {
         stop_meta <- metaWindow(ends_uniq, ss$stops)
-        offset <- changePointAnalysis(stop_meta$avg_counts, feature = "stop")
+        offset <- changePointAnalysis(stop_meta$counts, feature = "stop")
         offsets_stop <- c(offsets_stop, offset)
       }
     }

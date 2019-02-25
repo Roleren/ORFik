@@ -202,9 +202,9 @@ riboTISCoverageProportion <- function(grl, tx, footprints,
 
   lengthProportions <- c()
   for (l in allLengths) {
-    ends_uniq <- footprints[rwidth == l]
 
-    cvg <- overlapsToCoverage(unlTile, ends_uniq, FALSE, type = "within")
+    cvg <- overlapsToCoverage(unlTile, footprints[rwidth == l], FALSE,
+                              type = "within")
 
     cvg <- cvg /sum(cvg)
     cvg[is.nan(unlist(sum(runValue(cvg)), use.names = FALSE))] <-
