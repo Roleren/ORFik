@@ -114,7 +114,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
   max <- max(coverage$position) + 1
 
   plot <- ggplot(as.data.frame(coverage) ,
-                 aes(x=position, y=fraction, fill=counts)) + geom_tile()  +
+                 aes(x=position, y=fraction, fill=count)) + geom_tile()  +
     scale_fill_gradientn(colours = c("white","yellow2", "yellow3","lightblue"
                                      ,"blue", "navy"),
                          name = scoring) +

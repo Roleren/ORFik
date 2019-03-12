@@ -15,10 +15,6 @@ scaledWindowPositions(grl, reads, scaleTo = 100)
 a meta window can not directly be created, since a meta window must
 have equal size for all windows. Rescale all windows to scaleTo.
 i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc.}
-
-\item{scoring}{a character, one of (mean, median, sum, none) Lets say
-window should go from 200 bases to 100, then position 1 and 2 -> position 1.
-How should they be merged ?}
 }
 \value{
 A data.table with scored counts (counts) of
@@ -29,7 +25,7 @@ frame (frame).
 For example scale a coverage plot of a all human CDS to width 100
 }
 \details{
-Nice for making metaplots
+Nice for making metaplots, the score will be mean of merged positions.
 }
 \seealso{
 Other coverage: \code{\link{coverageScorings}},

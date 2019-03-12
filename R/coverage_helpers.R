@@ -86,16 +86,13 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #'
 #' For example scale a coverage plot of a all human CDS to width 100
 #'
-#' Nice for making metaplots
+#' Nice for making metaplots, the score will be mean of merged positions.
 #' @param grl GRangesList or GRanges of your ranges
 #' @param reads GRanges object of your reads.
 #' @param scaleTo an integer (100), if windows have different size,
 #'  a meta window can not directly be created, since a meta window must
 #'  have equal size for all windows. Rescale all windows to scaleTo.
 #'  i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc.
-#' @param scoring a character, one of (mean, median, sum, none) Lets say
-#' window should go from 200 bases to 100, then position 1 and 2 -> position 1.
-#' How should they be merged ?
 #' @return A data.table with scored counts (counts) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).

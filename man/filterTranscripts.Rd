@@ -18,6 +18,8 @@ transcripts}
 
 \item{minThreeUTR}{(integer) minimum bp for 3' UTR during filtering for the
 transcripts}
+
+\item{stopOnEmpty}{logical TRUE, stop if no valid names are found ?}
 }
 \value{
 a character vector of valid tramscript names

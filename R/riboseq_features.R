@@ -46,6 +46,7 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
 #' @family features
 #' @export
 #' @examples
+#' # a toy example with ribo-seq p-shifted reads
 #' ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
 #'                                      end = c(10, 20, 32)),
 #'                strand = "+",
@@ -54,12 +55,12 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
 #' grl <- GRangesList(tx1_1 = ORF)
 #' reads <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
 #' # grl must have same names as cds + _1 etc, so that they can be matched.
-#' entropy(grl, RFP)
+#' entropy(grl, reads)
 #' # or on cds
 #' cdsORF <- GRanges("1", IRanges(35, 44), "+", names = "tx1")
 #' names(cdsORF) <- "tx1"
 #' cds <-  GRangesList(tx1 = cdsORF)
-#' entropy(cds, RFP)
+#' entropy(cds, reads)
 #'
 entropy <- function(grl, reads) {
   # Get count list of groups with hits
