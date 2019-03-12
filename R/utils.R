@@ -1,3 +1,59 @@
+#' Get the transcripts that have minimum lengths of leaders, cds and trailer.
+#'
+#' Filter transcripts to those who have 5' UTR, CDS, 3' UTR of some lengths,
+#' pick the longest per gene.
+#'
+#' If a transcript does not have a 3' UTR, then the length is 0,
+#' so they will be filtered out. So only transcripts with leaders, cds and
+#' 3' UTRs will be returned. You can set the integer to 0, that will return all
+#' within that group.
+#' @param txdb a TxDb object from gtf
+#' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
+#' transcripts
+#' @param minCDS (integer) minimum bp for CDS during filtering for the
+#' transcripts
+#' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
+#' transcripts
+#' @return a character vector of valid tramscript names
+#' @export
+#' @examples
+#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+#' txNames <- filterTranscripts(txdb)
+#'
+filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
+                              minThreeUTR = 30L, stopOnEmpty = TRUE) {
+  if(!is(txdb, "TxDb")) stop("txdb must be a TxDb object")
+
+  tx <- data.table::setDT(
+    GenomicFeatures::transcriptLengths(
+      txdb, with.cds_len = TRUE, with.utr5_len = TRUE, with.utr3_len = TRUE))
+  tx <- tx[tx$utr5_len >= minFiveUTR & tx$cds_len >= minCDS &
+             tx$utr3_len >= minThreeUTR, ]
+  gene_id <- cds_len <- NULL
+  data.table::setorder(tx, gene_id, -cds_len)
+  tx <- tx[!duplicated(tx$gene_id), ]
+  tx <- tx[!is.na(tx$gene_id)]
+  if (stopOnEmpty & length(tx$tx_name) == 0)
+    stop("No transcript has leaders and trailers of specified minFiveUTR"
+         ,"minCDS, minThreeUTR")
+
+  return(tx$tx_name)
+}
+
+#' Helper function to find overlaping seqlevels
+#'
+#' Useful to avoid warnings in bioC
+#' @param grl a GRangesList or GRanges object
+#' @param reads a GRanges or GAlignment object
+#' @return a character vector of valid seqlevels
+validSeqlevels <- function(grl, reads) {
+  readNames <- unique(seqnames(reads))
+  seqMatch <- readNames %in%
+    unique(seqnamesPerGroup(grl, FALSE))
+  return(readNames[seqMatch])
+}
+
 #' Helper function to check for GRangesList
 #' @param class the class you want to check if is GRL,
 #' either a character from class or the object itself.
@@ -141,15 +197,22 @@ fread.bed <- function(filePath) {
 #'
 #' Many other ways to do this have their own functions, like startCodons and
 #' stopCodons.
-#' @param gr GRanges Object to reduce
+#' @param gr GRanges, GAlignment Object to reduce
 #' @param method the method to reduce, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per position.
+#' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
+#'  for each read, that gives original width of read.
 #' @return  Converted GRanges object
 #' @family utils
 #'
 convertToOneBasedRanges <- function(gr, method = "5prime",
-                                    addScoreColumn = FALSE){
+                                    addScoreColumn = FALSE,
+                                    addSizeColumn = FALSE){
+  if (addSizeColumn) {
+    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), size = readWidths(gr))
+  }
+  gr <- GRanges(gr)
   if (method == "5prime") {
     gr <- resize(gr, width = 1, fix = "start")
   } else if(method == "3prime") {

@@ -20,7 +20,7 @@ shifted right by 10.}
 \value{
 A GRanges object of shifted footprints, sorted and resized to 1bp of
 p-site, with metacolumn "size" indicating footprint size before shifting and
-resizing.
+resizing, sorted in increasing order.
 }
 \description{
 Function shifts footprints (GRanges) using specified offsets for every of
@@ -47,3 +47,8 @@ shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
                                 shifts$offsets_start)
 }
 }
+\seealso{
+Other pshifting: \code{\link{changePointAnalysis}},
+  \code{\link{detectRibosomeShifts}}
+}
+\concept{pshifting}

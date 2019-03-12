@@ -17,3 +17,6 @@ a logical, if it is periodic.
 The values 2.9 and 3.1 as amplitude region, have beenchosen from testing for
 optimal values
 }
+\details{
+It uses Fourier transform for finding periodic vectors
+}

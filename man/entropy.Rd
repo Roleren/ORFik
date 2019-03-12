@@ -30,7 +30,7 @@ ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
                names = rep("tx1_1", 3))
 names(ORF) <- rep("tx1", 3)
 grl <- GRangesList(tx1_1 = ORF)
-RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
+reads <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
 # grl must have same names as cds + _1 etc, so that they can be matched.
 entropy(grl, RFP)
 # or on cds

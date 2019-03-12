@@ -4,7 +4,7 @@
 \alias{initiationScore}
 \title{Get initiation score for a GRangesList of ORFs}
 \usage{
-initiationScore(grl, cds, tx, footprints, pShifted = TRUE)
+initiationScore(grl, cds, tx, reads, pShifted = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with ORFs}
@@ -13,13 +13,13 @@ initiationScore(grl, cds, tx, footprints, pShifted = TRUE)
 
 \item{tx}{a GrangesList of transcripts covering grl.}
 
-\item{footprints}{ribosomal footprints, given as Galignment object or
+\item{reads}{ribosomal footprints, given as Galignment object or
 Granges}
 
 \item{pShifted}{a logical (TRUE), are riboseq reads p-shifted?}
 }
 \value{
-an integer vector, 1 score per ORF
+an integer vector, 1 score per ORF, with names of grl
 }
 \description{
 initiationScore tries to check how much each TIS region resembles, the
@@ -36,24 +36,24 @@ As result there is one value per ORF:
 \examples{
 # Good hiting ORF
 ORF <- GRanges(seqnames = "1",
-               ranges = IRanges(start = c(21), end = c(40)),
+               ranges = IRanges(21, 40),
                strand = "+")
 names(ORF) <- c("tx1")
 grl <- GRangesList(tx1 = ORF)
-# 1 width position based
-RFP <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
- c(21, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
-score(RFP) <- 28 # original width
+# 1 width p-shifted reads
+reads <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+                            width = 1), "+")
+score(reads) <- 28 # original width
 cds <- GRanges(seqnames = "1",
-               ranges = IRanges(start = c(50), end = c(80)),
+               ranges = IRanges(50, 80),
                strand = "+")
 cds <- GRangesList(tx1 = cds)
 tx <- GRanges(seqnames = "1",
-               ranges = IRanges(1,85),
+               ranges = IRanges(1, 85),
                strand = "+")
 tx <- GRangesList(tx1 = tx)
 
-initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
+initiationScore(grl, cds, tx, reads, pShifted = TRUE)
 
 }
 \references{

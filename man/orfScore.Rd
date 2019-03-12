@@ -9,7 +9,7 @@ orfScore(grl, RFP, is.sorted = FALSE)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with ORFs}
 
-\item{RFP}{ribozomal footprints, given as Galignment object,
+\item{RFP}{ribosomal footprints, given as Galignment object,
 Granges or GRangesList}
 
 \item{is.sorted}{logical (F), is grl sorted.}
@@ -33,6 +33,10 @@ negate the resulting value.
 As result there is one value per ORF:
 Positive values say that the first frame have the most reads,
 negative values say that the first frame does not have the most reads.
+NOTE: If reads are not of size 1, then a read from 1-4 on range of 1-4,
+will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
+is that only the 5' end is important, so that only frame1 = 1,
+to get this, you first resize reads to 5'end only.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

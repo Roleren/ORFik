@@ -337,6 +337,8 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #' @inheritParams windowPerGroup
 #' @family features
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
+#' @export
+#'
 startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
                         upstream = 2L, downstream = 2L) {
   if (!is.sorted) grl <- sortPerGroup(grl)
@@ -346,7 +348,6 @@ startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
   }
   region <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE),
                              tx, upstream, downstream)
-
   return(region)
 }
 

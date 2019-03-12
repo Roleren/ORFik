@@ -103,6 +103,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
   } else {
     message("orfFeatures set to False, dropping all orf features.")
   }
+  scores[] # for print
   return(scores)
 }
 
@@ -257,5 +258,6 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
   } else {
     message("orfFeatures set to False, dropping all orf features.")
   }
+  scores[] # for print
   return(scores)
 }

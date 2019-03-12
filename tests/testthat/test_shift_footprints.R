@@ -17,11 +17,11 @@ test_that("ribosome shifting works as intended", {
 
   shifts <- detectRibosomeShifts(footprints, txdb)
   expect_is(shifts, "data.frame")
-  expect_equal(shifts$fragment_length, c(28, 29, 30))
+  expect_equal(shifts$fraction, c(28, 29, 30))
   expect_equal(shifts$offsets_start, c(-11, -12, -13))
 
   # shiftFootprints
-  shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
+  shiftedReads <- shiftFootprints(footprints, shifts$fraction,
                                   shifts$offsets_start)
 
   expect_is(shiftedReads, "GRanges")

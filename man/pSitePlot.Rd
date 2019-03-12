@@ -4,18 +4,30 @@
 \alias{pSitePlot}
 \title{Plot area around TIS for p-shifted reads}
 \usage{
-pSitePlot(hitMap, length = 29, region = "start")
+pSitePlot(hitMap, length = 29, region = "start", output = NULL)
 }
 \arguments{
-\item{hitMap}{a data.frame, given from metaWindow}
+\item{hitMap}{a data.frame, given from metaWindow (must have columns:
+position, score and frame)}
 
 \item{length}{an integer (29), which length is this for?}
 
-\item{region}{a character (start), either "start or "stop".}
+\item{region}{a character (start), either "start or "stop"}
+
+\item{output}{character string (NULL), if set, saves the plot as pdf
+to path given.}
 }
 \value{
-a ggplot
+a ggplot object of the coverage plot, NULL if output is set,
+then the plot will only be saved to location.
 }
 \description{
 Usefull to validate p-shifting is correct
+Can be used for any coverage of region around a point, like TIS, TSS,
+stop site etc.
 }
+\seealso{
+Other coveragePlot: \code{\link{coverageHeatMap}},
+  \code{\link{savePlot}}, \code{\link{windowCoveragePlot}}
+}
+\concept{coveragePlot}

@@ -36,3 +36,8 @@ If you return this function without assigning it and output is NULL,
 it will automaticly plot the figure in your session. If output is assigned,
 no plot will be shown in session.
 }
+\seealso{
+Other coveragePlot: \code{\link{coverageHeatMap}},
+  \code{\link{pSitePlot}}, \code{\link{savePlot}}
+}
+\concept{coveragePlot}

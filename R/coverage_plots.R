@@ -1,12 +1,19 @@
 #' Plot area around TIS for p-shifted reads
 #'
 #' Usefull to validate p-shifting is correct
-#' @param hitMap a data.frame, given from metaWindow
+#' Can be used for any coverage of region around a point, like TIS, TSS,
+#' stop site etc.
+#' @param hitMap a data.frame, given from metaWindow (must have columns:
+#' position, score and frame)
 #' @param length an integer (29), which length is this for?
-#' @param region a character (start), either "start or "stop".
-#' @return a ggplot
-pSitePlot <- function(hitMap, length = 29, region = "start") {
-  plot <- ggplot(hitMap, aes(x = factor(position), y = counts,
+#' @param region a character (start), either "start or "stop"
+#' @param output character string (NULL), if set, saves the plot as pdf
+#' to path given.
+#' @return a ggplot object of the coverage plot, NULL if output is set,
+#' then the plot will only be saved to location.
+#' @family coveragePlot
+pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
+  plot <- ggplot(hitMap, aes(x = factor(position), y = score,
                           fill = factor(frame))) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
@@ -15,7 +22,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start") {
     ylab("Averaged counts") +
     guides(fill = FALSE)
 
-  return(plot)
+  return(return(savePlot(plot, output)))
 }
 
 #' Get coverage window plot of reads
@@ -37,6 +44,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start") {
 #' @import ggplot2
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
+#' @family coveragePlot
 windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
@@ -78,11 +86,63 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     theme(legend.position="none") +
     facet_grid(fraction ~ feature, scales = "free")
 
+  return(savePlot(plot, output))
+}
+
+#' Create a heatmap of coverage
+#'
+#' Coverage rows in heat map is fraction
+#' Coverage column in heat map is score, default zscore of counts
+#'
+#'
+#' @param coverage a data.table of coverage with columns position, count and
+#' fraction
+#' @param output character string (NULL), if set, saves the plot as pdf
+#' to path given.
+#' @param scoring character vector (zscore), either of zScore,
+#' transcriptNormalized, sum, mean
+#' @return a ggplot object of the coverage plot, NULL if output is set,
+#' then the plot will only be saved to location.
+#' @import ggplot2
+#' @family coveragePlot
+coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
+  coverage$fraction <- factor(coverage$fraction,
+                              levels = unique(coverage$fraction),
+                              labels = unique(coverage$fraction))
+
+  min <- min(coverage$position)
+  max <- max(coverage$position) + 1
+
+  plot <- ggplot(as.data.frame(coverage) ,
+                 aes(x=position, y=fraction, fill=counts)) + geom_tile()  +
+    scale_fill_gradientn(colours = c("white","yellow2", "yellow3","lightblue"
+                                     ,"blue", "navy"),
+                         name = scoring) +
+    xlab("Position relative to start codon") +
+    ylab("Protected fragment length") +
+    scale_x_continuous(breaks=seq(min, max, 10)) +
+    theme_bw() + theme(panel.grid.major = element_blank(),
+                       panel.grid.minor = element_blank()) +
+    theme(text = element_text(size = 12))
+
+  return(savePlot(plot, output))
+}
+
+#' Helper function for writing plots to disc
+#' @param plot the ggplot to save
+#' @param output character string (NULL), if set, saves the plot as pdf
+#' to path given.
+#' @param width width of output in mm
+#' @param height height of output in mm
+#' @return a ggplot object of the coverage plot, NULL if output is set,
+#' then the plot will only be saved to location.
+#' @family coveragePlot
+savePlot <- function(plot, output = NULL, width = 200, height = 150) {
   if (!is.null(output)) {
     if(is.character(output) && dir.exists(dirname(outName))) {
       if (tools::file_ext(output) != "pdf") output <- paste0(output, ".pdf")
-      ggsave(output, plot = plot, width = 200, height=150, units = "mm",
-             dpi = 100, limitsize = FALSE)
+      ggsave(output, plot = plot, width = width, height = height, units = "mm",
+             dpi = 150, limitsize = FALSE)
     } else {
       stop("output does not name a valid directory")
     }

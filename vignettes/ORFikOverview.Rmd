@@ -128,13 +128,13 @@ table(qwidth(footprints))
 For the sake of this example we will focus only on most abundant length of 29.
 ```{r eval = TRUE, echo = TRUE} 
 footprints <- footprints[qwidth(footprints) == 29]
-footprintsGR <- granges(footprints, use.mcols = TRUE)
-footprintsGR
+footprints
 ```
 
 Restrict footprints to their 5' starts (after shifting it will be a p-site).
 ```{r eval = TRUE, echo = TRUE} 
-footprintsGR <- resize(footprintsGR, 1)
+footprintsGR <- ORFik:::convertToOneBasedRanges(footprints,
+                                                addSizeColumn = TRUE)
 footprintsGR
 ```
 
@@ -142,7 +142,9 @@ Now, lets prepare annotations and focus on START and STOP codons.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
 ```
 
@@ -151,14 +153,16 @@ well as cds. And get start and stop codons with extra window of 30bp around
 them.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 txNames <- filterTranscripts(txdb)
-windows <- getStartStopWindows(txdb, txNames, cds = cds)
-windows
+tx <- tx[txNames]; cds <- cds[txNames]; trailers <- trailers[txNames];
+windowsStart <- startRegion(cds[txNames], tx, TRUE, upstream = 30, 29)
+windowsStop <-  startRegion(trailers, tx, TRUE, upstream = 30, 29)
+windowsStart
 ```
 
 Calculate meta-coverage over start and stop windowed regions.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-hitMapStart <- metaWindow(footprintsGR, windows$start)
-hitMapStop <- metaWindow(footprintsGR, windows$stop)
+hitMapStart <- metaWindow(footprintsGR, windowsStart, withFrames = TRUE)
+hitMapStop <- metaWindow(footprintsGR, windowsStop, withFrames = TRUE)
 ```
 
 Plot start/stop windows for length 29.
@@ -182,7 +186,7 @@ Fortunately `ORFik` has function that can be used to shift footprints using
 desired shifts. Check documentation for more details.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 shiftedFootprints <- shiftFootprints(
-  footprints, shifts$fragment_length, shifts$offsets_start)
+  footprints, shifts$fraction, shifts$offsets_start)
 shiftedFootprints
 ```
 
@@ -234,7 +238,6 @@ features. See example below.
   txdb <- loadDb(txdbFile)
   dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile,
                   orfFeatures =  TRUE)
-  print(dt)
   dt
 }
 ```

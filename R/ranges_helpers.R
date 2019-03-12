@@ -324,7 +324,9 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   }
   g <- ranges(g)
   names(g) <- indices
-  return(pmapFromTranscriptF(g, tx, TRUE))
+  region <- pmapFromTranscriptF(g, tx, TRUE) # TRUE ?
+  names(region) <- names(gr)
+  return(region)
 }
 
 #' Extend the leaders transcription start sites.
@@ -380,77 +382,6 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
   if(is.null(cds)) return (extendedLeaders)
   return(addCdsOnLeaderEnds(extendedLeaders, cds))
 }
-
-#' Get overlaps and convert to coverage list
-#'
-#' @param gr a \code{\link{GRanges}} object, to get coverage of.
-#' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc.
-#' @param keep.names logical (T), keep names or not.
-#' @param type a string (any), argument for countOverlaps.
-#' @return a Rle, one list per group with # of hits per position.
-#' @export
-#' @family ExtendGenomicRanges
-#' @examples
-#' ORF <- GRanges(seqnames = "1",
-#'                ranges = IRanges(start = c(1, 10, 20),
-#'                                 end = c(5, 15, 25)),
-#'                strand = "+")
-#' names(ORF) <- "tx1"
-#' reads <- GRanges("1", IRanges(25, 25), "+")
-#' overlapsToCoverage(ORF, reads)
-#'
-overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
-  # could make this more efficient by counting overlaps
-  # only on untiled, then tile the ones that hit and count again
-  counts <- countOverlaps(gr, reads, type = type)
-
-  names <- names(counts)
-  names(counts) <- NULL
-  countList <- split(counts, names)
-  if (!keep.names) {
-    countList <- IRanges::RleList(countList)
-    names(countList) <- NULL
-    return(countList)
-  }
-  return(IRanges::RleList(countList))
-}
-
-
-#' Get coverage per group
-#'
-#' It tiles each GRangesList group, and finds hits per position
-#'
-#' This is a safer speedup of coverageByTranscript from GenomicFeatures
-#' @param grl a \code{\link{GRangesList}}
-#'  of 5' utrs or transcripts.
-#' @param is.sorted logical (F), is grl sorted.
-#' @inheritParams overlapsToCoverage
-#' @return a RleList, one integer-Rle per group with # of hits per position.
-#' @export
-#' @family ExtendGenomicRanges
-#' @examples
-#' ORF <- GRanges(seqnames = "1",
-#'                ranges = IRanges(start = c(1, 10, 20),
-#'                                 end = c(5, 15, 25)),
-#'                strand = "+")
-#' grl <- GRangesList(tx1_1 = ORF)
-#' RFP <- GRanges("1", IRanges(25, 25), "+")
-#' coveragePerTiling(grl, RFP)
-#'
-coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
-                              keep.names = TRUE) {
-
-  if (length(grl) > 10000) { # faster version for big grl
-    if (!is.sorted) grl <- sortPerGroup(grl)
-    cov <- coverageByTranscript(reads, grl)
-    if (!keep.names) names(cov) <- NULL
-    return(cov)
-  }
-
-  unlTile <- unlistGrl(tile1(grl, matchNaming = FALSE))
-  return(overlapsToCoverage(unlTile, reads, keep.names = keep.names))
-}
-
 
 #' Subset GRanges to get desired frame. GRanges object should be beforehand
 #' tiled to size of 1. This subsetting takes account for strand.

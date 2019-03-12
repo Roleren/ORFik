@@ -12,9 +12,10 @@
 #'
 codonSumsPerGroup <- function(countList, reg_len,
                               runLengths ) {
+  # TODO: USE NEW SCORING TO MAKE THIS VECTOR SIMPLER
   len <- lengths(countList)
   if (length(len) > 1) { # if more than 1 hit total
-    acums <- cumsum(as.numeric(len[seq.int(1, length(len) - 1)]))
+    acums <- cumsum(as.numeric(len[seq.int(length(len) - 1)]))
     acums <- rep.int(c(1, acums), runLengths)
   } else { # special case for 1 group only
     acums <- 1
@@ -135,103 +136,4 @@ checkRFP <- function(class) {
 subsetCoverage <- function(cov, y) {
   cov1 <- cov[[as.vector(seqnames(y)[1])]]
   return(as.vector(cov1[ranges(y)]))
-}
-
-
-#' Find proportion of reads per position in ORF TIS window
-#'
-#' Proportion defined as:
-#' average count per position in -20,20 normalized by counts per gene
-#'
-#' This pattern can be averaged on CDS's, to find other ORFs.
-#' When detecting new ORFs, this CDS average can be used as a template.
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually new ORFs, but can also be
-#'  either leaders, cds', 3'UTRs.
-#' @param tx a GrangesList of transcripts covering grl.
-#' @param footprints ribo seq reads as GAlignment, GRanges
-#'  or GRangesList object.
-#' @param onlyProportion a logical (FALSE), return whole data.frame or only
-#'  proportions
-#' @param average a logical (FALSE), take average over coverage in all grl ?
-#' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
-#' @param keep.names a logical(FALSE), only applies when onlyProportion
-#'  is TRUE.
-#' @param upStart upstream region boundary (5 or 20 as standard), relative
-#'  (5, mean 5 upstream from TIS)
-#' @param downStop downstream region boundary (5 or 20 as standard), relative
-#'  (5, mean 5 downstream from TIS)
-#' @return a data.frame with lengths by coverage / vector of proportions
-#' @importFrom BiocGenerics Reduce
-#'
-riboTISCoverageProportion <- function(grl, tx, footprints,
-                                      onlyProportion = FALSE, average = FALSE,
-                                      pShifted = TRUE, keep.names = FALSE,
-                                      upStart = if (pShifted) 5 else 20,
-                                      downStop = if (pShifted) 20 else 5) {
-  if (!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
-  windowSize <- upStart + downStop + 1
-  window <- startRegion(grl, tx, TRUE, upStart, downStop)
-  noHits <- widthPerGroup(window) < windowSize
-  if (all(noHits)) {
-    warning("no grl had valid window size!")
-    return(RleList(Rle(values = 0, lengths = windowSize)))
-  }
-  window <- window[!noHits]
-  # fix names, find a better way to store this, should be a function.
-  if (is.ORF(grl)) {
-    names(window) <- names(grl[!noHits])
-    g <- unlist(window, use.names = TRUE)
-    names(g) <- sub("\\..*", "", names(g), perl = TRUE)
-    mcols(g) <- DataFrame(row.names = names(g), names = names(g))
-    window <- groupGRangesBy(g)
-  }
-
-  unlTile <- tile1(window, matchNaming = FALSE)
-  if(length(unlTile) != length(window)) stop("Bad naming, most likely _
-                                             is not used for ORF correctly")
-  unlTile <- unlistGrl(unlTile)
-
-  rwidth <- readWidths(footprints)
-  footprints <- footprints[rwidth < 31 & rwidth > 26]
-  rwidth <- readWidths(footprints)
-  allLengths <- sort(unique(rwidth))
-  if (!(is.gr_or_grl(footprints) & unique(width(footprints)) == 1)) {
-    footprints <- resize(granges(footprints), 1)
-  }
-
-  lengthProportions <- c()
-  for (l in allLengths) {
-
-    cvg <- overlapsToCoverage(unlTile, footprints[rwidth == l], FALSE,
-                              type = "within")
-
-    cvg <- cvg /sum(cvg)
-    cvg[is.nan(unlist(sum(runValue(cvg)), use.names = FALSE))] <-
-      RleList(Rle(values = 0, lengths = windowSize))
-    if (average) {
-      cvg <- Reduce(`+`, cvg)
-      lengthProportions <- c(lengthProportions, as.vector(cvg/sum(cvg)))
-    } else {
-      lengthProportions <- c(lengthProportions, cvg)
-    }
-  }
-  if (!onlyProportion) {
-    if (average) {
-      lengths <- unlist(lapply(allLengths, function(x){rep.int(x,windowSize)}),
-                        use.names = FALSE)
-      df <- data.frame(prop = lengthProportions, length = lengths,
-                       pos = rep(seq.int(-upStart, downStop),
-                                 length(allLengths)))
-      return(df)
-    } else {
-      warning("Can only return proportion when average == FALSE")
-      return(lengthProportions)
-    }
-  } else {
-    if (keep.names & !average) {
-      names(lengthProportions[[1]]) <- names(window)
-    }
-    return(lengthProportions)
-  }
 }

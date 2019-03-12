@@ -161,12 +161,13 @@ test_that("orfScore works as intended", {
 
   scores <- orfScore(grl, RFP4)
   expect_is(scores, "data.table")
-  expect_equal(as.numeric(round(scores$ORFScores, 2)), c(1.58, 0.00, 0.00, 0.00))
+  expect_equal(as.numeric(round(scores$ORFScores, 2)),
+               c(1.58, 0.00, 0.00, 0.00))
 
   scores <- orfScore(grl, RFP7)
   expect_is(scores, "data.table")
-  expect_equal(as.numeric(round(scores$ORFScores, 2)), c(0.00, 0.00, 0.36, 0.00))
-
+  expect_equal(as.numeric(round(scores$ORFScores, 2)),
+               c(-0.33, 0.35, 0.43, 0.00))
 })
 
 test_that("fractionLength works as intended", {
@@ -335,9 +336,12 @@ test_that("initiationScore works as intended", {
   neg_control <- GRangesList(tx1 = GRanges("1", 82, "+"))
 
   test_result <- initiationScore(cds, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), -1.00) # cds should score itself -1
+  names(test_result) <- NULL
+  expect_equal(round(test_result, 2), -1.00) # cds should score itself -1
   test_result <- initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), -0.43) # ok scoring ORF
+  names(test_result) <- NULL
+  expect_equal(round(test_result, 2), -0.43) # ok scoring ORF
   test_result <- initiationScore(neg_control, cds, tx, RFP, pShifted = TRUE)
-  expect_equal(round(test_result,2), 0) # neg should score 0
+  names(test_result) <- NULL
+  expect_equal(round(test_result, 2), 0) # neg should score 0
 })

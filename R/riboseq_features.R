@@ -52,7 +52,7 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
 #'                names = rep("tx1_1", 3))
 #' names(ORF) <- rep("tx1", 3)
 #' grl <- GRangesList(tx1_1 = ORF)
-#' RFP <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
+#' reads <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
 #' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' entropy(grl, RFP)
 #' # or on cds
@@ -107,9 +107,11 @@ entropy <- function(grl, reads) {
 
   # sum the mhx to groups
   grouping <- rep.int(seq_along(runLengths), runLengths)
-
-  Hx <- sum(NumericList(split(Hx, grouping)))
-  MHx <- sum(NumericList(split(MHx, grouping)))
+  dt <- data.table(Hx, MHx, grouping)
+  Hx <- dt[, sum(Hx), by = grouping]$V1
+  MHx <- dt[, sum(MHx), by = grouping]$V1
+  # Hx <- sum(NumericList(split(Hx, grouping)))
+  # MHx <- sum(NumericList(split(MHx, grouping)))
 
   entropy <- rep(0.0, length(validIndices))
   # non 0 entropy values set to HX / MHX
@@ -342,6 +344,100 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE){
   return(score)
 }
 
+#' Inside/Outside score (IO)
+#'
+#' Inside/Outside score is defined as
+#' \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
+#' A pseudo-count of one was added to both the ORF and outside sums.
+#' @references doi: 10.1242/dev.098345
+#' @param grl a \code{\link{GRangesList}} object
+#'  with usually either leaders, cds', 3' utrs or ORFs
+#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
+#' @param GtfOrTx if Gtf: a TxDb object of a gtf file that transcripts will be
+#' extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
+#' a GrangesList will use as is
+#' @param ds numeric vector (NULL), disengagement score. If you have already
+#'  calculated \code{\link{disengagementScore}}, input here to save time.
+#' @param RFP.sorted logical (F), have you ran this line:
+#' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
+#' Normally not touched, for internal optimization purposes.
+#' @return a named vector of numeric values of scores
+#' @importFrom data.table rbindlist
+#' @family features
+#' @export
+#' @examples
+#' # Check inside outside score of a ORF within a transcript
+#' ORF <- GRanges("1",
+#'                ranges = IRanges(start = c(20, 30, 40),
+#'                                   end = c(25, 35, 45)),
+#'                strand = "+")
+#'
+#' grl <- GRangesList(tx1_1 = ORF)
+#'
+#' tx1 <- GRanges(seqnames = "1",
+#'                ranges = IRanges(start = c(1, 10, 20, 30, 40, 50),
+#'                                 end = c(5, 15, 25, 35, 45, 200)),
+#'                strand = "+")
+#' tx <- GRangesList(tx1 = tx1)
+#' RFP <- GRanges(seqnames = "1",
+#'                   ranges = IRanges(start = c(1, 4, 30, 60, 80, 90),
+#'                                    end = c(30, 33, 63, 90, 110, 120)),
+#'                   strand = "+")
+#'
+#' insideOutsideORF(grl, RFP, tx)
+#'
+insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
+                             RFP.sorted = FALSE) {
+
+  if (is(GtfOrTx, "TxDb")) {
+    tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
+  } else if (is.grl(GtfOrTx)) {
+    tx <- GtfOrTx
+  } else {
+    stop("GtfOrTx is neithter of type TxDb or GRangesList")
+  }
+  if (length(RFP) > 1e6 & !RFP.sorted) {
+    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
+  }
+
+  overlapGrl <- countOverlaps(grl, RFP) + 1
+  # find tx with hits
+  validIndices <- hasHits(tx, RFP)
+  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
+  if (!any(validIndices)) { # if no hits
+    names(overlapGrl) <- NULL
+    return(overlapGrl)
+  }
+  tx <- tx[txNames(grl)][validIndices]
+  grl <- grl[validIndices]
+
+  grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
+  upstreamTx <- upstreamOfPerGroup(tx, grlStarts, allowOutside = FALSE)
+  overlapTxOutside <- rep(1, length(validIndices))
+  if (!is.null(ds)) { # save time here if ds is defined
+    downstreamCounts <- 1/(ds/overlapGrl)
+    upstreamCounts <- rep(1, length(validIndices))
+    upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP)
+    overlapTxOutside <- downstreamCounts + upstreamCounts
+
+  } else { # else make ds again
+    grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
+    downstreamTx <- downstreamOfPerGroup(tx, grlStops)
+
+    dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
+                                              as.data.table(downstreamTx)))
+    group <- NULL # for avoiding warning
+    txOutside <- makeGRangesListFromDataFrame(
+      dtmerge[order(group)], split.field = "group")
+
+    overlapTxOutside[validIndices] <- countOverlaps(txOutside, RFP) + 1
+  }
+
+  scores <- overlapGrl / overlapTxOutside
+  names(scores) = NULL
+  return(scores)
+}
+
 #' Ribosome Release Score (RRS)
 #'
 #' Ribosome Release Score is defined as
@@ -443,100 +539,6 @@ ribosomeStallingScore <- function(grl, RFP){
   return(rss)
 }
 
-#' Inside/Outside score (IO)
-#'
-#' Inside/Outside score is defined as
-#' \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
-#' A pseudo-count of one was added to both the ORF and outside sums.
-#' @references doi: 10.1242/dev.098345
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually either leaders, cds', 3' utrs or ORFs
-#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
-#' @param GtfOrTx if Gtf: a TxDb object of a gtf file that transcripts will be
-#' extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
-#' a GrangesList will use as is
-#' @param ds numeric vector (NULL), disengagement score. If you have already
-#'  calculated \code{\link{disengagementScore}}, input here to save time.
-#' @param RFP.sorted logical (F), have you ran this line:
-#' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
-#' Normally not touched, for internal optimization purposes.
-#' @return a named vector of numeric values of scores
-#' @importFrom data.table rbindlist
-#' @family features
-#' @export
-#' @examples
-#' # Check inside outside score of a ORF within a transcript
-#' ORF <- GRanges("1",
-#'                ranges = IRanges(start = c(20, 30, 40),
-#'                                   end = c(25, 35, 45)),
-#'                strand = "+")
-#'
-#' grl <- GRangesList(tx1_1 = ORF)
-#'
-#' tx1 <- GRanges(seqnames = "1",
-#'                ranges = IRanges(start = c(1, 10, 20, 30, 40, 50),
-#'                                 end = c(5, 15, 25, 35, 45, 200)),
-#'                strand = "+")
-#' tx <- GRangesList(tx1 = tx1)
-#' RFP <- GRanges(seqnames = "1",
-#'                   ranges = IRanges(start = c(1, 4, 30, 60, 80, 90),
-#'                                    end = c(30, 33, 63, 90, 110, 120)),
-#'                   strand = "+")
-#'
-#' insideOutsideORF(grl, RFP, tx)
-#'
-insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
-                             RFP.sorted = FALSE) {
-
-  if (is(GtfOrTx, "TxDb")) {
-    tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
-  } else if (is.grl(GtfOrTx)) {
-    tx <- GtfOrTx
-  } else {
-    stop("GtfOrTx is neithter of type TxDb or GRangesList")
-  }
-  if (length(RFP) > 1e6 & !RFP.sorted) {
-    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
-  }
-
-  overlapGrl <- countOverlaps(grl, RFP) + 1
-  # find tx with hits
-  validIndices <- hasHits(tx, RFP)
-  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
-  if (!any(validIndices)) { # if no hits
-    names(overlapGrl) <- NULL
-    return(overlapGrl)
-  }
-  tx <- tx[txNames(grl)][validIndices]
-  grl <- grl[validIndices]
-
-  grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
-  upstreamTx <- upstreamOfPerGroup(tx, grlStarts, allowOutside = FALSE)
-  overlapTxOutside <- rep(1, length(validIndices))
-  if (!is.null(ds)) { # save time here if ds is defined
-    downstreamCounts <- 1/(ds/overlapGrl)
-    upstreamCounts <- rep(1, length(validIndices))
-    upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP)
-    overlapTxOutside <- downstreamCounts + upstreamCounts
-
-  } else { # else make ds again
-    grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
-    downstreamTx <- downstreamOfPerGroup(tx, grlStops)
-
-    dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
-                                              as.data.table(downstreamTx)))
-    group <- NULL # for avoiding warning
-    txOutside <- makeGRangesListFromDataFrame(
-      dtmerge[order(group)], split.field = "group")
-
-    overlapTxOutside[validIndices] <- countOverlaps(txOutside, RFP) + 1
-  }
-
-  scores <- overlapGrl / overlapTxOutside
-  names(scores) = NULL
-  return(scores)
-}
-
 #' Start region coverage
 #'
 #' Get the number of reads in the start region of each ORF. If you want the
@@ -572,57 +574,52 @@ startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @param cds a \code{\link{GRangesList}} object with coding sequences
 #' @param tx a GrangesList of transcripts covering grl.
-#' @param footprints ribosomal footprints, given as Galignment object or
+#' @param reads ribosomal footprints, given as Galignment object or
 #'  Granges
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
 #' @family features
-#' @return an integer vector, 1 score per ORF
+#' @return an integer vector, 1 score per ORF, with names of grl
 #' @export
 #' @importFrom BiocGenerics Reduce
 #' @examples
 #' # Good hiting ORF
 #' ORF <- GRanges(seqnames = "1",
-#'                ranges = IRanges(start = c(21), end = c(40)),
+#'                ranges = IRanges(21, 40),
 #'                strand = "+")
 #' names(ORF) <- c("tx1")
 #' grl <- GRangesList(tx1 = ORF)
-#' # 1 width position based
-#' RFP <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
-#'  c(21, 23, 50, 50, 50, 53, 53, 56, 59)), "+")
-#' score(RFP) <- 28 # original width
+#' # 1 width p-shifted reads
+#' reads <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+#'                             width = 1), "+")
+#' score(reads) <- 28 # original width
 #' cds <- GRanges(seqnames = "1",
-#'                ranges = IRanges(start = c(50), end = c(80)),
+#'                ranges = IRanges(50, 80),
 #'                strand = "+")
 #' cds <- GRangesList(tx1 = cds)
 #' tx <- GRanges(seqnames = "1",
-#'                ranges = IRanges(1,85),
+#'                ranges = IRanges(1, 85),
 #'                strand = "+")
 #' tx <- GRangesList(tx1 = tx)
 #'
-#' initiationScore(grl, cds, tx, RFP, pShifted = TRUE)
+#' initiationScore(grl, cds, tx, reads, pShifted = TRUE)
 #'
-initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
+initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE) {
   if (length(grl) == 0) stop("grl must have length > 0")
-  # train average cds model
-  df <- riboTISCoverageProportion(cds, tx, footprints, average = TRUE,
-                                  onlyProportion = FALSE, pShifted = pShifted)
-  cdsProp <- split(Rle(df$prop), df$length)
-  names(cdsProp) <- NULL
+  # meta coverage of cds
+  cdsMeta <- windowPerReadLength(cds, tx, reads, pShifted = pShifted)
 
-  # get ORF models
-  prop <- riboTISCoverageProportion(grl, tx, footprints, average = FALSE,
-                                    onlyProportion = TRUE, pShifted = pShifted,
-                                    keep.names = TRUE)
-  names <- names(prop[[1]])
-  names(prop[[1]]) <- NULL
-  dif <- lapply(seq.int(length(prop)), function(x)
-    abs(prop[[x]] - cdsProp[x]))
-  dif2 <- lapply(seq.int(length(prop)), function(x) sum(dif[[x]]))
+  # coverage per ORF
+  prop <- windowPerReadLength(grl, tx, reads, pShifted = pShifted,
+                              scoring = "fracPos")
 
-  tempAns <- Reduce("+", dif2) / length(dif2) - 1
+  # find a better scoring pattern
+  prop[, `:=` (dif = abs(score - cdsMeta$score))]
+  len <- length(unique(prop$fraction))
+  ans <- prop[, .(difPer = sum(dif)), by = list(fraction, genes)]
+  ans <- ans[, .(score = sum(difPer)/len - 1), by = list(genes)]$score
 
-  ans <- rep.int(0, length(grl))
-  ans[names(grl) %in% names] <- tempAns
+  ans[is.na(ans) | is.nan(ans)] <- 0
+  names(ans) <- names(grl)
   return(ans)
 }
 
@@ -642,9 +639,13 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
 #' As result there is one value per ORF:
 #' Positive values say that the first frame have the most reads,
 #' negative values say that the first frame does not have the most reads.
+#' NOTE: If reads are not of size 1, then a read from 1-4 on range of 1-4,
+#' will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
+#' is that only the 5' end is important, so that only frame1 = 1,
+#' to get this, you first resize reads to 5'end only.
 #' @references doi: 10.1002/embj.201488411
 #' @param grl a \code{\link{GRangesList}} object with ORFs
-#' @param RFP ribozomal footprints, given as Galignment object,
+#' @param RFP ribosomal footprints, given as Galignment object,
 #'  Granges or GRangesList
 #' @param is.sorted logical (F), is grl sorted.
 #' @importFrom data.table .SD
@@ -669,56 +670,16 @@ initiationScore <- function(grl, cds, tx, footprints, pShifted = TRUE) {
 #' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE) {
-  if (length(grl) > 50000) { # faster version for big grl
-    # only do ORFs that have hits
-    validIndices <- hasHits(grl, RFP)
-    if (!any(validIndices)) { # no variance in countList, 0 entropy
-      frame_zero_RP <- frame_one_RP <- frame_two_RP <-
-        ORFScores <- rep(0, length(grl))
-      return(data.table(frame_zero_RP, frame_one_RP, frame_two_RP, ORFScores))
-    }
-    # reduce to unique orfs
-    grl <- grl[validIndices]
-    reOrdering <- uniqueOrder(grl)
-    # find coverage
-    cov <- coveragePerTiling(reads = RFP, grl = uniqueGroups(grl),
-                            is.sorted = is.sorted, keep.names = FALSE)
+  if (any(widthPerGroup(grl, FALSE) < 3)) stop("width < 3 ORFs not allowed")
 
-    countsTile1 <- countsTile2 <- countsTile3 <- rep(0, length(validIndices))
-    len <- lengths(cov)
-    # make the 3 frames
-    positionFrame <- lapply(len, function(x){seq.int(1, x, 3)})
-    tempTile <- sum(cov[positionFrame])[reOrdering]
-    countsTile1[validIndices] <- tempTile # correct order and size
-    positionFrame <- lapply(len, function(x){seq.int(2, x, 3)})
-    tempTile <- sum(cov[positionFrame])[reOrdering]
-    countsTile2[validIndices] <- tempTile
-    positionFrame <- lapply(len, function(x){seq.int(3, x, 3)})
-    tempTile <- sum(cov[positionFrame])[reOrdering]
-    countsTile3[validIndices] <- tempTile
-  } else {
-    # tile the orfs into a d.t for easy seperation
-    dt <- as.data.table(tile1(grl, matchNaming = FALSE))
-
-    group <- NULL
-    # seperate the three tiles, by the 3 frames
-    tilex1 <- dt[, .SD[seq.int(1, .N, 3)], by = group]
-    grl1 <- makeGRangesListFromDataFrame(
-      tilex1, split.field = "group")
-    tilex2 <- dt[, .SD[seq.int(2, .N, 3)], by = group]
-    grl2 <- makeGRangesListFromDataFrame(
-      tilex2, split.field = "group")
-    tilex3 <- dt[, .SD[seq.int(3, .N, 3)], by = group]
-    grl3 <- makeGRangesListFromDataFrame(
-      tilex3, split.field = "group")
-
-    countsTile1 <- countOverlaps(grl1, RFP)
-    countsTile2 <- countOverlaps(grl2, RFP)
-    countsTile3 <- countOverlaps(grl3, RFP)
-  }
+  counts <- coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
+                              withFrames = TRUE)
+  total <- coverageScorings(counts, scoring = "frameSum")
+  countsTile1 <- total[frame == 0,]$score
+  countsTile2 <- total[frame == 1,]$score
+  countsTile3 <- total[frame == 2,]$score
 
   RP = countsTile1 + countsTile2 + countsTile3
-
   Ftotal <- RP/3
 
   frame1 <- (countsTile1 - Ftotal)^2 / Ftotal
@@ -726,14 +687,14 @@ orfScore <- function(grl, RFP, is.sorted = FALSE) {
   frame3 <- (countsTile3 - Ftotal)^2 / Ftotal
 
   dfORFs <- data.table(frame_zero_RP = countsTile1)
-  dfORFs$frame_one_RP <- countsTile2
-  dfORFs$frame_two_RP <- countsTile3
+  dfORFs[, frame_one_RP := countsTile2]
+  dfORFs[, frame_two_RP := countsTile3]
 
   ORFscore <- log2(frame1 + frame2 + frame3 + 1)
   revORFscore <-  which(frame1 < frame2 | frame1 < frame3)
   ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
   ORFscore[is.na(ORFscore)] <- 0
   dfORFs$ORFScores <- ORFscore
-
+  dfORFs[] # for print
   return(dfORFs)
 }

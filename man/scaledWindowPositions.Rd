@@ -4,7 +4,7 @@
 \alias{scaledWindowPositions}
 \title{Scale windows to a meta window of size}
 \usage{
-scaledWindowPositions(grl, reads, scaleTo = 100, scoring = "mean")
+scaledWindowPositions(grl, reads, scaleTo = 100)
 }
 \arguments{
 \item{grl}{GRangesList or GRanges of your ranges}
@@ -16,10 +16,12 @@ a meta window can not directly be created, since a meta window must
 have equal size for all windows. Rescale all windows to scaleTo.
 i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc.}
 
-\item{scoring}{a character, one of (mean, median, sum)}
+\item{scoring}{a character, one of (mean, median, sum, none) Lets say
+window should go from 200 bases to 100, then position 1 and 2 -> position 1.
+How should they be merged ?}
 }
 \value{
-A data.frame or data.table with average counts (avg_counts) of
+A data.table with scored counts (counts) of
 reads mapped to positions (position) specified in windows along with
 frame (frame).
 }
@@ -29,3 +31,9 @@ For example scale a coverage plot of a all human CDS to width 100
 \details{
 Nice for making metaplots
 }
+\seealso{
+Other coverage: \code{\link{coverageScorings}},
+  \code{\link{metaWindow}},
+  \code{\link{windowPerReadLength}}
+}
+\concept{coverage}

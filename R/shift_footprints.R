@@ -17,7 +17,8 @@
 #' shifted right by 10.
 #' @return A GRanges object of shifted footprints, sorted and resized to 1bp of
 #' p-site, with metacolumn "size" indicating footprint size before shifting and
-#' resizing.
+#' resizing, sorted in increasing order.
+#' @family pshifting
 #' @export
 #' @examples
 #' \dontrun{
@@ -93,7 +94,6 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
     return(allFootrpintsShifted)
 }
 
-
 #' Detect ribosome shifts
 #'
 #' Utilizes periodicity measurement (fourier transform) and change point
@@ -107,7 +107,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' and stop codons, so that you can verify visually whether this function
 #' detects correct shifts.
 #' @param footprints (GAlignments) object of RiboSeq reads - footprints
-#' @param txdb a txdb object from a gtf file
+#' @param txdb a txdb object from a gtf/gff file
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
 #' @param stop (logical) Whether to include predictions based on the stop
@@ -122,7 +122,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' periodicity.
 #' @return a data.frame with lengths of footprints and their predicted
 #' coresponding offsets
-#' @importFrom BiocGenerics Reduce
+#' @family pshifting
 #' @export
 #' @examples
 #' \dontrun{
@@ -136,70 +136,52 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' detectRibosomeShifts(footprints, txdb, stop = TRUE)
 #' }
 #'
-detectRibosomeShifts <- function(
-  footprints, txdb, start = TRUE, stop = FALSE,
+detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   firstN = 150L) {
-  window_size = 30L
 
-
+  # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR,
-                                minCDS = minCDS, minThreeUTR = minThreeUTR)
-  if (length(txNames) == 0) stop("No transcript has leaders and trailers of",
-                                 " specified minFiveUTR, minCDS, minThreeUTR")
+                               minCDS = minCDS, minThreeUTR = minThreeUTR)
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
-  seqMatch <- unique(seqnames(footprints)) %in%
-    unique(seqnamesPerGroup(cds, FALSE))
-  # reduce data set to only matching seqlevels
-  cds <- keepSeqlevels(cds, unique(seqnames(footprints))[seqMatch],
-                       pruning.mode = "coarse")
 
-  txNames <- txNames[txNames %in% names(cds)]
-  footprints <- keepSeqlevels(footprints, unique(seqnamesPerGroup(cds, FALSE)),
-                              pruning.mode = "coarse")
+  # reduce data-set to only matching seqlevels
+  seqMatch <- validSeqlevels(cds, footprints)
+  cds <- keepSeqlevels(cds, seqMatch, pruning.mode = "coarse")
+  footprints <- keepSeqlevels(footprints, seqMatch, pruning.mode = "coarse")
   if (length(cds) == 0 | length(footprints) == 0) {
     stop("txdb and footprints did not have any matched seqnames")
   }
-  ## start stop windows
-  ss <- getStartStopWindows(txdb, txNames, start = start, stop = stop,
-                            window_size = window_size, cds)
-  cdsN <- downstreamN(cds, firstN = firstN)
-  cds <- reduceKeepAttr(cdsN)
-  rWidth <- readWidths(footprints)
-  all_lengths <- sort(unique(rWidth))
-  selected_lengths <- offsets_start <- offsets_stop <- c()
-  footprints <- resize(granges(footprints), 1L)
-  for (l in all_lengths) {
-    ends_uniq <- footprints[rWidth == l]
+  txNames <- txNames[txNames %in% names(cds)]
+  tx <- exonsBy(txdb, by = "tx", use.names = TRUE)[txNames]
 
-    # get top_tx of covered tx
-    counts <- countOverlaps(cds, ends_uniq)
-    counts <- counts[counts > 1]
-    if (length(counts) > 1000) {
-      counts <- sort(counts, decreasing = TRUE)
-      counts <- counts[seq_len(floor(top_tx * length(counts) / 100))]
-    }
-    if (length(counts) == 0) next
-    cvgCDS <- overlapsToCoverage(unlistGrl(cdsN[names(counts)]),
-                                 ends_uniq, type = "within")
-    cvgCDS <- Reduce(`+`, cvgCDS)
-    if (isPeriodic(as.vector(cvgCDS))) {
-      selected_lengths <- c(selected_lengths, l)
-      if (start) {
-        start_meta <- metaWindow(ends_uniq, ss$starts)
-        offset <- changePointAnalysis(start_meta$counts, feature = "start")
-        offsets_start <- c(offsets_start, offset)
-      }
-      if (stop) {
-        stop_meta <- metaWindow(ends_uniq, ss$stops)
-        offset <- changePointAnalysis(stop_meta$counts, feature = "stop")
-        offsets_stop <- c(offsets_stop, offset)
-      }
-    }
+  # find periodic read lengths
+  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
+  periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
+                      pShifted = FALSE, upstream = 0, downstream = 149,
+                      zeroPosition = 0, scoring = "periodic")
+  validLengths <- periodicity[score == TRUE,]$fraction
+
+  # find shifts
+  offset <- data.table()
+  if (start) {
+    rw <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
+                             pShifted = FALSE, upstream = 30, downstream = 29,
+                             acceptedLengths = validLengths)
+    offset <- rw[, .(offsets_start = changePointAnalysis(score)),
+                by = fraction]
+  }
+  if (stop) {
+    threeUTRs <- threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+    rw <- windowPerReadLength(grl = threeUTRs, tx = tx, reads = footprints,
+                             pShifted = FALSE, upstream = 30, downstream = 29,
+                             acceptedLengths = validLengths)
+    if (nrow(offset) == 0) {
+      offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
+                  by = fraction]
+    } else offset$offsets_stop <- rw[, .(changePointAnalysis(score, "stop")),
+                       by = fraction]$V1
   }
 
-  shifts <- data.frame(fragment_length = selected_lengths)
-  if (start) shifts$offsets_start <- offsets_start
-  if (stop) shifts$offsets_stop <- offsets_stop
-  return(shifts)
+  return(as.data.frame(offset))
 }

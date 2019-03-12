@@ -4,9 +4,9 @@
 \alias{metaWindow}
 \title{Calculate meta-coverage of reads around input GRanges/List object.}
 \usage{
-metaWindow(x, windows, withFrames = TRUE, zeroPosition = NULL,
-  scaleTo = 100, returnAs = "data.frame", fraction = NULL,
-  forceUniqueEven = TRUE)
+metaWindow(x, windows, scoring = "sum", withFrames = FALSE,
+  zeroPosition = NULL, scaleTo = 100, returnAs = "data.frame",
+  fraction = NULL, forceUniqueEven = TRUE)
 }
 \arguments{
 \item{x}{GRangesList/GRanges object of your reads.
@@ -15,8 +15,11 @@ Remember to resize them beforehand to width of 1 to focus on
 
 \item{windows}{GRangesList or GRanges of your ranges}
 
+\item{scoring}{a character, one of (zscore, transcriptNormalized,
+mean, median, sum, sumLength), see ?coverageScorings}
+
 \item{withFrames}{a logical (TRUE), return positions with the 3 frames,
-relative to zeroPosition. zeroPosition is frame 1.}
+relative to zeroPosition. zeroPosition is frame 0.}
 
 \item{zeroPosition}{an integer DEFAULT (NULL), the point if all windows
 are equal size, that should be set to position 0. Like leaders and
@@ -37,7 +40,7 @@ i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.}
 are of same width and even. To avoid bugs.}
 }
 \value{
-A data.frame or data.table with average counts (avg_counts) of
+A data.frame or data.table with scored counts (score) of
 reads mapped to positions (position) specified in windows along with
 frame (frame).
 }
@@ -45,14 +48,19 @@ frame (frame).
 Sums up coverage over set of GRanges objects as a meta representation.
 }
 \examples{
-windows <- GenomicRanges::GRangesList(
-  GenomicRanges::GRanges(seqnames = "chr1",
-                         ranges = IRanges::IRanges(c(50, 100), c(80, 200)),
-                         strand = "-"))
+library(GenomicRanges)
+windows <- GRangesList(GRanges("chr1", IRanges(c(50, 100), c(80, 200)),
+                               "-"))
 x <- GenomicRanges::GRanges(
   seqnames = "chr1",
   ranges =  IRanges::IRanges(c(100, 180), c(200, 300)),
   strand = "-")
-metaWindow(x, windows)
+metaWindow(x, windows, withFrames = FALSE)
 
 }
+\seealso{
+Other coverage: \code{\link{coverageScorings}},
+  \code{\link{scaledWindowPositions}},
+  \code{\link{windowPerReadLength}}
+}
+\concept{coverage}
