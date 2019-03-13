@@ -50,6 +50,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
 #' @param type a character (transcript), what should legends say is
 #' the whole region? Transcript, gene, non coding rna etc.
 #' @import ggplot2
+#' @importFrom data.table copy
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot

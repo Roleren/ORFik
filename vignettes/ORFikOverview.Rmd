@@ -474,7 +474,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # Get the annotation
   txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
   txNames <- filterTranscripts(txdb, 100, 100, 100) # valid transcripts
-  leaders = fiveUTRsByTranscript(txdb,use.names = T)[txNames]
+  leaders = fiveUTRsByTranscript(txdb,use.names = TRUE)[txNames]
   cds <- cdsBy(txdb,"tx", use.names = TRUE)[txNames]
   trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
   tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
