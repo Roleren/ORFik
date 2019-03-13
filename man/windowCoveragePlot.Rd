@@ -36,6 +36,13 @@ If you return this function without assigning it and output is NULL,
 it will automaticly plot the figure in your session. If output is assigned,
 no plot will be shown in session.
 }
+\examples{
+library(data.table)
+coverage <- data.table(position = seq(20), score = cumsum(seq(20)))
+windowCoveragePlot(coverage)
+# See vignette for a more practical example
+
+}
 \seealso{
 Other coveragePlot: \code{\link{coverageHeatMap}},
   \code{\link{pSitePlot}}, \code{\link{savePlot}}

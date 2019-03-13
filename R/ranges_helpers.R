@@ -324,7 +324,7 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   }
   g <- ranges(g)
   names(g) <- indices
-  region <- pmapFromTranscriptF(g, tx, TRUE) # TRUE ?
+  region <- pmapFromTranscriptF(g, tx, TRUE)
   names(region) <- names(gr)
   return(region)
 }

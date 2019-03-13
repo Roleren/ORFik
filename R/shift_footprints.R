@@ -8,13 +8,17 @@
 #' the footprint is saved in size' parameter of GRanges output. Footprints are
 #' also sorted according to their genomic position, ready to be saved as a
 #' bed file.
-#' @param footprints (GAlignments) object of RiboSeq reads
-#' @param selected_lengths Numeric vector of lengths of footprints you select
+#'
+#' The two columns in shift are:
+#' - fraction Numeric vector of lengths of footprints you select
 #' for shifting.
-#' @param selected_shifts Numeric vector of shifts for coresponding
+#' - offsets_start Numeric vector of shifts for coresponding
 #' selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
 #' length of 31 will be shifted left by 10. Footprints of length 32 will be
 #' shifted right by 10.
+#' @param footprints (GAlignments) object of RiboSeq reads
+#' @param shifts a data.frame with minimum 2 columns, selected_lengths and
+#' selected_shifts. Output from \code{\link{detectRibosomeShifts}}
 #' @return A GRanges object of shifted footprints, sorted and resized to 1bp of
 #' p-site, with metacolumn "size" indicating footprint size before shifting and
 #' resizing, sorted in increasing order.
@@ -31,67 +35,67 @@
 #' # detect the shifts automagically
 #' shifts <- detectRibosomeShifts(footprints, txdb)
 #' # shift the RiboSeq footprints
-#' shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
-#'                                 shifts$offsets_start)
+#' shiftedReads <- shiftFootprints(footprints, shifts)
 #' }
-shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
+shiftFootprints <- function(footprints, shifts) {
+  if (!is(shifts, "data.frame")) stop("shifts must be data.frame")
+  selected_lengths <- shifts$fraction
+  selected_shifts <- -1 * shifts$offsets_start
+  allFootrpintsShifted <- GRanges()
 
-    selected_shifts <- -1 * selected_shifts
-    allFootrpintsShifted <- GRanges()
+  if (length(selected_lengths) != length(selected_shifts)) {
+      stop("Incorrect input. Not equal number of elements in",
+           " selected_lengths and selected_shifts!")
+  }
+  if (sum(selected_lengths > abs(selected_shifts)) !=
+      length(selected_shifts)) {
+      stop("Incorrect input. selected_shifts cant be bigger",
+           " than selected_lengths!")
+  }
 
-    if (length(selected_lengths) != length(selected_shifts)) {
-        stop("Incorrect input. Not equal number of elements in",
-             " selected_lengths and selected_shifts!")
-    }
-    if (sum(selected_lengths > abs(selected_shifts)) !=
-        length(selected_shifts)) {
-        stop("Incorrect input. selected_shifts cant be bigger",
-             " than selected_lengths!")
-    }
+  for (i in seq_along(selected_lengths)) {
+      message("Shifting footprints of length ", selected_lengths[i])
+      riboReadsW <- footprints[qwidth(footprints) == selected_lengths[i]]
+      if (length(riboReadsW) == 0) {
+          next
+      }
+      is_cigar <- width(riboReadsW) != qwidth(riboReadsW)
+      cigar_strings <- cigar(riboReadsW[is_cigar])
+      sizes <- qwidth(riboReadsW)
 
-    for (i in seq_along(selected_lengths)) {
-        message("Shifting footprints of length ", selected_lengths[i])
-        riboReadsW <- footprints[qwidth(footprints) == selected_lengths[i]]
-        if (length(riboReadsW) == 0) {
-            next
-        }
-        is_cigar <- width(riboReadsW) != qwidth(riboReadsW)
-        cigar_strings <- cigar(riboReadsW[is_cigar])
-        sizes <- qwidth(riboReadsW)
+      riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
+      riboReadsW$size <- sizes  #move footprint length to size
+      riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
 
-        riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
-        riboReadsW$size <- sizes  #move footprint length to size
-        riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
+      cigars <- riboReadsW[is_cigar]
+      notCigars <- riboReadsW[!is_cigar]
 
-        cigars <- riboReadsW[is_cigar]
-        notCigars <- riboReadsW[!is_cigar]
+      # Not Cigars - shift 5' ends, + shift right, - shift left
+      if (length(notCigars) != 0) {
+          is_plus <- as.vector(strand(notCigars) == "+")
+          shiftedNotCigarsPlus <- shift(notCigars[is_plus],
+                                        selected_shifts[i])
+          shiftedNotCigarsMinus <- shift(notCigars[!is_plus],
+                                         -1 * selected_shifts[i])
+          allFootrpintsShifted <- c(allFootrpintsShifted,
+                                    shiftedNotCigarsPlus,
+                                    shiftedNotCigarsMinus)
+      }
+      # Cigars
+      if (length(cigars) != 0) {
+          is_plus <- as.vector(strand(cigars) == "+")
+          shift_by <- rep(selected_shifts[i], length(cigars))
+          shift_by <- mapply(parseCigar, cigar_strings, shift_by, is_plus)
+          shift_by[!is_plus] <- -1 * shift_by[!is_plus]
+          shifted_cigars <- shift(cigars, shift_by)
+          allFootrpintsShifted <- c(allFootrpintsShifted, shifted_cigars)
+      }
+  }
 
-        # Not Cigars - shift 5' ends, + shift right, - shift left
-        if (length(notCigars) != 0) {
-            is_plus <- as.vector(strand(notCigars) == "+")
-            shiftedNotCigarsPlus <- shift(notCigars[is_plus],
-                                          selected_shifts[i])
-            shiftedNotCigarsMinus <- shift(notCigars[!is_plus],
-                                           -1 * selected_shifts[i])
-            allFootrpintsShifted <- c(allFootrpintsShifted,
-                                      shiftedNotCigarsPlus,
-                                      shiftedNotCigarsMinus)
-        }
-        # Cigars
-        if (length(cigars) != 0) {
-            is_plus <- as.vector(strand(cigars) == "+")
-            shift_by <- rep(selected_shifts[i], length(cigars))
-            shift_by <- mapply(parseCigar, cigar_strings, shift_by, is_plus)
-            shift_by[!is_plus] <- -1 * shift_by[!is_plus]
-            shifted_cigars <- shift(cigars, shift_by)
-            allFootrpintsShifted <- c(allFootrpintsShifted, shifted_cigars)
-        }
-    }
-
-    message("Sorting shifted footprints...")
-    allFootrpintsShifted <- sortSeqlevels(allFootrpintsShifted)
-    allFootrpintsShifted <- sort(allFootrpintsShifted)
-    return(allFootrpintsShifted)
+  message("Sorting shifted footprints...")
+  allFootrpintsShifted <- sortSeqlevels(allFootrpintsShifted)
+  allFootrpintsShifted <- sort(allFootrpintsShifted)
+  return(allFootrpintsShifted)
 }
 
 #' Detect ribosome shifts

@@ -17,7 +17,7 @@ test_that("windowPerReadLength works as intended", {
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 52)
   expect_equal(grltest$fraction[1], 29)
-  expect_equal(c(min(grltest$position), max(grltest$position)), c(-5,20))
+  expect_equal(c(min(grltest$position), max(grltest$position)), c(-5, 20))
   expect_equal(round(grltest$score[6], 3) , 0.143)
   # meta coverage
   grltest <- windowPerReadLength(grl, tx, footprintsGood)

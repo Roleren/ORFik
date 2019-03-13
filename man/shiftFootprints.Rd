@@ -4,18 +4,13 @@
 \alias{shiftFootprints}
 \title{Shift footprints by selected offsets}
 \usage{
-shiftFootprints(footprints, selected_lengths, selected_shifts)
+shiftFootprints(footprints, shifts)
 }
 \arguments{
 \item{footprints}{(GAlignments) object of RiboSeq reads}
 
-\item{selected_lengths}{Numeric vector of lengths of footprints you select
-for shifting.}
-
-\item{selected_shifts}{Numeric vector of shifts for coresponding
-selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
-length of 31 will be shifted left by 10. Footprints of length 32 will be
-shifted right by 10.}
+\item{shifts}{a data.frame with minimum 2 columns, selected_lengths and
+selected_shifts. Output from \code{\link{detectRibosomeShifts}}}
 }
 \value{
 A GRanges object of shifted footprints, sorted and resized to 1bp of
@@ -32,6 +27,15 @@ the footprint is saved in size' parameter of GRanges output. Footprints are
 also sorted according to their genomic position, ready to be saved as a
 bed file.
 }
+\details{
+The two columns in shift are:
+- fraction Numeric vector of lengths of footprints you select
+for shifting.
+- offsets_start Numeric vector of shifts for coresponding
+selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
+length of 31 will be shifted left by 10. Footprints of length 32 will be
+shifted right by 10.
+}
 \examples{
 \dontrun{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
@@ -43,8 +47,7 @@ footprints <- GenomicAlignments::readGAlignments(
 # detect the shifts automagically
 shifts <- detectRibosomeShifts(footprints, txdb)
 # shift the RiboSeq footprints
-shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
-                                shifts$offsets_start)
+shiftedReads <- shiftFootprints(footprints, shifts)
 }
 }
 \seealso{

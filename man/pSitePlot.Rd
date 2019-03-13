@@ -26,6 +26,9 @@ Usefull to validate p-shifting is correct
 Can be used for any coverage of region around a point, like TIS, TSS,
 stop site etc.
 }
+\details{
+See vignette for example
+}
 \seealso{
 Other coveragePlot: \code{\link{coverageHeatMap}},
   \code{\link{savePlot}}, \code{\link{windowCoveragePlot}}

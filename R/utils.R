@@ -221,8 +221,8 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   } else if(method == "tileAll") {
     gr <- unlist(tile(gr, width = 1), use.names = FALSE)
 
-  }  else if(method == "middle") {
-    ranges(gr) <- IRanges(start(gr) + ceiling((end(gr)-start(gr))/2),
+  } else if (method == "middle") {
+    ranges(gr) <- IRanges(start(gr) + ceiling((end(gr) - start(gr)) / 2),
                           width = 1)
   } else stop("method not defined")
 
@@ -230,13 +230,11 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     pos <- strandBool(gr)
     posGr <- gr[pos]
     dt <- as.data.table(posGr)[, .N, .(seqnames, start)]
-    posGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$start, width = 1),
-                  strand = "+")
+    posGr <- GRanges(dt$seqnames, IRanges(dt$start, width = 1), "+")
     score <- dt$N
     negGr <- gr[!pos]
     dt <- as.data.table(negGr)[, .N, .(seqnames, end)]
-    negGr <- GRanges(seqnames = dt$seqnames, IRanges(dt$end, width = 1),
-                     strand = "-")
+    negGr <- GRanges(dt$seqnames, IRanges(dt$end, width = 1), "-")
     score <- as.integer(c(score, dt$N))
 
     gr <- c(posGr, negGr)

@@ -7,14 +7,14 @@
 coverageHeatMap(coverage, output = NULL, scoring = "zscore")
 }
 \arguments{
-\item{coverage}{a data.table of coverage with columns position, count and
+\item{coverage}{a data.table of coverage with columns position, score and
 fraction}
 
 \item{output}{character string (NULL), if set, saves the plot as pdf
 to path given.}
 
 \item{scoring}{character vector (zscore), either of zScore,
-transcriptNormalized, sum, mean}
+transcriptNormalized, sum, mean, which score was used to create coverage ?}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
@@ -23,6 +23,9 @@ then the plot will only be saved to location.
 \description{
 Coverage rows in heat map is fraction
 Coverage column in heat map is score, default zscore of counts
+}
+\details{
+See vignette for example
 }
 \seealso{
 Other coveragePlot: \code{\link{pSitePlot}},

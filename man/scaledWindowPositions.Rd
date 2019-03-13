@@ -27,6 +27,16 @@ For example scale a coverage plot of a all human CDS to width 100
 \details{
 Nice for making metaplots, the score will be mean of merged positions.
 }
+\examples{
+library(GenomicRanges)
+windows <- GRangesList(GRanges("chr1", IRanges(1, 200), "-"))
+x <- GenomicRanges::GRanges(
+  seqnames = "chr1",
+  ranges =  IRanges::IRanges(c(1, 100, 199), c(2, 101, 200)),
+  strand = "-")
+scaledWindowPositions(windows, x, scaleTo = 100)
+
+}
 \seealso{
 Other coverage: \code{\link{coverageScorings}},
   \code{\link{metaWindow}},

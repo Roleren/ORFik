@@ -48,7 +48,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
   if (length(window_size) != 1 & forceUniqueEven)
     stop("All input 'windows' should have the same sum(width(windows)),
           when forceUniqueEven is TRUE")
-  if ((window_size %% 2 != 0) & forceUniqueEven)
+  if (forceUniqueEven & any(window_size %% 2 != 0))
     stop("Width of the window has to be even number, when forceUniqueEven
           is TRUE")
 
@@ -97,11 +97,20 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).
 #' @family coverage
+#' @export
+#' @examples
+#' library(GenomicRanges)
+#' windows <- GRangesList(GRanges("chr1", IRanges(1, 200), "-"))
+#' x <- GenomicRanges::GRanges(
+#'   seqnames = "chr1",
+#'   ranges =  IRanges::IRanges(c(1, 100, 199), c(2, 101, 200)),
+#'   strand = "-")
+#' scaledWindowPositions(windows, x, scaleTo = 100)
 #'
 scaledWindowPositions <- function(grl, reads, scaleTo = 100) {
   count <- coveragePerTiling(grl, reads, is.sorted = FALSE, keep.names = TRUE,
                               as.data.table = TRUE, withFrames = FALSE)
-  count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[count$genes]]
+  count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
   count[, position := ceiling(scalingFactor * position)]
   count[position > scaleTo]$position <- scaleTo
 
@@ -170,7 +179,7 @@ coverageScorings <- function(coverage, scoring = "zscore") {
                                is.null(cov$genes)))
   groupFPF <- coverageGroupings(c(is.null(cov$fraction),
                                 is.null(cov$feature)), "FPF")
-
+  if (is.null(cov$count)) cov$count <- cov$score
   if( scoring == "meanPos") { # rare scoring schemes
     groupFPF <- quote(list(genes, position))
     scoring <- "mean"
