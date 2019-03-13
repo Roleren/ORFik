@@ -53,6 +53,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
+#' @export
 #' @examples
 #' library(data.table)
 #' coverage <- data.table(position = seq(20), score = cumsum(seq(20)))
