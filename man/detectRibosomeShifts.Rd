@@ -11,7 +11,7 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
 \arguments{
 \item{footprints}{(GAlignments) object of RiboSeq reads - footprints}
 
-\item{txdb}{a txdb object from a gtf file}
+\item{txdb}{a txdb object from a gtf/gff file}
 
 \item{start}{(logical) Whether to include predictions based on the start
 codons. Default TRUE.}
@@ -67,3 +67,8 @@ detectRibosomeShifts(footprints, txdb, stop = TRUE)
 }
 
 }
+\seealso{
+Other pshifting: \code{\link{changePointAnalysis}},
+  \code{\link{shiftFootprints}}
+}
+\concept{pshifting}

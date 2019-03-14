@@ -19,9 +19,9 @@ ORFik orf names. that is "txName_id"}
 
 \item{is.sorted}{logical (TRUE), is grl sorted.}
 
-\item{upstream}{an integer (0), relative region to get upstream from.}
+\item{upstream}{an integer (2), relative region to get upstream from.}
 
-\item{downstream}{an integer (0), relative region to get downstream from}
+\item{downstream}{an integer (2), relative region to get downstream from}
 }
 \value{
 a numeric vector of counts

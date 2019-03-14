@@ -14,5 +14,9 @@ RiboSeq data.}
 a logical, if it is periodic.
 }
 \description{
-Find if there is periodicity in the vector
+The values 2.9 and 3.1 as amplitude region, have beenchosen from testing for
+optimal values
+}
+\details{
+It uses Fourier transform for finding periodic vectors
 }

@@ -7,8 +7,8 @@
 changePointAnalysis(x, feature = "start")
 }
 \arguments{
-\item{x}{a vector with points to analyse, assumes the zero is in the
-middle + 1}
+\item{x}{a vector with count per position to analyse, assumes the zero
+is in the middle + 1 (position 0)}
 
 \item{feature}{(character) either "start" or "stop"}
 }
@@ -18,3 +18,8 @@ a single numeric offset
 \description{
 Get the offset for specific RiboSeq read width
 }
+\seealso{
+Other pshifting: \code{\link{detectRibosomeShifts}},
+  \code{\link{shiftFootprints}}
+}
+\concept{pshifting}

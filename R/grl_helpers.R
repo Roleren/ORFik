@@ -77,6 +77,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
   if (length(grl) == 0) return(GRangesList())
 
   DT <- as.data.table(grl)
+  DT$group_name <- NULL
   group <- NULL # for not getting warning
   if (decreasing) {
     if (byStarts) {
@@ -91,27 +92,19 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
       DT <- DT[order(group, end)]
     }
   }
-  # test naming
+  # test naming, this is still not perfect
   testName <- names(unlist(grl[1], use.names = FALSE)[1])
-
-  #TODO: Make test for non unique names here. Maybe we should support it.
-  if (is.null(testName)) {
-    DT[, group := NULL]
-    asgrl <- makeGRangesListFromDataFrame(
-      DT, split.field = "group_name",
-      keep.extra.columns = TRUE)
-  } else {
-    if (!any(grep(pattern = "_", testName))) {
-      DT[, group := sub("_[0-9]*", "", DT$group_name, perl = TRUE)]
-    } else {
-      DT[, group := DT$group_name]
-    }
-    asgrl <- makeGRangesListFromDataFrame(
-      DT, split.field = "group_name",
-      names.field = "group", keep.extra.columns = TRUE)
+  if (!is.null(testName)) {
+    DT[, grnames := names(unlist(grl, use.names = FALSE))]
   }
 
-  asgrl <- asgrl[names(grl)]
+  asgrl <- makeGRangesListFromDataFrame(
+    DT, split.field = "group",
+    names.field = if(is.null(testName)) NULL else "grnames",
+    keep.extra.columns = TRUE)
+
+  names(asgrl) <- names(grl)
+
   return(asgrl)
 }
 

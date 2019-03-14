@@ -8,16 +8,21 @@
 #' the footprint is saved in size' parameter of GRanges output. Footprints are
 #' also sorted according to their genomic position, ready to be saved as a
 #' bed file.
-#' @param footprints (GAlignments) object of RiboSeq reads
-#' @param selected_lengths Numeric vector of lengths of footprints you select
+#'
+#' The two columns in shift are:
+#' - fraction Numeric vector of lengths of footprints you select
 #' for shifting.
-#' @param selected_shifts Numeric vector of shifts for coresponding
+#' - offsets_start Numeric vector of shifts for coresponding
 #' selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
 #' length of 31 will be shifted left by 10. Footprints of length 32 will be
 #' shifted right by 10.
+#' @param footprints (GAlignments) object of RiboSeq reads
+#' @param shifts a data.frame with minimum 2 columns, selected_lengths and
+#' selected_shifts. Output from \code{\link{detectRibosomeShifts}}
 #' @return A GRanges object of shifted footprints, sorted and resized to 1bp of
 #' p-site, with metacolumn "size" indicating footprint size before shifting and
-#' resizing.
+#' resizing, sorted in increasing order.
+#' @family pshifting
 #' @export
 #' @examples
 #' \dontrun{
@@ -30,69 +35,68 @@
 #' # detect the shifts automagically
 #' shifts <- detectRibosomeShifts(footprints, txdb)
 #' # shift the RiboSeq footprints
-#' shiftedReads <- shiftFootprints(footprints, shifts$fragment_length,
-#'                                 shifts$offsets_start)
+#' shiftedReads <- shiftFootprints(footprints, shifts)
 #' }
-shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
+shiftFootprints <- function(footprints, shifts) {
+  if (!is(shifts, "data.frame")) stop("shifts must be data.frame")
+  selected_lengths <- shifts$fraction
+  selected_shifts <- -1 * shifts$offsets_start
+  allFootrpintsShifted <- GRanges()
 
-    selected_shifts <- -1 * selected_shifts
-    allFootrpintsShifted <- GRanges()
+  if (length(selected_lengths) != length(selected_shifts)) {
+      stop("Incorrect input. Not equal number of elements in",
+           " selected_lengths and selected_shifts!")
+  }
+  if (sum(selected_lengths > abs(selected_shifts)) !=
+      length(selected_shifts)) {
+      stop("Incorrect input. selected_shifts cant be bigger",
+           " than selected_lengths!")
+  }
 
-    if (length(selected_lengths) != length(selected_shifts)) {
-        stop("Incorrect input. Not equal number of elements in",
-             " selected_lengths and selected_shifts!")
-    }
-    if (sum(selected_lengths > abs(selected_shifts)) !=
-        length(selected_shifts)) {
-        stop("Incorrect input. selected_shifts cant be bigger",
-             " than selected_lengths!")
-    }
+  for (i in seq_along(selected_lengths)) {
+      message("Shifting footprints of length ", selected_lengths[i])
+      riboReadsW <- footprints[qwidth(footprints) == selected_lengths[i]]
+      if (length(riboReadsW) == 0) {
+          next
+      }
+      is_cigar <- width(riboReadsW) != qwidth(riboReadsW)
+      cigar_strings <- cigar(riboReadsW[is_cigar])
+      sizes <- qwidth(riboReadsW)
 
-    for (i in seq_along(selected_lengths)) {
-        message("Shifting footprints of length ", selected_lengths[i])
-        riboReadsW <- footprints[qwidth(footprints) == selected_lengths[i]]
-        if (length(riboReadsW) == 0) {
-            next
-        }
-        is_cigar <- width(riboReadsW) != qwidth(riboReadsW)
-        cigar_strings <- cigar(riboReadsW[is_cigar])
-        sizes <- qwidth(riboReadsW)
+      riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
+      riboReadsW$size <- sizes  #move footprint length to size
+      riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
 
-        riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
-        riboReadsW$size <- sizes  #move footprint length to size
-        riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
+      cigars <- riboReadsW[is_cigar]
+      notCigars <- riboReadsW[!is_cigar]
 
-        cigars <- riboReadsW[is_cigar]
-        notCigars <- riboReadsW[!is_cigar]
+      # Not Cigars - shift 5' ends, + shift right, - shift left
+      if (length(notCigars) != 0) {
+          is_plus <- as.vector(strand(notCigars) == "+")
+          shiftedNotCigarsPlus <- shift(notCigars[is_plus],
+                                        selected_shifts[i])
+          shiftedNotCigarsMinus <- shift(notCigars[!is_plus],
+                                         -1 * selected_shifts[i])
+          allFootrpintsShifted <- c(allFootrpintsShifted,
+                                    shiftedNotCigarsPlus,
+                                    shiftedNotCigarsMinus)
+      }
+      # Cigars
+      if (length(cigars) != 0) {
+          is_plus <- as.vector(strand(cigars) == "+")
+          shift_by <- rep(selected_shifts[i], length(cigars))
+          shift_by <- mapply(parseCigar, cigar_strings, shift_by, is_plus)
+          shift_by[!is_plus] <- -1 * shift_by[!is_plus]
+          shifted_cigars <- shift(cigars, shift_by)
+          allFootrpintsShifted <- c(allFootrpintsShifted, shifted_cigars)
+      }
+  }
 
-        # Not Cigars - shift 5' ends, + shift right, - shift left
-        if (length(notCigars) != 0) {
-            is_plus <- as.vector(strand(notCigars) == "+")
-            shiftedNotCigarsPlus <- shift(notCigars[is_plus],
-                                          selected_shifts[i])
-            shiftedNotCigarsMinus <- shift(notCigars[!is_plus],
-                                           -1 * selected_shifts[i])
-            allFootrpintsShifted <- c(allFootrpintsShifted,
-                                      shiftedNotCigarsPlus,
-                                      shiftedNotCigarsMinus)
-        }
-        # Cigars
-        if (length(cigars) != 0) {
-            is_plus <- as.vector(strand(cigars) == "+")
-            shift_by <- rep(selected_shifts[i], length(cigars))
-            shift_by <- mapply(parseCigar, cigar_strings, shift_by, is_plus)
-            shift_by[!is_plus] <- -1 * shift_by[!is_plus]
-            shifted_cigars <- shift(cigars, shift_by)
-            allFootrpintsShifted <- c(allFootrpintsShifted, shifted_cigars)
-        }
-    }
-
-    message("Sorting shifted footprints...")
-    allFootrpintsShifted <- sortSeqlevels(allFootrpintsShifted)
-    allFootrpintsShifted <- sort(allFootrpintsShifted)
-    return(allFootrpintsShifted)
+  message("Sorting shifted footprints...")
+  allFootrpintsShifted <- sortSeqlevels(allFootrpintsShifted)
+  allFootrpintsShifted <- sort(allFootrpintsShifted)
+  return(allFootrpintsShifted)
 }
-
 
 #' Detect ribosome shifts
 #'
@@ -107,7 +111,7 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' and stop codons, so that you can verify visually whether this function
 #' detects correct shifts.
 #' @param footprints (GAlignments) object of RiboSeq reads - footprints
-#' @param txdb a txdb object from a gtf file
+#' @param txdb a txdb object from a gtf/gff file
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
 #' @param stop (logical) Whether to include predictions based on the stop
@@ -116,13 +120,13 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' transcripts to use for estimation of the shifts. By default we take top 10%
 #' top covered transcripts as they represent less noisy dataset. This is only
 #' applicable when there are more than 1000 transcripts.
-#' @inheritParams txNamesWithLeaders
+#' @inheritParams filterTranscripts
 #' @param firstN (integer) Represents how many bases of the transcripts
 #' downstream of start codons to use for initial estimation of the
 #' periodicity.
 #' @return a data.frame with lengths of footprints and their predicted
 #' coresponding offsets
-#' @importFrom BiocGenerics Reduce
+#' @family pshifting
 #' @export
 #' @examples
 #' \dontrun{
@@ -136,70 +140,52 @@ shiftFootprints <- function(footprints, selected_lengths, selected_shifts) {
 #' detectRibosomeShifts(footprints, txdb, stop = TRUE)
 #' }
 #'
-detectRibosomeShifts <- function(
-  footprints, txdb, start = TRUE, stop = FALSE,
+detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   firstN = 150L) {
-  window_size = 30L
 
-
-  txNames <- txNamesWithLeaders(txdb, minFiveUTR = minFiveUTR,
-                                minCDS = minCDS, minThreeUTR = minThreeUTR)
-  if (length(txNames) == 0) stop("No transcript has leaders and trailers of",
-                                 " specified minFiveUTR, minCDS, minThreeUTR")
+  # Filters for cds and footprints
+  txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
+                               minThreeUTR = minThreeUTR)
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
-  seqMatch <- unique(seqnames(footprints)) %in%
-    unique(seqnamesPerGroup(cds, FALSE))
-  # reduce data set to only matching seqlevels
-  cds <- keepSeqlevels(cds, unique(seqnames(footprints))[seqMatch],
-                       pruning.mode = "coarse")
 
-  txNames <- txNames[txNames %in% names(cds)]
-  footprints <- keepSeqlevels(footprints, unique(seqnamesPerGroup(cds, FALSE)),
-                              pruning.mode = "coarse")
+  # reduce data-set to only matching seqlevels
+  seqMatch <- validSeqlevels(cds, footprints)
+  cds <- keepSeqlevels(cds, seqMatch, pruning.mode = "coarse")
+  footprints <- keepSeqlevels(footprints, seqMatch, pruning.mode = "coarse")
   if (length(cds) == 0 | length(footprints) == 0) {
     stop("txdb and footprints did not have any matched seqnames")
   }
-  ## start stop windows
-  ss <- getStartStopWindows(txdb, txNames, start = start, stop = stop,
-                            window_size = window_size, cds)
-  cdsN <- downstreamN(cds, firstN = firstN)
-  cds <- reduceKeepAttr(cdsN)
-  rWidth <- readWidths(footprints)
-  all_lengths <- sort(unique(rWidth))
-  selected_lengths <- offsets_start <- offsets_stop <- c()
-  footprints <- resize(granges(footprints), 1L)
-  for (l in all_lengths) {
-    ends_uniq <- footprints[rWidth == l]
+  txNames <- txNames[txNames %in% names(cds)]
+  tx <- exonsBy(txdb, by = "tx", use.names = TRUE)[txNames]
 
-    # get top_tx of covered tx
-    counts <- countOverlaps(cds, ends_uniq)
-    counts <- counts[counts > 1]
-    if (length(counts) > 1000) {
-      counts <- sort(counts, decreasing = TRUE)
-      counts <- counts[seq_len(floor(top_tx * length(counts) / 100))]
-    }
-    if (length(counts) == 0) next
-    cvgCDS <- overlapsToCoverage(unlistGrl(cdsN[names(counts)]),
-                                 ends_uniq, type = "within")
-    cvgCDS <- Reduce(`+`, cvgCDS)
-    if (isPeriodic(as.vector(cvgCDS))) {
-      selected_lengths <- c(selected_lengths, l)
-      if (start) {
-        start_meta <- metaWindow(ends_uniq, ss$starts)
-        offset <- changePointAnalysis(start_meta$avg_counts, feature = "start")
-        offsets_start <- c(offsets_start, offset)
-      }
-      if (stop) {
-        stop_meta <- metaWindow(ends_uniq, ss$stops)
-        offset <- changePointAnalysis(stop_meta$avg_counts, feature = "stop")
-        offsets_stop <- c(offsets_stop, offset)
-      }
-    }
+  # find periodic read lengths
+  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
+  periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
+                      pShifted = FALSE, upstream = 0, downstream = 149,
+                      zeroPosition = 0, scoring = "periodic")
+  validLengths <- periodicity[score == TRUE,]$fraction
+
+  # find shifts
+  offset <- data.table()
+  if (start) {
+    rw <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
+                              pShifted = FALSE, upstream = 30, downstream = 29,
+                              acceptedLengths = validLengths)
+    offset <- rw[, .(offsets_start = changePointAnalysis(score)),
+                 by = fraction]
+  }
+  if (stop) {
+    threeUTRs <- threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+    rw <- windowPerReadLength(grl = threeUTRs, tx = tx, reads = footprints,
+                              pShifted = FALSE, upstream = 30, downstream = 29,
+                              acceptedLengths = validLengths)
+    if (nrow(offset) == 0) {
+      offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
+                   by = fraction]
+    } else offset$offsets_stop <- rw[, .(changePointAnalysis(score, "stop")),
+                                     by = fraction]$V1
   }
 
-  shifts <- data.frame(fragment_length = selected_lengths)
-  if (start) shifts$offsets_start <- offsets_start
-  if (stop) shifts$offsets_stop <- offsets_stop
-  return(shifts)
+  return(as.data.frame(offset))
 }

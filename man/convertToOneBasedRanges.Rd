@@ -4,24 +4,29 @@
 \alias{convertToOneBasedRanges}
 \title{Convert a GRanges Object to 1 width reads}
 \usage{
-convertToOneBasedRanges(gr, method = "5prime", addScoreColumn = FALSE)
+convertToOneBasedRanges(gr, method = "5prime", addScoreColumn = FALSE,
+  addSizeColumn = FALSE)
 }
 \arguments{
-\item{gr}{GRanges Object to reduce}
+\item{gr}{GRanges, GAlignment Object to reduce}
 
 \item{method}{the method to reduce, see info. (5prime defualt)}
 
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
 sums up the hits per position.}
+
+\item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
+for each read, that gives original width of read.}
 }
 \value{
 Converted GRanges object
 }
 \description{
-There are 3 ways of doing this
+There are 4 ways of doing this
 1. Take 5' ends, reduce away rest (5prime)
-2. Tile and include all (tileAll)
-3. Take middle point per GRanges (middle)
+2. Take 3' ends, reduce away rest (3prime)
+3. Tile and include all (tileAll)
+4. Take middle point per GRanges (middle)
 }
 \details{
 Many other ways to do this have their own functions, like startCodons and
