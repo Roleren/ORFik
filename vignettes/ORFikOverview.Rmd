@@ -73,7 +73,9 @@ install this package together with `ORFik`.
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 
   # Extract sequences of fiveUTRs.
-  tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, fiveUTRs) 
+  # Either you import fasta file of ranges, or you have some BSgenome.
+  tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 
+                                   fiveUTRs) 
   
   # Find all ORFs on those transcripts and get their genomic coordinates
   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
@@ -106,6 +108,9 @@ newFiveUTRs
 You will now see that most of the transcription start sites have changed. 
 Depending on the species, regular annotations might be incomplete or not 
 specific enough for your purposes. 
+
+NOTE: IF you want to edit the whole txdb / gtf file, use reassignTxDbByCage.
+And save this to get the new gtf with reannotated leaders by CAGE.
 
 # RiboSeq footprints automatic shift detection and shifting
 
@@ -196,7 +201,7 @@ which ORFs are potentially coding and functional.
 
 There are 2 main categories:
 - Sequence features (kozak, gc-content, etc.)
-- Read features (reads as: ribo-seq, RNA-seq, TCP-seq, shape-seq etc)
+- Read features (reads as: Ribo-seq, RNA-seq, TCP-seq, shape-seq etc)
 
 - FLOSS `floss`,   
 - coverage `coverage`,  
@@ -428,8 +433,8 @@ per transcript, periodic windows of exons, speicific parts of exons etc,
 ORFik can help you with this. 
 
 Let's do an example where ORFik shines.
-Objective: We have three transcripts, we also have a library of ribo-seq.
-This library was treated with cyclohexamide, so we know ribo-seq reads can
+Objective: We have three transcripts, we also have a library of Ribo-seq.
+This library was treated with cyclohexamide, so we know Ribo-seq reads can
 stack up close to the stop codon of the CDS. Lets say we only want to keep 
 transcripts, where the cds stop region (defined as last 9 bases of cds), has
 maximum 33% of the reads. To only keep transcripts with a good spread of reads 
@@ -461,20 +466,22 @@ cdsToRemove
 We now easily made a stop codon filter for our coding sequences.
 
 
-# Standard plots made easy with ORFik
+# Coverage plots made easy with ORFik
 
 In investigation of ORFs or other interest regions, ORFik can help you make
-some standard plots from reads of Ribo-seq, RNA-seq, CAGE-seq, TCP-seq etc.
+some coverage plots from reads of Ribo-seq, RNA-seq, CAGE-seq, TCP-seq etc.
 
-Lets make 3 plots of ribo-seq focused on CDS regions. 
+Lets make 3 plots of Ribo-seq focused on CDS regions. 
 
-```{r eval = TRUE, echo = TRUE}
+```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # Load data as shown before and pshift the ribo-seq
+  # Load data as shown before and pshift the Ribo-seq
   # Get the annotation
   txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+  # Lets take all valid transcripts, with size restrictions:
+  # leader > 100 bases, cds > 100 bases, trailer > 100 bases
   txNames <- filterTranscripts(txdb, 100, 100, 100) # valid transcripts
-  leaders = fiveUTRsByTranscript(txdb,use.names = TRUE)[txNames]
+  leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
   cds <- cdsBy(txdb,"tx", use.names = TRUE)[txNames]
   trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
   tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -506,8 +513,9 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   windowCoveragePlot(dt, scoring = "zscore", title = "Ribo-seq metaplot") 
 }
 ```
-Z-score is good at showing overall shape, lets use a median scoring to
-find median counts per meta window per positions.
+Z-score is good at showing overall shape. You see from the windows each region;
+leader, cds and trailer is scaled to 100.
+Lets use a median scoring to find median counts per meta window per positions. 
 ```{r eval = TRUE, echo = TRUE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   windowCoveragePlot(dt, scoring = "median", title = "Ribo-seq metaplot") 
@@ -515,7 +523,9 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 ```
 
 We see a big spike close to start of CDS, called the TIS.
-Lets look at this region using the pshifting plot.
+The median counts by transcript is close to 50 here.
+Lets look at the TIS region using the pshifting plot, seperated into 
+the 3 frames.
 
 ```{r eval = TRUE, echo = TRUE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
@@ -526,12 +536,25 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 }
 ```
 
-This looks good, lets check the different read lengths as a heatmap
+Since these reads are p-shifted it is not that unexpected that the maximum 
+number of reads are on the 0 position. We also see a clear pattern in the 
+Ribo-seq.
 
-```{r eval = TRUE, echo = TRUE}
+To see how the different read lengths distribute over the region, we make 
+a heatmap. Where the colors represent the zscore of counts per position. 
+
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # size 25 window (default): 5 upstream, 20 downstream of TIS
   hitMap <- windowPerReadLength(cds, tx,  shiftedReads)
   ORFik:::coverageHeatMap(hitMap)
 }
 ```
+
+In the heatmap you can see that read length 30 has the strongest peak on the 
+TIS, while read length 28 has some reads in the leaders (the - positions).
+
+
+Our hope is that by using ORFik, we can simplify your analysis when 
+you focus on ORFs / transcripts and especially in combination with sequence 
+libraries like RNA-seq, Ribo-seq etc.  

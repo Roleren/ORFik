@@ -13,7 +13,7 @@ footprintsBad <- GRanges()
 test_that("windowPerReadLength works as intended", {
   # per group coverage
   grltest <- windowPerReadLength(grl, tx, footprintsGood,
-                                         scoring = "fracPos")
+                                 scoring = "fracPos")
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 52)
   expect_equal(grltest$fraction[1], 29)

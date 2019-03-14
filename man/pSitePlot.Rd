@@ -8,7 +8,7 @@ pSitePlot(hitMap, length = 29, region = "start", output = NULL)
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
-(must have columns: position, score and frame)}
+(must have columns: position, (score or count) and frame)}
 
 \item{length}{an integer (29), which length is this for?}
 
@@ -26,8 +26,18 @@ Usefull to validate p-shifting is correct
 Can be used for any coverage of region around a point, like TIS, TSS,
 stop site etc.
 }
-\details{
-See vignette for example
+\examples{
+# An ORF
+grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
+# Ribo-seq reads
+range <- IRanges(c(rep(1, 3), 2, 3, rep(4, 2), 5, 6), width = 1 )
+reads <- GRanges("1", range, "+")
+coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
+                              withFrames = TRUE)
+ORFik:::pSitePlot(coverage)
+
+See vignette for more examples
+
 }
 \seealso{
 Other coveragePlot: \code{\link{coverageHeatMap}},

@@ -343,8 +343,10 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' Fraction of reads  per read length, per position in whole window (by
 #' upstream and downstream)
 #'
-#' If average is TRUE, if gives a metaWindow, so it will be the function
-#' metaWindow grouped by readLengths
+#' If tx is not NULL, it gives a metaWindow, centered around startSite of
+#' grl from upstream and downstream. If tx is NULL, it will use only downstream
+#' , since it has no reference from to find upstream from. Unless upstream is
+#' negative, that is, going downstream.
 #'
 #' @inheritParams startRegion
 #' @param reads any type of reads, usualy ribo seq. As GAlignment, GRanges
@@ -352,6 +354,8 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted to size
 #'  1 width reads? If upstream or downstream is set, this argument is
 #'  irrelevant.
+#' @param upstream an integer (5), relative region to get upstream from.
+#' @param downstream an integer (20), relative region to get downstream from
 #' @param acceptedLengths an integer vector (NULL), the read lengths accepted.
 #'  Default NULL, means all lengths accepted.
 #' @param zeroPosition an integer DEFAULT (upstream), the point if all windows
@@ -372,6 +376,10 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 acceptedLengths = NULL,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized") {
+  if (is.null(tx)) {
+    tx <- grl
+    upstream <- min(upstream, 0)
+  }
   if (!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
   if(length(reads) == 0 | length(grl) == 0) {
     return(data.table())

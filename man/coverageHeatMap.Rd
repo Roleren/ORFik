@@ -26,6 +26,22 @@ Coverage column in heat map is score, default zscore of counts
 \details{
 See vignette for example
 }
+\examples{
+# An ORF
+grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
+# Ribo-seq reads
+range <- IRanges(c(rep(1, 3), 2, 3, rep(4, 2), 5, 6), width = 1 )
+reads <- GRanges("1", range, "+")
+reads$size <- c(rep(28, 5), rep(29, 4)) # read size
+coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
+                                        downstream = 5)
+
+
+ORFik:::coverageHeatMap(coverage)
+
+See vignette for more examples
+
+}
 \seealso{
 Other coveragePlot: \code{\link{pSitePlot}},
   \code{\link{savePlot}}, \code{\link{windowCoveragePlot}}

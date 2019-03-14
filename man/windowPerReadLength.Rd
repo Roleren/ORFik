@@ -24,9 +24,9 @@ or GRangesList object.}
 1 width reads? If upstream or downstream is set, this argument is
 irrelevant.}
 
-\item{upstream}{an integer (0), relative region to get upstream from.}
+\item{upstream}{an integer (5), relative region to get upstream from.}
 
-\item{downstream}{an integer (0), relative region to get downstream from}
+\item{downstream}{an integer (20), relative region to get downstream from}
 
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}
@@ -50,8 +50,10 @@ Fraction of reads  per read length, per position in whole window (by
 upstream and downstream)
 }
 \details{
-If average is TRUE, if gives a metaWindow, so it will be the function
-metaWindow grouped by readLengths
+If tx is not NULL, it gives a metaWindow, centered around startSite of
+grl from upstream and downstream. If tx is NULL, it will use only downstream
+, since it has no reference from to find upstream from. Unless upstream is
+negative, that is, going downstream.
 }
 \seealso{
 Other coverage: \code{\link{coverageScorings}},

@@ -4,9 +4,9 @@
 #' Can be used for any coverage of region around a point, like TIS, TSS,
 #' stop site etc.
 #'
-#' See vignette for example
+#'
 #' @param hitMap a data.frame/data.table, given from metaWindow
-#' (must have columns: position, score and frame)
+#' (must have columns: position, (score or count) and frame)
 #' @param length an integer (29), which length is this for?
 #' @param region a character (start), either "start or "stop"
 #' @param output character string (NULL), if set, saves the plot as pdf or png
@@ -15,14 +15,32 @@
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
 #' @family coveragePlot
+#' @examples
+#' # An ORF
+#' grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
+#' # Ribo-seq reads
+#' range <- IRanges(c(rep(1, 3), 2, 3, rep(4, 2), 5, 6), width = 1 )
+#' reads <- GRanges("1", range, "+")
+#' coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
+#'                               withFrames = TRUE)
+#' ORFik:::pSitePlot(coverage)
+#'
+#' See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
-  min <- min(hitMap$position) + 2
-  max <- max(hitMap$position) - 1
+  min <- min(hitMap$position)
+  max <- max(hitMap$position)
+
+  if (nrow(hitMap) > 30) {
+    min <- min + 2
+    max <- max - 1
+  }
   by <- ifelse(length(hitMap$position) > 80, 3, 1)
+
+  if (is.null(hitMap$score)) hitMap$score <- hitMap$count
   if (is(hitMap, "data.table")) setDF(hitMap)
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
-                          fill = factor(frame))) +
+                             fill = factor(frame))) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     labs(title = paste("Length", length, "over", region, "of canonical CDS")) +
@@ -89,15 +107,14 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     geom_ribbon(stat = "identity", position = "identity",
                 aes(fill = as.factor(fraction), alpha = 0.5)) +
     geom_line() +
-    theme_bw() +   theme(panel.grid.major = element_blank(),
+    theme_bw() + theme(panel.grid.major = element_blank(),
                          panel.grid.minor = element_blank()) +
     scale_x_continuous(expand = c(0, 0)) +
     scale_y_continuous(expand = c(0, 0)) +
     scale_fill_manual(values = colors) +
     scale_color_manual(values = colors) +
     ggtitle(label = title,
-            subtitle = paste0("Genes n=",
-                              length(unique(coverage$genes)))) +
+            subtitle = paste0("Genes n=", length(unique(coverage$genes)))) +
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(scoring, " over ", type)) +
     theme(legend.position = "none") +
@@ -117,6 +134,20 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' then the plot will only be saved to location.
 #' @import ggplot2
 #' @family coveragePlot
+#' @examples
+#' # An ORF
+#' grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
+#' # Ribo-seq reads
+#' range <- IRanges(c(rep(1, 3), 2, 3, rep(4, 2), 5, 6), width = 1 )
+#' reads <- GRanges("1", range, "+")
+#' reads$size <- c(rep(28, 5), rep(29, 4)) # read size
+#' coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
+#'                                         downstream = 5)
+#'
+#'
+#' ORFik:::coverageHeatMap(coverage)
+#'
+#' See vignette for more examples
 #'
 coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
   coverage$fraction <- factor(coverage$fraction,
@@ -128,11 +159,12 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
   by <- ifelse(length(coverage$position) > 80, 3, 1)
 
   plot <- ggplot(as.data.frame(coverage) ,
-                 aes(x=position, y=fraction, fill=score)) + geom_tile()  +
-    scale_fill_gradientn(colours = c("white", "yellow2", "yellow3", "lightblue"
-                                     , "blue", "navy"),
+                 aes(x = position, y = fraction, fill = score)) +
+    geom_tile()  +
+    scale_fill_gradientn(colours = c("white", "yellow2", "yellow3",
+                                     "lightblue", "blue", "navy"),
                          name = scoring) +
-    xlab("Position relative to start codon") +
+    xlab("Position relative to start site") +
     ylab("Protected fragment length") +
     scale_x_continuous(breaks = seq(min, max, by)) +
     theme_bw() + theme(panel.grid.major = element_blank(),

@@ -330,11 +330,12 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #' a maximum of grl width. Since there is no reference for splicing.
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually either leaders, cds', 3' utrs or ORFs
-#' @param is.sorted logical (TRUE), is grl sorted.
 #' @param tx default NULL, a GRangesList of transcripts or (container region),
 #' names of tx must contain all grl names. The names of grl can also be the
 #' ORFik orf names. that is "txName_id"
-#' @inheritParams windowPerGroup
+#' @param is.sorted logical (TRUE), is grl sorted.
+#' @param upstream an integer (2), relative region to get upstream from.
+#' @param downstream an integer (2), relative region to get downstream from
 #' @family features
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
