@@ -373,7 +373,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized") {
   if (!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
-  if(length(reads) == 0) {
+  if(length(reads) == 0 | length(grl) == 0) {
     return(data.table())
   }
   windowSize <- upstream + downstream + 1

@@ -24,4 +24,23 @@ test_that("windowPerReadLength works as intended", {
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 26)
   expect_equal(round(grltest$score[6], 3) , 0.268)
+  # - strand
+  strand(grl) <- "-"
+  strand(tx) <- "-"
+  strand(footprintsGood) <- "-"
+  grltest <- windowPerReadLength(grl, tx, footprintsGood,
+                                 scoring = "fracPos")
+
+})
+
+test_that("windowPerReadLength works as intended strange cases", {
+  # no reads hit
+  grltest <- windowPerReadLength(grl, tx, footprintsBad,
+                                 scoring = "fracPos")
+  expect_is(grltest, "data.table")
+  expect_equal(nrow(grltest), 0)
+  # no grl
+  grltest <- windowPerReadLength(GRangesList(), tx, footprintsGood)
+  expect_is(grltest, "data.table")
+  expect_equal(nrow(grltest), 0)
 })
