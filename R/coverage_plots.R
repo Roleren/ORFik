@@ -5,21 +5,22 @@
 #' stop site etc.
 #'
 #' See vignette for example
-#' @param hitMap a data.frame, given from metaWindow (must have columns:
-#' position, score and frame)
+#' @param hitMap a data.frame/data.table, given from metaWindow
+#' (must have columns: position, score and frame)
 #' @param length an integer (29), which length is this for?
 #' @param region a character (start), either "start or "stop"
-#' @param output character string (NULL), if set, saves the plot as pdf
-#' to path given.
+#' @param output character string (NULL), if set, saves the plot as pdf or png
+#' to path given. If no format is given, is save as pdf.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
+#' @importFrom data.table setDF
 #' @family coveragePlot
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
   min <- min(hitMap$position) + 2
   max <- max(hitMap$position) - 1
   by <- ifelse(length(hitMap$position) > 80, 3, 1)
-
+  if (is(hitMap, "data.table")) setDF(hitMap)
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
                           fill = factor(frame))) +
     geom_bar(stat = "identity") +
@@ -41,10 +42,10 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
 #' it will automaticly plot the figure in your session. If output is assigned,
 #' no plot will be shown in session.
 #' @param coverage a data.table, output of scaledWindowCoverage
-#' @param output character string (NULL), if set, saves the plot as pdf
-#' to path given.
+#' @param output character string (NULL), if set, saves the plot as pdf or png
+#' to path given. If no format is given, is save as pdf.
 #' @param scoring character vector (zscore), either of zScore,
-#' transcriptNormalized, sum, mean
+#' transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
 #' @param colors character vector colors to use in plot
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcript), what should legends say is
@@ -111,12 +112,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' Coverage column in heat map is score, default zscore of counts
 #'
 #' See vignette for example
-#' @param coverage a data.table of coverage with columns position, score and
-#' fraction
-#' @param output character string (NULL), if set, saves the plot as pdf
-#' to path given.
-#' @param scoring character vector (zscore), either of zScore,
-#' transcriptNormalized, sum, mean, which score was used to create coverage ?
+#' @inheritParams windowCoveragePlot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
@@ -148,8 +144,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 
 #' Helper function for writing plots to disc
 #' @param plot the ggplot to save
-#' @param output character string (NULL), if set, saves the plot as pdf
-#' to path given.
+#' @param output character string (NULL), if set, saves the plot as pdf or png
+#' to path given. If no format is given, is save as pdf.
 #' @param width width of output in mm
 #' @param height height of output in mm
 #' @return a ggplot object of the coverage plot, NULL if output is set,
@@ -158,7 +154,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 savePlot <- function(plot, output = NULL, width = 200, height = 150) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(outName))) {
-      if (tools::file_ext(output) != "pdf") output <- paste0(output, ".pdf")
+      ext <- tools::file_ext(output)
+      if (ext != "pdf" & ext != "png") output <- paste0(output, ".pdf")
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
              dpi = 150, limitsize = FALSE)
     } else {

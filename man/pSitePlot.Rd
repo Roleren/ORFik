@@ -7,15 +7,15 @@
 pSitePlot(hitMap, length = 29, region = "start", output = NULL)
 }
 \arguments{
-\item{hitMap}{a data.frame, given from metaWindow (must have columns:
-position, score and frame)}
+\item{hitMap}{a data.frame/data.table, given from metaWindow
+(must have columns: position, score and frame)}
 
 \item{length}{an integer (29), which length is this for?}
 
 \item{region}{a character (start), either "start or "stop"}
 
-\item{output}{character string (NULL), if set, saves the plot as pdf
-to path given.}
+\item{output}{character string (NULL), if set, saves the plot as pdf or png
+to path given. If no format is given, is save as pdf.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

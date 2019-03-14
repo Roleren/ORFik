@@ -11,7 +11,7 @@ coverageScorings(coverage, scoring = "zscore")
 it is possible to have additionals: (genes, fraction, feature)}
 
 \item{scoring}{a character, one of (zscore, transcriptNormalized,
-mean, median, sum, sumLength, meanPos and frameSum, periodic)}
+mean, median, sum, sumLength, meanPos and frameSum, periodic, NULL)}
 }
 \value{
 a data.table with new scores
@@ -51,6 +51,7 @@ Scorings:
 8. frameSum (sum per frame per gene) used in ORFScore
 9. fracPos (fraction of counts per position per gene)
 10. periodic (Fourier transform periodicity of meta coverage per fraction)
+11. NULL (return input directly)
 }
 \examples{
 dt <- data.table::data.table(count = c(4, 1, 1, 4, 2, 3),

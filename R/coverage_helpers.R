@@ -6,7 +6,7 @@
 #' 5' ends of footprints, if that is wanted.
 #' @param windows GRangesList or GRanges of your ranges
 #' @param scoring a character, one of (zscore, transcriptNormalized,
-#' mean, median, sum, sumLength), see ?coverageScorings
+#' mean, median, sum, sumLength, NULL), see ?coverageScorings
 #' @param withFrames a logical (TRUE), return positions with the 3 frames,
 #' relative to zeroPosition. zeroPosition is frame 0.
 #' @param zeroPosition an integer DEFAULT (NULL), the point if all windows
@@ -20,6 +20,8 @@
 #' @param returnAs a character (data.frame), do data.table for speed.
 #' @param fraction a character/integer (NULL), the fraction i.e
 #' (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.
+#' @param feature a character string, info on region. Usually either
+#' gene name, transcript part like cds, leader, or CpG motifs etc.
 #' @param forceUniqueEven, a logical (TRUE), require that all windows
 #' are of same width and even. To avoid bugs.
 #' @return A data.frame or data.table with scored counts (score) of
@@ -41,7 +43,7 @@
 metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                        zeroPosition = NULL, scaleTo = 100,
                        returnAs = "data.frame", fraction = NULL,
-                       forceUniqueEven = TRUE) {
+                       feature = NULL, forceUniqueEven = !is.null(scoring)) {
   window_size <- unique(widthPerGroup(windows))
   if (!is.null(zeroPosition) & !is.numeric(zeroPosition))
     stop("zeroPosition must be numeric if defined")
@@ -74,6 +76,10 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
   if (!is.null(fraction)) {
     hitMap[, fraction := rep(fraction, nrow(hitMap))]
   }
+  if (!is.null(feature)) {
+    hitMap[, feature := rep(feature, nrow(hitMap))]
+  }
+
   if (returnAs == "data.frame") {
     hitMap <- setDF(hitMap)
     return(hitMap)
@@ -155,10 +161,11 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100) {
 #' 8. frameSum (sum per frame per gene) used in ORFScore
 #' 9. fracPos (fraction of counts per position per gene)
 #' 10. periodic (Fourier transform periodicity of meta coverage per fraction)
+#' 11. NULL (return input directly)
 #' @param coverage a data.table containing at least columns (count, position),
 #' it is possible to have additionals: (genes, fraction, feature)
 #' @param scoring a character, one of (zscore, transcriptNormalized,
-#' mean, median, sum, sumLength, meanPos and frameSum, periodic)
+#' mean, median, sum, sumLength, meanPos and frameSum, periodic, NULL)
 #' @return a data.table with new scores
 #' @family coverage
 #' @export
@@ -172,7 +179,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100) {
 #' coverageScorings(dt, scoring = "zscore")
 #'
 coverageScorings <- function(coverage, scoring = "zscore") {
-
+  if (is.null(scoring)) return(coverage)
   cov <- coverage
   # find groupings
   groupGF <- coverageGroupings(c(is.null(cov$fraction),

@@ -7,14 +7,13 @@
 coverageHeatMap(coverage, output = NULL, scoring = "zscore")
 }
 \arguments{
-\item{coverage}{a data.table of coverage with columns position, score and
-fraction}
+\item{coverage}{a data.table, output of scaledWindowCoverage}
 
-\item{output}{character string (NULL), if set, saves the plot as pdf
-to path given.}
+\item{output}{character string (NULL), if set, saves the plot as pdf or png
+to path given. If no format is given, is save as pdf.}
 
 \item{scoring}{character vector (zscore), either of zScore,
-transcriptNormalized, sum, mean, which score was used to create coverage ?}
+transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

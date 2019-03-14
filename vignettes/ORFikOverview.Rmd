@@ -490,20 +490,27 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(data.table)
   # Create meta coverage per part
-  leaderCov <- scaledWindowPositions(leaders, shiftedReads, scaleTo = 100)
+  leaderCov <- metaWindow(shiftedReads, leaders, scoring = NULL, 
+                          returnAs = "data.table", feature = "leaders")
 
-  cdsCov <- scaledWindowPositions(cds, shiftedReads, scaleTo = 100)
+  cdsCov <- metaWindow(shiftedReads, cds, scoring = NULL, 
+                       returnAs = "data.table", feature = "cds")
   
-  trailerCov <- scaledWindowPositions(trailers, shiftedReads, scaleTo = 100)
+  trailerCov <- metaWindow(shiftedReads, trailers, scoring = NULL, 
+                           returnAs = "data.table", feature = "trailers")
   # bind together
   dt <- rbindlist(list(leaderCov, cdsCov, trailerCov))
-  # Now set info columns
-  nGenes <- length(cds)
-  dt[, `:=` (fraction = "Ribo-seq", feature = c(rep("leaders", 100 * nGenes), 
-     rep("cds", 100 * nGenes), rep("trailers", 100 * nGenes)))]
-  
-  ORFik:::windowCoveragePlot(dt, scoring = "zscore", 
-                             title = "Ribo-seq metaplot") 
+  # Now set info column
+  dt[, `:=` (fraction = "Ribo-seq")]
+  # zscore gives shape, a good starting plot
+  windowCoveragePlot(dt, scoring = "zscore", title = "Ribo-seq metaplot") 
+}
+```
+Z-score is good at showing overall shape, lets use a median scoring to
+find median counts per meta window per positions.
+```{r eval = TRUE, echo = TRUE}
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  windowCoveragePlot(dt, scoring = "median", title = "Ribo-seq metaplot") 
 }
 ```
 

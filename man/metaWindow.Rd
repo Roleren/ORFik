@@ -6,7 +6,8 @@
 \usage{
 metaWindow(x, windows, scoring = "sum", withFrames = FALSE,
   zeroPosition = NULL, scaleTo = 100, returnAs = "data.frame",
-  fraction = NULL, forceUniqueEven = TRUE)
+  fraction = NULL, feature = NULL,
+  forceUniqueEven = !is.null(scoring))
 }
 \arguments{
 \item{x}{GRangesList/GRanges object of your reads.
@@ -16,7 +17,7 @@ Remember to resize them beforehand to width of 1 to focus on
 \item{windows}{GRangesList or GRanges of your ranges}
 
 \item{scoring}{a character, one of (zscore, transcriptNormalized,
-mean, median, sum, sumLength), see ?coverageScorings}
+mean, median, sum, sumLength, NULL), see ?coverageScorings}
 
 \item{withFrames}{a logical (TRUE), return positions with the 3 frames,
 relative to zeroPosition. zeroPosition is frame 0.}
@@ -35,6 +36,9 @@ i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.}
 
 \item{fraction}{a character/integer (NULL), the fraction i.e
 (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.}
+
+\item{feature}{a character string, info on region. Usually either
+gene name, transcript part like cds, leader, or CpG motifs etc.}
 
 \item{forceUniqueEven, }{a logical (TRUE), require that all windows
 are of same width and even. To avoid bugs.}
