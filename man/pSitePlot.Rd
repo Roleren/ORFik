@@ -36,7 +36,7 @@ coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
                               withFrames = TRUE)
 ORFik:::pSitePlot(coverage)
 
-See vignette for more examples
+# See vignette for more examples
 
 }
 \seealso{

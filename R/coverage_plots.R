@@ -25,7 +25,7 @@
 #'                               withFrames = TRUE)
 #' ORFik:::pSitePlot(coverage)
 #'
-#' See vignette for more examples
+#' # See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
   min <- min(hitMap$position)
@@ -147,7 +147,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #'
 #' ORFik:::coverageHeatMap(coverage)
 #'
-#' See vignette for more examples
+#' # See vignette for more examples
 #'
 coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
   coverage$fraction <- factor(coverage$fraction,

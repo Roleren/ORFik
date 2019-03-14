@@ -39,7 +39,7 @@ coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
 
 ORFik:::coverageHeatMap(coverage)
 
-See vignette for more examples
+# See vignette for more examples
 
 }
 \seealso{
