@@ -36,8 +36,8 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
   tx <- tx[!duplicated(tx$gene_id), ]
   tx <- tx[!is.na(tx$gene_id)]
   if (stopOnEmpty & length(tx$tx_name) == 0)
-    stop("No transcript has leaders and trailers of specified minFiveUTR"
-         ,"minCDS, minThreeUTR")
+    stop("No transcript has leaders and trailers of specified minFiveUTR",
+         "minCDS, minThreeUTR")
 
   return(tx$tx_name)
 }

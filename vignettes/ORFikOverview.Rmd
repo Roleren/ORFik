@@ -160,7 +160,7 @@ them.
 txNames <- filterTranscripts(txdb)
 tx <- tx[txNames]; cds <- cds[txNames]; trailers <- trailers[txNames];
 windowsStart <- startRegion(cds[txNames], tx, TRUE, upstream = 30, 29)
-windowsStop <-  startRegion(trailers, tx, TRUE, upstream = 30, 29)
+windowsStop <- startRegion(trailers, tx, TRUE, upstream = 30, 29)
 windowsStart
 ```
 
@@ -240,8 +240,8 @@ features. See example below.
   RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
   # transcript database
   txdb <- loadDb(txdbFile)
-  dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile,
-                  orfFeatures =  TRUE)
+  dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, 
+                        orfFeatures =  TRUE)
   dt
 }
 ```
@@ -460,7 +460,7 @@ tails <- tails(tile, 9)
 stopOverlap <- countOverlaps(tails, ribo)
 allOverlap <- countOverlaps(cds, ribo)
 fractions <- (stopOverlap + 1) / (allOverlap + 1) # pseudocount 1
-cdsToRemove <- fractions > 1/2 # filter with pseudocounts (1+1)/(3+1) 
+cdsToRemove <- fractions > 1 / 2 # filter with pseudocounts (1+1)/(3+1) 
 cdsToRemove
 ```
 We now easily made a stop codon filter for our coding sequences.
@@ -482,7 +482,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # leader > 100 bases, cds > 100 bases, trailer > 100 bases
   txNames <- filterTranscripts(txdb, 100, 100, 100) # valid transcripts
   leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
-  cds <- cdsBy(txdb,"tx", use.names = TRUE)[txNames]
+  cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
   trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
   tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
   # Ribo-seq

@@ -145,8 +145,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   firstN = 150L) {
 
   # Filters for cds and footprints
-  txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR,
-                               minCDS = minCDS, minThreeUTR = minThreeUTR)
+  txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
+                               minThreeUTR = minThreeUTR)
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
 
   # reduce data-set to only matching seqlevels
@@ -170,21 +170,21 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   offset <- data.table()
   if (start) {
     rw <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
-                             pShifted = FALSE, upstream = 30, downstream = 29,
-                             acceptedLengths = validLengths)
+                              pShifted = FALSE, upstream = 30, downstream = 29,
+                              acceptedLengths = validLengths)
     offset <- rw[, .(offsets_start = changePointAnalysis(score)),
-                by = fraction]
+                 by = fraction]
   }
   if (stop) {
     threeUTRs <- threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     rw <- windowPerReadLength(grl = threeUTRs, tx = tx, reads = footprints,
-                             pShifted = FALSE, upstream = 30, downstream = 29,
-                             acceptedLengths = validLengths)
+                              pShifted = FALSE, upstream = 30, downstream = 29,
+                              acceptedLengths = validLengths)
     if (nrow(offset) == 0) {
       offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
-                  by = fraction]
+                   by = fraction]
     } else offset$offsets_stop <- rw[, .(changePointAnalysis(score, "stop")),
-                       by = fraction]$V1
+                                     by = fraction]$V1
   }
 
   return(as.data.frame(offset))

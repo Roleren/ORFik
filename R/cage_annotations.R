@@ -11,7 +11,7 @@
 #'
 filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL) {
   if (tryCatch(seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs),
-           error = function(e){TRUE}) == TRUE){
+               error = function(e) {TRUE}) == TRUE) {
     warning("seqlevels of CAGE/fiveUTRs are not standardized, check them.")
   } else {
     seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs)
