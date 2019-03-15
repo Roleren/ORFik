@@ -185,7 +185,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 #' @family coveragePlot
 savePlot <- function(plot, output = NULL, width = 200, height = 150) {
   if (!is.null(output)) {
-    if (is.character(output) && dir.exists(dirname(outName))) {
+    if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)
       if (ext != "pdf" & ext != "png") output <- paste0(output, ".pdf")
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
