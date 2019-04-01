@@ -260,7 +260,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #'
 #' A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 #' @param grl a GRangesList object
-#' @param faFile FaFile or BSgenome used to find the transcripts,
+#' @inheritParams findFa
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
 #' @return a DNAStringSet of the transcript sequences

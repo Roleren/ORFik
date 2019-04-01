@@ -360,7 +360,7 @@ rankOrder <- function(grl) {
 #' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
 #' fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
 #'
-fractionLength <- function(grl, tx_len){
+fractionLength <- function(grl, tx_len) {
   grl_len <- widthPerGroup(grl, FALSE)
   tx_len <- tx_len[txNames(grl)]
   names(tx_len) <- NULL

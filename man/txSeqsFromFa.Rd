@@ -9,7 +9,8 @@ txSeqsFromFa(grl, faFile, is.sorted = FALSE)
 \arguments{
 \item{grl}{a GRangesList object}
 
-\item{faFile}{FaFile or BSgenome used to find the transcripts,}
+\item{faFile}{FaFile, BSgenome or fasta/index file path used to find the
+transcripts}
 
 \item{is.sorted}{a speedup, if you know the ranges are sorted}
 }

@@ -7,7 +7,8 @@
 findFa(faFile)
 }
 \arguments{
-\item{faFile}{a character path or FaFile}
+\item{faFile}{FaFile, BSgenome or fasta/index file path used to find the
+transcripts}
 }
 \value{
 a FaFile or BSgenome

@@ -8,7 +8,8 @@ filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
   minThreeUTR = 30L, stopOnEmpty = TRUE)
 }
 \arguments{
-\item{txdb}{a TxDb object from gtf}
+\item{txdb}{a TxDb file or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
 \item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
 transcripts}

@@ -1,3 +1,48 @@
+#' Get coverage window per transcript
+#'
+#' @param txdb a TxDb object or a path to gtf/gff/db file.
+#' @param reads GRanges or GAlignment of reads
+#' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
+#' @param windowSize an integer (100), size of windows
+#' @param fraction info on reads (which read length, or which type (RNA seq))
+#' @return a data.table with columns position, score
+windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
+                                windowSize = 100, fraction = "1") {
+  # Load data
+  txdb <- loadTxdb(txdb)
+
+  if (splitIn3) {
+    # Lets take all valid transcripts, with size restrictions:
+    # leader > 100 bases, cds > 100 bases, trailer > 100 bases
+    txNames <- filterTranscripts(txdb, windowSize, windowSize,
+                                 windowSize) # valid transcripts
+    leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+    cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
+    trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+
+    leaderCov <- scaledWindowPositions(leaders, reads, windowSize)
+    leaderCov[, `:=` (feature = "leaders")]
+    cdsCov <- scaledWindowPositions(cds, reads, windowSize)
+    cdsCov[, `:=` (feature = "cds")]
+    trailerCov <- scaledWindowPositions(trailers, reads, windowSize)
+    trailerCov[, `:=` (feature = "trailers")]
+
+    txCov <- rbindlist(list(leaderCov, cdsCov, trailerCov))
+    txCov[, `:=` (fraction = fraction)]
+
+  } else {
+    tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+    txNames <- widthPerGroup(tx) >= windowSize
+    if (!any(txNames)) stop(paste0("no valid transcripts with length",
+                                   windowSize))
+    tx <- tx[txNames]
+    txCov <- scaledWindowPositions(tx, reads, windowSize)
+    txCov[, `:=` (fraction = fraction, feature = "transcript")]
+  }
+  txCov[] # for print
+  return(txCov)
+}
+
 #' Calculate meta-coverage of reads around input GRanges/List object.
 #'
 #' Sums up coverage over set of GRanges objects as a meta representation.
@@ -98,7 +143,9 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #' @param scaleTo an integer (100), if windows have different size,
 #'  a meta window can not directly be created, since a meta window must
 #'  have equal size for all windows. Rescale all windows to scaleTo.
-#'  i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc.
+#'  i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
+#'  1 number per grl group.
+#' @param scoring a character, one of (meanPos, sumPos)
 #' @return A data.table with scored counts (counts) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).
@@ -113,16 +160,27 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #'   strand = "-")
 #' scaledWindowPositions(windows, x, scaleTo = 100)
 #'
-scaledWindowPositions <- function(grl, reads, scaleTo = 100) {
+scaledWindowPositions <- function(grl, reads, scaleTo = 100,
+                                  scoring = "meanPos") {
+  if ((length(scaleTo) != 1) & length(scaleTo) != length(grl))
+    stop("length of scaleTo must either be 1 or length(grl)")
+
   count <- coveragePerTiling(grl, reads, is.sorted = FALSE, keep.names = TRUE,
                               as.data.table = TRUE, withFrames = FALSE)
   count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
   count[, position := ceiling(scalingFactor * position)]
-  count[position > scaleTo]$position <- scaleTo
+
+  if (length(scaleTo) == 1) {
+    count[position > scaleTo]$position <- scaleTo
+  } else {
+    if (any(count[, .(max = max(position)), by = genes]$max > scaleTo)) {
+      index <- count[, .(ind = which.max(position)), by = genes]$ind
+      count[index, position := scaleTo]
+    }
+  }
 
   # mean counts per position per group
-  count <- coverageScorings(count, "meanPos")
-
+  count <- coverageScorings(count, scoring)
   return(count)
 }
 
@@ -158,10 +216,11 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100) {
 #' 5. sum (count per)
 #' 6. sumLength (count per) / number of windows
 #' 7. meanPos (mean per position per gene) used in scaledWindowPositions
-#' 8. frameSum (sum per frame per gene) used in ORFScore
-#' 9. fracPos (fraction of counts per position per gene)
-#' 10. periodic (Fourier transform periodicity of meta coverage per fraction)
-#' 11. NULL (return input directly)
+#' 8. sumPos (sum per position per gene) used in scaledWindowPositions
+#' 9. frameSum (sum per frame per gene) used in ORFScore
+#' 10. fracPos (fraction of counts per position per gene)
+#' 11. periodic (Fourier transform periodicity of meta coverage per fraction)
+#' 12. NULL (return input directly)
 #' @param coverage a data.table containing at least columns (count, position),
 #' it is possible to have additionals: (genes, fraction, feature)
 #' @param scoring a character, one of (zscore, transcriptNormalized,
@@ -187,9 +246,12 @@ coverageScorings <- function(coverage, scoring = "zscore") {
   groupFPF <- coverageGroupings(c(is.null(cov$fraction),
                                 is.null(cov$feature)), "FPF")
   if (is.null(cov$count)) cov$count <- cov$score
-  if( scoring == "meanPos") { # rare scoring schemes
+  if (scoring == "meanPos") { # rare scoring schemes
     groupFPF <- quote(list(genes, position))
     scoring <- "mean"
+  } else if (scoring == "sumPos") { # rare scoring schemes
+    groupFPF <- quote(list(genes, position))
+    scoring <- "sum"
   } else if (scoring == "frameSum") {
     groupFPF <- quote(list(genes, frame))
     scoring <- "sum"

@@ -4,7 +4,7 @@
 \alias{scaledWindowPositions}
 \title{Scale windows to a meta window of size}
 \usage{
-scaledWindowPositions(grl, reads, scaleTo = 100)
+scaledWindowPositions(grl, reads, scaleTo = 100, scoring = "meanPos")
 }
 \arguments{
 \item{grl}{GRangesList or GRanges of your ranges}
@@ -14,7 +14,10 @@ scaledWindowPositions(grl, reads, scaleTo = 100)
 \item{scaleTo}{an integer (100), if windows have different size,
 a meta window can not directly be created, since a meta window must
 have equal size for all windows. Rescale all windows to scaleTo.
-i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc.}
+i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
+1 number per grl group.}
+
+\item{scoring}{a character, one of (meanPos, sumPos)}
 }
 \value{
 A data.table with scored counts (counts) of

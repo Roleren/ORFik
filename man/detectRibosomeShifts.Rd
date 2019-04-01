@@ -11,7 +11,8 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
 \arguments{
 \item{footprints}{(GAlignments) object of RiboSeq reads - footprints}
 
-\item{txdb}{a txdb object from a gtf/gff file}
+\item{txdb}{a TxDb file or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
 \item{start}{(logical) Whether to include predictions based on the start
 codons. Default TRUE.}
@@ -57,13 +58,12 @@ detects correct shifts.
 \examples{
 \dontrun{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 footprints <- GenomicAlignments::readGAlignments(
   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 
-detectRibosomeShifts(footprints, txdb, stop = TRUE)
+detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
 }
 
 }

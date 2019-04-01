@@ -48,10 +48,11 @@ Scorings:
 5. sum (count per)
 6. sumLength (count per) / number of windows
 7. meanPos (mean per position per gene) used in scaledWindowPositions
-8. frameSum (sum per frame per gene) used in ORFScore
-9. fracPos (fraction of counts per position per gene)
-10. periodic (Fourier transform periodicity of meta coverage per fraction)
-11. NULL (return input directly)
+8. sumPos (sum per position per gene) used in scaledWindowPositions
+9. frameSum (sum per frame per gene) used in ORFScore
+10. fracPos (fraction of counts per position per gene)
+11. periodic (Fourier transform periodicity of meta coverage per fraction)
+12. NULL (return input directly)
 }
 \examples{
 dt <- data.table::data.table(count = c(4, 1, 1, 4, 2, 3),

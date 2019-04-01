@@ -17,7 +17,7 @@ with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 
 \item{RNA}{RnaSeq reads as GAlignment, GRanges or GRangesList object}
 
-\item{Gtf}{a TxDb object of a gtf file,}
+\item{Gtf}{a TxDb object of a gtf file or path to gtf, gff .sqlite etc.}
 
 \item{tx}{a GrangesList of transcripts,
 normally called from: exonsBy(Gtf, by = "tx", use.names = T)

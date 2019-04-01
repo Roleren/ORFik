@@ -7,7 +7,7 @@
 #' so they will be filtered out. So only transcripts with leaders, cds and
 #' 3' UTRs will be returned. You can set the integer to 0, that will return all
 #' within that group.
-#' @param txdb a TxDb object from gtf
+#' @inheritParams loadTxdb
 #' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
 #' transcripts
 #' @param minCDS (integer) minimum bp for CDS during filtering for the
@@ -24,7 +24,7 @@
 #'
 filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
                               minThreeUTR = 30L, stopOnEmpty = TRUE) {
-  if(!is(txdb, "TxDb")) stop("txdb must be a TxDb object")
+  txdb <- loadTxdb(txdb)
 
   tx <- data.table::setDT(
     GenomicFeatures::transcriptLengths(
@@ -245,7 +245,8 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 }
 
 #' Convenience wrapper for Rsamtools FaFile
-#' @param faFile a character path or FaFile
+#' @param faFile FaFile, BSgenome or fasta/index file path used to find the
+#'  transcripts
 #' @importFrom Rsamtools FaFile
 #' @return a FaFile or BSgenome
 #' @family utils

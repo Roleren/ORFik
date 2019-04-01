@@ -63,62 +63,32 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
 #' entropy(cds, reads)
 #'
 entropy <- function(grl, reads) {
-  # Get count list of groups with hits
+  # Optimize: Get count list of only groups with hits
   validIndices <- hasHits(grl, reads)
   if (!any(validIndices)) { # no variance in countList, 0 entropy
     return(rep(0, length(validIndices)))
   }
-  # get coverage per group
   grl <- grl[validIndices]
   reOrdering <- uniqueOrder(grl)
-  countList <- coveragePerTiling(uniqueGroups(grl), reads, is.sorted = TRUE,
-                                 keep.names = FALSE)
-
-  # generate the entropy variables
-  # Number of hits per group
-  N <- sum(countList)
-  # length per group
-  L <- lengths(countList)
-  reg_len <- rep.int(3, length(L)) # tuples per orf, start on 3
-
-  # which ORFs should not have tuplet length of 3
-  # is hits < length
-  bool <- N <= L
-  floors <- floor(L / N)
-  reg_len[bool] <- floors[bool]
-  reg_counts <- as.integer(L / reg_len) # number of tuples per orf
-  runLengths <- reg_counts
-
-  tripletSums <- codonSumsPerGroup(countList, reg_len, runLengths)
-
-  # expand N for easy vectorization
-  N <- rep.int(N, reg_counts)
 
   # entropy function, interval 0:1 real number
   # Xi is the ratio of hits per postion per group
-  Xi <-  tripletSums / N
-  validXi <- !is.nan(Xi * log2(Xi)) # avoid log2(0)
-  Hx <- rep(0, length(validXi))
-  Hx[validXi] <- Xi[validXi] * log2(Xi[validXi])
+  Xi <- codonSumsPerGroup(grl, reads)
 
-  MHx <- rep(0, length(validXi))
+  validXi <- Xi$codonSums > 0 # avoid log2(0)
+  Xi[, `:=` (Hx = rep(0, nrow(Xi)))]
+  Xi[validXi, Hx := codonSums * log2(codonSums)] # Hx: The codon sum part
+  Xi <- Xi[, .(Hx = sum(Hx)), by = genes]
 
-  reg_counts <- rep.int(reg_counts, runLengths)
-  MHx <- 1/reg_counts * log2(1 / reg_counts)
-
-  # sum the mhx to groups
-  grouping <- rep.int(seq_along(runLengths), runLengths)
-  dt <- data.table(Hx, MHx, grouping)
-  Hx <- dt[, sum(Hx), by = grouping]$V1
-  MHx <- dt[, sum(MHx), by = grouping]$V1
-  # Hx <- sum(NumericList(split(Hx, grouping)))
-  # MHx <- sum(NumericList(split(MHx, grouping)))
+  codons <- numCodons(grl)
+  MHx <- 1/codons
+  Xi[, MHx := MHx * log2(MHx) * codons] # MHx: The length part
+  Xi[, entropy := Hx / MHx] # entropy is read sums over lengths
 
   entropy <- rep(0.0, length(validIndices))
   # non 0 entropy values set to HX / MHX
-  tempEntro <- Hx / MHx
-  tempEntro[is.na(tempEntro)] <- 0.
-  tempEntro <- tempEntro[reOrdering] # order back from unique
+  Xi[is.na(entropy), entropy := 0.]
+  tempEntro <- Xi$entropy[reOrdering] # order back from unique
   entropy[validIndices] <- tempEntro # order back from hits
   return(entropy)
 }
@@ -304,14 +274,9 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' RFP <- GRanges("1", IRanges(c(1,10,20,30,40), width = 3), "+")
 #' disengagementScore(grl, RFP, tx)
 #'
-disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE){
-  if (is(GtfOrTx,"TxDb")) {
-    tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
-  } else if (is.grl(GtfOrTx)) {
-    tx <- GtfOrTx
-  } else {
-    stop("GtfOrTx is neithter of type TxDb or GRangesList")
-  }
+disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
+  tx <- loadRegion(GtfOrTx)
+
   # exclude non hits and set them to 0
   validIndices <- hasHits(tx, RFP)
   validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
@@ -389,18 +354,11 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE){
 #'
 insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
                              RFP.sorted = FALSE) {
+  tx <- loadRegion(GtfOrTx)
 
-  if (is(GtfOrTx, "TxDb")) {
-    tx <- exonsBy(GtfOrTx, by = "tx", use.names = TRUE)
-  } else if (is.grl(GtfOrTx)) {
-    tx <- GtfOrTx
-  } else {
-    stop("GtfOrTx is neithter of type TxDb or GRangesList")
-  }
   if (length(RFP) > 1e6 & !RFP.sorted) {
     RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
   }
-
   overlapGrl <- countOverlaps(grl, RFP) + 1
   # find tx with hits
   validIndices <- hasHits(tx, RFP)
@@ -474,14 +432,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #' ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #'
 ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
-  if (is(GtfOrThreeUtrs,"TxDb")) {
-    threeUTRs <- threeUTRsByTranscript(GtfOrThreeUtrs, by = "tx",
-                                       use.names = TRUE)
-  } else if (is.grl(GtfOrThreeUtrs)) {
-    threeUTRs <- GtfOrThreeUtrs
-  } else {
-    stop("GtfOrThreeUtrs is neithter of type TxDb or GRangesList")
-  }
+  threeUTRs <- loadRegion(GtfOrThreeUtrs, part = "trailer")
   # check that naming is correct, else change it.
   orfNames <- txNames(grl, FALSE)
   validNamesThree <- names(threeUTRs) %in% orfNames

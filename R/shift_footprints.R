@@ -26,14 +26,15 @@
 #' @export
 #' @examples
 #' \dontrun{
+#' # input path to gtf, or load it as TxDb.
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+#' # load reads
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 #' footprints <- GenomicAlignments::readGAlignments(
 #'   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
 #'     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 #' # detect the shifts automagically
-#' shifts <- detectRibosomeShifts(footprints, txdb)
+#' shifts <- detectRibosomeShifts(footprints, gtf_file)
 #' # shift the RiboSeq footprints
 #' shiftedReads <- shiftFootprints(footprints, shifts)
 #' }
@@ -111,7 +112,7 @@ shiftFootprints <- function(footprints, shifts) {
 #' and stop codons, so that you can verify visually whether this function
 #' detects correct shifts.
 #' @param footprints (GAlignments) object of RiboSeq reads - footprints
-#' @param txdb a txdb object from a gtf/gff file
+#' @inheritParams loadTxdb
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
 #' @param stop (logical) Whether to include predictions based on the stop
@@ -131,19 +132,18 @@ shiftFootprints <- function(footprints, shifts) {
 #' @examples
 #' \dontrun{
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 #' footprints <- GenomicAlignments::readGAlignments(
 #'   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
 #'     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 #'
-#' detectRibosomeShifts(footprints, txdb, stop = TRUE)
+#' detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
 #' }
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   firstN = 150L) {
-
+  txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
                                minThreeUTR = minThreeUTR)

@@ -244,7 +244,7 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #' Note: If you used CAGEr, you will get reads of a probability region, with
 #' always score of 1. Remember then to set filterValue to 0. And you should use
 #' the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
-#' @param txdb a TxDb object, normally from a gtf file.
+#' @inheritParams loadTxdb
 #' @inheritParams reassignTSSbyCage
 #' @importFrom data.table setkeyv
 #' @family CAGE
@@ -255,16 +255,15 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #'  # Get the gtf txdb file
 #'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'  package = "GenomicFeatures")
-#'  txdb <- loadDb(txdbFile)
 #'  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
 #'  package = "ORFik")
-#'  reassignTxDbByCage(txdb, cagePath)
+#'  reassignTxDbByCage(txdbFile, cagePath)
 #'  }
 #' @return a TxDb obect of reassigned transcripts
 reassignTxDbByCage <- function(txdb, cage, extension = 1000,
                                filterValue = 1, restrictUpstreamToTx = FALSE,
                                removeUnused = FALSE) {
-  if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
+  txdb <- loadTxdb(txdb)
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
   fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue,
                                 restrictUpstreamToTx, removeUnused)
@@ -305,16 +304,15 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #'  # Get the gtf txdb file
 #'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'  package = "GenomicFeatures")
-#'  txdb <- loadDb(txdbFile)
 #'  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
 #'  package = "ORFik")
-#'  reassignTxDbByCage(txdb, cagePath)
+#'  reassignTxDbByCage(txdbFile, cagePath)
 #'  }
 #' @return a TxDb obect of reassigned transcripts
 assignTSSByCage <- function(txdb, cage, extension = 1000,
                             filterValue = 1, restrictUpstreamToTx = FALSE,
                             removeUnused = FALSE) {
-  if (!is(txdb,"TxDb")) stop("txdb must be a TxDb object")
+  txdb <- loadTxdb(txdb)
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
 
   cds <- cdsBy(txdb,"tx",use.names = TRUE)
