@@ -4,22 +4,23 @@
 \alias{codonSumsPerGroup}
 \title{Get hits per codon}
 \usage{
-codonSumsPerGroup(countList, reg_len, runLengths)
+codonSumsPerGroup(grl, reads)
 }
 \arguments{
-\item{countList}{a Rle of count repetitions (000, 1, 00, 1 etc)}
+\item{grl}{a GRangesList}
 
-\item{reg_len}{integer vector, size of runs}
-
-\item{runLengths}{integer vector, duplications per run}
+\item{reads}{a GRanges or GAlignment}
 }
 \value{
-a list of codon sums
+a data.table with codon sums
 }
 \description{
 Helper for entropy function, normally not used directly
 Seperate each group into tuples (abstract codons)
 Gives sum for each tuple within each group
-Example: c(1,0,0,1), with reg_len = 2, gives
-c(1,0) and c(0,1), these are summed and returned as list
+}
+\details{
+Example: counts c(1,0,0,1), with reg_len = 2, gives
+c(1,0) and c(0,1), these are summed and returned as data.table
+10 bases, will give 3 codons, 1 base codons does not exist.
 }

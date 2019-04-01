@@ -3,46 +3,18 @@
 #' Helper for entropy function, normally not used directly
 #' Seperate each group into tuples (abstract codons)
 #' Gives sum for each tuple within each group
-#' Example: c(1,0,0,1), with reg_len = 2, gives
-#' c(1,0) and c(0,1), these are summed and returned as list
-#' @param countList a Rle of count repetitions (000, 1, 00, 1 etc)
-#' @param reg_len integer vector, size of runs
-#' @param runLengths integer vector, duplications per run
-#' @return a list of codon sums
 #'
-codonSumsPerGroup <- function(countList, reg_len,
-                              runLengths ) {
-  # TODO: USE NEW SCORING TO MAKE THIS VECTOR SIMPLER
-  len <- lengths(countList)
-  if (length(len) > 1) { # if more than 1 hit total
-    acums <- cumsum(as.numeric(len[seq.int(length(len) - 1)]))
-    acums <- rep.int(c(1, acums), runLengths)
-  } else { # special case for 1 group only
-    acums <- 1
-  }
-
-  # Need to reassign variables to equal length, to be able to vectorize
-  # h: The sequences we make the tuplets per orf,
-  # if h[1] is: c(0,1,2,3,4,5) and reg_len[1] is: c(3,3)
-  # you get int_seqs: ->  1: c(1,2,3 , 4,5,6) <- 2 triplets
-  reg_len <- rep.int(reg_len, runLengths)
-  h <- unlist(lapply(runLengths - 1, function(x) {
-    seq.int(0, x)
-  }), use.names = FALSE)
-
-  which_reads_start <- (acums + h * reg_len)
-  which_reads_end <- (h * reg_len + (reg_len + acums - 1))
-  # the actual triplets ->
-  int_seqs <- lapply(seq_along(which_reads_start), function(x) {
-    which_reads_start[x]:which_reads_end[x]
-  })
-
-  unlintcount <- unlist(IntegerList(countList), use.names = FALSE)
-  # get the assigned tuplets per orf, usually triplets
-  triplets <- lapply(int_seqs, function(x) {
-    unlintcount[x]
-  })
-  return(sum(IntegerList(triplets)))
+#' Example: counts c(1,0,0,1), with reg_len = 2, gives
+#' c(1,0) and c(0,1), these are summed and returned as data.table
+#' 10 bases, will give 3 codons, 1 base codons does not exist.
+#' @param grl a GRangesList
+#' @param reads a GRanges or GAlignment
+#' @return a data.table with codon sums
+#'
+codonSumsPerGroup <- function(grl, reads) {
+  dt <- scaledWindowPositions(grl, reads, numCodons(grl))
+  dt[, `:=` (codonSums = score / sum(score)), by = genes]
+  return(dt)
 }
 
 

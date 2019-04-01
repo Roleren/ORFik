@@ -4,7 +4,7 @@
 \alias{computeFeatures}
 \title{Get all possible features in ORFik}
 \usage{
-computeFeatures(grl, RFP, RNA = NULL, Gtf = NULL, faFile = NULL,
+computeFeatures(grl, RFP, RNA = NULL, Gtf, faFile = NULL,
   riboStart = 26, riboStop = 34, orfFeatures = TRUE,
   includeNonVarying = TRUE, grl.is.sorted = FALSE)
 }
@@ -16,7 +16,7 @@ with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 
 \item{RNA}{RnaSeq reads as GAlignment, GRanges or GRangesList object}
 
-\item{Gtf}{a TxDb object of a gtf file,}
+\item{Gtf}{a TxDb object of a gtf file or path to gtf, gff .sqlite etc.}
 
 \item{faFile}{a FaFile or BSgenome from the fasta file, see ?FaFile}
 

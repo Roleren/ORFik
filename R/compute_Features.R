@@ -12,7 +12,7 @@
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 #' @param RFP RiboSeq reads as GAlignment, GRanges or GRangesList object
 #' @param RNA RnaSeq reads as GAlignment, GRanges or GRangesList object
-#' @param Gtf a TxDb object of a gtf file,
+#' @param Gtf a TxDb object of a gtf file or path to gtf, gff .sqlite etc.
 #' @param faFile a FaFile or BSgenome from the fasta file, see ?FaFile
 #' @param riboStart usually 26, the start of the floss interval, see ?floss
 #' @param riboStop usually 34, the end of the floss interval
@@ -43,68 +43,24 @@
 #' suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
 #' # For more details see vignettes.
 #'
-computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
+computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,
                             includeNonVarying = TRUE, grl.is.sorted = FALSE) {
   #### Check input and load data ####
   validGRL(class(grl), "grl")
   checkRFP(class(RFP))
   checkRNA(class(RNA))
-  if(!is(Gtf,"TxDb")) stop("gtf must be TxDb object")
+  Gtf <- loadTxdb(Gtf)
 
   # get transcript parts
   fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
   cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
   threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
-  tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
+  tx <- loadRegion(Gtf)
 
-  if (!grl.is.sorted) {
-    grl <- sortPerGroup(grl)
-  }
-
-  #### Get all features, append 1 at a time, to save memory ####
-  scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
-  scores[, entropyRFP := entropy(grl, RFP)]
-  scores[, disengagementScores := disengagementScore(grl, RFP, tx)]
-  scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)]
-  scores[, RSS := ribosomeStallingScore(grl, RFP)]
-
-  if (includeNonVarying) {
-    scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
-  }
-
-  if (!is.null(RNA)) { # if rna seq is included
-    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
-    scores[, te := TE$te]
-    scores[, fpkmRFP := TE$fpkmRFP]
-    scores[, fpkmRNA := TE$fpkmRNA]
-  } else {
-    scores[, fpkmRFP := fpkm(grl, RFP)]
-  }
-  if (orfFeatures) { # if features are found for orfs
-    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted)$ORFScores]
-    scores[, ioScore := insideOutsideORF(grl, RFP, tx,
-                                         scores$disengagementScores)]
-
-    if (includeNonVarying) {
-
-      if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
-        scores$kozak <- kozakSequenceScore(grl, tx, faFile)
-      } else {
-        message("faFile not included, skipping kozak sequence score")
-      }
-      # switch five with tx, is it possible to use ?
-      distORFCDS <- distToCds(grl, fiveUTRs, cds)
-      scores[, distORFCDS := distORFCDS]
-      scores[, inFrameCDS := isInFrame(distORFCDS)]
-      scores[, isOverlappingCds := isOverlapping(distORFCDS)]
-      scores[, rankInTx := rankOrder(grl)]
-    }
-  } else {
-    message("orfFeatures set to False, dropping all orf features.")
-  }
-  scores[] # for print
-  return(scores)
+  return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
+                           riboStart, riboStop, orfFeatures, includeNonVarying,
+                           grl.is.sorted))
 }
 
 #' Get all possible features in ORFik
@@ -174,7 +130,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf = NULL, faFile = NULL,
 #' # See vignettes for more examples
 #' }
 #'
-computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
+computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
                                 fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
                                 orfFeatures = TRUE, includeNonVarying = TRUE,
@@ -190,7 +146,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
                             tx must be specified as a GRangesList")
     }
     } else {
-      if(!is(Gtf,"TxDb")) stop("gtf must be TxDb object")
+      Gtf <- loadTxdb(Gtf)
 
       notIncluded <- validGRL(c(class(fiveUTRs), class(cds),
                                 class(threeUTRs), class(tx)),
@@ -205,9 +161,22 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL,  Gtf = NULL, tx = NULL,
         threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
       }
       if (notIncluded[4]) {
-        tx <- exonsBy(Gtf, by = "tx", use.names = TRUE)
+        tx <- loadRegion(Gtf)
       }
-  }
+    }
+  return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
+                           riboStart, riboStop, orfFeatures, includeNonVarying,
+                           grl.is.sorted))
+}
+
+#' Calculate the features in computeFeatures
+#'
+#' Not used directly, calculates all features.
+#' @inheritParams computeFeaturesCage
+#' @return a data.table with features
+allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
+                              faFile, riboStart, riboStop, orfFeatures,
+                              includeNonVarying, grl.is.sorted) {
   if (!grl.is.sorted) {
     grl <- sortPerGroup(grl)
   }

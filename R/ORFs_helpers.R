@@ -499,3 +499,16 @@ longestORFs <- function(grl) {
   }
   return(grl[longestORFs])
 }
+
+#' Get number of codons
+#'
+#' Choose only whole codons, or with stubs.
+#' But usually there are no ORFs that are 17 bases etc.
+#' @param grl a \code{\link{GRangesList}} object
+#' @param as.integer a logical (TRUE), remove stub codons
+#' @param keep.names a logical (FALSE)
+#' @return an integer vector
+numCodons <- function(grl, as.integer = TRUE,  keep.names = FALSE) {
+  if (as.integer) return(ceiling(widthPerGroup(grl, keep.names) / 3))
+  return(widthPerGroup(grl, keep.names) / 3)
+}

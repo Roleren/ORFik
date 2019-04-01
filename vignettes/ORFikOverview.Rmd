@@ -58,7 +58,7 @@ frames.
 ```{r eval = TRUE, echo = TRUE}
 txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite", 
                         package = "GenomicFeatures")
-txdb <- loadDb(txdbFile)
+txdb <- loadTxdb(txdbFile)
 fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
 fiveUTRs
 ```
@@ -146,9 +146,9 @@ footprintsGR
 Now, lets prepare annotations and focus on START and STOP codons.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
-tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
-cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+txdb <- loadTxdb(gtf_file)
+tx <- GenomicFeatures::exonsBy(txdb, by = "tx", use.names = TRUE)
+cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
 trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
 ```
@@ -239,7 +239,7 @@ features. See example below.
   # set RNA seq to duplicate transcripts
   RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
   # transcript database
-  txdb <- loadDb(txdbFile)
+  txdb <- loadTxdb(txdbFile)
   dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, 
                         orfFeatures =  TRUE)
   dt
@@ -477,7 +477,7 @@ Lets make 3 plots of Ribo-seq focused on CDS regions.
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # Load data as shown before and pshift the Ribo-seq
   # Get the annotation
-  txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+  txdb <- loadTxdb(gtf_file)
   # Lets take all valid transcripts, with size restrictions:
   # leader > 100 bases, cds > 100 bases, trailer > 100 bases
   txNames <- filterTranscripts(txdb, 100, 100, 100) # valid transcripts
@@ -509,6 +509,8 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   dt <- rbindlist(list(leaderCov, cdsCov, trailerCov))
   # Now set info column
   dt[, `:=` (fraction = "Ribo-seq")]
+  # NOTE: All of this is done in one line in function: windowPerTranscript
+  
   # zscore gives shape, a good starting plot
   windowCoveragePlot(dt, scoring = "zscore", title = "Ribo-seq metaplot") 
 }

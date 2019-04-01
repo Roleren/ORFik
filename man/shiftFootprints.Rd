@@ -38,14 +38,15 @@ shifted right by 10.
 }
 \examples{
 \dontrun{
+# input path to gtf, or load it as TxDb.
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+# load reads
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 footprints <- GenomicAlignments::readGAlignments(
   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 # detect the shifts automagically
-shifts <- detectRibosomeShifts(footprints, txdb)
+shifts <- detectRibosomeShifts(footprints, gtf_file)
 # shift the RiboSeq footprints
 shiftedReads <- shiftFootprints(footprints, shifts)
 }

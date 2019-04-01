@@ -123,3 +123,51 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 
   return(txList)
 }
+
+#' General loader for txdb
+#'
+#' Useful to allow fast TxDb loader like .db
+#' @param txdb a TxDb file or a path to one of:
+#'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+#' @return a TxDb object
+#' @importFrom AnnotationDbi loadDb
+#' @export
+#' @examples
+#' library(GenomicFeatures)
+#' # Get the gtf txdb file
+#' txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                         package = "GenomicFeatures")
+#' txdb <- loadDb(txdbFile)
+#'
+loadTxdb <- function(txdb) {
+  if (is(txdb, "character")) {
+    f <- file_ext(txdb)
+    if ( f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
+      txdb <- GenomicFeatures::makeTxDbFromGFF(txdb)
+    } else if(f == "db" | f == "sqlite") {
+      txdb <- loadDb(txdb)
+    } else stop("when txdb is path, must be one of .gff, .gtf and .db")
+
+  } else if(!is(txdb, "TxDb")) stop("txdb must be path or TxDb")
+  return(txdb)
+}
+
+#' Load transcript region
+#'
+#' Load if not already GRangesList
+#' @param txdb a GRangesList or txdb object
+#' @param part a character, one of: tx, leader, cds, trailer
+#' @return a GrangesList of region
+loadRegion <- function(txdb, part = "tx") {
+  if (is.grl(txdb)) return(txdb)
+  txdb <- loadTxdb(txdb)
+  if (part == "tx") {
+    return(exonsBy(txdb, by = "tx", use.names = TRUE))
+  } else if (part == "leader") {
+    return(fiveUTRsByTranscript(txdb, use.names = TRUE))
+  } else if(part == "cds") {
+    return(cdsBy(txdb, by = "tx", use.names = TRUE))
+  } else if(part == "trailer") {
+    return(threeUTRsByTranscript(txdb, use.names = TRUE))
+  } else stop("invalid part, must be tx, leader, cds or trailer")
+}

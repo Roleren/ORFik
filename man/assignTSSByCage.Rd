@@ -8,7 +8,8 @@ assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
   restrictUpstreamToTx = FALSE, removeUnused = FALSE)
 }
 \arguments{
-\item{txdb}{a TxDb object, normally from a gtf file.}
+\item{txdb}{a TxDb file or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
 \item{cage}{Either a filePath for CageSeq file, or already loaded
 CageSeq peak data as GRanges.}
@@ -52,10 +53,9 @@ interval).
  # Get the gtf txdb file
  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
  package = "GenomicFeatures")
- txdb <- loadDb(txdbFile)
  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
  package = "ORFik")
- reassignTxDbByCage(txdb, cagePath)
+ reassignTxDbByCage(txdbFile, cagePath)
  }
 }
 \seealso{
