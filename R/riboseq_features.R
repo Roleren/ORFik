@@ -156,7 +156,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   tableFracs <- table(listing)
   colnames(tableFracs) <- NULL
   orfFractions <- lapply(seq_along(listing), function(x) {
-    tableFracs[x,]/sum(tableFracs[x,])
+    tableFracs[x,] / sum(tableFracs[x,])
   })
 
   # for cds
@@ -167,7 +167,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
   cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
   totalLength <- length(rfpValidMatchCDS)
   cdsFractions <- vapply(cdsFractions, FUN.VALUE = c(1.0), FUN = function(x) {
-    length(x)/totalLength
+    length(x) / totalLength
   })
   cdsFractions <- as.double(cdsFractions)
   # floss score ->
@@ -356,9 +356,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
                              RFP.sorted = FALSE) {
   tx <- loadRegion(GtfOrTx)
 
-  if (length(RFP) > 1e6 & !RFP.sorted) {
-    RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
-  }
+  if (!RFP.sorted) RFP <- optimizeReads(tx, RFP)
+
   overlapGrl <- countOverlaps(grl, RFP) + 1
   # find tx with hits
   validIndices <- hasHits(tx, RFP)
@@ -374,7 +373,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts, allowOutside = FALSE)
   overlapTxOutside <- rep(1, length(validIndices))
   if (!is.null(ds)) { # save time here if ds is defined
-    downstreamCounts <- 1/(ds/overlapGrl)
+    downstreamCounts <- 1 / (ds / overlapGrl)
     upstreamCounts <- rep(1, length(validIndices))
     upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP)
     overlapTxOutside <- downstreamCounts + upstreamCounts

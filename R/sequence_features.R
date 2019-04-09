@@ -179,7 +179,7 @@ kozakSequenceScore <- function(grl, tx, faFile, species = "human",
   }
   finalScores <- rep(0., length(grl))
   finalScores[validSeqs] <- scores
-  return(scores)
+  return(finalScores)
 }
 
 #' Get GC content
