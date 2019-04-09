@@ -347,8 +347,8 @@ startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
     tx <- grl
     names(tx) <- txNames(tx)
   }
-  region <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE),
-                             tx, upstream, downstream)
+  region <- windowPerGroup(startSites(grl, TRUE, TRUE, TRUE), tx, upstream,
+                           downstream)
   return(region)
 }
 

@@ -180,14 +180,11 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
   if (!grl.is.sorted) {
     grl <- sortPerGroup(grl)
   }
-  if (length(RFP) > 1e6) { # speedup on big riboseq libraries
-    rfp <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
-  } else {
-    rfp <- RFP
-  }
+
+  rfp <- optimizeReads(tx, RFP)
 
   #### Get all features, append 1 at a time, to save memory ####
-  scores <- data.table(floss = floss(grl, RFP, cds, riboStart, riboStop))
+  scores <- data.table(floss = floss(grl, rfp, cds, riboStart, riboStop))
   scores[, entropyRFP := entropy(grl, rfp)]
   scores[, disengagementScores := disengagementScore(grl, rfp, tx, TRUE)]
   scores[, RRS := ribosomeReleaseScore(grl, rfp, threeUTRs, RNA)]
@@ -198,12 +195,12 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
   }
 
   if (!is.null(RNA)) { # if rna seq is included
-    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
+    TE <- translationalEff(grl, RNA, rfp, tx, with.fpkm = TRUE)
     scores[, te := TE$te]
     scores[, fpkmRFP := TE$fpkmRFP]
     scores[, fpkmRNA := TE$fpkmRNA]
   } else {
-    scores[, fpkmRFP := fpkm(grl, RFP)]
+    scores[, fpkmRFP := fpkm(grl, rfp)]
   }
   if (orfFeatures) { # if features are found for orfs
     scores[, ORFScores := orfScore(grl, rfp, grl.is.sorted)$ORFScores]
@@ -213,13 +210,12 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     if (includeNonVarying) {
 
       if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
-        scores$kozak <- kozakSequenceScore(grl, tx, faFile)
+        scores[, kozak := kozakSequenceScore(grl, tx, faFile)]
       } else {
         message("faFile not included, skipping kozak sequence score")
       }
       # switch five with tx, is it possible to use ?
-      distORFCDS <- distToCds(grl, fiveUTRs, cds)
-      scores[, distORFCDS := distORFCDS]
+      scores[, distORFCDS := distToCds(grl, fiveUTRs, cds)]
       scores[, inFrameCDS := isInFrame(distORFCDS)]
       scores[, isOverlappingCds := isOverlapping(distORFCDS)]
       scores[, rankInTx := rankOrder(grl)]

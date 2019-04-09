@@ -55,6 +55,19 @@ validSeqlevels <- function(grl, reads) {
   return(readNames[seqMatch])
 }
 
+#' Find optimized subset of valid reads
+#' @inheritParams validSeqlevels
+#' @return the reads as GRanges or GAlignment
+optimizeReads <- function(grl, reads) {
+  seqMatch <- validSeqlevels(grl, reads)
+  reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
+  if (length(reads) > 1e6) { # speedup on big riboseq libraries
+    reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
+    reads <- sort(reads)
+  }
+  return(reads)
+}
+
 #' Helper function to check for GRangesList
 #' @param class the class you want to check if is GRL,
 #' either a character from class or the object itself.

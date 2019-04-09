@@ -184,7 +184,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
     names(x) <- NULL
   } else if (is(x, "IRanges")) {
     if (is.null(names(x))) {
-      indices <- seq.int(1,length(x))
+      indices <- seq.int(1, length(x))
     } else {
       indices <- strtoi(names(x))
     }
