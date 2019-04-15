@@ -16,6 +16,9 @@
 #' selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
 #' length of 31 will be shifted left by 10. Footprints of length 32 will be
 #' shifted right by 10.
+#'
+#' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
+#' 33, but will remove 3S so final read width is 30 in ORFik.
 #' @param footprints (GAlignments) object of RiboSeq reads
 #' @param shifts a data.frame with minimum 2 columns, selected_lengths and
 #' selected_shifts. Output from \code{\link{detectRibosomeShifts}}
@@ -56,13 +59,13 @@ shiftFootprints <- function(footprints, shifts) {
 
   for (i in seq_along(selected_lengths)) {
       message("Shifting footprints of length ", selected_lengths[i])
-      riboReadsW <- footprints[qwidth(footprints) == selected_lengths[i]]
+      riboReadsW <- footprints[readWidths(footprints) == selected_lengths[i]]
       if (length(riboReadsW) == 0) {
           next
       }
-      is_cigar <- width(riboReadsW) != qwidth(riboReadsW)
+      is_cigar <- width(riboReadsW) != readWidths(riboReadsW)
       cigar_strings <- cigar(riboReadsW[is_cigar])
-      sizes <- qwidth(riboReadsW)
+      sizes <- readWidths(riboReadsW)
 
       riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
       riboReadsW$size <- sizes  #move footprint length to size
@@ -111,12 +114,15 @@ shiftFootprints <- function(footprints, shifts) {
 #' Check out vignette for the examples of plotting RiboSeq metaplots over start
 #' and stop codons, so that you can verify visually whether this function
 #' detects correct shifts.
+#'
+#' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
+#' 33, but will remove 3S so final read width is 30 in ORFik.
 #' @param footprints (GAlignments) object of RiboSeq reads - footprints
 #' @inheritParams loadTxdb
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
 #' @param stop (logical) Whether to include predictions based on the stop
-#' codons. Default FASLE.
+#' codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 #' @param top_tx (integer) Specify which % of the top covered by RiboSeq reads
 #' transcripts to use for estimation of the shifts. By default we take top 10%
 #' top covered transcripts as they represent less noisy dataset. This is only
@@ -125,6 +131,10 @@ shiftFootprints <- function(footprints, shifts) {
 #' @param firstN (integer) Represents how many bases of the transcripts
 #' downstream of start codons to use for initial estimation of the
 #' periodicity.
+#' @param tx a GRangesList, if you do not have 5' UTRs in annotation, send
+#' your own version. Example: extendLeaders(tx, 30)
+#' Where 30 bases will be new "leaders". Since each original transcript was
+#' either only CDS or non-coding (filtered out).
 #' @return a data.frame with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -138,11 +148,23 @@ shiftFootprints <- function(footprints, shifts) {
 #'     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 #'
 #' detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
+#'
+#' # Without 5' Annotation
+#' library(GenomicFeatures)
+#'
+#' txdb <- loadTxdb(gtf_file)
+#' tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+#' tx <- extendLeaders(tx, 30)
+#' # Now run function, without 5' and 3' UTRs
+#' detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
+#'                      minCDS = 150L, minThreeUTR = NULL, firstN = 150L,
+#'                      tx = tx)
+#' # Your own tx here, with "fake" leaders
 #' }
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L) {
+  firstN = 150L, tx = NULL) {
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
@@ -157,7 +179,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     stop("txdb and footprints did not have any matched seqnames")
   }
   txNames <- txNames[txNames %in% names(cds)]
-  tx <- exonsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  if (is.null(tx)) tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+  tx <- tx[txNames]
 
   # find periodic read lengths
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
@@ -175,7 +198,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     offset <- rw[, .(offsets_start = changePointAnalysis(score)),
                  by = fraction]
   }
-  if (stop) {
+  if (stop & !is.null(minThreeUTR)) {
     threeUTRs <- threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     rw <- windowPerReadLength(grl = threeUTRs, tx = tx, reads = footprints,
                               pShifted = FALSE, upstream = 30, downstream = 29,

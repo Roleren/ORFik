@@ -69,9 +69,10 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' exist, and contain the original read widths. ORFik P-shifting creates a
 #' $size column, other softwares like shoelaces creates a score column
 #' @param reads a GRanges or GAlignment object.
+#' @param after.softclips logical (FALSE), include softclips in width
 #' @return an integer vector of widths
 #'
-readWidths <- function(reads) {
+readWidths <- function(reads, after.softclips = FALSE) {
 
   if (is(reads, "GRanges")) {
     rfpWidth <- width(reads)
@@ -95,7 +96,9 @@ readWidths <- function(reads) {
       }
     }
   } else {
-    rfpWidth <- qwidth(reads)
+    rfpWidth <- cigarWidthAlongQuerySpace(cigar(reads),
+                                          after.soft.clipping =
+                                            after.softclips)
   }
   return(rfpWidth)
 }

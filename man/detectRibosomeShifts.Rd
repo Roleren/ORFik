@@ -6,7 +6,7 @@
 \usage{
 detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L)
+  firstN = 150L, tx = NULL)
 }
 \arguments{
 \item{footprints}{(GAlignments) object of RiboSeq reads - footprints}
@@ -18,7 +18,7 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
 codons. Default TRUE.}
 
 \item{stop}{(logical) Whether to include predictions based on the stop
-codons. Default FASLE.}
+codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.}
 
 \item{top_tx}{(integer) Specify which % of the top covered by RiboSeq reads
 transcripts to use for estimation of the shifts. By default we take top 10%
@@ -26,17 +26,22 @@ top covered transcripts as they represent less noisy dataset. This is only
 applicable when there are more than 1000 transcripts.}
 
 \item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
-transcripts}
+transcripts. Set to NULL if no 5' UTRs exists for annotation.}
 
 \item{minCDS}{(integer) minimum bp for CDS during filtering for the
 transcripts}
 
 \item{minThreeUTR}{(integer) minimum bp for 3' UTR during filtering for the
-transcripts}
+transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 
 \item{firstN}{(integer) Represents how many bases of the transcripts
 downstream of start codons to use for initial estimation of the
 periodicity.}
+
+\item{tx}{a GRangesList, if you do not have 5' UTRs in annotation, send
+your own version. Example: extendLeaders(tx, 30)
+Where 30 bases will be new "leaders". Since each original transcript was
+either only CDS or non-coding (filtered out).}
 }
 \value{
 a data.frame with lengths of footprints and their predicted
@@ -54,6 +59,9 @@ shift 5' anchored footprints to be on the p-site of the ribosome.
 Check out vignette for the examples of plotting RiboSeq metaplots over start
 and stop codons, so that you can verify visually whether this function
 detects correct shifts.
+
+NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
+33, but will remove 3S so final read width is 30 in ORFik.
 }
 \examples{
 \dontrun{
@@ -64,6 +72,18 @@ footprints <- GenomicAlignments::readGAlignments(
     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
 
 detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
+
+# Without 5' Annotation
+library(GenomicFeatures)
+
+txdb <- loadTxdb(gtf_file)
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+tx <- extendLeaders(tx, 30)
+# Now run function, without 5' and 3' UTRs
+detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
+                     minCDS = 150L, minThreeUTR = NULL, firstN = 150L,
+                     tx = tx)
+# Your own tx here, with "fake" leaders
 }
 
 }

@@ -12,13 +12,13 @@ filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
 \item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
-transcripts}
+transcripts. Set to NULL if no 5' UTRs exists for annotation.}
 
 \item{minCDS}{(integer) minimum bp for CDS during filtering for the
 transcripts}
 
 \item{minThreeUTR}{(integer) minimum bp for 3' UTR during filtering for the
-transcripts}
+transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 
 \item{stopOnEmpty}{logical TRUE, stop if no valid names are found ?}
 }
@@ -34,10 +34,12 @@ If a transcript does not have a 3' UTR, then the length is 0,
 so they will be filtered out. So only transcripts with leaders, cds and
 3' UTRs will be returned. You can set the integer to 0, that will return all
 within that group.
+
+If your annotation does not have leaders or trailers, set them to NULL.
 }
 \examples{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
 txNames <- filterTranscripts(txdb)
 
 }

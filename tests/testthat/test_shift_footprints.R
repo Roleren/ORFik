@@ -5,7 +5,7 @@ library(ORFik)
 gtf <- system.file("extdata", "annotations.gtf",
         package = "ORFik") ## location of the gtf file
 suppressWarnings(txdb <-
- GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
+ GenomicFeatures::makeTxDbFromGFF(gtf))
 riboSeq_file <- system.file("extdata", "ribo-seq.bam",
                             package = "ORFik")
 
