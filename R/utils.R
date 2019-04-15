@@ -7,30 +7,35 @@
 #' so they will be filtered out. So only transcripts with leaders, cds and
 #' 3' UTRs will be returned. You can set the integer to 0, that will return all
 #' within that group.
+#'
+#' If your annotation does not have leaders or trailers, set them to NULL.
 #' @inheritParams loadTxdb
 #' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
-#' transcripts
+#' transcripts. Set to NULL if no 5' UTRs exists for annotation.
 #' @param minCDS (integer) minimum bp for CDS during filtering for the
 #' transcripts
 #' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
-#' transcripts
+#' transcripts. Set to NULL if no 3' UTRs exists for annotation.
 #' @param stopOnEmpty logical TRUE, stop if no valid names are found ?
 #' @return a character vector of valid tramscript names
 #' @export
 #' @examples
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file, format = "gtf")
+#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
 #' txNames <- filterTranscripts(txdb)
 #'
 filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
                               minThreeUTR = 30L, stopOnEmpty = TRUE) {
   txdb <- loadTxdb(txdb)
+  five <- ifelse(is.null(minFiveUTR), FALSE, TRUE)
+  three <- ifelse(is.null(minThreeUTR), FALSE, TRUE)
 
   tx <- data.table::setDT(
     GenomicFeatures::transcriptLengths(
-      txdb, with.cds_len = TRUE, with.utr5_len = TRUE, with.utr3_len = TRUE))
-  tx <- tx[tx$utr5_len >= minFiveUTR & tx$cds_len >= minCDS &
-             tx$utr3_len >= minThreeUTR, ]
+      txdb, with.cds_len = TRUE, with.utr5_len = five, with.utr3_len = three))
+  tx <- tx[ifelse(five, utr5_len >= minFiveUTR, TRUE) & cds_len >= minCDS &
+             ifelse(five, utr3_len >= minThreeUTR, TRUE), ]
+
   gene_id <- cds_len <- NULL
   data.table::setorder(tx, gene_id, -cds_len)
   tx <- tx[!duplicated(tx$gene_id), ]

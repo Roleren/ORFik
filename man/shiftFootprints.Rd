@@ -35,6 +35,9 @@ for shifting.
 selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
 length of 31 will be shifted left by 10. Footprints of length 32 will be
 shifted right by 10.
+
+NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
+33, but will remove 3S so final read width is 30 in ORFik.
 }
 \examples{
 \dontrun{

@@ -4,10 +4,12 @@
 \alias{readWidths}
 \title{Get RiboSeq widths}
 \usage{
-readWidths(reads)
+readWidths(reads, after.softclips = FALSE)
 }
 \arguments{
 \item{reads}{a GRanges or GAlignment object.}
+
+\item{after.softclips}{logical (FALSE), include softclips in width}
 }
 \value{
 an integer vector of widths
