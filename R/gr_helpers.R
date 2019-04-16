@@ -71,8 +71,19 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' @param reads a GRanges or GAlignment object.
 #' @param after.softclips logical (FALSE), include softclips in width
 #' @return an integer vector of widths
+#' @export
+#' @examples
+#' gr <- GRanges("chr1", 1)
+#' readWidths(gr)
 #'
-readWidths <- function(reads, after.softclips = FALSE) {
+#' # GAlignment with hit (1M) and soft clipped base (1S)
+#' ga <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "1M1S",
+#'  strand = factor("+", levels = c("+", "-", "*")))
+#' readWidths(ga) # Without soft-clip bases
+#'
+#' readWidths(ga, after.softclips = FALSE) # With soft-clip bases
+#'
+readWidths <- function(reads, after.softclips = TRUE) {
 
   if (is(reads, "GRanges")) {
     rfpWidth <- width(reads)
