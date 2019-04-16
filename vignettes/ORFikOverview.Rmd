@@ -87,8 +87,8 @@ In the example above you can see that fiveUTR_ORFs are grouped by transcript,
 the first group is from transcript "uc010ogz.1". Meta-column names contains name 
 of the transcript and identifier of the ORF separated by "_". When ORF is 
 separated into two exons you can see it twice, like the first ORF with name 
-"uc010ogz.1_1". The first ORF will always be the one most upstream for "+"" 
-strand, and least upstream for "-"" strand.
+"uc010ogz.1_1". The first ORF will always be the one most upstream for "+" 
+strand, and least upstream for "-" strand.
 
 # CageSeq data for 5' UTR re-annotation
 
@@ -127,12 +127,12 @@ footprints <- GenomicAlignments::readGAlignments(bam_file)
 
 Investigate what footprint lengths are present in our data.
 ```{r eval = TRUE, echo = TRUE} 
-table(qwidth(footprints))
+table(readWidths(footprints))
 ```
 
 For the sake of this example we will focus only on most abundant length of 29.
 ```{r eval = TRUE, echo = TRUE} 
-footprints <- footprints[qwidth(footprints) == 29]
+footprints <- footprints[readWidths(footprints) == 29]
 footprints
 ```
 

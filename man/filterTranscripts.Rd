@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{filterTranscripts}
 \alias{filterTranscripts}
-\title{Get the transcripts that have minimum lengths of leaders, cds and trailer.}
+\title{Get the transcripts with accepted lengths of leaders, cds and trailer.}
 \usage{
 filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
   minThreeUTR = 30L, stopOnEmpty = TRUE)
@@ -26,14 +26,14 @@ transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 a character vector of valid tramscript names
 }
 \description{
-Filter transcripts to those who have 5' UTR, CDS, 3' UTR of some lengths,
+Filter transcripts to those who have leaders, CDS, trailers of some lengths,
 pick the longest per gene.
 }
 \details{
-If a transcript does not have a 3' UTR, then the length is 0,
+If a transcript does not have a trailer, then the length is 0,
 so they will be filtered out. So only transcripts with leaders, cds and
-3' UTRs will be returned. You can set the integer to 0, that will return all
-within that group.
+trailers will be returned. You can set the integer to 0, that will return
+all within that group.
 
 If your annotation does not have leaders or trailers, set them to NULL.
 }

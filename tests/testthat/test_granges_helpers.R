@@ -251,3 +251,11 @@ test_that("windowPerGroup works as intended", {
                c(40, 64))
 
 })
+
+test_that("readWidths works as intended", {
+  ga <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "1M1S",
+                    strand = factor("+", levels = c("+", "-", "*")))
+
+  expect_equal(readWidths(ga), 1) # With soft-clip
+  expect_equal(readWidths(ga, after.softclips = FALSE), 2) # Without soft-clip
+})

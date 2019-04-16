@@ -4,7 +4,7 @@
 \alias{readWidths}
 \title{Get RiboSeq widths}
 \usage{
-readWidths(reads, after.softclips = FALSE)
+readWidths(reads, after.softclips = TRUE)
 }
 \arguments{
 \item{reads}{a GRanges or GAlignment object.}
@@ -23,4 +23,16 @@ width.
 If input is p-shifted and GRanges, the "$score" or "$size" colum" must
 exist, and contain the original read widths. ORFik P-shifting creates a
 $size column, other softwares like shoelaces creates a score column
+}
+\examples{
+gr <- GRanges("chr1", 1)
+readWidths(gr)
+
+# GAlignment with hit (1M) and soft clipped base (1S)
+ga <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "1M1S",
+ strand = factor("+", levels = c("+", "-", "*")))
+readWidths(ga) # Without soft-clip bases
+
+readWidths(ga, after.softclips = FALSE) # With soft-clip bases
+
 }

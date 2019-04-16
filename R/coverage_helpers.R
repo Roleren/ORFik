@@ -109,7 +109,6 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
     zeroPosition <- ifelse(is.null(zeroPosition), (window_size)/2,
                            zeroPosition)
     hitMap[, position := position - (zeroPosition + 1) ]
-
   }
 
   hitMap <- coverageScorings(hitMap, scoring)

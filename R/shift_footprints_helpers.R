@@ -43,8 +43,8 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 isPeriodic <- function(x) {
   if (sum(x) == 0) return(FALSE)
   amplitudes <- abs(fft(x))
-  amp <- amplitudes[2:(length(amplitudes)/2+1)]
-  periods <- 1/spec.pgram(x = x, plot = FALSE)$freq
+  amp <- amplitudes[2 : (length(amplitudes) / 2 + 1)]
+  periods <- 1 / spec.pgram(x = x, plot = FALSE)$freq
   return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
 }
 
