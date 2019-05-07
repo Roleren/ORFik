@@ -4,7 +4,8 @@
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
 #' @param windowSize an integer (100), size of windows
-#' @param fraction info on reads (which read length, or which type (RNA seq))
+#' @param fraction a character (1), info on reads (which read length,
+#' or which type (RNA seq))
 #' @return a data.table with columns position, score
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                 windowSize = 100, fraction = "1") {
@@ -19,16 +20,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
     trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
-
-    leaderCov <- scaledWindowPositions(leaders, reads, windowSize)
-    leaderCov[, `:=` (feature = "leaders")]
-    cdsCov <- scaledWindowPositions(cds, reads, windowSize)
-    cdsCov[, `:=` (feature = "cds")]
-    trailerCov <- scaledWindowPositions(trailers, reads, windowSize)
-    trailerCov[, `:=` (feature = "trailers")]
-
-    txCov <- rbindlist(list(leaderCov, cdsCov, trailerCov))
-    txCov[, `:=` (fraction = fraction)]
+    txCov <- splitIn3Tx(leaders, cds, trailers, reads, fraction)
 
   } else {
     tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -40,6 +32,28 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     txCov[, `:=` (fraction = fraction, feature = "transcript")]
   }
   txCov[] # for print
+  return(txCov)
+}
+
+#' Create coverage of transcripts, split into the 3 parts.
+#'
+#' The 3 parts  of transcripts are the leaders, the cds' and trailers.
+#' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
+#' @param cds a \code{\link{GRangesList}} of coding sequences
+#' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
+#' @inheritParams windowPerTranscript
+#' @return a data.table with columns position, score
+splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
+                       fraction = "1") {
+  leaderCov <- scaledWindowPositions(leaders, reads, windowSize)
+  leaderCov[, `:=` (feature = "leaders")]
+  cdsCov <- scaledWindowPositions(cds, reads, windowSize)
+  cdsCov[, `:=` (feature = "cds")]
+  trailerCov <- scaledWindowPositions(trailers, reads, windowSize)
+  trailerCov[, `:=` (feature = "trailers")]
+
+  txCov <- rbindlist(list(leaderCov, cdsCov, trailerCov))
+  txCov[, `:=` (fraction = fraction)]
   return(txCov)
 }
 

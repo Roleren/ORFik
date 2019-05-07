@@ -16,7 +16,8 @@ windowPerTranscript(txdb, reads, splitIn3 = TRUE, windowSize = 100,
 
 \item{windowSize}{an integer (100), size of windows}
 
-\item{fraction}{info on reads (which read length, or which type (RNA seq))}
+\item{fraction}{a character (1), info on reads (which read length,
+or which type (RNA seq))}
 }
 \value{
 a data.table with columns position, score
