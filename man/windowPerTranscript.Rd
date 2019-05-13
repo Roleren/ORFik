@@ -23,5 +23,6 @@ or which type (RNA seq))}
 a data.table with columns position, score
 }
 \description{
-Get coverage window per transcript
+NOTE: All ranges with smaller width than windowSize, will of course be
+removed. What is the 100 position on a 1 width size ?
 }

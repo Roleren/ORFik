@@ -17,7 +17,8 @@ to path given. If no format is given, is save as pdf.}
 \item{scoring}{character vector (zscore), either of zScore,
 transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
 
-\item{colors}{character vector colors to use in plot}
+\item{colors}{character vector colors to use in plot, will fix automaticly,
+using binary splits with colors c('skyblue4', 'orange')}
 
 \item{title}{a character (metaplot) (what is the title of plot?)}
 

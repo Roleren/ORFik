@@ -1,5 +1,7 @@
 #' Get coverage window per transcript
 #'
+#' NOTE: All ranges with smaller width than windowSize, will of course be
+#' removed. What is the 100 position on a 1 width size ?
 #' @param txdb a TxDb object or a path to gtf/gff/db file.
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
@@ -517,4 +519,36 @@ coverageGroupings <- function(logicals, grouping = "GF") {
     } else groupFPF <- quote(list(fraction, position, feature))
   } else stop("undefined grouping of coverage")
   return(groupFPF)
+}
+
+#' Get number of genes per grouping
+#'
+#' @param coverage a data.table with coverage
+#' @return number of genes in coverage
+getNGenesCoverage <- function(coverage) {
+  if (is.null(coverage$genes)) return(0)
+  if (is.null(coverage$fraction)) {
+    n <- coverage[, .(nGenes = max(genes))]
+  }
+
+  n <- coverage[, .(nGenes = max(genes)), by = fraction]
+  if(nrow(n) == 0) return(0)
+  return(n$nGenes)
+}
+
+#' Match coloring of coverage plot
+#'
+#' @param coverage a data.table with coverage
+#' @param colors a character vector of colors
+#' @return number of genes in coverage
+matchColors <- function(coverage, colors) {
+  nFractions <- length(unique(coverage$fraction))
+  nColors <- length(colors)
+  if (nColors == 0 || nFractions == 0)
+    stop("did not define fraction or colors")
+
+  if(nColors < nFractions) {
+    return(rep(colors, nFractions)[seq(nFractions)])
+  }
+  return(colors[seq(nFractions)])
 }
