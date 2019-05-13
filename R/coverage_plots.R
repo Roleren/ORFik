@@ -28,14 +28,6 @@
 #' # See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
-  min <- min(hitMap$position)
-  max <- max(hitMap$position)
-
-  if (nrow(hitMap) > 30) {
-    min <- min + 2
-    max <- max - 1
-  }
-  by <- ifelse(length(hitMap$position) > 80, 3, 1)
 
   if (is.null(hitMap$score)) hitMap$score <- hitMap$count
   if (is(hitMap, "data.table")) setDF(hitMap)
@@ -46,7 +38,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
     labs(title = paste("Length", length, "over", region, "of canonical CDS")) +
     xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
     ylab("Averaged counts") +
-    scale_x_discrete(breaks = seq(min, max, by)) +
+    scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
     guides(fill = FALSE)
 
   return(return(savePlot(plot, output)))
@@ -64,7 +56,8 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
 #' to path given. If no format is given, is save as pdf.
 #' @param scoring character vector (zscore), either of zScore,
 #' transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
-#' @param colors character vector colors to use in plot
+#' @param colors character vector colors to use in plot, will fix automaticly,
+#' using binary splits with colors c('skyblue4', 'orange')
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcript), what should legends say is
 #' the whole region? Transcript, gene, non coding rna etc.
@@ -90,7 +83,8 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
   if (is.null(cov$fraction)) {
     cov[, fraction := rep("range", nrow(cov))]
   }
-  colors <- colors[seq(length(unique(cov$fraction)))]
+
+  colors <- matchColors(cov, colors)
 
   cov$feature  <- factor(cov$feature, levels = unique(cov$feature),
                         labels = unique(cov$feature))
@@ -114,7 +108,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     scale_fill_manual(values = colors) +
     scale_color_manual(values = colors) +
     ggtitle(label = title,
-            subtitle = paste0("Genes n=", length(unique(coverage$genes)))) +
+            subtitle = paste0("Genes n=", getNGenesCoverage(coverage))) +
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(scoring, " over ", type)) +
     theme(legend.position = "none") +
@@ -154,10 +148,6 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
 
-  min <- min(coverage$position)
-  max <- max(coverage$position)
-  by <- ifelse(length(coverage$position) > 80, 3, 1)
-
   plot <- ggplot(as.data.frame(coverage) ,
                  aes(x = position, y = fraction, fill = score)) +
     geom_tile()  +
@@ -166,7 +156,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
                          name = scoring) +
     xlab("Position relative to start site") +
     ylab("Protected fragment length") +
-    scale_x_continuous(breaks = seq(min, max, by)) +
+    scale_x_continuous(breaks = xAxisScaler(coverage$position)) +
     theme_bw() + theme(panel.grid.major = element_blank(),
                        panel.grid.minor = element_blank()) +
     theme(text = element_text(size = 12))
@@ -195,4 +185,19 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150) {
     }
     return(NULL)
   } else return(plot)
+}
+
+#' Scale x axis correctly
+#'
+#' Works for all coverage plots, that need 0 position aligning
+#'
+#' @param covPos a numeric vector of positions in coverage
+#' @return a numeric vector from the seq() function, aligned to 0.
+xAxisScaler <- function(covPos) {
+  pos <- length(covPos)
+  min <- min(covPos)
+  max <- max(covPos)
+  by <- ifelse(pos > 80, ifelse(pos > 150, 6, 3), 1)
+
+  return(seq(min, max, by) - (min %% by))
 }

@@ -47,7 +47,7 @@ removeTxdbExons <- function(txList, fiveUTRs) {
   dt <- as.data.table(gr)
   dt$names <- names(gr)
   # find the ones that does not start on 1
-  d <-  dt[, .I[which.min(exon_rank)], by=names]
+  d <-  dt[, .I[which.min(exon_rank)], by = names]
   d$ranks <- dt$exon_rank[d$V1]
   d <- d[ranks > 1L,]
   if(nrow(d) == 0) return(txList)
