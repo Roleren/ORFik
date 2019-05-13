@@ -532,7 +532,7 @@ getNGenesCoverage <- function(coverage) {
   }
 
   n <- coverage[, .(nGenes = max(genes)), by = fraction]
-  if(nrow(n) == 0) return(0)
+  if (nrow(n) == 0) return(0)
   return(n$nGenes)
 }
 
@@ -547,7 +547,7 @@ matchColors <- function(coverage, colors) {
   if (nColors == 0 || nFractions == 0)
     stop("did not define fraction or colors")
 
-  if(nColors < nFractions) {
+  if (nColors < nFractions) {
     return(rep(colors, nFractions)[seq(nFractions)])
   }
   return(colors[seq(nFractions)])
