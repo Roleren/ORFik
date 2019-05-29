@@ -456,10 +456,9 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 acceptedLengths = NULL,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized") {
-  if (is.null(tx)) {
-    upstream <- min(upstream, 0)
-  }
-  if (!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
+
+  if (is.null(tx)) upstream <- min(upstream, 0)
+
   if(length(reads) == 0 | length(grl) == 0) {
     return(data.table())
   }
