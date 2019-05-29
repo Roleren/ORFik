@@ -78,14 +78,13 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #'  a meta window can not directly be created, since a meta window must
 #'  have equal size for all windows. Rescale all windows to scaleTo.
 #'  i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.
-#' @param returnAs a character (data.frame), do data.table for speed.
 #' @param fraction a character/integer (NULL), the fraction i.e
 #' (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.
 #' @param feature a character string, info on region. Usually either
 #' gene name, transcript part like cds, leader, or CpG motifs etc.
 #' @param forceUniqueEven, a logical (TRUE), if TRUE; require that all windows
 #' are of same width and even. To avoid bugs. FALSE if score is NULL.
-#' @return A data.frame or data.table with scored counts (score) of
+#' @return A data.table with scored counts (score) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).
 #' @family coverage
@@ -103,8 +102,8 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #'
 metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                        zeroPosition = NULL, scaleTo = 100,
-                       returnAs = "data.frame", fraction = NULL,
-                       feature = NULL, forceUniqueEven = !is.null(scoring)) {
+                       fraction = NULL, feature = NULL,
+                       forceUniqueEven = !is.null(scoring)) {
   window_size <- unique(widthPerGroup(windows))
   if (!is.null(zeroPosition) & !is.numeric(zeroPosition))
     stop("zeroPosition must be numeric if defined")
@@ -140,10 +139,6 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
     hitMap[, feature := rep(feature, nrow(hitMap))]
   }
 
-  if (returnAs == "data.frame") {
-    hitMap <- setDF(hitMap)
-    return(hitMap)
-  }
   hitMap[] # for print
   return(hitMap)
 }
@@ -479,8 +474,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   for(l in all_lengths){
     dt <- rbindlist(list(dt, metaWindow(
       x = reads[rWidth == l], windows = windows, scoring = scoring,
-      returnAs = "data.table", zeroPosition =  zeroPosition,
-      forceUniqueEven = FALSE, fraction = l)))
+      zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l)))
   }
 
   dt[] # for print

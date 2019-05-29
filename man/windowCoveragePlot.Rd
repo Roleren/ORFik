@@ -9,7 +9,7 @@ windowCoveragePlot(coverage, output = NULL, scoring = "zscore",
   type = "transcript")
 }
 \arguments{
-\item{coverage}{a data.table, output of scaledWindowCoverage}
+\item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
 
 \item{output}{character string (NULL), if set, saves the plot as pdf or png
 to path given. If no format is given, is save as pdf.}

@@ -44,7 +44,7 @@ Where 30 bases will be new "leaders". Since each original transcript was
 either only CDS or non-coding (filtered out).}
 }
 \value{
-a data.frame with lengths of footprints and their predicted
+a data.table with lengths of footprints and their predicted
 coresponding offsets
 }
 \description{

@@ -31,7 +31,7 @@
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
                       type = "canonical CDS") {
-  if (is(hitMap, "data.table")) setDF(hitMap)
+  hitMap <- setDT(copy(hitMap))
   if (is.null(hitMap$score)) hitMap[, score := count]
 
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
@@ -57,7 +57,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #'
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
-#' @param coverage a data.table, output of scaledWindowCoverage
+#' @param coverage a data.table, e.g. output of scaledWindowCoverage
 #' @param output character string (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param scoring character vector (zscore), either of zScore,
@@ -156,8 +156,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
 
-  plot <- ggplot(as.data.frame(coverage) ,
-                 aes(x = position, y = fraction, fill = score)) +
+  plot <- ggplot(coverage, aes(x = position, y = fraction, fill = score)) +
     geom_tile()  +
     scale_fill_gradientn(colours = c("white", "yellow2", "yellow3",
                                      "lightblue", "blue", "navy"),

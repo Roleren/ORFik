@@ -498,13 +498,13 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(data.table)
   # Create meta coverage per part
   leaderCov <- metaWindow(shiftedReads, leaders, scoring = NULL, 
-                          returnAs = "data.table", feature = "leaders")
+                          feature = "leaders")
 
   cdsCov <- metaWindow(shiftedReads, cds, scoring = NULL, 
-                       returnAs = "data.table", feature = "cds")
+                       feature = "cds")
   
   trailerCov <- metaWindow(shiftedReads, trailers, scoring = NULL, 
-                           returnAs = "data.table", feature = "trailers")
+                           feature = "trailers")
   # bind together
   dt <- rbindlist(list(leaderCov, cdsCov, trailerCov))
   # Now set info column
