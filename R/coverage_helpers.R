@@ -83,8 +83,8 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.
 #' @param feature a character string, info on region. Usually either
 #' gene name, transcript part like cds, leader, or CpG motifs etc.
-#' @param forceUniqueEven, a logical (TRUE), require that all windows
-#' are of same width and even. To avoid bugs.
+#' @param forceUniqueEven, a logical (TRUE), if TRUE; require that all windows
+#' are of same width and even. To avoid bugs. FALSE if score is NULL.
 #' @return A data.frame or data.table with scored counts (score) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).
@@ -254,7 +254,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #'
 coverageScorings <- function(coverage, scoring = "zscore") {
   if (is.null(scoring)) return(coverage)
-  cov <- coverage
+  cov <- setDT(copy(coverage))
   # find groupings
   groupGF <- coverageGroupings(c(is.null(cov$fraction),
                                is.null(cov$genes)))
@@ -388,6 +388,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
     coverage <- coverageByTranscript(reads, grl)
     if (!keep.names) names(coverage) <- NULL
   } else {
+    if (length(names(grl)) != length(unique(names(grl)))) {
+      stop("grl have duplicated names, be sure to make them unique!")
+    }
     unlTile <- unlistGrl(tile1(grl, matchNaming = FALSE))
     coverage <- overlapsToCoverage(unlTile, reads, keep.names = keep.names)
   }
@@ -429,7 +432,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @param reads any type of reads, usualy ribo seq. As GAlignment, GRanges
 #'  or GRangesList object.
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted to size
-#'  1 width reads? If upstream or downstream is set, this argument is
+#'  1 width reads? If upstream and downstream is set, this argument is
 #'  irrelevant.
 #' @param upstream an integer (5), relative region to get upstream from.
 #' @param downstream an integer (20), relative region to get downstream from
@@ -536,19 +539,4 @@ getNGenesCoverage <- function(coverage) {
   return(n$nGenes)
 }
 
-#' Match coloring of coverage plot
-#'
-#' @param coverage a data.table with coverage
-#' @param colors a character vector of colors
-#' @return number of genes in coverage
-matchColors <- function(coverage, colors) {
-  nFractions <- length(unique(coverage$fraction))
-  nColors <- length(colors)
-  if (nColors == 0 || nFractions == 0)
-    stop("did not define fraction or colors")
 
-  if (nColors < nFractions) {
-    return(rep(colors, nFractions)[seq(nFractions)])
-  }
-  return(colors[seq(nFractions)])
-}

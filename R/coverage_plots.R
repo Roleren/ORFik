@@ -4,7 +4,8 @@
 #' Can be used for any coverage of region around a point, like TIS, TSS,
 #' stop site etc.
 #'
-#'
+#' Remember if you want to change anything like colors, just return the
+#' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param hitMap a data.frame/data.table, given from metaWindow
 #' (must have columns: position, (score or count) and frame)
 #' @param length an integer (29), which length is this for?
@@ -51,13 +52,16 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
 #' If you return this function without assigning it and output is NULL,
 #' it will automaticly plot the figure in your session. If output is assigned,
 #' no plot will be shown in session.
+#'
+#' Remember if you want to change anything like colors, just return the
+#' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param coverage a data.table, output of scaledWindowCoverage
 #' @param output character string (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param scoring character vector (zscore), either of zScore,
 #' transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
 #' @param colors character vector colors to use in plot, will fix automaticly,
-#' using binary splits with colors c('skyblue4', 'orange')
+#' using binary splits with colors c('skyblue4', 'orange').
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcript), what should legends say is
 #' the whole region? Transcript, gene, non coding rna etc.
@@ -77,7 +81,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
                                type = "transcript") {
-  cov <- copy(coverage)
+  cov <- setDT(copy(coverage))
   if (is.null(cov$feature))
     cov[, feature := rep("meta", nrow(cov))]
   if (is.null(cov$fraction)) {
@@ -94,6 +98,8 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
   coverage_score <- coverageScorings(cov, scoring)
 
   coverage_score[, `:=` (fraction_min=min(score)), by = list(fraction)]
+  nGenes <- getNGenesCoverage(coverage)
+  subTitle <- ifelse(nGenes > 0, paste0("Genes n=", nGenes), "")
 
   plot <- ggplot(data = as.data.frame(coverage_score),
                  aes(x = position, ymax = score, ymin = fraction_min,
@@ -107,8 +113,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     scale_y_continuous(expand = c(0, 0)) +
     scale_fill_manual(values = colors) +
     scale_color_manual(values = colors) +
-    ggtitle(label = title,
-            subtitle = paste0("Genes n=", getNGenesCoverage(coverage))) +
+    ggtitle(label = title, subtitle = subTitle) +
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(scoring, " over ", type)) +
     theme(legend.position = "none") +
@@ -123,6 +128,9 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' Coverage column in heat map is score, default zscore of counts
 #'
 #' See vignette for example
+#'
+#' Remember if you want to change anything like colors, just return the
+#' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @inheritParams windowCoveragePlot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
@@ -200,4 +208,22 @@ xAxisScaler <- function(covPos) {
   by <- ifelse(pos > 80, ifelse(pos > 150, 6, 3), 1)
 
   return(seq(min, max, by) - (min %% by))
+}
+
+#' Match coloring of coverage plot
+#'
+#' Check that colors match with the number of fractions.
+#' @param coverage a data.table with coverage
+#' @param colors a character vector of colors
+#' @return number of genes in coverage
+matchColors <- function(coverage, colors) {
+  nFractions <- length(unique(coverage$fraction))
+  nColors <- length(colors)
+  if (nColors == 0 || nFractions == 0)
+    stop("did not define fraction or colors")
+
+  if (nColors < nFractions) {
+    return(rep(colors, nFractions)[seq(nFractions)])
+  }
+  return(colors[seq(nFractions)])
 }

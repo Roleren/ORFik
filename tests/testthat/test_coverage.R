@@ -1,4 +1,4 @@
-context("GRanges Helpers")
+context("Coverage Helpers")
 library(ORFik)
 
 ORF1 <- GRanges("1", IRanges(21, 49), "+")
@@ -9,6 +9,33 @@ names(tx) <- "tx1"
 footprintsGood <- GRanges("1", IRanges(seq.int(21, 49, 3), width = 1), "+")
 footprintsGood$score <- 29
 footprintsBad <- GRanges()
+
+test_that("coverageScorings works as intended", {
+  # no reads hit
+  coverage <- coveragePerTiling(grl, footprintsGood, is.sorted = TRUE,
+                                as.data.table = TRUE)
+  expect_is(coverage, "data.table")
+
+  # fracPos
+  dt <- coverageScorings(coverage, "fracPos")
+  expect_equal(sum(dt$score), length(grl))
+
+  # Sum
+  dt <- coverageScorings(coverage, "sum")
+  expect_equal(sum(dt$score), sum(countOverlaps(grl, footprintsGood)))
+
+  # Mean
+  dt <- coverageScorings(coverage, "mean")
+  expect_equal(sum(dt$score), 10)
+
+  # Zscore
+  dt <- coverageScorings(coverage, "zscore")
+  expect_equal(round(sum(dt$score), 2), -0.11)
+
+  # Transcript Normalized
+  dt <- coverageScorings(coverage, "transcriptNormalized")
+  expect_equal(round(sum(dt$score), 2), length(grl))
+})
 
 test_that("windowPerReadLength works as intended", {
   # per group coverage
@@ -44,3 +71,4 @@ test_that("windowPerReadLength works as intended strange cases", {
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 0)
 })
+

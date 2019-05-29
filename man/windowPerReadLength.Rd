@@ -21,7 +21,7 @@ ORFik orf names. that is "txName_id"}
 or GRangesList object.}
 
 \item{pShifted}{a logical (TRUE), are riboseq reads p-shifted to size
-1 width reads? If upstream or downstream is set, this argument is
+1 width reads? If upstream and downstream is set, this argument is
 irrelevant.}
 
 \item{upstream}{an integer (5), relative region to get upstream from.}

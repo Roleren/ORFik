@@ -14,8 +14,7 @@ RiboSeq data.}
 a logical, if it is periodic.
 }
 \description{
-The values 2.9 and 3.1 as amplitude region, have beenchosen from testing for
-optimal values
+Checks if there is a periodicity and if the periodicity is 3.
 }
 \details{
 It uses Fourier transform for finding periodic vectors

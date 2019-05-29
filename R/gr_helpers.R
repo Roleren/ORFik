@@ -59,11 +59,11 @@ groupGRangesBy <- function(gr, other = NULL) {
 }
 
 
-#' Get RiboSeq widths
+#' Get read widths
 #'
-#' Input a ribo-seq object and get width of reads, this is to avoid
-#' confusion between width, qwidth and meta column containing original read
-#' width.
+#' Input any reads, e.g. ribo-seq object and get width of reads, this is to
+#' avoid confusion between width, qwidth and meta column containing original
+#' read width.
 #'
 #' If input is p-shifted and GRanges, the "$score" or "$size" colum" must
 #' exist, and contain the original read widths. ORFik P-shifting creates a

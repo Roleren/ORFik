@@ -26,6 +26,10 @@ Usefull to validate p-shifting is correct
 Can be used for any coverage of region around a point, like TIS, TSS,
 stop site etc.
 }
+\details{
+Remember if you want to change anything like colors, just return the
+ggplot object, and reassign like: obj + scale_color_brewer() etc.
+}
 \examples{
 # An ORF
 grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))

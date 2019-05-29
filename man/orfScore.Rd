@@ -37,6 +37,8 @@ NOTE: If reads are not of size 1, then a read from 1-4 on range of 1-4,
 will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
 is that only the 5' end is important, so that only frame1 = 1,
 to get this, you first resize reads to 5'end only.
+
+NOTE: p shifting is not exact, so many ORFs will get a bad ORF score.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

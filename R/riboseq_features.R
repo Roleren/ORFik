@@ -314,7 +314,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
 #'
 #' Inside/Outside score is defined as
 #' \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
-#' A pseudo-count of one was added to both the ORF and outside sums.
+#' A pseudo-count of one is added to both the ORF and outside sums.
 #' @references doi: 10.1242/dev.098345
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually either leaders, cds', 3' utrs or ORFs
@@ -594,6 +594,8 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE) {
 #' will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
 #' is that only the 5' end is important, so that only frame1 = 1,
 #' to get this, you first resize reads to 5'end only.
+#'
+#' NOTE: p shifting is not exact, so many ORFs will get a bad ORF score.
 #' @references doi: 10.1002/embj.201488411
 #' @param grl a \code{\link{GRangesList}} object with ORFs
 #' @param RFP ribosomal footprints, given as Galignment object,
