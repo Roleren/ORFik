@@ -20,8 +20,9 @@
 #' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 #' 33, but will remove 3S so final read width is 30 in ORFik.
 #' @param footprints (GAlignments) object of RiboSeq reads
-#' @param shifts a data.frame with minimum 2 columns, selected_lengths and
-#' selected_shifts. Output from \code{\link{detectRibosomeShifts}}
+#' @param shifts a data.frame / data.table with minimum 2 columns,
+#' selected_lengths and selected_shifts.
+#' Output from \code{\link{detectRibosomeShifts}}
 #' @return A GRanges object of shifted footprints, sorted and resized to 1bp of
 #' p-site, with metacolumn "size" indicating footprint size before shifting and
 #' resizing, sorted in increasing order.
@@ -135,7 +136,7 @@ shiftFootprints <- function(footprints, shifts) {
 #' your own version. Example: extendLeaders(tx, 30)
 #' Where 30 bases will be new "leaders". Since each original transcript was
 #' either only CDS or non-coding (filtered out).
-#' @return a data.frame with lengths of footprints and their predicted
+#' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
 #' @export
@@ -210,5 +211,5 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
                                      by = fraction]$V1
   }
 
-  return(as.data.frame(offset))
+  return(offset)
 }

@@ -9,8 +9,9 @@ shiftFootprints(footprints, shifts)
 \arguments{
 \item{footprints}{(GAlignments) object of RiboSeq reads}
 
-\item{shifts}{a data.frame with minimum 2 columns, selected_lengths and
-selected_shifts. Output from \code{\link{detectRibosomeShifts}}}
+\item{shifts}{a data.frame / data.table with minimum 2 columns,
+selected_lengths and selected_shifts.
+Output from \code{\link{detectRibosomeShifts}}}
 }
 \value{
 A GRanges object of shifted footprints, sorted and resized to 1bp of

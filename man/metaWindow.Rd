@@ -5,9 +5,8 @@
 \title{Calculate meta-coverage of reads around input GRanges/List object.}
 \usage{
 metaWindow(x, windows, scoring = "sum", withFrames = FALSE,
-  zeroPosition = NULL, scaleTo = 100, returnAs = "data.frame",
-  fraction = NULL, feature = NULL,
-  forceUniqueEven = !is.null(scoring))
+  zeroPosition = NULL, scaleTo = 100, fraction = NULL,
+  feature = NULL, forceUniqueEven = !is.null(scoring))
 }
 \arguments{
 \item{x}{GRangesList/GRanges object of your reads.
@@ -32,8 +31,6 @@ a meta window can not directly be created, since a meta window must
 have equal size for all windows. Rescale all windows to scaleTo.
 i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.}
 
-\item{returnAs}{a character (data.frame), do data.table for speed.}
-
 \item{fraction}{a character/integer (NULL), the fraction i.e
 (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.}
 
@@ -44,7 +41,7 @@ gene name, transcript part like cds, leader, or CpG motifs etc.}
 are of same width and even. To avoid bugs. FALSE if score is NULL.}
 }
 \value{
-A data.frame or data.table with scored counts (score) of
+A data.table with scored counts (score) of
 reads mapped to positions (position) specified in windows along with
 frame (frame).
 }
