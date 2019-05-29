@@ -10,8 +10,9 @@
 #' (must have columns: position, (score or count) and frame)
 #' @param length an integer (29), which length is this for?
 #' @param region a character (start), either "start or "stop"
-#' @param output character string (NULL), if set, saves the plot as pdf or png
+#' @param output character (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
+#' @param type character (canonical CDS), type for plot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
@@ -28,15 +29,16 @@
 #'
 #' # See vignette for more examples
 #'
-pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
-
-  if (is.null(hitMap$score)) hitMap$score <- hitMap$count
+pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
+                      type = "canonical CDS") {
   if (is(hitMap, "data.table")) setDF(hitMap)
+  if (is.null(hitMap$score)) hitMap[, score := count]
+
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
                              fill = factor(frame))) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    labs(title = paste("Length", length, "over", region, "of canonical CDS")) +
+    labs(title = paste("Length", length, "over", region, "of", type)) +
     xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
     ylab("Averaged counts") +
     scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
@@ -87,19 +89,17 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
   if (is.null(cov$fraction)) {
     cov[, fraction := rep("range", nrow(cov))]
   }
-
-  colors <- matchColors(cov, colors)
-
   cov$feature  <- factor(cov$feature, levels = unique(cov$feature),
-                        labels = unique(cov$feature))
+                         labels = unique(cov$feature))
   cov$fraction <- factor(cov$fraction, levels = unique(cov$fraction),
                          labels = unique(cov$fraction))
 
   coverage_score <- coverageScorings(cov, scoring)
 
-  coverage_score[, `:=` (fraction_min=min(score)), by = list(fraction)]
+  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
   nGenes <- getNGenesCoverage(coverage)
-  subTitle <- ifelse(nGenes > 0, paste0("Genes n=", nGenes), "")
+  subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
+  colors <- matchColors(cov, colors)
 
   plot <- ggplot(data = as.data.frame(coverage_score),
                  aes(x = position, ymax = score, ymin = fraction_min,
@@ -178,16 +178,18 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 #' to path given. If no format is given, is save as pdf.
 #' @param width width of output in mm
 #' @param height height of output in mm
+#' @param dpi (150) dpi of plot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
-savePlot <- function(plot, output = NULL, width = 200, height = 150) {
+savePlot <- function(plot, output = NULL, width = 200, height = 150,
+                     dpi = 150) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)
       if (ext != "pdf" & ext != "png") output <- paste0(output, ".pdf")
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
-             dpi = 150, limitsize = FALSE)
+             dpi = dpi, limitsize = FALSE)
     } else {
       stop("output does not name a valid directory")
     }

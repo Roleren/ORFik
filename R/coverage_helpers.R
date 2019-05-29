@@ -457,7 +457,6 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized") {
   if (is.null(tx)) {
-    tx <- grl
     upstream <- min(upstream, 0)
   }
   if (!is(tx, "GRangesList")) stop("tx must be defined as GRangesList")
@@ -532,9 +531,10 @@ getNGenesCoverage <- function(coverage) {
   if (is.null(coverage$genes)) return(0)
   if (is.null(coverage$fraction)) {
     n <- coverage[, .(nGenes = max(genes))]
+  } else {
+    n <- coverage[, .(nGenes = max(genes)), by = fraction]
   }
 
-  n <- coverage[, .(nGenes = max(genes)), by = fraction]
   if (nrow(n) == 0) return(0)
   return(n$nGenes)
 }

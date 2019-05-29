@@ -4,7 +4,7 @@
 \alias{savePlot}
 \title{Helper function for writing plots to disc}
 \usage{
-savePlot(plot, output = NULL, width = 200, height = 150)
+savePlot(plot, output = NULL, width = 200, height = 150, dpi = 150)
 }
 \arguments{
 \item{plot}{the ggplot to save}
@@ -15,6 +15,8 @@ to path given. If no format is given, is save as pdf.}
 \item{width}{width of output in mm}
 
 \item{height}{height of output in mm}
+
+\item{dpi}{(150) dpi of plot}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

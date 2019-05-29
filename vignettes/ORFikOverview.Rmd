@@ -127,12 +127,12 @@ footprints <- GenomicAlignments::readGAlignments(bam_file)
 
 Investigate what footprint lengths are present in our data.
 ```{r eval = TRUE, echo = TRUE} 
-table(qwidth(footprints))
+table(readWidths(footprints))
 ```
 
 For the sake of this example we will focus only on most abundant length of 29.
 ```{r eval = TRUE, echo = TRUE} 
-footprints <- footprints[qwidth(footprints) == 29]
+footprints <- footprints[readWidths(footprints) == 29]
 footprints
 ```
 
@@ -147,7 +147,7 @@ Now, lets prepare annotations and focus on START and STOP codons.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf_file)
-tx <- GenomicFeatures::exonsBy(txdb, by = "tx", use.names = TRUE)
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
 trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
@@ -157,7 +157,7 @@ Filter cds to only those who have some minimum trailer and leader lengths, as
 well as cds. And get start and stop codons with extra window of 30bp around 
 them.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-txNames <- filterTranscripts(txdb)
+txNames <- filterTranscripts(txdb) # <- get only transcripts that pass filter
 tx <- tx[txNames]; cds <- cds[txNames]; trailers <- trailers[txNames];
 windowsStart <- startRegion(cds[txNames], tx, TRUE, upstream = 30, 29)
 windowsStop <- startRegion(trailers, tx, TRUE, upstream = 30, 29)

@@ -4,7 +4,8 @@
 \alias{pSitePlot}
 \title{Plot area around TIS for p-shifted reads}
 \usage{
-pSitePlot(hitMap, length = 29, region = "start", output = NULL)
+pSitePlot(hitMap, length = 29, region = "start", output = NULL,
+  type = "canonical CDS")
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
@@ -14,8 +15,10 @@ pSitePlot(hitMap, length = 29, region = "start", output = NULL)
 
 \item{region}{a character (start), either "start or "stop"}
 
-\item{output}{character string (NULL), if set, saves the plot as pdf or png
+\item{output}{character (NULL), if set, saves the plot as pdf or png
 to path given. If no format is given, is save as pdf.}
+
+\item{type}{character (canonical CDS), type for plot}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
