@@ -29,7 +29,7 @@ a named vector of numeric values of scores
 \description{
 Inside/Outside score is defined as
 \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
-A pseudo-count of one was added to both the ORF and outside sums.
+A pseudo-count of one is added to both the ORF and outside sums.
 }
 \examples{
 # Check inside outside score of a ORF within a transcript

@@ -2,7 +2,7 @@
 % Please edit documentation in R/gr_helpers.R
 \name{readWidths}
 \alias{readWidths}
-\title{Get RiboSeq widths}
+\title{Get read widths}
 \usage{
 readWidths(reads, after.softclips = TRUE)
 }
@@ -15,14 +15,16 @@ readWidths(reads, after.softclips = TRUE)
 an integer vector of widths
 }
 \description{
-Input a ribo-seq object and get width of reads, this is to avoid
-confusion between width, qwidth and meta column containing original read
-width.
+Input any reads, e.g. ribo-seq object and get width of reads, this is to
+avoid confusion between width, qwidth and meta column containing original
+read width.
 }
 \details{
 If input is p-shifted and GRanges, the "$score" or "$size" colum" must
-exist, and contain the original read widths. ORFik P-shifting creates a
-$size column, other softwares like shoelaces creates a score column
+exist, and the column must contain the original read widths. In ORFik
+"$size" have higher priority than "$score" for defining length.
+ORFik P-shifting creates a $size column, other softwares like shoelaces
+creates a score column.
 }
 \examples{
 gr <- GRanges("chr1", 1)

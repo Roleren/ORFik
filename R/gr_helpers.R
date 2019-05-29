@@ -59,15 +59,17 @@ groupGRangesBy <- function(gr, other = NULL) {
 }
 
 
-#' Get RiboSeq widths
+#' Get read widths
 #'
-#' Input a ribo-seq object and get width of reads, this is to avoid
-#' confusion between width, qwidth and meta column containing original read
-#' width.
+#' Input any reads, e.g. ribo-seq object and get width of reads, this is to
+#' avoid confusion between width, qwidth and meta column containing original
+#' read width.
 #'
 #' If input is p-shifted and GRanges, the "$score" or "$size" colum" must
-#' exist, and contain the original read widths. ORFik P-shifting creates a
-#' $size column, other softwares like shoelaces creates a score column
+#' exist, and the column must contain the original read widths. In ORFik
+#' "$size" have higher priority than "$score" for defining length.
+#' ORFik P-shifting creates a $size column, other softwares like shoelaces
+#' creates a score column.
 #' @param reads a GRanges or GAlignment object.
 #' @param after.softclips logical (FALSE), include softclips in width
 #' @return an integer vector of widths
@@ -95,8 +97,6 @@ readWidths <- function(reads, after.softclips = TRUE) {
                   "score or size meta column should contain widths of read, ",
                   "will continue using 1-widths")
         } else {
-          message("All widths are 1, using size column for widths, remove ",
-                  "size column and run again if this is wrong.")
           rfpWidth <- reads$size
         }
 

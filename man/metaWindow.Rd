@@ -40,8 +40,8 @@ i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.}
 \item{feature}{a character string, info on region. Usually either
 gene name, transcript part like cds, leader, or CpG motifs etc.}
 
-\item{forceUniqueEven, }{a logical (TRUE), require that all windows
-are of same width and even. To avoid bugs.}
+\item{forceUniqueEven, }{a logical (TRUE), if TRUE; require that all windows
+are of same width and even. To avoid bugs. FALSE if score is NULL.}
 }
 \value{
 A data.frame or data.table with scored counts (score) of

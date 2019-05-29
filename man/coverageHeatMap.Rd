@@ -25,6 +25,9 @@ Coverage column in heat map is score, default zscore of counts
 }
 \details{
 See vignette for example
+
+Remember if you want to change anything like colors, just return the
+ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }
 \examples{
 # An ORF

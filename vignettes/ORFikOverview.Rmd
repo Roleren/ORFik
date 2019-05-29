@@ -88,7 +88,7 @@ the first group is from transcript "uc010ogz.1". Meta-column names contains name
 of the transcript and identifier of the ORF separated by "_". When ORF is 
 separated into two exons you can see it twice, like the first ORF with name 
 "uc010ogz.1_1". The first ORF will always be the one most upstream for "+" 
-strand, and least upstream for "-" strand.
+strand, and the least upstream for "-" strand.
 
 # CageSeq data for 5' UTR re-annotation
 
@@ -147,7 +147,7 @@ Now, lets prepare annotations and focus on START and STOP codons.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf_file)
-tx <- GenomicFeatures::exonsBy(txdb, by = "tx", use.names = TRUE)
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
 trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
@@ -157,7 +157,7 @@ Filter cds to only those who have some minimum trailer and leader lengths, as
 well as cds. And get start and stop codons with extra window of 30bp around 
 them.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-txNames <- filterTranscripts(txdb)
+txNames <- filterTranscripts(txdb) # <- get only transcripts that pass filter
 tx <- tx[txNames]; cds <- cds[txNames]; trailers <- trailers[txNames];
 windowsStart <- startRegion(cds[txNames], tx, TRUE, upstream = 30, 29)
 windowsStop <- startRegion(trailers, tx, TRUE, upstream = 30, 29)

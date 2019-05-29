@@ -4,7 +4,8 @@
 \alias{pSitePlot}
 \title{Plot area around TIS for p-shifted reads}
 \usage{
-pSitePlot(hitMap, length = 29, region = "start", output = NULL)
+pSitePlot(hitMap, length = 29, region = "start", output = NULL,
+  type = "canonical CDS")
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
@@ -14,8 +15,10 @@ pSitePlot(hitMap, length = 29, region = "start", output = NULL)
 
 \item{region}{a character (start), either "start or "stop"}
 
-\item{output}{character string (NULL), if set, saves the plot as pdf or png
+\item{output}{character (NULL), if set, saves the plot as pdf or png
 to path given. If no format is given, is save as pdf.}
+
+\item{type}{character (canonical CDS), type for plot}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
@@ -25,6 +28,10 @@ then the plot will only be saved to location.
 Usefull to validate p-shifting is correct
 Can be used for any coverage of region around a point, like TIS, TSS,
 stop site etc.
+}
+\details{
+Remember if you want to change anything like colors, just return the
+ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }
 \examples{
 # An ORF

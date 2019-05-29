@@ -4,13 +4,15 @@
 #' Can be used for any coverage of region around a point, like TIS, TSS,
 #' stop site etc.
 #'
-#'
+#' Remember if you want to change anything like colors, just return the
+#' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param hitMap a data.frame/data.table, given from metaWindow
 #' (must have columns: position, (score or count) and frame)
 #' @param length an integer (29), which length is this for?
 #' @param region a character (start), either "start or "stop"
-#' @param output character string (NULL), if set, saves the plot as pdf or png
+#' @param output character (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
+#' @param type character (canonical CDS), type for plot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
@@ -27,15 +29,16 @@
 #'
 #' # See vignette for more examples
 #'
-pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
-
-  if (is.null(hitMap$score)) hitMap$score <- hitMap$count
+pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
+                      type = "canonical CDS") {
   if (is(hitMap, "data.table")) setDF(hitMap)
+  if (is.null(hitMap$score)) hitMap[, score := count]
+
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
                              fill = factor(frame))) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    labs(title = paste("Length", length, "over", region, "of canonical CDS")) +
+    labs(title = paste("Length", length, "over", region, "of", type)) +
     xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
     ylab("Averaged counts") +
     scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
@@ -51,13 +54,16 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL) {
 #' If you return this function without assigning it and output is NULL,
 #' it will automaticly plot the figure in your session. If output is assigned,
 #' no plot will be shown in session.
+#'
+#' Remember if you want to change anything like colors, just return the
+#' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param coverage a data.table, output of scaledWindowCoverage
 #' @param output character string (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param scoring character vector (zscore), either of zScore,
 #' transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
 #' @param colors character vector colors to use in plot, will fix automaticly,
-#' using binary splits with colors c('skyblue4', 'orange')
+#' using binary splits with colors c('skyblue4', 'orange').
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcript), what should legends say is
 #' the whole region? Transcript, gene, non coding rna etc.
@@ -77,23 +83,23 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
                                type = "transcript") {
-  cov <- copy(coverage)
+  cov <- setDT(copy(coverage))
   if (is.null(cov$feature))
     cov[, feature := rep("meta", nrow(cov))]
   if (is.null(cov$fraction)) {
     cov[, fraction := rep("range", nrow(cov))]
   }
-
-  colors <- matchColors(cov, colors)
-
   cov$feature  <- factor(cov$feature, levels = unique(cov$feature),
-                        labels = unique(cov$feature))
+                         labels = unique(cov$feature))
   cov$fraction <- factor(cov$fraction, levels = unique(cov$fraction),
                          labels = unique(cov$fraction))
 
   coverage_score <- coverageScorings(cov, scoring)
 
-  coverage_score[, `:=` (fraction_min=min(score)), by = list(fraction)]
+  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
+  nGenes <- getNGenesCoverage(coverage)
+  subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
+  colors <- matchColors(cov, colors)
 
   plot <- ggplot(data = as.data.frame(coverage_score),
                  aes(x = position, ymax = score, ymin = fraction_min,
@@ -107,8 +113,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     scale_y_continuous(expand = c(0, 0)) +
     scale_fill_manual(values = colors) +
     scale_color_manual(values = colors) +
-    ggtitle(label = title,
-            subtitle = paste0("Genes n=", getNGenesCoverage(coverage))) +
+    ggtitle(label = title, subtitle = subTitle) +
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(scoring, " over ", type)) +
     theme(legend.position = "none") +
@@ -123,6 +128,9 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' Coverage column in heat map is score, default zscore of counts
 #'
 #' See vignette for example
+#'
+#' Remember if you want to change anything like colors, just return the
+#' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @inheritParams windowCoveragePlot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
@@ -170,16 +178,18 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 #' to path given. If no format is given, is save as pdf.
 #' @param width width of output in mm
 #' @param height height of output in mm
+#' @param dpi (150) dpi of plot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
-savePlot <- function(plot, output = NULL, width = 200, height = 150) {
+savePlot <- function(plot, output = NULL, width = 200, height = 150,
+                     dpi = 150) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)
       if (ext != "pdf" & ext != "png") output <- paste0(output, ".pdf")
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
-             dpi = 150, limitsize = FALSE)
+             dpi = dpi, limitsize = FALSE)
     } else {
       stop("output does not name a valid directory")
     }
@@ -200,4 +210,22 @@ xAxisScaler <- function(covPos) {
   by <- ifelse(pos > 80, ifelse(pos > 150, 6, 3), 1)
 
   return(seq(min, max, by) - (min %% by))
+}
+
+#' Match coloring of coverage plot
+#'
+#' Check that colors match with the number of fractions.
+#' @param coverage a data.table with coverage
+#' @param colors a character vector of colors
+#' @return number of genes in coverage
+matchColors <- function(coverage, colors) {
+  nFractions <- length(unique(coverage$fraction))
+  nColors <- length(colors)
+  if (nColors == 0 || nFractions == 0)
+    stop("did not define fraction or colors")
+
+  if (nColors < nFractions) {
+    return(rep(colors, nFractions)[seq(nFractions)])
+  }
+  return(colors[seq(nFractions)])
 }

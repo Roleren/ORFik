@@ -31,8 +31,7 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 
 #' Find if there is periodicity in the vector
 #'
-#' The values 2.9 and 3.1 as amplitude region, have beenchosen from testing for
-#' optimal values
+#' Checks if there is a periodicity and if the periodicity is 3.
 #'
 #' It uses Fourier transform for finding periodic vectors
 #' @param x (numeric) Vector of values to detect periodicity of 3 like in

@@ -18,7 +18,7 @@ to path given. If no format is given, is save as pdf.}
 transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
 
 \item{colors}{character vector colors to use in plot, will fix automaticly,
-using binary splits with colors c('skyblue4', 'orange')}
+using binary splits with colors c('skyblue4', 'orange').}
 
 \item{title}{a character (metaplot) (what is the title of plot?)}
 
@@ -36,6 +36,9 @@ Spanning a region like a transcripts, plot how the reads distribute.
 If you return this function without assigning it and output is NULL,
 it will automaticly plot the figure in your session. If output is assigned,
 no plot will be shown in session.
+
+Remember if you want to change anything like colors, just return the
+ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }
 \examples{
 library(data.table)
