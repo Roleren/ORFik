@@ -1,7 +1,7 @@
 #' Get the transcripts with accepted lengths of leaders, cds and trailer.
 #'
 #' Filter transcripts to those who have leaders, CDS, trailers of some lengths,
-#' pick the longest per gene.
+#' you can also pick the longest per gene.
 #'
 #' If a transcript does not have a trailer, then the length is 0,
 #' so they will be filtered out. So only transcripts with leaders, cds and
@@ -16,6 +16,8 @@
 #' transcripts
 #' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
 #' transcripts. Set to NULL if no 3' UTRs exists for annotation.
+#' @param longestPerGene logical (TRUE), return only longest valid transcript
+#' per gene.
 #' @param stopOnEmpty logical TRUE, stop if no valid names are found ?
 #' @return a character vector of valid tramscript names
 #' @export
@@ -25,7 +27,8 @@
 #' txNames <- filterTranscripts(txdb)
 #'
 filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
-                              minThreeUTR = 30L, stopOnEmpty = TRUE) {
+                              minThreeUTR = 30L, longestPerGene = TRUE,
+                              stopOnEmpty = TRUE) {
   txdb <- loadTxdb(txdb)
   five <- ifelse(is.null(minFiveUTR), FALSE, TRUE)
   three <- ifelse(is.null(minThreeUTR), FALSE, TRUE)
@@ -33,12 +36,17 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
   tx <- data.table::setDT(
     GenomicFeatures::transcriptLengths(
       txdb, with.cds_len = TRUE, with.utr5_len = five, with.utr3_len = three))
+  five <- rep(five, nrow(tx))
+  three <- rep(three, nrow(tx))
+
   tx <- tx[ifelse(five, utr5_len >= minFiveUTR, TRUE) & cds_len >= minCDS &
-             ifelse(five, utr3_len >= minThreeUTR, TRUE), ]
+             ifelse(three, utr3_len >= minThreeUTR, TRUE), ]
 
   gene_id <- cds_len <- NULL
   data.table::setorder(tx, gene_id, -cds_len)
-  tx <- tx[!duplicated(tx$gene_id), ]
+  if (longestPerGene) {
+    tx <- tx[!duplicated(tx$gene_id), ]
+  }
   tx <- tx[!is.na(tx$gene_id)]
   if (stopOnEmpty & length(tx$tx_name) == 0)
     stop("No transcript has leaders and trailers of specified minFiveUTR",

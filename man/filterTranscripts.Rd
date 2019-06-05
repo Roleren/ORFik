@@ -5,7 +5,7 @@
 \title{Get the transcripts with accepted lengths of leaders, cds and trailer.}
 \usage{
 filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
-  minThreeUTR = 30L, stopOnEmpty = TRUE)
+  minThreeUTR = 30L, longestPerGene = TRUE, stopOnEmpty = TRUE)
 }
 \arguments{
 \item{txdb}{a TxDb file or a path to one of:
@@ -20,6 +20,9 @@ transcripts}
 \item{minThreeUTR}{(integer) minimum bp for 3' UTR during filtering for the
 transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 
+\item{longestPerGene}{logical (TRUE), return only longest valid transcript
+per gene.}
+
 \item{stopOnEmpty}{logical TRUE, stop if no valid names are found ?}
 }
 \value{
@@ -27,7 +30,7 @@ a character vector of valid tramscript names
 }
 \description{
 Filter transcripts to those who have leaders, CDS, trailers of some lengths,
-pick the longest per gene.
+you can also pick the longest per gene.
 }
 \details{
 If a transcript does not have a trailer, then the length is 0,
