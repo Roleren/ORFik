@@ -30,8 +30,8 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
                               minThreeUTR = 30L, longestPerGene = TRUE,
                               stopOnEmpty = TRUE) {
   txdb <- loadTxdb(txdb)
-  five <- ifelse(is.null(minFiveUTR), FALSE, TRUE)
-  three <- ifelse(is.null(minThreeUTR), FALSE, TRUE)
+  five <- !is.null(minFiveUTR)
+  three <- !is.null(minThreeUTR)
 
   tx <- data.table::setDT(
     GenomicFeatures::transcriptLengths(
