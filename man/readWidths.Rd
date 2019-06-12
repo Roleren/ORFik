@@ -20,7 +20,7 @@ avoid confusion between width, qwidth and meta column containing original
 read width.
 }
 \details{
-If input is p-shifted and GRanges, the "$score" or "$size" colum" must
+If input is p-shifted and GRanges, the "$size" or "$score" colum" must
 exist, and the column must contain the original read widths. In ORFik
 "$size" have higher priority than "$score" for defining length.
 ORFik P-shifting creates a $size column, other softwares like shoelaces
