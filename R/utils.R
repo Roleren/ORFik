@@ -264,10 +264,13 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   }
   if (addScoreColumn) {
     if (!is.null(cigar(reads))) {
-      dt <- as.data.table(gr)[, .N, .(seqnames, start, end, strand, cigar)]
+      dt <- as.data.table(gr)[, .(.N, .I),
+                              .(seqnames, start, end, strand, cigar)]
     } else {
-      dt <- as.data.table(gr)[, .N, .(seqnames, start, end, strand)]
+      dt <- as.data.table(gr)[, .(.N, .I), .(seqnames, start, end, strand)]
     }
+    dt <- dt[!duplicated(N) & (N > 1), ]
+    gr <- gr[dt$I]
     gr$score <- NULL
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = as.integer(dt$N))
   }
