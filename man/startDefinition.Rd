@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{startDefinition}
 \alias{startDefinition}
-\title{Returns start definitions}
+\title{Returns start codon definitions}
 \usage{
 startDefinition(transl_table)
 }

@@ -10,7 +10,8 @@ reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or transcript sequences}
 
-\item{cage}{Either a filePath for CageSeq file, or already loaded
+\item{cage}{Either a filePath for the CageSeq file as .bed, with possible
+compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges.}
 
 \item{extension}{The maximum number of basses upstream of the TSS to search

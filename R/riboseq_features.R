@@ -39,8 +39,8 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
 #' For example c(0,0,0,0) has 0 entropy, since no reads overlap.
 #' @param grl a \code{\link{GRangesList}} that the reads will
 #' be overlapped with
-#' @param reads a GAlignment object or GRanges or GRangesList, usualy data from
-#' RiboSeq or RnaSeq
+#' @param reads a GAlignment, GRanges or GRangesList object,
+#'  usually of RiboSeq, RnaSeq, CageSeq, etc.
 #' @return A numeric vector containing one entropy value per element in
 #' `grl`
 #' @family features

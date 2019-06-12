@@ -29,6 +29,8 @@ allowing to spot the shift.
 entropy that are recreated based on many scientific publications.  
 7. Utility functions to extend GenomicRanges for faster grouping, splitting, 
 tiling etc. 
+8. Several standardized plots for coverage and metacoverage of NGS data, 
+including smart grouping functions for easier prototyping.
 
 # Finding Open Reading Frames 
 

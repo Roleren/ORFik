@@ -176,7 +176,8 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #' always score of 1. Remember then to set filterValue to 0. And you should use
 #' the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 #' @param fiveUTRs (GRangesList) The 5' leaders or transcript sequences
-#' @param cage Either a filePath for CageSeq file, or already loaded
+#' @param cage Either a filePath for the CageSeq file as .bed, with possible
+#' compressions (".gzip", ".gz", ".bgz"), or already loaded
 #' CageSeq peak data as GRanges.
 #' @param extension The maximum number of basses upstream of the TSS to search
 #' for CageSeq peak.

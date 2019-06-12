@@ -1,4 +1,4 @@
-#' Returns start definitions
+#' Returns start codon definitions
 #'
 #' According to:
 #' <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
@@ -41,7 +41,7 @@ startDefinition <- function(transl_table) {
 }
 
 
-#' Returns stop definitions
+#' Returns stop codon definitions
 #'
 #' According to:
 #' <http://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/
@@ -139,7 +139,7 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
-  if (is.character(seqs) & substr(seqs[1], 1,1) %in%
+  if (is.character(seqs) & substr(seqs[1], 1, 1) %in%
       c("a", "t", "c", "g", "n")) {
     startCodon <- tolower(startCodon)
     stopCodon <- tolower(stopCodon)
@@ -167,6 +167,7 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' This function assumes that `seq` is in widths relative to `grl`,
 #' and that their orders match. 1st seq is 1st grl object, etc.
 #'
+#' See vignette for real life example.
 #' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs

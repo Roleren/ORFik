@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_ORFs.R
 \name{stopDefinition}
 \alias{stopDefinition}
-\title{Returns stop definitions}
+\title{Returns stop codon definitions}
 \usage{
 stopDefinition(transl_table)
 }

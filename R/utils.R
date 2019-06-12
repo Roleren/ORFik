@@ -213,23 +213,46 @@ fread.bed <- function(filePath) {
   }
   return(bed)
 }
+#' Custome bam reader
+#'
+#' Safer version that handles the most important error done.
+#' In the future will use a faster .bam loader for big .bam files in R.
+#' @param path a character path to .bam file
+#' @param chrStyle a GRanges object, or a characterPath (Default: NULL) to
+#' get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
+#' chromosome called MT or chrM etc.
+#' @return a GAlignment object of bam file
+readBam <- function(path, chrStyle = NULL) {
+  reads <- readGAlignments(path)
+  if (!is.null(chrStyle)) {
+    if (is.character(chrStyle)) {
+      seqlevelsStyle(reads) <- chrStyle
+    } else if (is.gr_or_grl(chrStyle)) {
+      seqlevelsStyle(reads) <- seqlevelsStyle(chrStyle)
+    } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
+  }
+}
 
 #' Convert a GRanges Object to 1 width reads
 #'
 #' There are 4 ways of doing this
 #' 1. Take 5' ends, reduce away rest (5prime)
 #' 2. Take 3' ends, reduce away rest (3prime)
-#' 3. Tile and include all (tileAll)
+#' 3. Tile to 1-mers and include all (tileAll)
 #' 4. Take middle point per GRanges (middle)
 #'
-#' Many other ways to do this have their own functions, like startCodons and
-#' stopCodons.
+#'
+#' Many other ways to do this have their own functions, like startSites and
+#' stopSites etc.
 #' @param gr GRanges, GAlignment Object to reduce
 #' @param method the method to reduce, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
-#'  sums up the hits per position.
+#'  sums up the hits per unique range This will make each read unique, so
+#'  that each read is 1 time, and score column gives the number of hits.
+#'  A useful compression.
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
-#'  for each read, that gives original width of read.
+#'  for each read, that gives original width of read. Useful if you need
+#'  original read lengths. This takes care of soft clips etc.
 #' @return  Converted GRanges object
 #' @family utils
 #'
@@ -238,6 +261,15 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addSizeColumn = FALSE){
   if (addSizeColumn) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr), size = readWidths(gr))
+  }
+  if (addScoreColumn) {
+    if (!is.null(cigar(reads))) {
+      dt <- as.data.table(gr)[, .N, .(seqnames, start, end, strand, cigar)]
+    } else {
+      dt <- as.data.table(gr)[, .N, .(seqnames, start, end, strand)]
+    }
+    gr$score <- NULL
+    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = as.integer(dt$N))
   }
   gr <- GRanges(gr)
   if (method == "5prime") {
@@ -252,21 +284,6 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                           width = 1)
   } else stop("method not defined")
 
-  if (addScoreColumn) {
-    pos <- strandBool(gr)
-    posGr <- gr[pos]
-    dt <- as.data.table(posGr)[, .N, .(seqnames, start)]
-    posGr <- GRanges(dt$seqnames, IRanges(dt$start, width = 1), "+")
-    score <- dt$N
-    negGr <- gr[!pos]
-    dt <- as.data.table(negGr)[, .N, .(seqnames, end)]
-    negGr <- GRanges(dt$seqnames, IRanges(dt$end, width = 1), "-")
-    score <- as.integer(c(score, dt$N))
-
-    gr <- c(posGr, negGr)
-    gr$score <- NULL
-    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = score)
-  }
   return(gr)
 }
 

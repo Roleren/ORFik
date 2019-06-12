@@ -11,7 +11,8 @@ assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
 \item{txdb}{a TxDb file or a path to one of:
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
-\item{cage}{Either a filePath for CageSeq file, or already loaded
+\item{cage}{Either a filePath for the CageSeq file as .bed, with possible
+compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges.}
 
 \item{extension}{The maximum number of basses upstream of the TSS to search

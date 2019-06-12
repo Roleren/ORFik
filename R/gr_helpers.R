@@ -10,7 +10,7 @@
 #' It is important that all groups in `other` are unique, otherwise
 #' duplicates will be grouped together.
 #' @param gr a GRanges object
-#' @param other a vector of unique names to group by
+#' @param other a vector of unique names to group by (default: NULL)
 #' @return a GRangesList named after names(Granges) if other is NULL, else
 #' names are from unique(other)
 #' @export

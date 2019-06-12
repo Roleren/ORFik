@@ -154,9 +154,11 @@ loadTxdb <- function(txdb) {
 
 #' Load transcript region
 #'
-#' Load if not already GRangesList
-#' @param txdb a GRangesList or txdb object
-#' @param part a character, one of: tx, leader, cds, trailer
+#' Load GRangesList if input is not already GRangesList.
+#' @param txdb a TxDb file or a path to one of:
+#'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
+#'  it will return it self.
+#' @param part a character, one of: tx, leader, cds, trailer, introns
 #' @return a GrangesList of region
 loadRegion <- function(txdb, part = "tx") {
   if (is.grl(txdb)) return(txdb)
@@ -169,5 +171,33 @@ loadRegion <- function(txdb, part = "tx") {
     return(cdsBy(txdb, by = "tx", use.names = TRUE))
   } else if(part == "trailer") {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
+  } else if(part == "introns") {
+    return(intronsByTranscript(txdb)(txdb, use.names = TRUE))
   } else stop("invalid part, must be tx, leader, cds or trailer")
+}
+
+#' Load type of transcript
+#'
+#' Like rRNA, snoRNA etc.
+#' NOTE: Only works on gtf/gff, not .db object for now.
+#' Also note that these anotations are not perfect, some rRNA annotations
+#' only contain 5S rRNA etc. If your gtf does not contain evertyhing you need,
+#' use a resource like repeatmasker and download a gtf:
+#' https://genome.ucsc.edu/cgi-bin/hgTables
+#' @references doi: 10.1002/0471250953.bi0410s25
+#' @param path path to gtf/gff
+#' @param part a character, default rRNA. Can also be:
+#' snoRNA, tRNA etc. As long as that type is defined in the gtf.
+#' @param tx a GRangesList of transcripts (Optional, default NULL),
+#'  add to save run time.
+#' @return a GRangesList of transcript of that type
+loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
+  if (!is.character(path)) stop("path must be a file path to gtf/gff")
+  type <- import(path)
+
+  valids <- type[grep(x = type$transcript_biotype, pattern = part)]
+  if (length(valids) == 0) stop("found no valid transcript of type", part)
+  if (is.null(tx)) tx <- loadRegion(path)
+
+  return(tx[unique(valids$transcript_id)])
 }

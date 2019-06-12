@@ -13,10 +13,13 @@ convertToOneBasedRanges(gr, method = "5prime", addScoreColumn = FALSE,
 \item{method}{the method to reduce, see info. (5prime defualt)}
 
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
-sums up the hits per position.}
+sums up the hits per unique range This will make each read unique, so
+that each read is 1 time, and score column gives the number of hits.
+A useful compression.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
-for each read, that gives original width of read.}
+for each read, that gives original width of read. Useful if you need
+original read lengths. This takes care of soft clips etc.}
 }
 \value{
 Converted GRanges object
@@ -25,12 +28,12 @@ Converted GRanges object
 There are 4 ways of doing this
 1. Take 5' ends, reduce away rest (5prime)
 2. Take 3' ends, reduce away rest (3prime)
-3. Tile and include all (tileAll)
+3. Tile to 1-mers and include all (tileAll)
 4. Take middle point per GRanges (middle)
 }
 \details{
-Many other ways to do this have their own functions, like startCodons and
-stopCodons.
+Many other ways to do this have their own functions, like startSites and
+stopSites etc.
 }
 \seealso{
 Other utils: \code{\link{bedToGR}}, \code{\link{findFa}},

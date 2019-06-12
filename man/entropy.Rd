@@ -10,8 +10,8 @@ entropy(grl, reads)
 \item{grl}{a \code{\link{GRangesList}} that the reads will
 be overlapped with}
 
-\item{reads}{a GAlignment object or GRanges or GRangesList, usualy data from
-RiboSeq or RnaSeq}
+\item{reads}{a GAlignment, GRanges or GRangesList object,
+usually of RiboSeq, RnaSeq, CageSeq, etc.}
 }
 \value{
 A numeric vector containing one entropy value per element in
