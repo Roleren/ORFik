@@ -19,6 +19,8 @@ pSitePlot(hitMap, length = 29, region = "start", output = NULL,
 to path given. If no format is given, is save as pdf.}
 
 \item{type}{character (canonical CDS), type for plot}
+
+\item{scoring}{character (Average sum) which scoring did you use ?}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

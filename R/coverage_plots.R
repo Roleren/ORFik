@@ -13,6 +13,7 @@
 #' @param output character (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param type character (canonical CDS), type for plot
+#' @param scoring character (Average sum) which scoring did you use ?
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
