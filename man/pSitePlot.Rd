@@ -5,7 +5,7 @@
 \title{Plot area around TIS for p-shifted reads}
 \usage{
 pSitePlot(hitMap, length = 29, region = "start", output = NULL,
-  type = "canonical CDS")
+  type = "canonical CDS", scoring = "Averaged counts")
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow

@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{loadTranscriptType}
 \alias{loadTranscriptType}
-\title{Load type of transcript}
+\title{Load biotype of transcript}
 \usage{
 loadTranscriptType(path, part = "rRNA", tx = NULL)
 }

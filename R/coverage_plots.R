@@ -30,7 +30,7 @@
 #' # See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
-                      type = "canonical CDS") {
+                      type = "canonical CDS", scoring = "Averaged counts") {
   hitMap <- setDT(copy(hitMap))
   if (is.null(hitMap$score)) hitMap[, score := count]
 
@@ -40,7 +40,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     labs(title = paste("Length", length, "over", region, "of", type)) +
     xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
-    ylab("Averaged counts") +
+    ylab(scoring) +
     scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
     guides(fill = FALSE)
 

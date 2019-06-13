@@ -70,6 +70,10 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' "$size" have higher priority than "$score" for defining length.
 #' ORFik P-shifting creates a $size column, other softwares like shoelaces
 #' creates a score column.
+#'
+#' Remember to think about how you define length. Like the question:
+#' is a Illumina error mismatch sufficient to reduce size of read and how
+#' do you know what is biological variance and what are Illumina errors?
 #' @param reads a GRanges or GAlignment object.
 #' @param after.softclips logical (FALSE), include softclips in width
 #' @return an integer vector of widths

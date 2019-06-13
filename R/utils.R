@@ -220,7 +220,8 @@ fread.bed <- function(filePath) {
 #' @param path a character path to .bam file
 #' @param chrStyle a GRanges object, or a characterPath (Default: NULL) to
 #' get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-#' chromosome called MT or chrM etc.
+#' chromosome called MT or chrM etc. If GRanges object, will use 1st seqlevel-
+#' style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"
 #' @return a GAlignment object of bam file
 readBam <- function(path, chrStyle = NULL) {
   reads <- readGAlignments(path)
@@ -228,9 +229,10 @@ readBam <- function(path, chrStyle = NULL) {
     if (is.character(chrStyle)) {
       seqlevelsStyle(reads) <- chrStyle
     } else if (is.gr_or_grl(chrStyle)) {
-      seqlevelsStyle(reads) <- seqlevelsStyle(chrStyle)
+      seqlevelsStyle(reads) <- seqlevelsStyle(chrStyle)[1]
     } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
   }
+  return(reads)
 }
 
 #' Convert a GRanges Object to 1 width reads

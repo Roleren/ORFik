@@ -11,7 +11,8 @@ readBam(path, chrStyle = NULL)
 
 \item{chrStyle}{a GRanges object, or a characterPath (Default: NULL) to
 get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-chromosome called MT or chrM etc.}
+chromosome called MT or chrM etc. If GRanges object, will use 1st seqlevel-
+style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }
 \value{
 a GAlignment object of bam file

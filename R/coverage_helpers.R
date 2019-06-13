@@ -22,7 +22,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
     trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
-    txCov <- splitIn3Tx(leaders, cds, trailers, reads, fraction)
+    txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction)
 
   } else {
     tx <- exonsBy(txdb, by = "tx", use.names = TRUE)

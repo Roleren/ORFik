@@ -158,8 +158,12 @@ loadTxdb <- function(txdb) {
 #' @param txdb a TxDb file or a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
 #'  it will return it self.
-#' @param part a character, one of: tx, leader, cds, trailer, introns
+#' @param part a character, one of: tx, leader, cds, trailer, intron
 #' @return a GrangesList of region
+#' @export
+#' @examples
+#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' loadRegion(gtf, "intron")
 loadRegion <- function(txdb, part = "tx") {
   if (is.grl(txdb)) return(txdb)
   txdb <- loadTxdb(txdb)
@@ -171,12 +175,12 @@ loadRegion <- function(txdb, part = "tx") {
     return(cdsBy(txdb, by = "tx", use.names = TRUE))
   } else if(part == "trailer") {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
-  } else if(part == "introns") {
-    return(intronsByTranscript(txdb)(txdb, use.names = TRUE))
-  } else stop("invalid part, must be tx, leader, cds or trailer")
+  } else if(part == "intron") {
+    return(intronsByTranscript(txdb, use.names = TRUE))
+  } else stop("invalid part, must be tx, leader, cds, trailer or introns")
 }
 
-#' Load type of transcript
+#' Load biotype of transcript
 #'
 #' Like rRNA, snoRNA etc.
 #' NOTE: Only works on gtf/gff, not .db object for now.
