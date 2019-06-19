@@ -147,7 +147,6 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
 #'                                         downstream = 5)
 #'
-#'
 #' ORFik:::coverageHeatMap(coverage)
 #'
 #' # See vignette for more examples
@@ -178,12 +177,12 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 #' to path given. If no format is given, is save as pdf.
 #' @param width width of output in mm
 #' @param height height of output in mm
-#' @param dpi (150) dpi of plot
+#' @param dpi (300) dpi of plot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
 savePlot <- function(plot, output = NULL, width = 200, height = 150,
-                     dpi = 150) {
+                     dpi = 300) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)

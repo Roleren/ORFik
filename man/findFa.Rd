@@ -19,7 +19,7 @@ Convenience wrapper for Rsamtools FaFile
 \seealso{
 Other utils: \code{\link{bedToGR}},
   \code{\link{convertToOneBasedRanges}},
-  \code{\link{fread.bed}}, \code{\link{is.gr_or_grl}},
-  \code{\link{is.grl}}, \code{\link{validGRL}}
+  \code{\link{fread.bed}}, \code{\link{optimizeReads}},
+  \code{\link{readBam}}
 }
 \concept{utils}

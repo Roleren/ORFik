@@ -69,33 +69,6 @@ hasHits <- function(grl, reads, keep.names = FALSE) {
   return(overlaps > 0)
 }
 
-#' Helper Function to check valid RNA input
-#' @param class, the given class of RNA object
-#' @return NULL, stop if unvalid object
-#'
-checkRNA <- function(class){
-  if (is.null(class) || (class == "NULL")) {
-    message("No RNA added, skipping feature te and fpkm of RNA, ",
-            "also ribosomeReleaseScore will also be not normalized best ",
-            "way possible.")
-  } else {
-    if (class != "GAlignments" & class != "GRanges") {
-      stop("RNA must be either GAlignments or GRanges")
-    }
-  }
-}
-
-
-#' Helper Function to check valid RFP input
-#' @param class, the given class of RFP object
-#' @return NULL, stop if invalid object
-#'
-checkRFP <- function(class) {
-  if (class != "GAlignments" & class != "GRanges") {
-    stop("RFP must be either GAlignments or GRanges")
-  }
-}
-
 #' Subset GRanges to get coverage.
 #'
 #' GRanges object should be beforehand

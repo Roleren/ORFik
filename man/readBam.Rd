@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{readBam}
 \alias{readBam}
-\title{Custome bam reader}
+\title{Custom bam reader}
 \usage{
 readBam(path, chrStyle = NULL)
 }
@@ -21,3 +21,10 @@ a GAlignment object of bam file
 Safer version that handles the most important error done.
 In the future will use a faster .bam loader for big .bam files in R.
 }
+\seealso{
+Other utils: \code{\link{bedToGR}},
+  \code{\link{convertToOneBasedRanges}},
+  \code{\link{findFa}}, \code{\link{fread.bed}},
+  \code{\link{optimizeReads}}
+}
+\concept{utils}

@@ -1,76 +1,9 @@
-#' Get the transcripts with accepted lengths of leaders, cds and trailer.
-#'
-#' Filter transcripts to those who have leaders, CDS, trailers of some lengths,
-#' you can also pick the longest per gene.
-#'
-#' If a transcript does not have a trailer, then the length is 0,
-#' so they will be filtered out. So only transcripts with leaders, cds and
-#' trailers will be returned. You can set the integer to 0, that will return
-#' all within that group.
-#'
-#' If your annotation does not have leaders or trailers, set them to NULL.
-#' @inheritParams loadTxdb
-#' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
-#' transcripts. Set to NULL if no 5' UTRs exists for annotation.
-#' @param minCDS (integer) minimum bp for CDS during filtering for the
-#' transcripts
-#' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
-#' transcripts. Set to NULL if no 3' UTRs exists for annotation.
-#' @param longestPerGene logical (TRUE), return only longest valid transcript
-#' per gene.
-#' @param stopOnEmpty logical TRUE, stop if no valid names are found ?
-#' @return a character vector of valid tramscript names
-#' @export
-#' @examples
-#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
-#' txNames <- filterTranscripts(txdb)
-#'
-filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
-                              minThreeUTR = 30L, longestPerGene = TRUE,
-                              stopOnEmpty = TRUE) {
-  txdb <- loadTxdb(txdb)
-  five <- !is.null(minFiveUTR)
-  three <- !is.null(minThreeUTR)
-
-  tx <- data.table::setDT(
-    GenomicFeatures::transcriptLengths(
-      txdb, with.cds_len = TRUE, with.utr5_len = five, with.utr3_len = three))
-  five <- rep(five, nrow(tx))
-  three <- rep(three, nrow(tx))
-
-  tx <- tx[ifelse(five, utr5_len >= minFiveUTR, TRUE) & cds_len >= minCDS &
-             ifelse(three, utr3_len >= minThreeUTR, TRUE), ]
-
-  gene_id <- cds_len <- NULL
-  data.table::setorder(tx, gene_id, -cds_len)
-  if (longestPerGene) {
-    tx <- tx[!duplicated(tx$gene_id), ]
-  }
-  tx <- tx[!is.na(tx$gene_id)]
-  if (stopOnEmpty & length(tx$tx_name) == 0)
-    stop("No transcript has leaders and trailers of specified minFiveUTR",
-         "minCDS, minThreeUTR")
-
-  return(tx$tx_name)
-}
-
-#' Helper function to find overlaping seqlevels
-#'
-#' Useful to avoid warnings in bioC
-#' @param grl a GRangesList or GRanges object
-#' @param reads a GRanges or GAlignment object
-#' @return a character vector of valid seqlevels
-validSeqlevels <- function(grl, reads) {
-  readNames <- unique(seqnames(reads))
-  seqMatch <- readNames %in%
-    unique(seqnamesPerGroup(grl, FALSE))
-  return(readNames[seqMatch])
-}
 
 #' Find optimized subset of valid reads
 #' @inheritParams validSeqlevels
 #' @return the reads as GRanges or GAlignment
+#' @family utils
+#'
 optimizeReads <- function(grl, reads) {
   seqMatch <- validSeqlevels(grl, reads)
   reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
@@ -79,76 +12,6 @@ optimizeReads <- function(grl, reads) {
     reads <- sort(reads)
   }
   return(reads)
-}
-
-#' Helper function to check for GRangesList
-#' @param class the class you want to check if is GRL,
-#' either a character from class or the object itself.
-#' @return a boolean
-#' @family utils
-#'
-is.grl <- function(class) {
-  if (!is.character(class)) {
-    class <- class(class)
-  }
-  return((class == "GRangesList" || class == "CompressedGRangesList"))
-}
-
-
-#' Helper function to check for GRangesList or GRanges class
-#' @param class the class you want to check if is GRL or GR,
-#'  either a character from class or the object itself.
-#' @return a boolean
-#' @family utils
-#'
-is.gr_or_grl <- function(class) {
-  if (!is.character(class)) {
-    class <- class(class)
-  }
-  return(is.grl(class) || class == "GRanges")
-}
-
-#' Check if all requirements for an ORFik ORF is accepted.
-#' @param grl a GRangesList or GRanges to check
-#' @return a logical (TRUE/FALSE)
-is.ORF <- function(grl){
-  if (is.gr_or_grl(class(grl))){
-     if (is.grl(grl)) {
-       names <- unlist(grl[1], use.names = FALSE)$names
-     } else {
-         names <-grl[1]$names
-     }
-    return(any(grep("_", names)))
-  }
-  return(FALSE)
-}
-
-#' Helper Function to check valid GRangesList input
-#' @param class as character vector the given class of
-#'  supposed GRangesList object
-#' @param type a character vector, is it gtf, cds, 5', 3', for messages.
-#' @param checkNULL should NULL classes be checked and return indeces of these?
-#' @return either NULL or indices (checkNULL == TRUE)
-#' @family utils
-#'
-validGRL <- function(class, type = "grl", checkNULL = FALSE) {
-  if(length(class) != length(type)) stop("not equal length of classes",
-                                         " and types, see validGRL")
-  if (checkNULL) {
-    indeces <- "NULL" == class
-    class <- class[!indeces]
-    if (length(class) == 0) return(rep(TRUE, length(type)))
-    type <- type[!indeces]
-  }
-  for (classI in seq_along(class)) {
-    if (!is.grl(class[classI])) {
-      messageI <- paste(type[classI], "must be given and be type GRangesList")
-      stop(messageI)
-    }
-  }
-  if (checkNULL) {
-    return(indeces)
-  }
 }
 
 #' Converts different type of files to Granges
@@ -175,7 +38,6 @@ bedToGR <- function(x, bed6 = TRUE){
   if (ncol(x) > 6L) mcols(gr) <- x[, 7L:ncol(x)]
   return(gr)
 }
-
 
 #' Load bed file as GRanges.
 #'
@@ -213,7 +75,8 @@ fread.bed <- function(filePath) {
   }
   return(bed)
 }
-#' Custome bam reader
+
+#' Custom bam reader
 #'
 #' Safer version that handles the most important error done.
 #' In the future will use a faster .bam loader for big .bam files in R.
@@ -223,11 +86,13 @@ fread.bed <- function(filePath) {
 #' chromosome called MT or chrM etc. If GRanges object, will use 1st seqlevel-
 #' style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"
 #' @return a GAlignment object of bam file
+#' @family utils
+#'
 readBam <- function(path, chrStyle = NULL) {
   reads <- readGAlignments(path)
   if (!is.null(chrStyle)) {
     if (is.character(chrStyle)) {
-      seqlevelsStyle(reads) <- chrStyle
+      seqlevelsStyle(reads) <- chrStyle[1]
     } else if (is.gr_or_grl(chrStyle)) {
       seqlevelsStyle(reads) <- seqlevelsStyle(chrStyle)[1]
     } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
@@ -296,9 +161,9 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' @param faFile FaFile, BSgenome or fasta/index file path used to find the
 #'  transcripts
 #' @importFrom Rsamtools FaFile
+#' @importFrom methods is
 #' @return a FaFile or BSgenome
 #' @family utils
-#' @importFrom methods is
 #'
 findFa <- function(faFile) {
   if (is.character(faFile)) {

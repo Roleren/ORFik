@@ -26,7 +26,7 @@ fread.bed(cageData)
 \seealso{
 Other utils: \code{\link{bedToGR}},
   \code{\link{convertToOneBasedRanges}},
-  \code{\link{findFa}}, \code{\link{is.gr_or_grl}},
-  \code{\link{is.grl}}, \code{\link{validGRL}}
+  \code{\link{findFa}}, \code{\link{optimizeReads}},
+  \code{\link{readBam}}
 }
 \concept{utils}

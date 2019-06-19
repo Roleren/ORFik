@@ -17,3 +17,10 @@ the reads as GRanges or GAlignment
 \description{
 Find optimized subset of valid reads
 }
+\seealso{
+Other utils: \code{\link{bedToGR}},
+  \code{\link{convertToOneBasedRanges}},
+  \code{\link{findFa}}, \code{\link{fread.bed}},
+  \code{\link{readBam}}
+}
+\concept{utils}
