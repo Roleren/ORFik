@@ -2,6 +2,7 @@
 
 export(assignTSSByCage)
 export(computeFeatures)
+export(convertToOneBasedRanges)
 export(coveragePerTiling)
 export(coverageScorings)
 export(defineTrailer)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{loadTranscriptType}
 \alias{loadTranscriptType}
-\title{Load biotype of transcript}
+\title{Load transcripts of given biotype}
 \usage{
 loadTranscriptType(path, part = "rRNA", tx = NULL)
 }
@@ -10,7 +10,7 @@ loadTranscriptType(path, part = "rRNA", tx = NULL)
 \item{path}{path to gtf/gff}
 
 \item{part}{a character, default rRNA. Can also be:
-snoRNA, tRNA etc. As long as that type is defined in the gtf.}
+snoRNA, tRNA etc. As long as that biotype is defined in the gtf.}
 
 \item{tx}{a GRangesList of transcripts (Optional, default NULL),
 add to save run time.}

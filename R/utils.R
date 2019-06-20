@@ -121,6 +121,7 @@ readBam <- function(path, chrStyle = NULL) {
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
 #' @return  Converted GRanges object
+#' @export
 #' @family utils
 #'
 convertToOneBasedRanges <- function(gr, method = "5prime",
@@ -130,13 +131,13 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr), size = readWidths(gr))
   }
   if (addScoreColumn) {
-    if (!is.null(cigar(reads))) {
+    if (!is.null(cigar(gr))) {
       dt <- as.data.table(gr)[, .(.N, .I),
                               .(seqnames, start, end, strand, cigar)]
     } else {
       dt <- as.data.table(gr)[, .(.N, .I), .(seqnames, start, end, strand)]
     }
-    dt <- dt[!duplicated(N) & (N > 1), ]
+    dt <- dt[!duplicated(N), ] # this is right ?
     gr <- gr[dt$I]
     gr$score <- NULL
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = as.integer(dt$N))

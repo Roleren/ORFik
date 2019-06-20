@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_helpers.R
 \name{codonSumsPerGroup}
 \alias{codonSumsPerGroup}
-\title{Get hits per codon}
+\title{Get read hits per codon}
 \usage{
 codonSumsPerGroup(grl, reads)
 }

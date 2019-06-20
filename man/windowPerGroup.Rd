@@ -25,8 +25,8 @@ If downstream is 20, it means the window will start 20 downstream of
 gr start site (-20 in relative transcript coordinates.)
 If upstream is 20, it means the window will start 20 upstream of
 gr start site (+20 in relative transcript coordinates.)
-It will keep exon structure of tx, so if -20 is on next exon, the previous
-exon is of course deleted.
+It will keep exon structure of tx, so if -20 is on next exon, it jumps to
+next exon.
 }
 \details{
 If a region has a part that goes out of bounds, E.g if you try to get window

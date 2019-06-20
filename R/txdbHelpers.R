@@ -180,7 +180,7 @@ loadRegion <- function(txdb, part = "tx") {
   } else stop("invalid part, must be tx, leader, cds, trailer or introns")
 }
 
-#' Load biotype of transcript
+#' Load transcripts of given biotype
 #'
 #' Like rRNA, snoRNA etc.
 #' NOTE: Only works on gtf/gff, not .db object for now.
@@ -191,7 +191,7 @@ loadRegion <- function(txdb, part = "tx") {
 #' @references doi: 10.1002/0471250953.bi0410s25
 #' @param path path to gtf/gff
 #' @param part a character, default rRNA. Can also be:
-#' snoRNA, tRNA etc. As long as that type is defined in the gtf.
+#' snoRNA, tRNA etc. As long as that biotype is defined in the gtf.
 #' @param tx a GRangesList of transcripts (Optional, default NULL),
 #'  add to save run time.
 #' @return a GRangesList of transcript of that type
@@ -206,15 +206,15 @@ loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
   return(tx[unique(valids$transcript_id)])
 }
 
-#' Get the transcripts with accepted lengths of leaders, cds and trailer.
+#' Filter transcripts by lengths
 #'
 #' Filter transcripts to those who have leaders, CDS, trailers of some lengths,
 #' you can also pick the longest per gene.
 #'
 #' If a transcript does not have a trailer, then the length is 0,
-#' so they will be filtered out. So only transcripts with leaders, cds and
-#' trailers will be returned. You can set the integer to 0, that will return
-#' all within that group.
+#' so they will be filtered out if you minThreeUTR to 1. So only transcripts
+#' with leaders, cds and trailers will be returned. You can set the integer
+#' to 0, that will return all within that group.
 #'
 #' If your annotation does not have leaders or trailers, set them to NULL.
 #' @inheritParams loadTxdb

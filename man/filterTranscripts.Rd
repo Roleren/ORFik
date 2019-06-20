@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{filterTranscripts}
 \alias{filterTranscripts}
-\title{Get the transcripts with accepted lengths of leaders, cds and trailer.}
+\title{Filter transcripts by lengths}
 \usage{
 filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
   minThreeUTR = 30L, longestPerGene = TRUE, stopOnEmpty = TRUE)
@@ -34,9 +34,9 @@ you can also pick the longest per gene.
 }
 \details{
 If a transcript does not have a trailer, then the length is 0,
-so they will be filtered out. So only transcripts with leaders, cds and
-trailers will be returned. You can set the integer to 0, that will return
-all within that group.
+so they will be filtered out if you minThreeUTR to 1. So only transcripts
+with leaders, cds and trailers will be returned. You can set the integer
+to 0, that will return all within that group.
 
 If your annotation does not have leaders or trailers, set them to NULL.
 }

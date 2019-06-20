@@ -2,7 +2,7 @@
 % Please edit documentation in R/feature_helpers.R
 \name{fpkm_calc}
 \alias{fpkm_calc}
-\title{Create normalizations of counts}
+\title{Create normalizations of read counts}
 \usage{
 fpkm_calc(counts, lengthSize, librarySize)
 }

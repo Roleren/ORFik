@@ -259,3 +259,17 @@ test_that("readWidths works as intended", {
   expect_equal(readWidths(ga), 1) # With soft-clip
   expect_equal(readWidths(ga, after.softclips = FALSE), 2) # Without soft-clip
 })
+
+test_that("convertToOneBasedRanges works as intended", {
+  ga <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "5M2S1M",
+                    strand = factor("+", levels = c("+", "-", "*")))
+  ga2 <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "1M2S1M",
+                    strand = factor("+", levels = c("+", "-", "*")))
+  ga <- rep(ga, 2)
+  ga <- c(ga, ga2)
+
+  res <- convertToOneBasedRanges(ga, addScoreColumn = T, addSizeColumn = T)
+  expect_equal(readWidths(res), c(6, 2))
+})
+
+

@@ -1,4 +1,4 @@
-#' Get hits per codon
+#' Get read hits per codon
 #'
 #' Helper for entropy function, normally not used directly
 #' Seperate each group into tuples (abstract codons)
@@ -18,7 +18,7 @@ codonSumsPerGroup <- function(grl, reads) {
 }
 
 
-#' Create normalizations of counts
+#' Create normalizations of read counts
 #'
 #' A helper for [fpkm()]
 #' Normally use function [fpkm()], if you want unusual normalization

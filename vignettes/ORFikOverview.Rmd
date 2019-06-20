@@ -140,8 +140,7 @@ footprints
 
 Restrict footprints to their 5' starts (after shifting it will be a p-site).
 ```{r eval = TRUE, echo = TRUE} 
-footprintsGR <- ORFik:::convertToOneBasedRanges(footprints,
-                                                addSizeColumn = TRUE)
+footprintsGR <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
 footprintsGR
 ```
 
