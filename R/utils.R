@@ -86,13 +86,18 @@ readBam <- function(path, chrStyle = NULL) {
 #' @param path a character path to file or a GRanges/Galignment object etc.
 #' Any Ranged object.
 #' @inheritParams matchSeqStyle
+#' @importFrom tools file_ext
+#' @importFrom tools file_path_sans_ext
+#' @importFrom rtracklayer import
 #' @return a GAlignment/GRanges object depending on input.
 fimport <- function(path, chrStyle = NULL) {
   if (is.character(path)) {
     if (file.exists(path)) {
       if (file_ext(path) == "bam") {
         return(readBam(path, chrStyle))
-      } else if (file_ext(path) == "bed") {
+      } else if (file_ext(path) == "bed" |
+                 file_ext(file_path_sans_ext(path,
+                                             compression = TRUE)) == "bed") {
         return(fread.bed(path, chrStyle))
       } else return(matchSeqStyle(import(path), chrStyle))
     } else stop(paste0(path, "does not exist as a File!"))
