@@ -9,7 +9,8 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
   firstN = 150L, tx = NULL)
 }
 \arguments{
-\item{footprints}{(GAlignments) object of RiboSeq reads - footprints}
+\item{footprints}{(GAlignments) object of RiboSeq reads - footprints, can
+also be path to the file.}
 
 \item{txdb}{a TxDb file or a path to one of:
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
@@ -65,7 +66,9 @@ NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 }
 \examples{
 \dontrun{
+# Transcriptome annotation ->
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+# The ribo seq file, usually .bam file ->
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 footprints <- GenomicAlignments::readGAlignments(
   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
@@ -83,7 +86,7 @@ tx <- extendLeaders(tx, 30)
 detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
                      minCDS = 150L, minThreeUTR = NULL, firstN = 150L,
                      tx = tx)
-# Your own tx here, with "fake" leaders
+
 }
 
 }

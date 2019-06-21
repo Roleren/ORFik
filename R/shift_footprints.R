@@ -43,7 +43,7 @@
 #' shiftedReads <- shiftFootprints(footprints, shifts)
 #' }
 shiftFootprints <- function(footprints, shifts) {
-  if (!is(shifts, "data.frame")) stop("shifts must be data.frame")
+  if (!is(shifts, "data.frame")) stop("shifts must be data.frame/data.table")
   selected_lengths <- shifts$fraction
   selected_shifts <- -1 * shifts$offsets_start
   allFootrpintsShifted <- GRanges()
@@ -118,7 +118,8 @@ shiftFootprints <- function(footprints, shifts) {
 #'
 #' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 #' 33, but will remove 3S so final read width is 30 in ORFik.
-#' @param footprints (GAlignments) object of RiboSeq reads - footprints
+#' @param footprints (GAlignments) object of RiboSeq reads - footprints, can
+#' also be path to the file.
 #' @inheritParams loadTxdb
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
@@ -142,7 +143,9 @@ shiftFootprints <- function(footprints, shifts) {
 #' @export
 #' @examples
 #' \dontrun{
+#' # Transcriptome annotation ->
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' # The ribo seq file, usually .bam file ->
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 #' footprints <- GenomicAlignments::readGAlignments(
 #'   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
@@ -160,7 +163,7 @@ shiftFootprints <- function(footprints, shifts) {
 #' detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
 #'                      minCDS = 150L, minThreeUTR = NULL, firstN = 150L,
 #'                      tx = tx)
-#' # Your own tx here, with "fake" leaders
+#'
 #' }
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
@@ -171,6 +174,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
                                minThreeUTR = minThreeUTR)
   cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  footprints <- fimport(footprints, cds)
 
   # reduce data-set to only matching seqlevels
   seqMatch <- validSeqlevels(cds, footprints)

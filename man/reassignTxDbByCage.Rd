@@ -5,30 +5,37 @@
 \title{Input a txdb and reassign the TSS for each transcript by CAGE}
 \usage{
 reassignTxDbByCage(txdb, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE, removeUnused = FALSE)
+  restrictUpstreamToTx = FALSE, removeUnused = FALSE,
+  preCleanup = TRUE)
 }
 \arguments{
 \item{txdb}{a TxDb file or a path to one of:
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
-\item{cage}{Either a filePath for the CageSeq file as .bed, with possible
-compressions (".gzip", ".gz", ".bgz"), or already loaded
-CageSeq peak data as GRanges.}
+\item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
+ with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+CageSeq peak data as GRanges or GAlignment.
+NOTE: If it is a .bam file, it will add a score column by running:
+convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
 
 \item{extension}{The maximum number of basses upstream of the TSS to search
 for CageSeq peak.}
 
-\item{filterValue}{The minimum number of reads on cage position,
-for it to be counted as possible new tss.
-(represented in score column in CageSeq data)
-If you already filtered, set it to 0.}
+\item{filterValue}{The minimum number of reads on cage position, for it to
+be counted as possible new tss. (represented in score column in
+CageSeq data) If you already filtered, set it to 0.}
 
-\item{restrictUpstreamToTx}{a logical (FALSE), if you want to restrict
-leaders to not extend closer than 5 bases from closest upstream leader,
-set this to TRUE.}
+\item{restrictUpstreamToTx}{a logical (FALSE). If TRUE: restrict leaders to
+not extend closer than 5 bases from closest upstream leader, set this
+to TRUE.}
 
-\item{removeUnused}{logical (FALSE), remove leaders that did not have any
-cage support. (standard is to set them to original annotation)}
+\item{removeUnused}{logical (FALSE), if False:  (standard is to set them to
+original annotation), If TRUE: remove leaders that did not have any cage
+support.}
+
+\item{preCleanup}{logical (TRUE), if TRUE,
+remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
+This is to keep original TSS if it is only +/- 5 bases from the original.}
 }
 \value{
 a TxDb obect of reassigned transcripts

@@ -4,10 +4,15 @@
 \alias{fread.bed}
 \title{Load bed file as GRanges.}
 \usage{
-fread.bed(filePath)
+fread.bed(filePath, chrStyle = NULL)
 }
 \arguments{
 \item{filePath}{The location of the bed file}
+
+\item{chrStyle}{a GRanges object, or a character style (Default: NULL) to
+get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
+chromosome called MT or chrM etc. Will use 1st seqlevel-
+style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }
 \value{
 a GRanges object
@@ -15,6 +20,7 @@ a GRanges object
 \description{
 Wraps around rtracklayer::import.bed and tries to speed up loading with the
 use of data.table. Supports gzip, gz, bgz and bed formats.
+Also safer chromosome naming with the argument chrStyle
 }
 \examples{
 # path to example CageSeq data from hg19 heart sample

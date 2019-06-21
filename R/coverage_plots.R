@@ -34,7 +34,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
                       type = "canonical CDS", scoring = "Averaged counts") {
   hitMap <- setDT(copy(hitMap))
   if (is.null(hitMap$score)) hitMap[, score := count]
-
+  if (is.null(hitMap$frame)) stop("frame must be included in hitMap for now!")
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
                              fill = factor(frame))) +
     geom_bar(stat = "identity") +

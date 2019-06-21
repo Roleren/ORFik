@@ -1,19 +1,4 @@
 
-#' Find optimized subset of valid reads
-#' @inheritParams validSeqlevels
-#' @return the reads as GRanges or GAlignment
-#' @family utils
-#'
-optimizeReads <- function(grl, reads) {
-  seqMatch <- validSeqlevels(grl, reads)
-  reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
-  if (length(reads) > 1e6) { # speedup on big riboseq libraries
-    reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
-    reads <- sort(reads)
-  }
-  return(reads)
-}
-
 #' Converts different type of files to Granges
 #'
 #' column 5 will be set to score
@@ -43,7 +28,9 @@ bedToGR <- function(x, bed6 = TRUE){
 #'
 #' Wraps around rtracklayer::import.bed and tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
+#' Also safer chromosome naming with the argument chrStyle
 #' @param filePath The location of the bed file
+#' @inheritParams matchSeqStyle
 #' @importFrom data.table fread setDF
 #' @importFrom tools file_ext
 #' @importFrom rtracklayer import.bed
@@ -56,7 +43,7 @@ bedToGR <- function(x, bed6 = TRUE){
 #'                         package = "ORFik")
 #' fread.bed(cageData)
 #'
-fread.bed <- function(filePath) {
+fread.bed <- function(filePath, chrStyle = NULL) {
 
   if (.Platform$OS.type == "unix") {
     if (file.exists(filePath)) {
@@ -73,29 +60,87 @@ fread.bed <- function(filePath) {
     ## NB: Windows user will have slower loading
     bed <- import.bed(con =  filePath)
   }
-  return(bed)
+
+  return(matchSeqStyle(bed, chrStyle))
 }
 
 #' Custom bam reader
 #'
+#' Only for single end reads
 #' Safer version that handles the most important error done.
 #' In the future will use a faster .bam loader for big .bam files in R.
 #' @param path a character path to .bam file
-#' @param chrStyle a GRanges object, or a characterPath (Default: NULL) to
-#' get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-#' chromosome called MT or chrM etc. If GRanges object, will use 1st seqlevel-
-#' style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"
+#' @inheritParams matchSeqStyle
 #' @return a GAlignment object of bam file
 #' @family utils
 #'
 readBam <- function(path, chrStyle = NULL) {
-  reads <- readGAlignments(path)
+  return(matchSeqStyle(readGAlignments(path), chrStyle))
+}
+
+#' Load any type of sequencing reads
+#'
+#' Wraps around rtracklayer::import and tries to speed up loading with the
+#' use of data.table. Supports gzip, gz, bgz and bed formats.
+#' Also safer chromosome naming with the argument chrStyle
+#' @param path a character path to file or a GRanges/Galignment object etc.
+#' Any Ranged object.
+#' @inheritParams matchSeqStyle
+#' @return a GAlignment/GRanges object depending on input.
+fimport <- function(path, chrStyle = NULL) {
+  if (is.character(path)) {
+    if (file.exists(path)) {
+      if (file_ext(path) == "bam") {
+        return(readBam(path, chrStyle))
+      } else if (file_ext(path) == "bed") {
+        return(fread.bed(path, chrStyle))
+      } else return(matchSeqStyle(import(path), chrStyle))
+    } else stop(paste0(path, "does not exist as a File!"))
+  } else if (is.gr_or_grl(path) | is(path, "GAlignments")) {
+    return(matchSeqStyle(path, chrStyle))
+  } else {
+    stop("path must be either a valid character",
+         " filepath or ranged object.")
+  }
+}
+
+#' A wrapper for seqlevelsStyle
+#'
+#' @param range a ranged object, (GRanges, GAlignment etc)
+#' @param chrStyle a GRanges object, or a character style (Default: NULL) to
+#' get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
+#' chromosome called MT or chrM etc. Will use 1st seqlevel-
+#' style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"
+#' @return a GAlignment/GRanges object depending on input.
+matchSeqStyle <- function(range, chrStyle = NULL) {
+  # if needed add this ->
+  # if (tryCatch(seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs),
+  #              error = function(e) {TRUE}) == TRUE) {
+  #   warning("seqlevels of CAGE/fiveUTRs are not standardized, check them.")
+  # } else {
+  #   seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs)
+  # }
   if (!is.null(chrStyle)) {
     if (is.character(chrStyle)) {
-      seqlevelsStyle(reads) <- chrStyle[1]
+      seqlevelsStyle(range) <- chrStyle[1]
     } else if (is.gr_or_grl(chrStyle)) {
-      seqlevelsStyle(reads) <- seqlevelsStyle(chrStyle)[1]
+      seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
     } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
+  }
+  return(range)
+}
+
+#' Find optimized subset of valid reads
+#' @inheritParams validSeqlevels
+#' @return the reads as GRanges or GAlignment
+#' @family utils
+#'
+optimizeReads <- function(grl, reads) {
+  seqMatch <- validSeqlevels(grl, reads)
+  reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
+  if (length(reads) > 1e6) { # speedup on big riboseq libraries
+    reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
+    reads <- sort(reads)
   }
   return(reads)
 }
