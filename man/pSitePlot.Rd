@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_plots.R
 \name{pSitePlot}
 \alias{pSitePlot}
-\title{Plot area around TIS for p-shifted reads}
+\title{Plot area around TIS as histogram}
 \usage{
 pSitePlot(hitMap, length = 29, region = "start", output = NULL,
   type = "canonical CDS", scoring = "Averaged counts")
@@ -32,6 +32,8 @@ Can be used for any coverage of region around a point, like TIS, TSS,
 stop site etc.
 }
 \details{
+The region is represented as a histogram with different colors for the
+3 frames. To make it easy to see patterns in the reads.
 Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }

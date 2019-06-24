@@ -268,7 +268,8 @@ test_that("convertToOneBasedRanges works as intended", {
   ga <- rep(ga, 2)
   ga <- c(ga, ga2)
 
-  res <- convertToOneBasedRanges(ga, addScoreColumn = T, addSizeColumn = T)
+  res <- convertToOneBasedRanges(ga, addScoreColumn = TRUE,
+                                 addSizeColumn = TRUE)
   expect_equal(readWidths(res), c(6, 2))
 })
 

@@ -1,9 +1,11 @@
-#' Plot area around TIS for p-shifted reads
+#' Plot area around TIS as histogram
 #'
 #' Usefull to validate p-shifting is correct
 #' Can be used for any coverage of region around a point, like TIS, TSS,
 #' stop site etc.
 #'
+#' The region is represented as a histogram with different colors for the
+#' 3 frames. To make it easy to see patterns in the reads.
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param hitMap a data.frame/data.table, given from metaWindow
@@ -48,13 +50,19 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
   return(return(savePlot(plot, output)))
 }
 
-#' Get coverage window plot of reads
+#' Get meta coverage plot of reads
 #'
 #' Spanning a region like a transcripts, plot how the reads distribute.
 #'
+#' If coverage has a column called feature, this can be used to subdivide the
+#' meta coverage into parts as (5' UTRs, cds, 3' UTRs) These are the columns
+#' in the plot.
+#' The fraction column divide sequence libraries. Like ribo-seq and rna-seq.
+#' These are the rows of the plot.
 #' If you return this function without assigning it and output is NULL,
 #' it will automaticly plot the figure in your session. If output is assigned,
-#' no plot will be shown in session.
+#' no plot will be shown in session. NULL is returned and object is saved to
+#' output.
 #'
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
@@ -125,8 +133,11 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 
 #' Create a heatmap of coverage
 #'
-#' Coverage rows in heat map is fraction
-#' Coverage column in heat map is score, default zscore of counts
+#' Coverage rows in heat map is fraction, usually fractions is divided into
+#' unique read lengths (standard Illumina is 76 unique widths, with some
+#' minimum cutoff like 15.)
+#' Coverage column in heat map is score, default zscore of counts. These are
+#' the relative positions you are plotting to. Like +/- relative to TIS or TSS.
 #'
 #' See vignette for example
 #'

@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_plots.R
 \name{windowCoveragePlot}
 \alias{windowCoveragePlot}
-\title{Get coverage window plot of reads}
+\title{Get meta coverage plot of reads}
 \usage{
 windowCoveragePlot(coverage, output = NULL, scoring = "zscore",
   colors = c("skyblue4", "orange"), title = "Coverage metaplot",
@@ -33,9 +33,15 @@ then the plot will only be saved to location.
 Spanning a region like a transcripts, plot how the reads distribute.
 }
 \details{
+If coverage has a column called feature, this can be used to subdivide the
+meta coverage into parts as (5' UTRs, cds, 3' UTRs) These are the columns
+in the plot.
+The fraction column divide sequence libraries. Like ribo-seq and rna-seq.
+These are the rows of the plot.
 If you return this function without assigning it and output is NULL,
 it will automaticly plot the figure in your session. If output is assigned,
-no plot will be shown in session.
+no plot will be shown in session. NULL is returned and object is saved to
+output.
 
 Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
