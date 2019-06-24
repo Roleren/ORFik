@@ -34,6 +34,10 @@ There are 4 ways of doing this
 \details{
 Many other ways to do this have their own functions, like startSites and
 stopSites etc.
+To retain information on original width, set addSizeColumn to TRUE.
+To compress data, 1 GRanges object per unique read, set addScoreColumn to
+TRUE. This will give you a score column with how many duplicated reads there
+were in the specified region.
 }
 \seealso{
 Other utils: \code{\link{bedToGR}}, \code{\link{findFa}},

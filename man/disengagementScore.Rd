@@ -27,7 +27,7 @@ a named vector of numeric values of scores
 }
 \description{
 Disengagement score is defined as
-\preformatted{(RPFs over ORF)/(RPFs downstream to tx end)}
+\preformatted{(RPFs over ORF)/(RPFs downstream to transcript end)}
 A pseudo-count of one is added to both the ORF and downstream sums.
 }
 \examples{

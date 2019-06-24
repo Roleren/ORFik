@@ -20,8 +20,11 @@ a ggplot object of the coverage plot, NULL if output is set,
 then the plot will only be saved to location.
 }
 \description{
-Coverage rows in heat map is fraction
-Coverage column in heat map is score, default zscore of counts
+Coverage rows in heat map is fraction, usually fractions is divided into
+unique read lengths (standard Illumina is 76 unique widths, with some
+minimum cutoff like 15.)
+Coverage column in heat map is score, default zscore of counts. These are
+the relative positions you are plotting to. Like +/- relative to TIS or TSS.
 }
 \details{
 See vignette for example

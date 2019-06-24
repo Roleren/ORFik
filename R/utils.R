@@ -111,6 +111,7 @@ fimport <- function(path, chrStyle = NULL) {
 
 #' A wrapper for seqlevelsStyle
 #'
+#' To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 #' @param range a ranged object, (GRanges, GAlignment etc)
 #' @param chrStyle a GRanges object, or a character style (Default: NULL) to
 #' get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
@@ -161,6 +162,10 @@ optimizeReads <- function(grl, reads) {
 #'
 #' Many other ways to do this have their own functions, like startSites and
 #' stopSites etc.
+#' To retain information on original width, set addSizeColumn to TRUE.
+#' To compress data, 1 GRanges object per unique read, set addScoreColumn to
+#' TRUE. This will give you a score column with how many duplicated reads there
+#' were in the specified region.
 #' @param gr GRanges, GAlignment Object to reduce
 #' @param method the method to reduce, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that

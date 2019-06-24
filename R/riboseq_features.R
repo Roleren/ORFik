@@ -248,7 +248,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' Disengagement score (DS)
 #'
 #' Disengagement score is defined as
-#' \preformatted{(RPFs over ORF)/(RPFs downstream to tx end)}
+#' \preformatted{(RPFs over ORF)/(RPFs downstream to transcript end)}
 #' A pseudo-count of one is added to both the ORF and downstream sums.
 #' @references doi: 10.1242/dev.098344
 #' @param grl a \code{\link{GRangesList}} object

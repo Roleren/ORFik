@@ -18,5 +18,5 @@ style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"}
 a GAlignment/GRanges object depending on input.
 }
 \description{
-A wrapper for seqlevelsStyle
+To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 }
