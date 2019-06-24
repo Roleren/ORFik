@@ -5,7 +5,7 @@
 \title{Plot area around TIS for p-shifted reads}
 \usage{
 pSitePlot(hitMap, length = 29, region = "start", output = NULL,
-  type = "canonical CDS")
+  type = "canonical CDS", scoring = "Averaged counts")
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
@@ -19,6 +19,8 @@ pSitePlot(hitMap, length = 29, region = "start", output = NULL,
 to path given. If no format is given, is save as pdf.}
 
 \item{type}{character (canonical CDS), type for plot}
+
+\item{scoring}{character (Average sum) which scoring did you use ?}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

@@ -154,20 +154,111 @@ loadTxdb <- function(txdb) {
 
 #' Load transcript region
 #'
-#' Load if not already GRangesList
-#' @param txdb a GRangesList or txdb object
-#' @param part a character, one of: tx, leader, cds, trailer
+#' Load GRangesList if input is not already GRangesList.
+#' @param txdb a TxDb file or a path to one of:
+#'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
+#'  it will return it self.
+#' @param part a character, one of: tx, leader, cds, trailer, intron
 #' @return a GrangesList of region
+#' @export
+#' @examples
+#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' loadRegion(gtf, "intron")
 loadRegion <- function(txdb, part = "tx") {
   if (is.grl(txdb)) return(txdb)
   txdb <- loadTxdb(txdb)
   if (part == "tx") {
     return(exonsBy(txdb, by = "tx", use.names = TRUE))
-  } else if (part == "leader") {
+  } else if (part %in% c("leader", "leaders")) {
     return(fiveUTRsByTranscript(txdb, use.names = TRUE))
   } else if(part == "cds") {
     return(cdsBy(txdb, by = "tx", use.names = TRUE))
-  } else if(part == "trailer") {
+  } else if(part %in% c("trailer", "trailers")) {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
-  } else stop("invalid part, must be tx, leader, cds or trailer")
+  } else if(part %in% c("intron", "introns")) {
+    return(intronsByTranscript(txdb, use.names = TRUE))
+  } else stop("invalid part, must be tx, leader, cds, trailer or introns")
+}
+
+#' Load transcripts of given biotype
+#'
+#' Like rRNA, snoRNA etc.
+#' NOTE: Only works on gtf/gff, not .db object for now.
+#' Also note that these anotations are not perfect, some rRNA annotations
+#' only contain 5S rRNA etc. If your gtf does not contain evertyhing you need,
+#' use a resource like repeatmasker and download a gtf:
+#' https://genome.ucsc.edu/cgi-bin/hgTables
+#' @references doi: 10.1002/0471250953.bi0410s25
+#' @param path path to gtf/gff
+#' @param part a character, default rRNA. Can also be:
+#' snoRNA, tRNA etc. As long as that biotype is defined in the gtf.
+#' @param tx a GRangesList of transcripts (Optional, default NULL),
+#'  add to save run time.
+#' @return a GRangesList of transcript of that type
+loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
+  if (!is.character(path)) stop("path must be a file path to gtf/gff")
+  type <- import(path)
+
+  valids <- type[grep(x = type$transcript_biotype, pattern = part)]
+  if (length(valids) == 0) stop("found no valid transcript of type", part)
+  if (is.null(tx)) tx <- loadRegion(path)
+
+  return(tx[unique(valids$transcript_id)])
+}
+
+#' Filter transcripts by lengths
+#'
+#' Filter transcripts to those who have leaders, CDS, trailers of some lengths,
+#' you can also pick the longest per gene.
+#'
+#' If a transcript does not have a trailer, then the length is 0,
+#' so they will be filtered out if you minThreeUTR to 1. So only transcripts
+#' with leaders, cds and trailers will be returned. You can set the integer
+#' to 0, that will return all within that group.
+#'
+#' If your annotation does not have leaders or trailers, set them to NULL.
+#' @inheritParams loadTxdb
+#' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
+#' transcripts. Set to NULL if no 5' UTRs exists for annotation.
+#' @param minCDS (integer) minimum bp for CDS during filtering for the
+#' transcripts
+#' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
+#' transcripts. Set to NULL if no 3' UTRs exists for annotation.
+#' @param longestPerGene logical (TRUE), return only longest valid transcript
+#' per gene.
+#' @param stopOnEmpty logical TRUE, stop if no valid names are found ?
+#' @return a character vector of valid tramscript names
+#' @export
+#' @examples
+#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
+#' txNames <- filterTranscripts(txdb)
+#'
+filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
+                              minThreeUTR = 30L, longestPerGene = TRUE,
+                              stopOnEmpty = TRUE) {
+  txdb <- loadTxdb(txdb)
+  five <- !is.null(minFiveUTR)
+  three <- !is.null(minThreeUTR)
+
+  tx <- data.table::setDT(
+    GenomicFeatures::transcriptLengths(
+      txdb, with.cds_len = TRUE, with.utr5_len = five, with.utr3_len = three))
+  five <- rep(five, nrow(tx))
+  three <- rep(three, nrow(tx))
+
+  tx <- tx[ifelse(five, utr5_len >= minFiveUTR, TRUE) & cds_len >= minCDS &
+             ifelse(three, utr3_len >= minThreeUTR, TRUE), ]
+
+  gene_id <- cds_len <- NULL
+  data.table::setorder(tx, gene_id, -cds_len)
+  if (longestPerGene) {
+    tx <- tx[!duplicated(tx$gene_id), ]
+  }
+  tx <- tx[!is.na(tx$gene_id)]
+  if (stopOnEmpty & length(tx$tx_name) == 0)
+    stop("No transcript has leaders and trailers of specified minFiveUTR",
+         "minCDS, minThreeUTR")
+
+  return(tx$tx_name)
 }

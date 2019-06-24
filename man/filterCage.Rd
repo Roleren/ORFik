@@ -4,18 +4,26 @@
 \alias{filterCage}
 \title{Filter peak of cage-data by value}
 \usage{
-filterCage(cage, filterValue = 1, fiveUTRs = NULL)
+filterCage(cage, filterValue = 1, fiveUTRs = NULL, preCleanup = TRUE)
 }
 \arguments{
-\item{cage}{The raw cage-data, as GRanges. Must contain a score column,
-with the count hits per position.}
+\item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
+ with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+CageSeq peak data as GRanges or GAlignment.
+NOTE: If it is a .bam file, it will add a score column by running:
+convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
 
-\item{filterValue}{The integer of counts(score) to filter on
-for a tss to pass as hit}
+\item{filterValue}{The minimum number of reads on cage position, for it to
+be counted as possible new tss. (represented in score column in
+CageSeq data) If you already filtered, set it to 0.}
 
 \item{fiveUTRs}{a GRangesList (NULL), if added will filter out cage reads by
 these following rules:
 all reads in region (-5:-1, 1:5) for each tss will be removed, removes noise.}
+
+\item{preCleanup}{logical (TRUE), if TRUE,
+remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
+This is to keep original TSS if it is only +/- 5 bases from the original.}
 }
 \value{
 the filtered Granges object

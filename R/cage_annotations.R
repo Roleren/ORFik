@@ -1,20 +1,16 @@
 
 #' Filter peak of cage-data by value
-#' @param cage The raw cage-data, as GRanges. Must contain a score column,
-#'  with the count hits per position.
-#' @param filterValue The integer of counts(score) to filter on
-#'  for a tss to pass as hit
+#' @inheritParams reassignTSSbyCage
 #' @param fiveUTRs a GRangesList (NULL), if added will filter out cage reads by
 #' these following rules:
 #' all reads in region (-5:-1, 1:5) for each tss will be removed, removes noise.
 #' @return the filtered Granges object
 #'
-filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL) {
-  if (tryCatch(seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs),
-               error = function(e) {TRUE}) == TRUE) {
-    warning("seqlevels of CAGE/fiveUTRs are not standardized, check them.")
-  } else {
-    seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs)
+filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
+                       preCleanup = TRUE) {
+  cage <- fimport(cage, seqlevelsStyle(fiveUTRs))
+  if (is.null(cage$score)) {
+    cage <- convertToOneBasedRanges(cage, addScoreColumn = TRUE)
   }
 
   if (filterValue == 0) {
@@ -23,7 +19,7 @@ filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL) {
   if (is.null(cage$score)) stop("Found no 'score' column in the CageSeq.")
   filteredCage <- cage[cage$score > filterValue, ] #filter on score
 
-  if (!is.null(fiveUTRs)) {
+  if (!is.null(fiveUTRs) & preCleanup) {
     # check that seqnames match
     tss <- startSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
     # remove all reads in region (-5:-1, 1:5) of tss
@@ -175,20 +171,29 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #' Note: If you used CAGEr, you will get reads of a probability region, with
 #' always score of 1. Remember then to set filterValue to 0. And you should use
 #' the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
-#' @param fiveUTRs (GRangesList) The 5' leaders or transcript sequences
-#' @param cage Either a filePath for CageSeq file, or already loaded
-#' CageSeq peak data as GRanges.
+#' NOTE on filtervalue: To get high quality TSS, set filtervalue to median
+#' count of reads overlapping per leader. This will make you discard a lot of
+#' new TSS positions though. I usually use 10 as a good standard.
+#' @param fiveUTRs (GRangesList) The 5' leaders or full transcript sequences
+#' @param cage Either a filePath for the CageSeq file as .bed .bam or .wig,
+#'  with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+#' CageSeq peak data as GRanges or GAlignment.
+#' NOTE: If it is a .bam file, it will add a score column by running:
+#' convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)
 #' @param extension The maximum number of basses upstream of the TSS to search
 #' for CageSeq peak.
-#' @param filterValue The minimum number of reads on cage position,
-#' for it to be counted as possible new tss.
-#' (represented in score column in CageSeq data)
-#' If you already filtered, set it to 0.
-#' @param restrictUpstreamToTx a logical (FALSE), if you want to restrict
-#'  leaders to not extend closer than 5 bases from closest upstream leader,
-#'  set this to TRUE.
-#' @param removeUnused logical (FALSE), remove leaders that did not have any
-#' cage support. (standard is to set them to original annotation)
+#' @param filterValue The minimum number of reads on cage position, for it to
+#' be counted as possible new tss. (represented in score column in
+#' CageSeq data) If you already filtered, set it to 0.
+#' @param restrictUpstreamToTx a logical (FALSE). If TRUE: restrict leaders to
+#' not extend closer than 5 bases from closest upstream leader, set this
+#' to TRUE.
+#' @param removeUnused logical (FALSE), if False:  (standard is to set them to
+#' original annotation), If TRUE: remove leaders that did not have any cage
+#' support.
+#' @param preCleanup logical (TRUE), if TRUE,
+#' remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
+#' This is to keep original TSS if it is only +/- 5 bases from the original.
 #' @return a GRangesList of newly assigned TSS for fiveUTRs,
 #'  using CageSeq data.
 #' @family CAGE
@@ -208,22 +213,15 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #'   ranges =  IRanges::IRanges(500, width = 1),
 #'   strand = "+",
 #'   score = 10) # <- Number of tags (reads) per position
-#' # notice also that seqnames use different naming, this will be fixed by ORFik
+#' # notice also that seqnames use different naming, this is fixed by ORFik
 #' # finally reassign TSS for fiveUTRs
 #' reassignTSSbyCage(fiveUTRs, cage)
 #'
 reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
                               filterValue = 1, restrictUpstreamToTx = FALSE,
-                              removeUnused = FALSE) {
+                              removeUnused = FALSE, preCleanup = TRUE) {
   validGRL(class(fiveUTRs), "fiveUTRs")
-  if (is.character(cage)) {
-    filteredCage <- filterCage(fread.bed(cage), filterValue, fiveUTRs)
-  } else if (is(cage, "GRanges")) {
-    filteredCage <- filterCage(cage, filterValue, fiveUTRs)
-  } else {
-    stop("Cage-file must be either a valid character",
-         " filepath or GRanges object.")
-  }
+  filteredCage <- filterCage(cage, filterValue, fiveUTRs, preCleanup)
 
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension,
                                 restrictUpstreamToTx)
@@ -262,11 +260,11 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #' @return a TxDb obect of reassigned transcripts
 reassignTxDbByCage <- function(txdb, cage, extension = 1000,
                                filterValue = 1, restrictUpstreamToTx = FALSE,
-                               removeUnused = FALSE) {
+                               removeUnused = FALSE, preCleanup = TRUE) {
   txdb <- loadTxdb(txdb)
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
   fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue,
-                                restrictUpstreamToTx, removeUnused)
+                                restrictUpstreamToTx, removeUnused, preCleanup)
 
   txList <- as.list(txdb)
   # find all transcripts with 5' UTRs
@@ -294,6 +292,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' CageSeq peak cutoff specified in `filterValue`. The new TSS will then
 #' be the positioned where the cage read (with highest read count in the
 #' interval).
+#'
 #' @inheritParams reassignTxDbByCage
 #' @importFrom data.table setkeyv
 #' @family CAGE
@@ -311,7 +310,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' @return a TxDb obect of reassigned transcripts
 assignTSSByCage <- function(txdb, cage, extension = 1000,
                             filterValue = 1, restrictUpstreamToTx = FALSE,
-                            removeUnused = FALSE) {
+                            removeUnused = FALSE, preCleanup = TRUE) {
   txdb <- loadTxdb(txdb)
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
 
@@ -337,7 +336,7 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   undefinedLeaders <- groupGRangesBy(undefinedLeaders)
   newLeaders <- reassignTSSbyCage(undefinedLeaders, cage, extension,
                                   filterValue, restrictUpstreamToTx,
-                                  removeUnused)
+                                  removeUnused, preCleanup)
 
   txList <- as.list(txdb)
   # find all transcripts with 5' UTRs

@@ -39,7 +39,6 @@ reads$size <- c(rep(28, 5), rep(29, 4)) # read size
 coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
                                         downstream = 5)
 
-
 ORFik:::coverageHeatMap(coverage)
 
 # See vignette for more examples

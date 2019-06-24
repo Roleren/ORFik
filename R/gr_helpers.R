@@ -10,7 +10,7 @@
 #' It is important that all groups in `other` are unique, otherwise
 #' duplicates will be grouped together.
 #' @param gr a GRanges object
-#' @param other a vector of unique names to group by
+#' @param other a vector of unique names to group by (default: NULL)
 #' @return a GRangesList named after names(Granges) if other is NULL, else
 #' names are from unique(other)
 #' @export
@@ -65,11 +65,15 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' avoid confusion between width, qwidth and meta column containing original
 #' read width.
 #'
-#' If input is p-shifted and GRanges, the "$score" or "$size" colum" must
+#' If input is p-shifted and GRanges, the "$size" or "$score" colum" must
 #' exist, and the column must contain the original read widths. In ORFik
 #' "$size" have higher priority than "$score" for defining length.
 #' ORFik P-shifting creates a $size column, other softwares like shoelaces
 #' creates a score column.
+#'
+#' Remember to think about how you define length. Like the question:
+#' is a Illumina error mismatch sufficient to reduce size of read and how
+#' do you know what is biological variance and what are Illumina errors?
 #' @param reads a GRanges or GAlignment object.
 #' @param after.softclips logical (FALSE), include softclips in width
 #' @return an integer vector of widths
@@ -88,28 +92,28 @@ groupGRangesBy <- function(gr, other = NULL) {
 readWidths <- function(reads, after.softclips = TRUE) {
 
   if (is(reads, "GRanges")) {
-    rfpWidth <- width(reads)
-    is.one_based <- all(as.integer(rfpWidth) == rep(1, length(rfpWidth)))
+    readWidth <- width(reads)
+    is.one_based <- all(as.integer(readWidth) == rep(1, length(readWidth)))
     if (is.one_based ) {
-      if (is.null(reads$score)) {
-        if (is.null(reads$size)) {
+      if (is.null(reads$size)) {
+        if (is.null(reads$score)) {
           message("All widths are 1, If ribo-seq is p-shifted, ",
                   "score or size meta column should contain widths of read, ",
                   "will continue using 1-widths")
         } else {
-          rfpWidth <- reads$size
+          message("All widths are 1, using score column for widths, remove ",
+                  "score column and run again if this is wrong.")
+          readWidth <- reads$score
         }
 
       } else {
-        message("All widths are 1, using score column for widths, remove ",
-                "score column and run again if this is wrong.")
-        rfpWidth <- reads$score
+        readWidth <- reads$size
       }
     }
   } else {
-    rfpWidth <- cigarWidthAlongQuerySpace(cigar(reads),
+    readWidth <- cigarWidthAlongQuerySpace(cigar(reads),
                                           after.soft.clipping =
                                             after.softclips)
   }
-  return(rfpWidth)
+  return(readWidth)
 }

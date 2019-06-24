@@ -20,11 +20,15 @@ avoid confusion between width, qwidth and meta column containing original
 read width.
 }
 \details{
-If input is p-shifted and GRanges, the "$score" or "$size" colum" must
+If input is p-shifted and GRanges, the "$size" or "$score" colum" must
 exist, and the column must contain the original read widths. In ORFik
 "$size" have higher priority than "$score" for defining length.
 ORFik P-shifting creates a $size column, other softwares like shoelaces
 creates a score column.
+
+Remember to think about how you define length. Like the question:
+is a Illumina error mismatch sufficient to reduce size of read and how
+do you know what is biological variance and what are Illumina errors?
 }
 \examples{
 gr <- GRanges("chr1", 1)

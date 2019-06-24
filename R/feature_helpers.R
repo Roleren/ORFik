@@ -1,4 +1,4 @@
-#' Get hits per codon
+#' Get read hits per codon
 #'
 #' Helper for entropy function, normally not used directly
 #' Seperate each group into tuples (abstract codons)
@@ -18,7 +18,7 @@ codonSumsPerGroup <- function(grl, reads) {
 }
 
 
-#' Create normalizations of counts
+#' Create normalizations of read counts
 #'
 #' A helper for [fpkm()]
 #' Normally use function [fpkm()], if you want unusual normalization
@@ -67,33 +67,6 @@ hasHits <- function(grl, reads, keep.names = FALSE) {
     names(overlaps) <- NULL
   }
   return(overlaps > 0)
-}
-
-#' Helper Function to check valid RNA input
-#' @param class, the given class of RNA object
-#' @return NULL, stop if unvalid object
-#'
-checkRNA <- function(class){
-  if (is.null(class) || (class == "NULL")) {
-    message("No RNA added, skipping feature te and fpkm of RNA, ",
-            "also ribosomeReleaseScore will also be not normalized best ",
-            "way possible.")
-  } else {
-    if (class != "GAlignments" & class != "GRanges") {
-      stop("RNA must be either GAlignments or GRanges")
-    }
-  }
-}
-
-
-#' Helper Function to check valid RFP input
-#' @param class, the given class of RFP object
-#' @return NULL, stop if invalid object
-#'
-checkRFP <- function(class) {
-  if (class != "GAlignments" & class != "GRanges") {
-    stop("RFP must be either GAlignments or GRanges")
-  }
 }
 
 #' Subset GRanges to get coverage.

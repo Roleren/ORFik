@@ -13,6 +13,7 @@
 #' @param output character (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param type character (canonical CDS), type for plot
+#' @param scoring character (Average sum) which scoring did you use ?
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
@@ -30,17 +31,17 @@
 #' # See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
-                      type = "canonical CDS") {
+                      type = "canonical CDS", scoring = "Averaged counts") {
   hitMap <- setDT(copy(hitMap))
   if (is.null(hitMap$score)) hitMap[, score := count]
-
+  if (is.null(hitMap$frame)) stop("frame must be included in hitMap for now!")
   plot <- ggplot(hitMap, aes(x = factor(position), y = score,
                              fill = factor(frame))) +
     geom_bar(stat = "identity") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     labs(title = paste("Length", length, "over", region, "of", type)) +
     xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
-    ylab("Averaged counts") +
+    ylab(scoring) +
     scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
     guides(fill = FALSE)
 
@@ -146,7 +147,6 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
 #'                                         downstream = 5)
 #'
-#'
 #' ORFik:::coverageHeatMap(coverage)
 #'
 #' # See vignette for more examples
@@ -177,12 +177,12 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
 #' to path given. If no format is given, is save as pdf.
 #' @param width width of output in mm
 #' @param height height of output in mm
-#' @param dpi (150) dpi of plot
+#' @param dpi (300) dpi of plot
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
 savePlot <- function(plot, output = NULL, width = 200, height = 150,
-                     dpi = 150) {
+                     dpi = 300) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)

@@ -9,7 +9,7 @@ groupGRangesBy(gr, other = NULL)
 \arguments{
 \item{gr}{a GRanges object}
 
-\item{other}{a vector of unique names to group by}
+\item{other}{a vector of unique names to group by (default: NULL)}
 }
 \value{
 a GRangesList named after names(Granges) if other is NULL, else

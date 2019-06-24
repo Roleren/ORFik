@@ -7,13 +7,19 @@
 loadRegion(txdb, part = "tx")
 }
 \arguments{
-\item{txdb}{a GRangesList or txdb object}
+\item{txdb}{a TxDb file or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
+it will return it self.}
 
-\item{part}{a character, one of: tx, leader, cds, trailer}
+\item{part}{a character, one of: tx, leader, cds, trailer, intron}
 }
 \value{
 a GrangesList of region
 }
 \description{
-Load if not already GRangesList
+Load GRangesList if input is not already GRangesList.
+}
+\examples{
+gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+loadRegion(gtf, "intron")
 }

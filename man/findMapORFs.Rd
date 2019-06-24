@@ -49,6 +49,8 @@ genomic coordinates of ORFs found on transcript sequences.
 \details{
 This function assumes that `seq` is in widths relative to `grl`,
 and that their orders match. 1st seq is 1st grl object, etc.
+
+See vignette for real life example.
 }
 \examples{
 # This sequence has ORFs at 1-9 and 4-9
