@@ -176,8 +176,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
     ylab("Protected fragment length") +
     scale_x_continuous(breaks = xAxisScaler(coverage$position)) +
     theme_bw() + theme(panel.grid.major = element_blank(),
-                       panel.grid.minor = element_blank()) +
-    theme(text = element_text(size = 12))
+                       panel.grid.minor = element_blank())
 
   return(savePlot(plot, output))
 }

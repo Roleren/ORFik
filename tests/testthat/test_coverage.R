@@ -24,6 +24,11 @@ test_that("coverageScorings works as intended", {
   dt <- coverageScorings(coverage, "sum")
   expect_equal(sum(dt$score), sum(countOverlaps(grl, footprintsGood)))
 
+  # log2 sum
+  dt <- coverageScorings(coverage, "log2sum")
+  expect_equal(sum(dt$score[is.finite(dt$score)]),
+               7)
+
   # Mean
   dt <- coverageScorings(coverage, "mean")
   expect_equal(sum(dt$score), 10)
@@ -35,6 +40,7 @@ test_that("coverageScorings works as intended", {
   # Transcript Normalized
   dt <- coverageScorings(coverage, "transcriptNormalized")
   expect_equal(round(sum(dt$score), 2), length(grl))
+
 })
 
 test_that("windowPerReadLength works as intended", {

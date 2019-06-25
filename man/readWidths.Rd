@@ -9,7 +9,7 @@ readWidths(reads, after.softclips = TRUE)
 \arguments{
 \item{reads}{a GRanges or GAlignment object.}
 
-\item{after.softclips}{logical (FALSE), include softclips in width}
+\item{after.softclips}{logical (TRUE), include softclips in width}
 }
 \value{
 an integer vector of widths

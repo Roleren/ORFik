@@ -166,6 +166,8 @@ optimizeReads <- function(grl, reads) {
 #' To compress data, 1 GRanges object per unique read, set addScoreColumn to
 #' TRUE. This will give you a score column with how many duplicated reads there
 #' were in the specified region.
+#'
+#' NOTE: Does not support paired end reads for the moment!
 #' @param gr GRanges, GAlignment Object to reduce
 #' @param method the method to reduce, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
@@ -175,15 +177,21 @@ optimizeReads <- function(grl, reads) {
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
+#' @param after.softclips logical (TRUE), TRUE: include softclips in size
 #' @return  Converted GRanges object
 #' @export
 #' @family utils
 #'
 convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE,
-                                    addSizeColumn = FALSE){
+                                    addSizeColumn = FALSE,
+                                    after.softclips = TRUE){
+  if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
+                                      loas as GAlignments instead!")
+
   if (addSizeColumn) {
-    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), size = readWidths(gr))
+    mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
+                                      size = readWidths(gr, after.softclips))
   }
   if (addScoreColumn) {
     if (!is.null(cigar(gr))) {
@@ -208,7 +216,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   } else if (method == "middle") {
     ranges(gr) <- IRanges(start(gr) + ceiling((end(gr) - start(gr)) / 2),
                           width = 1)
-  } else stop("method not defined")
+  } else stop("method not defined: must be 5prime, 3prime etc.")
 
   return(gr)
 }
