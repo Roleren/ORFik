@@ -239,7 +239,7 @@ yAxisScaler <- function(covPos) {
   max <- max(covPos)
 
   by <- ifelse(pos > 50, ifelse(pos > 70, ifelse(pos > 120,
-              ifelse(pos > 300, 100, 50), 20), 10), 1)
+               ifelse(pos > 300, 100, 50), 20), 10), 1)
 
   return(as.character(seq.int(min, max, by)))
 }

@@ -143,7 +143,7 @@ loadTxdb <- function(txdb) {
   #TODO: Check that is is an open connection!
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
-    if ( f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
+    if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
       txdb <- GenomicFeatures::makeTxDbFromGFF(txdb)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
@@ -174,16 +174,16 @@ loadRegion <- function(txdb, part = "tx") {
     return(exonsBy(txdb, by = "tx", use.names = TRUE))
   } else if (part %in% c("leader", "leaders")) {
     return(fiveUTRsByTranscript(txdb, use.names = TRUE))
-  } else if(part == "cds") {
+  } else if (part == "cds") {
     return(cdsBy(txdb, by = "tx", use.names = TRUE))
-  } else if(part %in% c("trailer", "trailers")) {
+  } else if (part %in% c("trailer", "trailers")) {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
-  } else if(part %in% c("intron", "introns")) {
+  } else if (part %in% c("intron", "introns")) {
     return(intronsByTranscript(txdb, use.names = TRUE))
-  }  else if(part %in% c("mrna", "mRNA")) {
+  }  else if (part %in% c("mrna", "mRNA")) {
     txNames <- filterTranscripts(txdb, 0, 1, 0, FALSE)
     return(exonsBy(txdb, by = "tx", use.names = TRUE)[txNames])
-  } else stop("invalid part, must be tx, leader, cds, trailer or introns")
+  } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
 }
 
 #' Load transcripts of given biotype

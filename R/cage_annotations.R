@@ -155,7 +155,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused,
 
     cageM[maxPeakPosition$to] <- maxPeakPosition$score[group]
     mcols(gr) <- DataFrame(row.names = names(gr), mcols(gr),
-                             cage = cageM)
+                           cage = cageM)
     fiveUTRs <- groupGRangesBy(gr, names(fiveUTRs)[groupOld])
   }
   if (removeUnused) {

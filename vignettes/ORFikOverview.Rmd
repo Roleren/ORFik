@@ -408,7 +408,7 @@ There are 4 standard ways of finding ORFs:
 3. You have a fasta file of transcripts (eucaryotes or procaryotes)
 4. You have a vector of transcripts preloaded in R.
 
-Lets start the simplest, a vector of preloaded transcripts. 
+Let's start with the simplest case, a vector of preloaded transcripts. 
 
 Lets say you have some transcripts and want to find all ORFs on them.
 findORFs() will give you only 5' to 3' direction, so if you want both directions,

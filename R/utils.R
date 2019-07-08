@@ -191,7 +191,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addSizeColumn = FALSE,
                                     after.softclips = TRUE){
   if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
-                                      loas as GAlignments instead!")
+                                      load as GAlignments instead!")
 
   if (addSizeColumn) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
