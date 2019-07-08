@@ -140,6 +140,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' txdb <- loadDb(txdbFile)
 #'
 loadTxdb <- function(txdb) {
+  #TODO: Check that is is an open connection!
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if ( f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
@@ -158,7 +159,9 @@ loadTxdb <- function(txdb) {
 #' @param txdb a TxDb file or a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
 #'  it will return it self.
-#' @param part a character, one of: tx, leader, cds, trailer, intron
+#' @param part a character, one of: tx, leader, cds, trailer, intron, mrna
+#' NOTE: difference between tx and mrna is that tx are all transcripts, while
+#' mrna are all transcripts with a cds
 #' @return a GrangesList of region
 #' @export
 #' @examples
@@ -177,6 +180,9 @@ loadRegion <- function(txdb, part = "tx") {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
   } else if(part %in% c("intron", "introns")) {
     return(intronsByTranscript(txdb, use.names = TRUE))
+  }  else if(part %in% c("mrna", "mRNA")) {
+    txNames <- filterTranscripts(txdb, 0, 1, 0, FALSE)
+    return(exonsBy(txdb, by = "tx", use.names = TRUE)[txNames])
   } else stop("invalid part, must be tx, leader, cds, trailer or introns")
 }
 
@@ -206,6 +212,19 @@ loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
   return(tx[unique(valids$transcript_id)])
 }
 
+#' Convert transcript names to gene names
+#'
+#' Works for ensembl etc.
+#' @param txNames character vector, the transcript names to convert.
+#' @param txdb the transcript database to use or gtf/gff path to it.
+#' @return character vector of gene names
+txNamesToGeneNames <- function(txNames, txdb) {
+  txdb <- loadTxdb(txdb)
+  g <- mcols(transcripts(txdb, columns = c("tx_name", "gene_id")))
+  match <- g[g$tx_name %in% txNames,]
+  return(as.character(match$gene_id))
+}
+
 #' Filter transcripts by lengths
 #'
 #' Filter transcripts to those who have leaders, CDS, trailers of some lengths,
@@ -226,7 +245,7 @@ loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
 #' transcripts. Set to NULL if no 3' UTRs exists for annotation.
 #' @param longestPerGene logical (TRUE), return only longest valid transcript
 #' per gene.
-#' @param stopOnEmpty logical TRUE, stop if no valid names are found ?
+#' @param stopOnEmpty logical TRUE, stop if no valid transcripts are found ?
 #' @return a character vector of valid tramscript names
 #' @export
 #' @examples

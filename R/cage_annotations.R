@@ -133,13 +133,12 @@ findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
 
 #' add cage max peaks as new transcript start sites for each 5' leader
 #' (*) strands are not supported, since direction must be known.
-#' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param maxPeakPosition The max peak for each 5' leader found by cage
-#' @param removeUnused logical (FALSE), remove leaders that did not have any
-#'  cage support. (standard is to set them to original annotation)
+#' @inheritParams reassignTSSbyCage
 #' @return a GRanges object of first exons
 #'
-addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
+addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused,
+                               cageMcol) {
 
   newTSS <- startSites(fiveUTRs, asGR = FALSE, keep.names = FALSE,
                        is.sorted = TRUE)
@@ -147,6 +146,18 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
     maxPeakPosition$start[maxPeakPosition$strand == "+"]
   newTSS[maxPeakPosition$to[maxPeakPosition$strand == "-"]] <-
     maxPeakPosition$end[maxPeakPosition$strand == "-"]
+
+  if (cageMcol) {
+    gr <- unlist(fiveUTRs, use.names = FALSE)
+    cageM <- rep.int(0, length(gr))
+    group <- groupOld <- groupings(fiveUTRs)
+    group <- group[group %in% maxPeakPosition$to]
+
+    cageM[maxPeakPosition$to] <- maxPeakPosition$score[group]
+    mcols(gr) <- DataFrame(row.names = names(gr), mcols(gr),
+                             cage = cageM)
+    fiveUTRs <- groupGRangesBy(gr, names(fiveUTRs)[groupOld])
+  }
   if (removeUnused) {
     fiveUTRsNew <- downstreamFromPerGroup(fiveUTRs[maxPeakPosition$to],
                                           newTSS[maxPeakPosition$to])
@@ -174,6 +185,9 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #' NOTE on filtervalue: To get high quality TSS, set filtervalue to median
 #' count of reads overlapping per leader. This will make you discard a lot of
 #' new TSS positions though. I usually use 10 as a good standard.
+#'
+#' TIP: do summary(countOverlaps(fiveUTRs, cage)) so you can find a good
+#' cutoff value for noise.
 #' @param fiveUTRs (GRangesList) The 5' leaders or full transcript sequences
 #' @param cage Either a filePath for the CageSeq file as .bed .bam or .wig,
 #'  with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
@@ -194,6 +208,8 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #' @param preCleanup logical (TRUE), if TRUE,
 #' remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
 #' This is to keep original TSS if it is only +/- 5 bases from the original.
+#' @param cageMcol a logical (FALSE), if TRUE, add a meta column to the
+#' returned object with the raw CAGE counts in support for new TSS.
 #' @return a GRangesList of newly assigned TSS for fiveUTRs,
 #'  using CageSeq data.
 #' @family CAGE
@@ -219,14 +235,15 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused) {
 #'
 reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
                               filterValue = 1, restrictUpstreamToTx = FALSE,
-                              removeUnused = FALSE, preCleanup = TRUE) {
+                              removeUnused = FALSE, preCleanup = TRUE,
+                              cageMcol = FALSE) {
   validGRL(class(fiveUTRs), "fiveUTRs")
   filteredCage <- filterCage(cage, filterValue, fiveUTRs, preCleanup)
 
   maxPeakPosition <- findNewTSS(fiveUTRs, filteredCage, extension,
                                 restrictUpstreamToTx)
 
-  return(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition, removeUnused))
+  return(addNewTSSOnLeaders(fiveUTRs, maxPeakPosition, removeUnused, cageMcol))
 }
 
 #' Input a txdb and reassign the TSS for each transcript by CAGE

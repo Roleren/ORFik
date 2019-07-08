@@ -6,7 +6,7 @@
 \usage{
 reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
   restrictUpstreamToTx = FALSE, removeUnused = FALSE,
-  preCleanup = TRUE)
+  preCleanup = TRUE, cageMcol = FALSE)
 }
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
@@ -35,6 +35,9 @@ support.}
 \item{preCleanup}{logical (TRUE), if TRUE,
 remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
 This is to keep original TSS if it is only +/- 5 bases from the original.}
+
+\item{cageMcol}{a logical (FALSE), if TRUE, add a meta column to the
+returned object with the raw CAGE counts in support for new TSS.}
 }
 \value{
 a GRangesList of newly assigned TSS for fiveUTRs,
@@ -57,6 +60,9 @@ the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
 NOTE on filtervalue: To get high quality TSS, set filtervalue to median
 count of reads overlapping per leader. This will make you discard a lot of
 new TSS positions though. I usually use 10 as a good standard.
+
+TIP: do summary(countOverlaps(fiveUTRs, cage)) so you can find a good
+cutoff value for noise.
 }
 \examples{
 # example 5' leader, notice exon_rank column

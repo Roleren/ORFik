@@ -75,6 +75,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @family utils
 #'
 readBam <- function(path, chrStyle = NULL) {
+  if (is(path, "factor")) path <- as.character(path)
   return(matchSeqStyle(readGAlignments(path), chrStyle))
 }
 
@@ -137,6 +138,9 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
 }
 
 #' Find optimized subset of valid reads
+#'
+#' If more than a million reads, keep only the ones that overlap within the
+#' grl ranges.
 #' @inheritParams validSeqlevels
 #' @return the reads as GRanges or GAlignment
 #' @family utils
@@ -144,7 +148,7 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
 optimizeReads <- function(grl, reads) {
   seqMatch <- validSeqlevels(grl, reads)
   reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
-  if (length(reads) > 1e6) { # speedup on big riboseq libraries
+  if (length(reads) > 1e6) { # speedup on big libraries
     reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
     reads <- sort(reads)
   }

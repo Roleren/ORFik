@@ -5,7 +5,7 @@ library(GenomicFeatures)
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                           package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
-fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
+fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
 cds <- cdsBy(txdb,"tx",use.names = TRUE)[1:length(fiveUTRs)]
 names(cds) <- names(fiveUTRs)
 rm(txdb)
@@ -21,8 +21,10 @@ start(cageEqualStart)[3] <- start(cageEqualStart)[3] - 1
 
 
 test_that("reassignTSSbyCage picks best one max peak of several", {
-  # second granges have higher score, and both are within frame, then max one should be picked
-  test_result <- suppressWarnings(reassignTSSbyCage(fiveUTRs[1], cage = cageEqualStart))
+  # second granges have higher score, and both are within frame,
+  # then max one should be picked
+  test_result <- suppressWarnings(reassignTSSbyCage(fiveUTRs[1],
+                                                    cage = cageEqualStart))
 
   expect_is(test_result, "GRangesList")
   expect_is(strand(test_result),"CompressedRleList")

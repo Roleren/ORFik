@@ -132,19 +132,9 @@ Investigate what footprint lengths are present in our data.
 table(readWidths(footprints))
 ```
 
-For the sake of this example we will focus only on most abundant length of 29.
-```{r eval = TRUE, echo = TRUE} 
-footprints <- footprints[readWidths(footprints) == 29]
-footprints
-```
+Lets look at how the reads distribute around the CDS per read length.
 
-Restrict footprints to their 5' starts (after shifting it will be a p-site).
-```{r eval = TRUE, echo = TRUE} 
-footprintsGR <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
-footprintsGR
-```
-
-Now, lets prepare annotations and focus on START and STOP codons.
+For that we need to prepare the transcriptome annotation.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf_file)
@@ -154,8 +144,33 @@ trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
 ```
 
-Filter cds to only those who have some minimum trailer and leader lengths, as 
-well as cds. And get start and stop codons with extra window of 30bp around 
+Restrict footprints to their 5' starts (after shifting it will be a p-site).
+```{r eval = TRUE, echo = TRUE} 
+footprintsGR <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
+footprintsGR
+```
+In the figure below we see why we need to p-shift, see that per length the 
+start of the read are in different positions relative to the CDS start site.
+The reads create a ladder going downwards, left to right. (see the blue steps)
+```{r eval = TRUE, echo = TRUE} 
+  hitMap <- windowPerReadLength(cds, tx,  footprintsGR, pShifted = FALSE)
+  ORFik:::coverageHeatMap(hitMap, scoring = "transcriptNormalized")
+```
+
+Now lets see how we can p-shift the reads, we will go into detail how this is 
+done. If you just want to run the function, without too much details, 
+skip down to after the 2 comming bar plots.
+
+For the sake of this example we will focus only on most abundant length of 29.
+```{r eval = TRUE, echo = TRUE} 
+footprints <- footprints[readWidths(footprints) == 29]
+footprintsGR <- footprintsGR[readWidths(footprintsGR) == 29]
+footprints
+```
+
+Filter the cds annotation to only those that have some minimum trailer and 
+leader lengths, as well as cds. 
+Then get start and stop codons with extra window of 30bp around 
 them.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 txNames <- filterTranscripts(txdb) # <- get only transcripts that pass filter
@@ -379,22 +394,36 @@ Many more operations are also supported for manipulation
 
 # When to use which ORFfinding function
 
-ORFik supports multiple ORF finding functions,here we describe their specific
+ORFik supports multiple ORF finding functions, here we describe their specific
 use.
 
-If you have a DNAStringSet or a character vector use findORFs.
-DNAStringSet is safer since all characters are forced to uppercase. 
+Which function you will use depend on which organism the data is from, and
+specific parameters, like circular or non circular genomes, will you use
+a transcriptome etc. 
 
-findORFs will give you only 5' to 3' direction, so if you want both directions,
+There are 4 standard ways of finding ORFs:
+1. You have some fasta file of the genome only. (For procaryotes)
+2. You have some fasta file of the genome and a spliced transcriptome
+   annotation. (For eucaryotes with splicing)
+3. You have a fasta file of transcripts (eucaryotes or procaryotes)
+4. You have a vector of transcripts preloaded in R.
+
+Lets start the simplest, a vector of preloaded transcripts. 
+
+Lets say you have some transcripts and want to find all ORFs on them.
+findORFs() will give you only 5' to 3' direction, so if you want both directions,
 you can do (for double stranded):
 ```{r eval = TRUE, echo = TRUE}
   library(Biostrings)
   library(S4Vectors)
-  seqs <- "ATGAAATGAAGTAAATCAAAACAT" # strand with ORFs in both directions
+  # strand with ORFs in both directions
+  seqs <- DNAStringSet("ATGAAATGAAGTAAATCAAAACAT")
+  ######################>######################< (< > is direction of ORF)
+  
   # positive strands
   pos <- findORFs(seqs, startCodon = "ATG", minimumLength = 0)
   # negative strands
-  neg <- findORFs(reverseComplement(DNAStringSet(seqs)),
+  neg <- findORFs(reverseComplement(seqs),
                   startCodon = "ATG", minimumLength = 0)
   # make GRanges since we want strand information
   pos <- GRanges(pos, strand = "+")
@@ -405,26 +434,33 @@ you can do (for double stranded):
   res <- split(res, seq.int(1, length(pos) + length(neg)))
   res
 ```
+Remember that these results are in transcript coordinates, sometimes you need
+to convert them to Genomic coordinates.
 
+## Finding ORFs in spliced transcripts
+If you have a genome and a spliced transcriptome annotation, you must use findMapORFs(). It takes care of the potential problem from the last example, 
+that we really want our result in genomic coordinates in the end.
+
+See above section for example: 
+Example of finding ORFs in on 5' UTR of hg19
+
+## Procaryote/Circular Genomes and fasta transcriptomes.
 Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
 normally used for genomes.
 
+## Filter on strand
 If you have transcriptomes, you dont want the (-) strand.
 If you get both (+/-) strand and only want (+) ORFs, do:
 ```{r eval = TRUE, echo = TRUE}
-  res[strandBool(res)]
+  res[strandBool(res)] # Keep only + stranded ORFs
 ```
-## Finding ORFs in spliced transcripts
-If you want to find ORFs in spliced transcripts, use findMapORFs.
-It supports automatic exon splitting, see above for example.
 
-## Procaryote and Circular Genomes
-If you want to find ORFs on circular genomes, use findORFsFasta.
-
-## Input conclusion:
+## ORF Input conclusion:
 Eucaryote splicing: findMapORFs, GRangesList (exons) and char (splice joined)
 Procaryote/circular: findORFsFasta, fasta file
 Direct ORFs from character vector: findORFs, char vector
+
+See individual functions for more examples.
 
 # Using ORFik in your package or scripts
 
@@ -442,6 +478,7 @@ maximum 33% of the reads. To only keep transcripts with a good spread of reads
 over the CDS. How would you make this filter ?
 
 ```{r eval = TRUE, echo = TRUE}
+  # First make som toy example
   cds <- GRanges("chr1", IRanges(c(1, 10, 20, 30, 40, 50, 60, 70, 80),
                                  c(5, 15, 25, 35, 45, 55, 65, 75, 85)),
                  "+")
@@ -454,10 +491,10 @@ over the CDS. How would you make this filter ?
 ```
 We see that ORF 1, has a low(bad) entropy, but we do not know where the reads 
 are stacked up.
-So lets make a new filter by using ORFiks utility functions:
+So lets make a new filter by using more ORFiks utility functions:
 ```{r eval = TRUE, echo = TRUE}
 tile <- tile1(cds, FALSE, FALSE) # tile them to 1 based positions
-tails <- tails(tile, 9)
+tails <- tails(tile, 9) # get 9 last bases per cds
 stopOverlap <- countOverlaps(tails, ribo)
 allOverlap <- countOverlaps(cds, ribo)
 fractions <- (stopOverlap + 1) / (allOverlap + 1) # pseudocount 1
@@ -497,7 +534,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 ```{r eval = TRUE, echo = TRUE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(data.table)
-  # Create meta coverage per part
+  # Create meta coverage per part of transcript
   leaderCov <- metaWindow(shiftedReads, leaders, scoring = NULL, 
                           feature = "leaders")
 
@@ -560,4 +597,4 @@ TIS, while read length 28 has some reads in the leaders (the - positions).
 
 Our hope is that by using ORFik, we can simplify your analysis when 
 you focus on ORFs / transcripts and especially in combination with sequence 
-libraries like RNA-seq, Ribo-seq etc.  
+libraries like RNA-seq and Ribo-seq etc.  

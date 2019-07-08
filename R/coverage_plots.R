@@ -43,7 +43,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
     labs(title = paste("Length", length, "over", region, "of", type)) +
     xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
-    ylab(scoring) +
+    ylab(prettyScoring(scoring)) +
     scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
     guides(fill = FALSE)
 
@@ -124,7 +124,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     scale_color_manual(values = colors) +
     ggtitle(label = title, subtitle = subTitle) +
     xlab(paste("Scaled position in", type)) +
-    ylab(paste0(scoring, " over ", type)) +
+    ylab(paste0(prettyScoring(scoring), " over ", type)) +
     theme(legend.position = "none") +
     facet_grid(fraction ~ feature, scales = "free")
 
@@ -144,6 +144,8 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @inheritParams windowCoveragePlot
+#' @param legendPos a character, Default "right". Where should the fill legend
+#' be ? ("top", "bottom", "right", "left")
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
@@ -162,7 +164,8 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #'
 #' # See vignette for more examples
 #'
-coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
+coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
+                            legendPos = "right") {
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
@@ -171,12 +174,14 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore") {
     geom_tile()  +
     scale_fill_gradientn(colours = c("white", "yellow2", "yellow3",
                                      "lightblue", "blue", "navy"),
-                         name = scoring) +
+                         name = prettyScoring(scoring)) +
     xlab("Position relative to start site") +
     ylab("Protected fragment length") +
     scale_x_continuous(breaks = xAxisScaler(coverage$position)) +
     theme_bw() + theme(panel.grid.major = element_blank(),
-                       panel.grid.minor = element_blank())
+                       panel.grid.minor = element_blank()) +
+    scale_y_discrete(breaks = yAxisScaler(levels(coverage$fraction))) +
+    theme(legend.position = legendPos)
 
   return(savePlot(plot, output))
 }
@@ -216,9 +221,39 @@ xAxisScaler <- function(covPos) {
   pos <- length(covPos)
   min <- min(covPos)
   max <- max(covPos)
-  by <- ifelse(pos > 80, ifelse(pos > 150, 6, 3), 1)
+  by <- ifelse(pos > 70, ifelse(pos > 150, ifelse(pos > 300, 9, 6), 3), 1)
 
   return(seq(min, max, by) - (min %% by))
+}
+
+#' Scale y axis correctly
+#'
+#' Works for all coverage plots.
+#'
+#' @param covPos a levels object from a factor of y axis
+#' @return a character vector from the seq() function, aligned to 0.
+yAxisScaler <- function(covPos) {
+  covPos <- as.integer(covPos)
+  pos <- length(covPos)
+  min <- min(covPos)
+  max <- max(covPos)
+
+  by <- ifelse(pos > 50, ifelse(pos > 70, ifelse(pos > 120,
+              ifelse(pos > 300, 100, 50), 20), 10), 1)
+
+  return(as.character(seq.int(min, max, by)))
+}
+
+#' Prettify scoring name
+#' @param scoring a character (the scoring)
+#' @return a new scoring name or the same if pretty
+prettyScoring <- function(scoring) {
+  if (scoring == "log2sum") {
+    scoring <- "log2(sum)"
+  } else if (scoring == "log10sum") {
+    scoring <- "log10(sum)"
+  }
+  return(scoring)
 }
 
 #' Match coloring of coverage plot
