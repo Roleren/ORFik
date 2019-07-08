@@ -15,7 +15,8 @@ optimizeReads(grl, reads)
 the reads as GRanges or GAlignment
 }
 \description{
-Find optimized subset of valid reads
+If more than a million reads, keep only the ones that overlap within the
+grl ranges.
 }
 \seealso{
 Other utils: \code{\link{bedToGR}},

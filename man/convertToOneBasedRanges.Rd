@@ -5,7 +5,7 @@
 \title{Convert a GRanges Object to 1 width reads}
 \usage{
 convertToOneBasedRanges(gr, method = "5prime", addScoreColumn = FALSE,
-  addSizeColumn = FALSE)
+  addSizeColumn = FALSE, after.softclips = TRUE)
 }
 \arguments{
 \item{gr}{GRanges, GAlignment Object to reduce}
@@ -20,6 +20,8 @@ A useful compression.}
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
 original read lengths. This takes care of soft clips etc.}
+
+\item{after.softclips}{logical (TRUE), TRUE: include softclips in size}
 }
 \value{
 Converted GRanges object
@@ -38,6 +40,8 @@ To retain information on original width, set addSizeColumn to TRUE.
 To compress data, 1 GRanges object per unique read, set addScoreColumn to
 TRUE. This will give you a score column with how many duplicated reads there
 were in the specified region.
+
+NOTE: Does not support paired end reads for the moment!
 }
 \seealso{
 Other utils: \code{\link{bedToGR}}, \code{\link{findFa}},

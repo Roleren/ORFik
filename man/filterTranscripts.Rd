@@ -23,7 +23,7 @@ transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 \item{longestPerGene}{logical (TRUE), return only longest valid transcript
 per gene.}
 
-\item{stopOnEmpty}{logical TRUE, stop if no valid names are found ?}
+\item{stopOnEmpty}{logical TRUE, stop if no valid transcripts are found ?}
 }
 \value{
 a character vector of valid tramscript names

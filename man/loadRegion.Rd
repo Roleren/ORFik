@@ -11,7 +11,9 @@ loadRegion(txdb, part = "tx")
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
 it will return it self.}
 
-\item{part}{a character, one of: tx, leader, cds, trailer, intron}
+\item{part}{a character, one of: tx, leader, cds, trailer, intron, mrna
+NOTE: difference between tx and mrna is that tx are all transcripts, while
+mrna are all transcripts with a cds}
 }
 \value{
 a GrangesList of region

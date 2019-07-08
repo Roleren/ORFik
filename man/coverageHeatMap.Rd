@@ -4,7 +4,8 @@
 \alias{coverageHeatMap}
 \title{Create a heatmap of coverage}
 \usage{
-coverageHeatMap(coverage, output = NULL, scoring = "zscore")
+coverageHeatMap(coverage, output = NULL, scoring = "zscore",
+  legendPos = "right")
 }
 \arguments{
 \item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
@@ -14,6 +15,9 @@ to path given. If no format is given, is save as pdf.}
 
 \item{scoring}{character vector (zscore), either of zScore,
 transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
+
+\item{legendPos}{a character, Default "right". Where should the fill legend
+be ? ("top", "bottom", "right", "left")}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

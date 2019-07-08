@@ -224,17 +224,20 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #' 3. mean (mean(count per))
 #' 4. median (median(count per))
 #' 5. sum (count per)
-#' 6. sumLength (count per) / number of windows
-#' 7. meanPos (mean per position per gene) used in scaledWindowPositions
-#' 8. sumPos (sum per position per gene) used in scaledWindowPositions
-#' 9. frameSum (sum per frame per gene) used in ORFScore
-#' 10. fracPos (fraction of counts per position per gene)
-#' 11. periodic (Fourier transform periodicity of meta coverage per fraction)
-#' 12. NULL (return input directly)
+#' 6. log2sum (count per)
+#' 7. log10sum (count per)
+#' 8. sumLength (count per) / number of windows
+#' 9. meanPos (mean per position per gene) used in scaledWindowPositions
+#' 10. sumPos (sum per position per gene) used in scaledWindowPositions
+#' 11. frameSum (sum per frame per gene) used in ORFScore
+#' 12. fracPos (fraction of counts per position per gene)
+#' 13. periodic (Fourier transform periodicity of meta coverage per fraction)
+#' 14. NULL (return input directly)
 #' @param coverage a data.table containing at least columns (count, position),
 #' it is possible to have additionals: (genes, fraction, feature)
 #' @param scoring a character, one of (zscore, transcriptNormalized,
-#' mean, median, sum, sumLength, meanPos and frameSum, periodic, NULL)
+#' mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
+#' periodic, NULL). More info in docs.
 #' @return a data.table with new scores
 #' @family coverage
 #' @export
@@ -296,6 +299,12 @@ coverageScorings <- function(coverage, scoring = "zscore") {
   } else if (scoring == "sum") {
     res <- cov[, .(score = sum(count, na.rm = TRUE)),
                         by = eval(groupFPF)]
+  } else if (scoring == "log2sum") {
+    res <- cov[, .(score = log2(sum(count, na.rm = TRUE))),
+               by = eval(groupFPF)]
+  } else if (scoring == "log10sum") {
+    res <- cov[, .(score = log10(sum(count, na.rm = TRUE))),
+               by = eval(groupFPF)]
   } else if (scoring == "sumLength") {
     uniques <- ifelse(!is.null(cov$genes),
                       length(unique(cov$genes)), 1)
