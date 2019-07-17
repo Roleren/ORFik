@@ -13,7 +13,7 @@ findORFs(seqs, startCodon = startDefinition(1),
 for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
 get seqs if you want only regions from a fasta/fasta index pair is:
 seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-regions and faFile is a FaFile.}
+search regions and faFile is a \code{\link{FaFile}}.}
 
 \item{startCodon}{(character vector) Possible START codons to search for.
 Check \code{\link{startDefinition}} for helper function.}
@@ -68,7 +68,7 @@ findORFs(c("ATGTAA", "ATGATGTAA"))
 }
 \seealso{
 Other findORFs: \code{\link{findMapORFs}},
-  \code{\link{findORFsFasta}},
+  \code{\link{findORFsFasta}}, \code{\link{findUORFs}},
   \code{\link{startDefinition}},
   \code{\link{stopDefinition}}
 }

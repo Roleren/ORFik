@@ -512,3 +512,23 @@ test_that("uniqueOrder works as intended", {
   test_result <- uniqueOrder(grl) # remember ordering
   expect_equal(test_result, as.integer(c(1,2,1)))
 })
+
+test_that("findUORFs works as intended", {
+   # Load annotation
+   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+                           package = "GenomicFeatures")
+   txdb <- loadTxdb(txdbFile)
+   fiveUTRs <- loadRegion(txdb, "leaders")
+   cds <- loadRegion(txdb, "cds")
+   if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+     # Normally you would not use a BSgenome, but some custome fasta-
+     # annotation you  have for your species
+     uorfs <- findUORFs(fiveUTRs["uc001bum.2"],
+                        BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
+                        "ATG", cds = cds)
+     expect_equal(names(uorfs[1]), "uc001bum.2_5")
+     expect_equal(length(uorfs), 1)
+   }
+
+})
+

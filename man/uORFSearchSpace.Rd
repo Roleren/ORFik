@@ -4,22 +4,33 @@
 \alias{uORFSearchSpace}
 \title{Create search space to look for uORFs}
 \usage{
-uORFSearchSpace(fiveUTRs, cage, extension = 1000, filterValue = 1,
-  cds = NULL)
+uORFSearchSpace(fiveUTRs, cage = NULL, extension = 1000,
+  filterValue = 1, restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE, cds = NULL)
 }
 \arguments{
-\item{fiveUTRs}{(GRangesList) The 5' leaders or transcript sequences}
+\item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
 
-\item{cage}{Either a filePath for CageSeq file, or already loaded
-CageSeq peak data as GRanges.}
+\item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
+ with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+CageSeq peak data as GRanges or GAlignment.
+NOTE: If it is a .bam file, it will add a score column by running:
+convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
 
 \item{extension}{The maximum number of basses upstream of the TSS to search
 for CageSeq peak.}
 
-\item{filterValue}{The minimum number of reads on cage position,
-for it to be counted as possible new tss.
-(represented in score column in CageSeq data)
-If you already filtered, set it to 0.}
+\item{filterValue}{The minimum number of reads on cage position, for it to
+be counted as possible new tss. (represented in score column in
+CageSeq data) If you already filtered, set it to 0.}
+
+\item{restrictUpstreamToTx}{a logical (FALSE). If TRUE: restrict leaders to
+not extend closer than 5 bases from closest upstream leader, set this
+to TRUE.}
+
+\item{removeUnused}{logical (FALSE), if False:  (standard is to set them to
+original annotation), If TRUE: remove leaders that did not have any cage
+support.}
 
 \item{cds}{(GRangesList) CDS of relative fiveUTRs, applicable only if you
 want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
@@ -31,7 +42,8 @@ a GRangesList of newly assigned TSS for fiveUTRs,
 }
 \description{
 Given a GRangesList of 5' UTRs or transcripts, reassign the start
-sites using max peaks from CageSeq data. A max peak is defined as new
+sites using max peaks from CageSeq data (if CAGE is given).
+A max peak is defined as new
 TSS if it is within boundary of 5' leader range, specified by
 `extension` in bp. A max peak must also be higher than minimum
 CageSeq peak cutoff specified in `filterValue`. The new TSS will then
@@ -59,3 +71,12 @@ cage <- GenomicRanges::GRanges(
 uORFSearchSpace(fiveUTRs, cage)
 
 }
+\seealso{
+Other uorfs: \code{\link{addCdsOnLeaderEnds}},
+  \code{\link{filterUORFs}},
+  \code{\link{removeORFsWithSameStartAsCDS}},
+  \code{\link{removeORFsWithSameStopAsCDS}},
+  \code{\link{removeORFsWithStartInsideCDS}},
+  \code{\link{removeORFsWithinCDS}}
+}
+\concept{uorfs}

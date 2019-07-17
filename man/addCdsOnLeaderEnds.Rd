@@ -23,3 +23,12 @@ When finding uORFs, often you want to allow them to end inside the cds.
 \details{
 This is a simple way to do that
 }
+\seealso{
+Other uorfs: \code{\link{filterUORFs}},
+  \code{\link{removeORFsWithSameStartAsCDS}},
+  \code{\link{removeORFsWithSameStopAsCDS}},
+  \code{\link{removeORFsWithStartInsideCDS}},
+  \code{\link{removeORFsWithinCDS}},
+  \code{\link{uORFSearchSpace}}
+}
+\concept{uorfs}
