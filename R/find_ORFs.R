@@ -307,7 +307,7 @@ findUORFs <- function(fiveUTRs, fa, startCodon = startDefinition(1),
   uorfSpace <- uORFSearchSpace(fiveUTRs, cage, extension,
                                filterValue, restrictUpstreamToTx, removeUnused,
                                cds)
-  seqs <- ORFik:::txSeqsFromFa(uorfSpace, fa)
+  seqs <- txSeqsFromFa(uorfSpace, fa)
   uorfs <- findMapORFs(uorfSpace, seqs, startCodon, stopCodon, longestORF,
                        minimumLength, groupByTx = FALSE)
   if(!is.null(cds)) uorfs <- filterUORFs(uorfs, cds)
