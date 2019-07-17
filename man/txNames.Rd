@@ -20,7 +20,13 @@ a character vector of transcript names,
 }
 \description{
 names must either be a column called names, or the names of the
-grl object
+grl object. If it is already tx names, it returns the input
+}
+\details{
+NOTE! Do not use _123 etc in end of transcript names if it is not ORFs.
+Else you will get errors. Just _ will work, but if transcripts are called
+ENST_123124124000 etc, it will crash, so substitute "_" with "."
+gsub("_", ".", names)
 }
 \examples{
 gr_plus <- GRanges(seqnames = c("chr1", "chr1"),

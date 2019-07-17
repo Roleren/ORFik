@@ -10,6 +10,7 @@
 #' @param onlyFirstExon logical (F), include whole cds or only first exons.
 #' @importFrom S4Vectors pc
 #' @return a GRangesList of cds exons added to ends
+#' @family uorfs
 #'
 addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
   if (length(cds) == 0) {
@@ -51,7 +52,8 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
 #' Create search space to look for uORFs
 #'
 #' Given a GRangesList of 5' UTRs or transcripts, reassign the start
-#' sites using max peaks from CageSeq data. A max peak is defined as new
+#' sites using max peaks from CageSeq data (if CAGE is given).
+#' A max peak is defined as new
 #' TSS if it is within boundary of 5' leader range, specified by
 #' `extension` in bp. A max peak must also be higher than minimum
 #' CageSeq peak cutoff specified in `filterValue`. The new TSS will then
@@ -59,21 +61,14 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
 #' interval). If you want to include uORFs going into the CDS, add this
 #' argument too.
 #'
-#' @param fiveUTRs (GRangesList) The 5' leaders or transcript sequences
-#' @param cage Either a filePath for CageSeq file, or already loaded
-#' CageSeq peak data as GRanges.
-#' @param extension The maximum number of basses upstream of the TSS to search
-#' for CageSeq peak.
-#' @param filterValue The minimum number of reads on cage position,
-#' for it to be counted as possible new tss.
-#' (represented in score column in CageSeq data)
-#' If you already filtered, set it to 0.
+#' @inheritParams reassignTSSbyCage
 #' @param cds (GRangesList) CDS of relative fiveUTRs, applicable only if you
 #' want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
 #' can overlap into CDS's.
 #' @return a GRangesList of newly assigned TSS for fiveUTRs,
 #'  using CageSeq data.
 #' @export
+#' @family uorfs
 #' @examples
 #' # example 5' leader, notice exon_rank column
 #' fiveUTRs <- GenomicRanges::GRangesList(
@@ -93,12 +88,92 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
 #' # finally reassign TSS for fiveUTRs
 #' uORFSearchSpace(fiveUTRs, cage)
 #'
-uORFSearchSpace <- function(fiveUTRs, cage, extension = 1000,
-                            filterValue = 1, cds = NULL){
-  searchSpace <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue)
-
-  if(!is.null(cds)) searchSpace <- addCdsOnLeaderEnds(searchSpace, cds)
-
-  return(searchSpace)
+uORFSearchSpace <- function(fiveUTRs, cage = NULL, extension = 1000,
+                            filterValue = 1, restrictUpstreamToTx = FALSE,
+                            removeUnused = FALSE, cds = NULL){
+  if (!is.null(cage)) {
+    fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue,
+                                     restrictUpstreamToTx, removeUnused)
+  }
+  if(!is.null(cds)) fiveUTRs <- addCdsOnLeaderEnds(fiveUTRs, cds)
+  return(fiveUTRs)
 }
 
+#' Remove uORFs that are false CDS hits
+#'
+#' This is a strong filtering, so that even if the cds is on another transcript
+#' , the uORF is filtered out, this is because there is no way of knowing by
+#' current ribo-seq, rna-seq experiments.
+#'
+#' @param uorfs (GRangesList), the uORFs to filter
+#' @param cds (GRangesList), the coding sequences (main ORFs on transcripts),
+#' to filter against.
+#' @return (GRangesList) of filtered uORFs
+#' @family uorfs
+#'
+filterUORFs <- function(uorfs, cds){
+  if (is.null(cds) || length(uorfs) == 0) return(uorfs)
+  validGRL(class(cds), "cds")
+  message("starting to filter out ourfs...")
+
+  #check start upstream, ending downstream
+  uorfs <- removeORFsWithinCDS(uorfs, cds)
+  uorfs <- sortPerGroup(uorfs)
+  uorfs <- removeORFsWithSameStopAsCDS(uorfs, cds)
+  uorfs <- removeORFsWithSameStartAsCDS(uorfs, cds)
+  uorfs <- removeORFsWithStartInsideCDS(uorfs, cds)
+  message("finished filtering ourfs")
+
+  return(uorfs)
+}
+
+#' Remove ORFs that are within cds
+#'
+#' @param grl (GRangesList), the ORFs to filter
+#' @param cds (GRangesList), the coding sequences (main ORFs on transcripts),
+#' to filter against.
+#' @return (GRangesList) of filtered uORFs
+#' @family uorfs
+removeORFsWithinCDS <- function(grl, cds){
+  overlaps <- findOverlaps(query = grl, cds, type = "within")
+  if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
+  return(grl)
+}
+
+#' Remove ORFs that have same stop site as the CDS
+#'
+#' @inheritParams removeORFsWithinCDS
+#' @return (GRangesList) of filtered uORFs
+#' @family uorfs
+removeORFsWithSameStopAsCDS <- function(grl, cds){
+  overlaps <- findOverlaps(query =  stopSites(grl, asGR = TRUE, is.sorted = T),
+                           stopSites(cds, asGR = TRUE, is.sorted = T),
+                           type = "within")
+  if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
+  return(grl)
+}
+
+#' Remove ORFs that have same start site as the CDS
+#'
+#' @inheritParams removeORFsWithinCDS
+#' @return (GRangesList) of filtered uORFs
+#' @family uorfs
+removeORFsWithSameStartAsCDS <- function(grl, cds){
+  starts <- startSites(grl, asGR = T, is.sorted = T)
+  cdsstarts <- startSites(cds, asGR = T, is.sorted = T)
+  overlaps <- findOverlaps(starts, cdsstarts, type = "within")
+  if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
+  return(grl)
+}
+
+#' Remove ORFs that have start site within the CDS
+#'
+#' @inheritParams removeORFsWithinCDS
+#' @return (GRangesList) of filtered uORFs
+#' @family uorfs
+removeORFsWithStartInsideCDS <- function(grl, cds){
+  starts <- startSites(grl, asGR = T, is.sorted = T)
+  overlaps <- findOverlaps(starts, cds, type = "within")
+  if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
+  return(grl)
+}

@@ -61,7 +61,8 @@ findORFsFasta(example_genome)
 }
 \seealso{
 Other findORFs: \code{\link{findMapORFs}},
-  \code{\link{findORFs}}, \code{\link{startDefinition}},
+  \code{\link{findORFs}}, \code{\link{findUORFs}},
+  \code{\link{startDefinition}},
   \code{\link{stopDefinition}}
 }
 \concept{findORFs}

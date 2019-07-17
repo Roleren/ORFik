@@ -27,6 +27,6 @@ startDefinition(1)
 \seealso{
 Other findORFs: \code{\link{findMapORFs}},
   \code{\link{findORFsFasta}}, \code{\link{findORFs}},
-  \code{\link{stopDefinition}}
+  \code{\link{findUORFs}}, \code{\link{stopDefinition}}
 }
 \concept{findORFs}

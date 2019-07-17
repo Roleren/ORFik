@@ -105,7 +105,7 @@ stopDefinition <- function(transl_table) {
 #' for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
 #' get seqs if you want only regions from a fasta/fasta index pair is:
 #' seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-#' regions and faFile is a FaFile.
+#' search regions and faFile is a \code{\link{FaFile}}.
 #' @param startCodon (character vector) Possible START codons to search for.
 #' Check \code{\link{startDefinition}} for helper function.
 #' @param stopCodon (character vector) Possible STOP codons to search for.
@@ -191,7 +191,7 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' names(grl) <- c("tx1", "tx2")
 #' findMapORFs(grl, c(seqs, seqs))
 #'
-findMapORFs <- function(grl, seqs, startCodon =  startDefinition(1),
+findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
                         stopCodon = stopDefinition(1), longestORF = TRUE,
                         minimumLength = 0, groupByTx = TRUE){
   validGRL(class(grl))
@@ -260,4 +260,56 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
     isCircular(gr) <- rep(TRUE, length(seqlevels(gr)))
   }
   return(gr)
+}
+
+#' Find upstream ORFs from transcript annotation
+#'
+#' Procedure:
+#' 1. Create a new search space starting with the 5' UTRs.
+#' 2. Redefine TSS with CAGE if wanted.
+#' 3. Add the whole of CDS to search space to allow uORFs going into cds.
+#' 4. find ORFs on that search space.
+#' 5. Filter out wrongly found uORFs, if CDS is included. The CDS,
+#'  alternative CDS, uORFs starting within the CDS etc.
+#'
+#' From default a filtering process is done to remove "fake" uORFs, but only if
+#' cds is included, since uORFs that stop on the stop codon on the CDS is not
+#' a uORF, but an alternative cds by definition.
+#' @inheritParams findMapORFs
+#' @param fa a \code{\link{FaFile}}. With fasta sequences corresponding to
+#' fiveUTR annotation. Usually loaded from the genome of an organism with
+#' fa = ORFik:::findFa("path/to/fasta/genome")
+#' @inheritParams uORFSearchSpace
+#' @return A GRangesList of uORFs, 1 granges list element per uORF.
+#' @export
+#' @family findORFs
+#' @examples
+#' \dontrun{
+#'  # Load annotation
+#'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                          package = "GenomicFeatures")
+#'  txdb <- loadTxdb(txdbFile)
+#'  fiveUTRs <- loadRegion(txdb, "leaders")
+#'  cds <- loadRegion(txdb, "cds")
+#'  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+#'    # Normally you would not use a BSgenome, but some custome fasta-
+#'    # annotation you  have for your species
+#'    findUORFs(fiveUTRs, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, "ATG",
+#'              cds = cds)
+#'  }
+#' }
+findUORFs <- function(fiveUTRs, fa, startCodon = startDefinition(1),
+                      stopCodon = stopDefinition(1), longestORF = TRUE,
+                      minimumLength = 0, cds = NULL,
+                      cage = NULL, extension = 1000, filterValue = 1,
+                      restrictUpstreamToTx = FALSE, removeUnused = FALSE) {
+
+  uorfSpace <- uORFSearchSpace(fiveUTRs, cage, extension,
+                               filterValue, restrictUpstreamToTx, removeUnused,
+                               cds)
+  seqs <- ORFik:::txSeqsFromFa(uorfSpace, fa)
+  uorfs <- findMapORFs(uorfSpace, seqs, startCodon, stopCodon, longestORF,
+                       minimumLength, groupByTx = FALSE)
+  if(!is.null(cds)) uorfs <- filterUORFs(uorfs, cds)
+  return(uorfs)
 }

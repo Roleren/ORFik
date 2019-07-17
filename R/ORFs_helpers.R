@@ -97,7 +97,12 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' Get transcript names from orf names
 #'
 #' names must either be a column called names, or the names of the
-#' grl object
+#' grl object. If it is already tx names, it returns the input
+#'
+#' NOTE! Do not use _123 etc in end of transcript names if it is not ORFs.
+#' Else you will get errors. Just _ will work, but if transcripts are called
+#' ENST_123124124000 etc, it will crash, so substitute "_" with "."
+#' gsub("_", ".", names)
 #' @param grl a \code{\link{GRangesList}} grouped by ORF
 #'  or GRanges object
 #' @param unique a boolean, if true unique the names,
@@ -135,15 +140,15 @@ txNames <- function(grl, unique = FALSE) {
       stop("grl have no valid orf names to convert")
     } else {
       if (unique) {
-        return(sub("_[0-9]*", "", unique(otherPossibility), perl = TRUE))
+        return(sub("_\\d+", "", unique(otherPossibility), perl = TRUE))
       }
-      return(sub("_[0-9]*", "", otherPossibility, perl = TRUE))
+      return(sub("_\\d+", "", otherPossibility, perl = TRUE))
     }
   }
   if (unique) {
-    return(sub("_[0-9]*", "", unique(names(grl)), perl = TRUE))
+    return(sub("_\\d+", "", unique(names(grl)), perl = TRUE))
   }
-  return(sub("_[0-9]*", "", names(grl), perl = TRUE))
+  return(sub("_\\d+", "", names(grl), perl = TRUE))
 }
 
 
