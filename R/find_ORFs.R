@@ -292,7 +292,7 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
 #'  fiveUTRs <- loadRegion(txdb, "leaders")
 #'  cds <- loadRegion(txdb, "cds")
 #'  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-#'    # Normally you would not use a BSgenome, but some custome fasta-
+#'    # Normally you would not use a BSgenome, but some custom fasta-
 #'    # annotation you  have for your species
 #'    findUORFs(fiveUTRs, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, "ATG",
 #'              cds = cds)

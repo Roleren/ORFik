@@ -180,7 +180,7 @@ loadRegion <- function(txdb, part = "tx") {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
   } else if (part %in% c("intron", "introns")) {
     return(intronsByTranscript(txdb, use.names = TRUE))
-  }  else if (part %in% c("mrna", "mrnas","mRNA", "mRNAs")) {
+  }  else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
     txNames <- filterTranscripts(txdb, 0, 1, 0, FALSE)
     return(exonsBy(txdb, by = "tx", use.names = TRUE)[txNames])
   } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
