@@ -44,6 +44,7 @@
 #' }
 shiftFootprints <- function(footprints, shifts) {
   if (!is(shifts, "data.frame")) stop("shifts must be data.frame/data.table")
+  if (nrow(shifts) == 0) stop("No shifts in data.frame")
   selected_lengths <- shifts$fraction
   selected_shifts <- -1 * shifts$offsets_start
   allFootrpintsShifted <- GRanges()
@@ -58,38 +59,44 @@ shiftFootprints <- function(footprints, shifts) {
            " than selected_lengths!")
   }
 
+  lengthsAll <- readWidths(footprints)
+  validReads <- lengthsAll %in% selected_lengths
+  lengthsAll <- lengthsAll[validReads]
+  footprints <- footprints[validReads]
+  cigarsAll <- cigar(footprints)
+  gr <- granges(footprints, use.mcols = TRUE)
+  is_cigarAll <- width(gr) != lengthsAll
+  gr <- resize(gr, 1L)  #resize to 5' only
+  gr$size <- lengthsAll
+
   for (i in seq_along(selected_lengths)) {
       message("Shifting footprints of length ", selected_lengths[i])
-      riboReadsW <- footprints[readWidths(footprints) == selected_lengths[i]]
-      if (length(riboReadsW) == 0) {
+      atThisLength <- lengthsAll == selected_lengths[i]
+      if (!any(atThisLength)) {
           next
       }
-      is_cigar <- width(riboReadsW) != readWidths(riboReadsW)
-      cigar_strings <- cigar(riboReadsW[is_cigar])
-      sizes <- readWidths(riboReadsW)
+      riboReadsW <- gr[atThisLength]
 
-      riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
-      riboReadsW$size <- sizes  #move footprint length to size
-      riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
-
+      is_cigar <- is_cigarAll[atThisLength]
+      cigar_strings <- cigarsAll[atThisLength][is_cigar]
       cigars <- riboReadsW[is_cigar]
       notCigars <- riboReadsW[!is_cigar]
 
       # Not Cigars - shift 5' ends, + shift right, - shift left
       if (length(notCigars) != 0) {
-          is_plus <- as.vector(strand(notCigars) == "+")
-          shiftedNotCigarsPlus <- shift(notCigars[is_plus],
-                                        selected_shifts[i])
-          shiftedNotCigarsMinus <- shift(notCigars[!is_plus],
-                                         -1 * selected_shifts[i])
-          allFootrpintsShifted <- c(allFootrpintsShifted,
-                                    shiftedNotCigarsPlus,
-                                    shiftedNotCigarsMinus)
+        is_plus <- strandBool(notCigars)
+        shiftedNotCigarsPlus <- IRanges::shift(notCigars[is_plus],
+                                               selected_shifts[i])
+        shiftedNotCigarsMinus <- IRanges::shift(notCigars[!is_plus],
+                                                -1 * selected_shifts[i])
+        allFootrpintsShifted <- c(allFootrpintsShifted,
+                                  shiftedNotCigarsPlus,
+                                  shiftedNotCigarsMinus)
       }
       # Cigars
       if (length(cigars) != 0) {
-          is_plus <- as.vector(strand(cigars) == "+")
-          shift_by <- rep(selected_shifts[i], length(cigars))
+          is_plus <- strandBool(cigars)
+          shift_by <- rep.int(selected_shifts[i], length(cigars))
           shift_by <- mapply(parseCigar, cigar_strings, shift_by, is_plus)
           shift_by[!is_plus] <- -1 * shift_by[!is_plus]
           shifted_cigars <- shift(cigars, shift_by)

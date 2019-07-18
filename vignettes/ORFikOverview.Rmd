@@ -62,7 +62,7 @@ txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                         package = "GenomicFeatures")
 txdb <- loadTxdb(txdbFile)
 fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
-fiveUTRs
+fiveUTRs[1]
 ```
 
 As we can see we have extracted 5' UTRs for hg19 annotations. Now we can load
@@ -80,7 +80,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
                                    fiveUTRs) 
   
   # Find all ORFs on those transcripts and get their genomic coordinates
-  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
+  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs, groupByTx = FALSE)
   fiveUTR_ORFs
 }
 ```
@@ -92,13 +92,27 @@ separated into two exons you can see it twice, like the first ORF with name
 "uc010ogz.1_1". The first ORF will always be the one most upstream for "+" 
 strand, and the least upstream for "-" strand.
 
+## Getting fasta sequences of ORFs
+
+Now lets see how easy it is to get fasta sequences from the ranges
+
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+
+  extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 
+                                   fiveUTR_ORFs[1])
+  # To save as .fasta do, assign to variable (seqs):
+  # writeXStringSet(seqs, filepath = "uorfs.fasta")
+}
+```
+
 # CageSeq data for 5' UTR re-annotation
 
 In the prerevious example we used the refence annotation of the 5' UTRs
 from the package GenomicFeatures. Here we will use advantage of CageSeq data to 
 set new Transcription Start Sites (TSS) and re-annotate 5' UTRs.
 
-```{r eval = TRUE, echo = TRUE} 
+```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 # path to example CageSeq data from hg19 heart sample
 cageData <- system.file("extdata", "cage-seq-heart.bed.bgz", 
                         package = "ORFik")
@@ -113,6 +127,97 @@ specific enough for your purposes.
 
 NOTE: IF you want to edit the whole txdb / gtf file, use reassignTxDbByCage.
 And save this to get the new gtf with reannotated leaders by CAGE.
+
+# New GRanges and GRangesList utilities for ORFs
+
+`ORFik` contains functions that can be utilized to speed up your coding.
+Check documentations for these functions: `unlistGrl`, `sortPerGroup`, 
+`strandBool`, `tile1`.
+
+## Grouping ORFs
+
+Sometimes you want all ORFs grouped by which transcript they came from,
+or you might want each ORF as a group in the GRangesList. To
+do this more easily you can use the function `groupGRangesBy`.
+
+```{r eval = TRUE, echo = TRUE}
+
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  # The ORFs are now grouped by transcripts, but we want them grouped by ORFs:
+  # we use the orfs exon column called ($names) to group, it is made by ORFik.
+  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
+  test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
+  test_ranges
+  # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
+  unlisted_ranges <- unlistGrl(test_ranges)
+  unlisted_ranges
+  test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping
+}
+```
+
+## Filtering example
+
+Lets say you found some ORFs, and you want to filter out some of them.
+ORFik provides several functions for filtering. A problem with the
+original GenomicRanges container, is that filtering on GRanges objects
+are much easier than on GRangesList objects, ORFik tries to fix this.
+
+In this example we will filter out all orfs as following:
+1. First group GRangesList by ORFs
+2. width < 60
+3. number of exons < 2
+4. strand is negative
+
+```{r eval = TRUE, echo = TRUE}
+
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  # lets use the fiveUTR_ORFs
+  #1. Group by ORFs, if ORFs are grouped by transcripts it would make no sense.
+  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
+  ORFs <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
+  length(ORFs)
+  #2. Remove widths < 60
+  ORFs <- ORFs[widthPerGroup(ORFs) >= 60]
+  length(ORFs)
+  #3. Keep only ORFs with at least 2 exons
+  ORFs <- ORFs[numExonsPerGroup(ORFs) > 1]
+  length(ORFs)
+  
+  #4. Keep only positive ORFs
+  ORFs <- ORFs[strandPerGroup(ORFs) == "+"]
+  # all remaining ORFs where on positive strand, so no change
+  length(ORFs)
+}
+```
+
+## ORF interest regions
+
+Specific part of the ORF are usually of interest, like start and stop codons.
+Here we run an example to show what ORFik can do for you.
+
+```{r eval = TRUE, echo = TRUE}
+if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+  # let's use the ORFs from the previous examples
+  #1. Find the start and stop sites as GRanges
+  startSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
+  stopSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
+  
+  #2. Lets find the start and stop codons,
+  # this takes care of potential 1 base exons etc. 
+  starts <- startCodons(fiveUTR_ORFs, is.sorted = TRUE)
+  starts
+  stops <- stopCodons(fiveUTR_ORFs, is.sorted = TRUE)
+  stops
+  
+  #3. Lets get the bases of the start and stop codons from the fasta file
+  # It's very important to check that ORFs are sorted here, set is.sorted to 
+  # FALSE if you are not certain if the exons are sorted.
+  txSeqsFromFa(starts, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
+  txSeqsFromFa(stops, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
+  }
+```
+
+Many more operations are also supported for manipulation of ORFs
 
 # RiboSeq footprints automatic shift detection and shifting
 
@@ -204,7 +309,7 @@ shifts
 ```
 
 Fortunately `ORFik` has function that can be used to shift footprints using 
-desired shifts. Check documentation for more details.
+desired shifts. See documentation for more details.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 shiftedFootprints <- shiftFootprints(footprints, shifts)
 shiftedFootprints
@@ -300,97 +405,6 @@ then we make a self defined kozak sequence.
 
 ```
 
-
-# GRanges and GRangesList utilities
-
-`ORFik` contains couple functions that can be utilized to speed up your coding.
-Check documentations for these functions: `unlistGrl`, `sortPerGroup`, 
-`strandBool`, `tile1`.
-
-## Grouping ORFs
-
-Sometimes you want a GRangesList of ORFs grouped by transcript, or you might 
-want each ORF as groups in the GRangesList. To do this more easily you can use 
-the function `groupGRangesBy`.
-
-```{r eval = TRUE, echo = TRUE}
-
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
-  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
-  unlisted_ranges
-  test_ranges <- groupGRangesBy(unlisted_ranges, names(unlisted_ranges))
-  
-  # test_ranges is now grouped by transcript, but we want them grouped by ORFs:
-  # we use the orfs exon column called ($names) to group, it is made by ORFik.
-  unlisted_ranges <- unlistGrl(test_ranges)
-  test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
-}
-```
-
-## Filtering example
-
-Lets say you found some ORFs, and you want to filter out some of them.
-ORFik provides several functions for filtering. A problem with the
-original GenomicRanges container, is that filtering on GRanges objects
-are much easier than on GRangesList objects, ORFik tries to fix this.
-
-In this example we will filter out all orfs as following:
-1. First group GRangesList by ORFs
-2. width < 60
-3. number of exons < 2
-4. strand is negative
-
-```{r eval = TRUE, echo = TRUE}
-
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # lets use the fiveUTR_ORFs
-  #1. Group by ORFs
-  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
-  ORFs <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
-  length(ORFs)
-  #2. Remove widths < 60
-  ORFs <- ORFs[widthPerGroup(ORFs) >= 60]
-  length(ORFs)
-  #3. Keep only ORFs with at least 2 exons
-  ORFs <- ORFs[numExonsPerGroup(ORFs) > 1]
-  length(ORFs)
-  
-  #4. Keep only positive ORFs
-  ORFs <- ORFs[strandPerGroup(ORFs) == "+"]
-  # all remaining ORFs where on positive strand, so no change
-  length(ORFs)
-}
-```
-
-## ORF interest regions
-
-Specific part of the ORF are usually of interest, like start and stop codons.
-Here we run an example to show what ORFik can do for you.
-
-```{r eval = TRUE, echo = TRUE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # let's use the ORFs from the previous examples
-  #1. Find the start and stop sites
-  startSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
-  stopSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
-  
-  #2. Lets find the start and stop codons,
-  # this takes care of potential 1 base exons etc. 
-  starts <- startCodons(fiveUTR_ORFs, is.sorted = TRUE)
-  starts
-  stops <- stopCodons(fiveUTR_ORFs, is.sorted = TRUE)
-  stops
-  
-  #3. Lets get the bases of the start and stop codons from the fasta file
-  # It's very important to check that ORFs are sorted here, else you could get 
-  # the end of the ORF instead of the beginning etc.
-  txSeqsFromFa(starts, faFile, is.sorted = TRUE)
-  txSeqsFromFa(stops, faFile, is.sorted = TRUE)
-  }
-```
-
-Many more operations are also supported for manipulation
 
 # When to use which ORFfinding function
 
@@ -596,5 +610,5 @@ TIS, while read length 28 has some reads in the leaders (the - positions).
 
 
 Our hope is that by using ORFik, we can simplify your analysis when 
-you focus on ORFs / transcripts and especially in combination with sequence 
-libraries like RNA-seq and Ribo-seq etc.  
+you focus on ORFs / transcript features and especially in combination with
+sequence libraries like RNA-seq and Ribo-seq etc.  
