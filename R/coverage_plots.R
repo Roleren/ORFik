@@ -218,7 +218,7 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150,
 #' @param covPos a numeric vector of positions in coverage
 #' @return a numeric vector from the seq() function, aligned to 0.
 xAxisScaler <- function(covPos) {
-  pos <- length(covPos)
+  pos <- length(unique(covPos))
   min <- min(covPos)
   max <- max(covPos)
   by <- ifelse(pos > 70, ifelse(pos > 150, ifelse(pos > 300, 9, 6), 3), 1)
