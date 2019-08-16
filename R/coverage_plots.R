@@ -107,16 +107,14 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 
   coverage_score <- coverageScorings(cov, scoring)
 
-
+  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
+  if (equalMax) coverage_score[, `:=` (fraction_min=min(fraction_min))]
   nGenes <- getNGenesCoverage(coverage)
   subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
   colors <- matchColors(cov, colors)
-  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
-  coverage_score[, `:=` (fraction_max=max(score)), by = fraction]
-  if (equalMax) coverage_score[, `:=` (fraction_max=max(fraction_max))]
 
   plot <- ggplot(data = as.data.frame(coverage_score),
-                 aes(x = position, ymax = fraction_max, ymin = fraction_min,
+                 aes(x = position, ymax = score, ymin = fraction_min,
                      y = score, colour = as.factor(fraction))) +
     geom_ribbon(stat = "identity", position = "identity",
                 aes(fill = as.factor(fraction), alpha = 0.5)) +
@@ -131,7 +129,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(prettyScoring(scoring), " over ", type)) +
     theme(legend.position = "none") +
-    facet_grid(fraction ~ feature, scales = "free")
+    facet_grid(fraction ~ feature, scales = ifelse(equalMax, "free_x", "free"))
 
   return(savePlot(plot, output))
 }
