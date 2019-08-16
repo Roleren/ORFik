@@ -112,7 +112,7 @@ In the prerevious example we used the refence annotation of the 5' UTRs
 from the package GenomicFeatures. Here we will use advantage of CageSeq data to 
 set new Transcription Start Sites (TSS) and re-annotate 5' UTRs.
 
-```{r eval = TRUE, echo = TRUE, warning = FALSE} 
+```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 # path to example CageSeq data from hg19 heart sample
 cageData <- system.file("extdata", "cage-seq-heart.bed.bgz", 
                         package = "ORFik")
@@ -147,11 +147,13 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # we use the orfs exon column called ($names) to group, it is made by ORFik.
   unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
   test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
-  test_ranges
+  print("Grouped by ORF")
+  print(test_ranges[1:2])
   # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
   unlisted_ranges <- unlistGrl(test_ranges)
-  unlisted_ranges
-  test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping
+  test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping by names
+  print("Grouped by Transcript")
+  print(unlisted_ranges)
 }
 ```
 
@@ -175,13 +177,13 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   #1. Group by ORFs, if ORFs are grouped by transcripts it would make no sense.
   unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
   ORFs <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
-  length(ORFs)
+  print(length(ORFs))
   #2. Remove widths < 60
   ORFs <- ORFs[widthPerGroup(ORFs) >= 60]
-  length(ORFs)
+  print(length(ORFs))
   #3. Keep only ORFs with at least 2 exons
   ORFs <- ORFs[numExonsPerGroup(ORFs) > 1]
-  length(ORFs)
+  print(length(ORFs))
   
   #4. Keep only positive ORFs
   ORFs <- ORFs[strandPerGroup(ORFs) == "+"]
@@ -205,14 +207,15 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   #2. Lets find the start and stop codons,
   # this takes care of potential 1 base exons etc. 
   starts <- startCodons(fiveUTR_ORFs, is.sorted = TRUE)
-  starts
   stops <- stopCodons(fiveUTR_ORFs, is.sorted = TRUE)
-  stops
+  print("Start codon ranges:")
+  print(starts[1:2])
   
   #3. Lets get the bases of the start and stop codons from the fasta file
   # It's very important to check that ORFs are sorted here, set is.sorted to 
   # FALSE if you are not certain if the exons are sorted.
   txSeqsFromFa(starts, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
+  print("Stop codons")
   txSeqsFromFa(stops, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
   }
 ```
@@ -299,6 +302,8 @@ ORFik:::pSitePlot(hitMapStart)
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 ORFik:::pSitePlot(hitMapStop, region = "stop")
 ```
+From these shifts ORFik uses a fourior transform to detect signal change needed 
+to scale all read lengths of Ribo-seq to the start of the meta-cds. 
 
 We can also use automatic detection of RiboSeq shifts using the code below. As
 we can see reasonable conclusion from the plots would be to shift length 29 by

@@ -76,6 +76,8 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcript), what should legends say is
 #' the whole region? Transcript, gene, non coding rna etc.
+#' @param equalMax a logical (FALSE), should all fractions (rows), have same
+#'  max value, for easy comparison of max values if needed.
 #' @import ggplot2
 #' @importFrom data.table copy
 #' @return a ggplot object of the coverage plot, NULL if output is set,
@@ -91,7 +93,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
-                               type = "transcript") {
+                               type = "transcript", equalMax = FALSE) {
   cov <- setDT(copy(coverage))
   if (is.null(cov$feature))
     cov[, feature := rep("meta", nrow(cov))]
@@ -105,13 +107,16 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 
   coverage_score <- coverageScorings(cov, scoring)
 
-  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
+
   nGenes <- getNGenesCoverage(coverage)
   subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
   colors <- matchColors(cov, colors)
+  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
+  coverage_score[, `:=` (fraction_max=max(score)), by = fraction]
+  if (equalMax) coverage_score[, `:=` (fraction_max=max(fraction_max))]
 
   plot <- ggplot(data = as.data.frame(coverage_score),
-                 aes(x = position, ymax = score, ymin = fraction_min,
+                 aes(x = position, ymax = fraction_max, ymin = fraction_min,
                      y = score, colour = as.factor(fraction))) +
     geom_ribbon(stat = "identity", position = "identity",
                 aes(fill = as.factor(fraction), alpha = 0.5)) +

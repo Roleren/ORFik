@@ -6,7 +6,7 @@
 \usage{
 windowCoveragePlot(coverage, output = NULL, scoring = "zscore",
   colors = c("skyblue4", "orange"), title = "Coverage metaplot",
-  type = "transcript")
+  type = "transcript", equalMax = FALSE)
 }
 \arguments{
 \item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
@@ -24,6 +24,9 @@ using binary splits with colors c('skyblue4', 'orange').}
 
 \item{type}{a character (transcript), what should legends say is
 the whole region? Transcript, gene, non coding rna etc.}
+
+\item{equalMax}{a logical (FALSE), should all fractions (rows), have same
+max value, for easy comparison of max values if needed.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
