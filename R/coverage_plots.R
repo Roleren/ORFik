@@ -208,7 +208,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
   if (addFracPlot) {
     plot2 <- pSitePlot(coverage, forHeatmap = TRUE)
     plot <- grid.arrange(plot2, plot + theme(legend.position = "bottom"),
-                 heights = c(1, 4))
+                                             heights = c(1, 4))
   }
 
   return(savePlot(plot, output))
