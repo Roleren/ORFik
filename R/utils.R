@@ -79,11 +79,36 @@ readBam <- function(path, chrStyle = NULL) {
   return(matchSeqStyle(readGAlignments(path), chrStyle))
 }
 
+# Custom wig reader
+#'
+#' Given 2 wig files, first is forward second is reverse.
+#' Merge them and return as GRanges object.
+#' @param path a character path to .bam file
+#' @inheritParams matchSeqStyle
+#' @importFrom rtracklayer import.wig
+#' @return a GAlignment object of bam file
+#' @family utils
+#'
+readWig <- function(path, chrStyle = NULL) {
+  if (length(path) != 2) stop("readWig must have 2 wig files,
+                              one forward strand and one reverse!")
+  forward <- import.wig(path[1])
+  reverse <- import.wig(path[2])
+  strand(forward) <- "+"
+  strand(reverse) <- "-"
+  return(matchSeqStyle(c(forward, reverse), chrStyle))
+}
+
 #' Load any type of sequencing reads
 #'
 #' Wraps around rtracklayer::import and tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle
+#'
+#' NOTE: For wig you can send in 2 files, so that it automaticly merges
+#' forward and reverse stranded objects. You can also just send 1 wig file,
+#' it will then have "*" as strand.
+#'
 #' @param path a character path to file or a GRanges/Galignment object etc.
 #' Any Ranged object.
 #' @inheritParams matchSeqStyle
@@ -93,15 +118,21 @@ readBam <- function(path, chrStyle = NULL) {
 #' @return a GAlignment/GRanges object depending on input.
 fimport <- function(path, chrStyle = NULL) {
   if (is.character(path)) {
-    if (file.exists(path)) {
-      if (file_ext(path) == "bam") {
-        return(readBam(path, chrStyle))
-      } else if (file_ext(path) == "bed" |
-                 file_ext(file_path_sans_ext(path,
-                                             compression = TRUE)) == "bed") {
-        return(fread.bed(path, chrStyle))
-      } else return(matchSeqStyle(import(path), chrStyle))
-    } else stop(paste0(path, "does not exist as a File!"))
+    if (all(file.exists(path))) {
+      if (length(path) > 1) { # Multiple file paths
+        if (all(file_ext(path) == "wig")) {
+          return(readWig(path, chrStyle))
+        } else stop("only wig format allowed for multiple files!")
+      } else { # Only 1 file path given
+          if (file_ext(path) == "bam") {
+          return(readBam(path, chrStyle))
+        } else if (file_ext(path) == "bed" |
+                   file_ext(file_path_sans_ext(path,
+                                               compression = TRUE)) == "bed") {
+          return(fread.bed(path, chrStyle))
+        } else return(matchSeqStyle(import(path), chrStyle))
+      }
+    } else stop(paste0(path, "does not exist as File/Files!"))
   } else if (is.gr_or_grl(path) | is(path, "GAlignments")) {
     return(matchSeqStyle(path, chrStyle))
   } else {

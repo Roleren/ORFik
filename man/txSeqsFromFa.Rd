@@ -19,6 +19,8 @@ a DNAStringSet of the transcript sequences
 }
 \description{
 A small safety wrapper around \code{\link{extractTranscriptSeqs}}
+For debug of errors do:
+which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
 }
 \seealso{
 Other ExtendGenomicRanges: \code{\link{asTX}},

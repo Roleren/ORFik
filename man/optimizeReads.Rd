@@ -22,6 +22,6 @@ grl ranges.
 Other utils: \code{\link{bedToGR}},
   \code{\link{convertToOneBasedRanges}},
   \code{\link{findFa}}, \code{\link{fread.bed}},
-  \code{\link{readBam}}
+  \code{\link{readBam}}, \code{\link{readWig}}
 }
 \concept{utils}

@@ -20,6 +20,6 @@ Convenience wrapper for Rsamtools FaFile
 Other utils: \code{\link{bedToGR}},
   \code{\link{convertToOneBasedRanges}},
   \code{\link{fread.bed}}, \code{\link{optimizeReads}},
-  \code{\link{readBam}}
+  \code{\link{readBam}}, \code{\link{readWig}}
 }
 \concept{utils}

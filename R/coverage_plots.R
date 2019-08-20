@@ -16,10 +16,13 @@
 #' to path given. If no format is given, is save as pdf.
 #' @param type character (canonical CDS), type for plot
 #' @param scoring character (Average sum) which scoring did you use ?
+#' @param forHeatmap a logical (FALSE), should the plot be part of
+#' a heatmap? It will scale it differently.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
 #' @family coveragePlot
+#' @export
 #' @examples
 #' # An ORF
 #' grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
@@ -28,24 +31,35 @@
 #' reads <- GRanges("1", range, "+")
 #' coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
 #'                               withFrames = TRUE)
-#' ORFik:::pSitePlot(coverage)
+#' pSitePlot(coverage)
 #'
 #' # See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
-                      type = "canonical CDS", scoring = "Averaged counts") {
+                      type = "canonical CDS", scoring = "Averaged counts",
+                      forHeatmap = FALSE) {
   hitMap <- setDT(copy(hitMap))
   if (is.null(hitMap$score)) hitMap[, score := count]
-  if (is.null(hitMap$frame)) stop("frame must be included in hitMap for now!")
-  plot <- ggplot(hitMap, aes(x = factor(position), y = score,
+  if (is.null(hitMap$frame)) {
+    hitMap[, frame := rep("1", nrow(hitMap))]
+  }
+  plot <- ggplot(hitMap, aes(x = position, y = score,
                              fill = factor(frame))) +
-    geom_bar(stat = "identity") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    labs(title = paste("Length", length, "over", region, "of", type)) +
-    xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
-    ylab(prettyScoring(scoring)) +
-    scale_x_discrete(breaks = xAxisScaler(hitMap$position)) +
     guides(fill = FALSE)
+  if (forHeatmap) {
+    plot <- plot + ggtitle("") +
+      geom_bar(stat = "identity", width = 1) +
+      xlab("") +
+      ylab("") +
+      scale_x_continuous(breaks = xAxisScaler(hitMap$position))
+  } else {
+    plot <- plot +
+      geom_bar(stat = "identity") +
+      labs(title = paste("Length", length, "over", region, "of", type)) +
+      xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
+      ylab(prettyScoring(scoring)) +
+      scale_x_continuous(breaks = xAxisScaler(hitMap$position))
+  }
 
   return(return(savePlot(plot, output)))
 }
@@ -76,7 +90,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcript), what should legends say is
 #' the whole region? Transcript, gene, non coding rna etc.
-#' @param equalMax a logical (FALSE), should all fractions (rows), have same
+#' @param scaleEqual a logical (FALSE), should all fractions (rows), have same
 #'  max value, for easy comparison of max values if needed.
 #' @import ggplot2
 #' @importFrom data.table copy
@@ -85,15 +99,17 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @family coveragePlot
 #' @export
 #' @examples
+#' # Usually run a metaplot, here a small example.
 #' library(data.table)
-#' coverage <- data.table(position = seq(20), score = cumsum(seq(20)))
+#' coverage <- data.table(position = seq(20),
+#'                        score = sample(seq(20), 20, replace = TRUE))
 #' windowCoveragePlot(coverage)
 #' # See vignette for a more practical example
 #'
 windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
-                               type = "transcript", equalMax = FALSE) {
+                               type = "transcript", scaleEqual = FALSE) {
   cov <- setDT(copy(coverage))
   if (is.null(cov$feature))
     cov[, feature := rep("meta", nrow(cov))]
@@ -108,7 +124,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
   coverage_score <- coverageScorings(cov, scoring)
 
   coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
-  if (equalMax) coverage_score[, `:=` (fraction_min=min(fraction_min))]
+  if (scaleEqual) coverage_score[, `:=` (fraction_min=min(fraction_min))]
   nGenes <- getNGenesCoverage(coverage)
   subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
   colors <- matchColors(cov, colors)
@@ -129,7 +145,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(prettyScoring(scoring), " over ", type)) +
     theme(legend.position = "none") +
-    facet_grid(fraction ~ feature, scales = ifelse(equalMax, "free_x", "free"))
+    facet_grid(fraction ~ feature, scales = ifelse(scaleEqual, "free_x", "free"))
 
   return(savePlot(plot, output))
 }
@@ -149,10 +165,13 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @inheritParams windowCoveragePlot
 #' @param legendPos a character, Default "right". Where should the fill legend
 #' be ? ("top", "bottom", "right", "left")
+#' @param addFracPlot Add plot on top of heatmap with fractions per positions
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
+#' @importFrom gridExtra grid.arrange
 #' @family coveragePlot
+#' @export
 #' @examples
 #' # An ORF
 #' grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
@@ -163,12 +182,12 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
 #'                                         downstream = 5)
 #'
-#' ORFik:::coverageHeatMap(coverage)
+#' coverageHeatMap(coverage)
 #'
 #' # See vignette for more examples
 #'
 coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
-                            legendPos = "right") {
+                            legendPos = "right", addFracPlot = FALSE) {
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
@@ -185,6 +204,12 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
                        panel.grid.minor = element_blank()) +
     scale_y_discrete(breaks = yAxisScaler(levels(coverage$fraction))) +
     theme(legend.position = legendPos)
+
+  if (addFracPlot) {
+    plot2 <- pSitePlot(coverage, forHeatmap = TRUE)
+    plot <- grid.arrange(plot2, plot + theme(legend.position = "bottom"),
+                 heights = c(1, 4))
+  }
 
   return(savePlot(plot, output))
 }

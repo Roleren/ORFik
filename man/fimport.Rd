@@ -23,3 +23,8 @@ Wraps around rtracklayer::import and tries to speed up loading with the
 use of data.table. Supports gzip, gz, bgz and bed formats.
 Also safer chromosome naming with the argument chrStyle
 }
+\details{
+NOTE: For wig you can send in 2 files, so that it automaticly merges
+forward and reverse stranded objects. You can also just send 1 wig file,
+it will then have "*" as strand.
+}

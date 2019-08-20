@@ -146,8 +146,9 @@ removeORFsWithinCDS <- function(grl, cds){
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
 removeORFsWithSameStopAsCDS <- function(grl, cds){
-  overlaps <- findOverlaps(query =  stopSites(grl, asGR = TRUE, is.sorted = T),
-                           stopSites(cds, asGR = TRUE, is.sorted = T),
+  overlaps <- findOverlaps(query =  stopSites(grl, asGR = TRUE,
+                                              is.sorted = TRUE),
+                           stopSites(cds, asGR = TRUE, is.sorted = TRUE),
                            type = "within")
   if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
   return(grl)
@@ -159,8 +160,8 @@ removeORFsWithSameStopAsCDS <- function(grl, cds){
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
 removeORFsWithSameStartAsCDS <- function(grl, cds){
-  starts <- startSites(grl, asGR = T, is.sorted = T)
-  cdsstarts <- startSites(cds, asGR = T, is.sorted = T)
+  starts <- startSites(grl, asGR = TRUE, is.sorted = TRUE)
+  cdsstarts <- startSites(cds, asGR = TRUE, is.sorted = TRUE)
   overlaps <- findOverlaps(starts, cdsstarts, type = "within")
   if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
   return(grl)
@@ -172,7 +173,7 @@ removeORFsWithSameStartAsCDS <- function(grl, cds){
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
 removeORFsWithStartInsideCDS <- function(grl, cds){
-  starts <- startSites(grl, asGR = T, is.sorted = T)
+  starts <- startSites(grl, asGR = TRUE, is.sorted = TRUE)
   overlaps <- findOverlaps(starts, cds, type = "within")
   if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
   return(grl)
