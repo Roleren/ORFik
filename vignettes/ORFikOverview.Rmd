@@ -98,9 +98,7 @@ Now lets see how easy it is to get fasta sequences from the ranges
 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-
-  extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 
-                                   fiveUTR_ORFs[1])
+  extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, fiveUTR_ORFs[1])
   # To save as .fasta do, assign to variable (seqs):
   # writeXStringSet(seqs, filepath = "uorfs.fasta")
 }
