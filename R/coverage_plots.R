@@ -105,7 +105,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #'                        score = sample(seq(20), 20, replace = TRUE))
 #' windowCoveragePlot(coverage)
 #'
-#' Multiple plots in one frame:
+#' #Multiple plots in one frame:
 #' coverage2 <- copy(coverage)
 #' coverage$fraction <- "Ribo-seq"
 #' coverage2$fraction <- "RNA-seq"
