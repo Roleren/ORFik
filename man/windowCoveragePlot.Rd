@@ -6,7 +6,7 @@
 \usage{
 windowCoveragePlot(coverage, output = NULL, scoring = "zscore",
   colors = c("skyblue4", "orange"), title = "Coverage metaplot",
-  type = "transcript")
+  type = "transcript", scaleEqual = FALSE)
 }
 \arguments{
 \item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
@@ -24,6 +24,9 @@ using binary splits with colors c('skyblue4', 'orange').}
 
 \item{type}{a character (transcript), what should legends say is
 the whole region? Transcript, gene, non coding rna etc.}
+
+\item{scaleEqual}{a logical (FALSE), should all fractions (rows), have same
+max value, for easy comparison of max values if needed.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
@@ -48,8 +51,17 @@ ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }
 \examples{
 library(data.table)
-coverage <- data.table(position = seq(20), score = cumsum(seq(20)))
+coverage <- data.table(position = seq(20),
+                       score = sample(seq(20), 20, replace = TRUE))
 windowCoveragePlot(coverage)
+
+#Multiple plots in one frame:
+coverage2 <- copy(coverage)
+coverage$fraction <- "Ribo-seq"
+coverage2$fraction <- "RNA-seq"
+dt <- rbindlist(list(coverage, coverage2))
+windowCoveragePlot(dt, scoring = "log10sum")
+
 # See vignette for a more practical example
 
 }

@@ -9,10 +9,10 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
   c_signs <- unlist(explodeCigarOps(cigar))
   c_counts <- unlist(explodeCigarOpLengths(cigar))
 
-  i = ifelse(is_plus_strand, 0L, length(c_signs) + 1L)
-  increment = ifelse(is_plus_strand, 1L, -1L)
-  limit = 0L
-  plusShift = 0L
+  i <- ifelse(is_plus_strand, 0L, length(c_signs) + 1L)
+  increment <- ifelse(is_plus_strand, 1L, -1L)
+  limit <- 0L
+  plusShift <- 0L
   while (shift >= limit) {
     i = i + increment
     if (c_signs[i] == "M") {

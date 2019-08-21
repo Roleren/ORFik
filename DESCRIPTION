@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.5.8
+Version: 1.5.9
 Encoding: UTF-8
 Authors@R: c(
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "dtc")),
@@ -37,6 +37,7 @@ Imports:
   Rsamtools (>= 1.35.0),
   BiocGenerics (>= 0.29.1),
   ggplot2 (>= 2.2.1),
+  gridExtra (>= 2.3),
   methods (>= 3.6.0)
 RoxygenNote: 6.1.1
 Suggests:

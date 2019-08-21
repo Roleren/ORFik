@@ -23,12 +23,14 @@ test_that("ribosome shifting works as intended", {
   # shiftFootprints
   shiftedReads <- shiftFootprints(footprints, shifts)
 
+  # Shifted positive
   expect_is(shiftedReads, "GRanges")
   expect_equal(length(shiftedReads), length(footprints))
   expect_equal(start(shiftedReads[1]), 24066285)
   expect_equal(as.character(strand(shiftedReads[1])), "+")
   expect_equal(shiftedReads[1]$size, 28)
 
+  # Shifted negative
   expect_equal(start(shiftedReads[16553]), 22711511)
   expect_equal(as.character(strand(shiftedReads[16553])), "-")
   expect_equal(shiftedReads[16553]$size, 30)

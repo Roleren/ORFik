@@ -5,7 +5,8 @@
 \title{Plot area around TIS as histogram}
 \usage{
 pSitePlot(hitMap, length = 29, region = "start", output = NULL,
-  type = "canonical CDS", scoring = "Averaged counts")
+  type = "canonical CDS", scoring = "Averaged counts",
+  forHeatmap = FALSE)
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
@@ -21,6 +22,10 @@ to path given. If no format is given, is save as pdf.}
 \item{type}{character (canonical CDS), type for plot}
 
 \item{scoring}{character (Average sum) which scoring did you use ?}
+
+\item{forHeatmap}{a logical (FALSE), should the plot be part of
+a heatmap? It will scale it differently. Removing x and y labels, and
+trunkate spaces between bars.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
@@ -45,7 +50,7 @@ range <- IRanges(c(rep(1, 3), 2, 3, rep(4, 2), 5, 6), width = 1 )
 reads <- GRanges("1", range, "+")
 coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
                               withFrames = TRUE)
-ORFik:::pSitePlot(coverage)
+pSitePlot(coverage)
 
 # See vignette for more examples
 

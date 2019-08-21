@@ -33,6 +33,6 @@ fread.bed(cageData)
 Other utils: \code{\link{bedToGR}},
   \code{\link{convertToOneBasedRanges}},
   \code{\link{findFa}}, \code{\link{optimizeReads}},
-  \code{\link{readBam}}
+  \code{\link{readBam}}, \code{\link{readWig}}
 }
 \concept{utils}

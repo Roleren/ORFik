@@ -157,7 +157,7 @@ asTX <- function(grl, reference) {
 #' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
 #' to transcript 3 etc.
 #' @param x IRangesList/IRanges/GRanges to map to genomic coordinates
-#' @param transcripts a GRangesList to map agains
+#' @param transcripts a GRangesList to map against
 #' @param removeEmpty a logical, remove non hit exons, else they are set
 #'  to 0.
 #' @return a GRangesList of mapped reads, names from ranges are kept.
@@ -259,6 +259,13 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' Get transcript sequence from a GrangesList and a faFile or BSgenome
 #'
 #' A small safety wrapper around \code{\link{extractTranscriptSeqs}}
+#' For debug of errors do:
+#' which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
+#'
+#' This happens usually when the grl contains chromsomes that the fasta
+#' file does not have. A normal error is that mitocondrial chromosome is
+#' called MT vs chrM even though they have same seqlevelsStyle. The
+#' above line will give you which chromosome it is missing.
 #' @param grl a GRangesList object
 #' @inheritParams findFa
 #' @param is.sorted a speedup, if you know the ranges are sorted
@@ -381,6 +388,51 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
   extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
   if(is.null(cds)) return (extendedLeaders)
   return(addCdsOnLeaderEnds(extendedLeaders, cds))
+}
+
+#' Extend the Trailers transcription stop sites
+#'
+#' Will extend the trailers or transcripts downstream by extension.
+#' Remember the extension is general not relative, that means splicing
+#' will not be taken into account.
+#' Requires the \code{grl} to be sorted beforehand,
+#' use \code{\link{sortPerGroup}} to get sorted grl.
+#' @param grl usually a \code{\link{GRangesList}} of 3' utrs or transcripts.
+#' Can be used for any extension of groups.
+#' @param extension an integer, how much to extend the leaders.
+#' Or a GRangesList where start / stops by strand are the positions
+#' to use as new starts.
+#' @return an extended GRangeslist
+#' @export
+#' @examples
+#' library(GenomicFeatures)
+#' samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                           package = "GenomicFeatures")
+#' txdb <- loadDb(samplefile)
+#' threeUTRs <- threeUTRsByTranscript(txdb) # <- extract only 5' leaders
+#' tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+#' ## now try(extend downstream 1000):
+#' extendTrailers(threeUTRs, extension = 1000)
+#' ## Or on transcripts
+#' extendTrailers(tx, extension = 1000)
+#'
+extendTrailers <- function(grl, extension = 1000L) {
+  if (is(extension, "numeric") && length(extension) == 1L) {
+    posIndices <- strandBool(grl)
+    promo <- flank(unlist(lastExonPerGroup(grl), use.names = FALSE),
+                   width = extension, start = FALSE)
+    newEnds <- rep(NA, length(grl))
+    newEnds[posIndices] <- as.integer(end(promo[posIndices]))
+    newEnds[!posIndices] <- as.integer(start(promo[!posIndices]))
+  } else if (is.grl(class(grl))) {
+    starts <- startSites(extension)
+    changedGRL <-upstreamOfPerGroup(grl[names(extension)], starts,
+                                    allowOutside = TRUE)
+    return(changedGRL)
+  } else {
+    stop("extension must either be an integer, or a GRangesList")
+  }
+  return(assignLastExonsStopSite(grl, newEnds))
 }
 
 #' Subset GRanges to get desired frame. GRanges object should be beforehand

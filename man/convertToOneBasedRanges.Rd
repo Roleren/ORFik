@@ -46,6 +46,6 @@ NOTE: Does not support paired end reads for the moment!
 \seealso{
 Other utils: \code{\link{bedToGR}}, \code{\link{findFa}},
   \code{\link{fread.bed}}, \code{\link{optimizeReads}},
-  \code{\link{readBam}}
+  \code{\link{readBam}}, \code{\link{readWig}}
 }
 \concept{utils}

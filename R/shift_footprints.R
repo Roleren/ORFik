@@ -44,63 +44,41 @@
 #' }
 shiftFootprints <- function(footprints, shifts) {
   if (!is(shifts, "data.frame")) stop("shifts must be data.frame/data.table")
+  if (nrow(shifts) == 0) stop("No shifts in data.frame")
+
   selected_lengths <- shifts$fraction
-  selected_shifts <- -1 * shifts$offsets_start
-  allFootrpintsShifted <- GRanges()
+  selected_shifts <- shifts$offsets_start
 
-  if (length(selected_lengths) != length(selected_shifts)) {
-      stop("Incorrect input. Not equal number of elements in",
-           " selected_lengths and selected_shifts!")
-  }
-  if (sum(selected_lengths > abs(selected_shifts)) !=
-      length(selected_shifts)) {
-      stop("Incorrect input. selected_shifts cant be bigger",
-           " than selected_lengths!")
-  }
+  lengthsAll <- readWidths(footprints)
+  validLengths <- lengthsAll %in% selected_lengths
+  lengthsAll <- lengthsAll[validLengths]
+  footprints <- footprints[validLengths]
+  cigarsAll <- cigar(footprints)
 
-  for (i in seq_along(selected_lengths)) {
-      message("Shifting footprints of length ", selected_lengths[i])
-      riboReadsW <- footprints[readWidths(footprints) == selected_lengths[i]]
-      if (length(riboReadsW) == 0) {
-          next
-      }
-      is_cigar <- width(riboReadsW) != readWidths(riboReadsW)
-      cigar_strings <- cigar(riboReadsW[is_cigar])
-      sizes <- readWidths(riboReadsW)
+  shiftsAll <- -selected_shifts[chmatch(as.character(lengthsAll),
+                          as.character(selected_lengths))]
 
-      riboReadsW <- granges(riboReadsW, use.mcols = TRUE)
-      riboReadsW$size <- sizes  #move footprint length to size
-      riboReadsW <- resize(riboReadsW, 1L)  #resize to 5' only
+  # Shift cigar and map back to corrected GRanges.
+  is_pos <- strandBool(footprints)
+  starts <- rep(NA, length(cigarsAll))
+  ends <- starts
+  starts[is_pos] <- shiftsAll[is_pos] + 1
+  ends[!is_pos] <- lengthsAll[!is_pos] - shiftsAll[!is_pos]
 
-      cigars <- riboReadsW[is_cigar]
-      notCigars <- riboReadsW[!is_cigar]
+  shiftedCigar <- cigarNarrow(cigarsAll, starts, ends)
 
-      # Not Cigars - shift 5' ends, + shift right, - shift left
-      if (length(notCigars) != 0) {
-          is_plus <- as.vector(strand(notCigars) == "+")
-          shiftedNotCigarsPlus <- shift(notCigars[is_plus],
-                                        selected_shifts[i])
-          shiftedNotCigarsMinus <- shift(notCigars[!is_plus],
-                                         -1 * selected_shifts[i])
-          allFootrpintsShifted <- c(allFootrpintsShifted,
-                                    shiftedNotCigarsPlus,
-                                    shiftedNotCigarsMinus)
-      }
-      # Cigars
-      if (length(cigars) != 0) {
-          is_plus <- as.vector(strand(cigars) == "+")
-          shift_by <- rep(selected_shifts[i], length(cigars))
-          shift_by <- mapply(parseCigar, cigar_strings, shift_by, is_plus)
-          shift_by[!is_plus] <- -1 * shift_by[!is_plus]
-          shifted_cigars <- shift(cigars, shift_by)
-          allFootrpintsShifted <- c(allFootrpintsShifted, shifted_cigars)
-      }
-  }
+  pos <- start(footprints) + unlist(attributes(shiftedCigar),
+                                    use.names = FALSE)
+
+  shifted <- GAlignments(seqnames(footprints), pos = pos,
+                         cigar = shiftedCigar, strand = strand(footprints))
+  shifted <- convertToOneBasedRanges(shifted)
+  shifted$size <- lengthsAll
 
   message("Sorting shifted footprints...")
-  allFootrpintsShifted <- sortSeqlevels(allFootrpintsShifted)
-  allFootrpintsShifted <- sort(allFootrpintsShifted)
-  return(allFootrpintsShifted)
+  shifted <- sortSeqlevels(shifted)
+  shifted <- sort(shifted)
+  return(shifted)
 }
 
 #' Detect ribosome shifts
@@ -184,7 +162,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     stop("txdb and footprints did not have any matched seqnames")
   }
   txNames <- txNames[txNames %in% names(cds)]
-  if (is.null(tx)) tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+  if (is.null(tx)) tx <- loadRegion(txdb)
   tx <- tx[txNames]
 
   # find periodic read lengths
@@ -202,9 +180,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
                               acceptedLengths = validLengths)
     offset <- rw[, .(offsets_start = changePointAnalysis(score)),
                  by = fraction]
+    # Figure how this is possible ->
+    offset <- offset[offsets_start < 0, ]
   }
   if (stop & !is.null(minThreeUTR)) {
-    threeUTRs <- threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+    threeUTRs <- loadRegion(txdb, "trailers")[txNames]
     rw <- windowPerReadLength(grl = threeUTRs, tx = tx, reads = footprints,
                               pShifted = FALSE, upstream = 30, downstream = 29,
                               acceptedLengths = validLengths)
@@ -217,3 +197,4 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 
   return(offset)
 }
+

@@ -5,7 +5,7 @@
 \title{Create a heatmap of coverage}
 \usage{
 coverageHeatMap(coverage, output = NULL, scoring = "zscore",
-  legendPos = "right")
+  legendPos = "right", addFracPlot = FALSE)
 }
 \arguments{
 \item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
@@ -18,6 +18,8 @@ transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
 
 \item{legendPos}{a character, Default "right". Where should the fill legend
 be ? ("top", "bottom", "right", "left")}
+
+\item{addFracPlot}{Add plot on top of heatmap with fractions per positions}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
@@ -46,7 +48,7 @@ reads$size <- c(rep(28, 5), rep(29, 4)) # read size
 coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
                                         downstream = 5)
 
-ORFik:::coverageHeatMap(coverage)
+coverageHeatMap(coverage)
 
 # See vignette for more examples
 
