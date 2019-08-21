@@ -9,7 +9,7 @@
 #' @return a GRanges object from bed
 #' @family utils
 #'
-bedToGR <- function(x, bed6 = TRUE){
+bedToGR <- function(x, bed6 = TRUE) {
 
   if (!bed6) {
     gr <- GRanges(x[, 1L], IRanges(x[, 2L] + 1L, x[, 3L]))
@@ -79,7 +79,7 @@ readBam <- function(path, chrStyle = NULL) {
   return(matchSeqStyle(readGAlignments(path), chrStyle))
 }
 
-# Custom wig reader
+#' Custom wig reader
 #'
 #' Given 2 wig files, first is forward second is reverse.
 #' Merge them and return as GRanges object.
@@ -220,7 +220,7 @@ optimizeReads <- function(grl, reads) {
 convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE,
                                     addSizeColumn = FALSE,
-                                    after.softclips = TRUE){
+                                    after.softclips = TRUE) {
   if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
                                       load as GAlignments instead!")
 
