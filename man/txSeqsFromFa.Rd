@@ -22,6 +22,12 @@ A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 For debug of errors do:
 which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
 }
+\details{
+This happens usually when the grl contains chromsomes that the fasta
+file does not have. A normal error is that mitocondrial chromosome is
+called MT vs chrM even though they have same seqlevelsStyle. The
+above line will give you which chromosome it is missing.
+}
 \seealso{
 Other ExtendGenomicRanges: \code{\link{asTX}},
   \code{\link{coveragePerTiling}},

@@ -102,7 +102,7 @@ readWig <- function(path, chrStyle = NULL) {
 #' Load any type of sequencing reads
 #'
 #' Wraps around rtracklayer::import and tries to speed up loading with the
-#' use of data.table. Supports gzip, gz, bgz and bed formats.
+#' use of data.table. Supports gzip, gz, bgz compression formats.
 #' Also safer chromosome naming with the argument chrStyle
 #'
 #' NOTE: For wig you can send in 2 files, so that it automaticly merges
@@ -125,19 +125,19 @@ fimport <- function(path, chrStyle = NULL) {
         } else stop("only wig format allowed for multiple files!")
       } else { # Only 1 file path given
           if (file_ext(path) == "bam") {
-          return(readBam(path, chrStyle))
+            return(readBam(path, chrStyle))
         } else if (file_ext(path) == "bed" |
                    file_ext(file_path_sans_ext(path,
                                                compression = TRUE)) == "bed") {
-          return(fread.bed(path, chrStyle))
+            return(fread.bed(path, chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
       }
     } else stop(paste0(path, "does not exist as File/Files!"))
   } else if (is.gr_or_grl(path) | is(path, "GAlignments")) {
-    return(matchSeqStyle(path, chrStyle))
+      return(matchSeqStyle(path, chrStyle))
   } else {
-    stop("path must be either a valid character",
-         " filepath or ranged object.")
+      stop("path must be either a valid character",
+           " filepath or ranged object.")
   }
 }
 

@@ -17,7 +17,8 @@
 #' @param type character (canonical CDS), type for plot
 #' @param scoring character (Average sum) which scoring did you use ?
 #' @param forHeatmap a logical (FALSE), should the plot be part of
-#' a heatmap? It will scale it differently.
+#' a heatmap? It will scale it differently. Removing x and y labels, and
+#' trunkate spaces between bars.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
@@ -99,11 +100,18 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @family coveragePlot
 #' @export
 #' @examples
-#' # Usually run a metaplot, here a small example.
 #' library(data.table)
 #' coverage <- data.table(position = seq(20),
 #'                        score = sample(seq(20), 20, replace = TRUE))
 #' windowCoveragePlot(coverage)
+#'
+#' Multiple plots in one frame:
+#' coverage2 <- copy(coverage)
+#' coverage$fraction <- "Ribo-seq"
+#' coverage2$fraction <- "RNA-seq"
+#' dt <- rbindlist(list(coverage, coverage2))
+#' windowCoveragePlot(dt, scoring = "log10sum")
+#'
 #' # See vignette for a more practical example
 #'
 windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",

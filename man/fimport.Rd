@@ -20,7 +20,7 @@ a GAlignment/GRanges object depending on input.
 }
 \description{
 Wraps around rtracklayer::import and tries to speed up loading with the
-use of data.table. Supports gzip, gz, bgz and bed formats.
+use of data.table. Supports gzip, gz, bgz compression formats.
 Also safer chromosome naming with the argument chrStyle
 }
 \details{

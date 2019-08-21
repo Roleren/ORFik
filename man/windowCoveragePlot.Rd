@@ -50,11 +50,18 @@ Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }
 \examples{
-# Usually run a metaplot, here a small example.
 library(data.table)
 coverage <- data.table(position = seq(20),
                        score = sample(seq(20), 20, replace = TRUE))
 windowCoveragePlot(coverage)
+
+Multiple plots in one frame:
+coverage2 <- copy(coverage)
+coverage$fraction <- "Ribo-seq"
+coverage2$fraction <- "RNA-seq"
+dt <- rbindlist(list(coverage, coverage2))
+windowCoveragePlot(dt, scoring = "log10sum")
+
 # See vignette for a more practical example
 
 }
