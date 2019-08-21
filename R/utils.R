@@ -124,20 +124,20 @@ fimport <- function(path, chrStyle = NULL) {
           return(readWig(path, chrStyle))
         } else stop("only wig format allowed for multiple files!")
       } else { # Only 1 file path given
-          if (file_ext(path) == "bam") {
-            return(readBam(path, chrStyle))
+        if (file_ext(path) == "bam") {
+          return(readBam(path, chrStyle))
         } else if (file_ext(path) == "bed" |
                    file_ext(file_path_sans_ext(path,
                                                compression = TRUE)) == "bed") {
-            return(fread.bed(path, chrStyle))
+          return(fread.bed(path, chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
       }
     } else stop(paste0(path, "does not exist as File/Files!"))
   } else if (is.gr_or_grl(path) | is(path, "GAlignments")) {
-      return(matchSeqStyle(path, chrStyle))
+    return(matchSeqStyle(path, chrStyle))
   } else {
-      stop("path must be either a valid character",
-           " filepath or ranged object.")
+    stop("path must be either a valid character",
+         " filepath or ranged object.")
   }
 }
 
@@ -247,7 +247,6 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     gr <- resize(gr, width = 1, fix = "end")
   } else if(method == "tileAll") {
     gr <- unlist(tile(gr, width = 1), use.names = FALSE)
-
   } else if (method == "middle") {
     ranges(gr) <- IRanges(start(gr) + ceiling((end(gr) - start(gr)) / 2),
                           width = 1)
