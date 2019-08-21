@@ -18,7 +18,7 @@
 #' @param scoring character (Average sum) which scoring did you use ?
 #' @param forHeatmap a logical (FALSE), should the plot be part of
 #' a heatmap? It will scale it differently. Removing x and y labels, and
-#' trunkate spaces between bars.
+#' truncate spaces between bars.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @importFrom data.table setDF
