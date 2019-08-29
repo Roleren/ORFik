@@ -26,7 +26,7 @@ per gene.}
 \item{stopOnEmpty}{logical TRUE, stop if no valid transcripts are found ?}
 }
 \value{
-a character vector of valid tramscript names
+a character vector of valid transcript names
 }
 \description{
 Filter transcripts to those who have leaders, CDS, trailers of some lengths,
@@ -34,15 +34,18 @@ you can also pick the longest per gene.
 }
 \details{
 If a transcript does not have a trailer, then the length is 0,
-so they will be filtered out if you minThreeUTR to 1. So only transcripts
-with leaders, cds and trailers will be returned. You can set the integer
-to 0, that will return all within that group.
+so they will be filtered out if you set minThreeUTR to 1.
+So only transcripts with leaders, cds and trailers will be returned.
+You can set the integer to 0, that will return all within that group.
 
 If your annotation does not have leaders or trailers, set them to NULL.
 }
 \examples{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
-txNames <- filterTranscripts(txdb)
+txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
+                             minThreeUTR = 1)
+loadRegion(txdb, "mrna")[txNames]
+loadRegion(txdb, "5utr")[txNames]
 
 }

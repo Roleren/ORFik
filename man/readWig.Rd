@@ -2,8 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{readWig}
 \alias{readWig}
-\title{Given 2 wig files, first is forward second is reverse.
-Merge them and return as GRanges object.}
+\title{Custom wig reader}
 \usage{
 readWig(path, chrStyle = NULL)
 }

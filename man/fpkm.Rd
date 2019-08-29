@@ -26,6 +26,12 @@ fragments". When calculating RiboSeq data FPKM over ORFs, use ORFs as
 `grl`. When calculating RNASeq data FPKM, use full transcripts as
 `grl`.
 }
+\details{
+Note also that you must consider if you will use the whole read
+library or just the reads overlapping `grl`.
+To only overlap do:
+reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
+}
 \examples{
 ORF <- GRanges(seqnames = "1",
                ranges = IRanges(start = c(1, 10, 20),

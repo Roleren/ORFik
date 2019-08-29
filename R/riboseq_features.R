@@ -4,6 +4,11 @@
 #' fragments". When calculating RiboSeq data FPKM over ORFs, use ORFs as
 #' `grl`. When calculating RNASeq data FPKM, use full transcripts as
 #' `grl`.
+#'
+#' Note also that you must consider if you will use the whole read
+#' library or just the reads overlapping `grl`.
+#' To only overlap do:
+#' reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
 #' @references doi: 10.1038/nbt.1621
 #' @param grl a \code{\link{GRangesList}} object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
