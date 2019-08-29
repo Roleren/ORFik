@@ -160,6 +160,10 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 
 #' Create a heatmap of coverage
 #'
+#' Rows: Position in region
+#' Columns: Read length
+#' Index intensity: (color) coverage scoring per index.
+#'
 #' Coverage rows in heat map is fraction, usually fractions is divided into
 #' unique read lengths (standard Illumina is 76 unique widths, with some
 #' minimum cutoff like 15.)
