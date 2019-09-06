@@ -160,6 +160,10 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 
 #' Create a heatmap of coverage
 #'
+#' Rows: Position in region
+#' Columns: Read length
+#' Index intensity: (color) coverage scoring per index.
+#'
 #' Coverage rows in heat map is fraction, usually fractions is divided into
 #' unique read lengths (standard Illumina is 76 unique widths, with some
 #' minimum cutoff like 15.)
@@ -225,7 +229,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' Helper function for writing plots to disc
 #' @param plot the ggplot to save
 #' @param output character string (NULL), if set, saves the plot as pdf or png
-#' to path given. If no format is given, is save as pdf.
+#' to path given. If no format is given, is save as png.
 #' @param width width of output in mm
 #' @param height height of output in mm
 #' @param dpi (300) dpi of plot
@@ -237,7 +241,7 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150,
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)
-      if (ext != "pdf" & ext != "png") output <- paste0(output, ".pdf")
+      if (ext != "pdf" & ext != "png") output <- paste0(output, ".png")
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
              dpi = dpi, limitsize = FALSE)
     } else {
@@ -257,7 +261,7 @@ xAxisScaler <- function(covPos) {
   pos <- length(unique(covPos))
   min <- min(covPos)
   max <- max(covPos)
-  by <- ifelse(pos > 70, ifelse(pos > 150, ifelse(pos > 300, 9, 6), 3), 1)
+  by <- ifelse(pos > 55, ifelse(pos > 150, ifelse(pos > 300, 9, 6), 3), 1)
 
   return(seq(min, max, by) - (min %% by))
 }

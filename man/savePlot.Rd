@@ -10,7 +10,7 @@ savePlot(plot, output = NULL, width = 200, height = 150, dpi = 300)
 \item{plot}{the ggplot to save}
 
 \item{output}{character string (NULL), if set, saves the plot as pdf or png
-to path given. If no format is given, is save as pdf.}
+to path given. If no format is given, is save as png.}
 
 \item{width}{width of output in mm}
 

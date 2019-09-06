@@ -25,7 +25,7 @@ to path given. If no format is given, is save as pdf.}
 
 \item{forHeatmap}{a logical (FALSE), should the plot be part of
 a heatmap? It will scale it differently. Removing x and y labels, and
-trunkate spaces between bars.}
+truncate spaces between bars.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
