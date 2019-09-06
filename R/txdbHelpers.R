@@ -129,6 +129,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' Useful to allow fast TxDb loader like .db
 #' @param txdb a TxDb file or a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+#' @inheritParams matchSeqStyle
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
 #' @export
@@ -139,7 +140,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'                         package = "GenomicFeatures")
 #' txdb <- loadDb(txdbFile)
 #'
-loadTxdb <- function(txdb) {
+loadTxdb <- function(txdb, chrStyle = NULL) {
   #TODO: Check that is is an open connection!
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
@@ -150,7 +151,7 @@ loadTxdb <- function(txdb) {
     } else stop("when txdb is path, must be one of .gff, .gtf and .db")
 
   } else if(!is(txdb, "TxDb")) stop("txdb must be path or TxDb")
-  return(txdb)
+  return(matchSeqStyle(txdb, chrStyle))
 }
 
 #' Load transcript region
