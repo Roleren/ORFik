@@ -9,7 +9,8 @@ fpkm(grl, reads, pseudoCount = 0)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
-ORFs as a special case (uORFs, potential new cds' etc).}
+ORFs as a special case (uORFs, potential new cds' etc). If
+regions are not spliced you can send a \code{\link{GRanges}} object.}
 
 \item{reads}{a GAlignment, GRanges or GRangesList object,
 usually of RiboSeq, RnaSeq, CageSeq, etc.}
@@ -22,15 +23,16 @@ a numeric vector with the fpkm values
 }
 \description{
 FPKM is short for "Fragments Per Kilobase of transcript per Million
-fragments". When calculating RiboSeq data FPKM over ORFs, use ORFs as
-`grl`. When calculating RNASeq data FPKM, use full transcripts as
-`grl`.
+fragments in library". When calculating RiboSeq data FPKM over ORFs,
+use ORFs as `grl`.
+When calculating RNASeq data FPKM, use full transcripts as
+`grl`. It is equal to RPKM given that you do not have paired end reads.
 }
 \details{
 Note also that you must consider if you will use the whole read
 library or just the reads overlapping `grl`.
 To only overlap do:
-reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
+reads <- reads[countOverlaps(reads, grl) > 0]
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
