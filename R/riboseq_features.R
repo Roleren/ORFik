@@ -1,18 +1,20 @@
 #' Create normalizations of overlapping read counts.
 #'
 #' FPKM is short for "Fragments Per Kilobase of transcript per Million
-#' fragments". When calculating RiboSeq data FPKM over ORFs, use ORFs as
-#' `grl`. When calculating RNASeq data FPKM, use full transcripts as
-#' `grl`.
+#' fragments in library". When calculating RiboSeq data FPKM over ORFs,
+#' use ORFs as `grl`.
+#' When calculating RNASeq data FPKM, use full transcripts as
+#' `grl`. It is equal to RPKM given that you do not have paired end reads.
 #'
 #' Note also that you must consider if you will use the whole read
 #' library or just the reads overlapping `grl`.
 #' To only overlap do:
-#' reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
+#' reads <- reads[countOverlaps(reads, grl) > 0]
 #' @references doi: 10.1038/nbt.1621
 #' @param grl a \code{\link{GRangesList}} object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
-#'  ORFs as a special case (uORFs, potential new cds' etc).
+#'  ORFs as a special case (uORFs, potential new cds' etc). If
+#'  regions are not spliced you can send a \code{\link{GRanges}} object.
 #' @param reads a GAlignment, GRanges or GRangesList object,
 #'  usually of RiboSeq, RnaSeq, CageSeq, etc.
 #' @param pseudoCount an integer, by default is 0, set it to 1 if you want to
@@ -30,7 +32,12 @@
 #' fpkm(grl, RFP)
 #'
 fpkm <- function(grl, reads, pseudoCount = 0) {
-  grl_len <- widthPerGroup(grl, FALSE)
+  if (is.gr_or_grl(grl)) {
+    if(is.grl(grl)) {
+      grl_len <- widthPerGroup(grl, FALSE)
+    } else grl_len <- width(grl)
+  } else stop("grl must be GRangesList or GRanges")
+
   overlaps <- countOverlaps(grl, reads)
   librarySize <- length(reads)
   return(fpkm_calc(overlaps, grl_len, librarySize) + pseudoCount)

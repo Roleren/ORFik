@@ -23,17 +23,17 @@ splitting, tiling etc.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/JokingHero/ORFik}
-  \item Report bugs at \url{https://github.com/JokingHero/ORFik/issues}
+  \item \url{https://github.com/Roleren/ORFik}
+  \item Report bugs at \url{https://github.com/Roleren/ORFik/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Kornel Labun \email{kornellabun@gmail.com} [copyright holder]
+\strong{Maintainer}: Haakon Tjeldnes \email{hauken_heyken@hotmail.com} [data contributor]
 
 Authors:
 \itemize{
-  \item Haakon Tjeldnes \email{hauken_heyken@hotmail.com} [data contributor]
+  \item Kornel Labun \email{kornellabun@gmail.com} [copyright holder]
 }
 
 Other contributors:

@@ -36,7 +36,7 @@ BiocManager::install("ORFik", version = "devel")
 Package is also available here on github
 ```r
 library(devtools)
-install_github("JokingHero/ORFik")
+install_github("Roleren/ORFik")
 ```  
 
 #### More information

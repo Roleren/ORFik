@@ -1,11 +1,11 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.5.10
+Version: 1.5.11
 Encoding: UTF-8
 Authors@R: c(
-  person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "dtc")),
-  person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cre", "cph")),
+  person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "cre", "dtc")),
+  person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cph")),
   person(given = "Katarzyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
   person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")) )
 Description: Tools for manipulation of sequence-, RiboSeq-, RNASeq- and CageSeq data. 
@@ -16,8 +16,8 @@ Description: Tools for manipulation of sequence-, RiboSeq-, RNASeq- and CageSeq 
 biocViews: ImmunoOncology, Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage, Alignment, DataImport
 License: MIT + file LICENSE
 LazyData: TRUE
-BugReports: https://github.com/JokingHero/ORFik/issues
-URL: https://github.com/JokingHero/ORFik
+BugReports: https://github.com/Roleren/ORFik/issues
+URL: https://github.com/Roleren/ORFik
 Depends:
   R (>= 3.6.0),
   IRanges (>= 2.17.1),
