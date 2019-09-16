@@ -55,12 +55,17 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
 #' Restrict extension of 5' UTRs to closest upstream leader end
 #'
 #' Basicly this function restricts all startSites, to the upstream GRangesList
-#'  objects end. Usually leaders, for CAGE.
+#' objects end. Usually leaders, for CAGE.
+#' Example: leader1: start on 10, leader2: stop on 8,
+#' extend leader1 to 5 -> this function will resize leader1
+#' to 9, to be outside leader2, so that CAGE reads can not wrongly overlap.
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param shiftedfiveUTRs The 5' leader sequences as GRangesList
 #'  shifted by CAGE
 #' @return GRangesList object of restricted fiveUTRs
 restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs) {
+  if (length(fiveUTRs) != length(shiftedfiveUTRs))
+    stop("fiveUTRs and shifted must be equal size!")
 
   startSitesGR <- startSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
   stopSitesGR <- stopSites(fiveUTRs, asGR = TRUE, is.sorted = TRUE)
@@ -72,7 +77,9 @@ restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs) {
                                        to(overlapsShifted)]
 
   # remove overlaps also in overlapsShifted
-  overlapsShifted <- overlapsShifted[!(overlapsShifted %in% overlaps)]
+  if (length(overlapsShifted) > 0 & length(overlaps) > 0)
+    overlapsShifted <- overlapsShifted[!(overlapsShifted %in% overlaps)]
+
   # for all duplicates, choose closest
   dt <- data.table(from = from(overlapsShifted), to = to(overlapsShifted))
   dt$distance <- distance(startSitesGR[from(overlapsShifted)],
