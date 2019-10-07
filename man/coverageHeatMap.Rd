@@ -37,10 +37,14 @@ minimum cutoff like 15.)
 Coverage column in heat map is score, default zscore of counts. These are
 the relative positions you are plotting to. Like +/- relative to TIS or TSS.
 
-See vignette for example
-
+Colors:
 Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
+Standard colors are:
+0 reads in whole readlength: gray
+few reads in position: white
+medium reads in position: yellow
+many reads in position: dark blue
 }
 \examples{
 # An ORF

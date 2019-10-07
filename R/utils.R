@@ -72,6 +72,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @param path a character path to .bam file
 #' @inheritParams matchSeqStyle
 #' @return a GAlignment object of bam file
+#' @export
 #' @family utils
 #'
 readBam <- function(path, chrStyle = NULL) {
@@ -128,7 +129,9 @@ fimport <- function(path, chrStyle = NULL) {
           return(readBam(path, chrStyle))
         } else if (file_ext(path) == "bed" |
                    file_ext(file_path_sans_ext(path,
-                                               compression = TRUE)) == "bed") {
+                                               compression = TRUE)) == "bed" |
+                   file_ext(file_path_sans_ext(path, compression = FALSE))
+                                                                  == "bed") {
           return(fread.bed(path, chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
       }

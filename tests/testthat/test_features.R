@@ -300,20 +300,6 @@ test_that("rankOrder works as intended", {
   expect_equal(ranks, c(1, 2, 3, 1))
 })
 
-test_that("computeFeatures works as intended", {
-  # test from example table in orfik
-  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP7,
-                            RNA = RNAGAlign, tx = tx, fiveUTRs = fiveUTRs,
-                            cds = cds, threeUTRs = threeUTRs, riboStart = 26,
-                            riboStop = 34)
-  expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 15)
-  expect_equal(nrow(dt), 4)
-  # load file
-  load(system.file("extdata", "features.rdata", package = "ORFik"))
-  expect_equal(dt, featureExamples) # should be equal to saved version
-})
-
 test_that("initiationScore works as intended", {
 
   # test from example table in orfik
@@ -344,4 +330,19 @@ test_that("initiationScore works as intended", {
   test_result <- initiationScore(neg_control, cds, tx, RFP, pShifted = TRUE)
   names(test_result) <- NULL
   expect_equal(round(test_result, 2), 0) # neg should score 0
+})
+
+test_that("computeFeatures works as intended", {
+  # test from example table in orfik
+  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP7,
+                            RNA = RNAGAlign, tx = tx, fiveUTRs = fiveUTRs,
+                            cds = cds, threeUTRs = threeUTRs, riboStart = 26,
+                            riboStop = 34)
+  expect_is(dt, "data.table")
+  expect_equal(ncol(dt), 16)
+  expect_equal(nrow(dt), 4)
+  # load file
+  load(system.file("extdata", "features.rdata", package = "ORFik"))
+  expect_equal(setDF(dt), setDF(featureExamples))
+  # should be equal to saved version
 })

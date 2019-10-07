@@ -79,6 +79,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' no plot will be shown in session. NULL is returned and object is saved to
 #' output.
 #'
+#' Colors:
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param coverage a data.table, e.g. output of scaledWindowCoverage
@@ -170,10 +171,15 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' Coverage column in heat map is score, default zscore of counts. These are
 #' the relative positions you are plotting to. Like +/- relative to TIS or TSS.
 #'
-#' See vignette for example
-#'
+#' Colors:
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
+#' Standard colors are:
+#' 0 reads in whole readlength: gray
+#' few reads in position: white
+#' medium reads in position: yellow
+#' many reads in position: dark blue
+#'
 #' @inheritParams windowCoveragePlot
 #' @param legendPos a character, Default "right". Where should the fill legend
 #' be ? ("top", "bottom", "right", "left")

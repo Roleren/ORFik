@@ -12,7 +12,7 @@ reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
 \item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
 
 \item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
- with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges or GAlignment.
 NOTE: If it is a .bam file, it will add a score column by running:
 convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
@@ -82,6 +82,7 @@ cage <- GenomicRanges::GRanges(
 # notice also that seqnames use different naming, this is fixed by ORFik
 # finally reassign TSS for fiveUTRs
 reassignTSSbyCage(fiveUTRs, cage)
+# See vignette for example using gtf file and real CAGE data.
 
 }
 \seealso{

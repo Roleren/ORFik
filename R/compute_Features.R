@@ -184,7 +184,17 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
   rfp <- optimizeReads(tx, RFP)
 
   #### Get all features, append 1 at a time, to save memory ####
-  scores <- data.table(floss = floss(grl, rfp, cds, riboStart, riboStop))
+
+  scores <- data.table(countRFP = countOverlaps(grl, rfp))
+  if (!is.null(RNA)) { # if rna seq is included
+    TE <- translationalEff(grl, RNA, rfp, tx, with.fpkm = TRUE)
+    scores[, te := TE$te]
+    scores[, fpkmRFP := TE$fpkmRFP]
+    scores[, fpkmRNA := TE$fpkmRNA]
+  } else {
+    scores[, fpkmRFP := fpkm(grl, rfp)]
+  }
+  scores[, floss := floss(grl, rfp, cds, riboStart, riboStop)]
   scores[, entropyRFP := entropy(grl, rfp)]
   scores[, disengagementScores := disengagementScore(grl, rfp, tx, TRUE)]
   scores[, RRS := ribosomeReleaseScore(grl, rfp, threeUTRs, RNA)]
@@ -194,14 +204,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
   }
 
-  if (!is.null(RNA)) { # if rna seq is included
-    TE <- translationalEff(grl, RNA, rfp, tx, with.fpkm = TRUE)
-    scores[, te := TE$te]
-    scores[, fpkmRFP := TE$fpkmRFP]
-    scores[, fpkmRNA := TE$fpkmRNA]
-  } else {
-    scores[, fpkmRFP := fpkm(grl, rfp)]
-  }
+
   if (orfFeatures) { # if features are found for orfs
     scores[, ORFScores := orfScore(grl, rfp, grl.is.sorted)$ORFScores]
     scores[, ioScore := insideOutsideORF(grl, rfp, tx,

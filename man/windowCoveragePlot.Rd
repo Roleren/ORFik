@@ -46,6 +46,7 @@ it will automaticly plot the figure in your session. If output is assigned,
 no plot will be shown in session. NULL is returned and object is saved to
 output.
 
+Colors:
 Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
 }

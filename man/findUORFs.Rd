@@ -37,7 +37,7 @@ want to extend 5' leaders downstream of CDS's, to allow upstream ORFs that
 can overlap into CDS's.}
 
 \item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
- with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges or GAlignment.
 NOTE: If it is a .bam file, it will add a score column by running:
 convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
