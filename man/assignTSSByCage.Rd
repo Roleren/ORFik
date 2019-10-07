@@ -9,11 +9,12 @@ assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
   preCleanup = TRUE)
 }
 \arguments{
-\item{txdb}{a TxDb file or a path to one of:
-(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, an ORFik experiment or
+a path to one of:
+ (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
 \item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
- with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
+with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges or GAlignment.
 NOTE: If it is a .bam file, it will add a score column by running:
 convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}

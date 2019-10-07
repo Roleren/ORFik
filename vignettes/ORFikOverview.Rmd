@@ -12,9 +12,9 @@ vignette: >
 
 # Introduction
 
-Welcome to the `ORFik` package. This vignette will walk you through our main 
-package usage with examples. `ORFik` is an R package containing various 
-functions for analysis of RiboSeq, RNASeq and CageSeq data.  
+Welcome to the `ORFik` package. This vignette will walk you through our detailed 
+package usage with examples, to just see how to get a ORFik report, see the other vignette.
+`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq and CageSeq data.  
 
 `ORFik` currently supports:  
 
@@ -103,33 +103,12 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # writeXStringSet(seqs, filepath = "uorfs.fasta")
 }
 ```
-
-# CageSeq data for 5' UTR re-annotation
-
-In the prerevious example we used the refence annotation of the 5' UTRs
-from the package GenomicFeatures. Here we will use advantage of CageSeq data to 
-set new Transcription Start Sites (TSS) and re-annotate 5' UTRs.
-
-```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
-# path to example CageSeq data from hg19 heart sample
-cageData <- system.file("extdata", "cage-seq-heart.bed.bgz", 
-                        package = "ORFik")
-# get new Transcription Start Sites using CageSeq dataset
-newFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData)
-newFiveUTRs
-```
-
-You will now see that most of the transcription start sites have changed. 
-Depending on the species, regular annotations might be incomplete or not 
-specific enough for your purposes. 
-
-NOTE: IF you want to edit the whole txdb / gtf file, use reassignTxDbByCage.
-And save this to get the new gtf with reannotated leaders by CAGE.
+You can see orf 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 bases. We will now look on ORFik functions to get startcodons and stopcodon etc.
 
 # New GRanges and GRangesList utilities for ORFs
 
 `ORFik` contains functions that can be utilized to speed up your coding.
-Check documentations for these functions: `unlistGrl`, `sortPerGroup`, 
+Check documentations for these functions: `sortPerGroup`, `unlistGrl`, 
 `strandBool`, `tile1`.
 
 ## Grouping ORFs
@@ -162,10 +141,10 @@ ORFik provides several functions for filtering. A problem with the
 original GenomicRanges container, is that filtering on GRanges objects
 are much easier than on GRangesList objects, ORFik tries to fix this.
 
-In this example we will filter out all orfs as following:
-1. First group GRangesList by ORFs
-2. width < 60
-3. number of exons < 2
+In this example we will filter out all orfs as following:\n
+1. First group GRangesList by ORFs\n
+2. width < 60\n
+3. number of exons < 2\n
 4. strand is negative
 
 ```{r eval = TRUE, echo = TRUE}
@@ -220,6 +199,95 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 
 Many more operations are also supported for manipulation of ORFs
 
+# When to use which ORFfinding function
+
+ORFik supports multiple ORF finding functions, here we describe their specific
+use.
+
+Which function you will use depend on which organism the data is from, and
+specific parameters, like circular or non circular genomes, will you use
+a transcriptome etc. 
+
+There are 4 standard ways of finding ORFs:
+1. You have some fasta file of the genome only. (For prokaryotes/circular genomes)
+2. You have some fasta file of the genome and a spliced transcriptome
+   annotation. (For eucaryotes with splicing)
+3. You have a fasta file of transcripts (eucaryotes or prokaryotes)
+4. You have a vector of transcripts preloaded in R.
+
+Let's start with the simplest case, a vector of preloaded transcripts. 
+
+Lets say you have some transcripts and want to find all ORFs on them.
+findORFs() will give you only 5' to 3' direction, so if you want both directions,
+you can do (for double stranded):
+```{r eval = TRUE, echo = TRUE}
+  library(Biostrings)
+  library(S4Vectors)
+  # strand with ORFs in both directions
+  seqs <- DNAStringSet("ATGAAATGAAGTAAATCAAAACAT")
+  ######################>######################< (< > is direction of ORF)
+  
+  # positive strands
+  pos <- findORFs(seqs, startCodon = "ATG", minimumLength = 0)
+  # negative strands
+  neg <- findORFs(reverseComplement(seqs),
+                  startCodon = "ATG", minimumLength = 0)
+  # make GRanges since we want strand information
+  pos <- GRanges(pos, strand = "+")
+  neg <- GRanges(neg, strand = "-")
+  # as GRanges
+  res <- c(pos, neg)
+  # or merge together and make GRangesList
+  res <- split(res, seq.int(1, length(pos) + length(neg)))
+  res
+```
+Remember that these results are in transcript coordinates, sometimes you need
+to convert them to Genomic coordinates.
+
+## Finding ORFs in spliced transcripts
+If you have a genome and a spliced transcriptome annotation, you must use findMapORFs(). 
+It takes care of the potential problem from the last example, 
+that we really want our result in genomic coordinates in the end.
+
+## Prokaryote/Circular Genomes and fasta transcriptomes.
+Use findORFsFasta(is.circular = T).
+Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
+normally used for genomes.
+
+## Filter on strand
+If you have fasta transcriptomes, you dont want the (-) strand. Since 
+all transcripts are in the direction in the fasta file.
+If you get both (+/-) strand and only want (+) ORFs, do:
+```{r eval = TRUE, echo = TRUE}
+  res[strandBool(res)] # Keep only + stranded ORFs
+```
+
+See individual functions for more examples.
+
+# CageSeq data for 5' UTR re-annotation
+
+In the prerevious example we used the refence annotation of the 5' UTRs
+from the package GenomicFeatures. Here we will use advantage of CageSeq data to 
+set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve
+tissue specific transcripts. 
+
+```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
+# path to example CageSeq data from hg19 heart sample
+cageData <- system.file("extdata", "cage-seq-heart.bed.bgz", 
+                        package = "ORFik")
+# get new Transcription Start Sites using CageSeq dataset
+newFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData)
+newFiveUTRs
+```
+
+You will now see that most of the transcription start sites have changed. 
+Depending on the species, regular annotations might be incomplete or not 
+specific enough for your purposes. 
+
+NOTE: IF you want to edit the whole txdb / gtf file, use reassignTxDbByCage.
+And save this to get the new gtf with reannotated leaders by CAGE.
+
+  
 # RiboSeq footprints automatic shift detection and shifting
 
 In RiboSeq data ribosomal footprints are restricted to their p-site positions 
@@ -230,7 +298,7 @@ go through an example processing of RiboSeq data below.
 Load example raw RiboSeq footprints (unshifted).
 ```{r eval = TRUE, echo = TRUE} 
 bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
-footprints <- GenomicAlignments::readGAlignments(bam_file)
+footprints <- readBam(bam_file)
 ```
 
 Investigate what footprint lengths are present in our data.
@@ -408,77 +476,6 @@ then we make a self defined kozak sequence.
 
 ```
 
-
-# When to use which ORFfinding function
-
-ORFik supports multiple ORF finding functions, here we describe their specific
-use.
-
-Which function you will use depend on which organism the data is from, and
-specific parameters, like circular or non circular genomes, will you use
-a transcriptome etc. 
-
-There are 4 standard ways of finding ORFs:
-1. You have some fasta file of the genome only. (For procaryotes)
-2. You have some fasta file of the genome and a spliced transcriptome
-   annotation. (For eucaryotes with splicing)
-3. You have a fasta file of transcripts (eucaryotes or procaryotes)
-4. You have a vector of transcripts preloaded in R.
-
-Let's start with the simplest case, a vector of preloaded transcripts. 
-
-Lets say you have some transcripts and want to find all ORFs on them.
-findORFs() will give you only 5' to 3' direction, so if you want both directions,
-you can do (for double stranded):
-```{r eval = TRUE, echo = TRUE}
-  library(Biostrings)
-  library(S4Vectors)
-  # strand with ORFs in both directions
-  seqs <- DNAStringSet("ATGAAATGAAGTAAATCAAAACAT")
-  ######################>######################< (< > is direction of ORF)
-  
-  # positive strands
-  pos <- findORFs(seqs, startCodon = "ATG", minimumLength = 0)
-  # negative strands
-  neg <- findORFs(reverseComplement(seqs),
-                  startCodon = "ATG", minimumLength = 0)
-  # make GRanges since we want strand information
-  pos <- GRanges(pos, strand = "+")
-  neg <- GRanges(neg, strand = "-")
-  # as GRanges
-  res <- c(pos, neg)
-  # or merge together and make GRangesList
-  res <- split(res, seq.int(1, length(pos) + length(neg)))
-  res
-```
-Remember that these results are in transcript coordinates, sometimes you need
-to convert them to Genomic coordinates.
-
-## Finding ORFs in spliced transcripts
-If you have a genome and a spliced transcriptome annotation, you must use findMapORFs(). It takes care of the potential problem from the last example, 
-that we really want our result in genomic coordinates in the end.
-
-See above section for example: 
-Example of finding ORFs in on 5' UTR of hg19
-
-## Procaryote/Circular Genomes and fasta transcriptomes.
-Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
-normally used for genomes.
-
-## Filter on strand
-If you have transcriptomes, you dont want the (-) strand.
-If you get both (+/-) strand and only want (+) ORFs, do:
-```{r eval = TRUE, echo = TRUE}
-  res[strandBool(res)] # Keep only + stranded ORFs
-```
-
-## ORF Input conclusion:
-Eucaryote splicing: findMapORFs, GRangesList (exons) and char (splice joined)
-Procaryote/circular: findORFsFasta, fasta file
-Direct ORFs from character vector: findORFs, char vector
-
-See individual functions for more examples.
-
 # Using ORFik in your package or scripts
 
 The focus of ORFik for development is to be a swiss army knife for 
@@ -609,7 +606,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 ```
 
 In the heatmap you can see that read length 30 has the strongest peak on the 
-TIS, while read length 28 has some reads in the leaders (the - positions).
+TIS, while read length 28 has some reads in the leaders (the minus positions).
 
 ## Multiple data sets in one plot
 

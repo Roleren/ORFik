@@ -127,7 +127,8 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' General loader for txdb
 #'
 #' Useful to allow fast TxDb loader like .db
-#' @param txdb a TxDb file or a path to one of:
+#' @param txdb a TxDb file, an ORFik experiment or
+#' a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
 #' @inheritParams matchSeqStyle
 #' @return a TxDb object
@@ -141,6 +142,9 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' txdb <- loadDb(txdbFile)
 #'
 loadTxdb <- function(txdb, chrStyle = NULL) {
+  if (is(txdb, "experiment")) {
+    txdb <- txdb@txdb
+  }
   #TODO: Check that is is an open connection!
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
@@ -173,17 +177,31 @@ loadRegion <- function(txdb, part = "tx") {
   txdb <- loadTxdb(txdb)
   if (part %in% c("tx", "transcript", "transcripts")) {
     return(exonsBy(txdb, by = "tx", use.names = TRUE))
-  } else if (part %in% c("leader", "leaders", "5'", "5", "5utr")) {
+  } else if (part %in% c("leader", "leaders", "5'", "5", "5utr",
+                         "fiveUTRs", "5pUTR")) {
     return(fiveUTRsByTranscript(txdb, use.names = TRUE))
   } else if (part %in% c("cds", "CDS", "mORF")) {
     return(cdsBy(txdb, by = "tx", use.names = TRUE))
-  } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr")) {
+  } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr",
+                         "threeUTRs", "3pUTR")) {
     return(threeUTRsByTranscript(txdb, use.names = TRUE))
   } else if (part %in% c("intron", "introns")) {
     return(intronsByTranscript(txdb, use.names = TRUE))
   }  else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
     return(loadRegion(txdb, "tx")[names(cdsBy(txdb, use.names = TRUE))])
   } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
+}
+
+#' Get all regions of transcripts specified
+#' @inheritParams loadTxdb
+#' @param parts the transcript parts you want
+#' @param extension What to add on the name after leader, like: B -> leadersB
+loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
+                        extension = "", envir = .GlobalEnv) {
+  for (i in parts)
+    assign(x = paste0(i, extension), value = loadRegion(txdb, i),
+           envir = envir)
+  return(NULL)
 }
 
 #' Load transcripts of given biotype

@@ -12,8 +12,9 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
 \item{footprints}{(GAlignments) object of RiboSeq reads - footprints, can
 also be path to the file.}
 
-\item{txdb}{a TxDb file or a path to one of:
-(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, an ORFik experiment or
+a path to one of:
+ (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
 
 \item{start}{(logical) Whether to include predictions based on the start
 codons. Default TRUE.}
