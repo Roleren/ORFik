@@ -8,6 +8,8 @@ ORFikReport(experiment, outputDir = ".")
 }
 \arguments{
 \item{experiment}{an ORFik experiment data.frame}
+
+\item{outputDir}{directory to save output, default (.)}
 }
 \value{
 NULL (all output stored to disc and .GlobalEnv)

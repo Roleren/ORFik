@@ -15,6 +15,8 @@ a path to one of:
 \item{parts}{the transcript parts you want}
 
 \item{extension}{What to add on the name after leader, like: B -> leadersB}
+
+\item{envir}{Which environment to save to, default (.GlobalEnv)}
 }
 \description{
 Get all regions of transcripts specified

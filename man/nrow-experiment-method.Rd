@@ -7,6 +7,12 @@
 \usage{
 \S4method{nrow}{experiment}(x)
 }
+\arguments{
+\item{object}{an ORFik experiment}
+}
+\value{
+number of rows in experiment (integer)
+}
 \description{
 Internal nrow function for ORFik experiment
 }

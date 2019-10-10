@@ -196,6 +196,7 @@ loadRegion <- function(txdb, part = "tx") {
 #' @inheritParams loadTxdb
 #' @param parts the transcript parts you want
 #' @param extension What to add on the name after leader, like: B -> leadersB
+#' @param envir Which environment to save to, default (.GlobalEnv)
 loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", envir = .GlobalEnv) {
   for (i in parts)

@@ -1,8 +1,0 @@
-name,ORFik,,,,
-gff,/home/roler/R/x86_64-pc-linux-gnu-library/3.6/ORFik/extdata/annotations.gtf,,,,
-fasta,,,,,
-libtype,stage,rep,condition,fraction,filepath
-cage,,,,,/home/roler/R/x86_64-pc-linux-gnu-library/3.6/ORFik/extdata//cage-seq-heart.bed.bgz
-ribo-seq,,,,heart,/home/roler/R/x86_64-pc-linux-gnu-library/3.6/ORFik/extdata//ribo-seq-heart.bed.bgz
-ribo-seq,,,,,/home/roler/R/x86_64-pc-linux-gnu-library/3.6/ORFik/extdata//ribo-seq.bam
-rna-seq,,,,,/home/roler/R/x86_64-pc-linux-gnu-library/3.6/ORFik/extdata//rna-seq-heart.bed.bgz
