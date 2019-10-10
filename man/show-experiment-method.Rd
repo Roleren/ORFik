@@ -7,6 +7,9 @@
 \usage{
 \S4method{show}{experiment}(object)
 }
+\arguments{
+\item{object}{an ORFik experiment}
+}
 \description{
-experiment show definition
+Show a simplified version of experiment.
 }

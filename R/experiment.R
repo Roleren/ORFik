@@ -1,4 +1,21 @@
 #' experiment class definition
+#'
+#' An object to massivly simplify your coding, it is
+#' similar to systempipeR's 'target' table. By containing
+#' filepaths and info for each library in some experiment.
+#'
+#' Simplest way to make is to call create.experiment on some
+#' folder with libraries and see what you get. Some of the fields
+#' might be needed to fill in manually. The important thing is
+#' that each row must be unique (excluding filepath), that means
+#' if it has replicates then that must be said explicit. And all
+#' filepaths must be unique and have files with size > 0.
+#' Syntax:
+#' libtype (library type): rna-seq, ribo-seq, CAGE etc.
+#' rep (replicate): 1,2,3 etc
+#' condition: WT (wild-type), control, target, mzdicer, starved etc.
+#' fraction: 18, 19 (fractinations), or other ways to split library.
+#' filepath: Full filepath to file
 #' @export
 experiment <- setClass("experiment",
                        slots=list(experiment = "character",
@@ -8,6 +25,9 @@ experiment <- setClass("experiment",
                        contains = "DataFrame")
 
 #' experiment show definition
+#'
+#' Show a simplified version of experiment.
+#' @param object an ORFik experiment
 #' @export
 setMethod("show",
           "experiment",
@@ -32,6 +52,8 @@ setMethod("show",
 )
 
 #' Internal nrow function for ORFik experiment
+#' @param x an ORFik experiment
+#' @return number of rows in experiment (integer)
 setMethod("nrow",
           "experiment",
           function(x) {
@@ -41,16 +63,58 @@ setMethod("nrow",
 
 #' Read ORFik experiment
 #'
-#' @param file a .csv file following ORFik experiment style.
+#' An object to massivly simplify your coding, it is
+#' similar to systempipeR's 'target' table. By containing
+#' filepaths and info for each library in some experiment.
+#'
+#' Simplest way to make is to call create.experiment on some
+#' folder with libraries and see what you get. Some of the fields
+#' might be needed to fill in manually. The important thing is
+#' that each row must be unique (excluding filepath), that means
+#' if it has replicates then that must be said explicit. And all
+#' filepaths must be unique and have files with size > 0.
+#' Syntax:
+#' libtype (library type): rna-seq, ribo-seq, CAGE etc.
+#' rep (replicate): 1,2,3 etc
+#' condition: WT (wild-type), control, target, mzdicer, starved etc.
+#' fraction: 18, 19 (fractinations), or other ways to split library.
+#' filepath: Full filepath to file
+#'
+#' The file must be csv and be a valid ORFik experiment
+#' @param file a .csv file following ORFik experiment style, or a
+#' template data.frame from create.experiment()
 #' @return an ORFik experiment
 #' @export
+#' @examples
+#' # From file
+#' \dontrun{
+#' df <- read.experiment(filepath) # <- valid .csv file
+#' }
+#' # From (create.experiment() template)
+#' template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
+#'                               exper = "ORFik", txdb = system.file("extdata",
+#'                                     "annotations.gtf",
+#'                                     package = "ORFik"),
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
 read.experiment <-  function(file) {
-  info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
+  if (is(file, "character")) {
+    info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
+    listData <- read.csv2(file, skip = 3, header = T, sep = ",",
+                          stringsAsFactors = FALSE)
+  } else if(is(file, "data.frame")) {
+    info <- file[1:3,]
+    listData <- file[-c(1:4),]
+    colnames(listData) <- file[4,]
+  } else stop("file must be either character or data.frame template")
+
+
   exper <- info[1,2]
   txdb <- ifelse(is.na(info[2,2]),  "", info[2,2])
   fa <- ifelse(is.na(info[3,2]),  "", info[3,2])
-  listData <- read.csv2(file, skip = 3, header = T, sep = ",",
-                        stringsAsFactors = FALSE)
+
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
                    listData = listData, expInVarName = TRUE)
 
@@ -68,12 +132,22 @@ read.experiment <-  function(file) {
 #' @param types Default (bam, bed, wig), which types of libraries to allow
 #' @param txdb A path to gff/gtf file used for libraries
 #' @param fa A path to fasta genome/sequences used for libraries
+#' @param viewTemplate run View() on template when finished, default (TRUE)
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @export
+#' @examples
+#' template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
+#'                               exper = "ORFik", txdb = system.file("extdata",
+#'                                     "annotations.gtf",
+#'                                     package = "ORFik"),
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
-                              fa = "") {
+                              fa = "", viewTemplate = TRUE) {
   if (!dir.exists(dir)) stop(paste0(dir, " is not a valid directory!"))
   files <- findLibrariesInFolder(dir, types)
 
@@ -96,7 +170,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   df[is.na(df)] <- ""
   if (!is.null(saveDir))
     save.experiment(df, paste0(saveDir, exper,".csv"))
-  View(df)
+  if (viewTemplate) View(df)
   return(df)
 }
 
@@ -254,7 +328,7 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
     varNames <- bamVarName(df)
     message(paste0("Ouputing libraries from: ",df@experiment))
     for (i in 1:nrow(df)) { # For each stage
-      print(i)
+      message(paste(i, ": ", varNames[i]))
       if (exists(x = varNames[i], envir = envir, inherits = FALSE)) next
       reads <- ORFik:::fimport(df[i,]$filepath, chrStyle)
       assign(varNames[i], reads, envir = envir)

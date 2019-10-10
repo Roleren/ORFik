@@ -5,7 +5,7 @@
 \title{Create a template for new ORFik experiment}
 \usage{
 create.experiment(dir, exper, saveDir = NULL, types = c("bam", "bed",
-  "wig"), txdb = "", fa = "")
+  "wig"), txdb = "", fa = "", viewTemplate = TRUE)
 }
 \arguments{
 \item{dir}{Which directory to create experiment from}
@@ -19,6 +19,8 @@ create.experiment(dir, exper, saveDir = NULL, types = c("bam", "bed",
 \item{txdb}{A path to gff/gtf file used for libraries}
 
 \item{fa}{A path to fasta genome/sequences used for libraries}
+
+\item{viewTemplate}{run View() on template when finished, default (TRUE)}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,
@@ -27,4 +29,14 @@ a data.frame, NOTE: this is not a ORFik experiment,
 \description{
 By using files in a folder. You will have to fill in the details
 that were not autodetected.
+}
+\examples{
+template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
+                              exper = "ORFik", txdb = system.file("extdata",
+                                    "annotations.gtf",
+                                    package = "ORFik"),
+                              viewTemplate = FALSE)
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment
+df <- read.experiment(template)
 }

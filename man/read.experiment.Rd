@@ -7,11 +7,45 @@
 read.experiment(file)
 }
 \arguments{
-\item{file}{a .csv file following ORFik experiment style.}
+\item{file}{a .csv file following ORFik experiment style, or a
+template data.frame from create.experiment()}
 }
 \value{
 an ORFik experiment
 }
 \description{
-Read ORFik experiment
+An object to massivly simplify your coding, it is
+similar to systempipeR's 'target' table. By containing
+filepaths and info for each library in some experiment.
+}
+\details{
+Simplest way to make is to call create.experiment on some
+folder with libraries and see what you get. Some of the fields
+might be needed to fill in manually. The important thing is
+that each row must be unique (excluding filepath), that means
+if it has replicates then that must be said explicit. And all
+filepaths must be unique and have files with size > 0.
+Syntax:
+libtype (library type): rna-seq, ribo-seq, CAGE etc.
+rep (replicate): 1,2,3 etc
+condition: WT (wild-type), control, target, mzdicer, starved etc.
+fraction: 18, 19 (fractinations), or other ways to split library.
+filepath: Full filepath to file
+
+The file must be csv and be a valid ORFik experiment
+}
+\examples{
+# From file
+\dontrun{
+df <- read.experiment(filepath) # <- valid .csv file
+}
+# From (create.experiment() template)
+template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
+                              exper = "ORFik", txdb = system.file("extdata",
+                                    "annotations.gtf",
+                                    package = "ORFik"),
+                              viewTemplate = FALSE)
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment
+df <- read.experiment(template)
 }
