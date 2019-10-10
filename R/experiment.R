@@ -52,7 +52,7 @@ setMethod("show",
 )
 
 #' Internal nrow function for ORFik experiment
-#' @param object an ORFik experiment
+#' @param x an ORFik experiment
 #' @return number of rows in experiment (integer)
 setMethod("nrow",
           "experiment",

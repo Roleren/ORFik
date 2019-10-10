@@ -8,7 +8,7 @@
 \S4method{nrow}{experiment}(x)
 }
 \arguments{
-\item{object}{an ORFik experiment}
+\item{x}{an ORFik experiment}
 }
 \value{
 number of rows in experiment (integer)
