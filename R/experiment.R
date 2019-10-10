@@ -111,9 +111,9 @@ read.experiment <-  function(file) {
   } else stop("file must be either character or data.frame template")
 
 
-  exper <- info[1,2]
-  txdb <- ifelse(is.na(info[2,2]),  "", info[2,2])
-  fa <- ifelse(is.na(info[3,2]),  "", info[3,2])
+  exper <- info[1, 2]
+  txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
+  fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
 
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
                    listData = listData, expInVarName = TRUE)
