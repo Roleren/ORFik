@@ -125,7 +125,8 @@ read.experiment <-  function(file) {
 #' Create a template for new ORFik experiment
 #'
 #' By using files in a folder. You will have to fill in the details
-#' that were not autodetected.
+#' that were not autodetected. Easiest to do in csv editor like libre Office
+#' or excel.
 #' @param dir Which directory to create experiment from
 #' @param exper Short name of experiment, max 5 characters long
 #' @param saveDir Directory to save experiment csv file (NULL)
@@ -152,16 +153,23 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   files <- findLibrariesInFolder(dir, types)
 
   df <- data.frame(matrix(ncol = 6, nrow = length(files) + 4))
+  # set lib column names
   df[4,] <- c("libtype", "stage", "rep", "condition", "fraction","filepath")
+  # set file paths
   df[5:(5+length(files)-1),6] <- files
+  # Set library type (RNA-seq etc)
   df[5:(5+length(files)-1),1] <- findFromPath(files)
-  df[5:(5+length(files)-1),2] <- findFromPath(files, c("64cell", "sphere", "shield",
-                                                       "64-cell", "Sphere", "Shield",
-                                                       "2h", "4h", "6h", "8h"))
+  # set stage
+  stages <- c("64cell", "256cell","sphere", "shield", "dome", "oblong", "bud",
+              "64Cell", "256Cell","Sphere", "Shield", "Dome", "Oblong", "Bud",
+              "2h", "4h", "6h", "8h", "24hpf", "2dpf", "3dpf", "4dpf", "5dpf")
+  df[5:(5+length(files)-1),2] <- findFromPath(files, stages)
+  # set rep
   df[5:(5+length(files)-1),3] <- findFromPath(files, c("rep1", "rep2", "rep3",
                                                        "run1", "run2", "run3",
                                                        "_r1_", "_r2_", "_r3_",
                                                        "_R1_", "_R2_", "_R3_"))
+  # Set condition
   df[5:(5+length(files)-1),4] <- findFromPath(files, c("WT", "control",
                                                        "MZ", "dicer"))
   df[1, 1:2] <- c("name", exper)
@@ -187,18 +195,20 @@ save.experiment <- function(df, file) {
 #' @param filepaths path to all files
 #' @param candidates Possible names to search for.
 #' @return a candidate library types (character vector)
-findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq", "RFP",
-                                                   "RPF", "ribo-seq", "mrna",
-                                                   "CAGE", "cage","LSU",
-                                                   "SSU",
-                                                   "ATAC", "tRNA", "SHAPE")) {
+findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq", "Rna-seq",
+                                                   "RFP", "RPF", "ribo-seq",
+                                                   "Ribo-seq", "mrna",
+                                                   "CAGE", "cage", "LSU",
+                                                   "SSU", "ATAC", "tRNA",
+                                                   "SHAPE")) {
   types <- c()
   for (path in filepaths) {
     hit <- unlist(sapply(candidates, grep, x = path))
     hitRel <- unlist(sapply(candidates, grep, x = gsub(".*/", "", path)))
     type <- if(length(hit) == 1 & length(hitRel) == 0) names(hit)
     over <- hit[names(hit) %in% names(hitRel)]
-    type <- ifelse(length(over) == 1, names(over), "")
+    type <- ifelse(length(over) == 1, names(over),
+                   ifelse(is.null(type), "", type))
     types <- c(types, gsub(pattern = "_", "", type))
   }
   return(types)
@@ -208,7 +218,7 @@ findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq", "RFP",
 #' Which type of experiments?
 #' @param df an ORFik experiment data.frame
 #' @return NULL
-libraryTypes <- function(df){
+libraryTypes <- function(df) {
   if (is(df, "experiment")) {
     return(unique(df$libtype))
   } else if (is(df, "character") | is(df, "factor")) {
@@ -336,20 +346,29 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
   }
 }
 
-#' Get all bam files in folder
+#' Get all library files in folder
 #' @param dir The directory to find bam, bed, wig files.
 #' @param types All accepted types of bam, bed, wig files..
+#' @importFrom tools file_ext
 #' @return (character vector) All files found from types parameter.
 findLibrariesInFolder <- function(dir, types) {
-  types <- paste(".",types, collapse = "|", sep = "")
-  files <- grep(pattern = types, x = list.files(dir, full.names = T),
+  regex <- paste(".", types, collapse = "|", sep = "")
+  files <- grep(pattern = regex, x = list.files(dir, full.names = T),
                 value = T)
-  # Remove .bai bam index files
-  bai <- -grep(pattern = ".bai", x = files)
-  if (length(bai)) {
-    return(files[bai])
-  }
+  # Remove .bai bam index files etc
+  fext <- file_ext(files)
+  if (!(all(fext %in% types))) {
+    files <- files[fext != "bai"]
+    fext <- fext[fext != "bai"]
 
+    compressed = fext %in% c("gzip", "gz", "bgz", "zip")
+    if (any(compressed)) {
+      fext[compressed] <-file_ext(file_path_sans_ext(files[compressed],
+                                                      compression = FALSE))
+
+    }
+    files <- files[fext %in% types]
+  }
   if (length(files) == 0) stop("Found no valid files in folder")
   return(files)
 }

@@ -15,7 +15,7 @@ mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
 periodic, NULL). More info in docs.}
 }
 \value{
-a data.table with new scores
+a data.table with new scores (size dependent on score used)
 }
 \description{
 Different scorings and groupings of a coverage representation.
@@ -42,15 +42,15 @@ transcripts, and feature column can be c(leader, cds, trailer) etc.
 Given a data.table coverage of counts, add a scoring scheme.
 per: the grouping given, if genes is defined, group by per gene in scoring.
 Scorings:
-1. zscore (count-windowMean)/windowSD per)
-2. transcriptNormalized (sum(count / sum of counts per))
-3. mean (mean(count per))
-4. median (median(count per))
-5. sum (count per)
-6. log2sum (count per)
-7. log10sum (count per)
-8. sumLength (count per) / number of windows
-9. meanPos (mean per position per gene) used in scaledWindowPositions
+1.  zscore (count-windowMean)/windowSD per)
+2.  transcriptNormalized (sum(count / sum of counts per))
+3.  mean (mean(count per))
+4.  median (median(count per))
+5.  sum (count per)
+6.  log2sum (count per)
+7.  log10sum (count per)
+8.  sumLength (count per) / number of windows
+9.  meanPos (mean per position per gene) used in scaledWindowPositions
 10. sumPos (sum per position per gene) used in scaledWindowPositions
 11. frameSum (sum per frame per gene) used in ORFScore
 12. fracPos (fraction of counts per position per gene)

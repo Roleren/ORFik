@@ -20,6 +20,8 @@ a GAlignment object of bam file
 \description{
 Given 2 wig files, first is forward second is reverse.
 Merge them and return as GRanges object.
+If they contain name reverse and forward, first and second order
+does not matter, it will search for forward and reverse.
 }
 \seealso{
 Other utils: \code{\link{bedToGR}},

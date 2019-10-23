@@ -47,7 +47,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 
   if (.Platform$OS.type == "unix") {
     if (file.exists(filePath)) {
-      if (any(file_ext(filePath) == c("gzip", "gz", "bgz"))) {
+      if (any(file_ext(filePath) %in% c("gzip", "gz", "bgz"))) {
         bed <- bedToGR(setDF(
           fread(cmd = paste("gunzip -c", filePath), sep = "\t")))
       } else if (file_ext(filePath) == "bed"){
@@ -84,6 +84,8 @@ readBam <- function(path, chrStyle = NULL) {
 #'
 #' Given 2 wig files, first is forward second is reverse.
 #' Merge them and return as GRanges object.
+#' If they contain name reverse and forward, first and second order
+#' does not matter, it will search for forward and reverse.
 #' @param path a character path to .bam file
 #' @inheritParams matchSeqStyle
 #' @importFrom rtracklayer import.wig
@@ -93,8 +95,17 @@ readBam <- function(path, chrStyle = NULL) {
 readWig <- function(path, chrStyle = NULL) {
   if (length(path) != 2) stop("readWig must have 2 wig files,
                               one forward strand and one reverse!")
-  forward <- import.wig(path[1])
-  reverse <- import.wig(path[2])
+  forwardIndex <- 1
+  reverseIndex <- 2
+  forwardPath <- grep("forward", path)
+  reversePath <- grep("reverse", path)
+  if (length(forwardPath) == 1 & length(reversePath) == 1){
+    forwardIndex <- forwardPath
+    reverseIndex <- reversePath
+  }
+
+  forward <- import.wig(path[forwardIndex])
+  reverse <- import.wig(path[reverseIndex])
   strand(forward) <- "+"
   strand(reverse) <- "-"
   return(matchSeqStyle(c(forward, reverse), chrStyle))
@@ -120,14 +131,19 @@ readWig <- function(path, chrStyle = NULL) {
 fimport <- function(path, chrStyle = NULL) {
   if (is.character(path)) {
     if (all(file.exists(path))) {
+      fext <- file_ext(path)
+      compressions <- c("gzip", "gz", "bgz", "zip")
+      areCompressed <- fext %in% compressions
+      fext[areCompressed] <- file_ext(file_path_sans_ext(path[areCompressed],
+                                               compression = FALSE))
       if (length(path) > 1) { # Multiple file paths
-        if (all(file_ext(path) == "wig")) {
+        if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
         } else stop("only wig format allowed for multiple files!")
       } else { # Only 1 file path given
-        if (file_ext(path) == "bam") {
+        if (fext == "bam") {
           return(readBam(path, chrStyle))
-        } else if (file_ext(path) == "bed" |
+        } else if (fext == "bed" |
                    file_ext(file_path_sans_ext(path,
                                                compression = TRUE)) == "bed" |
                    file_ext(file_path_sans_ext(path, compression = FALSE))

@@ -28,7 +28,8 @@ a data.frame, NOTE: this is not a ORFik experiment,
 }
 \description{
 By using files in a folder. You will have to fill in the details
-that were not autodetected.
+that were not autodetected. Easiest to do in csv editor like libre Office
+or excel.
 }
 \examples{
 template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
