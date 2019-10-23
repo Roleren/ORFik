@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{findLibrariesInFolder}
 \alias{findLibrariesInFolder}
-\title{Get all bam files in folder}
+\title{Get all library files in folder}
 \usage{
 findLibrariesInFolder(dir, types)
 }
@@ -15,5 +15,5 @@ findLibrariesInFolder(dir, types)
 (character vector) All files found from types parameter.
 }
 \description{
-Get all bam files in folder
+Get all library files in folder
 }

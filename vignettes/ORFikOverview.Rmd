@@ -103,7 +103,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # writeXStringSet(seqs, filepath = "uorfs.fasta")
 }
 ```
-You can see orf 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 bases. We will now look on ORFik functions to get startcodons and stopcodon etc.
+You can see orf 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 codons. We will now look on ORFik functions to get startcodons and stopcodon etc.
 
 # New GRanges and GRangesList utilities for ORFs
 
@@ -219,7 +219,7 @@ Let's start with the simplest case, a vector of preloaded transcripts.
 
 Lets say you have some transcripts and want to find all ORFs on them.
 findORFs() will give you only 5' to 3' direction, so if you want both directions,
-you can do (for double stranded):
+you can do (for strands in both direction):
 ```{r eval = TRUE, echo = TRUE}
   library(Biostrings)
   library(S4Vectors)

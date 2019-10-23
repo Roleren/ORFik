@@ -46,6 +46,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize) {
 #' @param faFile a FaFile from the fasta file, see ?FaFile.
 #'  Can also be path to fastaFile with fai file in same dir.
 #' @return a character vector of start regions
+#' @export
 startRegionString <- function(grl, tx, faFile, upstream = 20,
                               downstream = 20) {
   grl <- startRegion(grl, tx, is.sorted = TRUE, upstream, downstream)
