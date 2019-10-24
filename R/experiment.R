@@ -343,8 +343,7 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
     for (i in 1:nrow(df)) { # For each stage
       message(paste(i, ": ", varNames[i]))
       if (exists(x = varNames[i], envir = envir, inherits = FALSE)) next
-      reads <- ORFik:::fimport(df[i,]$filepath, chrStyle)
-      assign(varNames[i], reads, envir = envir)
+      assign(varNames[i], fimport(df[i,]$filepath, chrStyle), envir = envir)
     }
   }
   return(NULL)
