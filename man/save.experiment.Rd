@@ -11,6 +11,9 @@ save.experiment(df, file)
 
 \item{file}{name of file to save df as}
 }
+\value{
+NULL (experiment save only)
+}
 \description{
 Save experiment to disc
 }

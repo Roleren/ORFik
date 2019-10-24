@@ -18,6 +18,9 @@ a path to one of:
 
 \item{envir}{Which environment to save to, default (.GlobalEnv)}
 }
+\value{
+NULL (regions set by envir assignment)
+}
 \description{
 Get all regions of transcripts specified
 }

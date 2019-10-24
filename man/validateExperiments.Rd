@@ -10,6 +10,9 @@ validateExperiments(df)
 \arguments{
 \item{df}{an ORFik experiment data.frame}
 }
+\value{
+NULL (Stops if failed)
+}
 \description{
 Validate ORFik experiment
 Check for valid non-empty files etc.

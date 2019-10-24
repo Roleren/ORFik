@@ -26,6 +26,9 @@ in variable name.}
 
 \item{skip.experiment}{a logical (FALSE), don't include experiment}
 }
+\value{
+variable names of libraries (character vector)
+}
 \description{
 Get variable names from experiment
 }

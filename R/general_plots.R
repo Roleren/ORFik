@@ -57,7 +57,7 @@ kozakHeatmap <- function(seqs, rate, start, stop, center = ceiling((stop - start
   }
   dt$rate <- rate
   dt.melt <- melt(dt, id.vars = c("X.gene_id", "rate"))
-  codon.table <- dt.melt[, .(median_score = median(rate, na.rm=T),
+  codon.table <- dt.melt[, .(median_score = median(rate, na.rm = TRUE),
                              count_seq_pos_with_count = .N),
                          by = .(variable, value)]
 

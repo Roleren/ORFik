@@ -23,6 +23,9 @@ in variable name.}
 
 \item{skip.experiment}{a logical (FALSE), don't include experiment}
 }
+\value{
+variable name of library (character vector)
+}
 \description{
 Get variable name per filepath in experiment
 }

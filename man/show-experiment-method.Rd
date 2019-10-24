@@ -10,6 +10,9 @@
 \arguments{
 \item{object}{an ORFik experiment}
 }
+\value{
+print state of experiment
+}
 \description{
 Show a simplified version of experiment.
 }

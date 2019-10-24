@@ -13,6 +13,9 @@ outputLibs(df, chrStyle = NULL, envir = .GlobalEnv)
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 }
+\value{
+NULL (libraries set by envir assignment)
+}
 \description{
 Variable names defined by df
 }

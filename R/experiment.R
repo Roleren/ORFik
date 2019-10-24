@@ -16,6 +16,7 @@
 #' condition: WT (wild-type), control, target, mzdicer, starved etc.
 #' fraction: 18, 19 (fractinations), or other ways to split library.
 #' filepath: Full filepath to file
+#' @importFrom methods new
 #' @export
 experiment <- setClass("experiment",
                        slots=list(experiment = "character",
@@ -29,6 +30,7 @@ experiment <- setClass("experiment",
 #' Show a simplified version of experiment.
 #' @param object an ORFik experiment
 #' @export
+#' @return print state of experiment
 setMethod("show",
           "experiment",
           function(object) {
@@ -102,7 +104,7 @@ setMethod("nrow",
 read.experiment <-  function(file) {
   if (is(file, "character")) {
     info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
-    listData <- read.csv2(file, skip = 3, header = T, sep = ",",
+    listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
                           stringsAsFactors = FALSE)
   } else if(is(file, "data.frame")) {
     info <- file[1:3,]
@@ -185,9 +187,10 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 #' Save experiment to disc
 #' @param df an ORFik experiment data.frame
 #' @param file name of file to save df as
-#' @return NULL
+#' @return NULL (experiment save only)
 save.experiment <- function(df, file) {
-  write.table(x = df, file = file, sep = ",", row.names = F, col.names = F)
+  write.table(x = df, file = file, sep = ",",
+              row.names = FALSE, col.names = FALSE)
   return(NULL)
 }
 
@@ -217,7 +220,7 @@ findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq", "Rna-seq",
 
 #' Which type of experiments?
 #' @param df an ORFik experiment data.frame
-#' @return NULL
+#' @return library types (character vector)
 libraryTypes <- function(df) {
   if (is(df, "experiment")) {
     return(unique(df$libtype))
@@ -229,7 +232,7 @@ libraryTypes <- function(df) {
 #' Validate ORFik experiment
 #' Check for valid non-empty files etc.
 #' @param df an ORFik experiment data.frame
-#' @return NULL
+#' @return NULL (Stops if failed)
 validateExperiments <- function(df) {
   libTypes <- libraryTypes(df)
   if (!is(df, "experiment")) stop("df must be experiment!")
@@ -265,7 +268,7 @@ validateExperiments <- function(df) {
 #' in variable name.
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
-#' @return NULL
+#' @return variable names of libraries (character vector)
 #' @export
 bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.condition = length(unique(df$condition)) == 1,
@@ -292,7 +295,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' in variable name.
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
-#' @return NULL
+#' @return variable name of library (character vector)
 bamVarNamePicker <- function(df, skip.replicate = FALSE,
                              skip.condition = FALSE,
                              skip.stage = FALSE, skip.fraction = FALSE,
@@ -326,7 +329,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' @param df an ORFik experiment data.frame
 #' @param chrStyle the sequencelevels style (GRanges object or chr)
 #' @param envir environment to save to, default (.GlobalEnv)
-#' @return NULL
+#' @return NULL (libraries set by envir assignment)
 #' @export
 outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
   dfl <- df
@@ -344,6 +347,7 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
       assign(varNames[i], reads, envir = envir)
     }
   }
+  return(NULL)
 }
 
 #' Get all library files in folder
@@ -353,8 +357,8 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
 #' @return (character vector) All files found from types parameter.
 findLibrariesInFolder <- function(dir, types) {
   regex <- paste(".", types, collapse = "|", sep = "")
-  files <- grep(pattern = regex, x = list.files(dir, full.names = T),
-                value = T)
+  files <- grep(pattern = regex, x = list.files(dir, full.names = TRUE),
+                value = TRUE)
   # Remove .bai bam index files etc
   fext <- file_ext(files)
   if (!(all(fext %in% types))) {

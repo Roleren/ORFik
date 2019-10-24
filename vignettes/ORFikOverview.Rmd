@@ -250,7 +250,7 @@ It takes care of the potential problem from the last example,
 that we really want our result in genomic coordinates in the end.
 
 ## Prokaryote/Circular Genomes and fasta transcriptomes.
-Use findORFsFasta(is.circular = T).
+Use findORFsFasta(is.circular = TRUE).
 Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
 normally used for genomes.
 
@@ -626,7 +626,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # Load more files like above (Here I make sampled data from earlier Ribo-seq)
   dt2 <- copy(dt)
   dt2[, `:=` (fraction = "Ribo-seq2")]
-  dt2$score <- dt2$score + sample(seq(-40, 40), nrow(dt2), replace = T)
+  dt2$score <- dt2$score + sample(seq(-40, 40), nrow(dt2), replace = TRUE)
   
   dtl <- rbindlist(list(dt, dt2))
   windowCoveragePlot(dtl, scoring = "median", title = "Ribo-seq metaplots") 

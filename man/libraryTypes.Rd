@@ -9,6 +9,9 @@ libraryTypes(df)
 \arguments{
 \item{df}{an ORFik experiment data.frame}
 }
+\value{
+library types (character vector)
+}
 \description{
 Which type of experiments?
 }
