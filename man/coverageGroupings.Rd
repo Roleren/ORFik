@@ -21,5 +21,5 @@ FGF: Fraction, position, feature
 It finds which of these exists, and auto groups
 }
 \details{
-Normally not used directly
+Normally not used directly!
 }

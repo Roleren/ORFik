@@ -16,7 +16,7 @@ is in the middle + 1 (position 0)}
 a single numeric offset
 }
 \description{
-Get the offset for specific RiboSeq read width
+12 would mean p-site is 12 bases upstream
 }
 \seealso{
 Other pshifting: \code{\link{detectRibosomeShifts}},

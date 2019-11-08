@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_helpers.R
 \name{scaledWindowPositions}
 \alias{scaledWindowPositions}
-\title{Scale windows to a meta window of size}
+\title{Scale (bin) windows to a meta window of given size}
 \usage{
 scaledWindowPositions(grl, reads, scaleTo = 100, scoring = "meanPos")
 }
@@ -25,7 +25,7 @@ reads mapped to positions (position) specified in windows along with
 frame (frame).
 }
 \description{
-For example scale a coverage plot of a all human CDS to width 100
+For example scale a coverage table of a all human CDS to width 100
 }
 \details{
 Nice for making metaplots, the score will be mean of merged positions.

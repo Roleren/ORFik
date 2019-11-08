@@ -33,12 +33,13 @@ negate the resulting value.
 As result there is one value per ORF:
 Positive values say that the first frame have the most reads,
 negative values say that the first frame does not have the most reads.
-NOTE: If reads are not of size 1, then a read from 1-4 on range of 1-4,
+NOTE: If reads are not of width 1, then a read from 1-4 on range of 1-4,
 will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
 is that only the 5' end is important, so that only frame1 = 1,
 to get this, you first resize reads to 5'end only.
 
-NOTE: p shifting is not exact, so many ORFs will get a bad ORF score.
+NOTE: p shifting is not exact, so some functional ORFs will get a
+bad ORF score.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

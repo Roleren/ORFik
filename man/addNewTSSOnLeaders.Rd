@@ -2,7 +2,7 @@
 % Please edit documentation in R/cage_annotations.R
 \name{addNewTSSOnLeaders}
 \alias{addNewTSSOnLeaders}
-\title{add cage max peaks as new transcript start sites for each 5' leader
+\title{Add cage max peaks as new transcript start sites for each 5' leader
 (*) strands are not supported, since direction must be known.}
 \usage{
 addNewTSSOnLeaders(fiveUTRs, maxPeakPosition, removeUnused, cageMcol)
@@ -23,6 +23,6 @@ returned object with the raw CAGE counts in support for new TSS.}
 a GRanges object of first exons
 }
 \description{
-add cage max peaks as new transcript start sites for each 5' leader
+Add cage max peaks as new transcript start sites for each 5' leader
 (*) strands are not supported, since direction must be known.
 }

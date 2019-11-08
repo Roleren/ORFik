@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_helpers.R
 \name{splitIn3Tx}
 \alias{splitIn3Tx}
-\title{Create coverage of transcripts, split into the 3 parts.}
+\title{Create binned coverage of transcripts, split into the 3 parts.}
 \usage{
 splitIn3Tx(leaders, cds, trailers, reads, windowSize = 100,
   fraction = "1")
@@ -26,4 +26,7 @@ a data.table with columns position, score
 }
 \description{
 The 3 parts  of transcripts are the leaders, the cds' and trailers.
+Per transcript part, bin them all to windowSize (default 100),
+and make a data.table, rows are positions, useful for plotting with ORFik
+and ggplot2.
 }

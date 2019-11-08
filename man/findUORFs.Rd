@@ -28,7 +28,7 @@ unique (seqname, strand, stopcodon) combination, you can also use function
 \code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Which is START + STOP = 6 bp.
-Minimum length of ORF, without counting 3bp for START and STOP codons.
+Minimum length of ORF, without counting 3bps for START and STOP codons.
 For example minimumLength = 8 will result in size of ORFs to be at least
 START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.}
 
@@ -72,7 +72,7 @@ Procedure:
 \details{
 From default a filtering process is done to remove "fake" uORFs, but only if
 cds is included, since uORFs that stop on the stop codon on the CDS is not
-a uORF, but an alternative cds by definition.
+a uORF, but an alternative cds by definition, etc.
 }
 \examples{
 \dontrun{

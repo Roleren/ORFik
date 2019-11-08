@@ -120,7 +120,7 @@ findMaxPeaks <- function(cageOverlaps, filteredCage) {
 #' Finds max peaks per trancsript from reads in the cagefile
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param cageData The CAGE as GRanges object
-#' @param extension The number of basses upstream to add on transcripts
+#' @param extension The number of basses to extends transcripts upstream.
 #' @param restrictUpstreamToTx a logical (FALSE), if you want to restrict
 #'  leaders to not extend closer than 5 bases from closest upstream leader,
 #'  set this to TRUE.
@@ -138,7 +138,7 @@ findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
   return(maxPeakPosition)
 }
 
-#' add cage max peaks as new transcript start sites for each 5' leader
+#' Add cage max peaks as new transcript start sites for each 5' leader
 #' (*) strands are not supported, since direction must be known.
 #' @param maxPeakPosition The max peak for each 5' leader found by cage
 #' @inheritParams reassignTSSbyCage

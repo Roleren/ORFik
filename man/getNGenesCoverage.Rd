@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_helpers.R
 \name{getNGenesCoverage}
 \alias{getNGenesCoverage}
-\title{Get number of genes per grouping}
+\title{Get number of genes per coverage table}
 \usage{
 getNGenesCoverage(coverage)
 }
@@ -13,5 +13,5 @@ getNGenesCoverage(coverage)
 number of genes in coverage
 }
 \description{
-Get number of genes per grouping
+Used to count genes in ORFik meta plots
 }

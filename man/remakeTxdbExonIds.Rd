@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{remakeTxdbExonIds}
 \alias{remakeTxdbExonIds}
-\title{Get new exon ids}
+\title{Get new exon ids after update of txdb}
 \usage{
 remakeTxdbExonIds(txList)
 }
@@ -13,5 +13,5 @@ remakeTxdbExonIds(txList)
 a new valid ordered list of exon ids (integer)
 }
 \description{
-Get new exon ids
+Get new exon ids after update of txdb
 }

@@ -1,4 +1,4 @@
-#' Get new exon ids
+#' Get new exon ids after update of txdb
 #' @param txList a list, call of as.list(txdb)
 #' @return a new valid ordered list of exon ids (integer)
 remakeTxdbExonIds <- function(txList) {
@@ -22,7 +22,7 @@ remakeTxdbExonIds <- function(txList) {
   return(as.integer(c[order(DT$id)]))
 }
 
-#' Update exon ranks of exon data.frame
+#' Update exon ranks of exon data.frame inside txdb object
 #'
 #' @param exons a data.frame, call of as.list(txdb)$splicings
 #' @return a data.frame, modified call of as.list(txdb)
@@ -160,7 +160,9 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 
 #' Load transcript region
 #'
-#' Load GRangesList if input is not already GRangesList.
+#' Usefull to simplify loading of standard regions, like cds' and leaders.
+#'
+#' Load as GRangesList if input is not already GRangesList.
 #' @param txdb a TxDb file or a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
 #'  it will return it self.
@@ -192,7 +194,10 @@ loadRegion <- function(txdb, part = "tx") {
   } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
 }
 
-#' Get all regions of transcripts specified
+#' Get all regions of transcripts specified to environment
+#'
+#' By default loads all parts to .GlobalEnv (global environemnt)
+#' Useful to not spend time on finding the functions to load regions.
 #' @inheritParams loadTxdb
 #' @param parts the transcript parts you want
 #' @param extension What to add on the name after leader, like: B -> leadersB
@@ -234,7 +239,7 @@ loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
 
 #' Convert transcript names to gene names
 #'
-#' Works for ensembl etc.
+#' Works for ensembl, UCSC and other standard annotations.
 #' @param txNames character vector, the transcript names to convert.
 #' @param txdb the transcript database to use or gtf/gff path to it.
 #' @return character vector of gene names
@@ -255,7 +260,8 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' So only transcripts with leaders, cds and trailers will be returned.
 #' You can set the integer to 0, that will return all within that group.
 #'
-#' If your annotation does not have leaders or trailers, set them to NULL.
+#' If your annotation does not have leaders or trailers, set them to NULL,
+#' since 0 does mean there must exist a column called utr3_len etc.
 #' @inheritParams loadTxdb
 #' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
 #' transcripts. Set to NULL if no 5' UTRs exists for annotation.

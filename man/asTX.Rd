@@ -18,6 +18,10 @@ equal to grl ig. cds is grl and gene can be reference}
 a GRangesList in transcript coordinates
 }
 \description{
+Map range coordinates between features in the genome and
+transcriptome (reference) space.
+}
+\details{
 Similar to GenomicFeatures' pmapToTranscripts, but in this version the
 grl ranges are compared to reference ranges with same name, not
 by index. And it has a security fix.

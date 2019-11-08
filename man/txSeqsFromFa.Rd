@@ -18,11 +18,12 @@ transcripts}
 a DNAStringSet of the transcript sequences
 }
 \description{
+For each GRanges object, find the sequence of it from faFile or BSgenome.
+}
+\details{
 A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 For debug of errors do:
 which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
-}
-\details{
 This happens usually when the grl contains chromsomes that the fasta
 file does not have. A normal error is that mitocondrial chromosome is
 called MT vs chrM even though they have same seqlevelsStyle. The

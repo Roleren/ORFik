@@ -10,7 +10,7 @@ startDefinition(transl_table)
 \item{transl_table}{numeric.  NCBI genetic code number for translation.}
 }
 \value{
-A string of START sies separatd with "|".
+A string of START sites separatd with "|".
 }
 \description{
 According to:

@@ -2,8 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{subsetToFrame}
 \alias{subsetToFrame}
-\title{Subset GRanges to get desired frame. GRanges object should be beforehand
-tiled to size of 1. This subsetting takes account for strand.}
+\title{Subset GRanges to get desired frame.}
 \usage{
 subsetToFrame(x, frame)
 }
@@ -16,6 +15,10 @@ subsetToFrame(x, frame)
 GRanges object reduced to only first frame
 }
 \description{
-Subset GRanges to get desired frame. GRanges object should be beforehand
+Usually used for ORFs to get specific frame (0-2):
+frame 0, frame 1, frame 2
+}
+\details{
+GRanges object should be beforehand
 tiled to size of 1. This subsetting takes account for strand.
 }

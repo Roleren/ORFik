@@ -1,9 +1,13 @@
 #' Make grouping for exon structures.
 #'
+#' Make vector of exon ranking, either iterate per exon in ORF
+#' byTranscript = FALSE, or per ORF in transcript byTranscript = TRUE.
+#'
 #' Either by transcript or by original groupings.
 #' Must be ordered, so that same transcripts are ordered together.
 #' @param grl a \code{\link{GRangesList}}
-#' @param byTranscript if ORfs are by transcript, check duplicates
+#' @param byTranscript logical (default: FALSE), groups orfs by transcript
+#' name or ORF name, if ORfs are by transcript, check duplicates.
 #' @return an integer vector of indices for exon ranks
 #' @importFrom S4Vectors nrun Rle
 #'
@@ -126,6 +130,9 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
 
 #' Map genomic to transcript coordinates by reference
 #'
+#' Map range coordinates between features in the genome and
+#' transcriptome (reference) space.
+#'
 #' Similar to GenomicFeatures' pmapToTranscripts, but in this version the
 #' grl ranges are compared to reference ranges with same name, not
 #' by index. And it has a security fix.
@@ -149,17 +156,20 @@ asTX <- function(grl, reference) {
 
 #' Faster pmapFromTranscript
 #'
-#' This version tries to fix the shortcommings of GenomicFeature's version.
-#' Much faster and uses less memory.
-#' Implemented as dynamic program optimized c++ code.
-#'
+#' Map range coordinates between features in the transcriptome and
+#' genome (reference) space.
 #' The length of x must be the same as length of transcripts. Only exception is
 #' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
 #' to transcript 3 etc.
+#'
+#' This version tries to fix the shortcommings of GenomicFeature's version.
+#' Much faster and uses less memory.
+#' Implemented as dynamic program optimized c++ code.
 #' @param x IRangesList/IRanges/GRanges to map to genomic coordinates
-#' @param transcripts a GRangesList to map against
+#' @param transcripts a GRangesList to map against (the genomic coordinates)
 #' @param removeEmpty a logical, remove non hit exons, else they are set
-#'  to 0.
+#'  to 0. That is all exons in the reference that the transcript coordinates
+#'  do not span.
 #' @return a GRangesList of mapped reads, names from ranges are kept.
 #' @export
 #' @examples
@@ -258,10 +268,11 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 
 #' Get transcript sequence from a GrangesList and a faFile or BSgenome
 #'
+#' For each GRanges object, find the sequence of it from faFile or BSgenome.
+#'
 #' A small safety wrapper around \code{\link{extractTranscriptSeqs}}
 #' For debug of errors do:
 #' which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
-#'
 #' This happens usually when the grl contains chromsomes that the fasta
 #' file does not have. A normal error is that mitocondrial chromosome is
 #' called MT vs chrM even though they have same seqlevelsStyle. The
@@ -297,7 +308,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' If region has no hit in bound, a width 0 GRanges object is returned.
 #' This is usefull for things like countOverlaps, since 0 hits will then always
 #' be returned for the correct object. If you don't want the 0 width windows,
-#' use \code{reduce()}
+#' use \code{reduce()} to remove 0-width windows.
 #' @param gr a GRanges object (startSites and others, must be single point)
 #' @param tx a GRangesList of transcripts or (container region), names of
 #'  tx must contain all gr names. The names of gr can also be the ORFik orf
@@ -435,9 +446,13 @@ extendTrailers <- function(grl, extension = 1000L) {
   return(assignLastExonsStopSite(grl, newEnds))
 }
 
-#' Subset GRanges to get desired frame. GRanges object should be beforehand
-#' tiled to size of 1. This subsetting takes account for strand.
+#' Subset GRanges to get desired frame.
 #'
+#' Usually used for ORFs to get specific frame (0-2):
+#' frame 0, frame 1, frame 2
+#'
+#' GRanges object should be beforehand
+#' tiled to size of 1. This subsetting takes account for strand.
 #' @param x A tiled to size of 1 GRanges object
 #' @param frame A numeric indicating which frame to extract
 #' @return GRanges object reduced to only first frame
@@ -454,10 +469,12 @@ subsetToFrame <- function(x, frame) {
 
 #' Reduce GRanges / GRangesList
 #'
+#' Reduce away all GRanges elements with 0-width.
+#'
 #' Extends function \code{\link{reduce}}
 #' by trying to keep names and meta columns, if it is a
 #' GRangesList. It also does not lose sorting for GRangesList,
-#' since original reduce sorts all by ascending.
+#' since original reduce sorts all by ascending position.
 #' If keep.names == FALSE, it's just the normal GenomicRanges::reduce
 #' with sorting negative strands descending for GRangesList.
 #' @param grl a \code{\link{GRangesList}} or GRanges object

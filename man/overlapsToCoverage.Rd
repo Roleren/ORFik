@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_helpers.R
 \name{overlapsToCoverage}
 \alias{overlapsToCoverage}
-\title{Get overlaps and convert to coverage list}
+\title{Get overlaps and convert to Rle coverage list}
 \usage{
 overlapsToCoverage(gr, reads, keep.names = TRUE, type = "any")
 }
@@ -19,7 +19,7 @@ overlapsToCoverage(gr, reads, keep.names = TRUE, type = "any")
 a Rle, one list per group with # of hits per position.
 }
 \description{
-Get overlaps and convert to coverage list
+Basicly a count overlap transformed to Rle.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

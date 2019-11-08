@@ -36,7 +36,7 @@ it will set start to the edge boundary
 If region has no hit in bound, a width 0 GRanges object is returned.
 This is usefull for things like countOverlaps, since 0 hits will then always
 be returned for the correct object. If you don't want the 0 width windows,
-use \code{reduce()}
+use \code{reduce()} to remove 0-width windows.
 }
 \examples{
 # find 2nd codon of an ORF on a spliced transcript

@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_helpers.R
 \name{windowPerTranscript}
 \alias{windowPerTranscript}
-\title{Get coverage window per transcript}
+\title{Get a binned coverage window per transcript}
 \usage{
 windowPerTranscript(txdb, reads, splitIn3 = TRUE, windowSize = 100,
   fraction = "1")
@@ -23,6 +23,11 @@ or which type (RNA seq))}
 a data.table with columns position, score
 }
 \description{
+Per transcript (or other regions), bin them all to windowSize (default 100),
+and make a data.table, rows are positions, useful for plotting with ORFik
+and ggplot2.
+}
+\details{
 NOTE: All ranges with smaller width than windowSize, will of course be
-removed. What is the 100 position on a 1 width size ?
+removed. What is the 100 position on a 1 width object ?
 }

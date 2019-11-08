@@ -7,7 +7,7 @@
 #' version, unknown indices removed.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
-#' @return A string of START sies separatd with "|".
+#' @return A string of START sites separatd with "|".
 #' @family findORFs
 #' @export
 #' @examples
@@ -50,7 +50,7 @@ startDefinition <- function(transl_table) {
 #' version, unknown indices removed.
 #'
 #' @param transl_table numeric.  NCBI genetic code number for translation.
-#' @return A string of STOP sies separatd with "|".
+#' @return A string of STOP sites separatd with "|".
 #' @family findORFs
 #' @export
 #' @examples
@@ -114,7 +114,7 @@ stopDefinition <- function(transl_table) {
 #' unique (seqname, strand, stopcodon) combination, you can also use function
 #' \code{\link{longestORFs}} after creation of ORFs for same result.
 #' @param minimumLength (integer) Default is 0. Which is START + STOP = 6 bp.
-#' Minimum length of ORF, without counting 3bp for START and STOP codons.
+#' Minimum length of ORF, without counting 3bps for START and STOP codons.
 #' For example minimumLength = 8 will result in size of ORFs to be at least
 #' START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.
 #' @return (IRangesList) of ORFs locations by START and STOP sites
@@ -171,8 +171,8 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
-#' @param groupByTx logical (T), should output GRangesList be grouped by
-#' orfs per transcript (T) or by exons per ORF (F)?
+#' @param groupByTx logical (default: TRUE), should output GRangesList be
+#' grouped by orfs per transcript (TRUE) or by exons per ORF (FALSE)?
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
@@ -274,7 +274,7 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
 #'
 #' From default a filtering process is done to remove "fake" uORFs, but only if
 #' cds is included, since uORFs that stop on the stop codon on the CDS is not
-#' a uORF, but an alternative cds by definition.
+#' a uORF, but an alternative cds by definition, etc.
 #' @inheritParams findMapORFs
 #' @param fa a \code{\link{FaFile}}. With fasta sequences corresponding to
 #' fiveUTR annotation. Usually loaded from the genome of an organism with

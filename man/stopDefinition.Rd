@@ -10,7 +10,7 @@ stopDefinition(transl_table)
 \item{transl_table}{numeric.  NCBI genetic code number for translation.}
 }
 \value{
-A string of STOP sies separatd with "|".
+A string of STOP sites separatd with "|".
 }
 \description{
 According to:

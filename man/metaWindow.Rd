@@ -28,8 +28,8 @@ if windows have different widths, this will be ignored.}
 
 \item{scaleTo}{an integer (100), if windows have different size,
 a meta window can not directly be created, since a meta window must
-have equal size for all windows. Rescale all windows to scaleTo.
-i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.}
+have equal size for all windows. Rescale (bin) all windows to scaleTo.
+i.e c(1,2,3) -> size 2 -> coverage of position c(1, mean(2,3)) etc.}
 
 \item{fraction}{a character/integer (NULL), the fraction i.e
 (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.}

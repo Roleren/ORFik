@@ -19,7 +19,10 @@ mrna are all transcripts with a cds}
 a GrangesList of region
 }
 \description{
-Load GRangesList if input is not already GRangesList.
+Usefull to simplify loading of standard regions, like cds' and leaders.
+}
+\details{
+Load as GRangesList if input is not already GRangesList.
 }
 \examples{
 gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")

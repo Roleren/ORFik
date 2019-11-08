@@ -15,5 +15,5 @@ txNamesToGeneNames(txNames, txdb)
 character vector of gene names
 }
 \description{
-Works for ensembl etc.
+Works for ensembl, UCSC and other standard annotations.
 }

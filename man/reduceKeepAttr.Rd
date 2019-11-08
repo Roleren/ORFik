@@ -27,10 +27,13 @@ reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
 A reduced GRangesList
 }
 \description{
+Reduce away all GRanges elements with 0-width.
+}
+\details{
 Extends function \code{\link{reduce}}
 by trying to keep names and meta columns, if it is a
 GRangesList. It also does not lose sorting for GRangesList,
-since original reduce sorts all by ascending.
+since original reduce sorts all by ascending position.
 If keep.names == FALSE, it's just the normal GenomicRanges::reduce
 with sorting negative strands descending for GRangesList.
 }

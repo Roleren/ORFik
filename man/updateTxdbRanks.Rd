@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{updateTxdbRanks}
 \alias{updateTxdbRanks}
-\title{Update exon ranks of exon data.frame}
+\title{Update exon ranks of exon data.frame inside txdb object}
 \usage{
 updateTxdbRanks(exons)
 }
@@ -13,5 +13,5 @@ updateTxdbRanks(exons)
 a data.frame, modified call of as.list(txdb)
 }
 \description{
-Update exon ranks of exon data.frame
+Update exon ranks of exon data.frame inside txdb object
 }

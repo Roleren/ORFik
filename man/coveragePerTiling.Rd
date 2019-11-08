@@ -29,7 +29,8 @@ a RleList, one integer-Rle per group with # of hits per position.
 Or data.table if as.data.table is TRUE.
 }
 \description{
-It tiles each GRangesList group, and finds hits per position
+It tiles each GRangesList group to width 1, and finds hits per position.
+A range from 1:5 will split into c(1,2,3,4,5) and count hits on each.
 }
 \details{
 This is a safer speedup of coverageByTranscript from GenomicFeatures.

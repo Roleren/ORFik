@@ -9,12 +9,17 @@ makeExonRanks(grl, byTranscript = FALSE)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
 
-\item{byTranscript}{if ORfs are by transcript, check duplicates}
+\item{byTranscript}{logical (default: FALSE), groups orfs by transcript
+name or ORF name, if ORfs are by transcript, check duplicates.}
 }
 \value{
 an integer vector of indices for exon ranks
 }
 \description{
+Make vector of exon ranking, either iterate per exon in ORF
+byTranscript = FALSE, or per ORF in transcript byTranscript = TRUE.
+}
+\details{
 Either by transcript or by original groupings.
 Must be ordered, so that same transcripts are ordered together.
 }

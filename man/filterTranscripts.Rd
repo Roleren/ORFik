@@ -39,7 +39,8 @@ so they will be filtered out if you set minThreeUTR to 1.
 So only transcripts with leaders, cds and trailers will be returned.
 You can set the integer to 0, that will return all within that group.
 
-If your annotation does not have leaders or trailers, set them to NULL.
+If your annotation does not have leaders or trailers, set them to NULL,
+since 0 does mean there must exist a column called utr3_len etc.
 }
 \examples{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")

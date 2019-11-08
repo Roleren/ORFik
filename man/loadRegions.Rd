@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{loadRegions}
 \alias{loadRegions}
-\title{Get all regions of transcripts specified}
+\title{Get all regions of transcripts specified to environment}
 \usage{
 loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
   extension = "", envir = .GlobalEnv)
@@ -22,5 +22,6 @@ a path to one of:
 NULL (regions set by envir assignment)
 }
 \description{
-Get all regions of transcripts specified
+By default loads all parts to .GlobalEnv (global environemnt)
+Useful to not spend time on finding the functions to load regions.
 }

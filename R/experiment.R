@@ -199,6 +199,7 @@ save.experiment <- function(df, file) {
 #' @param candidates Possible names to search for.
 #' @return a candidate library types (character vector)
 findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq", "Rna-seq",
+                                                   "RNA-seq",
                                                    "RFP", "RPF", "ribo-seq",
                                                    "Ribo-seq", "mrna",
                                                    "CAGE", "cage", "LSU",
@@ -355,7 +356,7 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv) {
 #' @importFrom tools file_ext
 #' @return (character vector) All files found from types parameter.
 findLibrariesInFolder <- function(dir, types) {
-  regex <- paste(".", types, collapse = "|", sep = "")
+  regex <- paste("\\.", types, collapse = "|", sep = "")
   files <- grep(pattern = regex, x = list.files(dir, full.names = TRUE),
                 value = TRUE)
   # Remove .bai bam index files etc
@@ -368,7 +369,6 @@ findLibrariesInFolder <- function(dir, types) {
     if (any(compressed)) {
       fext[compressed] <-file_ext(file_path_sans_ext(files[compressed],
                                                       compression = FALSE))
-
     }
     files <- files[fext %in% types]
   }

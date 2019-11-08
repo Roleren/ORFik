@@ -14,7 +14,8 @@ RiboSeq data.}
 a logical, if it is periodic.
 }
 \description{
-Checks if there is a periodicity and if the periodicity is 3.
+Checks if there is a periodicity and if the periodicity is 3,
+more precisely between 2.9 and 3.1.
 }
 \details{
 It uses Fourier transform for finding periodic vectors

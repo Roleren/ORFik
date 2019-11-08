@@ -1,7 +1,11 @@
-#' Get coverage window per transcript
+#' Get a binned coverage window per transcript
+#'
+#' Per transcript (or other regions), bin them all to windowSize (default 100),
+#' and make a data.table, rows are positions, useful for plotting with ORFik
+#' and ggplot2.
 #'
 #' NOTE: All ranges with smaller width than windowSize, will of course be
-#' removed. What is the 100 position on a 1 width size ?
+#' removed. What is the 100 position on a 1 width object ?
 #' @param txdb a TxDb object or a path to gtf/gff/db file.
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
@@ -37,9 +41,12 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
   return(txCov)
 }
 
-#' Create coverage of transcripts, split into the 3 parts.
+#' Create binned coverage of transcripts, split into the 3 parts.
 #'
 #' The 3 parts  of transcripts are the leaders, the cds' and trailers.
+#' Per transcript part, bin them all to windowSize (default 100),
+#' and make a data.table, rows are positions, useful for plotting with ORFik
+#' and ggplot2.
 #' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
 #' @param cds a \code{\link{GRangesList}} of coding sequences
 #' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
@@ -76,8 +83,8 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' if windows have different widths, this will be ignored.
 #' @param scaleTo an integer (100), if windows have different size,
 #'  a meta window can not directly be created, since a meta window must
-#'  have equal size for all windows. Rescale all windows to scaleTo.
-#'  i.e c(1,2,3) -> size 2 -> c(1, sum(2,3)) etc.
+#'  have equal size for all windows. Rescale (bin) all windows to scaleTo.
+#'  i.e c(1,2,3) -> size 2 -> coverage of position c(1, mean(2,3)) etc.
 #' @param fraction a character/integer (NULL), the fraction i.e
 #' (27) for read length 27, or ("LSU") for large sub-unit TCP-seq.
 #' @param feature a character string, info on region. Usually either
@@ -143,9 +150,9 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
   return(hitMap)
 }
 
-#' Scale windows to a meta window of size
+#' Scale (bin) windows to a meta window of given size
 #'
-#' For example scale a coverage plot of a all human CDS to width 100
+#' For example scale a coverage table of a all human CDS to width 100
 #'
 #' Nice for making metaplots, the score will be mean of merged positions.
 #' @param grl GRangesList or GRanges of your ranges
@@ -319,8 +326,9 @@ coverageScorings <- function(coverage, scoring = "zscore") {
   return(res)
 }
 
-#' Get overlaps and convert to coverage list
+#' Get overlaps and convert to Rle coverage list
 #'
+#' Basicly a count overlap transformed to Rle.
 #' @param gr a \code{\link{GRanges}} object, to get coverage of.
 #' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc.
 #' @param keep.names logical (T), keep names or not.
@@ -354,7 +362,8 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 
 #' Get coverage per group
 #'
-#' It tiles each GRangesList group, and finds hits per position
+#' It tiles each GRangesList group to width 1, and finds hits per position.
+#' A range from 1:5 will split into c(1,2,3,4,5) and count hits on each.
 #'
 #' This is a safer speedup of coverageByTranscript from GenomicFeatures.
 #' It also gives the possibility to return as data.table, for faster
@@ -420,7 +429,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   return(coverage)
 }
 
-#' Find proportion of reads per position in window
+#' Find proportion of reads per position per read length in window
 #'
 #' This is like a more detailed floss score, where floss score takes fraction
 #' of reads per read length over whole window, this is defined as:
@@ -429,8 +438,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #'
 #' If tx is not NULL, it gives a metaWindow, centered around startSite of
 #' grl from upstream and downstream. If tx is NULL, it will use only downstream
-#' , since it has no reference from to find upstream from. Unless upstream is
-#' negative, that is, going downstream.
+#' , since it has no reference on how to find upstream region.
+#' The exception is when upstream is negative, that is,
+#' going into downstream region of the object.
 #'
 #' @inheritParams startRegion
 #' @param reads any type of reads, usualy ribo seq. As GAlignment, GRanges
@@ -497,7 +507,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
 #' FGF: Fraction, position, feature
 #' It finds which of these exists, and auto groups
 #'
-#' Normally not used directly
+#' Normally not used directly!
 #' @param logicals size 2 logical vector, the is.null checks for each column,
 #' @param grouping which grouping to perform
 #' @return a quote of the grouping to pass to data.table
@@ -525,8 +535,9 @@ coverageGroupings <- function(logicals, grouping = "GF") {
   return(groupFPF)
 }
 
-#' Get number of genes per grouping
+#' Get number of genes per coverage table
 #'
+#' Used to count genes in ORFik meta plots
 #' @param coverage a data.table with coverage
 #' @return number of genes in coverage
 getNGenesCoverage <- function(coverage) {

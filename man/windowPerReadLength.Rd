@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_helpers.R
 \name{windowPerReadLength}
 \alias{windowPerReadLength}
-\title{Find proportion of reads per position in window}
+\title{Find proportion of reads per position per read length in window}
 \usage{
 windowPerReadLength(grl, tx = NULL, reads, pShifted = TRUE,
   upstream = if (pShifted) 5 else 20, downstream = if (pShifted) 20
@@ -52,8 +52,9 @@ upstream and downstream)
 \details{
 If tx is not NULL, it gives a metaWindow, centered around startSite of
 grl from upstream and downstream. If tx is NULL, it will use only downstream
-, since it has no reference from to find upstream from. Unless upstream is
-negative, that is, going downstream.
+, since it has no reference on how to find upstream region.
+The exception is when upstream is negative, that is,
+going into downstream region of the object.
 }
 \seealso{
 Other coverage: \code{\link{coverageScorings}},

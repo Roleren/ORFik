@@ -31,7 +31,8 @@ parseCigar <- function(cigar, shift, is_plus_strand) {
 
 #' Find if there is periodicity in the vector
 #'
-#' Checks if there is a periodicity and if the periodicity is 3.
+#' Checks if there is a periodicity and if the periodicity is 3,
+#' more precisely between 2.9 and 3.1.
 #'
 #' It uses Fourier transform for finding periodic vectors
 #' @param x (numeric) Vector of values to detect periodicity of 3 like in
@@ -48,6 +49,8 @@ isPeriodic <- function(x) {
 }
 
 #' Get the offset for specific RiboSeq read width
+#'
+#' 12 would mean p-site is 12 bases upstream
 #' @param x a vector with count per position to analyse, assumes the zero
 #'  is in the middle + 1 (position 0)
 #' @param feature (character) either "start" or "stop"
