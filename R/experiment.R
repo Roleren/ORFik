@@ -181,7 +181,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   # Set condition
   conditions <- c("WT", "control", "MZ", "dicer", "4Ei", "4ei", "silvesterol",
                   "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
-  df[5:(5+length(files)-1),4] <- findFromPath(files, )
+  df[5:(5+length(files)-1),4] <- findFromPath(files, conditions)
   # Paired end
   pairs <- c("_R1_", "_F", "_Forward", "_forward",
              "_R2_", "_R", "_Reverse", "_reverse")
