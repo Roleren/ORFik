@@ -196,8 +196,8 @@ create.experiment <- function(dir, exper, saveDir = NULL,
               "2-4Cell", "64Cell", "256Cell", "1KCell",
               "sphere", "shield", "dome", "oblong", "bud",
               "Sphere", "Shield", "Dome", "Oblong", "Bud",
-              "2h", "4h", "6h", "8h", "24hpf", "28hpf",
-              "2dpf", "3dpf", "4dpf", "5dpf")
+              "_2h", "_4h", "_6h", "_8h", "_12h", "_24hpf", "_28hpf",
+              "1dpf", "2dpf", "3dpf", "4dpf", "5dpf")
   df[5:(5+length(files)-1),2] <- findFromPath(files, stages)
   # set rep
   # TODO, FIX so R1 is not REP; it can mix up with illumina paired end
