@@ -9,9 +9,9 @@ assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
   preCleanup = TRUE)
 }
 \arguments{
-\item{txdb}{a TxDb file, an ORFik experiment or
-a path to one of:
- (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+or an ORFik experiment}
 
 \item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
 with possible compressions (".gzip", ".gz", ".bgz"), or already loaded

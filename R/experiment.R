@@ -1,8 +1,8 @@
 #' experiment class definition
 #'
-#' An object to massivly simplify your coding, it is
-#' similar to systempipeR's 'target' table. By containing
-#' filepaths and info for each library in some experiment.
+#' An object to massivly simplify your coding, by having a
+#' table of all libraries in an experiment. That contains
+#' filepaths and info for each library.
 #'
 #' Simplest way to make is to call create.experiment on some
 #' folder with libraries and see what you get. Some of the fields
@@ -17,6 +17,34 @@
 #' fraction: 18, 19 (fractinations), or other ways to split library.
 #' filepath: Full filepath to file
 #' @importFrom methods new
+#' @examples
+#' \dontrun{
+#' library(ORFik)
+#' # 1. Update path to experiment data  directory (bam files etc)
+#' exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
+#' # 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, Max 2017 -> Max17)
+#' exper_name = "Max17"
+#' # 3. Create a template experiment, and check that it is correct
+#' temp <- create.experiment(exp_dir, exper_name,
+#'  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
+#'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+#' # 4. Make sure each row(sample) is unique and correct
+#' # You will get a view open now, check the data.frame that it is correct:
+#' # library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
+#' # Let say it did not figure out it is RNA-seq, then we do:"
+#' temp$X1[5] <- "RNA" # X1[5 and 6] are libtypes
+#' temp$X1[6] <- "RNA"
+#' # You can also do this in your spread sheet program (excel, libre..)
+#' # Now save new version, if you did not use spread sheet.
+#' save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
+#'  exper_name,".csv"))
+#' # 5. Load experiment, this will validate that you actually made it correct
+#' df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
+#'  exper_name,".csv"))
+#' # Set experiment name not to be assigned to variable
+#' df@expInVarName <- FALSE
+#' df
+#' }
 #' @export
 experiment <- setClass("experiment",
                        slots=list(experiment = "character",
@@ -153,7 +181,7 @@ read.experiment <-  function(file) {
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
                               fa = "", viewTemplate = TRUE) {
-  if (!dir.exists(dir)) stop(paste0(dir, " is not a valid directory!"))
+  if (!dir.exists(dir)) stop(paste(dir, "is not a valid directory!"))
   files <- findLibrariesInFolder(dir, types)
 
   df <- data.frame(matrix(ncol = 6, nrow = length(files) + 4))
@@ -191,14 +219,15 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   df[3, 1:2] <- c("fasta", fa)
   df[is.na(df)] <- ""
   if (!is.null(saveDir))
-    save.experiment(df, paste0(saveDir, exper,".csv"))
+    save.experiment(df, pasteDir(saveDir, exper,".csv"))
   if (viewTemplate) View(df)
   return(df)
 }
 
 #' Save experiment to disc
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param file name of file to save df as
+#' @export
 #' @return NULL (experiment save only)
 save.experiment <- function(df, file) {
   write.table(x = df, file = file, sep = ",",
@@ -275,7 +304,7 @@ validateExperiments <- function(df) {
 #' Get library variable names from ORFik experiment
 #'
 #' What will each sample be called given the columns of the experiment?
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
 #' @param skip.condition a logical (FALSE), don't include condition
@@ -302,7 +331,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 }
 
 #' Get variable name per filepath in experiment
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
 #' @param skip.condition a logical (FALSE), don't include condition
@@ -342,7 +371,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' Output bam/bed/wig files to R as variables
 #'
 #' Variable names defined by df
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param chrStyle the sequencelevels style (GRanges object or chr)
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @return NULL (libraries set by envir assignment)
@@ -384,10 +413,9 @@ findLibrariesInFolder <- function(dir, types) {
     if (any(compressed)) {
       fext[compressed] <-file_ext(file_path_sans_ext(files[compressed],
                                                       compression = FALSE))
-
     }
     files <- files[fext %in% types]
   }
   if (length(files) == 0) stop("Found no valid files in folder")
-  return(files)
+  return(pasteDir(files))
 }

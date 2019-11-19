@@ -113,3 +113,13 @@ checkRFP <- function(class) {
     stop("RFP must be either GAlignments or GRanges")
   }
 }
+
+#' A paste function for directories
+#' Makes sure slashes are corrected, and not doubled.
+#' @param ... any amount of arguments that are possible to convert
+#'  to characters
+#' @return the pasted string
+pasteDir <- function(...) {
+  temp <- gsub(pattern = "//", x = paste(..., sep = "/"), replacement = "/")
+  return(gsub(pattern = "/\\.", temp, replacement = "."))
+}

@@ -1,0 +1,140 @@
+#' A post Alignment quality control of reads
+#'
+#' From this report you will get a summary csv table, with distribution of
+#' aligned reads, overlap of reads to transcript regions, like
+#' leader, cds, trailer, tRNAs, rRNAs, snoRNAs etc.
+#' It will also make you some correlation plots and meta coverage plots,
+#' so you get a good understanding of how good the quality of your NGS
+#' data production + aligner step were.
+#' Everything will be outputed in the directory of your NGS data,
+#' inside the folder QC_STATS/, relative to data location in 'df'
+#'
+#' To make a ORFik experiment, see ?ORFik::experiment
+#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @export
+#' @return NULL
+ORFikQC <- function(df) {
+  # When experiment is ready, everything down from here is automatic
+  message("Started ORFik QC report:")
+  validateExperiments(df)
+
+  exp_dir <- dirname(df$filepath[1])
+  stats_folder <- paste0(exp_dir, "/QC_STATS/")
+  dir.create(stats_folder)
+
+  txdb <- loadTxdb(df)
+  loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"));
+  outputLibs(df, leaders)
+
+  # Special regions rRNA etc..
+  if (!(file_ext(df@txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
+    # Try to use reference of sqlite
+    gff.df <- import(metadata(txdb)[3,2])
+  } else gff.df <- import(df@txdb)
+  types <- unique(gff.df$transcript_biotype)
+  types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
+                             "rRNA", "ribozyme", "Mt_tRNA")]
+
+  # Put into csv, the standard stats
+  libs <- bamVarName(df)
+  for (s in libs) { # For each library
+    message(s)
+    lib <- get(s)
+    # Raw stats
+    res <- data.frame(Sample = s, Raw_reads = 2e7,
+                      Aligned_reads = length(lib))
+    res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
+
+    # mRNA region stats
+    sCo <- function(region, lib) sum(countOverlaps(region, lib))
+    res_mrna <- data.table(mRNA = sCo(mrna, lib), LEADERS = sCo(leaders, lib),
+                           CDS = sCo(cds, lib), TRAILERs = sCo(trailers, lib))
+    res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]
+    res_mrna[,ratio_cds_mrna := CDS / mRNA]
+    res_mrna[, ratio_cds_leader := CDS / LEADERS]
+
+    # Special region stats
+    numbers <- sCo(tx, lib)
+    for (t in types) {
+      valids <- gff.df[grep(x = gff.df$transcript_biotype, pattern = t)]
+      numbers <- c(numbers, sCo(tx[unique(valids$transcript_id)], lib))
+    }
+
+    res_extra <- data.frame(matrix(numbers, nrow = 1))
+    colnames(res_extra) <- c("All_tx_types", types)
+
+    # Lib width distribution, after soft.clip
+    widths <- summary(readWidths(lib))
+    res_widths <- data.frame(matrix(widths, nrow = 1))
+    colnames(res_widths) <- names(widths)
+
+    final <- cbind(res, res_widths, res_mrna, res_extra)
+
+    if (s == libs[1]) finals <- final
+    else finals <- rbind(finals, final)
+  }
+
+  # Update raw reads to real number
+  # Needs a folder called trim
+  if (dir.exists(paste0(exp_dir, "../trim/"))) {
+    oldDir <- getwd()
+    setwd(paste0(exp_dir, "../trim/"))
+    raw_library <- system('ls *.json', intern = TRUE)
+    lib_string <- 'grep -m 1 -h "total_reads" *.json | grep -Eo "[0-9]*"'
+    raw_reads <- as.numeric(system(lib_string, intern = TRUE))
+    raw_data <- data.table(raw_library, raw_reads)
+    raw_data$raw_library <- gsub("report_",
+                                 x = raw_data$raw_library, replacement = "")
+    raw_data$raw_library <- gsub(".json",
+                                 x = raw_data$raw_library, replacement = "")
+    order <- unlist(lapply(X = raw_data$raw_library,
+                           function(p) grep(pattern = p, x = df$filepath)))
+    notMatch <-
+      !all(seq(nrow(df)) %in% order) | length(seq(nrow(df))) != length(order)
+    if (notMatch) { # did not match all
+      message("Could not find raw read count of your data, setting to 20 M")
+    } else {
+      finals[order,]$Raw_reads <- raw_data$raw_reads
+      finals$ratio_aligned_raw = finals$Aligned_reads / finals$Raw_reads
+    }
+    setwd(oldDir)
+  } else message("Could not find raw read counts of data, setting to 20 M")
+
+  write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
+
+  QCplots(df, mrna, stats_folder)
+
+  message(paste("Everything done, saved QC to:", stats_folder))
+}
+
+#' Correlation and coverage plots for ORFikQC
+#'
+#' Output will be stored in same folder as the
+#' libraries in df.
+#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param region (default: mrna), make raw count matrices of
+#' whole mrnas or one of (leaders, cds, trailers)
+#' @param stats_folder directory to save
+#' @importFrom GGally ggpairs
+#' @return NULL
+QCplots <- function(df, region, stats_folder) {
+  message("Making QC plots")
+  # Load fpkm values
+  data_for_pairs <- makeSummarizedExperimentFromBam(df, region = region,
+                                                    geneOrTxNames = "tx",
+                                                    longestPerGene = FALSE,
+                                                    type = "fpkm")
+  paired_plot <- ggpairs(as.data.frame(data_for_pairs),
+                         columns = 1:ncol(data_for_pairs))
+  ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
+         height=400, width=400, units = 'mm', dpi=300)
+  paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs)),
+                         columns = 1:ncol(data_for_pairs))
+  ggsave(pasteDir(stats_folder, "cor_plot_log2.png"), paired_plot,
+         height=400, width=400, units = 'mm', dpi=300)
+
+  # window coverage over mRNA regions
+  txNames <- filterTranscripts(df@txdb, 100, 100, 100, longestPerGene = FALSE)
+  transcriptWindow(leaders[txNames], cds[txNames], trailers[txNames],
+                   df = df, outdir = stats_folder, allTogether = TRUE)
+}

@@ -127,9 +127,9 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' General loader for txdb
 #'
 #' Useful to allow fast TxDb loader like .db
-#' @param txdb a TxDb file, an ORFik experiment or
-#' a path to one of:
+#' @param txdb a TxDb file, a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+#'  or an ORFik experiment
 #' @inheritParams matchSeqStyle
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb

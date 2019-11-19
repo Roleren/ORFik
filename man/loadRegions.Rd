@@ -8,9 +8,9 @@ loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
   extension = "", envir = .GlobalEnv)
 }
 \arguments{
-\item{txdb}{a TxDb file, an ORFik experiment or
-a path to one of:
- (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+or an ORFik experiment}
 
 \item{parts}{the transcript parts you want}
 

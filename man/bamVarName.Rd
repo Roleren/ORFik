@@ -11,7 +11,7 @@ bamVarName(df, skip.replicate = length(unique(df$rep)) == 1,
   skip.experiment = !df@expInVarName)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik experiment, to make it, see: ?experiment}
 
 \item{skip.replicate}{a logical (FALSE), don't include replicate
 in variable name.}

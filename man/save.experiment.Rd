@@ -7,7 +7,7 @@
 save.experiment(df, file)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik experiment, to make it, see: ?experiment}
 
 \item{file}{name of file to save df as}
 }

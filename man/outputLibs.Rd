@@ -7,7 +7,7 @@
 outputLibs(df, chrStyle = NULL, envir = .GlobalEnv)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik experiment, to make it, see: ?experiment}
 
 \item{chrStyle}{the sequencelevels style (GRanges object or chr)}
 

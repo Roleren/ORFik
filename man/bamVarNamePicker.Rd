@@ -8,7 +8,7 @@ bamVarNamePicker(df, skip.replicate = FALSE, skip.condition = FALSE,
   skip.stage = FALSE, skip.fraction = FALSE, skip.experiment = FALSE)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik experiment, to make it, see: ?experiment}
 
 \item{skip.replicate}{a logical (FALSE), don't include replicate
 in variable name.}
