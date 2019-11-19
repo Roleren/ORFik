@@ -196,7 +196,8 @@ create.experiment <- function(dir, exper, saveDir = NULL,
               "2-4Cell", "64Cell", "256Cell", "1KCell",
               "sphere", "shield", "dome", "oblong", "bud",
               "Sphere", "Shield", "Dome", "Oblong", "Bud",
-              "_2h", "_4h", "_6h", "_8h", "_12h", "_24hpf", "_28hpf",
+              "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h",
+              "_02h", "_04h", "_06h", "_08h", "_12hpf", "_24hpf", "_28hpf",
               "1dpf", "2dpf", "3dpf", "4dpf", "5dpf")
   df[5:(5+length(files)-1),2] <- findFromPath(files, stages)
   # set rep
