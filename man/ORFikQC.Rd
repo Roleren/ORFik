@@ -4,10 +4,13 @@
 \alias{ORFikQC}
 \title{A post Alignment quality control of reads}
 \usage{
-ORFikQC(df)
+ORFikQC(df, out.dir = dirname(df$filepath[1]))
 }
 \arguments{
 \item{df}{an ORFik experiment, to make it, see: ?experiment}
+
+\item{out.dir}{optional output directory,
+default: dirname(df$filepath[1])}
 }
 \description{
 From this report you will get a summary csv table, with distribution of

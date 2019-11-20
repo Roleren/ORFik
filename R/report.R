@@ -11,14 +11,16 @@
 #'
 #' To make a ORFik experiment, see ?ORFik::experiment
 #' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param out.dir optional output directory,
+#' default: dirname(df$filepath[1])
 #' @export
 #' @return NULL
-ORFikQC <- function(df) {
+ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
   validateExperiments(df)
 
-  exp_dir <- dirname(df$filepath[1])
+  exp_dir <- out.dir
   stats_folder <- paste0(exp_dir, "/QC_STATS/")
   if (!dir.create(stats_folder)) stop("Could not create directory!")
 
