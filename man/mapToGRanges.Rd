@@ -29,11 +29,16 @@ There is no check on invalid matches, so be carefull if you use this
 function directly.
 }
 \seealso{
-Other ORFHelpers: \code{\link{defineTrailer}},
-  \code{\link{longestORFs}}, \code{\link{orfID}},
-  \code{\link{startCodons}}, \code{\link{startSites}},
-  \code{\link{stopCodons}}, \code{\link{stopSites}},
-  \code{\link{txNames}}, \code{\link{uniqueGroups}},
-  \code{\link{uniqueOrder}}
+Other ORFHelpers: 
+\code{\link{defineTrailer}()},
+\code{\link{longestORFs}()},
+\code{\link{orfID}()},
+\code{\link{startCodons}()},
+\code{\link{startSites}()},
+\code{\link{stopCodons}()},
+\code{\link{stopSites}()},
+\code{\link{txNames}()},
+\code{\link{uniqueGroups}()},
+\code{\link{uniqueOrder}()}
 }
 \concept{ORFHelpers}

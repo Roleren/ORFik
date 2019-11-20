@@ -1,8 +1,8 @@
 #' experiment class definition
 #'
-#' An object to massivly simplify your coding, it is
-#' similar to systempipeR's 'target' table. By containing
-#' filepaths and info for each library in some experiment.
+#' An object to massivly simplify your coding, by having a
+#' table of all libraries in an experiment. That contains
+#' filepaths and info for each library.
 #'
 #' Simplest way to make is to call create.experiment on some
 #' folder with libraries and see what you get. Some of the fields
@@ -17,6 +17,42 @@
 #' fraction: 18, 19 (fractinations), or other ways to split library.
 #' filepath: Full filepath to file
 #' @importFrom methods new
+#' @examples
+#' \dontrun{
+#' library(ORFik)
+#'
+#' # 1. Update path to experiment data  directory (bam, bed, wig files etc)
+#' exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
+#'
+#' # 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, Max 2017 -> Max17)
+#' exper_name = "Lee13"
+#'
+#' # 3. Create a template experiment
+#' temp <- create.experiment(exp_dir, exper_name,
+#'  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
+#'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+#'
+#' # 4. Make sure each row(sample) is unique and correct
+#' # You will get a view open now, check the data.frame that it is correct:
+#' # library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
+#' # Let say it did not figure out it is RNA-seq, then we do:"
+#'
+#' temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are libtypes
+#'
+#' # You can also do this in your spread sheet program (excel, libre..)
+#' # Now save new version, if you did not use spread sheet.
+#'
+#' save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
+#'  exper_name,".csv"))
+#'
+#' # 5. Load experiment, this will validate that you actually made it correct
+#' df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
+#'  exper_name,".csv"))
+#'
+#' # Set experiment name not to be assigned to variable
+#' df@expInVarName <- FALSE
+#' df
+#' }
 #' @export
 experiment <- setClass("experiment",
                        slots=list(experiment = "character",
@@ -126,9 +162,11 @@ read.experiment <-  function(file) {
 
 #' Create a template for new ORFik experiment
 #'
-#' By using files in a folder. You will have to fill in the details
+#' By using files in a folder. It will try to make an experiment table
+#' with information per sample. You will have to fill in the details
 #' that were not autodetected. Easiest to do in csv editor like libre Office
-#' or excel.
+#' or excel. Remember that each row (sample) must have a unique combination
+#' of values.
 #' @param dir Which directory to create experiment from
 #' @param exper Short name of experiment, max 5 characters long
 #' @param saveDir Directory to save experiment csv file (NULL)
@@ -151,7 +189,7 @@ read.experiment <-  function(file) {
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
                               fa = "", viewTemplate = TRUE) {
-  if (!dir.exists(dir)) stop(paste0(dir, " is not a valid directory!"))
+  if (!dir.exists(dir)) stop(paste(dir, "is not a valid directory!"))
   files <- findLibrariesInFolder(dir, types)
 
   df <- data.frame(matrix(ncol = 6, nrow = length(files) + 4))
@@ -162,31 +200,44 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   # Set library type (RNA-seq etc)
   df[5:(5+length(files)-1),1] <- findFromPath(files)
   # set stage
-  stages <- c("64cell", "256cell","sphere", "shield", "dome", "oblong", "bud",
-              "64Cell", "256Cell","Sphere", "Shield", "Dome", "Oblong", "Bud",
-              "2h", "4h", "6h", "8h", "24hpf", "2dpf", "3dpf", "4dpf", "5dpf")
+  stages <- c("2-4cell", "64cell", "256cell", "1Kcell",
+              "2-4Cell", "64Cell", "256Cell", "1KCell",
+              "sphere", "shield", "dome", "oblong", "bud",
+              "Sphere", "Shield", "Dome", "Oblong", "Bud",
+              "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h", "_48h",
+              "_02h", "_04h", "_06h", "_08h",
+              "1dpf", "2dpf", "3dpf", "4dpf", "5dpf")
   df[5:(5+length(files)-1),2] <- findFromPath(files, stages)
   # set rep
+  # TODO, FIX so R1 is not REP; it can mix up with illumina paired end
   df[5:(5+length(files)-1),3] <- findFromPath(files, c("rep1", "rep2", "rep3",
+                                                       "Rep1", "Rep2", "Rep3",
                                                        "run1", "run2", "run3",
                                                        "_r1_", "_r2_", "_r3_",
                                                        "_R1_", "_R2_", "_R3_"))
   # Set condition
-  df[5:(5+length(files)-1),4] <- findFromPath(files, c("WT", "control",
-                                                       "MZ", "dicer"))
+  conditions <- c("WT", "control", "MZ", "dicer", "4Ei", "4ei", "silvesterol",
+                  "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
+  df[5:(5+length(files)-1),4] <- findFromPath(files, conditions)
+  # Paired end
+  pairs <- c("_R1_", "_F", "_Forward", "_forward",
+             "_R2_", "_R", "_Reverse", "_reverse")
+  # TODO Make pairs included, it should be optional
   df[1, 1:2] <- c("name", exper)
   df[2, 1:2] <- c("gff", txdb)
   df[3, 1:2] <- c("fasta", fa)
   df[is.na(df)] <- ""
   if (!is.null(saveDir))
-    save.experiment(df, paste0(saveDir, exper,".csv"))
+    save.experiment(df, pasteDir(saveDir, exper,".csv"))
   if (viewTemplate) View(df)
   return(df)
 }
 
 #' Save experiment to disc
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment / template,
+#'  to make it, see: ?experiment
 #' @param file name of file to save df as
+#' @export
 #' @return NULL (experiment save only)
 save.experiment <- function(df, file) {
   write.table(x = df, file = file, sep = ",",
@@ -198,10 +249,11 @@ save.experiment <- function(df, file) {
 #' @param filepaths path to all files
 #' @param candidates Possible names to search for.
 #' @return a candidate library types (character vector)
-findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq", "Rna-seq",
-                                                   "RNA-seq",
+findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq",
+                                                   "Rna-seq", "RNA-seq",
                                                    "RFP", "RPF", "ribo-seq",
                                                    "Ribo-seq", "mrna",
+                                                   "mrna-seq", "mRNA-seq",
                                                    "CAGE", "cage", "LSU",
                                                    "SSU", "ATAC", "tRNA",
                                                    "SHAPE")) {
@@ -248,7 +300,7 @@ validateExperiments <- function(df) {
                                                   file.size)) == 0)
   }
   if (any(is.na(emptyFiles)))
-    stop(paste("File is not existing:\n",df$filepath[is.na(emptyFiles)]))
+    stop(paste("File is not existing:\n", df$filepath[is.na(emptyFiles)]))
   if (any(emptyFiles)) {
     print(cbind(df[which(emptyFiles),]))
     stop("Empty files in list, see above for which")
@@ -259,8 +311,10 @@ validateExperiments <- function(df) {
     stop("Duplicated filepaths in experiment!")
 }
 
-#' Get variable names from experiment
-#' @param df an ORFik experiment data.frame
+#' Get library variable names from ORFik experiment
+#'
+#' What will each sample be called given the columns of the experiment?
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
 #' @param skip.condition a logical (FALSE), don't include condition
@@ -276,7 +330,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
                        skip.fraction = length(unique(df$fraction)) == 1,
                        skip.experiment = !df@expInVarName) {
-  libTypes <- libraryTypes(df)
+
   varName <- c()
   for (i in 1:nrow(df)) {
     varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
@@ -287,7 +341,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 }
 
 #' Get variable name per filepath in experiment
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
 #' @param skip.condition a logical (FALSE), don't include condition
@@ -321,13 +375,13 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     current <- paste(current, paste0("r", rep), sep = "_")
   if (! (skip.experiment | is.null(df@experiment)))
     current <- paste(df@experiment, current, sep = "_")
-  return(current)
+  return(gsub(pattern = "__", "_", current))
 }
 
 #' Output bam/bed/wig files to R as variables
 #'
 #' Variable names defined by df
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param chrStyle the sequencelevels style (GRanges object or chr)
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @return NULL (libraries set by envir assignment)
@@ -373,5 +427,5 @@ findLibrariesInFolder <- function(dir, types) {
     files <- files[fext %in% types]
   }
   if (length(files) == 0) stop("Found no valid files in folder")
-  return(files)
+  return(pasteDir(files))
 }

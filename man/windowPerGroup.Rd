@@ -47,10 +47,12 @@ windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 
 }
 \seealso{
-Other ExtendGenomicRanges: \code{\link{asTX}},
-  \code{\link{coveragePerTiling}},
-  \code{\link{overlapsToCoverage}},
-  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
-  \code{\link{txSeqsFromFa}}
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{coveragePerTiling}()},
+\code{\link{overlapsToCoverage}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{tile1}()},
+\code{\link{txSeqsFromFa}()}
 }
 \concept{ExtendGenomicRanges}

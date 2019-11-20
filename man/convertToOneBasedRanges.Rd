@@ -4,8 +4,13 @@
 \alias{convertToOneBasedRanges}
 \title{Convert a GRanges Object to 1 width reads}
 \usage{
-convertToOneBasedRanges(gr, method = "5prime", addScoreColumn = FALSE,
-  addSizeColumn = FALSE, after.softclips = TRUE)
+convertToOneBasedRanges(
+  gr,
+  method = "5prime",
+  addScoreColumn = FALSE,
+  addSizeColumn = FALSE,
+  after.softclips = TRUE
+)
 }
 \arguments{
 \item{gr}{GRanges, GAlignment Object to reduce}
@@ -44,8 +49,12 @@ were in the specified region.
 NOTE: Does not support paired end reads for the moment!
 }
 \seealso{
-Other utils: \code{\link{bedToGR}}, \code{\link{findFa}},
-  \code{\link{fread.bed}}, \code{\link{optimizeReads}},
-  \code{\link{readBam}}, \code{\link{readWig}}
+Other utils: 
+\code{\link{bedToGR}()},
+\code{\link{findFa}()},
+\code{\link{fread.bed}()},
+\code{\link{optimizeReads}()},
+\code{\link{readBam}()},
+\code{\link{readWig}()}
 }
 \concept{utils}

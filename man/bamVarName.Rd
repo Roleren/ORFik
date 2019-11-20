@@ -2,16 +2,19 @@
 % Please edit documentation in R/experiment.R
 \name{bamVarName}
 \alias{bamVarName}
-\title{Get variable names from experiment}
+\title{Get library variable names from ORFik experiment}
 \usage{
-bamVarName(df, skip.replicate = length(unique(df$rep)) == 1,
+bamVarName(
+  df,
+  skip.replicate = length(unique(df$rep)) == 1,
   skip.condition = length(unique(df$condition)) == 1,
   skip.stage = length(unique(df$stage)) == 1,
   skip.fraction = length(unique(df$fraction)) == 1,
-  skip.experiment = !df@expInVarName)
+  skip.experiment = !df@expInVarName
+)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik experiment, to make it, see: ?experiment}
 
 \item{skip.replicate}{a logical (FALSE), don't include replicate
 in variable name.}
@@ -30,5 +33,5 @@ in variable name.}
 variable names of libraries (character vector)
 }
 \description{
-Get variable names from experiment
+What will each sample be called given the columns of the experiment?
 }

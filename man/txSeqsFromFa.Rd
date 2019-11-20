@@ -30,10 +30,12 @@ called MT vs chrM even though they have same seqlevelsStyle. The
 above line will give you which chromosome it is missing.
 }
 \seealso{
-Other ExtendGenomicRanges: \code{\link{asTX}},
-  \code{\link{coveragePerTiling}},
-  \code{\link{overlapsToCoverage}},
-  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
-  \code{\link{windowPerGroup}}
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{coveragePerTiling}()},
+\code{\link{overlapsToCoverage}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{tile1}()},
+\code{\link{windowPerGroup}()}
 }
 \concept{ExtendGenomicRanges}

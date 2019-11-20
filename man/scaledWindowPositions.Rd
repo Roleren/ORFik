@@ -41,8 +41,9 @@ scaledWindowPositions(windows, x, scaleTo = 100)
 
 }
 \seealso{
-Other coverage: \code{\link{coverageScorings}},
-  \code{\link{metaWindow}},
-  \code{\link{windowPerReadLength}}
+Other coverage: 
+\code{\link{coverageScorings}()},
+\code{\link{metaWindow}()},
+\code{\link{windowPerReadLength}()}
 }
 \concept{coverage}

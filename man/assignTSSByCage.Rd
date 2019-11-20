@@ -4,14 +4,20 @@
 \alias{assignTSSByCage}
 \title{Input a txdb and add a 5' leader for each transcript, that does not have one.}
 \usage{
-assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE, removeUnused = FALSE,
-  preCleanup = TRUE)
+assignTSSByCage(
+  txdb,
+  cage,
+  extension = 1000,
+  filterValue = 1,
+  restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE,
+  preCleanup = TRUE
+)
 }
 \arguments{
-\item{txdb}{a TxDb file, an ORFik experiment or
-a path to one of:
- (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+or an ORFik experiment}
 
 \item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
 with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
@@ -68,7 +74,8 @@ interval).
  }
 }
 \seealso{
-Other CAGE: \code{\link{reassignTSSbyCage}},
-  \code{\link{reassignTxDbByCage}}
+Other CAGE: 
+\code{\link{reassignTSSbyCage}()},
+\code{\link{reassignTxDbByCage}()}
 }
 \concept{CAGE}

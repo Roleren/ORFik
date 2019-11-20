@@ -18,9 +18,12 @@ a character vector of valid seqlevels
 Useful to avoid warnings in bioC
 }
 \seealso{
-Other validity: \code{\link{checkRFP}},
-  \code{\link{checkRNA}}, \code{\link{is.ORF}},
-  \code{\link{is.gr_or_grl}}, \code{\link{is.grl}},
-  \code{\link{validGRL}}
+Other validity: 
+\code{\link{checkRFP}()},
+\code{\link{checkRNA}()},
+\code{\link{is.ORF}()},
+\code{\link{is.gr_or_grl}()},
+\code{\link{is.grl}()},
+\code{\link{validGRL}()}
 }
 \concept{validity}

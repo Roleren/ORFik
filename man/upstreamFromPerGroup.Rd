@@ -28,10 +28,11 @@ If you don't want to include the points given in the region,
 use \code{\link{upstreamOfPerGroup}}
 }
 \seealso{
-Other GRanges: \code{\link{assignFirstExonsStartSite}},
-  \code{\link{assignLastExonsStopSite}},
-  \code{\link{downstreamFromPerGroup}},
-  \code{\link{downstreamOfPerGroup}},
-  \code{\link{upstreamOfPerGroup}}
+Other GRanges: 
+\code{\link{assignFirstExonsStartSite}()},
+\code{\link{assignLastExonsStopSite}()},
+\code{\link{downstreamFromPerGroup}()},
+\code{\link{downstreamOfPerGroup}()},
+\code{\link{upstreamOfPerGroup}()}
 }
 \concept{GRanges}

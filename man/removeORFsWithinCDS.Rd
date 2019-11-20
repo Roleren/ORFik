@@ -19,11 +19,12 @@ to filter against.}
 Remove ORFs that are within cds
 }
 \seealso{
-Other uorfs: \code{\link{addCdsOnLeaderEnds}},
-  \code{\link{filterUORFs}},
-  \code{\link{removeORFsWithSameStartAsCDS}},
-  \code{\link{removeORFsWithSameStopAsCDS}},
-  \code{\link{removeORFsWithStartInsideCDS}},
-  \code{\link{uORFSearchSpace}}
+Other uorfs: 
+\code{\link{addCdsOnLeaderEnds}()},
+\code{\link{filterUORFs}()},
+\code{\link{removeORFsWithSameStartAsCDS}()},
+\code{\link{removeORFsWithSameStopAsCDS}()},
+\code{\link{removeORFsWithStartInsideCDS}()},
+\code{\link{uORFSearchSpace}()}
 }
 \concept{uorfs}

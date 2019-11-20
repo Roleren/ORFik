@@ -4,8 +4,7 @@
 \alias{splitIn3Tx}
 \title{Create binned coverage of transcripts, split into the 3 parts.}
 \usage{
-splitIn3Tx(leaders, cds, trailers, reads, windowSize = 100,
-  fraction = "1")
+splitIn3Tx(leaders, cds, trailers, reads, windowSize = 100, fraction = "1")
 }
 \arguments{
 \item{leaders}{a \code{\link{GRangesList}} of leaders (5' UTRs)}

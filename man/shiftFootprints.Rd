@@ -56,7 +56,8 @@ shiftedReads <- shiftFootprints(footprints, shifts)
 }
 }
 \seealso{
-Other pshifting: \code{\link{changePointAnalysis}},
-  \code{\link{detectRibosomeShifts}}
+Other pshifting: 
+\code{\link{changePointAnalysis}()},
+\code{\link{detectRibosomeShifts}()}
 }
 \concept{pshifting}

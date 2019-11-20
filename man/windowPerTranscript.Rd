@@ -4,8 +4,13 @@
 \alias{windowPerTranscript}
 \title{Get a binned coverage window per transcript}
 \usage{
-windowPerTranscript(txdb, reads, splitIn3 = TRUE, windowSize = 100,
-  fraction = "1")
+windowPerTranscript(
+  txdb,
+  reads,
+  splitIn3 = TRUE,
+  windowSize = 100,
+  fraction = "1"
+)
 }
 \arguments{
 \item{txdb}{a TxDb object or a path to gtf/gff/db file.}

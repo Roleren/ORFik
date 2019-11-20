@@ -4,9 +4,13 @@
 \alias{findORFs}
 \title{Find Open Reading Frames.}
 \usage{
-findORFs(seqs, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = TRUE,
-  minimumLength = 0)
+findORFs(
+  seqs,
+  startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1),
+  longestORF = TRUE,
+  minimumLength = 0
+)
 }
 \arguments{
 \item{seqs}{(DNAStringSet or character vector) - DNA/RNA sequences to search
@@ -67,9 +71,11 @@ findORFs(c("ATGTAA", "ATGATGTAA"))
 
 }
 \seealso{
-Other findORFs: \code{\link{findMapORFs}},
-  \code{\link{findORFsFasta}}, \code{\link{findUORFs}},
-  \code{\link{startDefinition}},
-  \code{\link{stopDefinition}}
+Other findORFs: 
+\code{\link{findMapORFs}()},
+\code{\link{findORFsFasta}()},
+\code{\link{findUORFs}()},
+\code{\link{startDefinition}()},
+\code{\link{stopDefinition}()}
 }
 \concept{findORFs}

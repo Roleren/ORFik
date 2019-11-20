@@ -4,13 +4,19 @@
 \alias{filterTranscripts}
 \title{Filter transcripts by lengths}
 \usage{
-filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
-  minThreeUTR = 30L, longestPerGene = TRUE, stopOnEmpty = TRUE)
+filterTranscripts(
+  txdb,
+  minFiveUTR = 30L,
+  minCDS = 150L,
+  minThreeUTR = 30L,
+  longestPerGene = TRUE,
+  stopOnEmpty = TRUE
+)
 }
 \arguments{
-\item{txdb}{a TxDb file, an ORFik experiment or
-a path to one of:
- (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+or an ORFik experiment}
 
 \item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
 transcripts. Set to NULL if no 5' UTRs exists for annotation.}

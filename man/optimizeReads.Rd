@@ -19,9 +19,12 @@ If more than a million reads, keep only the ones that overlap within the
 grl ranges.
 }
 \seealso{
-Other utils: \code{\link{bedToGR}},
-  \code{\link{convertToOneBasedRanges}},
-  \code{\link{findFa}}, \code{\link{fread.bed}},
-  \code{\link{readBam}}, \code{\link{readWig}}
+Other utils: 
+\code{\link{bedToGR}()},
+\code{\link{convertToOneBasedRanges}()},
+\code{\link{findFa}()},
+\code{\link{fread.bed}()},
+\code{\link{readBam}()},
+\code{\link{readWig}()}
 }
 \concept{utils}

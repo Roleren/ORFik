@@ -4,8 +4,15 @@
 \alias{create.experiment}
 \title{Create a template for new ORFik experiment}
 \usage{
-create.experiment(dir, exper, saveDir = NULL, types = c("bam", "bed",
-  "wig"), txdb = "", fa = "", viewTemplate = TRUE)
+create.experiment(
+  dir,
+  exper,
+  saveDir = NULL,
+  types = c("bam", "bed", "wig"),
+  txdb = "",
+  fa = "",
+  viewTemplate = TRUE
+)
 }
 \arguments{
 \item{dir}{Which directory to create experiment from}
@@ -27,9 +34,11 @@ a data.frame, NOTE: this is not a ORFik experiment,
  only a template for it!
 }
 \description{
-By using files in a folder. You will have to fill in the details
+By using files in a folder. It will try to make an experiment table
+with information per sample. You will have to fill in the details
 that were not autodetected. Easiest to do in csv editor like libre Office
-or excel.
+or excel. Remember that each row (sample) must have a unique combination
+of values.
 }
 \examples{
 template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),

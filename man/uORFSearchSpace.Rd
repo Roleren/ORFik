@@ -4,9 +4,15 @@
 \alias{uORFSearchSpace}
 \title{Create search space to look for uORFs}
 \usage{
-uORFSearchSpace(fiveUTRs, cage = NULL, extension = 1000,
-  filterValue = 1, restrictUpstreamToTx = FALSE,
-  removeUnused = FALSE, cds = NULL)
+uORFSearchSpace(
+  fiveUTRs,
+  cage = NULL,
+  extension = 1000,
+  filterValue = 1,
+  restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE,
+  cds = NULL
+)
 }
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
@@ -72,11 +78,12 @@ uORFSearchSpace(fiveUTRs, cage)
 
 }
 \seealso{
-Other uorfs: \code{\link{addCdsOnLeaderEnds}},
-  \code{\link{filterUORFs}},
-  \code{\link{removeORFsWithSameStartAsCDS}},
-  \code{\link{removeORFsWithSameStopAsCDS}},
-  \code{\link{removeORFsWithStartInsideCDS}},
-  \code{\link{removeORFsWithinCDS}}
+Other uorfs: 
+\code{\link{addCdsOnLeaderEnds}()},
+\code{\link{filterUORFs}()},
+\code{\link{removeORFsWithSameStartAsCDS}()},
+\code{\link{removeORFsWithSameStopAsCDS}()},
+\code{\link{removeORFsWithStartInsideCDS}()},
+\code{\link{removeORFsWithinCDS}()}
 }
 \concept{uorfs}

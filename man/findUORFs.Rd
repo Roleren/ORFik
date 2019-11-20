@@ -4,11 +4,20 @@
 \alias{findUORFs}
 \title{Find upstream ORFs from transcript annotation}
 \usage{
-findUORFs(fiveUTRs, fa, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = TRUE,
-  minimumLength = 0, cds = NULL, cage = NULL, extension = 1000,
-  filterValue = 1, restrictUpstreamToTx = FALSE,
-  removeUnused = FALSE)
+findUORFs(
+  fiveUTRs,
+  fa,
+  startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1),
+  longestORF = TRUE,
+  minimumLength = 0,
+  cds = NULL,
+  cage = NULL,
+  extension = 1000,
+  filterValue = 1,
+  restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE
+)
 }
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
@@ -91,9 +100,11 @@ a uORF, but an alternative cds by definition, etc.
 }
 }
 \seealso{
-Other findORFs: \code{\link{findMapORFs}},
-  \code{\link{findORFsFasta}}, \code{\link{findORFs}},
-  \code{\link{startDefinition}},
-  \code{\link{stopDefinition}}
+Other findORFs: 
+\code{\link{findMapORFs}()},
+\code{\link{findORFsFasta}()},
+\code{\link{findORFs}()},
+\code{\link{startDefinition}()},
+\code{\link{stopDefinition}()}
 }
 \concept{findORFs}

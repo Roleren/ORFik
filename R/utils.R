@@ -97,8 +97,8 @@ readWig <- function(path, chrStyle = NULL) {
                               one forward strand and one reverse!")
   forwardIndex <- 1
   reverseIndex <- 2
-  forwardPath <- grep("forward", path)
-  reversePath <- grep("reverse", path)
+  forwardPath <- grep("forward"|"fwd", path)
+  reversePath <- grep("reverse"|"rev", path)
   if (length(forwardPath) == 1 & length(reversePath) == 1){
     forwardIndex <- forwardPath
     reverseIndex <- reversePath

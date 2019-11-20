@@ -26,10 +26,11 @@ will return the 5' utrs per transcript, usually used for interesting
 parts of the transcripts.
 }
 \seealso{
-Other GRanges: \code{\link{assignFirstExonsStartSite}},
-  \code{\link{assignLastExonsStopSite}},
-  \code{\link{downstreamFromPerGroup}},
-  \code{\link{downstreamOfPerGroup}},
-  \code{\link{upstreamFromPerGroup}}
+Other GRanges: 
+\code{\link{assignFirstExonsStartSite}()},
+\code{\link{assignLastExonsStopSite}()},
+\code{\link{downstreamFromPerGroup}()},
+\code{\link{downstreamOfPerGroup}()},
+\code{\link{upstreamFromPerGroup}()}
 }
 \concept{GRanges}

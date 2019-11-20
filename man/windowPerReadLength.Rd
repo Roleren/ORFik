@@ -4,10 +4,17 @@
 \alias{windowPerReadLength}
 \title{Find proportion of reads per position per read length in window}
 \usage{
-windowPerReadLength(grl, tx = NULL, reads, pShifted = TRUE,
-  upstream = if (pShifted) 5 else 20, downstream = if (pShifted) 20
-  else 5, acceptedLengths = NULL, zeroPosition = upstream,
-  scoring = "transcriptNormalized")
+windowPerReadLength(
+  grl,
+  tx = NULL,
+  reads,
+  pShifted = TRUE,
+  upstream = if (pShifted) 5 else 20,
+  downstream = if (pShifted) 20 else 5,
+  acceptedLengths = NULL,
+  zeroPosition = upstream,
+  scoring = "transcriptNormalized"
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -57,8 +64,9 @@ The exception is when upstream is negative, that is,
 going into downstream region of the object.
 }
 \seealso{
-Other coverage: \code{\link{coverageScorings}},
-  \code{\link{metaWindow}},
-  \code{\link{scaledWindowPositions}}
+Other coverage: 
+\code{\link{coverageScorings}()},
+\code{\link{metaWindow}()},
+\code{\link{scaledWindowPositions}()}
 }
 \concept{coverage}

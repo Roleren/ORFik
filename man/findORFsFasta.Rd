@@ -4,9 +4,14 @@
 \alias{findORFsFasta}
 \title{Finds Open Reading Frames in fasta files.}
 \usage{
-findORFsFasta(filePath, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = TRUE,
-  minimumLength = 0, is.circular = FALSE)
+findORFsFasta(
+  filePath,
+  startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1),
+  longestORF = TRUE,
+  minimumLength = 0,
+  is.circular = FALSE
+)
 }
 \arguments{
 \item{filePath}{(character) Path to the fasta file. Can be both uppercase or
@@ -60,9 +65,11 @@ findORFsFasta(example_genome)
 
 }
 \seealso{
-Other findORFs: \code{\link{findMapORFs}},
-  \code{\link{findORFs}}, \code{\link{findUORFs}},
-  \code{\link{startDefinition}},
-  \code{\link{stopDefinition}}
+Other findORFs: 
+\code{\link{findMapORFs}()},
+\code{\link{findORFs}()},
+\code{\link{findUORFs}()},
+\code{\link{startDefinition}()},
+\code{\link{stopDefinition}()}
 }
 \concept{findORFs}

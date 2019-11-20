@@ -36,22 +36,28 @@ isInFrame <- isInFrame(dist)
 doi: 10.1074/jbc.R116.733899
 }
 \seealso{
-Other features: \code{\link{computeFeaturesCage}},
-  \code{\link{computeFeatures}},
-  \code{\link{disengagementScore}},
-  \code{\link{distToCds}}, \code{\link{distToTSS}},
-  \code{\link{entropy}}, \code{\link{floss}},
-  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
-  \code{\link{initiationScore}},
-  \code{\link{insideOutsideORF}},
-  \code{\link{isOverlapping}},
-  \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
-  \code{\link{rankOrder}},
-  \code{\link{ribosomeReleaseScore}},
-  \code{\link{ribosomeStallingScore}},
-  \code{\link{startRegionCoverage}},
-  \code{\link{startRegion}}, \code{\link{subsetCoverage}},
-  \code{\link{translationalEff}}
+Other features: 
+\code{\link{computeFeaturesCage}()},
+\code{\link{computeFeatures}()},
+\code{\link{disengagementScore}()},
+\code{\link{distToCds}()},
+\code{\link{distToTSS}()},
+\code{\link{entropy}()},
+\code{\link{floss}()},
+\code{\link{fpkm_calc}()},
+\code{\link{fpkm}()},
+\code{\link{fractionLength}()},
+\code{\link{initiationScore}()},
+\code{\link{insideOutsideORF}()},
+\code{\link{isOverlapping}()},
+\code{\link{kozakSequenceScore}()},
+\code{\link{orfScore}()},
+\code{\link{rankOrder}()},
+\code{\link{ribosomeReleaseScore}()},
+\code{\link{ribosomeStallingScore}()},
+\code{\link{startRegionCoverage}()},
+\code{\link{startRegion}()},
+\code{\link{subsetCoverage}()},
+\code{\link{translationalEff}()}
 }
 \concept{features}

@@ -19,7 +19,8 @@ a single numeric offset
 12 would mean p-site is 12 bases upstream
 }
 \seealso{
-Other pshifting: \code{\link{detectRibosomeShifts}},
-  \code{\link{shiftFootprints}}
+Other pshifting: 
+\code{\link{detectRibosomeShifts}()},
+\code{\link{shiftFootprints}()}
 }
 \concept{pshifting}

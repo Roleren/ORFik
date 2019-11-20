@@ -27,11 +27,16 @@ uniqueGroups(grl)
 
 }
 \seealso{
-Other ORFHelpers: \code{\link{defineTrailer}},
-  \code{\link{longestORFs}}, \code{\link{mapToGRanges}},
-  \code{\link{orfID}}, \code{\link{startCodons}},
-  \code{\link{startSites}}, \code{\link{stopCodons}},
-  \code{\link{stopSites}}, \code{\link{txNames}},
-  \code{\link{uniqueOrder}}
+Other ORFHelpers: 
+\code{\link{defineTrailer}()},
+\code{\link{longestORFs}()},
+\code{\link{mapToGRanges}()},
+\code{\link{orfID}()},
+\code{\link{startCodons}()},
+\code{\link{startSites}()},
+\code{\link{stopCodons}()},
+\code{\link{stopSites}()},
+\code{\link{txNames}()},
+\code{\link{uniqueOrder}()}
 }
 \concept{ORFHelpers}

@@ -17,9 +17,12 @@ a boolean
 Helper function to check for GRangesList or GRanges class
 }
 \seealso{
-Other validity: \code{\link{checkRFP}},
-  \code{\link{checkRNA}}, \code{\link{is.ORF}},
-  \code{\link{is.grl}}, \code{\link{validGRL}},
-  \code{\link{validSeqlevels}}
+Other validity: 
+\code{\link{checkRFP}()},
+\code{\link{checkRNA}()},
+\code{\link{is.ORF}()},
+\code{\link{is.grl}()},
+\code{\link{validGRL}()},
+\code{\link{validSeqlevels}()}
 }
 \concept{validity}

@@ -4,9 +4,15 @@
 \alias{reduceKeepAttr}
 \title{Reduce GRanges / GRangesList}
 \usage{
-reduceKeepAttr(grl, keep.names = FALSE, drop.empty.ranges = FALSE,
-  min.gapwidth = 1L, with.revmap = FALSE,
-  with.inframe.attrib = FALSE, ignore.strand = FALSE)
+reduceKeepAttr(
+  grl,
+  keep.names = FALSE,
+  drop.empty.ranges = FALSE,
+  min.gapwidth = 1L,
+  with.revmap = FALSE,
+  with.inframe.attrib = FALSE,
+  ignore.strand = FALSE
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} or GRanges object}
@@ -49,9 +55,12 @@ reduceKeepAttr(grl, keep.names = TRUE)
 
 }
 \seealso{
-Other ExtendGenomicRanges: \code{\link{asTX}},
-  \code{\link{coveragePerTiling}},
-  \code{\link{overlapsToCoverage}}, \code{\link{tile1}},
-  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{coveragePerTiling}()},
+\code{\link{overlapsToCoverage}()},
+\code{\link{tile1}()},
+\code{\link{txSeqsFromFa}()},
+\code{\link{windowPerGroup}()}
 }
 \concept{ExtendGenomicRanges}

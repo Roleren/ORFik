@@ -20,9 +20,12 @@ column 5 will be set to score
 Only Accepts bed files for now, standard format from Fantom5
 }
 \seealso{
-Other utils: \code{\link{convertToOneBasedRanges}},
-  \code{\link{findFa}}, \code{\link{fread.bed}},
-  \code{\link{optimizeReads}}, \code{\link{readBam}},
-  \code{\link{readWig}}
+Other utils: 
+\code{\link{convertToOneBasedRanges}()},
+\code{\link{findFa}()},
+\code{\link{fread.bed}()},
+\code{\link{optimizeReads}()},
+\code{\link{readBam}()},
+\code{\link{readWig}()}
 }
 \concept{utils}

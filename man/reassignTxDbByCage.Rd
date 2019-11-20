@@ -4,14 +4,20 @@
 \alias{reassignTxDbByCage}
 \title{Input a txdb and reassign the TSS for each transcript by CAGE}
 \usage{
-reassignTxDbByCage(txdb, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE, removeUnused = FALSE,
-  preCleanup = TRUE)
+reassignTxDbByCage(
+  txdb,
+  cage,
+  extension = 1000,
+  filterValue = 1,
+  restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE,
+  preCleanup = TRUE
+)
 }
 \arguments{
-\item{txdb}{a TxDb file, an ORFik experiment or
-a path to one of:
- (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)}
+\item{txdb}{a TxDb file, a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
+or an ORFik experiment}
 
 \item{cage}{Either a filePath for the CageSeq file as .bed .bam or .wig,
 with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
@@ -67,7 +73,8 @@ the 5' end of the read as input, use: ORFik:::convertToOneBasedRanges(cage)
  }
 }
 \seealso{
-Other CAGE: \code{\link{assignTSSByCage}},
-  \code{\link{reassignTSSbyCage}}
+Other CAGE: 
+\code{\link{assignTSSByCage}()},
+\code{\link{reassignTSSbyCage}()}
 }
 \concept{CAGE}

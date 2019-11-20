@@ -6,9 +6,9 @@
 \alias{experiment}
 \title{experiment class definition}
 \description{
-An object to massivly simplify your coding, it is
-similar to systempipeR's 'target' table. By containing
-filepaths and info for each library in some experiment.
+An object to massivly simplify your coding, by having a
+table of all libraries in an experiment. That contains
+filepaths and info for each library.
 }
 \details{
 Simplest way to make is to call create.experiment on some
@@ -23,4 +23,41 @@ rep (replicate): 1,2,3 etc
 condition: WT (wild-type), control, target, mzdicer, starved etc.
 fraction: 18, 19 (fractinations), or other ways to split library.
 filepath: Full filepath to file
+}
+\examples{
+\dontrun{
+library(ORFik)
+
+# 1. Update path to experiment data  directory (bam, bed, wig files etc)
+exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
+
+# 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, Max 2017 -> Max17)
+exper_name = "Lee13"
+
+# 3. Create a template experiment
+temp <- create.experiment(exp_dir, exper_name,
+ txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
+ fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+
+# 4. Make sure each row(sample) is unique and correct
+# You will get a view open now, check the data.frame that it is correct:
+# library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
+# Let say it did not figure out it is RNA-seq, then we do:"
+
+temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are libtypes
+
+# You can also do this in your spread sheet program (excel, libre..)
+# Now save new version, if you did not use spread sheet.
+
+save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
+ exper_name,".csv"))
+
+# 5. Load experiment, this will validate that you actually made it correct
+df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
+ exper_name,".csv"))
+
+# Set experiment name not to be assigned to variable
+df@expInVarName <- FALSE
+df
+}
 }

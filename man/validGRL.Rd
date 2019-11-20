@@ -21,9 +21,12 @@ either NULL or indices (checkNULL == TRUE)
 Helper Function to check valid GRangesList input
 }
 \seealso{
-Other validity: \code{\link{checkRFP}},
-  \code{\link{checkRNA}}, \code{\link{is.ORF}},
-  \code{\link{is.gr_or_grl}}, \code{\link{is.grl}},
-  \code{\link{validSeqlevels}}
+Other validity: 
+\code{\link{checkRFP}()},
+\code{\link{checkRNA}()},
+\code{\link{is.ORF}()},
+\code{\link{is.gr_or_grl}()},
+\code{\link{is.grl}()},
+\code{\link{validSeqlevels}()}
 }
 \concept{validity}

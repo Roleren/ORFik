@@ -27,9 +27,12 @@ grl ranges are compared to reference ranges with same name, not
 by index. And it has a security fix.
 }
 \seealso{
-Other ExtendGenomicRanges: \code{\link{coveragePerTiling}},
-  \code{\link{overlapsToCoverage}},
-  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
-  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+Other ExtendGenomicRanges: 
+\code{\link{coveragePerTiling}()},
+\code{\link{overlapsToCoverage}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{tile1}()},
+\code{\link{txSeqsFromFa}()},
+\code{\link{windowPerGroup}()}
 }
 \concept{ExtendGenomicRanges}

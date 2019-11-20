@@ -26,11 +26,16 @@ grl <- GRangesList(ORF1 = ORF1, ORF2 = ORF2)
 longestORFs(grl) # get only longest
 }
 \seealso{
-Other ORFHelpers: \code{\link{defineTrailer}},
-  \code{\link{mapToGRanges}}, \code{\link{orfID}},
-  \code{\link{startCodons}}, \code{\link{startSites}},
-  \code{\link{stopCodons}}, \code{\link{stopSites}},
-  \code{\link{txNames}}, \code{\link{uniqueGroups}},
-  \code{\link{uniqueOrder}}
+Other ORFHelpers: 
+\code{\link{defineTrailer}()},
+\code{\link{mapToGRanges}()},
+\code{\link{orfID}()},
+\code{\link{startCodons}()},
+\code{\link{startSites}()},
+\code{\link{stopCodons}()},
+\code{\link{stopSites}()},
+\code{\link{txNames}()},
+\code{\link{uniqueGroups}()},
+\code{\link{uniqueOrder}()}
 }
 \concept{ORFHelpers}
