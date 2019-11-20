@@ -74,10 +74,10 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 #' @return a DEseq summerizedExperiment object
 scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
                                       collapse = FALSE) {
-  if (is.factor(final$SAMPLE))
+  if (is.factor(final$SAMPLE)) {
     lvls <- levels(final$SAMPLE) %in% unique(colData(final)$SAMPLE)
     final$SAMPLE <- factor(final$SAMPLE, levels = levels(final$SAMPLE)[lvls])
-
+  }
   if (collapse) {
     collapsedAll <- collapseReplicates(final, final$SAMPLE)
     assay(collapsedAll) <- ceiling(assay(collapsedAll) /

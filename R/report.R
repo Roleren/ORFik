@@ -27,7 +27,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   }
 
   txdb <- loadTxdb(df)
-  loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"));
+  loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
   outputLibs(df, leaders)
 
   # Special regions rRNA etc..
@@ -54,7 +54,8 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
       return(sum(countOverlaps(region, lib)))
     }
     res_mrna <- data.table(mRNA = sCo(mrna, lib), LEADERS = sCo(leaders, lib),
-                           CDS = sCo(cds, lib), TRAILERs = sCo(trailers, lib))
+                           CDS = sCo(get("cds", mode = "S4"), lib),
+                           TRAILERs = sCo(trailers, lib))
     res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]
     res_mrna[,ratio_cds_mrna := CDS / mRNA]
     res_mrna[, ratio_cds_leader := CDS / LEADERS]
@@ -140,7 +141,8 @@ QCplots <- function(df, region, stats_folder) {
          height=400, width=400, units = 'mm', dpi=300)
 
   # window coverage over mRNA regions
-  txNames <- filterTranscripts(df@txdb, 100, 100, 100, longestPerGene = FALSE)
-  transcriptWindow(leaders[txNames], cds[txNames], trailers[txNames],
-                   df = df, outdir = stats_folder, allTogether = TRUE)
+  txNames <- filterTranscripts(df, 100, 100, 100, longestPerGene = FALSE)
+  transcriptWindow(leaders[txNames], get("cds", mode = "S4")[txNames],
+                   trailers[txNames], df = df, outdir = stats_folder,
+                   allTogether = TRUE)
 }
