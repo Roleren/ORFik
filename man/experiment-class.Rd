@@ -35,16 +35,20 @@ exper_name = "Max17"
 temp <- create.experiment(exp_dir, exper_name,
  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+
 # 4. Make sure each row(sample) is unique and correct
 # You will get a view open now, check the data.frame that it is correct:
 # library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
 # Let say it did not figure out it is RNA-seq, then we do:"
-temp$X1[5] <- "RNA" # X1[5 and 6] are libtypes
-temp$X1[6] <- "RNA"
+
+temp[5:6, 1] <- "RNA" # X1[5 and 6] are libtypes
+
 # You can also do this in your spread sheet program (excel, libre..)
 # Now save new version, if you did not use spread sheet.
+
 save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
  exper_name,".csv"))
+
 # 5. Load experiment, this will validate that you actually made it correct
 df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
  exper_name,".csv"))

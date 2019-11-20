@@ -20,7 +20,7 @@ ORFikQC <- function(df) {
 
   exp_dir <- dirname(df$filepath[1])
   stats_folder <- paste0(exp_dir, "/QC_STATS/")
-  dir.create(stats_folder)
+  if (!dir.create(stats_folder)) stop("Could not create directory!")
 
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"));

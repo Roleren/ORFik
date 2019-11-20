@@ -28,16 +28,20 @@
 #' temp <- create.experiment(exp_dir, exper_name,
 #'  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
 #'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+#'
 #' # 4. Make sure each row(sample) is unique and correct
 #' # You will get a view open now, check the data.frame that it is correct:
 #' # library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
 #' # Let say it did not figure out it is RNA-seq, then we do:"
-#' temp$X1[5] <- "RNA" # X1[5 and 6] are libtypes
-#' temp$X1[6] <- "RNA"
+#'
+#' temp[5:6, 1] <- "RNA" # X1[5 and 6] are libtypes
+#'
 #' # You can also do this in your spread sheet program (excel, libre..)
 #' # Now save new version, if you did not use spread sheet.
+#'
 #' save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
 #'  exper_name,".csv"))
+#'
 #' # 5. Load experiment, this will validate that you actually made it correct
 #' df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
 #'  exper_name,".csv"))
@@ -196,8 +200,8 @@ create.experiment <- function(dir, exper, saveDir = NULL,
               "2-4Cell", "64Cell", "256Cell", "1KCell",
               "sphere", "shield", "dome", "oblong", "bud",
               "Sphere", "Shield", "Dome", "Oblong", "Bud",
-              "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h",
-              "_02h", "_04h", "_06h", "_08h", "_12hpf", "_24hpf", "_28hpf",
+              "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h", "_48h",
+              "_02h", "_04h", "_06h", "_08h",
               "1dpf", "2dpf", "3dpf", "4dpf", "5dpf")
   df[5:(5+length(files)-1),2] <- findFromPath(files, stages)
   # set rep
@@ -226,7 +230,8 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 }
 
 #' Save experiment to disc
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik experiment / template,
+#'  to make it, see: ?experiment
 #' @param file name of file to save df as
 #' @export
 #' @return NULL (experiment save only)
@@ -366,7 +371,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     current <- paste(current, paste0("r", rep), sep = "_")
   if (! (skip.experiment | is.null(df@experiment)))
     current <- paste(df@experiment, current, sep = "_")
-  return(current)
+  return(gsub(pattern = "__", "_", current))
 }
 
 #' Output bam/bed/wig files to R as variables
