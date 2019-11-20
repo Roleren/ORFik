@@ -26,7 +26,9 @@ then the plot will only be saved to location.
 Helper function for writing plots to disc
 }
 \seealso{
-Other coveragePlot: \code{\link{coverageHeatMap}},
-  \code{\link{pSitePlot}}, \code{\link{windowCoveragePlot}}
+Other coveragePlot: 
+\code{\link{coverageHeatMap}()},
+\code{\link{pSitePlot}()},
+\code{\link{windowCoveragePlot}()}
 }
 \concept{coveragePlot}

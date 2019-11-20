@@ -4,8 +4,7 @@
 \alias{startRegion}
 \title{Start region as GRangesList}
 \usage{
-startRegion(grl, tx = NULL, is.sorted = TRUE, upstream = 2L,
-  downstream = 2L)
+startRegion(grl, tx = NULL, is.sorted = TRUE, upstream = 2L, downstream = 2L)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -36,22 +35,28 @@ If tx is null, then upstream will be forced to 0 and downstream to
 a maximum of grl width. Since there is no reference for splicing.
 }
 \seealso{
-Other features: \code{\link{computeFeaturesCage}},
-  \code{\link{computeFeatures}},
-  \code{\link{disengagementScore}},
-  \code{\link{distToCds}}, \code{\link{distToTSS}},
-  \code{\link{entropy}}, \code{\link{floss}},
-  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
-  \code{\link{initiationScore}},
-  \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
-  \code{\link{isOverlapping}},
-  \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
-  \code{\link{rankOrder}},
-  \code{\link{ribosomeReleaseScore}},
-  \code{\link{ribosomeStallingScore}},
-  \code{\link{startRegionCoverage}},
-  \code{\link{subsetCoverage}},
-  \code{\link{translationalEff}}
+Other features: 
+\code{\link{computeFeaturesCage}()},
+\code{\link{computeFeatures}()},
+\code{\link{disengagementScore}()},
+\code{\link{distToCds}()},
+\code{\link{distToTSS}()},
+\code{\link{entropy}()},
+\code{\link{floss}()},
+\code{\link{fpkm_calc}()},
+\code{\link{fpkm}()},
+\code{\link{fractionLength}()},
+\code{\link{initiationScore}()},
+\code{\link{insideOutsideORF}()},
+\code{\link{isInFrame}()},
+\code{\link{isOverlapping}()},
+\code{\link{kozakSequenceScore}()},
+\code{\link{orfScore}()},
+\code{\link{rankOrder}()},
+\code{\link{ribosomeReleaseScore}()},
+\code{\link{ribosomeStallingScore}()},
+\code{\link{startRegionCoverage}()},
+\code{\link{subsetCoverage}()},
+\code{\link{translationalEff}()}
 }
 \concept{features}

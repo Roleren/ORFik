@@ -4,10 +4,17 @@
 \alias{windowPerReadLength}
 \title{Find proportion of reads per position in window}
 \usage{
-windowPerReadLength(grl, tx = NULL, reads, pShifted = TRUE,
-  upstream = if (pShifted) 5 else 20, downstream = if (pShifted) 20
-  else 5, acceptedLengths = NULL, zeroPosition = upstream,
-  scoring = "transcriptNormalized")
+windowPerReadLength(
+  grl,
+  tx = NULL,
+  reads,
+  pShifted = TRUE,
+  upstream = if (pShifted) 5 else 20,
+  downstream = if (pShifted) 20 else 5,
+  acceptedLengths = NULL,
+  zeroPosition = upstream,
+  scoring = "transcriptNormalized"
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -56,8 +63,9 @@ grl from upstream and downstream. If tx is NULL, it will use only downstream
 negative, that is, going downstream.
 }
 \seealso{
-Other coverage: \code{\link{coverageScorings}},
-  \code{\link{metaWindow}},
-  \code{\link{scaledWindowPositions}}
+Other coverage: 
+\code{\link{coverageScorings}()},
+\code{\link{metaWindow}()},
+\code{\link{scaledWindowPositions}()}
 }
 \concept{coverage}

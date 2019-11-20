@@ -21,11 +21,12 @@ This is a strong filtering, so that even if the cds is on another transcript
 current ribo-seq, rna-seq experiments.
 }
 \seealso{
-Other uorfs: \code{\link{addCdsOnLeaderEnds}},
-  \code{\link{removeORFsWithSameStartAsCDS}},
-  \code{\link{removeORFsWithSameStopAsCDS}},
-  \code{\link{removeORFsWithStartInsideCDS}},
-  \code{\link{removeORFsWithinCDS}},
-  \code{\link{uORFSearchSpace}}
+Other uorfs: 
+\code{\link{addCdsOnLeaderEnds}()},
+\code{\link{removeORFsWithSameStartAsCDS}()},
+\code{\link{removeORFsWithSameStopAsCDS}()},
+\code{\link{removeORFsWithStartInsideCDS}()},
+\code{\link{removeORFsWithinCDS}()},
+\code{\link{uORFSearchSpace}()}
 }
 \concept{uorfs}

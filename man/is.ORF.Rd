@@ -16,9 +16,12 @@ a logical (TRUE/FALSE)
 Check if all requirements for an ORFik ORF is accepted.
 }
 \seealso{
-Other validity: \code{\link{checkRFP}},
-  \code{\link{checkRNA}}, \code{\link{is.gr_or_grl}},
-  \code{\link{is.grl}}, \code{\link{validGRL}},
-  \code{\link{validSeqlevels}}
+Other validity: 
+\code{\link{checkRFP}()},
+\code{\link{checkRNA}()},
+\code{\link{is.gr_or_grl}()},
+\code{\link{is.grl}()},
+\code{\link{validGRL}()},
+\code{\link{validSeqlevels}()}
 }
 \concept{validity}

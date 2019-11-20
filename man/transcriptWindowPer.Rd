@@ -4,8 +4,17 @@
 \alias{transcriptWindowPer}
 \title{Helper function for transcriptWindow}
 \usage{
-transcriptWindowPer(leaders, cds, trailers, df, outdir, scores = c("sum",
-  "zscore"), reads, returnCoverage = FALSE, windowSize = 100)
+transcriptWindowPer(
+  leaders,
+  cds,
+  trailers,
+  df,
+  outdir,
+  scores = c("sum", "zscore"),
+  reads,
+  returnCoverage = FALSE,
+  windowSize = 100
+)
 }
 \arguments{
 \item{leaders}{a \code{\link{GRangesList}} of leaders (5' UTRs)}

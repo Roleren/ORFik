@@ -4,8 +4,11 @@
 \alias{scoreSummarizedExperiment}
 \title{Helper function for makeSummarizedExperimentFromBam}
 \usage{
-scoreSummarizedExperiment(final, score = "transcriptNormalized",
-  collapse = FALSE)
+scoreSummarizedExperiment(
+  final,
+  score = "transcriptNormalized",
+  collapse = FALSE
+)
 }
 \arguments{
 \item{final}{ranged summarized experiment object}

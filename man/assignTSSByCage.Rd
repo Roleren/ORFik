@@ -4,9 +4,15 @@
 \alias{assignTSSByCage}
 \title{Input a txdb and add a 5' leader for each transcript, that does not have one.}
 \usage{
-assignTSSByCage(txdb, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE, removeUnused = FALSE,
-  preCleanup = TRUE)
+assignTSSByCage(
+  txdb,
+  cage,
+  extension = 1000,
+  filterValue = 1,
+  restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE,
+  preCleanup = TRUE
+)
 }
 \arguments{
 \item{txdb}{a TxDb file, a path to one of:
@@ -68,7 +74,8 @@ interval).
  }
 }
 \seealso{
-Other CAGE: \code{\link{reassignTSSbyCage}},
-  \code{\link{reassignTxDbByCage}}
+Other CAGE: 
+\code{\link{reassignTSSbyCage}()},
+\code{\link{reassignTxDbByCage}()}
 }
 \concept{CAGE}

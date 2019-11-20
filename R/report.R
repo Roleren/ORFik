@@ -22,7 +22,9 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   exp_dir <- out.dir
   stats_folder <- paste0(exp_dir, "/QC_STATS/")
-  if (!dir.create(stats_folder)) stop("Could not create directory!")
+  if (!dir.create(stats_folder)) {
+    if (!dir.exists(stats_folder)) stop("Could not create directory!")
+  }
 
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"));
@@ -48,7 +50,9 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
 
     # mRNA region stats
-    sCo <- function(region, lib) sum(countOverlaps(region, lib))
+    sCo <- function(region, lib) {
+      return(sum(countOverlaps(region, lib)))
+    }
     res_mrna <- data.table(mRNA = sCo(mrna, lib), LEADERS = sCo(leaders, lib),
                            CDS = sCo(cds, lib), TRAILERs = sCo(trailers, lib))
     res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]

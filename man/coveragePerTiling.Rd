@@ -4,8 +4,14 @@
 \alias{coveragePerTiling}
 \title{Get coverage per group}
 \usage{
-coveragePerTiling(grl, reads, is.sorted = FALSE, keep.names = TRUE,
-  as.data.table = FALSE, withFrames = FALSE)
+coveragePerTiling(
+  grl,
+  reads,
+  is.sorted = FALSE,
+  keep.names = TRUE,
+  as.data.table = FALSE,
+  withFrames = FALSE
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}
@@ -50,9 +56,12 @@ coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE,
 
 }
 \seealso{
-Other ExtendGenomicRanges: \code{\link{asTX}},
-  \code{\link{overlapsToCoverage}},
-  \code{\link{reduceKeepAttr}}, \code{\link{tile1}},
-  \code{\link{txSeqsFromFa}}, \code{\link{windowPerGroup}}
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{overlapsToCoverage}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{tile1}()},
+\code{\link{txSeqsFromFa}()},
+\code{\link{windowPerGroup}()}
 }
 \concept{ExtendGenomicRanges}

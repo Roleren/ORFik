@@ -4,9 +4,18 @@
 \alias{computeFeatures}
 \title{Get all possible features in ORFik}
 \usage{
-computeFeatures(grl, RFP, RNA = NULL, Gtf, faFile = NULL,
-  riboStart = 26, riboStop = 34, orfFeatures = TRUE,
-  includeNonVarying = TRUE, grl.is.sorted = FALSE)
+computeFeatures(
+  grl,
+  RFP,
+  RNA = NULL,
+  Gtf,
+  faFile = NULL,
+  riboStart = 26,
+  riboStop = 34,
+  orfFeatures = TRUE,
+  includeNonVarying = TRUE,
+  grl.is.sorted = FALSE
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -64,21 +73,28 @@ suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
 
 }
 \seealso{
-Other features: \code{\link{computeFeaturesCage}},
-  \code{\link{disengagementScore}},
-  \code{\link{distToCds}}, \code{\link{distToTSS}},
-  \code{\link{entropy}}, \code{\link{floss}},
-  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
-  \code{\link{initiationScore}},
-  \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
-  \code{\link{isOverlapping}},
-  \code{\link{kozakSequenceScore}}, \code{\link{orfScore}},
-  \code{\link{rankOrder}},
-  \code{\link{ribosomeReleaseScore}},
-  \code{\link{ribosomeStallingScore}},
-  \code{\link{startRegionCoverage}},
-  \code{\link{startRegion}}, \code{\link{subsetCoverage}},
-  \code{\link{translationalEff}}
+Other features: 
+\code{\link{computeFeaturesCage}()},
+\code{\link{disengagementScore}()},
+\code{\link{distToCds}()},
+\code{\link{distToTSS}()},
+\code{\link{entropy}()},
+\code{\link{floss}()},
+\code{\link{fpkm_calc}()},
+\code{\link{fpkm}()},
+\code{\link{fractionLength}()},
+\code{\link{initiationScore}()},
+\code{\link{insideOutsideORF}()},
+\code{\link{isInFrame}()},
+\code{\link{isOverlapping}()},
+\code{\link{kozakSequenceScore}()},
+\code{\link{orfScore}()},
+\code{\link{rankOrder}()},
+\code{\link{ribosomeReleaseScore}()},
+\code{\link{ribosomeStallingScore}()},
+\code{\link{startRegionCoverage}()},
+\code{\link{startRegion}()},
+\code{\link{subsetCoverage}()},
+\code{\link{translationalEff}()}
 }
 \concept{features}

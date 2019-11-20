@@ -42,7 +42,7 @@ Imports:
   gridExtra (>= 2.3),
   GGally (>= 1.4.0),
   methods (>= 3.6.0)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.0
 Suggests:
   testthat,
   rmarkdown,

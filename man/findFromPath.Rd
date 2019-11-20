@@ -4,9 +4,12 @@
 \alias{findFromPath}
 \title{Find all candidate library types filenames}
 \usage{
-findFromPath(filepaths, candidates = c("RNA", "rna-seq", "Rna-seq",
-  "RNA-seq", "RFP", "RPF", "ribo-seq", "Ribo-seq", "mrna", "mrna-seq",
-  "mRNA-seq", "CAGE", "cage", "LSU", "SSU", "ATAC", "tRNA", "SHAPE"))
+findFromPath(
+  filepaths,
+  candidates = c("RNA", "rna-seq", "Rna-seq", "RNA-seq", "RFP", "RPF", "ribo-seq",
+    "Ribo-seq", "mrna", "mrna-seq", "mRNA-seq", "CAGE", "cage", "LSU", "SSU", "ATAC",
+    "tRNA", "SHAPE")
+)
 }
 \arguments{
 \item{filepaths}{path to all files}

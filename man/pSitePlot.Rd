@@ -4,9 +4,15 @@
 \alias{pSitePlot}
 \title{Plot area around TIS as histogram}
 \usage{
-pSitePlot(hitMap, length = 29, region = "start", output = NULL,
-  type = "canonical CDS", scoring = "Averaged counts",
-  forHeatmap = FALSE)
+pSitePlot(
+  hitMap,
+  length = 29,
+  region = "start",
+  output = NULL,
+  type = "canonical CDS",
+  scoring = "Averaged counts",
+  forHeatmap = FALSE
+)
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
@@ -56,7 +62,9 @@ pSitePlot(coverage)
 
 }
 \seealso{
-Other coveragePlot: \code{\link{coverageHeatMap}},
-  \code{\link{savePlot}}, \code{\link{windowCoveragePlot}}
+Other coveragePlot: 
+\code{\link{coverageHeatMap}()},
+\code{\link{savePlot}()},
+\code{\link{windowCoveragePlot}()}
 }
 \concept{coveragePlot}

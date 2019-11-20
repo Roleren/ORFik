@@ -4,11 +4,14 @@
 \alias{bamVarName}
 \title{Get library variable names from ORFik experiment}
 \usage{
-bamVarName(df, skip.replicate = length(unique(df$rep)) == 1,
+bamVarName(
+  df,
+  skip.replicate = length(unique(df$rep)) == 1,
   skip.condition = length(unique(df$condition)) == 1,
   skip.stage = length(unique(df$stage)) == 1,
   skip.fraction = length(unique(df$fraction)) == 1,
-  skip.experiment = !df@expInVarName)
+  skip.experiment = !df@expInVarName
+)
 }
 \arguments{
 \item{df}{an ORFik experiment, to make it, see: ?experiment}

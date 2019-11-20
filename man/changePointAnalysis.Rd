@@ -19,7 +19,8 @@ a single numeric offset
 Get the offset for specific RiboSeq read width
 }
 \seealso{
-Other pshifting: \code{\link{detectRibosomeShifts}},
-  \code{\link{shiftFootprints}}
+Other pshifting: 
+\code{\link{detectRibosomeShifts}()},
+\code{\link{shiftFootprints}()}
 }
 \concept{pshifting}

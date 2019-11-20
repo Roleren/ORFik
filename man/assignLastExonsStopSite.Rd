@@ -21,10 +21,11 @@ should be the min start in group, use ORFik:::sortPerGroup(grl) to get
 sorted grl.
 }
 \seealso{
-Other GRanges: \code{\link{assignFirstExonsStartSite}},
-  \code{\link{downstreamFromPerGroup}},
-  \code{\link{downstreamOfPerGroup}},
-  \code{\link{upstreamFromPerGroup}},
-  \code{\link{upstreamOfPerGroup}}
+Other GRanges: 
+\code{\link{assignFirstExonsStartSite}()},
+\code{\link{downstreamFromPerGroup}()},
+\code{\link{downstreamOfPerGroup}()},
+\code{\link{upstreamFromPerGroup}()},
+\code{\link{upstreamOfPerGroup}()}
 }
 \concept{GRanges}

@@ -4,9 +4,15 @@
 \alias{windowCoveragePlot}
 \title{Get meta coverage plot of reads}
 \usage{
-windowCoveragePlot(coverage, output = NULL, scoring = "zscore",
-  colors = c("skyblue4", "orange"), title = "Coverage metaplot",
-  type = "transcript", scaleEqual = FALSE)
+windowCoveragePlot(
+  coverage,
+  output = NULL,
+  scoring = "zscore",
+  colors = c("skyblue4", "orange"),
+  title = "Coverage metaplot",
+  type = "transcript",
+  scaleEqual = FALSE
+)
 }
 \arguments{
 \item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
@@ -67,7 +73,9 @@ windowCoveragePlot(dt, scoring = "log10sum")
 
 }
 \seealso{
-Other coveragePlot: \code{\link{coverageHeatMap}},
-  \code{\link{pSitePlot}}, \code{\link{savePlot}}
+Other coveragePlot: 
+\code{\link{coverageHeatMap}()},
+\code{\link{pSitePlot}()},
+\code{\link{savePlot}()}
 }
 \concept{coveragePlot}

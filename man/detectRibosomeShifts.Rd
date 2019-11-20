@@ -4,9 +4,18 @@
 \alias{detectRibosomeShifts}
 \title{Detect ribosome shifts}
 \usage{
-detectRibosomeShifts(footprints, txdb, start = TRUE, stop = FALSE,
-  top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L, tx = NULL)
+detectRibosomeShifts(
+  footprints,
+  txdb,
+  start = TRUE,
+  stop = FALSE,
+  top_tx = 10L,
+  minFiveUTR = 30L,
+  minCDS = 150L,
+  minThreeUTR = 30L,
+  firstN = 150L,
+  tx = NULL
+)
 }
 \arguments{
 \item{footprints}{(GAlignments) object of RiboSeq reads - footprints, can
@@ -92,7 +101,8 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
 
 }
 \seealso{
-Other pshifting: \code{\link{changePointAnalysis}},
-  \code{\link{shiftFootprints}}
+Other pshifting: 
+\code{\link{changePointAnalysis}()},
+\code{\link{shiftFootprints}()}
 }
 \concept{pshifting}

@@ -4,8 +4,7 @@
 \alias{kozakSequenceScore}
 \title{Make a score for each ORFs start region by proximity to Kozak}
 \usage{
-kozakSequenceScore(grl, tx, faFile, species = "human",
-  include.N = FALSE)
+kozakSequenceScore(grl, tx, faFile, species = "human", include.N = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} grouped by ORF}
@@ -68,21 +67,28 @@ kozakSequenceScore(ORFs, tx, faFile)
 doi: https://doi.org/10.1371/journal.pone.0108475
 }
 \seealso{
-Other features: \code{\link{computeFeaturesCage}},
-  \code{\link{computeFeatures}},
-  \code{\link{disengagementScore}},
-  \code{\link{distToCds}}, \code{\link{distToTSS}},
-  \code{\link{entropy}}, \code{\link{floss}},
-  \code{\link{fpkm_calc}}, \code{\link{fpkm}},
-  \code{\link{fractionLength}},
-  \code{\link{initiationScore}},
-  \code{\link{insideOutsideORF}}, \code{\link{isInFrame}},
-  \code{\link{isOverlapping}}, \code{\link{orfScore}},
-  \code{\link{rankOrder}},
-  \code{\link{ribosomeReleaseScore}},
-  \code{\link{ribosomeStallingScore}},
-  \code{\link{startRegionCoverage}},
-  \code{\link{startRegion}}, \code{\link{subsetCoverage}},
-  \code{\link{translationalEff}}
+Other features: 
+\code{\link{computeFeaturesCage}()},
+\code{\link{computeFeatures}()},
+\code{\link{disengagementScore}()},
+\code{\link{distToCds}()},
+\code{\link{distToTSS}()},
+\code{\link{entropy}()},
+\code{\link{floss}()},
+\code{\link{fpkm_calc}()},
+\code{\link{fpkm}()},
+\code{\link{fractionLength}()},
+\code{\link{initiationScore}()},
+\code{\link{insideOutsideORF}()},
+\code{\link{isInFrame}()},
+\code{\link{isOverlapping}()},
+\code{\link{orfScore}()},
+\code{\link{rankOrder}()},
+\code{\link{ribosomeReleaseScore}()},
+\code{\link{ribosomeStallingScore}()},
+\code{\link{startRegionCoverage}()},
+\code{\link{startRegion}()},
+\code{\link{subsetCoverage}()},
+\code{\link{translationalEff}()}
 }
 \concept{features}

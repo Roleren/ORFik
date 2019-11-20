@@ -4,9 +4,14 @@
 \alias{makeSummarizedExperimentFromBam}
 \title{Make a summerizedExperiment object from bam files}
 \usage{
-makeSummarizedExperimentFromBam(df, saveName = NULL,
-  longestPerGene = TRUE, geneOrTxNames = "gene", region = "mrna",
-  type = "count")
+makeSummarizedExperimentFromBam(
+  df,
+  saveName = NULL,
+  longestPerGene = TRUE,
+  geneOrTxNames = "gene",
+  region = "mrna",
+  type = "count"
+)
 }
 \arguments{
 \item{df}{an ORFik experiment, to make it, see: ?experiment}

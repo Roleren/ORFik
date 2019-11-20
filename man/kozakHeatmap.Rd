@@ -4,9 +4,17 @@
 \alias{kozakHeatmap}
 \title{Make sequence region heatmap relative to scoring}
 \usage{
-kozakHeatmap(seqs, rate, start, stop, center = ceiling((stop - start +
-  1)/2), min.observations = ">q1", skip.startCodon = FALSE,
-  xlab = "TIS", type = "ribo-seq")
+kozakHeatmap(
+  seqs,
+  rate,
+  start,
+  stop,
+  center = ceiling((stop - start + 1)/2),
+  min.observations = ">q1",
+  skip.startCodon = FALSE,
+  xlab = "TIS",
+  type = "ribo-seq"
+)
 }
 \arguments{
 \item{seqs}{the sequences (character vector, DNAStringSet)}

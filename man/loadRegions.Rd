@@ -4,8 +4,12 @@
 \alias{loadRegions}
 \title{Get all regions of transcripts specified}
 \usage{
-loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
-  extension = "", envir = .GlobalEnv)
+loadRegions(
+  txdb,
+  parts = c("mrna", "leaders", "cds", "trailers"),
+  extension = "",
+  envir = .GlobalEnv
+)
 }
 \arguments{
 \item{txdb}{a TxDb file, a path to one of:

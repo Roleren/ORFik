@@ -4,11 +4,19 @@
 \alias{transcriptWindow}
 \title{Make 100 bases size meta window for all libraries in experiment}
 \usage{
-transcriptWindow(leaders, cds, trailers, df, outdir, scores = c("sum",
-  "zscore"), allTogether = FALSE, colors = rep("skyblue4", nrow(df)),
-  windowSize = min(100, min(widthPerGroup(leaders, F)),
-  min(widthPerGroup(cds, F)), min(widthPerGroup(trailers, F))),
-  returnPlot = FALSE)
+transcriptWindow(
+  leaders,
+  cds,
+  trailers,
+  df,
+  outdir,
+  scores = c("sum", "zscore"),
+  allTogether = FALSE,
+  colors = rep("skyblue4", nrow(df)),
+  windowSize = min(100, min(widthPerGroup(leaders, F)), min(widthPerGroup(cds, F)),
+    min(widthPerGroup(trailers, F))),
+  returnPlot = FALSE
+)
 }
 \arguments{
 \item{leaders}{a \code{\link{GRangesList}} of leaders (5' UTRs)}

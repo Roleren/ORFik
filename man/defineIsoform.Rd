@@ -4,10 +4,13 @@
 \alias{defineIsoform}
 \title{Overlaps GRanges object with provided annotations.}
 \usage{
-defineIsoform(rel_orf, tran, isoform_names = c("perfect_match",
-  "elong_START_match", "trunc_START_match", "elong_STOP_match",
-  "trunc_STOP_match", "overlap_inside", "overlap_both", "overlap_upstream",
-  "overlap_downstream", "upstream", "downstram", "none"))
+defineIsoform(
+  rel_orf,
+  tran,
+  isoform_names = c("perfect_match", "elong_START_match", "trunc_START_match",
+    "elong_STOP_match", "trunc_STOP_match", "overlap_inside", "overlap_both",
+    "overlap_upstream", "overlap_downstream", "upstream", "downstram", "none")
+)
 }
 \arguments{
 \item{rel_orf}{- GRanges object of your ORF.}

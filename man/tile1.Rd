@@ -38,10 +38,12 @@ tile1(grl)
 
 }
 \seealso{
-Other ExtendGenomicRanges: \code{\link{asTX}},
-  \code{\link{coveragePerTiling}},
-  \code{\link{overlapsToCoverage}},
-  \code{\link{reduceKeepAttr}}, \code{\link{txSeqsFromFa}},
-  \code{\link{windowPerGroup}}
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{coveragePerTiling}()},
+\code{\link{overlapsToCoverage}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{txSeqsFromFa}()},
+\code{\link{windowPerGroup}()}
 }
 \concept{ExtendGenomicRanges}

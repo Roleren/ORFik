@@ -4,8 +4,21 @@
 \alias{allFeaturesHelper}
 \title{Calculate the features in computeFeatures}
 \usage{
-allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
-  riboStart, riboStop, orfFeatures, includeNonVarying, grl.is.sorted)
+allFeaturesHelper(
+  grl,
+  RFP,
+  RNA,
+  tx,
+  fiveUTRs,
+  cds,
+  threeUTRs,
+  faFile,
+  riboStart,
+  riboStop,
+  orfFeatures,
+  includeNonVarying,
+  grl.is.sorted
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object

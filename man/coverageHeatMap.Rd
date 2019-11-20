@@ -4,8 +4,13 @@
 \alias{coverageHeatMap}
 \title{Create a heatmap of coverage}
 \usage{
-coverageHeatMap(coverage, output = NULL, scoring = "zscore",
-  legendPos = "right", addFracPlot = FALSE)
+coverageHeatMap(
+  coverage,
+  output = NULL,
+  scoring = "zscore",
+  legendPos = "right",
+  addFracPlot = FALSE
+)
 }
 \arguments{
 \item{coverage}{a data.table, e.g. output of scaledWindowCoverage}
@@ -62,7 +67,9 @@ coverageHeatMap(coverage)
 
 }
 \seealso{
-Other coveragePlot: \code{\link{pSitePlot}},
-  \code{\link{savePlot}}, \code{\link{windowCoveragePlot}}
+Other coveragePlot: 
+\code{\link{pSitePlot}()},
+\code{\link{savePlot}()},
+\code{\link{windowCoveragePlot}()}
 }
 \concept{coveragePlot}

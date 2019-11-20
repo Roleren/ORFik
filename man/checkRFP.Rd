@@ -16,9 +16,12 @@ NULL, stop if invalid object
 Helper Function to check valid RFP input
 }
 \seealso{
-Other validity: \code{\link{checkRNA}},
-  \code{\link{is.ORF}}, \code{\link{is.gr_or_grl}},
-  \code{\link{is.grl}}, \code{\link{validGRL}},
-  \code{\link{validSeqlevels}}
+Other validity: 
+\code{\link{checkRNA}()},
+\code{\link{is.ORF}()},
+\code{\link{is.gr_or_grl}()},
+\code{\link{is.grl}()},
+\code{\link{validGRL}()},
+\code{\link{validSeqlevels}()}
 }
 \concept{validity}

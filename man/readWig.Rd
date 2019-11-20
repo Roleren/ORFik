@@ -24,9 +24,12 @@ If they contain name reverse and forward, first and second order
 does not matter, it will search for forward and reverse.
 }
 \seealso{
-Other utils: \code{\link{bedToGR}},
-  \code{\link{convertToOneBasedRanges}},
-  \code{\link{findFa}}, \code{\link{fread.bed}},
-  \code{\link{optimizeReads}}, \code{\link{readBam}}
+Other utils: 
+\code{\link{bedToGR}()},
+\code{\link{convertToOneBasedRanges}()},
+\code{\link{findFa}()},
+\code{\link{fread.bed}()},
+\code{\link{optimizeReads}()},
+\code{\link{readBam}()}
 }
 \concept{utils}

@@ -4,8 +4,15 @@
 \alias{create.experiment}
 \title{Create a template for new ORFik experiment}
 \usage{
-create.experiment(dir, exper, saveDir = NULL, types = c("bam", "bed",
-  "wig"), txdb = "", fa = "", viewTemplate = TRUE)
+create.experiment(
+  dir,
+  exper,
+  saveDir = NULL,
+  types = c("bam", "bed", "wig"),
+  txdb = "",
+  fa = "",
+  viewTemplate = TRUE
+)
 }
 \arguments{
 \item{dir}{Which directory to create experiment from}

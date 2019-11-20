@@ -4,9 +4,17 @@
 \alias{metaWindow}
 \title{Calculate meta-coverage of reads around input GRanges/List object.}
 \usage{
-metaWindow(x, windows, scoring = "sum", withFrames = FALSE,
-  zeroPosition = NULL, scaleTo = 100, fraction = NULL,
-  feature = NULL, forceUniqueEven = !is.null(scoring))
+metaWindow(
+  x,
+  windows,
+  scoring = "sum",
+  withFrames = FALSE,
+  zeroPosition = NULL,
+  scaleTo = 100,
+  fraction = NULL,
+  feature = NULL,
+  forceUniqueEven = !is.null(scoring)
+)
 }
 \arguments{
 \item{x}{GRangesList/GRanges object of your reads.
@@ -60,8 +68,9 @@ metaWindow(x, windows, withFrames = FALSE)
 
 }
 \seealso{
-Other coverage: \code{\link{coverageScorings}},
-  \code{\link{scaledWindowPositions}},
-  \code{\link{windowPerReadLength}}
+Other coverage: 
+\code{\link{coverageScorings}()},
+\code{\link{scaledWindowPositions}()},
+\code{\link{windowPerReadLength}()}
 }
 \concept{coverage}

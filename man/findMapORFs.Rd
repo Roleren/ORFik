@@ -4,9 +4,15 @@
 \alias{findMapORFs}
 \title{Find ORFs and immediately map them to their genomic positions.}
 \usage{
-findMapORFs(grl, seqs, startCodon = startDefinition(1),
-  stopCodon = stopDefinition(1), longestORF = TRUE,
-  minimumLength = 0, groupByTx = TRUE)
+findMapORFs(
+  grl,
+  seqs,
+  startCodon = startDefinition(1),
+  stopCodon = stopDefinition(1),
+  longestORF = TRUE,
+  minimumLength = 0,
+  groupByTx = TRUE
+)
 }
 \arguments{
 \item{grl}{(\code{\link{GRangesList}}) of sequences
@@ -69,9 +75,11 @@ findMapORFs(grl, c(seqs, seqs))
 
 }
 \seealso{
-Other findORFs: \code{\link{findORFsFasta}},
-  \code{\link{findORFs}}, \code{\link{findUORFs}},
-  \code{\link{startDefinition}},
-  \code{\link{stopDefinition}}
+Other findORFs: 
+\code{\link{findORFsFasta}()},
+\code{\link{findORFs}()},
+\code{\link{findUORFs}()},
+\code{\link{startDefinition}()},
+\code{\link{stopDefinition}()}
 }
 \concept{findORFs}

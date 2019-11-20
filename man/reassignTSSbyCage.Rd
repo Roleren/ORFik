@@ -4,9 +4,16 @@
 \alias{reassignTSSbyCage}
 \title{Reassign all Transcript Start Sites (TSS)}
 \usage{
-reassignTSSbyCage(fiveUTRs, cage, extension = 1000, filterValue = 1,
-  restrictUpstreamToTx = FALSE, removeUnused = FALSE,
-  preCleanup = TRUE, cageMcol = FALSE)
+reassignTSSbyCage(
+  fiveUTRs,
+  cage,
+  extension = 1000,
+  filterValue = 1,
+  restrictUpstreamToTx = FALSE,
+  removeUnused = FALSE,
+  preCleanup = TRUE,
+  cageMcol = FALSE
+)
 }
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
@@ -86,7 +93,8 @@ reassignTSSbyCage(fiveUTRs, cage)
 
 }
 \seealso{
-Other CAGE: \code{\link{assignTSSByCage}},
-  \code{\link{reassignTxDbByCage}}
+Other CAGE: 
+\code{\link{assignTSSByCage}()},
+\code{\link{reassignTxDbByCage}()}
 }
 \concept{CAGE}

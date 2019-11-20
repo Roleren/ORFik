@@ -4,8 +4,14 @@
 \alias{filterTranscripts}
 \title{Filter transcripts by lengths}
 \usage{
-filterTranscripts(txdb, minFiveUTR = 30L, minCDS = 150L,
-  minThreeUTR = 30L, longestPerGene = TRUE, stopOnEmpty = TRUE)
+filterTranscripts(
+  txdb,
+  minFiveUTR = 30L,
+  minCDS = 150L,
+  minThreeUTR = 30L,
+  longestPerGene = TRUE,
+  stopOnEmpty = TRUE
+)
 }
 \arguments{
 \item{txdb}{a TxDb file, a path to one of:
