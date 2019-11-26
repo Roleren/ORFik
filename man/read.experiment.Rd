@@ -37,19 +37,22 @@ The file must be csv and be a valid ORFik experiment
 \examples{
 # From file
 \dontrun{
+# Read from file
 df <- read.experiment(filepath) # <- valid .csv file
 }
-# From (create.experiment() template)
-template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
-                              exper = "ORFik", txdb = system.file("extdata",
-                                    "annotations.gtf",
-                                    package = "ORFik"),
+# Read from (create.experiment() template)
+# 1. Pick directory
+dir <- system.file("extdata", "", package = "ORFik")
+# 2. Pick an experiment name
+exper <- "ORFik"
+# 3. Pick .gff/.gtf location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+template <- create.experiment(dir = dir, exper, txdb = txdb,
                               viewTemplate = FALSE)
 template$X5[6] <- "heart" # <- fix non unique row
-
-# read experiment
+# read experiment from template
 df <- read.experiment(template)
 
 # To save it, do:
-# save.experiment(df = df, file = "path/to/save/experiment.csv")
+# save.experiment(df, file = "path/to/save/experiment.csv")
 }

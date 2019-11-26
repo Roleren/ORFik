@@ -36,7 +36,7 @@ library(ORFik)
 # 1. Update path to experiment data  directory (bam, bed, wig files etc)
 exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 
-# 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, Max 2017 -> Max17)
+# 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, etc)
 exper_name = "Lee13"
 
 # 3. Create a template experiment
@@ -53,13 +53,12 @@ temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are library types
 
 # You can also do this in your spread sheet program (excel, libre..)
 # Now save new version, if you did not use spread sheet.
-
-save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
- exper_name,".csv"))
+saveName <- paste0("/data/processed_data/experiment_tables_for_R/",
+ exper_name,".csv")
+save.experiment(temp, saveName)
 
 # 5. Load experiment, this will validate that you actually made it correct
-df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
- exper_name,".csv"))
+df <- read.experiment(saveName)
 
 # Set experiment name not to be assigned in R variable names
 df@expInVarName <- FALSE

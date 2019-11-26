@@ -11,10 +11,24 @@
 #'
 #' To make a ORFik experiment, see ?ORFik::experiment
 #' @param df an ORFik experiment, to make it, see: ?experiment
-#' @param out.dir optional output directory,
-#' default: dirname(df$filepath[1])
+#' @param out.dir optional output directory, default: dirname(df$filepath[1])
+#' @return NULL (objects stored to disc)
 #' @export
-#' @return NULL
+#' @examples
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+#'
+#' # ORFikQC(df)
 ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
@@ -128,8 +142,9 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' @param region (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save
+#' @return NULL (objects stored to disc)
 #' @importFrom GGally ggpairs
-#' @return NULL
+#' @importFrom AnnotationDbi metadata
 QCplots <- function(df, region, stats_folder) {
   message("Making QC plots:")
   message("- Correlation plots")

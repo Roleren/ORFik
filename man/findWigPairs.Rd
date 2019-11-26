@@ -7,7 +7,7 @@
 findWigPairs(paths)
 }
 \arguments{
-\item{path}{a character path to two .wig files}
+\item{paths}{a character path at least one .wig file}
 }
 \value{
 if not all are paired, return original list,

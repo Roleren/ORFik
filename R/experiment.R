@@ -29,7 +29,7 @@
 #' # 1. Update path to experiment data  directory (bam, bed, wig files etc)
 #' exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 #'
-#' # 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, Max 2017 -> Max17)
+#' # 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, etc)
 #' exper_name = "Lee13"
 #'
 #' # 3. Create a template experiment
@@ -46,13 +46,12 @@
 #'
 #' # You can also do this in your spread sheet program (excel, libre..)
 #' # Now save new version, if you did not use spread sheet.
-#'
-#' save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
-#'  exper_name,".csv"))
+#' saveName <- paste0("/data/processed_data/experiment_tables_for_R/",
+#'  exper_name,".csv")
+#' save.experiment(temp, saveName)
 #'
 #' # 5. Load experiment, this will validate that you actually made it correct
-#' df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
-#'  exper_name,".csv"))
+#' df <- read.experiment(saveName)
 #'
 #' # Set experiment name not to be assigned in R variable names
 #' df@expInVarName <- FALSE
@@ -134,21 +133,24 @@ setMethod("nrow",
 #' @examples
 #' # From file
 #' \dontrun{
+#' # Read from file
 #' df <- read.experiment(filepath) # <- valid .csv file
 #' }
-#' # From (create.experiment() template)
-#' template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
-#'                               exper = "ORFik", txdb = system.file("extdata",
-#'                                     "annotations.gtf",
-#'                                     package = "ORFik"),
+#' # Read from (create.experiment() template)
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
 #'                               viewTemplate = FALSE)
 #' template$X5[6] <- "heart" # <- fix non unique row
-#'
-#' # read experiment
+#' # read experiment from template
 #' df <- read.experiment(template)
 #'
 #' # To save it, do:
-#' # save.experiment(df = df, file = "path/to/save/experiment.csv")
+#' # save.experiment(df, file = "path/to/save/experiment.csv")
 read.experiment <-  function(file) {
   if (is(file, "character")) {
     if (file_ext(file) == "") file <- paste0(file, ".csv")
@@ -193,18 +195,18 @@ read.experiment <-  function(file) {
 #'  only a template for it!
 #' @export
 #' @examples
-#' # Pick directory
+#' # 1. Pick directory
 #' dir <- system.file("extdata", "", package = "ORFik")
-#' # Pick an experiment name
+#' # 2. Pick an experiment name
 #' exper <- "ORFik"
-#' # Pick .gff/.gtf location
+#' # 3. Pick .gff/.gtf location
 #' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
 #'                               viewTemplate = FALSE)
 #' template$X5[6] <- "heart" # <- fix non unique row
 #' # read experiment
 #' df <- read.experiment(template)
-#' # Save with save.experiment()
+#' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
                               fa = "", viewTemplate = TRUE) {
@@ -263,6 +265,19 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 #' @param file name of file to save df as
 #' @export
 #' @return NULL (experiment save only)
+#' @examples
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 save.experiment <- function(df, file) {
   write.table(x = df, file = file, sep = ",",
               row.names = FALSE, col.names = FALSE)
@@ -407,7 +422,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 
 #' Output bam/bed/wig files to R as variables
 #'
-#' Variable names defined by df
+#' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param chrStyle the sequencelevels style (GRanges object or chr)
@@ -415,7 +430,22 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' @param BPPARAM how many cores? default: bpparam()
 #' @return NULL (libraries set by envir assignment)
 #' @importFrom BiocParallel bplapply
+#' @importFrom BiocParallel bpparam
 #' @export
+#' @examples
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#' # Output to .GlobalEnv with:
+#' # outputLibs(df)
 outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
                        BPPARAM = bpparam()) {
   dfl <- df
@@ -459,8 +489,23 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
 #' Variable names defined by df, in envir defined
 #' @param df an ORFik experiment, to make it, see: ?experiment
 #' @param envir environment to save to, default (.GlobalEnv)
-#' @return NULL
+#' @return NULL (objects removed from envir specified)
 #' @export
+#' @examples
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#' # Output to .GlobalEnv with:
+#' # outputLibs(df)
+#' # Then remove them with: remove.experiments(df)
 remove.experiments <- function(df, envir = .GlobalEnv) {
   rm(list =  bamVarName(df), envir = envir)
   return(NULL)

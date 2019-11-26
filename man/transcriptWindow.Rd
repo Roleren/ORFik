@@ -13,8 +13,8 @@ transcriptWindow(
   scores = c("sum", "zscore"),
   allTogether = FALSE,
   colors = rep("skyblue4", nrow(df)),
-  windowSize = min(100, min(widthPerGroup(leaders, F)), min(widthPerGroup(cds, F)),
-    min(widthPerGroup(trailers, F))),
+  windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
+    FALSE)), min(widthPerGroup(trailers, FALSE))),
   returnPlot = FALSE
 )
 }

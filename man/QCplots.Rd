@@ -14,6 +14,9 @@ whole mrnas or one of (leaders, cds, trailers)}
 
 \item{stats_folder}{directory to save}
 }
+\value{
+NULL (objects stored to disc)
+}
 \description{
 Output will be stored in same folder as the
 libraries in df.

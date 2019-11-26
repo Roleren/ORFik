@@ -43,16 +43,16 @@ A column reverse is made if their are paired data, like +/- strand
 wig files.
 }
 \examples{
-# Pick directory
+# 1. Pick directory
 dir <- system.file("extdata", "", package = "ORFik")
-# Pick an experiment name
+# 2. Pick an experiment name
 exper <- "ORFik"
-# Pick .gff/.gtf location
+# 3. Pick .gff/.gtf location
 txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb
+template <- create.experiment(dir = dir, exper, txdb = txdb,
                               viewTemplate = FALSE)
 template$X5[6] <- "heart" # <- fix non unique row
 # read experiment
 df <- read.experiment(template)
-# Save with save.experiment()
+# Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 }

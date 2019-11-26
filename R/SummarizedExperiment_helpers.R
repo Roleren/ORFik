@@ -1,3 +1,5 @@
+#' Make a count matrix from a libraries
+#'
 #' Make a summerizedExperiment object from bam files
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
@@ -12,9 +14,27 @@
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
-#' @importFrom SummarizedExperiment SummarizedExperiment
+#' @import SummarizedExperiment
 #' @export
-#' @return a summerizedExperiment object
+#' @return a SummarizedExperiment object
+#' @examples
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#'
+#' # makeSummarizedExperimentFromBam(df)
+#' # Only cds (coding sequences):
+#' # makeSummarizedExperimentFromBam(df, region = "cds")
+#' # FPKM instead of raw counts
+#' # makeSummarizedExperimentFromBam(df, type = "fpkm")
 makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             longestPerGene = TRUE,
                                             geneOrTxNames = "gene",
@@ -69,7 +89,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 #' alternative is "fpkm", "log2fpkm" or "log10fpkm"
 #' @param collapse a logical (default FALSE), if TRUE all samples
 #' within group
-#' @importFrom DESeq2 DESeqDataSet
+#' @import SummarizedExperiment DESeq2
 #' @export
 #' @return a DEseq summerizedExperiment object
 scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",

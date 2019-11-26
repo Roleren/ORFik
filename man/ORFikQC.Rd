@@ -9,8 +9,10 @@ ORFikQC(df, out.dir = dirname(df$filepath[1]))
 \arguments{
 \item{df}{an ORFik experiment, to make it, see: ?experiment}
 
-\item{out.dir}{optional output directory,
-default: dirname(df$filepath[1])}
+\item{out.dir}{optional output directory, default: dirname(df$filepath[1])}
+}
+\value{
+NULL (objects stored to disc)
 }
 \description{
 From this report you will get a summary csv table, with distribution of
@@ -24,4 +26,20 @@ inside the folder QC_STATS/, relative to data location in 'df'
 }
 \details{
 To make a ORFik experiment, see ?ORFik::experiment
+}
+\examples{
+# 1. Pick directory
+dir <- system.file("extdata", "", package = "ORFik")
+# 2. Pick an experiment name
+exper <- "ORFik"
+# 3. Pick .gff/.gtf location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+template <- create.experiment(dir = dir, exper, txdb = txdb,
+                              viewTemplate = FALSE)
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment
+df <- read.experiment(template)
+# Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+
+# ORFikQC(df)
 }

@@ -118,7 +118,7 @@ readWig <- function(path, chrStyle = NULL) {
   return(matchSeqStyle(c(forward, reverse), chrStyle))
 }
 #' Find pair of forward and reverse strand wig files
-#' @param path a character path to two .wig files
+#' @param paths a character path at least one .wig file
 #' @return if not all are paired, return original list,
 #' if they are all paired, return a data.table with matches as 2 columns
 findWigPairs <- function(paths) {

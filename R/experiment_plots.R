@@ -17,9 +17,9 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
                              scores = c("sum", "zscore"), allTogether = FALSE,
                              colors = rep("skyblue4", nrow(df)),
                              windowSize = min(100,
-                                              min(widthPerGroup(leaders, F)),
-                                              min(widthPerGroup(cds, F)),
-                                              min(widthPerGroup(trailers, F)))
+                                           min(widthPerGroup(leaders, FALSE)),
+                                           min(widthPerGroup(cds, FALSE)),
+                                           min(widthPerGroup(trailers, FALSE)))
                              , returnPlot = FALSE) {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))

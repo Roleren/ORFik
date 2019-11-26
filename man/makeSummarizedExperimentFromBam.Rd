@@ -2,7 +2,7 @@
 % Please edit documentation in R/SummarizedExperiment_helpers.R
 \name{makeSummarizedExperimentFromBam}
 \alias{makeSummarizedExperimentFromBam}
-\title{Make a summerizedExperiment object from bam files}
+\title{Make a count matrix from a libraries}
 \usage{
 makeSummarizedExperimentFromBam(
   df,
@@ -32,8 +32,30 @@ whole mrnas or one of (leaders, cds, trailers)}
 "log2fpkm" or "log10fpkm"}
 }
 \value{
-a summerizedExperiment object
+a SummarizedExperiment object
 }
 \description{
+Make a summerizedExperiment object from bam files
+}
+\details{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
+}
+\examples{
+# 1. Pick directory
+dir <- system.file("extdata", "", package = "ORFik")
+# 2. Pick an experiment name
+exper <- "ORFik"
+# 3. Pick .gff/.gtf location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+template <- create.experiment(dir = dir, exper, txdb = txdb,
+                              viewTemplate = FALSE)
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment
+df <- read.experiment(template)
+
+# makeSummarizedExperimentFromBam(df)
+# Only cds (coding sequences):
+# makeSummarizedExperimentFromBam(df, region = "cds")
+# FPKM instead of raw counts
+# makeSummarizedExperimentFromBam(df, type = "fpkm")
 }

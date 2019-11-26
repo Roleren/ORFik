@@ -19,6 +19,21 @@ outputLibs(df, chrStyle = NULL, envir = .GlobalEnv, BPPARAM = bpparam())
 NULL (libraries set by envir assignment)
 }
 \description{
-Variable names defined by df
+Variable names defined by df (ORFik experiment DataFrame)
 Uses multiple cores to load, defined by multicoreParam
+}
+\examples{
+# 1. Pick directory
+dir <- system.file("extdata", "", package = "ORFik")
+# 2. Pick an experiment name
+exper <- "ORFik"
+# 3. Pick .gff/.gtf location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+template <- create.experiment(dir = dir, exper, txdb = txdb,
+                              viewTemplate = FALSE)
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment
+df <- read.experiment(template)
+# Output to .GlobalEnv with:
+# outputLibs(df)
 }
