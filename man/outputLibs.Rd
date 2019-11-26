@@ -4,7 +4,7 @@
 \alias{outputLibs}
 \title{Output bam/bed/wig files to R as variables}
 \usage{
-outputLibs(df, chrStyle = NULL, envir = .GlobalEnv)
+outputLibs(df, chrStyle = NULL, envir = .GlobalEnv, BPPARAM = bpparam())
 }
 \arguments{
 \item{df}{an ORFik experiment, to make it, see: ?experiment}
@@ -12,10 +12,13 @@ outputLibs(df, chrStyle = NULL, envir = .GlobalEnv)
 \item{chrStyle}{the sequencelevels style (GRanges object or chr)}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
+
+\item{BPPARAM}{how many cores? default: bpparam()}
 }
 \value{
 NULL (libraries set by envir assignment)
 }
 \description{
 Variable names defined by df
+Uses multiple cores to load, defined by multicoreParam
 }

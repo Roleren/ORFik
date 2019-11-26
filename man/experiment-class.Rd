@@ -23,6 +23,11 @@ rep (replicate): 1,2,3 etc
 condition: WT (wild-type), control, target, mzdicer, starved etc.
 fraction: 18, 19 (fractinations), or other ways to split library.
 filepath: Full filepath to file
+
+Special rules:
+Single end supports bam, bed, wig + compressions of these
+Paired end bam files not supported yet!
+Paired forward / reverse wig files support soon!
 }
 \examples{
 \dontrun{
@@ -44,7 +49,7 @@ temp <- create.experiment(exp_dir, exper_name,
 # library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
 # Let say it did not figure out it is RNA-seq, then we do:"
 
-temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are libtypes
+temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are library types
 
 # You can also do this in your spread sheet program (excel, libre..)
 # Now save new version, if you did not use spread sheet.
@@ -56,7 +61,7 @@ save.experiment(temp, paste0("/data/processed_data/experiment_tables_for_R/",
 df <- read.experiment(paste0("/data/processed_data/experiment_tables_for_R/",
  exper_name,".csv"))
 
-# Set experiment name not to be assigned to variable
+# Set experiment name not to be assigned in R variable names
 df@expInVarName <- FALSE
 df
 }

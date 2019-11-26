@@ -8,7 +8,7 @@ findFromPath(
   filepaths,
   candidates = c("RNA", "rna-seq", "Rna-seq", "RNA-seq", "RFP", "RPF", "ribo-seq",
     "Ribo-seq", "mrna", "mrna-seq", "mRNA-seq", "CAGE", "cage", "LSU", "SSU", "ATAC",
-    "tRNA", "SHAPE")
+    "tRNA", "SHAPE", "PRPF")
 )
 }
 \arguments{

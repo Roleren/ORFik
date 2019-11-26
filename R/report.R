@@ -21,7 +21,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   validateExperiments(df)
 
   exp_dir <- out.dir
-  stats_folder <- paste0(exp_dir, "/QC_STATS/")
+  stats_folder <- pasteDir(exp_dir, "/QC_STATS/")
   if (!dir.create(stats_folder)) {
     if (!dir.exists(stats_folder)) stop("Could not create directory!")
   }
@@ -33,6 +33,10 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   # Special regions rRNA etc..
   if (!(file_ext(df@txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
     # Try to use reference of sqlite
+    if (!(file_ext(metadata(txdb)[3,2]) %in%
+          c("gtf", "gff", "gff3", "gff2"))) {
+      stop("Could not find valid gtf / gff file, only data base object!")
+    }
     gff.df <- import(metadata(txdb)[3,2])
   } else gff.df <- import(df@txdb)
   types <- unique(gff.df$transcript_biotype)
@@ -41,6 +45,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   # Put into csv, the standard stats
   libs <- bamVarName(df)
+  message("Making summary counts for lib:")
   for (s in libs) { # For each library
     message(s)
     lib <- get(s)
@@ -84,6 +89,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   # Update raw reads to real number
   # Needs a folder called trim
   if (dir.exists(paste0(exp_dir, "../trim/"))) {
+    message("Create raw read counts")
     oldDir <- getwd()
     setwd(paste0(exp_dir, "../trim/"))
     raw_library <- system('ls *.json', intern = TRUE)
@@ -125,7 +131,8 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' @importFrom GGally ggpairs
 #' @return NULL
 QCplots <- function(df, region, stats_folder) {
-  message("Making QC plots")
+  message("Making QC plots:")
+  message("- Correlation plots")
   # Load fpkm values
   data_for_pairs <- makeSummarizedExperimentFromBam(df, region = region,
                                                     geneOrTxNames = "tx",
@@ -141,6 +148,7 @@ QCplots <- function(df, region, stats_folder) {
          height=400, width=400, units = 'mm', dpi=300)
 
   # window coverage over mRNA regions
+  message("- Meta coverage plots")
   txNames <- filterTranscripts(df, 100, 100, 100, longestPerGene = FALSE)
   transcriptWindow(leaders[txNames], get("cds", mode = "S4")[txNames],
                    trailers[txNames], df = df, outdir = stats_folder,

@@ -141,10 +141,11 @@ original GenomicRanges container, is that filtering on GRanges objects
 are much easier than on GRangesList objects, ORFik tries to fix this.
 
 In this example we will filter out all orfs as following:
-* 1. First group GRangesList by ORFs
-* 2. width < 60
-* 3. number of exons < 2
-* 4. strand is negative
+
+- 1. First group GRangesList by ORFs
+- 2. width < 60
+- 3. number of exons < 2
+- 4. strand is negative
 
 ```{r eval = TRUE, echo = TRUE}
 
@@ -208,11 +209,11 @@ specific parameters, like circular or non circular genomes, will you use
 a transcriptome etc. 
 
 There are 4 standard ways of finding ORFs:
-* 1. You have some fasta file of the genome only. (For prokaryotes/circular  genomes)
-* 2. You have some fasta file of the genome and a spliced transcriptome
-   annotation. (For eucaryotes with splicing)
-* 3. You have a fasta file of transcripts (eucaryotes or prokaryotes)
-* 4. You have a vector of transcripts preloaded in R.
+
+- 1. You have some fasta file of the genome only. (For prokaryotes/circular  genomes)
+- 2. You have some fasta file of the genome and a spliced transcriptome annotation.  (For eucaryotes with splicing)
+- 3. You have a fasta file of transcripts (eucaryotes or prokaryotes)
+- 4. You have a vector of transcripts preloaded in R.
 
 Let's start with the simplest case, a vector of preloaded transcripts. 
 
@@ -395,13 +396,13 @@ There are 2 main categories:
 * Sequence features (kozak, gc-content, etc.)
 * Read features (reads as: Ribo-seq, RNA-seq, TCP-seq, shape-seq etc)
 
-- FLOSS `floss`,   
-- coverage `coverage`,  
-- ORFscore `orfScore`,  
-- entropy `entropy`,  
-- translational effiency `translationalEff`,  
-- inside outside score `insideOutsideScore`,  
-- distance between orfs and cds' `distToCds`,  
+- FLOSS `floss`   
+- coverage `coverage`  
+- ORFscore `orfScore`  
+- entropy `entropy`  
+- translational effiency `translationalEff`  
+- inside outside score `insideOutsideScore`  
+- distance between orfs and cds' `distToCds`  
 - other  
 
 All of the features are implemented based on scientific article published in

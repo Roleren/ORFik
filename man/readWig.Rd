@@ -7,7 +7,8 @@
 readWig(path, chrStyle = NULL)
 }
 \arguments{
-\item{path}{a character path to .bam file}
+\item{path}{a character path to two .wig files, or a data.table
+with 2 columns, (forward, filepath) and reverse, only 1 row.}
 
 \item{chrStyle}{a GRanges object, or a character style (Default: NULL) to
 get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial

@@ -86,29 +86,58 @@ readBam <- function(path, chrStyle = NULL) {
 #' Merge them and return as GRanges object.
 #' If they contain name reverse and forward, first and second order
 #' does not matter, it will search for forward and reverse.
-#' @param path a character path to .bam file
+#' @param path a character path to two .wig files, or a data.table
+#' with 2 columns, (forward, filepath) and reverse, only 1 row.
 #' @inheritParams matchSeqStyle
 #' @importFrom rtracklayer import.wig
 #' @return a GAlignment object of bam file
 #' @family utils
 #'
 readWig <- function(path, chrStyle = NULL) {
-  if (length(path) != 2) stop("readWig must have 2 wig files,
+  if (is(path, "character")) {
+    if (length(path) != 2) stop("readWig must have 2 wig files,
                               one forward strand and one reverse!")
-  forwardIndex <- 1
-  reverseIndex <- 2
-  forwardPath <- grep("forward"|"fwd", path)
-  reversePath <- grep("reverse"|"rev", path)
-  if (length(forwardPath) == 1 & length(reversePath) == 1){
-    forwardIndex <- forwardPath
-    reverseIndex <- reversePath
-  }
 
-  forward <- import.wig(path[forwardIndex])
-  reverse <- import.wig(path[reverseIndex])
+    forwardPath <- grep("forward|fwd", path)
+    reversePath <- grep("reverse|rev", path)
+    if (length(forwardPath) == 1 & length(reversePath) == 1){
+      forwardIndex <- forwardPath
+      reverseIndex <- reversePath
+    }
+
+    forward <- import.wig(path[forwardIndex])
+    reverse <- import.wig(path[reverseIndex])
+  } else if (is(path, "data.table")) {
+    if (!is.null(path$forward)) {
+      forward <- import.wig(path$forward)
+    } else forward <- import.wig(path$filepath)
+    reverse <- import.wig(path$reverse)
+  }
   strand(forward) <- "+"
   strand(reverse) <- "-"
   return(matchSeqStyle(c(forward, reverse), chrStyle))
+}
+#' Find pair of forward and reverse strand wig files
+#' @param path a character path to two .wig files
+#' @return if not all are paired, return original list,
+#' if they are all paired, return a data.table with matches as 2 columns
+findWigPairs <- function(paths) {
+  forwardPath <- grep("forward\\.wig*|fwd\\.wig*", paths)
+  reversePath <- grep("reverse\\.wig*|rev\\.wig*", paths)
+
+  if ((length(forwardPath) != length(reversePath)) |
+      length(forwardPath) == 0 | length(reversePath) == 0) return(paths)
+  dt <- data.table(forward = paths[forwardPath],
+                   reverse = paths[reversePath], match = FALSE)
+  for (row in seq(nrow(dt))) {
+    if (gsub(pattern = "forward\\.wig*|fwd\\.wig*", x = dt$forward[row], "")
+        == gsub(pattern = "reverse\\.wig*|rev\\.wig*", x = dt$reverse[row], ""))
+        dt$match[row] = TRUE
+  }
+  if (all(dt$match)) {
+    return(dt)
+  }
+  return(paths)
 }
 
 #' Load any type of sequencing reads
@@ -139,6 +168,8 @@ fimport <- function(path, chrStyle = NULL) {
       if (length(path) > 1) { # Multiple file paths
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
+        } else if (all(fext %in% c("bam"))) {
+          stop("only wig format allowed for multiple files!, is this paired end bam?")
         } else stop("only wig format allowed for multiple files!")
       } else { # Only 1 file path given
         if (fext == "bam") {

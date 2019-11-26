@@ -46,6 +46,10 @@ template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"
                                     package = "ORFik"),
                               viewTemplate = FALSE)
 template$X5[6] <- "heart" # <- fix non unique row
+
 # read experiment
 df <- read.experiment(template)
+
+# To save it, do:
+# save.experiment(df = df, file = "path/to/save/experiment.csv")
 }

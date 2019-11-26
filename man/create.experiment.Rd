@@ -39,14 +39,20 @@ with information per sample. You will have to fill in the details
 that were not autodetected. Easiest to do in csv editor like libre Office
 or excel. Remember that each row (sample) must have a unique combination
 of values.
+A column reverse is made if their are paired data, like +/- strand
+wig files.
 }
 \examples{
-template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
-                              exper = "ORFik", txdb = system.file("extdata",
-                                    "annotations.gtf",
-                                    package = "ORFik"),
+# Pick directory
+dir <- system.file("extdata", "", package = "ORFik")
+# Pick an experiment name
+exper <- "ORFik"
+# Pick .gff/.gtf location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+template <- create.experiment(dir = dir, exper, txdb = txdb
                               viewTemplate = FALSE)
 template$X5[6] <- "heart" # <- fix non unique row
 # read experiment
 df <- read.experiment(template)
+# Save with save.experiment()
 }

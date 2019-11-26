@@ -12,7 +12,8 @@ findLibrariesInFolder(dir, types)
 \item{types}{All accepted types of bam, bed, wig files..}
 }
 \value{
-(character vector) All files found from types parameter.
+(data.table) All files found from types parameter.
+With 2 extra column (logical), is it wig pairs, and paired bam files.
 }
 \description{
 Get all library files in folder
