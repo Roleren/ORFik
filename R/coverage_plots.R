@@ -137,6 +137,9 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
   nGenes <- getNGenesCoverage(coverage)
   subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
   colors <- matchColors(cov, colors)
+  # Y-axis facet name, scaling
+  max_name <- max(nchar(unique(as.character(coverage_score$fraction))))
+  fraction_text <- 12 - min(6, (max_name / 40) *12)
 
   plot <- ggplot(data = as.data.frame(coverage_score),
                  aes(x = position, ymax = score, ymin = fraction_min,
@@ -154,7 +157,9 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
     xlab(paste("Scaled position in", type)) +
     ylab(paste0(prettyScoring(scoring), " over ", type)) +
     theme(legend.position = "none") +
-    facet_grid(fraction ~ feature, scales = ifelse(scaleEqual, "free_x", "free"))
+    facet_grid(fraction ~ feature, scales = ifelse(scaleEqual, "free_x", "free")) +
+    theme(strip.text.y = element_text(size = fraction_text),
+          strip.text.x = element_text(size = 12))
 
   return(savePlot(plot, output))
 }
