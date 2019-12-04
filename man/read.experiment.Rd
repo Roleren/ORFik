@@ -11,7 +11,7 @@ read.experiment(file)
 template data.frame from create.experiment()}
 }
 \value{
-an ORFik experiment
+an ORFik \code{\link{experiment}}
 }
 \description{
 An object to massivly simplify your coding, it is

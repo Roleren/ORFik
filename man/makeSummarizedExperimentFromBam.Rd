@@ -14,7 +14,7 @@ makeSummarizedExperimentFromBam(
 )
 }
 \arguments{
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{saveName}{a character (default NULL),
 if set save experiment to path given. Always saved as .rds.,

@@ -11,11 +11,12 @@ transcriptWindow(
   df,
   outdir,
   scores = c("sum", "zscore"),
-  allTogether = FALSE,
+  allTogether = TRUE,
   colors = rep("skyblue4", nrow(df)),
   windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
     FALSE)), min(widthPerGroup(trailers, FALSE))),
-  returnPlot = FALSE
+  returnPlot = FALSE,
+  dfr = NULL
 )
 }
 \arguments{
@@ -25,19 +26,23 @@ transcriptWindow(
 
 \item{trailers}{a \code{\link{GRangesList}} of trailers (3' UTRs)}
 
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{outdir}{directory to save to}
 
-\item{scores}{scoring function (default: c("sum", "zscore"))}
+\item{scores}{scoring function (default: c("sum", "zscore")),
+see ?coverageScorings for possible scores.}
 
-\item{allTogether}{plot all coverage plots in 1? (defualt: FALSE)}
+\item{allTogether}{plot all coverage plots in 1 output? (defualt: TRUE)}
 
 \item{colors}{Which colors to use, default (skyblue4)}
 
 \item{windowSize}{size of binned windows, default: 100}
 
 \item{returnPlot}{return plot from function, default False}
+
+\item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
+normalize against}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE

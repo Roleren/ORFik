@@ -7,7 +7,7 @@
 QCplots(df, region, stats_folder)
 }
 \arguments{
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{region}{(default: mrna), make raw count matrices of
 whole mrnas or one of (leaders, cds, trailers)}

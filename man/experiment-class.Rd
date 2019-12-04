@@ -7,8 +7,8 @@
 \title{experiment class definition}
 \description{
 An object to massivly simplify your coding, by having a
-table of all libraries in an experiment. That contains
-filepaths and info for each library.
+table of all libraries of an experiment. That contains
+filepaths and info for each library in the experiment.
 }
 \details{
 Simplest way to make is to call create.experiment on some
@@ -25,9 +25,11 @@ fraction: 18, 19 (fractinations), or other ways to split library.
 filepath: Full filepath to file
 
 Special rules:
+Supported:
 Single end supports bam, bed, wig + compressions of these
+Paired forward / reverse wig files, must have same name except _forward etc
+Not supported yet:
 Paired end bam files not supported yet!
-Paired forward / reverse wig files support soon!
 }
 \examples{
 \dontrun{

@@ -7,7 +7,7 @@
 outputLibs(df, chrStyle = NULL, envir = .GlobalEnv, BPPARAM = bpparam())
 }
 \arguments{
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{chrStyle}{the sequencelevels style (GRanges object or chr)}
 

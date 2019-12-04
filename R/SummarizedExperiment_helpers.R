@@ -3,7 +3,7 @@
 #' Make a summerizedExperiment object from bam files
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param saveName a character (default NULL),
 #' if set save experiment to path given. Always saved as .rds.,
 #' it is optional to add .rds, it will be added for you if not present.

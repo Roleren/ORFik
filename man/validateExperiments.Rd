@@ -8,7 +8,7 @@ Check for valid non-empty files etc.}
 validateExperiments(df)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik \code{\link{experiment}}}
 }
 \value{
 NULL (Stops if failed)

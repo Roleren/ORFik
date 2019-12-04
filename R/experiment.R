@@ -1,8 +1,8 @@
 #' experiment class definition
 #'
 #' An object to massivly simplify your coding, by having a
-#' table of all libraries in an experiment. That contains
-#' filepaths and info for each library.
+#' table of all libraries of an experiment. That contains
+#' filepaths and info for each library in the experiment.
 #'
 #' Simplest way to make is to call create.experiment on some
 #' folder with libraries and see what you get. Some of the fields
@@ -18,9 +18,11 @@
 #' filepath: Full filepath to file
 #'
 #' Special rules:
+#' Supported:
 #' Single end supports bam, bed, wig + compressions of these
+#' Paired forward / reverse wig files, must have same name except _forward etc
+#' Not supported yet:
 #' Paired end bam files not supported yet!
-#' Paired forward / reverse wig files support soon!
 #' @importFrom methods new
 #' @examples
 #' \dontrun{
@@ -68,7 +70,7 @@ experiment <- setClass("experiment",
 #' experiment show definition
 #'
 #' Show a simplified version of experiment.
-#' @param object an ORFik experiment
+#' @param object an ORFik \code{\link{experiment}}
 #' @export
 #' @return print state of experiment
 setMethod("show",
@@ -97,7 +99,7 @@ setMethod("show",
 )
 
 #' Internal nrow function for ORFik experiment
-#' @param x an ORFik experiment
+#' @param x an ORFik \code{\link{experiment}}
 #' @return number of rows in experiment (integer)
 setMethod("nrow",
           "experiment",
@@ -128,7 +130,7 @@ setMethod("nrow",
 #' The file must be csv and be a valid ORFik experiment
 #' @param file a .csv file following ORFik experiment style, or a
 #' template data.frame from create.experiment()
-#' @return an ORFik experiment
+#' @return an ORFik \code{\link{experiment}}
 #' @export
 #' @examples
 #' # From file
@@ -260,8 +262,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 }
 
 #' Save experiment to disc
-#' @param df an ORFik experiment / template,
-#'  to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param file name of file to save df as
 #' @export
 #' @return NULL (experiment save only)
@@ -311,7 +312,7 @@ findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq",
 
 
 #' Which type of experiments?
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik \code{\link{experiment}}
 #' @return library types (character vector)
 libraryTypes <- function(df) {
   if (is(df, "experiment")) {
@@ -323,7 +324,7 @@ libraryTypes <- function(df) {
 
 #' Validate ORFik experiment
 #' Check for valid non-empty files etc.
-#' @param df an ORFik experiment data.frame
+#' @param df an ORFik \code{\link{experiment}}
 #' @return NULL (Stops if failed)
 validateExperiments <- function(df) {
   libTypes <- libraryTypes(df)
@@ -356,7 +357,7 @@ validateExperiments <- function(df) {
 #' Get library variable names from ORFik experiment
 #'
 #' What will each sample be called given the columns of the experiment?
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
 #' @param skip.condition a logical (FALSE), don't include condition
@@ -383,7 +384,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 }
 
 #' Get variable name per filepath in experiment
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
 #' @param skip.condition a logical (FALSE), don't include condition
@@ -424,7 +425,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #'
 #' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param chrStyle the sequencelevels style (GRanges object or chr)
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores? default: bpparam()
@@ -487,7 +488,7 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
 #' Remove bam/bed/wig files load in R as variables
 #'
 #' Variable names defined by df, in envir defined
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @return NULL (objects removed from envir specified)
 #' @export

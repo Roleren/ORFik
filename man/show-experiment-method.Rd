@@ -7,7 +7,7 @@
 \S4method{show}{experiment}(object)
 }
 \arguments{
-\item{object}{an ORFik experiment}
+\item{object}{an ORFik \code{\link{experiment}}}
 }
 \value{
 print state of experiment

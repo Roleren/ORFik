@@ -7,7 +7,7 @@
 ORFikQC(df, out.dir = dirname(df$filepath[1]))
 }
 \arguments{
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{out.dir}{optional output directory, default: dirname(df$filepath[1])}
 }

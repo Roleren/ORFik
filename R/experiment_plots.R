@@ -5,22 +5,25 @@
 #' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
 #' @param cds a \code{\link{GRangesList}} of coding sequences
 #' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param outdir directory to save to
-#' @param scores scoring function (default: c("sum", "zscore"))
-#' @param allTogether plot all coverage plots in 1? (defualt: FALSE)
+#' @param scores scoring function (default: c("sum", "zscore")),
+#' see ?coverageScorings for possible scores.
+#' @param allTogether plot all coverage plots in 1 output? (defualt: TRUE)
 #' @param colors Which colors to use, default (skyblue4)
 #' @param windowSize size of binned windows, default: 100
 #' @param returnPlot return plot from function, default False
+#' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
+#' normalize against
 #' @return NULL, or ggplot object if returnPlot is TRUE
 transcriptWindow <- function(leaders, cds, trailers, df, outdir,
-                             scores = c("sum", "zscore"), allTogether = FALSE,
+                             scores = c("sum", "zscore"), allTogether = TRUE,
                              colors = rep("skyblue4", nrow(df)),
                              windowSize = min(100,
                                            min(widthPerGroup(leaders, FALSE)),
                                            min(widthPerGroup(cds, FALSE)),
                                            min(widthPerGroup(trailers, FALSE)))
-                             , returnPlot = FALSE) {
+                             , returnPlot = FALSE, dfr= NULL) {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))
 
@@ -34,7 +37,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
       stop("fix!")
       libTypes <- libraryTypes(df)
       j <- 0
-      for (i in 1:nrow(df)) { # For each stage
+      for (i in seq(nrow(df))) { # For each stage
         j <- j + 1
         print(i)
         readsList <- list()
@@ -71,12 +74,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
 #'
 #' Gives you binned meta coverage plots, either saved seperatly or
 #' all in one.
-#' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
-#' @param cds a \code{\link{GRangesList}} of coding sequences
-#' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
-#' @param df an ORFik experiment, to make it, see: ?experiment
-#' @param outdir directory to save to
-#' @param scores scoring function (default: c("sum", "zscore"))
+#' @inheritParams transcriptWindow
 #' @param reads a GRanges / GAligment object of reads
 #' @param returnCoverage return data.table with coverage (default: FALSE)
 #' @param windowSize size of binned windows, default: 100
@@ -105,4 +103,84 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
   }
 
   return(plotHelper(coverage, df, outdir, scores, returnCoverage))
+}
+
+#' Normalize a data.table of coverage by RNA seq per position
+#'
+#' Normalizes per position per gene by this function:
+#' (reads at position / min(librarysize, 1) * number of genes) /
+#'  fpkm of that gene's RNA-seq
+#'
+#' Good way to compare libraries
+#' @inheritParams transcriptWindow
+#' @param tx a \code{\link{GRangesList}} of mrna transcripts
+#' @return a data.table of normalized transcripts by RNA.
+rnaNormalize <- function(coverage, df, dfr = NULL, tx) {
+  if (is.null(dfr)) dfr <- df[df$libtype == "RNA",]
+  if (!all(table(df$libtype) == nrow(dfr))) {
+    message("RNA normalization not equal rows of experiment,
+            returning without normalizing.")
+    return(coverage)
+  }
+
+  fullVarNameR <- bamVarName(df)
+  bamVarsR <- gsub(paste0(paste(unique(df$libtype),
+                                collapse = "_|"), "_"), "", bamVarName(df))
+  bamVarsr <- gsub(paste0(paste(unique(dfr$libtype),
+                                collapse = "_|"), "_"), "", bamVarName(dfr))
+  matches <- bamVarsr %in% bamVarsR
+  if (!any(matches)) {
+    message("RNA experiment does not match any rows in df,
+            returning without normalizing.")
+    return(coverage)
+  }
+
+  outputLibs(dfr, tx)
+  rnaVarNames <- bamVarName(dfr)[matches]
+  i <- 1
+  for (j in rnaVarNames) {
+    fpkms <- ORFik::fpkm(tx, get(j), pseudoCount = 1)
+    fpkmsDT <- data.table(fpkms)
+    rows <- fullVarNameR[which(bamVarsR == bamVarsr[i])]
+    coverage[coverage$fraction  %in% rows, score :=
+               (score / (min(sum(score), 1)*length(unique(genes))))  /
+               fpkmsDT[genes]]
+    i = i + 1
+  }
+  return(coverage)
+}
+
+#' Helper function for coverage plots
+#'
+#' Should only be used internally
+#' @param coverage a data.table containing at least columns (count, position),
+#' it is possible to have additionals: (genes, fraction, feature)
+#' @inheritParams transcriptWindow
+#' @param returnCoverage (defualt: FALSE), return the ggplot object (TRUE)
+#'  or NULL (FALSE).
+#' @param title Title to give plot
+#' @param plotFunction Which plot function, default: windowCoveragePlot
+#' @return NULL (or ggplot object if returnCoverage is TRUE)
+plotHelper <- function(coverage, df, outdir, scores, returnCoverage = FALSE,
+                       title = "coverage metaplot", colors = c("skyblue4", "orange"),
+                       plotFunction = "windowCoveragePlot") {
+  if (!is.null(outdir)) {
+    for(s in scores) {
+      stage <- df$stage[1]
+      type <- df$type[1]
+      sample_name <- paste0(stage, "_", type, "_", s) # What happens on cds ?
+      outName <- paste0(outdir, sample_name, ".png")
+      if (plotFunction == "windowCoveragePlot") {
+        windowCoveragePlot(coverage, output = outName, scoring = s,
+                           title = title, colors = colors)
+      } else if (plotFunction == "coverageHeatMap") {
+        plot <- ORFik:::coverageHeatMap(coverage = coverage, scoring = s)
+        ggsave(outName, plot = plot, width = 350, height = 180, units = "mm",
+               dpi = 300, limitsize = FALSE)
+      } else stop("invalid plot name")
+
+    }
+  }
+  if (returnCoverage) return(coverage)
+  return(NULL)
 }

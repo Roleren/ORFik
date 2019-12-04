@@ -7,7 +7,7 @@
 remove.experiments(df, envir = .GlobalEnv)
 }
 \arguments{
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 }

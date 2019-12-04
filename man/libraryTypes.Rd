@@ -7,7 +7,7 @@
 libraryTypes(df)
 }
 \arguments{
-\item{df}{an ORFik experiment data.frame}
+\item{df}{an ORFik \code{\link{experiment}}}
 }
 \value{
 library types (character vector)

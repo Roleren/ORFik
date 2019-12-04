@@ -14,7 +14,7 @@ bamVarNamePicker(
 )
 }
 \arguments{
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{skip.replicate}{a logical (FALSE), don't include replicate
 in variable name.}

@@ -10,7 +10,7 @@
 #' inside the folder QC_STATS/, relative to data location in 'df'
 #'
 #' To make a ORFik experiment, see ?ORFik::experiment
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default: dirname(df$filepath[1])
 #' @return NULL (objects stored to disc)
 #' @export
@@ -138,7 +138,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #'
 #' Output will be stored in same folder as the
 #' libraries in df.
-#' @param df an ORFik experiment, to make it, see: ?experiment
+#' @param df an ORFik \code{\link{experiment}}
 #' @param region (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save

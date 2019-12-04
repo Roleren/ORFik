@@ -23,11 +23,12 @@ transcriptWindowPer(
 
 \item{trailers}{a \code{\link{GRangesList}} of trailers (3' UTRs)}
 
-\item{df}{an ORFik experiment, to make it, see: ?experiment}
+\item{df}{an ORFik \code{\link{experiment}}}
 
 \item{outdir}{directory to save to}
 
-\item{scores}{scoring function (default: c("sum", "zscore"))}
+\item{scores}{scoring function (default: c("sum", "zscore")),
+see ?coverageScorings for possible scores.}
 
 \item{reads}{a GRanges / GAligment object of reads}
 
