@@ -203,8 +203,14 @@ loadRegion <- function(txdb, part = "tx") {
 #' @param extension What to add on the name after leader, like: B -> leadersB
 #' @param envir Which environment to save to, default (.GlobalEnv)
 #' @return NULL (regions set by envir assignment)
+#' @export
+#' @examples
+#' # Load all mrna regions to Global environment
+#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
 loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", envir = .GlobalEnv) {
+  txdb <- loadTxdb(txdb)
   for (i in parts)
     assign(x = paste0(i, extension), value = loadRegion(txdb, i),
            envir = envir)

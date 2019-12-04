@@ -29,3 +29,8 @@ NULL (regions set by envir assignment)
 By default loads all parts to .GlobalEnv (global environemnt)
 Useful to not spend time on finding the functions to load regions.
 }
+\examples{
+# Load all mrna regions to Global environment
+gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
+}

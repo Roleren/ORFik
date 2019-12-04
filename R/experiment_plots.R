@@ -15,7 +15,22 @@
 #' @param returnPlot return plot from function, default False
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
 #' normalize against
+#' @export
 #' @return NULL, or ggplot object if returnPlot is TRUE
+#' @examples
+#' # Make ORFik experiment
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#' loadRegions(df) # Load leader, cds and trailers as GRangesList
+#' #transcriptWindow(leaders, cds, trailers, df, outdir = "directory_to_save")
 transcriptWindow <- function(leaders, cds, trailers, df, outdir,
                              scores = c("sum", "zscore"), allTogether = TRUE,
                              colors = rep("skyblue4", nrow(df)),
