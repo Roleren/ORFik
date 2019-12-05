@@ -16,6 +16,9 @@
 #' @param returnPlot return plot from function, default False
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
 #' normalize against
+#' @param idName A character to id if you make several in same folder,
+#' and same experiment, like splitting transcripts in two groups like
+#' targets / nontargets etc. (default: "")
 #' @export
 #' @return NULL, or ggplot object if returnPlot is TRUE
 #' @examples
@@ -40,7 +43,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
                                            min(widthPerGroup(leaders, FALSE)),
                                            min(widthPerGroup(cds, FALSE)),
                                            min(widthPerGroup(trailers, FALSE)))
-                             , returnPlot = FALSE, dfr= NULL) {
+                             , returnPlot = FALSE, dfr= NULL,
+                             idName = "") {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))
 
@@ -82,8 +86,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
       for(s in scores) {
         a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
                                 title = title)
-        ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s, ".png"))
-               , a, height = 10)
+        ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s,
+                                       "_", idName,".png")), a, height = 10)
       }
     }
   }

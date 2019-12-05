@@ -17,7 +17,8 @@ transcriptWindow(
   windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
     FALSE)), min(widthPerGroup(trailers, FALSE))),
   returnPlot = FALSE,
-  dfr = NULL
+  dfr = NULL,
+  idName = ""
 )
 }
 \arguments{
@@ -46,6 +47,10 @@ see ?coverageScorings for possible scores.}
 
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
 normalize against}
+
+\item{idName}{A character to id if you make several in same folder,
+and same experiment, like splitting transcripts in two groups like
+targets / nontargets etc. (default: "")}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE
