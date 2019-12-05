@@ -11,6 +11,7 @@
 #' see ?coverageScorings for possible scores.
 #' @param allTogether plot all coverage plots in 1 output? (defualt: TRUE)
 #' @param colors Which colors to use, default (skyblue4)
+#' @param title title of ggplot
 #' @param windowSize size of binned windows, default: 100
 #' @param returnPlot return plot from function, default False
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
@@ -34,6 +35,7 @@
 transcriptWindow <- function(leaders, cds, trailers, df, outdir,
                              scores = c("sum", "zscore"), allTogether = TRUE,
                              colors = rep("skyblue4", nrow(df)),
+                             title = "Coverage metaplot",
                              windowSize = min(100,
                                            min(widthPerGroup(leaders, FALSE)),
                                            min(widthPerGroup(cds, FALSE)),
@@ -73,8 +75,13 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
                                               get(i), fraction = i,
                                               windowSize = windowSize)))
       }
+      if (!is.null(dfr)) {
+        coverage <- rnaNormalize(coverage, df, dfr, cds)
+        title <- paste0(title, " RNA-normalized")
+      }
       for(s in scores) {
-        a <- windowCoveragePlot(coverage, scoring = s, colors = colors)
+        a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
+                                title = title)
         ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s, ".png"))
                , a, height = 10)
       }

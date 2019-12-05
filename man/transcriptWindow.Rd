@@ -13,6 +13,7 @@ transcriptWindow(
   scores = c("sum", "zscore"),
   allTogether = TRUE,
   colors = rep("skyblue4", nrow(df)),
+  title = "Coverage metaplot",
   windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
     FALSE)), min(widthPerGroup(trailers, FALSE))),
   returnPlot = FALSE,
@@ -36,6 +37,8 @@ see ?coverageScorings for possible scores.}
 \item{allTogether}{plot all coverage plots in 1 output? (defualt: TRUE)}
 
 \item{colors}{Which colors to use, default (skyblue4)}
+
+\item{title}{title of ggplot}
 
 \item{windowSize}{size of binned windows, default: 100}
 
