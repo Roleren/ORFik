@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{bamVarName}
 \alias{bamVarName}
-\title{Get library variable names from ORFik experiment}
+\title{Get library variable names from ORFik \code{\link{experiment}}}
 \usage{
 bamVarName(
   df,

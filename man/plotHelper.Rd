@@ -16,8 +16,8 @@ plotHelper(
 )
 }
 \arguments{
-\item{coverage}{a data.table containing at least columns (count, position),
-it is possible to have additionals: (genes, fraction, feature)}
+\item{coverage}{a data.table containing at least columns (count/score,
+position), it is possible to have additionals: (genes, fraction, feature)}
 
 \item{df}{an ORFik \code{\link{experiment}}}
 

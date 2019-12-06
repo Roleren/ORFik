@@ -8,8 +8,9 @@
 #' table of all libraries of an experiment. That contains
 #' filepaths and info for each library in the experiment. It also tries
 #' to guess grouping / types / pairs by the file names.
-#' @usage
-#' ## Constructor
+#'
+#' ## Constructor:
+#'
 #' Simplest way to make is to call:
 #' create.experiment(dir)
 #'
@@ -18,11 +19,11 @@
 #' (excluding filepath), that means
 #' if it has replicates then that must be said explicit. And all
 #' filepaths must be unique and have files with size > 0.
-#' Syntax (columns):
-#' libtype (library type): rna-seq, ribo-seq, CAGE etc.
-#' rep (replicate): 1,2,3 etc
-#' condition: WT (wild-type), control, target, mzdicer, starved etc.
-#' fraction: 18, 19 (fractinations), or other ways to split library.
+#' Syntax (columns):\cr
+#' libtype (library type): rna-seq, ribo-seq, CAGE etc.\cr
+#' rep (replicate): 1,2,3 etc\cr
+#' condition: WT (wild-type), control, target, mzdicer, starved etc.\cr
+#' fraction: 18, 19 (fractinations), or other ways to split library.\cr
 #' filepath: Full filepath to file
 #' @details
 #' Special rules:\cr
@@ -118,24 +119,7 @@ setMethod("nrow",
           }
 )
 
-#' Read ORFik experiment
-#'
-#' An object to massivly simplify your coding, it is
-#' similar to systempipeR's 'target' table. By containing
-#' filepaths and info for each library in some experiment.
-#'
-#' Simplest way to make is to call create.experiment on some
-#' folder with libraries and see what you get. Some of the fields
-#' might be needed to fill in manually. The important thing is
-#' that each row must be unique (excluding filepath), that means
-#' if it has replicates then that must be said explicit. And all
-#' filepaths must be unique and have files with size > 0.
-#' Syntax:
-#' libtype (library type): rna-seq, ribo-seq, CAGE etc.
-#' rep (replicate): 1,2,3 etc
-#' condition: WT (wild-type), control, target, mzdicer, starved etc.
-#' fraction: 18, 19 (fractinations), or other ways to split library.
-#' filepath: Full filepath to file
+#' Read ORFik \code{\link{experiment}}
 #'
 #' The file must be csv and be a valid ORFik experiment
 #' @param file a .csv file following ORFik experiment style ("," as seperator)
@@ -188,7 +172,7 @@ read.experiment <-  function(file) {
   return(df)
 }
 
-#' Create a template for new ORFik experiment
+#' Create a template for new ORFik \code{\link{experiment}}
 #'
 #' By using files in a folder. It will try to make an experiment table
 #' with information per sample. You will have to fill in the details
@@ -273,7 +257,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   return(df)
 }
 
-#' Save experiment to disc
+#' Save \code{\link{experiment}} to disc
 #' @param df an ORFik \code{\link{experiment}}
 #' @param file name of file to save df as
 #' @export
@@ -324,7 +308,7 @@ findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq",
 }
 
 
-#' Which type of experiments?
+#' Which type of library type in \code{\link{experiment}}?
 #' @param df an ORFik \code{\link{experiment}}
 #' @return library types (character vector)
 #' @family ORFik_experiment
@@ -336,7 +320,8 @@ libraryTypes <- function(df) {
   } else stop("library types must be data.frame or character vector!")
 }
 
-#' Validate ORFik experiment
+#' Validate ORFik \code{\link{experiment}}
+#'
 #' Check for valid non-empty files etc.
 #' @param df an ORFik \code{\link{experiment}}
 #' @return NULL (Stops if failed)
@@ -369,7 +354,7 @@ validateExperiments <- function(df) {
     stop("Duplicated filepaths in experiment!")
 }
 
-#' Get library variable names from ORFik experiment
+#' Get library variable names from ORFik \code{\link{experiment}}
 #'
 #' What will each sample be called given the columns of the experiment?
 #' @param df an ORFik \code{\link{experiment}}

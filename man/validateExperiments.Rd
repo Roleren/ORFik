@@ -2,8 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{validateExperiments}
 \alias{validateExperiments}
-\title{Validate ORFik experiment
-Check for valid non-empty files etc.}
+\title{Validate ORFik \code{\link{experiment}}}
 \usage{
 validateExperiments(df)
 }
@@ -14,7 +13,6 @@ validateExperiments(df)
 NULL (Stops if failed)
 }
 \description{
-Validate ORFik experiment
 Check for valid non-empty files etc.
 }
 \seealso{

@@ -138,6 +138,8 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
 #'  fpkm of that gene's RNA-seq
 #'
 #' Good way to compare libraries
+#' @param coverage a data.table containing at least columns (count/score,
+#'  position), it is possible to have additionals: (genes, fraction, feature)
 #' @inheritParams transcriptWindow
 #' @param tx a \code{\link{GRangesList}} of mrna transcripts
 #' @return a data.table of normalized transcripts by RNA.
@@ -179,8 +181,8 @@ rnaNormalize <- function(coverage, df, dfr = NULL, tx) {
 #' Helper function for coverage plots
 #'
 #' Should only be used internally
-#' @param coverage a data.table containing at least columns (count, position),
-#' it is possible to have additionals: (genes, fraction, feature)
+#' @param coverage a data.table containing at least columns (count/score,
+#'  position), it is possible to have additionals: (genes, fraction, feature)
 #' @inheritParams transcriptWindow
 #' @param returnCoverage (defualt: FALSE), return the ggplot object (TRUE)
 #'  or NULL (FALSE).
@@ -200,7 +202,7 @@ plotHelper <- function(coverage, df, outdir, scores, returnCoverage = FALSE,
         windowCoveragePlot(coverage, output = outName, scoring = s,
                            title = title, colors = colors)
       } else if (plotFunction == "coverageHeatMap") {
-        plot <- ORFik:::coverageHeatMap(coverage = coverage, scoring = s)
+        plot <- coverageHeatMap(coverage = coverage, scoring = s)
         ggsave(outName, plot = plot, width = 350, height = 180, units = "mm",
                dpi = 300, limitsize = FALSE)
       } else stop("invalid plot name")

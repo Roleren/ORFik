@@ -7,6 +7,9 @@
 rnaNormalize(coverage, df, dfr = NULL, tx)
 }
 \arguments{
+\item{coverage}{a data.table containing at least columns (count/score,
+position), it is possible to have additionals: (genes, fraction, feature)}
+
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to

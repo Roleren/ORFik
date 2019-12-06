@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{read.experiment}
 \alias{read.experiment}
-\title{Read ORFik experiment}
+\title{Read ORFik \code{\link{experiment}}}
 \usage{
 read.experiment(file)
 }
@@ -14,24 +14,6 @@ read.experiment(file)
 an ORFik \code{\link{experiment}}
 }
 \description{
-An object to massivly simplify your coding, it is
-similar to systempipeR's 'target' table. By containing
-filepaths and info for each library in some experiment.
-}
-\details{
-Simplest way to make is to call create.experiment on some
-folder with libraries and see what you get. Some of the fields
-might be needed to fill in manually. The important thing is
-that each row must be unique (excluding filepath), that means
-if it has replicates then that must be said explicit. And all
-filepaths must be unique and have files with size > 0.
-Syntax:
-libtype (library type): rna-seq, ribo-seq, CAGE etc.
-rep (replicate): 1,2,3 etc
-condition: WT (wild-type), control, target, mzdicer, starved etc.
-fraction: 18, 19 (fractinations), or other ways to split library.
-filepath: Full filepath to file
-
 The file must be csv and be a valid ORFik experiment
 }
 \examples{

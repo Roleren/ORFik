@@ -5,23 +5,6 @@
 \alias{experiment-class}
 \alias{experiment}
 \title{experiment class definition}
-\usage{
-## Constructor
-Simplest way to make is to call:
-create.experiment(dir)
-
-On some folder with libraries and see what you get. Some of the fields
-might be needed to fill in manually. Each resulting row must be unique
-(excluding filepath), that means
-if it has replicates then that must be said explicit. And all
-filepaths must be unique and have files with size > 0.
-Syntax (columns):
-libtype (library type): rna-seq, ribo-seq, CAGE etc.
-rep (replicate): 1,2,3 etc
-condition: WT (wild-type), control, target, mzdicer, starved etc.
-fraction: 18, 19 (fractinations), or other ways to split library.
-filepath: Full filepath to file
-}
 \description{
 Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather
@@ -33,6 +16,24 @@ filepaths and info for each library in the experiment. It also tries
 to guess grouping / types / pairs by the file names.
 }
 \details{
+## Constructor:
+
+Simplest way to make is to call:
+create.experiment(dir)
+
+On some folder with libraries and see what you get. Some of the fields
+might be needed to fill in manually. Each resulting row must be unique
+(excluding filepath), that means
+if it has replicates then that must be said explicit. And all
+filepaths must be unique and have files with size > 0.
+Syntax (columns):\cr
+libtype (library type): rna-seq, ribo-seq, CAGE etc.\cr
+rep (replicate): 1,2,3 etc\cr
+condition: WT (wild-type), control, target, mzdicer, starved etc.\cr
+fraction: 18, 19 (fractinations), or other ways to split library.\cr
+filepath: Full filepath to file
+
+
 Special rules:\cr
 Supported:\cr
 Single end bam, bed, wig + compressions of these\cr

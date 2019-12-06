@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{create.experiment}
 \alias{create.experiment}
-\title{Create a template for new ORFik experiment}
+\title{Create a template for new ORFik \code{\link{experiment}}}
 \usage{
 create.experiment(
   dir,

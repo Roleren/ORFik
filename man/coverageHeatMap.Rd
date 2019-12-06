@@ -58,8 +58,8 @@ grl <- GRangesList(tx1 = GRanges("1", IRanges(1, 6), "+"))
 range <- IRanges(c(rep(1, 3), 2, 3, rep(4, 2), 5, 6), width = 1 )
 reads <- GRanges("1", range, "+")
 reads$size <- c(rep(28, 5), rep(29, 4)) # read size
-coverage <- ORFik:::windowPerReadLength(grl, reads = reads, upstream = 0,
-                                        downstream = 5)
+coverage <- windowPerReadLength(grl, reads = reads, upstream = 0,
+                                downstream = 5)
 
 coverageHeatMap(coverage)
 

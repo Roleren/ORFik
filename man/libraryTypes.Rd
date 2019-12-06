@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{libraryTypes}
 \alias{libraryTypes}
-\title{Which type of experiments?}
+\title{Which type of library type in \code{\link{experiment}}?}
 \usage{
 libraryTypes(df)
 }
@@ -13,7 +13,7 @@ libraryTypes(df)
 library types (character vector)
 }
 \description{
-Which type of experiments?
+Which type of library type in \code{\link{experiment}}?
 }
 \seealso{
 Other ORFik_experiment: 

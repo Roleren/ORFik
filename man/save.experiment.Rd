@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{save.experiment}
 \alias{save.experiment}
-\title{Save experiment to disc}
+\title{Save \code{\link{experiment}} to disc}
 \usage{
 save.experiment(df, file)
 }
@@ -15,7 +15,7 @@ save.experiment(df, file)
 NULL (experiment save only)
 }
 \description{
-Save experiment to disc
+Save \code{\link{experiment}} to disc
 }
 \examples{
 # 1. Pick directory
