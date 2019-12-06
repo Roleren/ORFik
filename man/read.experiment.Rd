@@ -56,3 +56,14 @@ df <- read.experiment(template)
 # To save it, do:
 # save.experiment(df, file = "path/to/save/experiment.csv")
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{bamVarName}()},
+\code{\link{create.experiment}()},
+\code{\link{experiment-class}},
+\code{\link{libraryTypes}()},
+\code{\link{outputLibs}()},
+\code{\link{save.experiment}()},
+\code{\link{validateExperiments}()}
+}
+\concept{ORFik_experiment}

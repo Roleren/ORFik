@@ -41,3 +41,14 @@ df <- read.experiment(template)
 # Output to .GlobalEnv with:
 # outputLibs(df)
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{bamVarName}()},
+\code{\link{create.experiment}()},
+\code{\link{experiment-class}},
+\code{\link{libraryTypes}()},
+\code{\link{read.experiment}()},
+\code{\link{save.experiment}()},
+\code{\link{validateExperiments}()}
+}
+\concept{ORFik_experiment}

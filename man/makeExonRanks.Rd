@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{makeExonRanks}
 \alias{makeExonRanks}
-\title{Make grouping for exon structures.}
+\title{Make grouping by exons ranks}
 \usage{
 makeExonRanks(grl, byTranscript = FALSE)
 }
@@ -16,8 +16,9 @@ name or ORF name, if ORfs are by transcript, check duplicates.}
 an integer vector of indices for exon ranks
 }
 \description{
-Make vector of exon ranking, either iterate per exon in ORF
-byTranscript = FALSE, or per ORF in transcript byTranscript = TRUE.
+There are two ways to make vector of exon ranking:
+1. Iterate per exon in ORF, byTranscript = FALSE
+2. Iterate per ORF in transcript, byTranscript = TRUE.
 }
 \details{
 Either by transcript or by original groupings.

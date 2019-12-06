@@ -79,6 +79,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     rownames(res) <- names(tx)
   }
   if(!is.null(saveName)) {
+    if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
     saveRDS(res, file = saveName)
   }
   return(res)

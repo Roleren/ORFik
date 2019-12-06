@@ -56,3 +56,14 @@ template$X5[6] <- "heart" # <- fix non unique row
 df <- read.experiment(template)
 # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{bamVarName}()},
+\code{\link{experiment-class}},
+\code{\link{libraryTypes}()},
+\code{\link{outputLibs}()},
+\code{\link{read.experiment}()},
+\code{\link{save.experiment}()},
+\code{\link{validateExperiments}()}
+}
+\concept{ORFik_experiment}

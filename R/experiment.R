@@ -1,13 +1,21 @@
 #' experiment class definition
 #'
-#' An object to massivly simplify your coding, by having a
+#' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
+#' more ease to find not only counts, but rather
+#' information about libraries, and annotation, so that more tasks are
+#' possible. Like coverage per position in some transcript etc.
+#' \cr It is an object to massivly simplify your coding, by having a
 #' table of all libraries of an experiment. That contains
-#' filepaths and info for each library in the experiment.
+#' filepaths and info for each library in the experiment. It also tries
+#' to guess grouping / types / pairs by the file names.
+#' @usage
+#' ## Constructor
+#' Simplest way to make is to call:
+#' create.experiment(dir)
 #'
-#' Simplest way to make is to call create.experiment on some
-#' folder with libraries and see what you get. Some of the fields
-#' might be needed to fill in manually. The important thing is
-#' that each row must be unique (excluding filepath), that means
+#' On some folder with libraries and see what you get. Some of the fields
+#' might be needed to fill in manually. Each resulting row must be unique
+#' (excluding filepath), that means
 #' if it has replicates then that must be said explicit. And all
 #' filepaths must be unique and have files with size > 0.
 #' Syntax (columns):
@@ -16,12 +24,13 @@
 #' condition: WT (wild-type), control, target, mzdicer, starved etc.
 #' fraction: 18, 19 (fractinations), or other ways to split library.
 #' filepath: Full filepath to file
-#'
-#' Special rules:
-#' Supported:
-#' Single end bam, bed, wig + compressions of these
+#' @details
+#' Special rules:\cr
+#' Supported:\cr
+#' Single end bam, bed, wig + compressions of these\cr
 #' Paired forward / reverse wig files, must have same name except _forward etc
-#' Not supported yet:
+#'
+#' Not supported yet:\cr
 #' Paired end bam files not supported yet!
 #' @importFrom methods new
 #' @examples
@@ -60,6 +69,7 @@
 #' df
 #' }
 #' @export
+#' @family ORFik_experiment
 experiment <- setClass("experiment",
                        slots=list(experiment = "character",
                                   txdb = "character",
@@ -153,6 +163,7 @@ setMethod("nrow",
 #'
 #' # To save it, do:
 #' # save.experiment(df, file = "path/to/save/experiment.csv")
+#' @family ORFik_experiment
 read.experiment <-  function(file) {
   if (is(file, "character")) {
     if (file_ext(file) == "") file <- paste0(file, ".csv")
@@ -209,6 +220,7 @@ read.experiment <-  function(file) {
 #' # read experiment
 #' df <- read.experiment(template)
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+#' @family ORFik_experiment
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
                               fa = "", viewTemplate = TRUE) {
@@ -279,6 +291,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 #' # read experiment
 #' df <- read.experiment(template)
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+#' @family ORFik_experiment
 save.experiment <- function(df, file) {
   write.table(x = df, file = file, sep = ",",
               row.names = FALSE, col.names = FALSE)
@@ -314,6 +327,7 @@ findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq",
 #' Which type of experiments?
 #' @param df an ORFik \code{\link{experiment}}
 #' @return library types (character vector)
+#' @family ORFik_experiment
 libraryTypes <- function(df) {
   if (is(df, "experiment")) {
     return(unique(df$libtype))
@@ -326,6 +340,7 @@ libraryTypes <- function(df) {
 #' Check for valid non-empty files etc.
 #' @param df an ORFik \code{\link{experiment}}
 #' @return NULL (Stops if failed)
+#' @family ORFik_experiment
 validateExperiments <- function(df) {
   libTypes <- libraryTypes(df)
   if (!is(df, "experiment")) stop("df must be experiment!")
@@ -368,6 +383,7 @@ validateExperiments <- function(df) {
 #' @param skip.experiment a logical (FALSE), don't include experiment
 #' @return variable names of libraries (character vector)
 #' @export
+#' @family ORFik_experiment
 bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.condition = length(unique(df$condition)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
@@ -447,6 +463,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' df <- read.experiment(template)
 #' # Output to .GlobalEnv with:
 #' # outputLibs(df)
+#' @family ORFik_experiment
 outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
                        BPPARAM = bpparam()) {
   dfl <- df

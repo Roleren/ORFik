@@ -15,3 +15,14 @@ library types (character vector)
 \description{
 Which type of experiments?
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{bamVarName}()},
+\code{\link{create.experiment}()},
+\code{\link{experiment-class}},
+\code{\link{outputLibs}()},
+\code{\link{read.experiment}()},
+\code{\link{save.experiment}()},
+\code{\link{validateExperiments}()}
+}
+\concept{ORFik_experiment}

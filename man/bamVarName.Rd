@@ -35,3 +35,14 @@ variable names of libraries (character vector)
 \description{
 What will each sample be called given the columns of the experiment?
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{create.experiment}()},
+\code{\link{experiment-class}},
+\code{\link{libraryTypes}()},
+\code{\link{outputLibs}()},
+\code{\link{read.experiment}()},
+\code{\link{save.experiment}()},
+\code{\link{validateExperiments}()}
+}
+\concept{ORFik_experiment}

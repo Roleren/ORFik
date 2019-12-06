@@ -17,3 +17,14 @@ NULL (Stops if failed)
 Validate ORFik experiment
 Check for valid non-empty files etc.
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{bamVarName}()},
+\code{\link{create.experiment}()},
+\code{\link{experiment-class}},
+\code{\link{libraryTypes}()},
+\code{\link{outputLibs}()},
+\code{\link{read.experiment}()},
+\code{\link{save.experiment}()}
+}
+\concept{ORFik_experiment}

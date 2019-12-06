@@ -5,16 +5,14 @@
 \alias{experiment-class}
 \alias{experiment}
 \title{experiment class definition}
-\description{
-An object to massivly simplify your coding, by having a
-table of all libraries of an experiment. That contains
-filepaths and info for each library in the experiment.
-}
-\details{
-Simplest way to make is to call create.experiment on some
-folder with libraries and see what you get. Some of the fields
-might be needed to fill in manually. The important thing is
-that each row must be unique (excluding filepath), that means
+\usage{
+## Constructor
+Simplest way to make is to call:
+create.experiment(dir)
+
+On some folder with libraries and see what you get. Some of the fields
+might be needed to fill in manually. Each resulting row must be unique
+(excluding filepath), that means
 if it has replicates then that must be said explicit. And all
 filepaths must be unique and have files with size > 0.
 Syntax (columns):
@@ -23,12 +21,24 @@ rep (replicate): 1,2,3 etc
 condition: WT (wild-type), control, target, mzdicer, starved etc.
 fraction: 18, 19 (fractinations), or other ways to split library.
 filepath: Full filepath to file
-
-Special rules:
-Supported:
-Single end bam, bed, wig + compressions of these
+}
+\description{
+Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
+more ease to find not only counts, but rather
+information about libraries, and annotation, so that more tasks are
+possible. Like coverage per position in some transcript etc.
+\cr It is an object to massivly simplify your coding, by having a
+table of all libraries of an experiment. That contains
+filepaths and info for each library in the experiment. It also tries
+to guess grouping / types / pairs by the file names.
+}
+\details{
+Special rules:\cr
+Supported:\cr
+Single end bam, bed, wig + compressions of these\cr
 Paired forward / reverse wig files, must have same name except _forward etc
-Not supported yet:
+
+Not supported yet:\cr
 Paired end bam files not supported yet!
 }
 \examples{
@@ -67,3 +77,14 @@ df@expInVarName <- FALSE
 df
 }
 }
+\seealso{
+Other ORFik_experiment: 
+\code{\link{bamVarName}()},
+\code{\link{create.experiment}()},
+\code{\link{libraryTypes}()},
+\code{\link{outputLibs}()},
+\code{\link{read.experiment}()},
+\code{\link{save.experiment}()},
+\code{\link{validateExperiments}()}
+}
+\concept{ORFik_experiment}

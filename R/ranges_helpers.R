@@ -1,7 +1,8 @@
-#' Make grouping for exon structures.
+#' Make grouping by exons ranks
 #'
-#' Make vector of exon ranking, either iterate per exon in ORF
-#' byTranscript = FALSE, or per ORF in transcript byTranscript = TRUE.
+#' There are two ways to make vector of exon ranking:
+#' 1. Iterate per exon in ORF, byTranscript = FALSE
+#' 2. Iterate per ORF in transcript, byTranscript = TRUE.
 #'
 #' Either by transcript or by original groupings.
 #' Must be ordered, so that same transcripts are ordered together.
