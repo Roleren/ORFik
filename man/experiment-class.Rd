@@ -17,7 +17,7 @@ might be needed to fill in manually. The important thing is
 that each row must be unique (excluding filepath), that means
 if it has replicates then that must be said explicit. And all
 filepaths must be unique and have files with size > 0.
-Syntax:
+Syntax (columns):
 libtype (library type): rna-seq, ribo-seq, CAGE etc.
 rep (replicate): 1,2,3 etc
 condition: WT (wild-type), control, target, mzdicer, starved etc.
@@ -26,7 +26,7 @@ filepath: Full filepath to file
 
 Special rules:
 Supported:
-Single end supports bam, bed, wig + compressions of these
+Single end bam, bed, wig + compressions of these
 Paired forward / reverse wig files, must have same name except _forward etc
 Not supported yet:
 Paired end bam files not supported yet!

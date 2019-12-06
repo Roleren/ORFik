@@ -10,13 +10,15 @@ fimport(path, chrStyle = NULL)
 \item{path}{a character path to file or a GRanges/Galignment object etc.
 Any Ranged object.}
 
-\item{chrStyle}{a GRanges object, or a character style (Default: NULL) to
-get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-chromosome called MT or chrM etc. Will use 1st seqlevel-
-style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"}
+\item{chrStyle}{a GRanges object, or a \code{\link{seqlevelsStyle}}
+(Default: NULL) to get seqlevelsStyle from. Is chromosome 1
+called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+Will use 1st seqlevel-style if more are present.
+Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }
 \value{
-a GAlignment/GRanges object depending on input.
+a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
+ depending on input.
 }
 \description{
 Wraps around rtracklayer::import and tries to speed up loading with the

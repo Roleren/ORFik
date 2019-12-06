@@ -14,7 +14,8 @@ Can be used for any extension of groups.}
 Or a GRangesList where start / stops by strand are the positions
 to use as new starts.}
 
-\item{cds}{If you want to extend 5' leaders downstream, to catch
+\item{cds}{a \code{\link{GRangesList}} of coding sequences,
+If you want to extend 5' leaders downstream, to catch
 upstream ORFs going into cds, include it. It will add first
 cds exon to grl matched by names.
 Do not add for transcripts, as they are already included.}

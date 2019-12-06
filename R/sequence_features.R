@@ -81,8 +81,7 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' @param grl a \code{\link{GRangesList}} grouped by ORF
 #' @param tx a \code{\link{GRangesList}}, the reference area for ORFs, each ORF
 #'  must have a coresponding tx.
-#' @param faFile a FaFile from the fasta file, see ?FaFile.
-#'  Can also be path to fastaFile with fai file in same dir.
+#' @inheritParams findFa
 #' @param species ("human"), which species to use,
 #' currently supports human, zebrafish and mouse (m. musculus).
 #' You can also specify a pfm for your own species.
@@ -185,14 +184,13 @@ kozakSequenceScore <- function(grl, tx, faFile, species = "human",
 #' Get GC content
 #'
 #' 0.5 means 50% of bases are G or C.
-#' @param seqs a character vector of ranges, or ranges as GRangesList
+#' @param seqs a character vector of sequences, or ranges as GRangesList
 #' @param fa fasta index file  .fai file, either path to it, or the loaded
 #' FaFile, default (NULL), only set if you give ranges as GRangesList
 #' @return a numeric vector of gc content scores
 #' @importFrom Biostrings alphabetFrequency
 #' @export
 #' @examples
-#' # Usually the ORFs are found in orfik, which makes names for you etc.
 #' # Here we make an example from scratch
 #' seqName <- "Chromosome"
 #' ORF1 <- GRanges(seqnames = seqName,
@@ -202,12 +200,12 @@ kozakSequenceScore <- function(grl, tx, faFile, species = "human",
 #'                     ranges = IRanges(c(400, 100), width = 30),
 #'                     strand = c("-", "-"))
 #' ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
-#' ORFs <- makeORFNames(ORFs) # need ORF names
 #' # get path to FaFile for sequences
 #' faFile <- system.file("extdata", "genome.fasta", package = "ORFik")
 #' gcContent(ORFs, faFile)
-gcContent <- function(seqs, fa) {
+gcContent <- function(seqs, fa = NULL) {
   if (is(seqs, "GRangesList")) {
+    if (is.null(fa)) stop("fa must be defined, when seqs is GRangesList")
     seqs <- txSeqsFromFa(seqs, fa)
   }
   alf <- alphabetFrequency(seqs, as.prob = TRUE)
@@ -225,7 +223,8 @@ gcContent <- function(seqs, fa) {
 #' 2: 2 shifted from cds
 #'
 #' @references doi: 10.1074/jbc.R116.733899
-#' @param dists a vector of distances between ORF and cds
+#' @param dists a vector of integer distances between ORF and cds.
+#' 0 distance means equal frame
 #' @return a logical vector
 #' @family features
 #' @examples

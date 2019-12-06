@@ -9,14 +9,17 @@
 #' it is optional to add .rds, it will be added for you if not present.
 #' @param longestPerGene a logical (default TRUE), if FALSE all transcript
 #' isoforms per gene.
-#' @param geneOrTxNames a character (default gene), if tx use with tx names
-#' @param region (default: mrna), make raw count matrices of
-#' whole mrnas or one of (leaders, cds, trailers)
+#' @param geneOrTxNames a character (default "gene"), should row names
+#' keep trancripts names ("tx") or change to gene names ("gene")
+#' @param region a character vector (default: "mrna"), make raw count matrices
+#'  of whole mrnas or one of (leaders, cds, trailers). Can also be a
+#' \code{\link{GRangesList}}, then it uses this region directly.
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
 #' @import SummarizedExperiment
 #' @export
-#' @return a SummarizedExperiment object
+#' @return a \code{\link{SummarizedExperiment}} object or data.table if
+#' "type" is not "count, with rownames as transcript / gene names.
 #' @examples
 #' # 1. Pick directory
 #' dir <- system.file("extdata", "", package = "ORFik")
@@ -33,7 +36,7 @@
 #' # makeSummarizedExperimentFromBam(df)
 #' # Only cds (coding sequences):
 #' # makeSummarizedExperimentFromBam(df, region = "cds")
-#' # FPKM instead of raw counts
+#' # FPKM instead of raw counts on whole mrna regions
 #' # makeSummarizedExperimentFromBam(df, type = "fpkm")
 makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             longestPerGene = TRUE,
@@ -42,7 +45,6 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   if(!is.null(saveName) && file.exists(saveName)) {
     return(readRDS(saveName))
   }
-  libTypes <- libraryTypes(df)
   validateExperiments(df)
 
   if (is(region, "character")) {
@@ -72,8 +74,10 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 
   res <- SummarizedExperiment(assays=list(counts=mat), rowRanges=tx,
                               colData=colData)
-  if (type %in% c("fpkm", "log2fpkm", "log10fpkm"))
+  if (type %in% c("fpkm", "log2fpkm", "log10fpkm")) {
     res <- as.data.table(scoreSummarizedExperiment(res, score = type))
+    rownames(res) <- names(tx)
+  }
   if(!is.null(saveName)) {
     saveRDS(res, file = saveName)
   }
@@ -88,10 +92,11 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 #' (row normalized raw counts matrix),
 #' alternative is "fpkm", "log2fpkm" or "log10fpkm"
 #' @param collapse a logical (default FALSE), if TRUE all samples
-#' within group
+#' within the group SAMPLE will be collapsed to one.
 #' @import SummarizedExperiment DESeq2
 #' @export
-#' @return a DEseq summerizedExperiment object
+#' @return a DEseq summerizedExperiment object (transcriptNormalized)
+#'  or matrix (if fpkm input)
 scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
                                       collapse = FALSE) {
   if (is.factor(final$SAMPLE)) {
@@ -117,16 +122,12 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
     fpkmTranscriptNormalized <- fpkmCollapsed / normalization
     assay(dds) <- fpkmTranscriptNormalized
     return(dds)
-  } else if (score == "fpkm") {
-    return(fpkmCollapsed)
   }
-  else if (score == "fpkm") {
+  if (score == "fpkm") {
     return(fpkmCollapsed)
-  }
-  else if (score == "log2fpkm") {
+  } else if (score == "log2fpkm") {
     return(log2(fpkmCollapsed))
-  }
-  else if (score == "log10fpkm") {
+  } else if (score == "log10fpkm") {
     return(log10(fpkmCollapsed))
   }
   return(dds)

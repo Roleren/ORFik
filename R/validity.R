@@ -1,7 +1,7 @@
 #' Helper function to find overlaping seqlevels
 #'
 #' Useful to avoid warnings in bioC
-#' @param grl a GRangesList or GRanges object
+#' @param grl a \code{\link{GRangesList}} or GRanges object
 #' @param reads a GRanges or GAlignment object
 #' @return a character vector of valid seqlevels
 #' @family validity

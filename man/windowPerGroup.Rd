@@ -9,9 +9,9 @@ windowPerGroup(gr, tx, upstream = 0L, downstream = 0L)
 \arguments{
 \item{gr}{a GRanges object (startSites and others, must be single point)}
 
-\item{tx}{a GRangesList of transcripts or (container region), names of
-tx must contain all gr names. The names of gr can also be the ORFik orf
-names. that is "txName_id"}
+\item{tx}{a \code{\link{GRangesList}} of transcripts or (container region),
+names of tx must contain all gr names. The names of gr can also be the
+ORFik orf names. that is "txName_id"}
 
 \item{upstream}{an integer (0), relative region to get upstream from.}
 

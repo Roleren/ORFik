@@ -18,10 +18,11 @@ scoreSummarizedExperiment(
 alternative is "fpkm", "log2fpkm" or "log10fpkm"}
 
 \item{collapse}{a logical (default FALSE), if TRUE all samples
-within group}
+within the group SAMPLE will be collapsed to one.}
 }
 \value{
-a DEseq summerizedExperiment object
+a DEseq summerizedExperiment object (transcriptNormalized)
+ or matrix (if fpkm input)
 }
 \description{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment

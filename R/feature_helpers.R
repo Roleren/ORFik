@@ -7,7 +7,7 @@
 #' Example: counts c(1,0,0,1), with reg_len = 2, gives
 #' c(1,0) and c(0,1), these are summed and returned as data.table
 #' 10 bases, will give 3 codons, 1 base codons does not exist.
-#' @param grl a GRangesList
+#' @param grl a \code{\link{GRangesList}}
 #' @param reads a GRanges or GAlignment
 #' @return a data.table with codon sums
 #'
@@ -43,8 +43,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize) {
 #' only the startsite is returned.
 #' @param grl a \code{\link{GRangesList}} of ranges to find regions in.
 #' @inheritParams windowPerGroup
-#' @param faFile a FaFile from the fasta file, see ?FaFile.
-#'  Can also be path to fastaFile with fai file in same dir.
+#' @inheritParams findFa
 #' @return a character vector of start regions
 #' @export
 startRegionString <- function(grl, tx, faFile, upstream = 20,

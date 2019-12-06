@@ -7,7 +7,7 @@
 codonSumsPerGroup(grl, reads)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link{GRangesList}}}
 
 \item{reads}{a GRanges or GAlignment}
 }

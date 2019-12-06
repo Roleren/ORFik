@@ -19,12 +19,13 @@
 #'
 #' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 #' 33, but will remove 3S so final read width is 30 in ORFik.
-#' @param footprints (GAlignments) object of RiboSeq reads
+#' @param footprints \code{\link{GAlignments}} object of RiboSeq reads
 #' @param shifts a data.frame / data.table with minimum 2 columns,
 #' selected_lengths and selected_shifts.
 #' Output from \code{\link{detectRibosomeShifts}}
-#' @return A GRanges object of shifted footprints, sorted and resized to 1bp of
-#' p-site, with metacolumn "size" indicating footprint size before shifting and
+#' @return A \code{\link{GRanges}} object of shifted footprints, sorted and
+#' resized to 1bp of p-site,
+#' with metacolumn "size" indicating footprint size before shifting and
 #' resizing, sorted in increasing order.
 #' @family pshifting
 #' @export

@@ -7,14 +7,15 @@
 findFa(faFile)
 }
 \arguments{
-\item{faFile}{FaFile, BSgenome or fasta/index file path used to find the
-transcripts}
+\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+ORFik \code{\link{experiment}}. This file used to find the
+transcript sequences}
 }
 \value{
-a FaFile or BSgenome
+a \code{\link{FaFile}} or BSgenome
 }
 \description{
-Convenience wrapper for Rsamtools FaFile
+Get fasta file object, to find sequences in file.
 }
 \seealso{
 Other utils: 

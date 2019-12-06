@@ -23,16 +23,19 @@ it is optional to add .rds, it will be added for you if not present.}
 \item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
 isoforms per gene.}
 
-\item{geneOrTxNames}{a character (default gene), if tx use with tx names}
+\item{geneOrTxNames}{a character (default "gene"), should row names
+keep trancripts names ("tx") or change to gene names ("gene")}
 
-\item{region}{(default: mrna), make raw count matrices of
-whole mrnas or one of (leaders, cds, trailers)}
+\item{region}{a character vector (default: "mrna"), make raw count matrices
+ of whole mrnas or one of (leaders, cds, trailers). Can also be a
+\code{\link{GRangesList}}, then it uses this region directly.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
 }
 \value{
-a SummarizedExperiment object
+a \code{\link{SummarizedExperiment}} object or data.table if
+"type" is not "count, with rownames as transcript / gene names.
 }
 \description{
 Make a summerizedExperiment object from bam files
@@ -56,6 +59,6 @@ df <- read.experiment(template)
 # makeSummarizedExperimentFromBam(df)
 # Only cds (coding sequences):
 # makeSummarizedExperimentFromBam(df, region = "cds")
-# FPKM instead of raw counts
+# FPKM instead of raw counts on whole mrna regions
 # makeSummarizedExperimentFromBam(df, type = "fpkm")
 }

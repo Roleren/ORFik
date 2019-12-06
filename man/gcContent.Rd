@@ -4,10 +4,10 @@
 \alias{gcContent}
 \title{Get GC content}
 \usage{
-gcContent(seqs, fa)
+gcContent(seqs, fa = NULL)
 }
 \arguments{
-\item{seqs}{a character vector of ranges, or ranges as GRangesList}
+\item{seqs}{a character vector of sequences, or ranges as GRangesList}
 
 \item{fa}{fasta index file  .fai file, either path to it, or the loaded
 FaFile, default (NULL), only set if you give ranges as GRangesList}
@@ -19,7 +19,6 @@ a numeric vector of gc content scores
 0.5 means 50% of bases are G or C.
 }
 \examples{
-# Usually the ORFs are found in orfik, which makes names for you etc.
 # Here we make an example from scratch
 seqName <- "Chromosome"
 ORF1 <- GRanges(seqnames = seqName,
@@ -29,7 +28,6 @@ ORF2 <- GRanges(seqnames = seqName,
                     ranges = IRanges(c(400, 100), width = 30),
                     strand = c("-", "-"))
 ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
-ORFs <- makeORFNames(ORFs) # need ORF names
 # get path to FaFile for sequences
 faFile <- system.file("extdata", "genome.fasta", package = "ORFik")
 gcContent(ORFs, faFile)

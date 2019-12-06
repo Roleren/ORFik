@@ -10,7 +10,7 @@
 #' that each row must be unique (excluding filepath), that means
 #' if it has replicates then that must be said explicit. And all
 #' filepaths must be unique and have files with size > 0.
-#' Syntax:
+#' Syntax (columns):
 #' libtype (library type): rna-seq, ribo-seq, CAGE etc.
 #' rep (replicate): 1,2,3 etc
 #' condition: WT (wild-type), control, target, mzdicer, starved etc.
@@ -19,7 +19,7 @@
 #'
 #' Special rules:
 #' Supported:
-#' Single end supports bam, bed, wig + compressions of these
+#' Single end bam, bed, wig + compressions of these
 #' Paired forward / reverse wig files, must have same name except _forward etc
 #' Not supported yet:
 #' Paired end bam files not supported yet!
@@ -128,8 +128,8 @@ setMethod("nrow",
 #' filepath: Full filepath to file
 #'
 #' The file must be csv and be a valid ORFik experiment
-#' @param file a .csv file following ORFik experiment style, or a
-#' template data.frame from create.experiment()
+#' @param file a .csv file following ORFik experiment style ("," as seperator)
+#' , or a template data.frame from create.experiment()
 #' @return an ORFik \code{\link{experiment}}
 #' @export
 #' @examples
@@ -426,7 +426,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
-#' @param chrStyle the sequencelevels style (GRanges object or chr)
+#' @inheritParams matchSeqStyle
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores? default: bpparam()
 #' @return NULL (libraries set by envir assignment)

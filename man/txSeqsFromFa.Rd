@@ -7,15 +7,16 @@
 txSeqsFromFa(grl, faFile, is.sorted = FALSE)
 }
 \arguments{
-\item{grl}{a GRangesList object}
+\item{grl}{a \code{\link{GRangesList}} object}
 
-\item{faFile}{FaFile, BSgenome or fasta/index file path used to find the
-transcripts}
+\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+ORFik \code{\link{experiment}}. This file used to find the
+transcript sequences}
 
 \item{is.sorted}{a speedup, if you know the ranges are sorted}
 }
 \value{
-a DNAStringSet of the transcript sequences
+a \code{\link{DNAStringSet}} of the transcript sequences
 }
 \description{
 For each GRanges object, find the sequence of it from faFile or BSgenome.

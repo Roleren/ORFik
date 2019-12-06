@@ -9,7 +9,11 @@ outputLibs(df, chrStyle = NULL, envir = .GlobalEnv, BPPARAM = bpparam())
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{chrStyle}{the sequencelevels style (GRanges object or chr)}
+\item{chrStyle}{a GRanges object, or a \code{\link{seqlevelsStyle}}
+(Default: NULL) to get seqlevelsStyle from. Is chromosome 1
+called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+Will use 1st seqlevel-style if more are present.
+Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 

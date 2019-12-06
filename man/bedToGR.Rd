@@ -7,13 +7,13 @@
 bedToGR(x, bed6 = TRUE)
 }
 \arguments{
-\item{x}{An data.frame from imported bed-file,
+\item{x}{A \code{\link{data.frame}} from imported bed-file,
 to convert to GRanges}
 
 \item{bed6}{If bed6, no meta column is added}
 }
 \value{
-a GRanges object from bed
+a \code{\link{GRanges}} object from bed
 }
 \description{
 column 5 will be set to score

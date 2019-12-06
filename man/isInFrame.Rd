@@ -7,7 +7,8 @@
 isInFrame(dists)
 }
 \arguments{
-\item{dists}{a vector of distances between ORF and cds}
+\item{dists}{a vector of integer distances between ORF and cds.
+0 distance means equal frame}
 }
 \value{
 a logical vector

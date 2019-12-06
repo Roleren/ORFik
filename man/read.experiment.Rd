@@ -7,8 +7,8 @@
 read.experiment(file)
 }
 \arguments{
-\item{file}{a .csv file following ORFik experiment style, or a
-template data.frame from create.experiment()}
+\item{file}{a .csv file following ORFik experiment style ("," as seperator)
+, or a template data.frame from create.experiment()}
 }
 \value{
 an ORFik \code{\link{experiment}}

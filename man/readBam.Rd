@@ -9,13 +9,14 @@ readBam(path, chrStyle = NULL)
 \arguments{
 \item{path}{a character path to .bam file}
 
-\item{chrStyle}{a GRanges object, or a character style (Default: NULL) to
-get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-chromosome called MT or chrM etc. Will use 1st seqlevel-
-style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"}
+\item{chrStyle}{a GRanges object, or a \code{\link{seqlevelsStyle}}
+(Default: NULL) to get seqlevelsStyle from. Is chromosome 1
+called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+Will use 1st seqlevel-style if more are present.
+Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }
 \value{
-a GAlignment object of bam file
+a \code{\link{GAlignments}} object of bam file
 }
 \description{
 Only for single end reads

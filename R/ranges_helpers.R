@@ -277,11 +277,11 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' file does not have. A normal error is that mitocondrial chromosome is
 #' called MT vs chrM even though they have same seqlevelsStyle. The
 #' above line will give you which chromosome it is missing.
-#' @param grl a GRangesList object
+#' @param grl a \code{\link{GRangesList}} object
 #' @inheritParams findFa
 #' @param is.sorted a speedup, if you know the ranges are sorted
 #' @export
-#' @return a DNAStringSet of the transcript sequences
+#' @return a \code{\link{DNAStringSet}} of the transcript sequences
 #' @family ExtendGenomicRanges
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
@@ -310,9 +310,9 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' be returned for the correct object. If you don't want the 0 width windows,
 #' use \code{reduce()} to remove 0-width windows.
 #' @param gr a GRanges object (startSites and others, must be single point)
-#' @param tx a GRangesList of transcripts or (container region), names of
-#'  tx must contain all gr names. The names of gr can also be the ORFik orf
-#'  names. that is "txName_id"
+#' @param tx a \code{\link{GRangesList}} of transcripts or (container region),
+#' names of tx must contain all gr names. The names of gr can also be the
+#' ORFik orf names. that is "txName_id"
 #' @param upstream an integer (0), relative region to get upstream from.
 #' @param downstream an integer (0), relative region to get downstream from
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
@@ -359,7 +359,8 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' @param extension an integer, how much to extend the leaders.
 #' Or a GRangesList where start / stops by strand are the positions
 #' to use as new starts.
-#' @param cds If you want to extend 5' leaders downstream, to catch
+#' @param cds a \code{\link{GRangesList}} of coding sequences,
+#' If you want to extend 5' leaders downstream, to catch
 #' upstream ORFs going into cds, include it. It will add first
 #' cds exon to grl matched by names.
 #' Do not add for transcripts, as they are already included.

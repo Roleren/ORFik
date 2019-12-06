@@ -10,13 +10,14 @@ readWig(path, chrStyle = NULL)
 \item{path}{a character path to two .wig files, or a data.table
 with 2 columns, (forward, filepath) and reverse, only 1 row.}
 
-\item{chrStyle}{a GRanges object, or a character style (Default: NULL) to
-get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-chromosome called MT or chrM etc. Will use 1st seqlevel-
-style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"}
+\item{chrStyle}{a GRanges object, or a \code{\link{seqlevelsStyle}}
+(Default: NULL) to get seqlevelsStyle from. Is chromosome 1
+called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+Will use 1st seqlevel-style if more are present.
+Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }
 \value{
-a GAlignment object of bam file
+a \code{\link{GRanges}} object of the file/s
 }
 \description{
 Given 2 wig files, first is forward second is reverse.

@@ -3,10 +3,10 @@
 #'
 #' column 5 will be set to score
 #' Only Accepts bed files for now, standard format from Fantom5
-#' @param x An data.frame from imported bed-file,
+#' @param x A \code{\link{data.frame}} from imported bed-file,
 #'  to convert to GRanges
 #' @param bed6 If bed6, no meta column is added
-#' @return a GRanges object from bed
+#' @return a \code{\link{GRanges}} object from bed
 #' @family utils
 #'
 bedToGR <- function(x, bed6 = TRUE) {
@@ -34,7 +34,7 @@ bedToGR <- function(x, bed6 = TRUE) {
 #' @importFrom data.table fread setDF
 #' @importFrom tools file_ext
 #' @importFrom rtracklayer import.bed
-#' @return a GRanges object
+#' @return a \code{\link{GRanges}} object
 #' @export
 #' @family utils
 #' @examples
@@ -71,7 +71,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' In the future will use a faster .bam loader for big .bam files in R.
 #' @param path a character path to .bam file
 #' @inheritParams matchSeqStyle
-#' @return a GAlignment object of bam file
+#' @return a \code{\link{GAlignments}} object of bam file
 #' @export
 #' @family utils
 #'
@@ -90,7 +90,7 @@ readBam <- function(path, chrStyle = NULL) {
 #' with 2 columns, (forward, filepath) and reverse, only 1 row.
 #' @inheritParams matchSeqStyle
 #' @importFrom rtracklayer import.wig
-#' @return a GAlignment object of bam file
+#' @return a \code{\link{GRanges}} object of the file/s
 #' @family utils
 #'
 readWig <- function(path, chrStyle = NULL) {
@@ -156,7 +156,8 @@ findWigPairs <- function(paths) {
 #' @importFrom tools file_ext
 #' @importFrom tools file_path_sans_ext
 #' @importFrom rtracklayer import
-#' @return a GAlignment/GRanges object depending on input.
+#' @return a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
+#'  depending on input.
 fimport <- function(path, chrStyle = NULL) {
   if (is.character(path)) {
     if (all(file.exists(path))) {
@@ -195,10 +196,11 @@ fimport <- function(path, chrStyle = NULL) {
 #'
 #' To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 #' @param range a ranged object, (GRanges, GAlignment etc)
-#' @param chrStyle a GRanges object, or a character style (Default: NULL) to
-#' get seqlevelsStyle from. Is chromosome 1 called chr1 or 1, is mitocondrial
-#' chromosome called MT or chrM etc. Will use 1st seqlevel-
-#' style if more are present. Like: c("NCBI", "UCSC") -> pick "NCBI"
+#' @param chrStyle a GRanges object, or a \code{\link{seqlevelsStyle}}
+#' (Default: NULL) to get seqlevelsStyle from. Is chromosome 1
+#' called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+#' Will use 1st seqlevel-style if more are present.
+#' Like: c("NCBI", "UCSC") -> pick "NCBI"
 #' @return a GAlignment/GRanges object depending on input.
 matchSeqStyle <- function(range, chrStyle = NULL) {
   # if needed add this ->
@@ -306,11 +308,14 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 }
 
 #' Convenience wrapper for Rsamtools FaFile
-#' @param faFile FaFile, BSgenome or fasta/index file path used to find the
-#'  transcripts
+#'
+#' Get fasta file object, to find sequences in file.
+#' @param faFile \code{\link{FaFile}}, BSgenome, fasta/index file path or an
+#' ORFik \code{\link{experiment}}. This file used to find the
+#' transcript sequences
 #' @importFrom Rsamtools FaFile
 #' @importFrom methods is
-#' @return a FaFile or BSgenome
+#' @return a \code{\link{FaFile}} or BSgenome
 #' @family utils
 #'
 findFa <- function(faFile) {
@@ -322,6 +327,8 @@ findFa <- function(faFile) {
     }
   } else if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
     return(faFile)
+  } else if (is(faFile, "experiment")) {
+    return(FaFile(faFile@fafile))
   }
-  stop("faFile must be FaFile, BSgenome or valid filePath")
+  stop("faFile must be FaFile, BSgenome, valid filePath, or ORFik experiment")
 }

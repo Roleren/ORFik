@@ -7,15 +7,16 @@
 shiftFootprints(footprints, shifts)
 }
 \arguments{
-\item{footprints}{(GAlignments) object of RiboSeq reads}
+\item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads}
 
 \item{shifts}{a data.frame / data.table with minimum 2 columns,
 selected_lengths and selected_shifts.
 Output from \code{\link{detectRibosomeShifts}}}
 }
 \value{
-A GRanges object of shifted footprints, sorted and resized to 1bp of
-p-site, with metacolumn "size" indicating footprint size before shifting and
+A \code{\link{GRanges}} object of shifted footprints, sorted and
+resized to 1bp of p-site,
+with metacolumn "size" indicating footprint size before shifting and
 resizing, sorted in increasing order.
 }
 \description{

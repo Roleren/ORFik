@@ -12,8 +12,9 @@ kozakSequenceScore(grl, tx, faFile, species = "human", include.N = FALSE)
 \item{tx}{a \code{\link{GRangesList}}, the reference area for ORFs, each ORF
 must have a coresponding tx.}
 
-\item{faFile}{a FaFile from the fasta file, see ?FaFile.
-Can also be path to fastaFile with fai file in same dir.}
+\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+ORFik \code{\link{experiment}}. This file used to find the
+transcript sequences}
 
 \item{species}{("human"), which species to use,
 currently supports human, zebrafish and mouse (m. musculus).
