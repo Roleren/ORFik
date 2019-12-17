@@ -38,10 +38,12 @@ a \code{\link{SummarizedExperiment}} object or data.table if
 "type" is not "count, with rownames as transcript / gene names.
 }
 \description{
-Make a summerizedExperiment object from bam files
+Make a summerizedExperiment / matrix object from bam files
 }
 \details{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
+NOTE: If the file called saveName exists, it will the load file,
+not remake it!
 }
 \examples{
 # 1. Pick directory

@@ -1,8 +1,10 @@
 #' Make a count matrix from a libraries
 #'
-#' Make a summerizedExperiment object from bam files
+#' Make a summerizedExperiment / matrix object from bam files
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
+#' NOTE: If the file called saveName exists, it will the load file,
+#' not remake it!
 #' @param df an ORFik \code{\link{experiment}}
 #' @param saveName a character (default NULL),
 #' if set save experiment to path given. Always saved as .rds.,
@@ -43,6 +45,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             geneOrTxNames = "gene",
                                             region = "mrna", type = "count") {
   if(!is.null(saveName) && file.exists(saveName)) {
+    if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
     return(readRDS(saveName))
   }
   validateExperiments(df)
@@ -52,7 +55,8 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     tx <- loadRegion(txdb, region)
   } else tx <- region
 
-  if (geneOrTxNames == "gene"){
+  if (geneOrTxNames == "gene") {
+    if (!is(region, "character")) txdb <- loadTxdb(df@txdb)
     names(tx) <- txNamesToGeneNames(names(tx), txdb)
   }
 
@@ -132,4 +136,37 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
     return(log10(fpkmCollapsed))
   }
   return(dds)
+}
+
+#' Extract count table directly from experiment
+#'
+#' Extracts by getting /QC_STATS directory, and searching for region
+#' @param df an ORFik \code{\link{experiment}}
+#' @param region a character vector (default: "mrna"), make raw count matrices
+#'  of whole mrnas or one of (leaders, cds, trailers). Can also be a
+#' @param type default: "count" (raw counts matrix), alternative is "fpkm",
+#' "log2fpkm" or "log10fpkm"
+#' @return a DEseq summerizedExperiment object (count)
+#'  or matrix (if fpkm input)
+countTable <- function(df, region = "mrna", type = "count") {
+  if (is(df, "experiment"))
+    df <- paste0(dirname(df$filepath[1]), "/QC_STATS")
+
+  if (is(df, "character")) {
+    if (dir.exists(df))
+      df <- list.files(path = df, pattern = paste0(region, ".rds"), full.names = T)
+
+    if (length(df) == 1 & file.exists(df)) {
+      res <- readRDS(df)
+      if (type %in% c("fpkm", "log2fpkm", "log10fpkm")) {
+        ress <- as.data.table(scoreSummarizedExperiment(res, score = type))
+        rownames(ress) <- names(ranges(res))
+        res <- ress
+      }
+      return(res)
+    }
+
+  }
+  message(paste("Invalid count table:", df))
+  stop("df must be filepath to dir, table or ORFik experiment!")
 }

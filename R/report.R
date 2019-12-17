@@ -6,6 +6,10 @@
 #' It will also make you some correlation plots and meta coverage plots,
 #' so you get a good understanding of how good the quality of your NGS
 #' data production + aligner step were.
+#' You will also get count tables over mrna, leader, cds and trailer
+#' separately.
+#'
+#'
 #' Everything will be outputed in the directory of your NGS data,
 #' inside the folder QC_STATS/, relative to data location in 'df'
 #'
@@ -128,6 +132,17 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   } else message("Could not find raw read counts of data, setting to 20 M")
 
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
+
+  # Make count tables
+  countDir <- paste0(stats_folder, "countTable_")
+
+  for (region in c("mrna", "leaders", "cds", "trailers")) {
+    sumExp <- makeSummarizedExperimentFromBam(df, region = region,
+                                              geneOrTxNames = "tx",
+                                              longestPerGene = FALSE,
+                                              saveName =
+                                                paste0(countDir,region))
+  }
 
   QCplots(df, mrna, stats_folder)
 
