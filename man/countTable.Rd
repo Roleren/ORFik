@@ -4,7 +4,7 @@
 \alias{countTable}
 \title{Extract count table directly from experiment}
 \usage{
-countTable(df, region = "mrna", type = "count")
+countTable(df, region = "mrna", type = "count", collapse = FALSE)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -14,6 +14,9 @@ of whole mrnas or one of (leaders, cds, trailers). Can also be a}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
+
+\item{collapse}{a logical (default FALSE), if TRUE all samples
+within the group SAMPLE will be collapsed to one.}
 }
 \value{
 a DEseq summerizedExperiment object (count)
@@ -21,4 +24,29 @@ a DEseq summerizedExperiment object (count)
 }
 \description{
 Extracts by getting /QC_STATS directory, and searching for region
+Requires \code{\link{ORFikQC}} to have been run on experiment!
+}
+\examples{
+# 1. Pick directory
+dir <- system.file("extdata", "", package = "ORFik")
+# 2. Pick an experiment name
+exper <- "ORFik"
+# 3. Pick .gff/.gtf location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+template <- create.experiment(dir = dir, exper, txdb = txdb,
+                              viewTemplate = FALSE)
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment
+df <- read.experiment(template)
+# Make QC report to get counts ++
+# ORFikQC(df)
+
+# Get count Table of mrnas
+# countTable(df, "mrna")
+# Get count Table of cds
+# countTable(df, "cds")
+# Get count Table of mrnas as fpkm values
+# countTable(df, "mrna", type = "count")
+# Get count Table of mrnas with collapsed replicates
+# countTable(df, "mrna", collapse = TRUE)
 }

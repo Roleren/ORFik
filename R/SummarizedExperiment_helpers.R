@@ -141,14 +141,42 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' Extract count table directly from experiment
 #'
 #' Extracts by getting /QC_STATS directory, and searching for region
+#' Requires \code{\link{ORFikQC}} to have been run on experiment!
 #' @param df an ORFik \code{\link{experiment}}
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #'  of whole mrnas or one of (leaders, cds, trailers). Can also be a
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
+#' @param collapse a logical (default FALSE), if TRUE all samples
+#' within the group SAMPLE will be collapsed to one.
 #' @return a DEseq summerizedExperiment object (count)
 #'  or matrix (if fpkm input)
-countTable <- function(df, region = "mrna", type = "count") {
+#' @export
+#' @examples
+#' # 1. Pick directory
+#' dir <- system.file("extdata", "", package = "ORFik")
+#' # 2. Pick an experiment name
+#' exper <- "ORFik"
+#' # 3. Pick .gff/.gtf location
+#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               viewTemplate = FALSE)
+#' template$X5[6] <- "heart" # <- fix non unique row
+#' # read experiment
+#' df <- read.experiment(template)
+#' # Make QC report to get counts ++
+#' # ORFikQC(df)
+#'
+#' # Get count Table of mrnas
+#' # countTable(df, "mrna")
+#' # Get count Table of cds
+#' # countTable(df, "cds")
+#' # Get count Table of mrnas as fpkm values
+#' # countTable(df, "mrna", type = "count")
+#' # Get count Table of mrnas with collapsed replicates
+#' # countTable(df, "mrna", collapse = TRUE)
+countTable <- function(df, region = "mrna", type = "count",
+                       collapse = FALSE) {
   if (is(df, "experiment"))
     df <- paste0(dirname(df$filepath[1]), "/QC_STATS")
 
@@ -165,7 +193,6 @@ countTable <- function(df, region = "mrna", type = "count") {
       }
       return(res)
     }
-
   }
   message(paste("Invalid count table:", df))
   stop("df must be filepath to dir, table or ORFik experiment!")

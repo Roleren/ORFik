@@ -61,6 +61,19 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "ribozyme", "Mt_tRNA")]
 
+  # Make count tables
+  message("Making count tables for region:")
+  countDir <- paste0(stats_folder, "countTable_")
+  for (region in c("mrna", "leaders", "cds", "trailers")) {
+    message(region)
+    path <- paste0(countDir,region)
+    dt <- makeSummarizedExperimentFromBam(df, region = region,
+                                          geneOrTxNames = "tx",
+                                          longestPerGene = FALSE,
+                                          saveName = path)
+    assign(paste0("ct_", region), colSums(dt))
+  }
+
   # Put into csv, the standard stats
   libs <- bamVarName(df)
   message("Making summary counts for lib:")
@@ -76,9 +89,10 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     sCo <- function(region, lib) {
       return(sum(countOverlaps(region, lib)))
     }
-    res_mrna <- data.table(mRNA = sCo(mrna, lib), LEADERS = sCo(leaders, lib),
-                           CDS = sCo(get("cds", mode = "S4"), lib),
-                           TRAILERs = sCo(trailers, lib))
+    res_mrna <- data.table(mRNA = get(ct_mrna)[lib],
+                           LEADERS = get(ct_leaders)[lib],
+                           CDS = get(ct_cds)[lib],
+                           TRAILERs = get(ct_trailers)[lib])
     res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]
     res_mrna[,ratio_cds_mrna := CDS / mRNA]
     res_mrna[, ratio_cds_leader := CDS / LEADERS]
@@ -129,20 +143,12 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
       finals$ratio_aligned_raw = finals$Aligned_reads / finals$Raw_reads
     }
     setwd(oldDir)
-  } else message("Could not find raw read counts of data, setting to 20 M")
+  } else {
+    message("Could not find raw read counts of data, setting to 20 M")
+    message(paste0("No folder called:", paste0(exp_dir, "../trim/")))
+  }
 
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
-
-  # Make count tables
-  countDir <- paste0(stats_folder, "countTable_")
-
-  for (region in c("mrna", "leaders", "cds", "trailers")) {
-    sumExp <- makeSummarizedExperimentFromBam(df, region = region,
-                                              geneOrTxNames = "tx",
-                                              longestPerGene = FALSE,
-                                              saveName =
-                                                paste0(countDir,region))
-  }
 
   QCplots(df, mrna, stats_folder)
 
