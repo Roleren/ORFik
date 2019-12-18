@@ -71,7 +71,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
                                           geneOrTxNames = "tx",
                                           longestPerGene = FALSE,
                                           saveName = path)
-    assign(paste0("ct_", region), colSums(dt))
+    assign(paste0("ct_", region), colSums(assay(dt)))
   }
 
   # Put into csv, the standard stats
