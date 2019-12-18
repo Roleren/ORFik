@@ -89,10 +89,10 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     sCo <- function(region, lib) {
       return(sum(countOverlaps(region, lib)))
     }
-    res_mrna <- data.table(mRNA = get("ct_mrna")[lib],
-                           LEADERS = get("ct_leaders")[lib],
-                           CDS = get("ct_cds")[lib],
-                           TRAILERs = get("ct_trailers")[lib])
+    res_mrna <- data.table(mRNA = get("ct_mrna")[s],
+                           LEADERS = get("ct_leaders")[s],
+                           CDS = get("ct_cds")[s],
+                           TRAILERs = get("ct_trailers")[s])
     res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]
     res_mrna[,ratio_cds_mrna := CDS / mRNA]
     res_mrna[, ratio_cds_leader := CDS / LEADERS]
