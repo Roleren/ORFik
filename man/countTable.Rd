@@ -4,16 +4,11 @@
 \alias{countTable}
 \title{Extract count table directly from experiment}
 \usage{
-countTable(
-  df,
-  region = "mrna",
-  type = "count",
-  collapse = FALSE,
-  dir = dirname(df$filepath[1])
-)
+countTable(df, region = "mrna", type = "count", collapse = FALSE)
 }
 \arguments{
-\item{df}{an ORFik \code{\link{experiment}}}
+\item{df}{an ORFik \code{\link{experiment}} or path to folder with
+countTable, use path if not same folder as experiment libraries.}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers). Can also be a}
@@ -21,8 +16,10 @@ of whole mrnas or one of (leaders, cds, trailers). Can also be a}
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
 
-\item{collapse}{a logical (default FALSE), if TRUE all samples
-within the group SAMPLE will be collapsed to one.}
+\item{collapse}{a logical/character (default FALSE), if TRUE all samples
+within the group SAMPLE will be collapsed to one. If "all", all
+groups will be merged into 1 column called merged_all. Collapse is defined
+as rowSum(elements_per_group) / ncol(elements_per_group)}
 }
 \value{
 a DEseq summerizedExperiment object (count)

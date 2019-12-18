@@ -98,8 +98,10 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 #' @param score default: "transcriptNormalized"
 #' (row normalized raw counts matrix),
 #' alternative is "fpkm", "log2fpkm" or "log10fpkm"
-#' @param collapse a logical (default FALSE), if TRUE all samples
-#' within the group SAMPLE will be collapsed to one.
+#' @param collapse a logical/character (default FALSE), if TRUE all samples
+#' within the group SAMPLE will be collapsed to one. If "all", all
+#' groups will be merged into 1 column called merged_all. Collapse is defined
+#' as rowSum(elements_per_group) / ncol(elements_per_group)
 #' @import SummarizedExperiment DESeq2
 #' @export
 #' @return a DEseq summerizedExperiment object (transcriptNormalized)
@@ -110,13 +112,18 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
     lvls <- levels(final$SAMPLE) %in% unique(colData(final)$SAMPLE)
     final$SAMPLE <- factor(final$SAMPLE, levels = levels(final$SAMPLE)[lvls])
   }
-  if (collapse) {
-    collapsedAll <- collapseReplicates(final, final$SAMPLE)
-    assay(collapsedAll) <- ceiling(assay(collapsedAll) /
-                              t(matrix(as.double(table(colData(final)$SAMPLE)),
-                                       ncol = nrow(assay(collapsedAll)) ,
-                                       nrow = length(unique(
-                                         colData(final)$SAMPLE)))))
+  if (collapse %in% c(TRUE, "all")) {
+    if (collapse == TRUE) {
+      collapsedAll <- collapseReplicates(final, final$SAMPLE)
+    } else {
+      collapsedAll <- collapseReplicates(final, rep("merged_all",
+                                                    ncol(final)))
+    }
+    # Number of samples per group as matrix
+    nlibs <- t(matrix(as.double(table(colData(final)$SAMPLE)),
+                      ncol = nrow(assay(collapsedAll)) ,
+                      nrow = length(unique(colData(final)$SAMPLE))))
+    assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
 
 
@@ -144,13 +151,16 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #'
 #' Extracts by getting /QC_STATS directory, and searching for region
 #' Requires \code{\link{ORFikQC}} to have been run on experiment!
-#' @param df an ORFik \code{\link{experiment}}
+#' @param df an ORFik \code{\link{experiment}} or path to folder with
+#' countTable, use path if not same folder as experiment libraries.
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #'  of whole mrnas or one of (leaders, cds, trailers). Can also be a
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
-#' @param collapse a logical (default FALSE), if TRUE all samples
-#' within the group SAMPLE will be collapsed to one.
+#' @param collapse a logical/character (default FALSE), if TRUE all samples
+#' within the group SAMPLE will be collapsed to one. If "all", all
+#' groups will be merged into 1 column called merged_all. Collapse is defined
+#' as rowSum(elements_per_group) / ncol(elements_per_group)
 #' @return a DEseq summerizedExperiment object (count)
 #'  or matrix (if fpkm input)
 #' @export
@@ -178,10 +188,11 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # Get count Table of mrnas with collapsed replicates
 #' # countTable(df, "mrna", collapse = TRUE)
 countTable <- function(df, region = "mrna", type = "count",
-                       collapse = FALSE, dir = dirname(df$filepath[1])) {
-  if (is(df, "experiment"))
+                       collapse = FALSE) {
+  if (is(df, "experiment")) {
+    dir = dirname(df$filepath[1])
     df <- paste0(dir, "/QC_STATS")
-
+  }
   if (is(df, "character")) {
     if (dir.exists(df)) {
       df <- list.files(path = df, pattern = paste0(region, ".rds"),
@@ -189,12 +200,10 @@ countTable <- function(df, region = "mrna", type = "count",
     }
     if (length(df) == 1) {
       res <- readRDS(df)
-      if (type %in% c("fpkm", "log2fpkm", "log10fpkm")) {
-        ress <- as.data.table(scoreSummarizedExperiment(res, type, collapse))
-        rownames(ress) <- names(ranges(res))
-        res <- ress
-      }
-      return(res)
+      ress <- as.data.table(scoreSummarizedExperiment(res, type, collapse))
+      rownames(ress) <- names(ranges(res))
+
+      return(ress)
     }
   }
   message(paste("Invalid count table:", df))

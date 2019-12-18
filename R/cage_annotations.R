@@ -9,7 +9,7 @@
 filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
                        preCleanup = TRUE) {
   cage <- fimport(cage, seqlevelsStyle(fiveUTRs))
-  if (is.null(cage$score)) {
+  if (is.null(score(cage))) {
     cage <- convertToOneBasedRanges(cage, addScoreColumn = TRUE)
   }
 
