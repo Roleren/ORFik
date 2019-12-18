@@ -4,7 +4,13 @@
 \alias{countTable}
 \title{Extract count table directly from experiment}
 \usage{
-countTable(df, region = "mrna", type = "count", collapse = FALSE)
+countTable(
+  df,
+  region = "mrna",
+  type = "count",
+  collapse = FALSE,
+  dir = dirname(df$filepath[1])
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}

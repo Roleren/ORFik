@@ -178,18 +178,19 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # Get count Table of mrnas with collapsed replicates
 #' # countTable(df, "mrna", collapse = TRUE)
 countTable <- function(df, region = "mrna", type = "count",
-                       collapse = FALSE) {
+                       collapse = FALSE, dir = dirname(df$filepath[1])) {
   if (is(df, "experiment"))
-    df <- paste0(dirname(df$filepath[1]), "/QC_STATS")
+    df <- paste0(dir, "/QC_STATS")
 
   if (is(df, "character")) {
-    if (dir.exists(df))
-      df <- list.files(path = df, pattern = paste0(region, ".rds"), full.names = T)
-
-    if (length(df) == 1 & file.exists(df)) {
+    if (dir.exists(df)) {
+      df <- list.files(path = df, pattern = paste0(region, ".rds"),
+                       full.names = T)
+    }
+    if (length(df) == 1) {
       res <- readRDS(df)
       if (type %in% c("fpkm", "log2fpkm", "log10fpkm")) {
-        ress <- as.data.table(scoreSummarizedExperiment(res, score = type))
+        ress <- as.data.table(scoreSummarizedExperiment(res, type, collapse))
         rownames(ress) <- names(ranges(res))
         res <- ress
       }

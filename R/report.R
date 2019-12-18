@@ -171,11 +171,8 @@ QCplots <- function(df, region, stats_folder) {
   message("- Correlation plots")
   # Load fpkm values
   saveName <- paste0(stats_folder, "countTable_", region)
-  data_for_pairs <- makeSummarizedExperimentFromBam(df, region = region,
-                                                    geneOrTxNames = "tx",
-                                                    longestPerGene = FALSE,
-                                                    type = "fpkm",
-                                                    saveName = saveName)
+  data_for_pairs <- countTable(df, region, type = "fpkm")
+
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
