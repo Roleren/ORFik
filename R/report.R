@@ -120,10 +120,10 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   # Update raw reads to real number
   # Needs a folder called trim
-  if (dir.exists(paste0(exp_dir, "../trim/"))) {
+  if (dir.exists(paste0(exp_dir, "/../trim/"))) {
     message("Create raw read counts")
     oldDir <- getwd()
-    setwd(paste0(exp_dir, "../trim/"))
+    setwd(paste0(exp_dir, "/../trim/"))
     raw_library <- system('ls *.json', intern = TRUE)
     lib_string <- 'grep -m 1 -h "total_reads" *.json | grep -Eo "[0-9]*"'
     raw_reads <- as.numeric(system(lib_string, intern = TRUE))
@@ -145,7 +145,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     setwd(oldDir)
   } else {
     message("Could not find raw read counts of data, setting to 20 M")
-    message(paste0("No folder called:", paste0(exp_dir, "../trim/")))
+    message(paste0("No folder called:", paste0(exp_dir, "/../trim/")))
   }
 
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
@@ -170,10 +170,12 @@ QCplots <- function(df, region, stats_folder) {
   message("Making QC plots:")
   message("- Correlation plots")
   # Load fpkm values
+  saveName <- paste0(stats_folder, "countTable_", region)
   data_for_pairs <- makeSummarizedExperimentFromBam(df, region = region,
                                                     geneOrTxNames = "tx",
                                                     longestPerGene = FALSE,
-                                                    type = "fpkm")
+                                                    type = "fpkm",
+                                                    saveName = saveName)
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,

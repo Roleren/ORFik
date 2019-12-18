@@ -45,9 +45,10 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             geneOrTxNames = "gene",
                                             region = "mrna", type = "count") {
 
-  if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
-  if(!is.null(saveName) && file.exists(saveName)) {
-    return(readRDS(saveName))
+
+  if(!is.null(saveName)) {
+    if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
+    if (file.exists(saveName)) return(readRDS(saveName))
   }
   validateExperiments(df)
 
