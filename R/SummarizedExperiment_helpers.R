@@ -127,7 +127,11 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
     assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
-  dds <- DESeqDataSet(collapsedAll, design = ~ SAMPLE)
+  if (collapse == "all") {
+    dds <- DESeqDataSet(collapsedAll, design = ~ 1)
+  } else {
+    dds <- DESeqDataSet(collapsedAll, design = ~ SAMPLE)
+  }
 
   if (score %in% c("transcriptNormalized", "fpkm", "log2fpkm", "log10fpkm")) {
     fpkmCollapsed <- DESeq2::fpkm(dds)
