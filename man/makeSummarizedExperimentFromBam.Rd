@@ -23,12 +23,12 @@ it is optional to add .rds, it will be added for you if not present.}
 \item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
 isoforms per gene.}
 
-\item{geneOrTxNames}{a character (default "gene"), should row names
+\item{geneOrTxNames}{a character vector (default "gene"), should row names
 keep trancripts names ("tx") or change to gene names ("gene")}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
- of whole mrnas or one of (leaders, cds, trailers). Can also be a
-\code{\link{GRangesList}}, then it uses this region directly.}
+of whole mrnas or one of (leaders, cds, trailers).
+Can also be a \code{\link{GRangesList}}, then it uses this region directly.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}

@@ -11,11 +11,11 @@
 #' it is optional to add .rds, it will be added for you if not present.
 #' @param longestPerGene a logical (default TRUE), if FALSE all transcript
 #' isoforms per gene.
-#' @param geneOrTxNames a character (default "gene"), should row names
+#' @param geneOrTxNames a character vector (default "gene"), should row names
 #' keep trancripts names ("tx") or change to gene names ("gene")
 #' @param region a character vector (default: "mrna"), make raw count matrices
-#'  of whole mrnas or one of (leaders, cds, trailers). Can also be a
-#' \code{\link{GRangesList}}, then it uses this region directly.
+#' of whole mrnas or one of (leaders, cds, trailers).
+#' Can also be a \code{\link{GRangesList}}, then it uses this region directly.
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
 #' @import SummarizedExperiment
@@ -125,24 +125,25 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
                       nrow = length(unique(colData(final)$SAMPLE))))
     assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
-
-
   dds <- DESeqDataSet(collapsedAll, design = ~ SAMPLE)
-  fpkmCollapsed <- DESeq2::fpkm(dds)
-  if (score == "transcriptNormalized") {
-    normalization <- matrix(rep(rowSums2(fpkmCollapsed),
-                                ncol(fpkmCollapsed)),
-                            ncol = ncol(fpkmCollapsed))
-    fpkmTranscriptNormalized <- fpkmCollapsed / normalization
-    assay(dds) <- fpkmTranscriptNormalized
-    return(dds)
-  }
-  if (score == "fpkm") {
-    return(fpkmCollapsed)
-  } else if (score == "log2fpkm") {
-    return(log2(fpkmCollapsed))
-  } else if (score == "log10fpkm") {
-    return(log10(fpkmCollapsed))
+
+  if (score %in% c("transcriptNormalized", "fpkm", "log2fpkm", "log10fpkm")) {
+    fpkmCollapsed <- DESeq2::fpkm(dds)
+    if (score == "transcriptNormalized") {
+      normalization <- matrix(rep(rowSums2(fpkmCollapsed),
+                                  ncol(fpkmCollapsed)),
+                              ncol = ncol(fpkmCollapsed))
+      fpkmTranscriptNormalized <- fpkmCollapsed / normalization
+      assay(dds) <- fpkmTranscriptNormalized
+      return(dds)
+    }
+    if (score == "fpkm") {
+      return(fpkmCollapsed)
+    } else if (score == "log2fpkm") {
+      return(log2(fpkmCollapsed))
+    } else if (score == "log10fpkm") {
+      return(log10(fpkmCollapsed))
+    }
   }
   return(dds)
 }
@@ -154,7 +155,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' @param df an ORFik \code{\link{experiment}} or path to folder with
 #' countTable, use path if not same folder as experiment libraries.
 #' @param region a character vector (default: "mrna"), make raw count matrices
-#'  of whole mrnas or one of (leaders, cds, trailers). Can also be a
+#'  of whole mrnas or one of (leaders, cds, trailers).
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
 #' @param collapse a logical/character (default FALSE), if TRUE all samples

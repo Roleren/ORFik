@@ -11,7 +11,7 @@ countTable(df, region = "mrna", type = "count", collapse = FALSE)
 countTable, use path if not same folder as experiment libraries.}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
-of whole mrnas or one of (leaders, cds, trailers). Can also be a}
+of whole mrnas or one of (leaders, cds, trailers).}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
