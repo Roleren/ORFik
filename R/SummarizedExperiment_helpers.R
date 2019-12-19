@@ -115,14 +115,16 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
   if (collapse %in% c(TRUE, "all")) {
     if (collapse == TRUE) {
       collapsedAll <- collapseReplicates(final, final$SAMPLE)
+      nlibs <- t(matrix(as.double(table(colData(final)$SAMPLE)),
+                        ncol = nrow(assay(collapsedAll)) ,
+                        nrow = length(unique(colData(final)$SAMPLE))))
     } else {
       collapsedAll <- collapseReplicates(final, rep("merged_all",
                                                     ncol(final)))
+      nlibs <- ncol(final)
     }
     # Number of samples per group as matrix
-    nlibs <- t(matrix(as.double(table(colData(final)$SAMPLE)),
-                      ncol = nrow(assay(collapsedAll)) ,
-                      nrow = length(unique(colData(final)$SAMPLE))))
+
     assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
   dds <- DESeqDataSet(collapsedAll, design = ~ SAMPLE)
