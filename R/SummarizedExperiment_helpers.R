@@ -201,10 +201,13 @@ countTable <- function(df, region = "mrna", type = "count",
     }
     if (length(df) == 1) {
       res <- readRDS(df)
-      ress <- assay(scoreSummarizedExperiment(res, type, collapse))
-      ress <- as.data.table(ress)
+      ress <- scoreSummarizedExperiment(res, type, collapse)
+      if (is(ress, "matrix")) {
+        ress <- as.data.table(ress)
+      } else { # is deseq
+        ress <- as.data.table(assay(ress))
+      }
       rownames(ress) <- names(ranges(res))
-
       return(ress)
     }
   }
