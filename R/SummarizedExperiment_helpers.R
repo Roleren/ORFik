@@ -162,8 +162,8 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' within the group SAMPLE will be collapsed to one. If "all", all
 #' groups will be merged into 1 column called merged_all. Collapse is defined
 #' as rowSum(elements_per_group) / ncol(elements_per_group)
-#' @return a DEseq summerizedExperiment object (count)
-#'  or matrix (if fpkm input)
+#' @return a data.table of columns as counts per library, column name
+#' is name of library
 #' @export
 #' @examples
 #' # 1. Pick directory
@@ -201,7 +201,8 @@ countTable <- function(df, region = "mrna", type = "count",
     }
     if (length(df) == 1) {
       res <- readRDS(df)
-      ress <- as.data.table(scoreSummarizedExperiment(res, type, collapse))
+      ress <- assay(scoreSummarizedExperiment(res, type, collapse))
+      ress <- as.data.table(ress)
       rownames(ress) <- names(ranges(res))
 
       return(ress)

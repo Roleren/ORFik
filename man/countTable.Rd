@@ -22,8 +22,8 @@ groups will be merged into 1 column called merged_all. Collapse is defined
 as rowSum(elements_per_group) / ncol(elements_per_group)}
 }
 \value{
-a DEseq summerizedExperiment object (count)
- or matrix (if fpkm input)
+a data.table of columns as counts per library, column name
+is name of library
 }
 \description{
 Extracts by getting /QC_STATS directory, and searching for region

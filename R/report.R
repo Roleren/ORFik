@@ -7,7 +7,7 @@
 #' so you get a good understanding of how good the quality of your NGS
 #' data production + aligner step were.
 #' You will also get count tables over mrna, leader, cds and trailer
-#' separately.
+#' separately, similar to HTseq count tables.
 #'
 #'
 #' Everything will be outputed in the directory of your NGS data,
