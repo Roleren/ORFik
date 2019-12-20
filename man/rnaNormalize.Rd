@@ -4,7 +4,7 @@
 \alias{rnaNormalize}
 \title{Normalize a data.table of coverage by RNA seq per position}
 \usage{
-rnaNormalize(coverage, df, dfr = NULL, tx)
+rnaNormalize(coverage, df, dfr = NULL, tx, normalizeMode = "position")
 }
 \arguments{
 \item{coverage}{a data.table containing at least columns (count/score,
@@ -16,6 +16,12 @@ position), it is possible to have additionals: (genes, fraction, feature)}
 normalize against}
 
 \item{tx}{a \code{\link{GRangesList}} of mrna transcripts}
+
+\item{normalizeMode}{a character (default: "position"), how to normalize
+library against rna library. Either on "position", normalize by
+number of genes, sum of reads and RNA seq, on tx "region" or "feature":
+same as position but RNA is split into the feature groups to normalize.
+Useful if you have a list of targets and background genes.}
 }
 \value{
 a data.table of normalized transcripts by RNA.

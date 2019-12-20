@@ -366,6 +366,7 @@ validateExperiments <- function(df) {
 #' in variable name.
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
+#' @param skip.libtype a logical (FALSE), don't include libtype
 #' @return variable names of libraries (character vector)
 #' @export
 #' @family ORFik_experiment
@@ -373,18 +374,21 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.condition = length(unique(df$condition)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
                        skip.fraction = length(unique(df$fraction)) == 1,
-                       skip.experiment = !df@expInVarName) {
+                       skip.experiment = !df@expInVarName,
+                       skip.libtype = FALSE) {
 
   varName <- c()
   for (i in 1:nrow(df)) {
     varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
                                            skip.condition, skip.stage,
-                                           skip.fraction, skip.experiment))
+                                           skip.fraction, skip.experiment,
+                                           skip.libtype))
   }
   return(varName)
 }
 
 #' Get variable name per filepath in experiment
+#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
@@ -394,31 +398,41 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' in variable name.
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
+#' @param skip.libtype a logical (FALSE), don't include libtype
 #' @return variable name of library (character vector)
 bamVarNamePicker <- function(df, skip.replicate = FALSE,
                              skip.condition = FALSE,
                              skip.stage = FALSE, skip.fraction = FALSE,
-                             skip.experiment = FALSE) {
+                             skip.experiment = FALSE,
+                             skip.libtype = FALSE) {
   if(nrow(df) != 1) stop("experiment must only input 1 row")
   lib <- df$libtype
   stage <- df$stage
   cond <- df$condition
   rep <- df$rep
   frac <- df$fraction
-  current <- lib
+  current <- ""
+  # Add only underscore if x is not ""
+  spaste <- function(x, y, reverse = FALSE) {
+    if (reverse)
+      return(paste(x, y, sep = ifelse(y == "", "", "_")))
+    return(paste(x, y, sep = ifelse(x == "", "", "_")))
+  }
+  if (!skip.libtype)
+    current <- lib
   if(!skip.condition)
-    current <- paste(current, cond, sep = "_")
+    current <- spaste(current, cond)
   if (!skip.stage)
-    current <- paste(current, stage, sep = "_")
+    current <- spaste(current, stage)
   if (!(skip.fraction | is.null(frac))) {
     if (frac != "")
-      current <- paste(current, paste0("f", frac), sep = "_")
+      current <- spaste(current, paste0("f", frac))
   }
 
   if (!(skip.replicate | is.null(rep)))
-    current <- paste(current, paste0("r", rep), sep = "_")
+    current <- spaste(current, paste0("r", rep))
   if (! (skip.experiment | is.null(df@experiment)))
-    current <- paste(df@experiment, current, sep = "_")
+    current <- spaste(df@experiment, current, TRUE)
   return(gsub(pattern = "__", "_", current))
 }
 

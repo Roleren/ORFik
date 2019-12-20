@@ -8,7 +8,7 @@ makeSummarizedExperimentFromBam(
   df,
   saveName = NULL,
   longestPerGene = TRUE,
-  geneOrTxNames = "gene",
+  geneOrTxNames = "tx",
   region = "mrna",
   type = "count"
 )
@@ -23,8 +23,8 @@ it is optional to add .rds, it will be added for you if not present.}
 \item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
 isoforms per gene.}
 
-\item{geneOrTxNames}{a character vector (default "gene"), should row names
-keep trancripts names ("tx") or change to gene names ("gene")}
+\item{geneOrTxNames}{a character vector (default "tx"), should row names
+keep trancript names ("tx") or change to gene names ("gene")}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers).

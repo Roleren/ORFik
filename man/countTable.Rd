@@ -23,7 +23,7 @@ as rowSum(elements_per_group) / ncol(elements_per_group)}
 }
 \value{
 a data.table of columns as counts per library, column name
-is name of library
+is name of library. Rownames must be unique for now. Might change.
 }
 \description{
 Extracts by getting /QC_STATS directory, and searching for region

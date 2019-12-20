@@ -11,8 +11,8 @@
 #' it is optional to add .rds, it will be added for you if not present.
 #' @param longestPerGene a logical (default TRUE), if FALSE all transcript
 #' isoforms per gene.
-#' @param geneOrTxNames a character vector (default "gene"), should row names
-#' keep trancripts names ("tx") or change to gene names ("gene")
+#' @param geneOrTxNames a character vector (default "tx"), should row names
+#' keep trancript names ("tx") or change to gene names ("gene")
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #' of whole mrnas or one of (leaders, cds, trailers).
 #' Can also be a \code{\link{GRangesList}}, then it uses this region directly.
@@ -42,7 +42,7 @@
 #' # makeSummarizedExperimentFromBam(df, type = "fpkm")
 makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             longestPerGene = TRUE,
-                                            geneOrTxNames = "gene",
+                                            geneOrTxNames = "tx",
                                             region = "mrna", type = "count") {
 
 
@@ -169,7 +169,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' groups will be merged into 1 column called merged_all. Collapse is defined
 #' as rowSum(elements_per_group) / ncol(elements_per_group)
 #' @return a data.table of columns as counts per library, column name
-#' is name of library
+#' is name of library. Rownames must be unique for now. Might change.
 #' @export
 #' @examples
 #' # 1. Pick directory
@@ -218,5 +218,6 @@ countTable <- function(df, region = "mrna", type = "count",
     }
   }
   message(paste("Invalid count table:", df))
-  stop("df must be filepath to dir, table or ORFik experiment!")
+  stop("df must be filepath to directory with countTable, the path
+       to the countTable or ORFik experiment with a QC_STATS folder!")
 }
