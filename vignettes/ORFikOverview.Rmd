@@ -97,9 +97,11 @@ Now lets see how easy it is to get fasta sequences from the ranges
 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, fiveUTR_ORFs[1])
-  # To save as .fasta do, assign to variable (seqs):
-  # writeXStringSet(seqs, filepath = "uorfs.fasta")
+  orf_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
+                                    fiveUTR_ORFs[1])
+  # To save as .fasta do:
+  # writeXStringSet(orf_seqs, filepath = "uorfs.fasta")
+  orf_seqs[1]
 }
 ```
 You can see orf 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 codons. We will now look on ORFik functions to get startcodons and stopcodon etc.
@@ -112,6 +114,7 @@ Check documentations for these functions: `sortPerGroup`, `unlistGrl`,
 
 ## Grouping ORFs
 
+There are 2 main ways of grouping ORFs.
 Sometimes you want all ORFs grouped by which transcript they came from,
 or you might want each ORF as a group in the GRangesList. To
 do this more easily you can use the function `groupGRangesBy`.
@@ -129,7 +132,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   unlisted_ranges <- unlistGrl(test_ranges)
   test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping by names
   print("Grouped by Transcript")
-  print(unlisted_ranges)
+  print(test_ranges)
 }
 ```
 

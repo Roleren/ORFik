@@ -29,7 +29,8 @@
 #' Special rules:\cr
 #' Supported:\cr
 #' Single end bam, bed, wig + compressions of these\cr
-#' Paired forward / reverse wig files, must have same name except _forward etc
+#' Paired forward / reverse wig files, must have same name except
+#'  _forward / _reverse etc
 #'
 #' Not supported yet:\cr
 #' Paired end bam files not supported yet!
@@ -403,8 +404,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 bamVarNamePicker <- function(df, skip.replicate = FALSE,
                              skip.condition = FALSE,
                              skip.stage = FALSE, skip.fraction = FALSE,
-                             skip.experiment = FALSE,
-                             skip.libtype = FALSE) {
+                             skip.experiment = FALSE, skip.libtype = FALSE) {
   if(nrow(df) != 1) stop("experiment must only input 1 row")
   lib <- df$libtype
   stage <- df$stage
@@ -424,7 +424,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     current <- spaste(current, cond)
   if (!skip.stage)
     current <- spaste(current, stage)
-  if (!(skip.fraction | is.null(frac))) {
+  if (!(skip.fraction | is.null(frac) | is.na(frac))) {
     if (frac != "")
       current <- spaste(current, paste0("f", frac))
   }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/SummarizedExperiment_helpers.R
 \name{makeSummarizedExperimentFromBam}
 \alias{makeSummarizedExperimentFromBam}
-\title{Make a count matrix from a libraries}
+\title{Make a count matrix from a library or experiment}
 \usage{
 makeSummarizedExperimentFromBam(
   df,
@@ -18,7 +18,8 @@ makeSummarizedExperimentFromBam(
 
 \item{saveName}{a character (default NULL),
 if set save experiment to path given. Always saved as .rds.,
-it is optional to add .rds, it will be added for you if not present.}
+it is optional to add .rds, it will be added for you if not present.
+Also used to load existing file with that name.}
 
 \item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
 isoforms per gene.}
@@ -42,7 +43,7 @@ Make a summerizedExperiment / matrix object from bam files
 }
 \details{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
-NOTE: If the file called saveName exists, it will the load file,
+NOTE: If the file called saveName exists, it will then load file,
 not remake it!
 }
 \examples{

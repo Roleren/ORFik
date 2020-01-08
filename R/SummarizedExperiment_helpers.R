@@ -1,14 +1,15 @@
-#' Make a count matrix from a libraries
+#' Make a count matrix from a library or experiment
 #'
 #' Make a summerizedExperiment / matrix object from bam files
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
-#' NOTE: If the file called saveName exists, it will the load file,
+#' NOTE: If the file called saveName exists, it will then load file,
 #' not remake it!
 #' @param df an ORFik \code{\link{experiment}}
 #' @param saveName a character (default NULL),
 #' if set save experiment to path given. Always saved as .rds.,
 #' it is optional to add .rds, it will be added for you if not present.
+#' Also used to load existing file with that name.
 #' @param longestPerGene a logical (default TRUE), if FALSE all transcript
 #' isoforms per gene.
 #' @param geneOrTxNames a character vector (default "tx"), should row names
@@ -156,8 +157,15 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
 #' Extract count table directly from experiment
 #'
+#' Used to quickly load read count tables to R.
+#'
+#' If df is experiment:
 #' Extracts by getting /QC_STATS directory, and searching for region
 #' Requires \code{\link{ORFikQC}} to have been run on experiment!
+#'
+#' If df is path to folder:
+#' Loads the the file in that directory with the regex region.rds,
+#' where region is what is defined by argument.
 #' @param df an ORFik \code{\link{experiment}} or path to folder with
 #' countTable, use path if not same folder as experiment libraries.
 #' @param region a character vector (default: "mrna"), make raw count matrices
