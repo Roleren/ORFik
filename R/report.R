@@ -150,7 +150,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
 
-  QCplots(df, mrna, stats_folder)
+  QCplots(df, "mrna", stats_folder)
 
   message(paste("Everything done, saved QC to:", stats_folder))
 }
@@ -160,7 +160,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' Output will be stored in same folder as the
 #' libraries in df.
 #' @param df an ORFik \code{\link{experiment}}
-#' @param region (default: mrna), make raw count matrices of
+#' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save
 #' @return NULL (objects stored to disc)

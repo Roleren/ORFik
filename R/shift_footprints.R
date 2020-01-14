@@ -199,3 +199,32 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   return(offset)
 }
 
+#' Shift footprints of each file in experiment
+#'
+#' Saves files to a specified location as .bed
+#' @param df an ORFik \code{\link{experiment}}
+#' @param out.dir output directory for files,
+#' default: dirname(df$filepath[1]), making a /pshifted
+#' folder at that location
+#' @inheritParams detectRibosomeShifts
+#' @return NULL (Objects are saved to out.dir/pshited/"name")
+shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
+                                        start = TRUE, stop = FALSE,
+                                        top_tx = 10L, minFiveUTR = 30L,
+                                        minCDS = 150L, minThreeUTR = 30L,
+                                        firstN = 150L) {
+  message(paste0("Shifting reads in experiment:", df@experiment))
+  path <- out.dir; path <- pasteDir(path, "/pshifted/")
+  varNames <- bamVarName(df)
+  outputLibs(df)
+  txdb <- loadTxdb(df)
+  for (file in varNames) {
+    message(paste(file))
+    shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
+                                   top_tx = top_tx, minFiveUTR = minFiveUTR,
+                                   minCDS = minCDS, minThreeUTR = minThreeUTR,
+                                   firstN = firstN)
+    shifted <- shiftFootprints(file, shifts)
+    export.bed(shifted, paste0(path, file,"_pshifted.bed"))
+  }
+}
