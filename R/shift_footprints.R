@@ -214,7 +214,7 @@ shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L) {
   path <- out.dir; path <- pasteDir(path, "/pshifted/")
-  dir.create(path)
+  dir.create(path, showWarnings = FALSE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
   varNames <- bamVarName(df)
   outputLibs(df)
@@ -226,7 +226,7 @@ shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
                                    top_tx = top_tx, minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
                                    firstN = firstN)
-    shifted <- shiftFootprints(file, shifts)
+    shifted <- shiftFootprints(get(file), shifts)
     export.bed(shifted, paste0(path, file,"_pshifted.bed"))
   }
 }
