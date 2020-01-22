@@ -227,6 +227,7 @@ shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
                                    firstN = firstN)
     shifted <- shiftFootprints(get(file), shifts)
+    shifted$score <- shifted$size
     export.bed(shifted, paste0(path, file,"_pshifted.bed"))
   }
 }
