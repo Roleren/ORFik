@@ -166,7 +166,9 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' @return NULL (objects stored to disc)
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
-QCplots <- function(df, region, stats_folder) {
+  QCplots <- function(df, region = "mrna",
+                    stats_folder = paste0(dirname(df$filepath[1]),
+                                          "/QC_STATS/")) {
   message("Making QC plots:")
   message("- Correlation plots")
   # Load fpkm values
@@ -184,7 +186,12 @@ QCplots <- function(df, region, stats_folder) {
 
   # window coverage over mRNA regions
   message("- Meta coverage plots")
-  txNames <- filterTranscripts(df, 100, 100, 100, longestPerGene = FALSE)
+  txdb <- loadTxdb(df)
+  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = FALSE)
+  if (!exists("cds", mode = "S4")) {
+    loadRegions(txdb, parts = c("leaders", "cds", "trailers"))
+  }
+
   transcriptWindow(leaders[txNames], get("cds", mode = "S4")[txNames],
                    trailers[txNames], df = df, outdir = stats_folder,
                    allTogether = TRUE)

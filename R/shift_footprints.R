@@ -213,13 +213,15 @@ shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L) {
-  message(paste0("Shifting reads in experiment:", df@experiment))
   path <- out.dir; path <- pasteDir(path, "/pshifted/")
+  dir.create(path)
+  if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
   varNames <- bamVarName(df)
   outputLibs(df)
   txdb <- loadTxdb(df)
+  message(paste0("Shifting reads in experiment:", df@experiment))
   for (file in varNames) {
-    message(paste(file))
+    message(file)
     shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
                                    top_tx = top_tx, minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,

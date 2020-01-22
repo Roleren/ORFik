@@ -4,7 +4,11 @@
 \alias{QCplots}
 \title{Correlation and coverage plots for ORFikQC}
 \usage{
-QCplots(df, region, stats_folder)
+QCplots(
+  df,
+  region = "mrna",
+  stats_folder = paste0(dirname(df$filepath[1]), "/QC_STATS/")
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
