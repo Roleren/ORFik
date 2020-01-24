@@ -51,5 +51,16 @@ periodicity.}
 NULL (Objects are saved to out.dir/pshited/"name")
 }
 \description{
-Saves files to a specified location as .bed
+Saves files to a specified location as .bed, it will include a score column
+containing read width.
 }
+\details{
+For more details, see: \code{\link{detectRibosomeShifts}}
+}
+\seealso{
+Other pshifting: 
+\code{\link{changePointAnalysis}()},
+\code{\link{detectRibosomeShifts}()},
+\code{\link{shiftFootprints}()}
+}
+\concept{pshifting}

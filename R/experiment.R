@@ -433,7 +433,9 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     current <- spaste(current, paste0("r", rep))
   if (! (skip.experiment | is.null(df@experiment)))
     current <- spaste(df@experiment, current, TRUE)
-  return(gsub(pattern = "__", "_", current))
+
+  current <- gsub(pattern = "__", "_", current)
+  return(gsub("_$", "", current))
 }
 
 #' Output bam/bed/wig files to R as variables

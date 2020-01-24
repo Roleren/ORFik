@@ -26,7 +26,7 @@ separately, similar to HTseq count tables.
 }
 \details{
 Everything will be outputed in the directory of your NGS data,
-inside the folder QC_STATS/, relative to data location in 'df'
+inside the folder ./QC_STATS/, relative to data location in 'df'
 
 To make a ORFik experiment, see ?ORFik::experiment
 }

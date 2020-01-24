@@ -201,13 +201,17 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 
 #' Shift footprints of each file in experiment
 #'
-#' Saves files to a specified location as .bed
+#' Saves files to a specified location as .bed, it will include a score column
+#' containing read width.
+#'
+#' For more details, see: \code{\link{detectRibosomeShifts}}
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir output directory for files,
 #' default: dirname(df$filepath[1]), making a /pshifted
 #' folder at that location
 #' @inheritParams detectRibosomeShifts
 #' @return NULL (Objects are saved to out.dir/pshited/"name")
+#' @family pshifting
 shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
                                         start = TRUE, stop = FALSE,
                                         top_tx = 10L, minFiveUTR = 30L,

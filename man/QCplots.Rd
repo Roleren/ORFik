@@ -22,6 +22,10 @@ whole mrnas or one of (leaders, cds, trailers)}
 NULL (objects stored to disc)
 }
 \description{
+Correlation plots default to mRNA covering reads.
+Meta plots defaults to leader, cds, trailer.
+}
+\details{
 Output will be stored in same folder as the
 libraries in df.
 }

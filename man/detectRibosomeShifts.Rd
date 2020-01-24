@@ -103,6 +103,7 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
 \seealso{
 Other pshifting: 
 \code{\link{changePointAnalysis}()},
+\code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shiftFootprints}()}
 }
 \concept{pshifting}

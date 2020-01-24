@@ -11,7 +11,7 @@
 #'
 #'
 #' Everything will be outputed in the directory of your NGS data,
-#' inside the folder QC_STATS/, relative to data location in 'df'
+#' inside the folder ./QC_STATS/, relative to data location in 'df'
 #'
 #' To make a ORFik experiment, see ?ORFik::experiment
 #' @param df an ORFik \code{\link{experiment}}
@@ -157,6 +157,9 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
 #' Correlation and coverage plots for ORFikQC
 #'
+#' Correlation plots default to mRNA covering reads.
+#' Meta plots defaults to leader, cds, trailer.
+#'
 #' Output will be stored in same folder as the
 #' libraries in df.
 #' @param df an ORFik \code{\link{experiment}}
@@ -166,7 +169,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' @return NULL (objects stored to disc)
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
-  QCplots <- function(df, region = "mrna",
+QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
                                           "/QC_STATS/")) {
   message("Making QC plots:")
@@ -194,5 +197,6 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   transcriptWindow(leaders[txNames], get("cds", mode = "S4")[txNames],
                    trailers[txNames], df = df, outdir = stats_folder,
-                   allTogether = TRUE)
+                   allTogether = TRUE,
+                   scores = c("sum", "zscore", "transcriptNormalized"))
 }

@@ -21,6 +21,7 @@ a single numeric offset
 \seealso{
 Other pshifting: 
 \code{\link{detectRibosomeShifts}()},
+\code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shiftFootprints}()}
 }
 \concept{pshifting}
