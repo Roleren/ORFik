@@ -1,10 +1,13 @@
 #' Reassign the start positions of the first exons per group in grl
-#' @description make sure your grl is sorted, since start of "-" strand
+#'
+#' Per group in GRangesList, assign the most upstream site.
+#'
+#' make sure your grl is sorted, since start of "-" strand
 #' objects should be the
 #' max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param newStarts an integer vector of same length as grl, with new start
-#' values
+#' values (absolute coordinates, not relative)
 #' @return the same GRangesList with new start sites
 #' @family GRanges
 #'
@@ -29,12 +32,15 @@ assignFirstExonsStartSite <- function(grl, newStarts) {
 
 
 #' Reassign the stop positions of the last exons per group
-#' @description make sure your grl is sorted, since stop of "-" strand objects
+#'
+#' Per group in GRangesList, assign the most upstream site.
+#'
+#' make sure your grl is sorted, since stop of "-" strand objects
 #' should be the min start in group, use ORFik:::sortPerGroup(grl) to get
 #' sorted grl.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param newStops an integer vector of same length as grl,
-#'  with new start values
+#'  with new start values (absolute coordinates, not relative)
 #' @return the same GRangesList with new stop sites
 #' @importFrom data.table .N .I
 #' @family GRanges

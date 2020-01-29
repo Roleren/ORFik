@@ -23,10 +23,15 @@ Only for single end reads
 Safer version that handles the most important error done.
 In the future will use a faster .bam loader for big .bam files in R.
 }
+\examples{
+bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+readBam(bam_file, "UCSC")
+}
 \seealso{
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

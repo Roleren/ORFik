@@ -74,7 +74,9 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @return a \code{\link{GAlignments}} object of bam file
 #' @export
 #' @family utils
-#'
+#' @examples
+#' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' readBam(bam_file, "UCSC")
 readBam <- function(path, chrStyle = NULL) {
   if (is(path, "factor")) path <- as.character(path)
   return(matchSeqStyle(readGAlignments(path), chrStyle))
@@ -158,6 +160,14 @@ findWigPairs <- function(paths) {
 #' @importFrom rtracklayer import
 #' @return a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
 #'  depending on input.
+#' @export
+#' @family utils
+#' @examples
+#' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' fimport(bam_file)
+#' # Certain chromosome naming
+#' fimport(bam_file, "NCBI")
+#'
 fimport <- function(path, chrStyle = NULL) {
   if (is.character(path)) {
     if (all(file.exists(path))) {
@@ -260,7 +270,8 @@ optimizeReads <- function(grl, reads) {
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per unique range This will make each read unique, so
 #'  that each read is 1 time, and score column gives the number of hits.
-#'  A useful compression.
+#'  A useful compression. If addSizeColumn is FALSE, it will not differentiate
+#'  between reads with same start and stop, but different length.
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
@@ -276,21 +287,22 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
                                       load as GAlignments instead!")
 
-  if (addSizeColumn) {
+  if (addSizeColumn & is.null(mcols(gr)$size)) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
                                       size = readWidths(gr, after.softclips))
   }
   if (addScoreColumn) {
-    if (!is.null(cigar(gr))) {
-      dt <- as.data.table(gr)[, .(.N, .I),
-                              .(seqnames, start, end, strand, cigar)]
+    dt <- data.table(seqnames = as.character(seqnames(gr)),
+                     start = start(gr),
+                     end = end(gr),
+                     strand = as.character(strand(gr)))
+    if (addSizeColumn) {
+      dt[, size := mcols(gr)$size]
+      dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
     } else {
-      dt <- as.data.table(gr)[, .(.N, .I), .(seqnames, start, end, strand)]
+      dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
     }
-    dt <- dt[!duplicated(N), ] # this is right ?
-    gr <- gr[dt$I]
-    gr$score <- NULL
-    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = as.integer(dt$N))
+    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = T)
   }
   gr <- GRanges(gr)
   if (method == "5prime") {

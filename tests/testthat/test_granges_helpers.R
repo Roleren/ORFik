@@ -269,16 +269,39 @@ test_that("readWidths works as intended", {
 })
 
 test_that("convertToOneBasedRanges works as intended", {
-  ga <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "5M2S1M",
+  # Soft clipping should not matter
+  ga <- GAlignments(seqnames = "1", pos = as.integer(5), cigar = "22S6M",
                     strand = factor("+", levels = c("+", "-", "*")))
-  ga2 <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "1M2S1M",
+  ga2 <- GAlignments(seqnames = "1", pos = as.integer(5), cigar = "3S6M",
                     strand = factor("+", levels = c("+", "-", "*")))
-  ga <- rep(ga, 2)
-  ga <- c(ga, ga2)
+  ga3 <- GAlignments(seqnames = "1", pos = as.integer(5), cigar = "4S6M",
+                     strand = factor("+", levels = c("+", "-", "*")))
+
+  ga <- c(rep(ga, 2), rep(ga2, 2), ga3)
 
   res <- convertToOneBasedRanges(ga, addScoreColumn = TRUE,
                                  addSizeColumn = TRUE)
-  expect_equal(readWidths(res), c(6, 2))
+  expect_equal(readWidths(res), c(6))
+
+  res <- convertToOneBasedRanges(ga, addScoreColumn = FALSE,
+                                 addSizeColumn = TRUE)
+  expect_equal(readWidths(res), rep(6, 5))
+
+  res <- convertToOneBasedRanges(ga, addScoreColumn = TRUE,
+                                 addSizeColumn = FALSE)
+  expect_equal(score(res), 5)
+  # Introns gaps matter
+  ga <- GAlignments(seqnames = "1", pos = as.integer(5), cigar = "6M6N6M",
+                    strand = factor("+", levels = c("+", "-", "*")))
+  ga2 <- GAlignments(seqnames = "1", pos = as.integer(5), cigar = "6M7N6M",
+                     strand = factor("+", levels = c("+", "-", "*")))
+  ga3 <- GAlignments(seqnames = "1", pos = as.integer(5), cigar = "6M8N7M",
+                     strand = factor("+", levels = c("+", "-", "*")))
+
+  ga <- c(rep(ga, 2), rep(ga2, 2), ga3)
+  res <- convertToOneBasedRanges(ga, addScoreColumn = TRUE,
+                                 addSizeColumn = TRUE, method = "3prime")
+  expect_equal(start(res), c(22, 23, 25))
 })
 
 

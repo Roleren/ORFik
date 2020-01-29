@@ -19,10 +19,17 @@ a character vector of transcript names,
  without _* naming
 }
 \description{
-names must either be a column called names, or the names of the
-grl object. If it is already tx names, it returns the input
+Using the ORFik definition of orf name, which is:
+example ENSEMBL:
+tx name: ENST0909090909090
+orf id: _1 (the first of on that tx)
+orf_name: ENST0909090909090_1
+So therefor txNames("ENST0909090909090_1") = ENST0909090909090
 }
 \details{
+The names must be extracted from a column called names, or the names of the
+grl object. If it is already tx names, it returns the input
+
 NOTE! Do not use _123 etc in end of transcript names if it is not ORFs.
 Else you will get errors. Just _ will work, but if transcripts are called
 ENST_123124124000 etc, it will crash, so substitute "_" with "."

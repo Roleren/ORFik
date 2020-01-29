@@ -14,4 +14,7 @@ print state of experiment
 }
 \description{
 Show a simplified version of experiment.
+The show function simplifies the view so that any
+column of data (like replicate or stage) is not shown, if all
+values are identical in that column. Filepath is also never shown.
 }

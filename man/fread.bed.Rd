@@ -34,6 +34,7 @@ fread.bed(cageData)
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{optimizeReads}()},
 \code{\link{readBam}()},

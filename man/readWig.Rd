@@ -29,6 +29,7 @@ does not matter, it will search for forward and reverse.
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

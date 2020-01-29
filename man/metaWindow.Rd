@@ -17,9 +17,9 @@ metaWindow(
 )
 }
 \arguments{
-\item{x}{GRangesList/GRanges object of your reads.
+\item{x}{GRanges/GAlignment object of your reads.
 Remember to resize them beforehand to width of 1 to focus on
-5' ends of footprints, if that is wanted.}
+5' ends of footprints etc, if that is wanted.}
 
 \item{windows}{GRangesList or GRanges of your ranges}
 

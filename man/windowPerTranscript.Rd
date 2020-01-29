@@ -34,5 +34,5 @@ and ggplot2.
 }
 \details{
 NOTE: All ranges with smaller width than windowSize, will of course be
-removed. What is the 100 position on a 1 width object ?
+removed. What is the 100th position on a 1 width object ?
 }

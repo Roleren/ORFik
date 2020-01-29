@@ -2,7 +2,8 @@
 % Please edit documentation in R/experiment.R
 \name{nrow,experiment-method}
 \alias{nrow,experiment-method}
-\title{Internal nrow function for ORFik experiment}
+\title{Internal nrow function for ORFik experiment
+Number of runs in experiment}
 \usage{
 \S4method{nrow}{experiment}(x)
 }
@@ -14,4 +15,5 @@ number of rows in experiment (integer)
 }
 \description{
 Internal nrow function for ORFik experiment
+Number of runs in experiment
 }

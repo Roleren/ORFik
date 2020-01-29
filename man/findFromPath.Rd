@@ -20,5 +20,5 @@ findFromPath(
 a candidate library types (character vector)
 }
 \description{
-Find all candidate library types filenames
+From the given \code{\link{experiment}}
 }

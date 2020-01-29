@@ -20,7 +20,8 @@ convertToOneBasedRanges(
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
 sums up the hits per unique range This will make each read unique, so
 that each read is 1 time, and score column gives the number of hits.
-A useful compression.}
+A useful compression. If addSizeColumn is FALSE, it will not differentiate
+between reads with same start and stop, but different length.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
@@ -51,6 +52,7 @@ NOTE: Does not support paired end reads for the moment!
 \seealso{
 Other utils: 
 \code{\link{bedToGR}()},
+\code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

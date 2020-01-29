@@ -82,6 +82,9 @@ experiment <- setClass("experiment",
 #' experiment show definition
 #'
 #' Show a simplified version of experiment.
+#' The show function simplifies the view so that any
+#' column of data (like replicate or stage) is not shown, if all
+#' values are identical in that column. Filepath is also never shown.
 #' @param object an ORFik \code{\link{experiment}}
 #' @export
 #' @return print state of experiment
@@ -111,6 +114,7 @@ setMethod("show",
 )
 
 #' Internal nrow function for ORFik experiment
+#' Number of runs in experiment
 #' @param x an ORFik \code{\link{experiment}}
 #' @return number of rows in experiment (integer)
 setMethod("nrow",
@@ -122,9 +126,12 @@ setMethod("nrow",
 
 #' Read ORFik \code{\link{experiment}}
 #'
+#' Read in runs / samples from an experiment as a single R object.
+#' To read an ORFik experiment, you must of course make one first.
+#' See \code{\link{create.experiment}}
 #' The file must be csv and be a valid ORFik experiment
 #' @param file a .csv file following ORFik experiment style ("," as seperator)
-#' , or a template data.frame from create.experiment()
+#' , or a template data.frame from \code{\link{create.experiment}}
 #' @return an ORFik \code{\link{experiment}}
 #' @export
 #' @examples
@@ -175,13 +182,17 @@ read.experiment <-  function(file) {
 
 #' Create a template for new ORFik \code{\link{experiment}}
 #'
+#' Create information on runs / samples from an experiment as a single R object.
 #' By using files in a folder. It will try to make an experiment table
-#' with information per sample. You will have to fill in the details
-#' that were not autodetected. Easiest to do in csv editor like libre Office
+#' with information per sample. There will be several columns you can fill in,
+#' most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
+#' Wild type or mutant etc.
+#' You will have to fill in the details that were not autodetected.
+#' Easiest way to fill in the blanks are in a csv editor like libre Office
 #' or excel. Remember that each row (sample) must have a unique combination
 #' of values.
-#' A column reverse is made if their are paired data, like +/- strand
-#' wig files.
+#' An extra column called "reverse" is made if there are paired data,
+#' like +/- strand wig files.
 #' @param dir Which directory to create experiment from
 #' @param exper Short name of experiment, max 5 characters long
 #' @param saveDir Directory to save experiment csv file (NULL)
@@ -259,6 +270,8 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 }
 
 #' Save \code{\link{experiment}} to disc
+#'
+#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param file name of file to save df as
 #' @export
@@ -284,6 +297,8 @@ save.experiment <- function(df, file) {
 }
 
 #' Find all candidate library types filenames
+#'
+#' From the given \code{\link{experiment}}
 #' @param filepaths path to all files
 #' @param candidates Possible names to search for.
 #' @return a candidate library types (character vector)
@@ -323,7 +338,8 @@ libraryTypes <- function(df) {
 
 #' Validate ORFik \code{\link{experiment}}
 #'
-#' Check for valid non-empty files etc.
+#' Check for valid existing, non-empty and all unique.
+#' A good way to see if your experiment is valid.
 #' @param df an ORFik \code{\link{experiment}}
 #' @return NULL (Stops if failed)
 #' @family ORFik_experiment

@@ -22,6 +22,7 @@ Only Accepts bed files for now, standard format from Fantom5
 \seealso{
 Other utils: 
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

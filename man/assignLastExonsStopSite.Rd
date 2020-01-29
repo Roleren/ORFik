@@ -10,12 +10,15 @@ assignLastExonsStopSite(grl, newStops)
 \item{grl}{a \code{\link{GRangesList}} object}
 
 \item{newStops}{an integer vector of same length as grl,
-with new start values}
+with new start values (absolute coordinates, not relative)}
 }
 \value{
 the same GRangesList with new stop sites
 }
 \description{
+Per group in GRangesList, assign the most upstream site.
+}
+\details{
 make sure your grl is sorted, since stop of "-" strand objects
 should be the min start in group, use ORFik:::sortPerGroup(grl) to get
 sorted grl.

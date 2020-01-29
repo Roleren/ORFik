@@ -5,7 +5,7 @@
 #' and ggplot2.
 #'
 #' NOTE: All ranges with smaller width than windowSize, will of course be
-#' removed. What is the 100 position on a 1 width object ?
+#' removed. What is the 100th position on a 1 width object ?
 #' @param txdb a TxDb object or a path to gtf/gff/db file.
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
@@ -69,9 +69,9 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' Calculate meta-coverage of reads around input GRanges/List object.
 #'
 #' Sums up coverage over set of GRanges objects as a meta representation.
-#' @param x GRangesList/GRanges object of your reads.
+#' @param x GRanges/GAlignment object of your reads.
 #' Remember to resize them beforehand to width of 1 to focus on
-#' 5' ends of footprints, if that is wanted.
+#' 5' ends of footprints etc, if that is wanted.
 #' @param windows GRangesList or GRanges of your ranges
 #' @param scoring a character, one of (zscore, transcriptNormalized,
 #' mean, median, sum, sumLength, NULL), see ?coverageScorings
@@ -452,14 +452,14 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @param downstream an integer (20), relative region to get downstream from
 #' @param acceptedLengths an integer vector (NULL), the read lengths accepted.
 #'  Default NULL, means all lengths accepted.
-#' @param zeroPosition an integer DEFAULT (upstream), the point if all windows
-#' are equal size, that should be set to position 0. Like leaders and
-#' cds combination, then 0 is the TIS and -1 is last base in leader. NOTE!:
-#' if windows have different widths, this will be ignored.
+#' @param zeroPosition an integer DEFAULT (upstream), what is the center point?
+#' Like leaders and cds combination, then 0 is the TIS and -1 is last base in leader.
+#' NOTE!: if windows have different widths, this will be ignored.
 #' @param scoring a character (transcriptNormalized), one of
 #' (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
-#' see ?coverageScorings. Use to choose meta coverage or per transcript.
-#' @return a data.frame with lengths by coverage / vector of proportions
+#' see ?coverageScorings. Use to decide a scoring of hits per position
+#' for metacoverage etc.
+#' @return a data.table with lengths by coverage / vector of proportions
 #' @family coverage
 #' @importFrom data.table rbindlist
 #' @export
