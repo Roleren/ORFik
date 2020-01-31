@@ -383,33 +383,6 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   return(gr)
 }
 
-#'  Store GRanges object as .bedo
-#'
-#'  .bed is .bed ORFik, an optimized bed format for coverage reads with read lengths
-#'
-#'  @param object a GRanges object
-#'  @param out a character, location on disc (full path)
-#'  @return NULL, object saved to disc
-#'
-export.bedo <- function(object, out) {
-  if (!is(object, "GRanges")) stop("object must be GRanges")
-  dt <- setDT(as.data.frame(object))
-  fwrite(dt, file = out)
-}
-
-#'  Load GRanges object from .bedo
-#'
-#'  .bed is .bed ORFik, an optimized bed format for coverage reads with read lengths
-#'
-#'  @param path a character, location on disc (full path)
-#'  @return GRanges object
-#'
-export.bedo <- function(path) {
-  if (file_ext(path) == "bedo") stop("export.bedo can only load .bedo files!")
-  return(makeGRangesFromDataFrame(fread(input = path),
-                                  keep.extra.columns = TRUE))
-}
-
 #' Remove file extension of path
 #'
 #' Allows removal of compression

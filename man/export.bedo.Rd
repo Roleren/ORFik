@@ -4,11 +4,7 @@
 \alias{export.bedo}
 \title{Store GRanges object as .bedo}
 \usage{
-export.bedo(path)
-
-export.bedo(path)
-
-export.bedo(path)
+export.bedo(object, out)
 }
 \arguments{
 \item{object}{a GRanges object}
@@ -23,16 +19,4 @@ NULL, object saved to disc
 .bedo is a text based format with columns:
 chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
 , duplicates of that read
-
-.bed is .bed ORFik, an optimized bed format for coverage reads with read lengths
-
-.bed is .bed ORFik, an optimized bed format for coverage reads with read lengths
-}
-\details{
-@param object a GRanges object
- @param out a character, location on disc (full path)
- @return NULL, object saved to disc
-
-@param path a character, location on disc (full path)
- @return GRanges object
 }
