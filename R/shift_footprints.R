@@ -212,13 +212,15 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @inheritParams detectRibosomeShifts
 #' @return NULL (Objects are saved to out.dir/pshited/"name")
 #' @family pshifting
-shiftFootprintsByExperiment <- function(df, out.dir = dirname(df$filepath[1]),
+shiftFootprintsByExperiment <- function(df,
+                                        out.dir = pasteDir(dirname(
+                                          df$filepath[1]), "/pshifted/"),
                                         start = TRUE, stop = FALSE,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L) {
-  path <- out.dir; path <- pasteDir(path, "/pshifted/")
-  dir.create(path, showWarnings = FALSE)
+  path <- out.dir
+  dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
   varNames <- bamVarName(df)
   outputLibs(df)

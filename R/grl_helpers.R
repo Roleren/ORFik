@@ -402,3 +402,58 @@ groupings <- function(grl){
   l <- lengths(grl, use.names = FALSE)
   return(rep.int(seq.int(length(l)), l))
 }
+
+#' Remake of coverageByTranscript
+#'
+#' Allows weights
+#' @param x reads (GRanges, GAlignment)
+#' @param transcripts GRangeslist
+#' @param ignore.strand a logical (default: FALSE)
+#' @param weight a vector (default: 1L), if single number applies for all,
+#' else equal size as x
+#' @return Integer Rle of coverage, 1 per transcript
+coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
+                                   weight = 1L)
+{
+  if (!is(transcripts, "GRangesList")) {
+    transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
+                       silent = TRUE)
+    if (is(transcripts, "try-error"))
+      stop(wmsg("failed to extract the exon ranges ",
+                "from 'transcripts' with ", "exonsBy(transcripts,",
+                "by=\"tx\", use.names=TRUE)"))
+  }
+  if (!isTRUEorFALSE(ignore.strand))
+    stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
+  seqinfo(x) <-
+    GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
+                                                                  transcripts)
+  ex <- unlist(transcripts, use.names = FALSE)
+  sm <- selfmatch(ex)
+  is_unique <- sm == seq_along(sm)
+  uex2ex <- which(is_unique)
+  uex <- ex[uex2ex]
+  if (ignore.strand) {
+    cvg <- coverage(x, weight = weight)
+    uex_cvg <- cvg[uex]
+  }
+  else {
+    x1 <- x[strand(x) %in% c("+", "*")]
+    x2 <- x[strand(x) %in% c("-", "*")]
+    cvg1 <- coverage(x1, weight = weight)
+    cvg2 <- coverage(x2, weight = weight)
+    is_plus_ex <- strand(uex) == "+"
+    is_minus_ex <- strand(uex) == "-"
+    if (!identical(is_plus_ex, !is_minus_ex))
+      stop(wmsg("'transcripts' has exons on the * strand. ",
+                "This is not supported at the moment."))
+    uex_cvg <- cvg1[uex]
+    uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+  }
+  uex_cvg <- revElements(uex_cvg, strand(uex) == "-")
+  ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
+  ex_cvg <- uex_cvg[ex2uex]
+  ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
+  mcols(ans) <- mcols(transcripts)
+  ans
+}

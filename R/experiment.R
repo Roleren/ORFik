@@ -454,12 +454,15 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
   return(gsub("_$", "", current))
 }
 
-#' Output bam/bed/wig files to R as variables
+#' Output bam/bed/bedo/wig files to R as variables
 #'
 #' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams matchSeqStyle
+#' @param type a character(default: "defualt"), load files in experiment
+#' or some precomputed variant, either "bedo" or "pshifted".
+#' These are made with ORFik:::simpleLibs()
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores? default: bpparam()
 #' @return NULL (libraries set by envir assignment)
@@ -481,14 +484,14 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' # Output to .GlobalEnv with:
 #' # outputLibs(df)
 #' @family ORFik_experiment
-outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
-                       BPPARAM = bpparam()) {
+outputLibs <- function(df, chrStyle = NULL, type = "default",
+                       envir = .GlobalEnv, BPPARAM = bpparam()) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
 
   for (df in dfl) {
-    validateExperiments(df)
-    libTypes <- libraryTypes(df)
+    ORFik:::validateExperiments(df)
+    libTypes <- ORFik:::libraryTypes(df)
     varNames <- bamVarName(df)
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage
@@ -500,15 +503,29 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
     if (!all(loaded)) {
       message(paste0("Ouputing libraries from: ",df@experiment))
       libs <-bplapply(df$filepath,
-                      function(x, chrStyle, df) {
-                            i <- which(df$filepath == x)
-                            varNames <- bamVarName(df)
-                            message(paste(i, ": ", varNames[i]))
-                            if (!is.null(df$reverse)) {
-                              input <- c(df[i,]$filepath, df[i,]$reverse)
-                            } else input <- df[i,]$filepath
-                            return(fimport(input, chrStyle))
-      }, BPPARAM = BPPARAM, chrStyle = chrStyle, df = df)
+                      function(x, chrStyle, df, type) {
+                        i <- which(df$filepath == x)
+                        varNames <- bamVarName(df)
+                        message(paste(i, ": ", varNames[i]))
+                        if (type == "bedo") {
+                          out.dir <- paste0(dirname(df$filepath[1]), "/bedo/")
+                          if (dir.exists(out.dir)) {
+                            input <- paste0(out.dir,
+                                            remove.file_ext(x,
+                                                            basename = TRUE)
+                                            , ".bedo")
+                          } else type <- "default"
+                        }
+                        if (type == "default") {
+                          if (!is.null(df$reverse)) {
+                            input <- c(x, df[i,]$reverse)
+                          } else input <- x
+                        }
+                        return(fimport(input, chrStyle))
+                      },
+                      BPPARAM = BPPARAM, chrStyle = chrStyle,
+                      df = df, type = type)
+
 
       # assign to environment
       for (i in 1:nrow(df)) { # For each stage
@@ -518,6 +535,37 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
   }
   return(NULL)
 }
+
+#' Will make a simplified version of libraries
+#'
+#' A .obed file containing chromosome, start, stop, strand,
+#' readWidth and number of duplicate reads
+#' @param df an ORFik \code{\link{experiment}}
+#' @param out.dir optional output directory, default: dirname(df$filepath[1])
+#' @return NULL (saves files to disc)
+simpleLibs <- function(df,
+                       out.dir = paste0(dirname(df$filepath[1]), "/bedo/")) {
+  ORFik:::validateExperiments(df)
+  dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
+  if (!dir.exists(out.dir)) stop("could not create directory!")
+  message(paste("Saving .bedo files to:", out.dir))
+  outputLibs(df)
+
+  varNames <- bamVarName(df)
+  i <- 1
+  for (f in varNames) {
+    message(f)
+    gr <- convertToOneBasedRanges(gr = get(f), addScoreColumn = TRUE,
+                                  addSizeColumn = TRUE,
+                                  method = "None")
+    output <- paste0(out.dir,
+                     remove.file_ext(df$filepath[i], basename = TRUE),
+                     ".bedo")
+    export.bedo(gr, output)
+    i <- i + 1
+  }
+}
+
 
 #' Remove bam/bed/wig files load in R as variables
 #'

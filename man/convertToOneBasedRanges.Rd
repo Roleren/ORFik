@@ -33,13 +33,18 @@ original read lengths. This takes care of soft clips etc.}
 Converted GRanges object
 }
 \description{
-There are 4 ways of doing this
+There are 5 ways of doing this
 1. Take 5' ends, reduce away rest (5prime)
 2. Take 3' ends, reduce away rest (3prime)
 3. Tile to 1-mers and include all (tileAll)
 4. Take middle point per GRanges (middle)
+5. Get original with metacolumns (None)
 }
 \details{
+You can also do multiple at a time, then output is GRangesList, where
+each list group is the operation (5prime is [1], 3prime is [2] etc)
+
+
 Many other ways to do this have their own functions, like startSites and
 stopSites etc.
 To retain information on original width, set addSizeColumn to TRUE.

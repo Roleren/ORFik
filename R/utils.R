@@ -142,6 +142,62 @@ findWigPairs <- function(paths) {
   return(paths)
 }
 
+#' Store GRanges object as .bedo
+#'
+#' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
+#' .bedo is a text based format with columns:
+#' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
+#' , duplicates of that read
+#' @param object a GRanges object
+#' @param out a character, location on disc (full path)
+#' @return NULL, object saved to disc
+#'
+export.bedo <- function(object, out) {
+  if (!is(object, "GRanges")) stop("object must be GRanges")
+  dt <- setDT(as.data.frame(object))
+  fwrite(dt, file = out)
+}
+
+#' Load GRanges object from .bedo
+#'
+#' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
+#' .bedo is a text based format with columns:
+#' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
+#' , duplicates of that read
+#' @param path a character, location on disc (full path)
+#' @return GRanges object
+#' @export
+import.bedo <- function(path) {
+  if (file_ext(path) != "bedo") stop("export.bedo can only load .bedo files!")
+  return(makeGRangesFromDataFrame(fread(input = path), keep.extra.columns = TRUE))
+}
+
+#' Remove file extension of path
+#'
+#' Allows removal of compression
+#' @param path character path (allows multiple paths)
+#' @param basename relative path (TRUE) or full path (FALSE)? (default: FALSE)
+#' @return character path without file extension
+remove.file_ext <- function(path, basename = FALSE) {
+  library(tools)
+  out <- c()
+  for (p in path) {
+    fext <- file_ext(path)
+    compressions <- c("gzip", "gz", "bgz", "zip")
+    areCompressed <- fext %in% compressions
+    if (areCompressed) {
+      ext <- file_ext(file_path_sans_ext(path, compression = FALSE))
+      whichCompression <- compression[compression %in% fext]
+      regex <- gsub(pattern = paste0("*\\.",ext,"\\.",whichCompression,"$"), "", path)
+    } else {
+      regex <- paste0("*\\.",fext,"$")
+    }
+    new <- gsub(pattern = regex, "", path)
+    out <- c(out, new)
+  }
+  return(ifelse(basename, basename(out), out))
+}
+
 #' Load any type of sequencing reads
 #'
 #' Wraps around rtracklayer::import and tries to speed up loading with the
@@ -191,6 +247,8 @@ fimport <- function(path, chrStyle = NULL) {
                    file_ext(file_path_sans_ext(path, compression = FALSE))
                                                                   == "bed") {
           return(fread.bed(path, chrStyle))
+        } else if (fext == "bedo") {
+            import.bedo(path)
         } else return(matchSeqStyle(import(path), chrStyle))
       }
     } else stop(paste0(path, "does not exist as File/Files!"))
@@ -250,11 +308,15 @@ optimizeReads <- function(grl, reads) {
 
 #' Convert a GRanges Object to 1 width reads
 #'
-#' There are 4 ways of doing this
+#' There are 5 ways of doing this
 #' 1. Take 5' ends, reduce away rest (5prime)
 #' 2. Take 3' ends, reduce away rest (3prime)
 #' 3. Tile to 1-mers and include all (tileAll)
 #' 4. Take middle point per GRanges (middle)
+#' 5. Get original with metacolumns (None)
+#'
+#' You can also do multiple at a time, then output is GRangesList, where
+#' each list group is the operation (5prime is [1], 3prime is [2] etc)
 #'
 #'
 #' Many other ways to do this have their own functions, like startSites and
@@ -304,19 +366,74 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     }
     gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = T)
   }
+
   gr <- GRanges(gr)
   if (method == "5prime") {
     gr <- resize(gr, width = 1, fix = "start")
   } else if(method == "3prime") {
     gr <- resize(gr, width = 1, fix = "end")
+  } else if(method == "None") {
   } else if(method == "tileAll") {
     gr <- unlist(tile(gr, width = 1), use.names = FALSE)
   } else if (method == "middle") {
     ranges(gr) <- IRanges(start(gr) + ceiling((end(gr) - start(gr)) / 2),
                           width = 1)
-  } else stop("method not defined: must be 5prime, 3prime etc.")
+  } else stop("invalid type: must be 5prime, 3prime, None, tileAll or middle")
 
   return(gr)
+}
+
+#'  Store GRanges object as .bedo
+#'
+#'  .bed is .bed ORFik, an optimized bed format for coverage reads with read lengths
+#'
+#'  @param object a GRanges object
+#'  @param out a character, location on disc (full path)
+#'  @return NULL, object saved to disc
+#'
+export.bedo <- function(object, out) {
+  if (!is(object, "GRanges")) stop("object must be GRanges")
+  dt <- setDT(as.data.frame(object))
+  fwrite(dt, file = out)
+}
+
+#'  Load GRanges object from .bedo
+#'
+#'  .bed is .bed ORFik, an optimized bed format for coverage reads with read lengths
+#'
+#'  @param path a character, location on disc (full path)
+#'  @return GRanges object
+#'
+export.bedo <- function(path) {
+  if (file_ext(path) == "bedo") stop("export.bedo can only load .bedo files!")
+  return(makeGRangesFromDataFrame(fread(input = path),
+                                  keep.extra.columns = TRUE))
+}
+
+#' Remove file extension of path
+#'
+#' Allows removal of compression
+#' @param path character path (allows multiple paths)
+#' @param basename relative path (TRUE) or full path (FALSE)? (default: FALSE)
+#' @return character path without file extension
+remove.file_ext <- function(path, basename = FALSE) {
+  library(tools)
+  out <- c()
+  for (p in path) {
+    fext <- file_ext(path)
+    compressions <- c("gzip", "gz", "bgz", "zip")
+    areCompressed <- fext %in% compressions
+    if (areCompressed) {
+      ext <- file_ext(file_path_sans_ext(path, compression = FALSE))
+      whichCompression <- compression[compression %in% fext]
+      regex <- gsub(pattern = paste0("*\\.",ext,"\\.",whichCompression,"$"), "", path)
+    } else {
+      regex <- paste0("*\\.",fext,"$")
+    }
+    new <- gsub(pattern = regex, "", path)
+    out <- c(out, new)
+  }
+  return(ifelse(basename, basename(out), out))
 }
 
 #' Convenience wrapper for Rsamtools FaFile

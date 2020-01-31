@@ -6,7 +6,7 @@
 \usage{
 shiftFootprintsByExperiment(
   df,
-  out.dir = dirname(df$filepath[1]),
+  out.dir = pasteDir(dirname(df$filepath[1]), "/pshifted/"),
   start = TRUE,
   stop = FALSE,
   top_tx = 10L,

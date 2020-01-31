@@ -398,7 +398,10 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               withFrames = FALSE) {
   if (!is.sorted) grl <- sortPerGroup(grl)
   if (length(grl) > 10000) { # faster version for big grl
-    coverage <- coverageByTranscript(reads, grl)
+    if (!is.null(reads$score)) {
+      coverage <- coverageByTranscriptW(reads, grl, weight = "score")
+    } else coverage <- coverageByTranscript(reads, grl)
+
     if (!keep.names) names(coverage) <- NULL
   } else {
     if (length(names(grl)) != length(unique(names(grl)))) {
