@@ -166,6 +166,7 @@ export.bedo <- function(object, out) {
 #' , duplicates of that read
 #' @param path a character, location on disc (full path)
 #' @return GRanges object
+#' @importFrom tools file_ext
 #' @export
 import.bedo <- function(path) {
   if (file_ext(path) != "bedo") stop("export.bedo can only load .bedo files!")
@@ -177,6 +178,7 @@ import.bedo <- function(path) {
 #' Allows removal of compression
 #' @param path character path (allows multiple paths)
 #' @param basename relative path (TRUE) or full path (FALSE)? (default: FALSE)
+#' @importFrom tools file_ext
 #' @return character path without file extension
 remove.file_ext <- function(path, basename = FALSE) {
   library(tools)

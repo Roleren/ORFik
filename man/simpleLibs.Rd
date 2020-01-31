@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{simpleLibs}
 \alias{simpleLibs}
-\title{Will make a simplified version of libraries}
+\title{Will make a simplified version of NGS libraries}
 \usage{
 simpleLibs(df, out.dir = paste0(dirname(df$filepath[1]), "/bedo/"))
 }
@@ -15,6 +15,7 @@ simpleLibs(df, out.dir = paste0(dirname(df$filepath[1]), "/bedo/"))
 NULL (saves files to disc)
 }
 \description{
-A .obed file containing chromosome, start, stop, strand,
-readWidth and number of duplicate reads
+An .obed file containing chromosome, start, stop, strand,
+readWidth and number of duplicate reads.
+A bed file with 2 score columns
 }

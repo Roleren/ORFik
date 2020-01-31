@@ -7,9 +7,9 @@
 coverageByTranscriptW(x, transcripts, ignore.strand = FALSE, weight = 1L)
 }
 \arguments{
-\item{x}{reads (GRanges, GAlignment)}
+\item{x}{reads (\code{\link{GRanges}}, GAlignment)}
 
-\item{transcripts}{GRangeslist}
+\item{transcripts}{\code{\link{GRangesList}}}
 
 \item{ignore.strand}{a logical (default: FALSE)}
 
@@ -20,5 +20,5 @@ else equal size as x}
 Integer Rle of coverage, 1 per transcript
 }
 \description{
-Allows weights
+Allows weights, see \code{\link{coverageByTranscript}}
 }

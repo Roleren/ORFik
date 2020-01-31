@@ -405,29 +405,27 @@ groupings <- function(grl){
 
 #' Remake of coverageByTranscript
 #'
-#' Allows weights
-#' @param x reads (GRanges, GAlignment)
-#' @param transcripts GRangeslist
+#'
+#' Allows weights, see \code{\link{coverageByTranscript}}
+#' @param x reads (\code{\link{GRanges}}, GAlignment)
+#' @param transcripts \code{\link{GRangesList}}
 #' @param ignore.strand a logical (default: FALSE)
 #' @param weight a vector (default: 1L), if single number applies for all,
 #' else equal size as x
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
-                                   weight = 1L)
-{
+                                    weight = 1L) {
   if (!is(transcripts, "GRangesList")) {
     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
                        silent = TRUE)
     if (is(transcripts, "try-error"))
       stop(wmsg("failed to extract the exon ranges ",
-                "from 'transcripts' with ", "exonsBy(transcripts,",
-                "by=\"tx\", use.names=TRUE)"))
+                "from 'transcripts' with ", "exonsBy(transcripts, by=\"tx\", use.names=TRUE)"))
   }
   if (!isTRUEorFALSE(ignore.strand))
     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
-  seqinfo(x) <-
-    GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
-                                                                  transcripts)
+  seqinfo(x) <- GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
+                                                                              transcripts)
   ex <- unlist(transcripts, use.names = FALSE)
   sm <- selfmatch(ex)
   is_unique <- sm == seq_along(sm)
@@ -438,8 +436,9 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
     uex_cvg <- cvg[uex]
   }
   else {
-    x1 <- x[strand(x) %in% c("+", "*")]
-    x2 <- x[strand(x) %in% c("-", "*")]
+
+    x1 <- x[BiocGenerics::`%in%`(strand(x), c("+", "*"))]
+    x2 <- x[BiocGenerics::`%in%`(strand(x), c("-", "*"))]
     cvg1 <- coverage(x1, weight = weight)
     cvg2 <- coverage(x2, weight = weight)
     is_plus_ex <- strand(uex) == "+"
@@ -455,5 +454,5 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
   ex_cvg <- uex_cvg[ex2uex]
   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
   mcols(ans) <- mcols(transcripts)
-  ans
+  return(ans)
 }

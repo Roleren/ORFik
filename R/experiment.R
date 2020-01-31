@@ -490,8 +490,8 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
   if(!is(dfl, "list")) dfl <- list(dfl)
 
   for (df in dfl) {
-    ORFik:::validateExperiments(df)
-    libTypes <- ORFik:::libraryTypes(df)
+    validateExperiments(df)
+    libTypes <- libraryTypes(df)
     varNames <- bamVarName(df)
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage
@@ -536,16 +536,17 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
   return(NULL)
 }
 
-#' Will make a simplified version of libraries
+#' Will make a simplified version of NGS libraries
 #'
-#' A .obed file containing chromosome, start, stop, strand,
-#' readWidth and number of duplicate reads
+#' An .obed file containing chromosome, start, stop, strand,
+#' readWidth and number of duplicate reads.
+#' A bed file with 2 score columns
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default: dirname(df$filepath[1])
 #' @return NULL (saves files to disc)
 simpleLibs <- function(df,
                        out.dir = paste0(dirname(df$filepath[1]), "/bedo/")) {
-  ORFik:::validateExperiments(df)
+  validateExperiments(df)
   dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(out.dir)) stop("could not create directory!")
   message(paste("Saving .bedo files to:", out.dir))
