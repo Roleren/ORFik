@@ -368,6 +368,9 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #' This is a safer speedup of coverageByTranscript from GenomicFeatures.
 #' It also gives the possibility to return as data.table, for faster
 #' computations.
+#' NOTE: If reads contains a $score column, it will presume that this is the number
+#' of replicates per reads, weights for the coverage() function.
+#' So delete the score column if this is wrong.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param is.sorted logical (F), is grl sorted.
@@ -397,19 +400,12 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE, as.data.table = FALSE,
                               withFrames = FALSE) {
   if (!is.sorted) grl <- sortPerGroup(grl)
-  if (length(grl) > 10000) { # faster version for big grl
-    if (!is.null(reads$score)) {
-      coverage <- coverageByTranscriptW(reads, grl, weight = "score")
-    } else coverage <- coverageByTranscript(reads, grl)
+  if (!is.null(mcols(reads)$score)) {
+    coverage <- coverageByTranscriptW(reads, grl, weight = "score")
+  } else coverage <- coverageByTranscript(reads, grl)
 
-    if (!keep.names) names(coverage) <- NULL
-  } else {
-    if (length(names(grl)) != length(unique(names(grl)))) {
-      stop("grl have duplicated names, be sure to make them unique!")
-    }
-    unlTile <- unlistGrl(tile1(grl, matchNaming = FALSE))
-    coverage <- overlapsToCoverage(unlTile, reads, keep.names = keep.names)
-  }
+  if (!keep.names) names(coverage) <- NULL
+
   if (as.data.table) {
     window_size <- unique(widthPerGroup(grl))
     count <- data.table(count = unlist(IntegerList(coverage),

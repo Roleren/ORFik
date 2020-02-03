@@ -152,7 +152,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
                                minThreeUTR = minThreeUTR)
-  cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
   footprints <- fimport(footprints, cds)
 
   # reduce data-set to only matching seqlevels
@@ -167,7 +167,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   tx <- tx[txNames]
 
   # find periodic read lengths
-  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
+  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
+                                        addScoreColumn = TRUE)
   periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
                       pShifted = FALSE, upstream = 0, downstream = 149,
                       zeroPosition = 0, scoring = "periodic")

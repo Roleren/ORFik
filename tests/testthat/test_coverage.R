@@ -7,7 +7,7 @@ grl <- GRangesList("tx1_1" = ORF1, "tx1_2" = ORF2)
 tx <- resize(resize(grl[1], width = 50), width = 70, fix = "end")
 names(tx) <- "tx1"
 footprintsGood <- GRanges("1", IRanges(seq.int(21, 49, 3), width = 1), "+")
-footprintsGood$score <- 29
+footprintsGood$size <- 29
 footprintsBad <- GRanges()
 
 test_that("coverageScorings works as intended", {

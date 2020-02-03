@@ -181,24 +181,25 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     grl <- sortPerGroup(grl)
   }
 
-  rfp <- optimizeReads(tx, RFP)
-
+  RFP <- optimizeReads(tx, RFP)
+  tx <- tx[txNames(grl)]
   #### Get all features, append 1 at a time, to save memory ####
 
-  scores <- data.table(countRFP = countOverlaps(grl, rfp))
+  scores <- data.table(countRFP = countOverlaps(grl, RFP))
   if (!is.null(RNA)) { # if rna seq is included
-    TE <- translationalEff(grl, RNA, rfp, tx, with.fpkm = TRUE)
+    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
     scores[, te := TE$te]
     scores[, fpkmRFP := TE$fpkmRFP]
     scores[, fpkmRNA := TE$fpkmRNA]
   } else {
-    scores[, fpkmRFP := fpkm(grl, rfp)]
+    scores[, fpkmRFP := fpkm_calc(countRFP, widthPerGroup(grl), length(RFP))]
   }
-  scores[, floss := floss(grl, rfp, cds, riboStart, riboStop)]
-  scores[, entropyRFP := entropy(grl, rfp)]
-  scores[, disengagementScores := disengagementScore(grl, rfp, tx, TRUE)]
-  scores[, RRS := ribosomeReleaseScore(grl, rfp, threeUTRs, RNA)]
-  scores[, RSS := ribosomeStallingScore(grl, rfp)]
+  scores[, floss := floss(grl, RFP, cds, riboStart, riboStop)]
+  scores[, entropyRFP := entropy(grl, RFP)]
+  scores[, disengagementScores := disengagementScore(grl, RFP, tx, TRUE)]
+  scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA,
+                                       countRFP + 1)]
+  scores[, RSS := ribosomeStallingScore(grl, RFP, countRFP)]
 
   if (includeNonVarying) {
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
@@ -206,8 +207,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
 
 
   if (orfFeatures) { # if features are found for orfs
-    scores[, ORFScores := orfScore(grl, rfp, grl.is.sorted)$ORFScores]
-    scores[, ioScore := insideOutsideORF(grl, rfp, tx,
+    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted)$ORFScores]
+    scores[, ioScore := insideOutsideORF(grl, RFP, tx,
                                          scores$disengagementScores, TRUE)]
 
     if (includeNonVarying) {

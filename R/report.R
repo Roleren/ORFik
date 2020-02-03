@@ -11,7 +11,8 @@
 #'
 #'
 #' Everything will be outputed in the directory of your NGS data,
-#' inside the folder ./QC_STATS/, relative to data location in 'df'
+#' inside the folder ./QC_STATS/, relative to data location in 'df'.
+#' You can specify new out location with out.dir if you want.
 #'
 #' To make a ORFik experiment, see ?ORFik::experiment
 #' @param df an ORFik \code{\link{experiment}}

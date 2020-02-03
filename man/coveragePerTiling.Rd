@@ -42,6 +42,9 @@ A range from 1:5 will split into c(1,2,3,4,5) and count hits on each.
 This is a safer speedup of coverageByTranscript from GenomicFeatures.
 It also gives the possibility to return as data.table, for faster
 computations.
+NOTE: If reads contains a $score column, it will presume that this is the number
+of replicates per reads, weights for the coverage() function.
+So delete the score column if this is wrong.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

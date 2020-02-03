@@ -394,13 +394,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
     grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
     downstreamTx <- downstreamOfPerGroup(tx, grlStops)
 
-    dtmerge <- data.table::rbindlist(l = list(as.data.table(upstreamTx),
-                                              as.data.table(downstreamTx)))
-    group <- NULL # for avoiding warning
-    txOutside <- makeGRangesListFromDataFrame(
-      dtmerge[order(group)], split.field = "group")
-
-    overlapTxOutside[validIndices] <- countOverlaps(txOutside, RFP) + 1
+    overlapTxOutside[validIndices] <- countOverlaps(upstreamTx, RFP) +
+      countOverlaps(downstreamTx, RFP) + 1
   }
 
   scores <- overlapGrl / overlapTxOutside
@@ -428,6 +423,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #'  if object is GRangesList, it is presumed to be the 3' utrs
 #' @param RNA RnaSeq reads as GAlignment, GRanges
 #'  or GRangesList object
+#' @param overlapGrl an integer vector of overlaps
+#' (default: countOverlaps(grl, RFP) + 1)
 #' @return a named vector of numeric values of scores, NA means that
 #' no 3' utr was found for that transcript.
 #' @export
@@ -442,7 +439,8 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #' RNA <- GRanges("1", IRanges(1, 50), "+")
 #' ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #'
-ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
+ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
+                                 overlapGrl = countOverlaps(grl, RFP) + 1){
   threeUTRs <- loadRegion(GtfOrThreeUtrs, part = "trailer")
   # check that naming is correct, else change it.
   orfNames <- txNames(grl, FALSE)
@@ -453,7 +451,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
     threeUTRs <- threeUTRs[validNamesThree]
     grl <- grl[validNamesGRL]
   }
-  overlapGrl <- countOverlaps(grl, RFP) + 1
+
   threeUTRs <- threeUTRs[orfNames[validNamesGRL]]
   overlapThreeUtrs <- countOverlaps(threeUTRs, RFP) + 1
 
@@ -480,6 +478,8 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #'  cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignment, GRanges
 #'  or GRangesList object
+#' @param overlapGrl an integer vector of overlaps
+#' (default: countOverlaps(grl, RFP))
 #' @return a named vector of numeric values of RSS scores
 #' @export
 #' @family features
@@ -491,9 +491,9 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL){
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' ribosomeStallingScore(grl, RFP)
 #'
-ribosomeStallingScore <- function(grl, RFP){
+ribosomeStallingScore <- function(grl, RFP,
+                                  overlapGrl = countOverlaps(grl, RFP)) {
   grl_len <- widthPerGroup(grl, FALSE)
-  overlapGrl <- countOverlaps(grl, RFP)
   stopCodons <- stopCodons(grl, is.sorted = TRUE)
   overlapStop <- countOverlaps(stopCodons, RFP)
 

@@ -11,7 +11,9 @@ filterCage(cage, filterValue = 1, fiveUTRs = NULL, preCleanup = TRUE)
 with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges or GAlignment.
 NOTE: If it is a .bam file, it will add a score column by running:
-convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
+convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)
+The score column is then number of replicates of read, if score column is
+something else, like read length, set the score column to NULL first.}
 
 \item{filterValue}{The minimum number of reads on cage position, for it to
 be counted as possible new tss. (represented in score column in

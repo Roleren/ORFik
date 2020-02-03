@@ -4,7 +4,13 @@
 \alias{ribosomeReleaseScore}
 \title{Ribosome Release Score (RRS)}
 \usage{
-ribosomeReleaseScore(grl, RFP, GtfOrThreeUtrs, RNA = NULL)
+ribosomeReleaseScore(
+  grl,
+  RFP,
+  GtfOrThreeUtrs,
+  RNA = NULL,
+  overlapGrl = countOverlaps(grl, RFP) + 1
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -20,6 +26,9 @@ if object is GRangesList, it is presumed to be the 3' utrs}
 
 \item{RNA}{RnaSeq reads as GAlignment, GRanges
 or GRangesList object}
+
+\item{overlapGrl}{an integer vector of overlaps
+(default: countOverlaps(grl, RFP) + 1)}
 }
 \value{
 a named vector of numeric values of scores, NA means that
