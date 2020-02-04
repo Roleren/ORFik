@@ -412,6 +412,7 @@ groupings <- function(grl){
 #' @param ignore.strand a logical (default: FALSE)
 #' @param weight a vector (default: 1L), if single number applies for all,
 #' else equal size as x
+#' @importFrom S4Vectors wmsg isTRUEorFALSE
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
                                     weight = 1L) {

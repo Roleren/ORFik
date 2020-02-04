@@ -160,8 +160,8 @@ rnaNormalize <- function(coverage, df, dfr = NULL, tx, normalizeMode = "position
     return(coverage)
   }
 
-  bamVarsR <- bamVarName(df, skip.libtype = TRUE, skip.experiment = T)
-  bamVarsr <- bamVarName(dfr, skip.libtype = TRUE, skip.experiment = T)
+  bamVarsR <- bamVarName(df, skip.libtype = TRUE, skip.experiment = TRUE)
+  bamVarsr <- bamVarName(dfr, skip.libtype = TRUE, skip.experiment = TRUE)
   matches <- bamVarsr %in% bamVarsR
   if (!any(matches)) {
     message("RNA experiment does not match any rows in df, returning without normalizing.")

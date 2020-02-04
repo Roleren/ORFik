@@ -68,7 +68,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
                                  nrow = length(tx)))
-  for (i in 1:length(varNames)) { # For each sample
+  for (i in seq(length(varNames))) { # For each sample
     print(varNames[i])
     co <- countOverlaps(tx, get(varNames[i]))
     rawCounts[, (paste0("V",i)) := co]
@@ -211,7 +211,7 @@ countTable <- function(df, region = "mrna", type = "count",
   if (is(df, "character")) {
     if (dir.exists(df)) {
       df <- list.files(path = df, pattern = paste0(region, ".rds"),
-                       full.names = T)
+                       full.names = TRUE)
     }
     if (length(df) == 1) {
       res <- readRDS(df)

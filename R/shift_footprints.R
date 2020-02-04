@@ -212,6 +212,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' folder at that location
 #' @inheritParams detectRibosomeShifts
 #' @return NULL (Objects are saved to out.dir/pshited/"name")
+#' @importFrom rtracklayer export.bed
 #' @family pshifting
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(

@@ -5,8 +5,6 @@
 \title{Remove file extension of path}
 \usage{
 remove.file_ext(path, basename = FALSE)
-
-remove.file_ext(path, basename = FALSE)
 }
 \arguments{
 \item{path}{character path (allows multiple paths)}
@@ -15,11 +13,7 @@ remove.file_ext(path, basename = FALSE)
 }
 \value{
 character path without file extension
-
-character path without file extension
 }
 \description{
-Allows removal of compression
-
 Allows removal of compression
 }

@@ -94,9 +94,9 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
                            LEADERS = get("ct_leaders")[s],
                            CDS = get("ct_cds")[s],
                            TRAILERs = get("ct_trailers")[s])
-    res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]
-    res_mrna[,ratio_cds_mrna := CDS / mRNA]
-    res_mrna[, ratio_cds_leader := CDS / LEADERS]
+    res_mrna[,ratio_mrna_aligned := round(mRNA / res$Aligned_reads, 6)]
+    res_mrna[,ratio_cds_mrna := round(CDS / mRNA, 6)]
+    res_mrna[, ratio_cds_leader := round(CDS / LEADERS, 6)]
 
     # Special region stats
     numbers <- sCo(tx, lib)
@@ -109,7 +109,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     colnames(res_extra) <- c("All_tx_types", types)
 
     # Lib width distribution, after soft.clip
-    widths <- summary(readWidths(lib))
+    widths <- round(summary(readWidths(lib)))
     res_widths <- data.frame(matrix(widths, nrow = 1))
     colnames(res_widths) <- names(widths)
 
@@ -141,7 +141,8 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
       message("Could not find raw read count of your data, setting to 20 M")
     } else {
       finals[order,]$Raw_reads <- raw_data$raw_reads
-      finals$ratio_aligned_raw = finals$Aligned_reads / finals$Raw_reads
+      finals$ratio_raw_aligned = round(finals$Aligned_reads /
+                                         finals$Raw_reads, 4)
     }
     setwd(oldDir)
   } else {

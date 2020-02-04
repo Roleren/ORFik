@@ -163,8 +163,8 @@ read.experiment <-  function(file) {
     listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
                           stringsAsFactors = FALSE)
   } else if(is(file, "data.frame")) {
-    info <- file[1:3,]
-    listData <- file[-c(1:4),]
+    info <- file[seq(3),]
+    listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
 
@@ -259,9 +259,9 @@ create.experiment <- function(dir, exper, saveDir = NULL,
                   "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
   df[5:(5+length(files)-1), 4] <- findFromPath(files, conditions)
 
-  df[1, 1:2] <- c("name", exper)
-  df[2, 1:2] <- c("gff", txdb)
-  df[3, 1:2] <- c("fasta", fa)
+  df[1, seq(2)] <- c("name", exper)
+  df[2, seq(2)] <- c("gff", txdb)
+  df[3, seq(2)] <- c("fasta", fa)
   df[is.na(df)] <- ""
   if (!is.null(saveDir))
     save.experiment(df, pasteDir(saveDir, exper,".csv"))

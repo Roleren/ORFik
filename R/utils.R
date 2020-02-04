@@ -151,6 +151,7 @@ findWigPairs <- function(paths) {
 #' @param object a GRanges object
 #' @param out a character, location on disc (full path)
 #' @return NULL, object saved to disc
+#' @importFrom data.table fwrite
 #'
 export.bedo <- function(object, out) {
   if (!is(object, "GRanges")) stop("object must be GRanges")
@@ -181,7 +182,6 @@ import.bedo <- function(path) {
 #' @importFrom tools file_ext
 #' @return character path without file extension
 remove.file_ext <- function(path, basename = FALSE) {
-  library(tools)
   out <- c()
   for (p in path) {
     fext <- file_ext(path)
@@ -189,8 +189,7 @@ remove.file_ext <- function(path, basename = FALSE) {
     areCompressed <- fext %in% compressions
     if (areCompressed) {
       ext <- file_ext(file_path_sans_ext(path, compression = FALSE))
-      whichCompression <- compression[compression %in% fext]
-      regex <- gsub(pattern = paste0("*\\.",ext,"\\.",whichCompression,"$"), "", path)
+      regex <- paste0("*\\.",ext,"\\.", fext,"$")
     } else {
       regex <- paste0("*\\.",fext,"$")
     }
@@ -238,7 +237,8 @@ fimport <- function(path, chrStyle = NULL) {
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
         } else if (all(fext %in% c("bam"))) {
-          stop("only wig format allowed for multiple files!, is this paired end bam?")
+          stop("only wig format allowed for multiple files!,
+               is this paired end bam?")
         } else stop("only wig format allowed for multiple files!")
       } else { # Only 1 file path given
         if (fext == "bam") {
@@ -366,7 +366,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     } else {
       dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
     }
-    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = T)
+    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE)
   }
 
   gr <- GRanges(gr)
@@ -383,32 +383,6 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   } else stop("invalid type: must be 5prime, 3prime, None, tileAll or middle")
 
   return(gr)
-}
-
-#' Remove file extension of path
-#'
-#' Allows removal of compression
-#' @param path character path (allows multiple paths)
-#' @param basename relative path (TRUE) or full path (FALSE)? (default: FALSE)
-#' @return character path without file extension
-remove.file_ext <- function(path, basename = FALSE) {
-  library(tools)
-  out <- c()
-  for (p in path) {
-    fext <- file_ext(path)
-    compressions <- c("gzip", "gz", "bgz", "zip")
-    areCompressed <- fext %in% compressions
-    if (areCompressed) {
-      ext <- file_ext(file_path_sans_ext(path, compression = FALSE))
-      whichCompression <- compression[compression %in% fext]
-      regex <- gsub(pattern = paste0("*\\.",ext,"\\.",whichCompression,"$"), "", path)
-    } else {
-      regex <- paste0("*\\.",fext,"$")
-    }
-    new <- gsub(pattern = regex, "", path)
-    out <- c(out, new)
-  }
-  return(ifelse(basename, basename(out), out))
 }
 
 #' Convenience wrapper for Rsamtools FaFile
