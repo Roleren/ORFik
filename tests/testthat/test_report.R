@@ -28,11 +28,11 @@ test_that("Experiment class correct naming", {
   names <- bamVarName(df)
   expect_equal(names, c("ORFik_cage", "ORFik_ribo-seq_fheart",
                         "ORFik_ribo-seq","ORFik_rna-seq"))
-  names <- bamVarName(df, skip.experiment = T)
+  names <- bamVarName(df, skip.experiment = TRUE)
   expect_equal(names, c("cage", "ribo-seq_fheart",
                         "ribo-seq","rna-seq"))
 
-  names <- bamVarName(df, skip.experiment = T, skip.fraction = TRUE)
+  names <- bamVarName(df, skip.experiment = TRUE, skip.fraction = TRUE)
   expect_equal(names, c("cage", "ribo-seq",
                         "ribo-seq","rna-seq"))
 
