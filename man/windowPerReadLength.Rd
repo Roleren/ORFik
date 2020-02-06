@@ -38,17 +38,17 @@ irrelevant.}
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}
 
-\item{zeroPosition}{an integer DEFAULT (upstream), the point if all windows
-are equal size, that should be set to position 0. Like leaders and
-cds combination, then 0 is the TIS and -1 is last base in leader. NOTE!:
-if windows have different widths, this will be ignored.}
+\item{zeroPosition}{an integer DEFAULT (upstream), what is the center point?
+Like leaders and cds combination, then 0 is the TIS and -1 is last base in leader.
+NOTE!: if windows have different widths, this will be ignored.}
 
 \item{scoring}{a character (transcriptNormalized), one of
 (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
-see ?coverageScorings. Use to choose meta coverage or per transcript.}
+see ?coverageScorings. Use to decide a scoring of hits per position
+for metacoverage etc.}
 }
 \value{
-a data.frame with lengths by coverage / vector of proportions
+a data.table with lengths by coverage / vector of proportions
 }
 \description{
 This is like a more detailed floss score, where floss score takes fraction

@@ -21,7 +21,7 @@ position), it is possible to have additionals: (genes, fraction, feature)}
 
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{outdir}{directory to save to}
+\item{outdir}{directory to save to (default: NULL, no saving)}
 
 \item{scores}{scoring function (default: c("sum", "zscore")),
 see ?coverageScorings for possible scores.}

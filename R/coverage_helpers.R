@@ -5,7 +5,7 @@
 #' and ggplot2.
 #'
 #' NOTE: All ranges with smaller width than windowSize, will of course be
-#' removed. What is the 100 position on a 1 width object ?
+#' removed. What is the 100th position on a 1 width object ?
 #' @param txdb a TxDb object or a path to gtf/gff/db file.
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
@@ -69,9 +69,9 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' Calculate meta-coverage of reads around input GRanges/List object.
 #'
 #' Sums up coverage over set of GRanges objects as a meta representation.
-#' @param x GRangesList/GRanges object of your reads.
+#' @param x GRanges/GAlignment object of your reads.
 #' Remember to resize them beforehand to width of 1 to focus on
-#' 5' ends of footprints, if that is wanted.
+#' 5' ends of footprints etc, if that is wanted.
 #' @param windows GRangesList or GRanges of your ranges
 #' @param scoring a character, one of (zscore, transcriptNormalized,
 #' mean, median, sum, sumLength, NULL), see ?coverageScorings
@@ -368,6 +368,9 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #' This is a safer speedup of coverageByTranscript from GenomicFeatures.
 #' It also gives the possibility to return as data.table, for faster
 #' computations.
+#' NOTE: If reads contains a $score column, it will presume that this is the number
+#' of replicates per reads, weights for the coverage() function.
+#' So delete the score column if this is wrong.
 #' @param grl a \code{\link{GRangesList}}
 #'  of 5' utrs or transcripts.
 #' @param is.sorted logical (F), is grl sorted.
@@ -397,16 +400,12 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE, as.data.table = FALSE,
                               withFrames = FALSE) {
   if (!is.sorted) grl <- sortPerGroup(grl)
-  if (length(grl) > 10000) { # faster version for big grl
-    coverage <- coverageByTranscript(reads, grl)
-    if (!keep.names) names(coverage) <- NULL
-  } else {
-    if (length(names(grl)) != length(unique(names(grl)))) {
-      stop("grl have duplicated names, be sure to make them unique!")
-    }
-    unlTile <- unlistGrl(tile1(grl, matchNaming = FALSE))
-    coverage <- overlapsToCoverage(unlTile, reads, keep.names = keep.names)
-  }
+  if (!is.null(mcols(reads)$score)) {
+    coverage <- coverageByTranscriptW(reads, grl, weight = "score")
+  } else coverage <- coverageByTranscript(reads, grl)
+
+  if (!keep.names) names(coverage) <- NULL
+
   if (as.data.table) {
     window_size <- unique(widthPerGroup(grl))
     count <- data.table(count = unlist(IntegerList(coverage),
@@ -452,14 +451,14 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @param downstream an integer (20), relative region to get downstream from
 #' @param acceptedLengths an integer vector (NULL), the read lengths accepted.
 #'  Default NULL, means all lengths accepted.
-#' @param zeroPosition an integer DEFAULT (upstream), the point if all windows
-#' are equal size, that should be set to position 0. Like leaders and
-#' cds combination, then 0 is the TIS and -1 is last base in leader. NOTE!:
-#' if windows have different widths, this will be ignored.
+#' @param zeroPosition an integer DEFAULT (upstream), what is the center point?
+#' Like leaders and cds combination, then 0 is the TIS and -1 is last base in leader.
+#' NOTE!: if windows have different widths, this will be ignored.
 #' @param scoring a character (transcriptNormalized), one of
 #' (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
-#' see ?coverageScorings. Use to choose meta coverage or per transcript.
-#' @return a data.frame with lengths by coverage / vector of proportions
+#' see ?coverageScorings. Use to decide a scoring of hits per position
+#' for metacoverage etc.
+#' @return a data.table with lengths by coverage / vector of proportions
 #' @family coverage
 #' @importFrom data.table rbindlist
 #' @export

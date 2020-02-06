@@ -10,7 +10,8 @@ bamVarName(
   skip.condition = length(unique(df$condition)) == 1,
   skip.stage = length(unique(df$stage)) == 1,
   skip.fraction = length(unique(df$fraction)) == 1,
-  skip.experiment = !df@expInVarName
+  skip.experiment = !df@expInVarName,
+  skip.libtype = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ in variable name.}
 \item{skip.fraction}{a logical (FALSE), don't include fraction}
 
 \item{skip.experiment}{a logical (FALSE), don't include experiment}
+
+\item{skip.libtype}{a logical (FALSE), don't include libtype}
 }
 \value{
 variable names of libraries (character vector)

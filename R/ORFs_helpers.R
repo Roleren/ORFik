@@ -96,7 +96,14 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 
 #' Get transcript names from orf names
 #'
-#' names must either be a column called names, or the names of the
+#' Using the ORFik definition of orf name, which is:
+#' example ENSEMBL:
+#' tx name: ENST0909090909090
+#' orf id: _1 (the first of on that tx)
+#' orf_name: ENST0909090909090_1
+#' So therefor txNames("ENST0909090909090_1") = ENST0909090909090
+#'
+#' The names must be extracted from a column called names, or the names of the
 #' grl object. If it is already tx names, it returns the input
 #'
 #' NOTE! Do not use _123 etc in end of transcript names if it is not ORFs.
@@ -507,8 +514,10 @@ longestORFs <- function(grl) {
 
 #' Get number of codons
 #'
-#' Choose only whole codons, or with stubs.
-#' But usually there are no ORFs that are 17 bases etc.
+#' Length of object / 3.
+#' Choose either only whole codons, or with stubs.
+#' For orfs stubs are not relevant, since there are no correctly defined
+#' ORFs that are 17 bases long etc.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param as.integer a logical (TRUE), remove stub codons
 #' @param keep.names a logical (FALSE)

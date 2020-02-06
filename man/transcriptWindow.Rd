@@ -9,7 +9,7 @@ transcriptWindow(
   cds,
   trailers,
   df,
-  outdir,
+  outdir = NULL,
   scores = c("sum", "zscore"),
   allTogether = TRUE,
   colors = rep("skyblue4", nrow(df)),
@@ -30,7 +30,7 @@ transcriptWindow(
 
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{outdir}{directory to save to}
+\item{outdir}{directory to save to (default: NULL, no saving)}
 
 \item{scores}{scoring function (default: c("sum", "zscore")),
 see ?coverageScorings for possible scores.}
@@ -48,7 +48,8 @@ see ?coverageScorings for possible scores.}
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
 normalize against}
 
-\item{idName}{A character to id if you make several in same folder,
+\item{idName}{A character ID to add to saved name of plot,
+if you make several plots in the same folder,
 and same experiment, like splitting transcripts in two groups like
 targets / nontargets etc. (default: "")}
 }

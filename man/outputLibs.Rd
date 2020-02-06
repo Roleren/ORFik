@@ -2,9 +2,15 @@
 % Please edit documentation in R/experiment.R
 \name{outputLibs}
 \alias{outputLibs}
-\title{Output bam/bed/wig files to R as variables}
+\title{Output bam/bed/bedo/wig files to R as variables}
 \usage{
-outputLibs(df, chrStyle = NULL, envir = .GlobalEnv, BPPARAM = bpparam())
+outputLibs(
+  df,
+  chrStyle = NULL,
+  type = "default",
+  envir = .GlobalEnv,
+  BPPARAM = bpparam()
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -14,6 +20,10 @@ outputLibs(df, chrStyle = NULL, envir = .GlobalEnv, BPPARAM = bpparam())
 called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
+
+\item{type}{a character(default: "defualt"), load files in experiment
+or some precomputed variant, either "bedo" or "pshifted".
+These are made with ORFik:::simpleLibs()}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 

@@ -17,6 +17,8 @@ numCodons(grl, as.integer = TRUE, keep.names = FALSE)
 an integer vector
 }
 \description{
-Choose only whole codons, or with stubs.
-But usually there are no ORFs that are 17 bases etc.
+Length of object / 3.
+Choose either only whole codons, or with stubs.
+For orfs stubs are not relevant, since there are no correctly defined
+ORFs that are 17 bases long etc.
 }

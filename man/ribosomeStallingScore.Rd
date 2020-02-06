@@ -4,7 +4,7 @@
 \alias{ribosomeStallingScore}
 \title{Ribosome Stalling Score (RSS)}
 \usage{
-ribosomeStallingScore(grl, RFP)
+ribosomeStallingScore(grl, RFP, overlapGrl = countOverlaps(grl, RFP))
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -13,6 +13,9 @@ cds', 3' utrs or ORFs.}
 
 \item{RFP}{RiboSeq reads as GAlignment, GRanges
 or GRangesList object}
+
+\item{overlapGrl}{an integer vector of overlaps
+(default: countOverlaps(grl, RFP))}
 }
 \value{
 a named vector of numeric values of RSS scores

@@ -4,12 +4,16 @@
 \alias{QCplots}
 \title{Correlation and coverage plots for ORFikQC}
 \usage{
-QCplots(df, region, stats_folder)
+QCplots(
+  df,
+  region = "mrna",
+  stats_folder = paste0(dirname(df$filepath[1]), "/QC_STATS/")
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{region}{(default: mrna), make raw count matrices of
+\item{region}{a character (default: mrna), make raw count matrices of
 whole mrnas or one of (leaders, cds, trailers)}
 
 \item{stats_folder}{directory to save}
@@ -18,6 +22,10 @@ whole mrnas or one of (leaders, cds, trailers)}
 NULL (objects stored to disc)
 }
 \description{
+Correlation plots default to mRNA covering reads.
+Meta plots defaults to leader, cds, trailer.
+}
+\details{
 Output will be stored in same folder as the
 libraries in df.
 }

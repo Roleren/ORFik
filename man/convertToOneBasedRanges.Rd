@@ -20,7 +20,8 @@ convertToOneBasedRanges(
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
 sums up the hits per unique range This will make each read unique, so
 that each read is 1 time, and score column gives the number of hits.
-A useful compression.}
+A useful compression. If addSizeColumn is FALSE, it will not differentiate
+between reads with same start and stop, but different length.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
@@ -32,13 +33,18 @@ original read lengths. This takes care of soft clips etc.}
 Converted GRanges object
 }
 \description{
-There are 4 ways of doing this
+There are 5 ways of doing this
 1. Take 5' ends, reduce away rest (5prime)
 2. Take 3' ends, reduce away rest (3prime)
 3. Tile to 1-mers and include all (tileAll)
 4. Take middle point per GRanges (middle)
+5. Get original with metacolumns (None)
 }
 \details{
+You can also do multiple at a time, then output is GRangesList, where
+each list group is the operation (5prime is [1], 3prime is [2] etc)
+
+
 Many other ways to do this have their own functions, like startSites and
 stopSites etc.
 To retain information on original width, set addSizeColumn to TRUE.
@@ -51,6 +57,7 @@ NOTE: Does not support paired end reads for the moment!
 \seealso{
 Other utils: 
 \code{\link{bedToGR}()},
+\code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

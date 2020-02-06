@@ -37,7 +37,8 @@ filepath: Full filepath to file
 Special rules:\cr
 Supported:\cr
 Single end bam, bed, wig + compressions of these\cr
-Paired forward / reverse wig files, must have same name except _forward etc
+Paired forward / reverse wig files, must have same name except
+ _forward / _reverse etc
 
 Not supported yet:\cr
 Paired end bam files not supported yet!

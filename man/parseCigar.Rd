@@ -17,5 +17,7 @@ parseCigar(cigar, shift, is_plus_strand)
 the shifted read
 }
 \description{
-Shift ribo-seq reads using cigar string
+Example if you want to change a read of length 20, by +12.
+You need to account for gaps etc, this is done using the
+cigar string of the read.
 }

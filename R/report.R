@@ -6,8 +6,13 @@
 #' It will also make you some correlation plots and meta coverage plots,
 #' so you get a good understanding of how good the quality of your NGS
 #' data production + aligner step were.
+#' You will also get count tables over mrna, leader, cds and trailer
+#' separately, similar to HTseq count tables.
+#'
+#'
 #' Everything will be outputed in the directory of your NGS data,
-#' inside the folder QC_STATS/, relative to data location in 'df'
+#' inside the folder ./QC_STATS/, relative to data location in 'df'.
+#' You can specify new out location with out.dir if you want.
 #'
 #' To make a ORFik experiment, see ?ORFik::experiment
 #' @param df an ORFik \code{\link{experiment}}
@@ -57,6 +62,19 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "ribozyme", "Mt_tRNA")]
 
+  # Make count tables
+  message("Making count tables for region:")
+  countDir <- paste0(stats_folder, "countTable_")
+  for (region in c("mrna", "leaders", "cds", "trailers")) {
+    message(region)
+    path <- paste0(countDir,region)
+    dt <- makeSummarizedExperimentFromBam(df, region = region,
+                                          geneOrTxNames = "tx",
+                                          longestPerGene = FALSE,
+                                          saveName = path)
+    assign(paste0("ct_", region), colSums(assay(dt)))
+  }
+
   # Put into csv, the standard stats
   libs <- bamVarName(df)
   message("Making summary counts for lib:")
@@ -72,12 +90,13 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     sCo <- function(region, lib) {
       return(sum(countOverlaps(region, lib)))
     }
-    res_mrna <- data.table(mRNA = sCo(mrna, lib), LEADERS = sCo(leaders, lib),
-                           CDS = sCo(get("cds", mode = "S4"), lib),
-                           TRAILERs = sCo(trailers, lib))
-    res_mrna[,ratio_mrna_aligned := mRNA / res$Aligned_reads]
-    res_mrna[,ratio_cds_mrna := CDS / mRNA]
-    res_mrna[, ratio_cds_leader := CDS / LEADERS]
+    res_mrna <- data.table(mRNA = get("ct_mrna")[s],
+                           LEADERS = get("ct_leaders")[s],
+                           CDS = get("ct_cds")[s],
+                           TRAILERs = get("ct_trailers")[s])
+    res_mrna[,ratio_mrna_aligned := round(mRNA / res$Aligned_reads, 6)]
+    res_mrna[,ratio_cds_mrna := round(CDS / mRNA, 6)]
+    res_mrna[, ratio_cds_leader := round(CDS / LEADERS, 6)]
 
     # Special region stats
     numbers <- sCo(tx, lib)
@@ -90,7 +109,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     colnames(res_extra) <- c("All_tx_types", types)
 
     # Lib width distribution, after soft.clip
-    widths <- summary(readWidths(lib))
+    widths <- round(summary(readWidths(lib)))
     res_widths <- data.frame(matrix(widths, nrow = 1))
     colnames(res_widths) <- names(widths)
 
@@ -102,10 +121,10 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   # Update raw reads to real number
   # Needs a folder called trim
-  if (dir.exists(paste0(exp_dir, "../trim/"))) {
+  if (dir.exists(paste0(exp_dir, "/../trim/"))) {
     message("Create raw read counts")
     oldDir <- getwd()
-    setwd(paste0(exp_dir, "../trim/"))
+    setwd(paste0(exp_dir, "/../trim/"))
     raw_library <- system('ls *.json', intern = TRUE)
     lib_string <- 'grep -m 1 -h "total_reads" *.json | grep -Eo "[0-9]*"'
     raw_reads <- as.numeric(system(lib_string, intern = TRUE))
@@ -122,37 +141,45 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
       message("Could not find raw read count of your data, setting to 20 M")
     } else {
       finals[order,]$Raw_reads <- raw_data$raw_reads
-      finals$ratio_aligned_raw = finals$Aligned_reads / finals$Raw_reads
+      finals$ratio_raw_aligned = round(finals$Aligned_reads /
+                                         finals$Raw_reads, 4)
     }
     setwd(oldDir)
-  } else message("Could not find raw read counts of data, setting to 20 M")
+  } else {
+    message("Could not find raw read counts of data, setting to 20 M")
+    message(paste0("No folder called:", paste0(exp_dir, "/../trim/")))
+  }
 
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
 
-  QCplots(df, mrna, stats_folder)
+  QCplots(df, "mrna", stats_folder)
 
   message(paste("Everything done, saved QC to:", stats_folder))
 }
 
 #' Correlation and coverage plots for ORFikQC
 #'
+#' Correlation plots default to mRNA covering reads.
+#' Meta plots defaults to leader, cds, trailer.
+#'
 #' Output will be stored in same folder as the
 #' libraries in df.
 #' @param df an ORFik \code{\link{experiment}}
-#' @param region (default: mrna), make raw count matrices of
+#' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save
 #' @return NULL (objects stored to disc)
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
-QCplots <- function(df, region, stats_folder) {
+QCplots <- function(df, region = "mrna",
+                    stats_folder = paste0(dirname(df$filepath[1]),
+                                          "/QC_STATS/")) {
   message("Making QC plots:")
   message("- Correlation plots")
   # Load fpkm values
-  data_for_pairs <- makeSummarizedExperimentFromBam(df, region = region,
-                                                    geneOrTxNames = "tx",
-                                                    longestPerGene = FALSE,
-                                                    type = "fpkm")
+  saveName <- paste0(stats_folder, "countTable_", region)
+  data_for_pairs <- countTable(df, region, type = "fpkm")
+
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
@@ -164,8 +191,14 @@ QCplots <- function(df, region, stats_folder) {
 
   # window coverage over mRNA regions
   message("- Meta coverage plots")
-  txNames <- filterTranscripts(df, 100, 100, 100, longestPerGene = FALSE)
+  txdb <- loadTxdb(df)
+  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = FALSE)
+  if (!exists("cds", mode = "S4")) {
+    loadRegions(txdb, parts = c("leaders", "cds", "trailers"))
+  }
+
   transcriptWindow(leaders[txNames], get("cds", mode = "S4")[txNames],
                    trailers[txNames], df = df, outdir = stats_folder,
-                   allTogether = TRUE)
+                   allTogether = TRUE,
+                   scores = c("sum", "zscore", "transcriptNormalized"))
 }

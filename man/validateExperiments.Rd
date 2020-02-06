@@ -13,7 +13,8 @@ validateExperiments(df)
 NULL (Stops if failed)
 }
 \description{
-Check for valid non-empty files etc.
+Check for valid existing, non-empty and all unique.
+A good way to see if your experiment is valid.
 }
 \seealso{
 Other ORFik_experiment: 

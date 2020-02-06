@@ -21,10 +21,14 @@ leader, cds, trailer, tRNAs, rRNAs, snoRNAs etc.
 It will also make you some correlation plots and meta coverage plots,
 so you get a good understanding of how good the quality of your NGS
 data production + aligner step were.
-Everything will be outputed in the directory of your NGS data,
-inside the folder QC_STATS/, relative to data location in 'df'
+You will also get count tables over mrna, leader, cds and trailer
+separately, similar to HTseq count tables.
 }
 \details{
+Everything will be outputed in the directory of your NGS data,
+inside the folder ./QC_STATS/, relative to data location in 'df'.
+You can specify new out location with out.dir if you want.
+
 To make a ORFik experiment, see ?ORFik::experiment
 }
 \examples{

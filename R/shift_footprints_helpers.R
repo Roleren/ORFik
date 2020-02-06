@@ -1,5 +1,8 @@
 #' Shift ribo-seq reads using cigar string
 #'
+#' Example if you want to change a read of length 20, by +12.
+#' You need to account for gaps etc, this is done using the
+#' cigar string of the read.
 #' @param cigar the cigar of the reads
 #' @param shift the shift as integer
 #' @param is_plus_strand logical

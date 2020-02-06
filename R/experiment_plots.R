@@ -6,7 +6,7 @@
 #' @param cds a \code{\link{GRangesList}} of coding sequences
 #' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
 #' @param df an ORFik \code{\link{experiment}}
-#' @param outdir directory to save to
+#' @param outdir directory to save to (default: NULL, no saving)
 #' @param scores scoring function (default: c("sum", "zscore")),
 #' see ?coverageScorings for possible scores.
 #' @param allTogether plot all coverage plots in 1 output? (defualt: TRUE)
@@ -16,7 +16,8 @@
 #' @param returnPlot return plot from function, default False
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
 #' normalize against
-#' @param idName A character to id if you make several in same folder,
+#' @param idName A character ID to add to saved name of plot,
+#' if you make several plots in the same folder,
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
 #' @export
@@ -35,7 +36,7 @@
 #' df <- read.experiment(template)
 #' loadRegions(df) # Load leader, cds and trailers as GRangesList
 #' #transcriptWindow(leaders, cds, trailers, df, outdir = "directory_to_save")
-transcriptWindow <- function(leaders, cds, trailers, df, outdir,
+transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                              scores = c("sum", "zscore"), allTogether = TRUE,
                              colors = rep("skyblue4", nrow(df)),
                              title = "Coverage metaplot",
@@ -86,8 +87,10 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
       for(s in scores) {
         a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
                                 title = title)
-        ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s,
-                                       "_", idName,".png")), a, height = 10)
+        if (!is.null(outdir)) {
+          ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s,
+                                         "_", idName,".png")), a, height = 10)
+        }
       }
     }
   }
@@ -106,7 +109,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir,
 #' @param windowSize size of binned windows, default: 100
 #' @return NULL, or ggplot object if returnPlot is TRUE
 transcriptWindowPer <- function(leaders, cds, trailers, df,
-                                outdir, scores = c("sum", "zscore"),
+                                outdir = NULL, scores = c("sum", "zscore"),
                                 reads, returnCoverage = FALSE,
                                 windowSize = 100) {
 
@@ -142,37 +145,53 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
 #'  position), it is possible to have additionals: (genes, fraction, feature)
 #' @inheritParams transcriptWindow
 #' @param tx a \code{\link{GRangesList}} of mrna transcripts
+#' @param normalizeMode a character (default: "position"), how to normalize
+#' library against rna library. Either on "position", normalize by
+#' number of genes, sum of reads and RNA seq, on tx "region" or "feature":
+#' same as position but RNA is split into the feature groups to normalize.
+#' Useful if you have a list of targets and background genes.
 #' @return a data.table of normalized transcripts by RNA.
-rnaNormalize <- function(coverage, df, dfr = NULL, tx) {
+#' @export
+rnaNormalize <- function(coverage, df, dfr = NULL, tx, normalizeMode = "position") {
+  coverage <- copy(coverage)
   if (is.null(dfr)) dfr <- df[df$libtype == "RNA",]
   if (!all(table(df$libtype) == nrow(dfr))) {
-    message("RNA normalization not equal rows of experiment,
-            returning without normalizing.")
+    message("RNA normalization not equal rows of experiment, returning without normalizing.")
     return(coverage)
   }
 
-  fullVarNameR <- bamVarName(df)
-  bamVarsR <- gsub(paste0(paste(unique(df$libtype),
-                                collapse = "_|"), "_"), "", bamVarName(df))
-  bamVarsr <- gsub(paste0(paste(unique(dfr$libtype),
-                                collapse = "_|"), "_"), "", bamVarName(dfr))
+  bamVarsR <- bamVarName(df, skip.libtype = TRUE, skip.experiment = TRUE)
+  bamVarsr <- bamVarName(dfr, skip.libtype = TRUE, skip.experiment = TRUE)
   matches <- bamVarsr %in% bamVarsR
   if (!any(matches)) {
-    message("RNA experiment does not match any rows in df,
-            returning without normalizing.")
+    message("RNA experiment does not match any rows in df, returning without normalizing.")
     return(coverage)
   }
 
   outputLibs(dfr, tx)
-  rnaVarNames <- bamVarName(dfr)[matches]
+  fullVarNameR <- bamVarName(df)
+  rnaVarNames <- bamVarName(df)(dfr)[matches]
   i <- 1
   for (j in rnaVarNames) {
-    fpkms <- ORFik::fpkm(tx, get(j), pseudoCount = 1)
-    fpkmsDT <- data.table(fpkms)
+    fpkmsDT <- data.table(ORFik::fpkm(tx, get(j), pseudoCount = 1))
+
     rows <- fullVarNameR[which(bamVarsR == bamVarsr[i])]
-    coverage[coverage$fraction  %in% rows, score :=
-               (score / (min(sum(score), 1)*length(unique(genes))))  /
-               fpkmsDT[genes]]
+    if (normalizeMode == "position") {
+      coverage[coverage$fraction  %in% rows,
+               score := (score / (min(sum(score), 1)*length(unique(genes))))
+                 / fpkmsDT[genes]]
+    } else if (normalizeMode == "region") {
+      coverage[coverage$fraction  %in% rows,
+               score := (score / fpkmsDT[genes])]
+    } else if (normalizeMode == "feature") {
+      print("Normalize by feature")
+      f <- table(coverage$feature)
+      coverage[coverage$fraction  %in% rows,
+               score := (score / (min(sum(score), 1)*f[feature]))
+                 / fpkmsDT[genes]]
+      coverage$test <- f[coverage$feature]
+    } else stop("normalizeMode must be either position, region or feature")
+
     i = i + 1
   }
   return(coverage)

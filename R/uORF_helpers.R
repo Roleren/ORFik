@@ -95,7 +95,8 @@ uORFSearchSpace <- function(fiveUTRs, cage = NULL, extension = 1000,
     fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue,
                                   restrictUpstreamToTx, removeUnused)
   }
-  if(!is.null(cds)) fiveUTRs <- addCdsOnLeaderEnds(fiveUTRs, cds)
+  if(!is.null(cds))
+    fiveUTRs <- addCdsOnLeaderEnds(fiveUTRs, get("cds", mode = "S4"))
   return(fiveUTRs)
 }
 

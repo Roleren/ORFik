@@ -152,7 +152,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
                                minThreeUTR = minThreeUTR)
-  cds <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+  cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
   footprints <- fimport(footprints, cds)
 
   # reduce data-set to only matching seqlevels
@@ -167,7 +167,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   tx <- tx[txNames]
 
   # find periodic read lengths
-  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
+  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
+                                        addScoreColumn = TRUE)
   periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
                       pShifted = FALSE, upstream = 0, downstream = 149,
                       zeroPosition = 0, scoring = "periodic")
@@ -199,3 +200,42 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   return(offset)
 }
 
+#' Shift footprints of each file in experiment
+#'
+#' Saves files to a specified location as .bed, it will include a score column
+#' containing read width.
+#'
+#' For more details, see: \code{\link{detectRibosomeShifts}}
+#' @param df an ORFik \code{\link{experiment}}
+#' @param out.dir output directory for files,
+#' default: dirname(df$filepath[1]), making a /pshifted
+#' folder at that location
+#' @inheritParams detectRibosomeShifts
+#' @return NULL (Objects are saved to out.dir/pshited/"name")
+#' @importFrom rtracklayer export.bed
+#' @family pshifting
+shiftFootprintsByExperiment <- function(df,
+                                        out.dir = pasteDir(dirname(
+                                          df$filepath[1]), "/pshifted/"),
+                                        start = TRUE, stop = FALSE,
+                                        top_tx = 10L, minFiveUTR = 30L,
+                                        minCDS = 150L, minThreeUTR = 30L,
+                                        firstN = 150L) {
+  path <- out.dir
+  dir.create(path, showWarnings = FALSE, recursive = TRUE)
+  if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
+  varNames <- bamVarName(df)
+  outputLibs(df)
+  txdb <- loadTxdb(df)
+  message(paste0("Shifting reads in experiment:", df@experiment))
+  for (file in varNames) {
+    message(file)
+    shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
+                                   top_tx = top_tx, minFiveUTR = minFiveUTR,
+                                   minCDS = minCDS, minThreeUTR = minThreeUTR,
+                                   firstN = firstN)
+    shifted <- shiftFootprints(get(file), shifts)
+    shifted$score <- shifted$size
+    export.bed(shifted, paste0(path, file,"_pshifted.bed"))
+  }
+}

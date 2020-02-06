@@ -74,7 +74,9 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @return a \code{\link{GAlignments}} object of bam file
 #' @export
 #' @family utils
-#'
+#' @examples
+#' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' readBam(bam_file, "UCSC")
 readBam <- function(path, chrStyle = NULL) {
   if (is(path, "factor")) path <- as.character(path)
   return(matchSeqStyle(readGAlignments(path), chrStyle))
@@ -140,6 +142,63 @@ findWigPairs <- function(paths) {
   return(paths)
 }
 
+#' Store GRanges object as .bedo
+#'
+#' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
+#' .bedo is a text based format with columns:
+#' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
+#' , duplicates of that read
+#' @param object a GRanges object
+#' @param out a character, location on disc (full path)
+#' @return NULL, object saved to disc
+#' @importFrom data.table fwrite
+#'
+export.bedo <- function(object, out) {
+  if (!is(object, "GRanges")) stop("object must be GRanges")
+  dt <- setDT(as.data.frame(object))
+  fwrite(dt, file = out)
+}
+
+#' Load GRanges object from .bedo
+#'
+#' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
+#' .bedo is a text based format with columns:
+#' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
+#' , duplicates of that read
+#' @param path a character, location on disc (full path)
+#' @return GRanges object
+#' @importFrom tools file_ext
+#' @export
+import.bedo <- function(path) {
+  if (file_ext(path) != "bedo") stop("export.bedo can only load .bedo files!")
+  return(makeGRangesFromDataFrame(fread(input = path), keep.extra.columns = TRUE))
+}
+
+#' Remove file extension of path
+#'
+#' Allows removal of compression
+#' @param path character path (allows multiple paths)
+#' @param basename relative path (TRUE) or full path (FALSE)? (default: FALSE)
+#' @importFrom tools file_ext
+#' @return character path without file extension
+remove.file_ext <- function(path, basename = FALSE) {
+  out <- c()
+  for (p in path) {
+    fext <- file_ext(path)
+    compressions <- c("gzip", "gz", "bgz", "zip")
+    areCompressed <- fext %in% compressions
+    if (areCompressed) {
+      ext <- file_ext(file_path_sans_ext(path, compression = FALSE))
+      regex <- paste0("*\\.",ext,"\\.", fext,"$")
+    } else {
+      regex <- paste0("*\\.",fext,"$")
+    }
+    new <- gsub(pattern = regex, "", path)
+    out <- c(out, new)
+  }
+  return(ifelse(basename, basename(out), out))
+}
+
 #' Load any type of sequencing reads
 #'
 #' Wraps around rtracklayer::import and tries to speed up loading with the
@@ -158,6 +217,14 @@ findWigPairs <- function(paths) {
 #' @importFrom rtracklayer import
 #' @return a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
 #'  depending on input.
+#' @export
+#' @family utils
+#' @examples
+#' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' fimport(bam_file)
+#' # Certain chromosome naming
+#' fimport(bam_file, "NCBI")
+#'
 fimport <- function(path, chrStyle = NULL) {
   if (is.character(path)) {
     if (all(file.exists(path))) {
@@ -170,7 +237,8 @@ fimport <- function(path, chrStyle = NULL) {
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
         } else if (all(fext %in% c("bam"))) {
-          stop("only wig format allowed for multiple files!, is this paired end bam?")
+          stop("only wig format allowed for multiple files!,
+               is this paired end bam?")
         } else stop("only wig format allowed for multiple files!")
       } else { # Only 1 file path given
         if (fext == "bam") {
@@ -181,6 +249,8 @@ fimport <- function(path, chrStyle = NULL) {
                    file_ext(file_path_sans_ext(path, compression = FALSE))
                                                                   == "bed") {
           return(fread.bed(path, chrStyle))
+        } else if (fext == "bedo") {
+            import.bedo(path)
         } else return(matchSeqStyle(import(path), chrStyle))
       }
     } else stop(paste0(path, "does not exist as File/Files!"))
@@ -240,11 +310,15 @@ optimizeReads <- function(grl, reads) {
 
 #' Convert a GRanges Object to 1 width reads
 #'
-#' There are 4 ways of doing this
+#' There are 5 ways of doing this
 #' 1. Take 5' ends, reduce away rest (5prime)
 #' 2. Take 3' ends, reduce away rest (3prime)
 #' 3. Tile to 1-mers and include all (tileAll)
 #' 4. Take middle point per GRanges (middle)
+#' 5. Get original with metacolumns (None)
+#'
+#' You can also do multiple at a time, then output is GRangesList, where
+#' each list group is the operation (5prime is [1], 3prime is [2] etc)
 #'
 #'
 #' Many other ways to do this have their own functions, like startSites and
@@ -260,7 +334,8 @@ optimizeReads <- function(grl, reads) {
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per unique range This will make each read unique, so
 #'  that each read is 1 time, and score column gives the number of hits.
-#'  A useful compression.
+#'  A useful compression. If addSizeColumn is FALSE, it will not differentiate
+#'  between reads with same start and stop, but different length.
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
@@ -276,33 +351,36 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
                                       load as GAlignments instead!")
 
-  if (addSizeColumn) {
+  if (addSizeColumn & is.null(mcols(gr)$size)) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
                                       size = readWidths(gr, after.softclips))
   }
   if (addScoreColumn) {
-    if (!is.null(cigar(gr))) {
-      dt <- as.data.table(gr)[, .(.N, .I),
-                              .(seqnames, start, end, strand, cigar)]
+    dt <- data.table(seqnames = as.character(seqnames(gr)),
+                     start = start(gr),
+                     end = end(gr),
+                     strand = as.character(strand(gr)))
+    if (addSizeColumn) {
+      dt[, size := mcols(gr)$size]
+      dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
     } else {
-      dt <- as.data.table(gr)[, .(.N, .I), .(seqnames, start, end, strand)]
+      dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
     }
-    dt <- dt[!duplicated(N), ] # this is right ?
-    gr <- gr[dt$I]
-    gr$score <- NULL
-    mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = as.integer(dt$N))
+    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE)
   }
+
   gr <- GRanges(gr)
   if (method == "5prime") {
     gr <- resize(gr, width = 1, fix = "start")
   } else if(method == "3prime") {
     gr <- resize(gr, width = 1, fix = "end")
+  } else if(method == "None") {
   } else if(method == "tileAll") {
     gr <- unlist(tile(gr, width = 1), use.names = FALSE)
   } else if (method == "middle") {
     ranges(gr) <- IRanges(start(gr) + ceiling((end(gr) - start(gr)) / 2),
                           width = 1)
-  } else stop("method not defined: must be 5prime, 3prime etc.")
+  } else stop("invalid type: must be 5prime, 3prime, None, tileAll or middle")
 
   return(gr)
 }

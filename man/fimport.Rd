@@ -30,3 +30,21 @@ NOTE: For wig you can send in 2 files, so that it automaticly merges
 forward and reverse stranded objects. You can also just send 1 wig file,
 it will then have "*" as strand.
 }
+\examples{
+bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+fimport(bam_file)
+# Certain chromosome naming
+fimport(bam_file, "NCBI")
+
+}
+\seealso{
+Other utils: 
+\code{\link{bedToGR}()},
+\code{\link{convertToOneBasedRanges}()},
+\code{\link{findFa}()},
+\code{\link{fread.bed}()},
+\code{\link{optimizeReads}()},
+\code{\link{readBam}()},
+\code{\link{readWig}()}
+}
+\concept{utils}

@@ -29,7 +29,8 @@
 #' Special rules:\cr
 #' Supported:\cr
 #' Single end bam, bed, wig + compressions of these\cr
-#' Paired forward / reverse wig files, must have same name except _forward etc
+#' Paired forward / reverse wig files, must have same name except
+#'  _forward / _reverse etc
 #'
 #' Not supported yet:\cr
 #' Paired end bam files not supported yet!
@@ -81,6 +82,9 @@ experiment <- setClass("experiment",
 #' experiment show definition
 #'
 #' Show a simplified version of experiment.
+#' The show function simplifies the view so that any
+#' column of data (like replicate or stage) is not shown, if all
+#' values are identical in that column. Filepath is also never shown.
 #' @param object an ORFik \code{\link{experiment}}
 #' @export
 #' @return print state of experiment
@@ -110,6 +114,7 @@ setMethod("show",
 )
 
 #' Internal nrow function for ORFik experiment
+#' Number of runs in experiment
 #' @param x an ORFik \code{\link{experiment}}
 #' @return number of rows in experiment (integer)
 setMethod("nrow",
@@ -121,9 +126,12 @@ setMethod("nrow",
 
 #' Read ORFik \code{\link{experiment}}
 #'
+#' Read in runs / samples from an experiment as a single R object.
+#' To read an ORFik experiment, you must of course make one first.
+#' See \code{\link{create.experiment}}
 #' The file must be csv and be a valid ORFik experiment
 #' @param file a .csv file following ORFik experiment style ("," as seperator)
-#' , or a template data.frame from create.experiment()
+#' , or a template data.frame from \code{\link{create.experiment}}
 #' @return an ORFik \code{\link{experiment}}
 #' @export
 #' @examples
@@ -155,8 +163,8 @@ read.experiment <-  function(file) {
     listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
                           stringsAsFactors = FALSE)
   } else if(is(file, "data.frame")) {
-    info <- file[1:3,]
-    listData <- file[-c(1:4),]
+    info <- file[seq(3),]
+    listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
 
@@ -174,13 +182,17 @@ read.experiment <-  function(file) {
 
 #' Create a template for new ORFik \code{\link{experiment}}
 #'
+#' Create information on runs / samples from an experiment as a single R object.
 #' By using files in a folder. It will try to make an experiment table
-#' with information per sample. You will have to fill in the details
-#' that were not autodetected. Easiest to do in csv editor like libre Office
+#' with information per sample. There will be several columns you can fill in,
+#' most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
+#' Wild type or mutant etc.
+#' You will have to fill in the details that were not autodetected.
+#' Easiest way to fill in the blanks are in a csv editor like libre Office
 #' or excel. Remember that each row (sample) must have a unique combination
 #' of values.
-#' A column reverse is made if their are paired data, like +/- strand
-#' wig files.
+#' An extra column called "reverse" is made if there are paired data,
+#' like +/- strand wig files.
 #' @param dir Which directory to create experiment from
 #' @param exper Short name of experiment, max 5 characters long
 #' @param saveDir Directory to save experiment csv file (NULL)
@@ -247,9 +259,9 @@ create.experiment <- function(dir, exper, saveDir = NULL,
                   "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
   df[5:(5+length(files)-1), 4] <- findFromPath(files, conditions)
 
-  df[1, 1:2] <- c("name", exper)
-  df[2, 1:2] <- c("gff", txdb)
-  df[3, 1:2] <- c("fasta", fa)
+  df[1, seq(2)] <- c("name", exper)
+  df[2, seq(2)] <- c("gff", txdb)
+  df[3, seq(2)] <- c("fasta", fa)
   df[is.na(df)] <- ""
   if (!is.null(saveDir))
     save.experiment(df, pasteDir(saveDir, exper,".csv"))
@@ -258,6 +270,8 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 }
 
 #' Save \code{\link{experiment}} to disc
+#'
+#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param file name of file to save df as
 #' @export
@@ -283,6 +297,8 @@ save.experiment <- function(df, file) {
 }
 
 #' Find all candidate library types filenames
+#'
+#' From the given \code{\link{experiment}}
 #' @param filepaths path to all files
 #' @param candidates Possible names to search for.
 #' @return a candidate library types (character vector)
@@ -322,7 +338,8 @@ libraryTypes <- function(df) {
 
 #' Validate ORFik \code{\link{experiment}}
 #'
-#' Check for valid non-empty files etc.
+#' Check for valid existing, non-empty and all unique.
+#' A good way to see if your experiment is valid.
 #' @param df an ORFik \code{\link{experiment}}
 #' @return NULL (Stops if failed)
 #' @family ORFik_experiment
@@ -366,6 +383,7 @@ validateExperiments <- function(df) {
 #' in variable name.
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
+#' @param skip.libtype a logical (FALSE), don't include libtype
 #' @return variable names of libraries (character vector)
 #' @export
 #' @family ORFik_experiment
@@ -373,18 +391,21 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.condition = length(unique(df$condition)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
                        skip.fraction = length(unique(df$fraction)) == 1,
-                       skip.experiment = !df@expInVarName) {
+                       skip.experiment = !df@expInVarName,
+                       skip.libtype = FALSE) {
 
   varName <- c()
   for (i in 1:nrow(df)) {
     varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
                                            skip.condition, skip.stage,
-                                           skip.fraction, skip.experiment))
+                                           skip.fraction, skip.experiment,
+                                           skip.libtype))
   }
   return(varName)
 }
 
 #' Get variable name per filepath in experiment
+#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
@@ -394,40 +415,54 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' in variable name.
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
+#' @param skip.libtype a logical (FALSE), don't include libtype
 #' @return variable name of library (character vector)
 bamVarNamePicker <- function(df, skip.replicate = FALSE,
                              skip.condition = FALSE,
                              skip.stage = FALSE, skip.fraction = FALSE,
-                             skip.experiment = FALSE) {
+                             skip.experiment = FALSE, skip.libtype = FALSE) {
   if(nrow(df) != 1) stop("experiment must only input 1 row")
   lib <- df$libtype
   stage <- df$stage
   cond <- df$condition
   rep <- df$rep
   frac <- df$fraction
-  current <- lib
+  current <- ""
+  # Add only underscore if x is not ""
+  spaste <- function(x, y, reverse = FALSE) {
+    if (reverse)
+      return(paste(x, y, sep = ifelse(y == "", "", "_")))
+    return(paste(x, y, sep = ifelse(x == "", "", "_")))
+  }
+  if (!skip.libtype)
+    current <- lib
   if(!skip.condition)
-    current <- paste(current, cond, sep = "_")
+    current <- spaste(current, cond)
   if (!skip.stage)
-    current <- paste(current, stage, sep = "_")
-  if (!(skip.fraction | is.null(frac))) {
+    current <- spaste(current, stage)
+  if (!(skip.fraction | is.null(frac) | is.na(frac))) {
     if (frac != "")
-      current <- paste(current, paste0("f", frac), sep = "_")
+      current <- spaste(current, paste0("f", frac))
   }
 
   if (!(skip.replicate | is.null(rep)))
-    current <- paste(current, paste0("r", rep), sep = "_")
+    current <- spaste(current, paste0("r", rep))
   if (! (skip.experiment | is.null(df@experiment)))
-    current <- paste(df@experiment, current, sep = "_")
-  return(gsub(pattern = "__", "_", current))
+    current <- spaste(df@experiment, current, TRUE)
+
+  current <- gsub(pattern = "__", "_", current)
+  return(gsub("_$", "", current))
 }
 
-#' Output bam/bed/wig files to R as variables
+#' Output bam/bed/bedo/wig files to R as variables
 #'
 #' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams matchSeqStyle
+#' @param type a character(default: "defualt"), load files in experiment
+#' or some precomputed variant, either "bedo" or "pshifted".
+#' These are made with ORFik:::simpleLibs()
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores? default: bpparam()
 #' @return NULL (libraries set by envir assignment)
@@ -449,8 +484,8 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' # Output to .GlobalEnv with:
 #' # outputLibs(df)
 #' @family ORFik_experiment
-outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
-                       BPPARAM = bpparam()) {
+outputLibs <- function(df, chrStyle = NULL, type = "default",
+                       envir = .GlobalEnv, BPPARAM = bpparam()) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
 
@@ -468,15 +503,29 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
     if (!all(loaded)) {
       message(paste0("Ouputing libraries from: ",df@experiment))
       libs <-bplapply(df$filepath,
-                      function(x, chrStyle, df) {
-                            i <- which(df$filepath == x)
-                            varNames <- bamVarName(df)
-                            message(paste(i, ": ", varNames[i]))
-                            if (!is.null(df$reverse)) {
-                              input <- c(df[i,]$filepath, df[i,]$reverse)
-                            } else input <- df[i,]$filepath
-                            return(fimport(input, chrStyle))
-      }, BPPARAM = BPPARAM, chrStyle = chrStyle, df = df)
+                      function(x, chrStyle, df, type) {
+                        i <- which(df$filepath == x)
+                        varNames <- bamVarName(df)
+                        message(paste(i, ": ", varNames[i]))
+                        if (type == "bedo") {
+                          out.dir <- paste0(dirname(df$filepath[1]), "/bedo/")
+                          if (dir.exists(out.dir)) {
+                            input <- paste0(out.dir,
+                                            remove.file_ext(x,
+                                                            basename = TRUE)
+                                            , ".bedo")
+                          } else type <- "default"
+                        }
+                        if (type == "default") {
+                          if (!is.null(df$reverse)) {
+                            input <- c(x, df[i,]$reverse)
+                          } else input <- x
+                        }
+                        return(fimport(input, chrStyle))
+                      },
+                      BPPARAM = BPPARAM, chrStyle = chrStyle,
+                      df = df, type = type)
+
 
       # assign to environment
       for (i in 1:nrow(df)) { # For each stage
@@ -486,6 +535,38 @@ outputLibs <- function(df, chrStyle = NULL, envir = .GlobalEnv,
   }
   return(NULL)
 }
+
+#' Will make a simplified version of NGS libraries
+#'
+#' An .obed file containing chromosome, start, stop, strand,
+#' readWidth and number of duplicate reads.
+#' A bed file with 2 score columns
+#' @param df an ORFik \code{\link{experiment}}
+#' @param out.dir optional output directory, default: dirname(df$filepath[1])
+#' @return NULL (saves files to disc)
+simpleLibs <- function(df,
+                       out.dir = paste0(dirname(df$filepath[1]), "/bedo/")) {
+  validateExperiments(df)
+  dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
+  if (!dir.exists(out.dir)) stop("could not create directory!")
+  message(paste("Saving .bedo files to:", out.dir))
+  outputLibs(df)
+
+  varNames <- bamVarName(df)
+  i <- 1
+  for (f in varNames) {
+    message(f)
+    gr <- convertToOneBasedRanges(gr = get(f), addScoreColumn = TRUE,
+                                  addSizeColumn = TRUE,
+                                  method = "None")
+    output <- paste0(out.dir,
+                     remove.file_ext(df$filepath[i], basename = TRUE),
+                     ".bedo")
+    export.bedo(gr, output)
+    i <- i + 1
+  }
+}
+
 
 #' Remove bam/bed/wig files load in R as variables
 #'

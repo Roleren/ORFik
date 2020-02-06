@@ -8,12 +8,15 @@ read.experiment(file)
 }
 \arguments{
 \item{file}{a .csv file following ORFik experiment style ("," as seperator)
-, or a template data.frame from create.experiment()}
+, or a template data.frame from \code{\link{create.experiment}}}
 }
 \value{
 an ORFik \code{\link{experiment}}
 }
 \description{
+Read in runs / samples from an experiment as a single R object.
+To read an ORFik experiment, you must of course make one first.
+See \code{\link{create.experiment}}
 The file must be csv and be a valid ORFik experiment
 }
 \examples{

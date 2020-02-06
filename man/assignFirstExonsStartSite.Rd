@@ -10,12 +10,15 @@ assignFirstExonsStartSite(grl, newStarts)
 \item{grl}{a \code{\link{GRangesList}} object}
 
 \item{newStarts}{an integer vector of same length as grl, with new start
-values}
+values (absolute coordinates, not relative)}
 }
 \value{
 the same GRangesList with new start sites
 }
 \description{
+Per group in GRangesList, assign the most upstream site.
+}
+\details{
 make sure your grl is sorted, since start of "-" strand
 objects should be the
 max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.

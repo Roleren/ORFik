@@ -49,7 +49,9 @@ can overlap into CDS's.}
 with possible compressions (".gzip", ".gz", ".bgz"), or already loaded
 CageSeq peak data as GRanges or GAlignment.
 NOTE: If it is a .bam file, it will add a score column by running:
-convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)}
+convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)
+The score column is then number of replicates of read, if score column is
+something else, like read length, set the score column to NULL first.}
 
 \item{extension}{The maximum number of basses upstream of the TSS to search
 for CageSeq peak.}

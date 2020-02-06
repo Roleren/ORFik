@@ -17,8 +17,10 @@ scoreSummarizedExperiment(
 (row normalized raw counts matrix),
 alternative is "fpkm", "log2fpkm" or "log10fpkm"}
 
-\item{collapse}{a logical (default FALSE), if TRUE all samples
-within the group SAMPLE will be collapsed to one.}
+\item{collapse}{a logical/character (default FALSE), if TRUE all samples
+within the group SAMPLE will be collapsed to one. If "all", all
+groups will be merged into 1 column called merged_all. Collapse is defined
+as rowSum(elements_per_group) / ncol(elements_per_group)}
 }
 \value{
 a DEseq summerizedExperiment object (transcriptNormalized)

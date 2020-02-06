@@ -181,7 +181,7 @@ test_that("fractionLength works as intended", {
   changedtx_len[1] <- 200
   scores <- fractionLength(grl, changedtx_len)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.08, 0.09, 0.09, 0.10))
+  expect_equal(round(scores, 3), c(0.085, 0.090, 0.090, 0.103))
 })
 
 

@@ -9,7 +9,7 @@
 filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
                        preCleanup = TRUE) {
   cage <- fimport(cage, seqlevelsStyle(fiveUTRs))
-  if (is.null(cage$score)) {
+  if (is.null(score(cage))) {
     cage <- convertToOneBasedRanges(cage, addScoreColumn = TRUE)
   }
 
@@ -201,6 +201,8 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused,
 #' CageSeq peak data as GRanges or GAlignment.
 #' NOTE: If it is a .bam file, it will add a score column by running:
 #' convertToOneBasedRanges(cage, method = "5prime", addScoreColumn = TRUE)
+#' The score column is then number of replicates of read, if score column is
+#' something else, like read length, set the score column to NULL first.
 #' @param extension The maximum number of basses upstream of the TSS to search
 #' for CageSeq peak.
 #' @param filterValue The minimum number of reads on cage position, for it to

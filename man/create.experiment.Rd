@@ -34,13 +34,17 @@ a data.frame, NOTE: this is not a ORFik experiment,
  only a template for it!
 }
 \description{
+Create information on runs / samples from an experiment as a single R object.
 By using files in a folder. It will try to make an experiment table
-with information per sample. You will have to fill in the details
-that were not autodetected. Easiest to do in csv editor like libre Office
+with information per sample. There will be several columns you can fill in,
+most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
+Wild type or mutant etc.
+You will have to fill in the details that were not autodetected.
+Easiest way to fill in the blanks are in a csv editor like libre Office
 or excel. Remember that each row (sample) must have a unique combination
 of values.
-A column reverse is made if their are paired data, like +/- strand
-wig files.
+An extra column called "reverse" is made if there are paired data,
+like +/- strand wig files.
 }
 \examples{
 # 1. Pick directory

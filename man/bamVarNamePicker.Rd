@@ -10,7 +10,8 @@ bamVarNamePicker(
   skip.condition = FALSE,
   skip.stage = FALSE,
   skip.fraction = FALSE,
-  skip.experiment = FALSE
+  skip.experiment = FALSE,
+  skip.libtype = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ in variable name.}
 \item{skip.fraction}{a logical (FALSE), don't include fraction}
 
 \item{skip.experiment}{a logical (FALSE), don't include experiment}
+
+\item{skip.libtype}{a logical (FALSE), don't include libtype}
 }
 \value{
 variable name of library (character vector)

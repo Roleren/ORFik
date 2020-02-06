@@ -2,13 +2,13 @@
 % Please edit documentation in R/SummarizedExperiment_helpers.R
 \name{makeSummarizedExperimentFromBam}
 \alias{makeSummarizedExperimentFromBam}
-\title{Make a count matrix from a libraries}
+\title{Make a count matrix from a library or experiment}
 \usage{
 makeSummarizedExperimentFromBam(
   df,
   saveName = NULL,
   longestPerGene = TRUE,
-  geneOrTxNames = "gene",
+  geneOrTxNames = "tx",
   region = "mrna",
   type = "count"
 )
@@ -18,17 +18,18 @@ makeSummarizedExperimentFromBam(
 
 \item{saveName}{a character (default NULL),
 if set save experiment to path given. Always saved as .rds.,
-it is optional to add .rds, it will be added for you if not present.}
+it is optional to add .rds, it will be added for you if not present.
+Also used to load existing file with that name.}
 
 \item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
 isoforms per gene.}
 
-\item{geneOrTxNames}{a character (default "gene"), should row names
-keep trancripts names ("tx") or change to gene names ("gene")}
+\item{geneOrTxNames}{a character vector (default "tx"), should row names
+keep trancript names ("tx") or change to gene names ("gene")}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
- of whole mrnas or one of (leaders, cds, trailers). Can also be a
-\code{\link{GRangesList}}, then it uses this region directly.}
+of whole mrnas or one of (leaders, cds, trailers).
+Can also be a \code{\link{GRangesList}}, then it uses this region directly.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
@@ -38,10 +39,12 @@ a \code{\link{SummarizedExperiment}} object or data.table if
 "type" is not "count, with rownames as transcript / gene names.
 }
 \description{
-Make a summerizedExperiment object from bam files
+Make a summerizedExperiment / matrix object from bam files
 }
 \details{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
+NOTE: If the file called saveName exists, it will then load file,
+not remake it!
 }
 \examples{
 # 1. Pick directory
