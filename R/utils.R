@@ -250,7 +250,7 @@ fimport <- function(path, chrStyle = NULL) {
                                                                   == "bed") {
           return(fread.bed(path, chrStyle))
         } else if (fext == "bedo") {
-            import.bedo(path)
+          return(matchSeqStyle(import.bedo(path), chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
       }
     } else stop(paste0(path, "does not exist as File/Files!"))

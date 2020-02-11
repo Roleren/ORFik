@@ -541,15 +541,20 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' An .obed file containing chromosome, start, stop, strand,
 #' readWidth and number of duplicate reads.
 #' A bed file with 2 score columns
+#' Gives a massive speedup when cigar strings are not needed.
 #' @param df an ORFik \code{\link{experiment}}
-#' @param out.dir optional output directory, default: dirname(df$filepath[1])
-#' @return NULL (saves files to disc)
+#' @param out.dir optional output directory, default: dirname(df$filepath[1]),
+#' if it is NULL, it will just reassign R objects to simplified libraries.
+#' @return NULL (saves files to disc or R .GlobalEnv)
 simpleLibs <- function(df,
                        out.dir = paste0(dirname(df$filepath[1]), "/bedo/")) {
   validateExperiments(df)
-  dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
-  if (!dir.exists(out.dir)) stop("could not create directory!")
-  message(paste("Saving .bedo files to:", out.dir))
+  if (!is.null(out.dir)) {
+    dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
+    if (!dir.exists(out.dir)) stop("could not create directory!")
+    message(paste("Saving .bedo files to:", out.dir))
+  }
+
   outputLibs(df)
 
   varNames <- bamVarName(df)
@@ -559,10 +564,15 @@ simpleLibs <- function(df,
     gr <- convertToOneBasedRanges(gr = get(f), addScoreColumn = TRUE,
                                   addSizeColumn = TRUE,
                                   method = "None")
-    output <- paste0(out.dir,
-                     remove.file_ext(df$filepath[i], basename = TRUE),
-                     ".bedo")
-    export.bedo(gr, output)
+    if (!is.null(out.dir)) {
+      output <- paste0(out.dir,
+                       remove.file_ext(df$filepath[i], basename = TRUE),
+                       ".bedo")
+      export.bedo(gr, output)
+    } else {
+      assign(x = f, value = gr, envir = .GlobalEnv)
+    }
+
     i <- i + 1
   }
 }

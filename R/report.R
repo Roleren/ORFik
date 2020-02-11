@@ -47,7 +47,11 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
-  outputLibs(df, leaders)
+  outputLibs(df, leaders, type = "bedo")
+  libs <- bamVarName(df)
+  if (is(get(libs[1]), "GAlignments")) {
+    simpleLibs(df, NULL) # Speedup by reducing unwanted information
+  }
 
   # Special regions rRNA etc..
   if (!(file_ext(df@txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
@@ -76,7 +80,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
   }
 
   # Put into csv, the standard stats
-  libs <- bamVarName(df)
+
   message("Making summary counts for lib:")
   for (s in libs) { # For each library
     message(s)

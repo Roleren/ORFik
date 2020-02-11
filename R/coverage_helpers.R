@@ -482,7 +482,6 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
     warning("no grl ranges had valid window size!")
     return(data.table())
   }
-
   rWidth <- readWidths(reads)
   all_lengths <- sort(unique(rWidth))
   if (!is.null(acceptedLengths))
