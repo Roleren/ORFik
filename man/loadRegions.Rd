@@ -8,6 +8,7 @@ loadRegions(
   txdb,
   parts = c("mrna", "leaders", "cds", "trailers"),
   extension = "",
+  names.keep = NULL,
   envir = .GlobalEnv
 )
 }
@@ -19,6 +20,9 @@ or an ORFik experiment}
 \item{parts}{the transcript parts you want}
 
 \item{extension}{What to add on the name after leader, like: B -> leadersB}
+
+\item{names.keep}{a character vector of subset of names to keep. Example:
+loadRegions(txdb, names = ENST1000005), will return only that transcript}
 
 \item{envir}{Which environment to save to, default (.GlobalEnv)}
 }

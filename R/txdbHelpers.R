@@ -201,6 +201,8 @@ loadRegion <- function(txdb, part = "tx") {
 #' @inheritParams loadTxdb
 #' @param parts the transcript parts you want
 #' @param extension What to add on the name after leader, like: B -> leadersB
+#' @param names.keep a character vector of subset of names to keep. Example:
+#' loadRegions(txdb, names = ENST1000005), will return only that transcript
 #' @param envir Which environment to save to, default (.GlobalEnv)
 #' @return NULL (regions set by envir assignment)
 #' @export
@@ -209,11 +211,23 @@ loadRegion <- function(txdb, part = "tx") {
 #' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
 loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
-                        extension = "", envir = .GlobalEnv) {
+                        extension = "", names.keep = NULL,
+                        envir = .GlobalEnv) {
   txdb <- loadTxdb(txdb)
-  for (i in parts)
-    assign(x = paste0(i, extension), value = loadRegion(txdb, i),
-           envir = envir)
+  if (!is.null(names.keep)) { # If subset
+    for (i in parts) {
+      region <- loadRegion(txdb, i)
+      subset <- names(region) %in% names.keep
+      if (length(subset) == 0)
+        stop(paste("Found no transcripts kepts, for region:", i))
+      assign(x = paste0(i, extension),
+             value = region[subset], envir = envir)
+    }
+  } else {
+    for (i in parts)
+      assign(x = paste0(i, extension), value = loadRegion(txdb, i),
+             envir = envir)
+  }
   return(NULL)
 }
 

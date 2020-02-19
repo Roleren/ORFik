@@ -549,7 +549,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 ```
 
 
-```{r eval = TRUE, echo = TRUE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(data.table)
   # Create meta coverage per part of transcript
