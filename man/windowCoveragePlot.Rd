@@ -11,7 +11,8 @@ windowCoveragePlot(
   colors = c("skyblue4", "orange"),
   title = "Coverage metaplot",
   type = "transcript",
-  scaleEqual = FALSE
+  scaleEqual = FALSE,
+  setMinToZero = FALSE
 )
 }
 \arguments{
@@ -33,6 +34,10 @@ the whole region? Transcript, gene, non coding rna etc.}
 
 \item{scaleEqual}{a logical (FALSE), should all fractions (rows), have same
 max value, for easy comparison of max values if needed.}
+
+\item{setMinToZero}{a logical (FALSE), should minimum y-value be 0 (TRUE).
+With FALSE minimum value is minimum score at any position. This parameter
+overrides scaleEqual.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

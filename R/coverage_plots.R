@@ -94,6 +94,9 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' the whole region? Transcript, gene, non coding rna etc.
 #' @param scaleEqual a logical (FALSE), should all fractions (rows), have same
 #'  max value, for easy comparison of max values if needed.
+#' @param setMinToZero a logical (FALSE), should minimum y-value be 0 (TRUE).
+#' With FALSE minimum value is minimum score at any position. This parameter
+#' overrides scaleEqual.
 #' @import ggplot2
 #' @importFrom data.table copy
 #' @return a ggplot object of the coverage plot, NULL if output is set,
@@ -118,7 +121,8 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
-                               type = "transcript", scaleEqual = FALSE) {
+                               type = "transcript", scaleEqual = FALSE,
+                               setMinToZero = FALSE) {
   cov <- setDT(copy(coverage))
   if (is.null(cov$feature))
     cov[, feature := rep("meta", nrow(cov))]
@@ -132,8 +136,12 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 
   coverage_score <- coverageScorings(cov, scoring)
 
-  coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
-  if (scaleEqual) coverage_score[, `:=` (fraction_min=min(fraction_min))]
+  # Decide y-min value
+  if (setMinToZero) {
+    coverage_score[, `:=` (fraction_min = 0)]
+  } else coverage_score[, `:=` (fraction_min=min(score)), by = fraction]
+  if (scaleEqual) coverage_score[, `:=` (fraction_min = min(fraction_min))]
+
   nGenes <- getNGenesCoverage(coverage)
   subTitle <- ifelse(any(nGenes > 0), paste0("Genes n=", nGenes), "")
   colors <- matchColors(cov, colors)
