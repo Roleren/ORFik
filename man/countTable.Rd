@@ -13,8 +13,9 @@ countTable, use path if not same folder as experiment libraries.}
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers).}
 
-\item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
-"log2fpkm" or "log10fpkm"}
+\item{type}{default: "count" (raw counts matrix),
+"summarized" (SummarizedExperiment object),
+normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm"}
 
 \item{collapse}{a logical/character (default FALSE), if TRUE all samples
 within the group SAMPLE will be collapsed to one. If "all", all

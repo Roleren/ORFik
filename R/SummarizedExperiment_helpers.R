@@ -171,8 +171,9 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' countTable, use path if not same folder as experiment libraries.
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #'  of whole mrnas or one of (leaders, cds, trailers).
-#' @param type default: "count" (raw counts matrix), alternative is "fpkm",
-#' "log2fpkm" or "log10fpkm"
+#' @param type default: "count" (raw counts matrix),
+#' "summarized" (SummarizedExperiment object),
+#' normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm"
 #' @param collapse a logical/character (default FALSE), if TRUE all samples
 #' within the group SAMPLE will be collapsed to one. If "all", all
 #' groups will be merged into 1 column called merged_all. Collapse is defined
@@ -216,6 +217,7 @@ countTable <- function(df, region = "mrna", type = "count",
     }
     if (length(df) == 1) {
       res <- readRDS(df)
+      if (type == "summarized") return(res)
       ress <- scoreSummarizedExperiment(res, type, collapse)
       if (is(ress, "matrix")) {
         ress <- as.data.table(ress)
