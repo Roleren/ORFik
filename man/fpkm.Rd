@@ -4,7 +4,7 @@
 \alias{fpkm}
 \title{Create normalizations of overlapping read counts.}
 \usage{
-fpkm(grl, reads, pseudoCount = 0)
+fpkm(grl, reads, pseudoCount = 0, librarySize = "full")
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -17,6 +17,11 @@ usually of RiboSeq, RnaSeq, CageSeq, etc.}
 
 \item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
 avoid NA and inf values.}
+
+\item{librarySize}{either value or character vector. Default ("full"),
+librarySize is length of all (reads). If you just have a subset, you
+can give the value by librarySize = length(wholeLib), if you want lib size
+to be only reads overlapping grl, do: librarySize = "overlapping"}
 }
 \value{
 a numeric vector with the fpkm values
@@ -32,7 +37,7 @@ When calculating RNASeq data FPKM, use full transcripts as
 Note also that you must consider if you will use the whole read
 library or just the reads overlapping `grl`.
 To only overlap do:
-reads <- reads[countOverlaps(reads, grl) > 0]
+librarySize = "overlapping"
 }
 \examples{
 ORF <- GRanges(seqnames = "1",

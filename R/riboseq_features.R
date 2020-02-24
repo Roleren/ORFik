@@ -9,7 +9,7 @@
 #' Note also that you must consider if you will use the whole read
 #' library or just the reads overlapping `grl`.
 #' To only overlap do:
-#' reads <- reads[countOverlaps(reads, grl) > 0]
+#' librarySize = "overlapping"
 #' @references doi: 10.1038/nbt.1621
 #' @param grl a \code{\link{GRangesList}} object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
@@ -19,6 +19,10 @@
 #'  usually of RiboSeq, RnaSeq, CageSeq, etc.
 #' @param pseudoCount an integer, by default is 0, set it to 1 if you want to
 #' avoid NA and inf values.
+#' @param librarySize either value or character vector. Default ("full"),
+#' librarySize is length of all (reads). If you just have a subset, you
+#' can give the value by librarySize = length(wholeLib), if you want lib size
+#' to be only reads overlapping grl, do: librarySize = "overlapping"
 #' @return a numeric vector with the fpkm values
 #' @export
 #' @family features
@@ -31,7 +35,7 @@
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' fpkm(grl, RFP)
 #'
-fpkm <- function(grl, reads, pseudoCount = 0) {
+fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full") {
   if (is.gr_or_grl(grl)) {
     if(is.grl(grl)) {
       grl_len <- widthPerGroup(grl, FALSE)
@@ -39,7 +43,14 @@ fpkm <- function(grl, reads, pseudoCount = 0) {
   } else stop("grl must be GRangesList or GRanges")
 
   overlaps <- countOverlaps(grl, reads)
-  librarySize <- length(reads)
+
+  if (librarySize == "full") {
+    librarySize <- length(reads)
+  } else if (is.numeric(librarySize)) {
+    # Use value directly
+  } else if (librarySize == "overlapping") {
+    librarySize <- sum(countOverlaps(reads, grl) > 0)
+  } else stop("librarySize must be numeric or full / overlapping!")
   return(fpkm_calc(overlaps, grl_len, librarySize) + pseudoCount)
 }
 

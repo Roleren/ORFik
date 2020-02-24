@@ -28,4 +28,5 @@ a DEseq summerizedExperiment object (transcriptNormalized)
 }
 \description{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
+For FPKM values, DESeq2::fpkm(robust = FALSE) is used
 }

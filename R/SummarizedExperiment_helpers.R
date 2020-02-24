@@ -95,6 +95,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 #' Helper function for makeSummarizedExperimentFromBam
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
+#' For FPKM values, DESeq2::fpkm(robust = FALSE) is used
 #' @param final ranged summarized experiment object
 #' @param score default: "transcriptNormalized"
 #' (row normalized raw counts matrix),
@@ -135,7 +136,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
   }
 
   if (score %in% c("transcriptNormalized", "fpkm", "log2fpkm", "log10fpkm")) {
-    fpkmCollapsed <- DESeq2::fpkm(dds)
+    fpkmCollapsed <- DESeq2::fpkm(dds, robust = FALSE)
     if (score == "transcriptNormalized") {
       normalization <- matrix(rep(rowSums2(fpkmCollapsed),
                                   ncol(fpkmCollapsed)),
