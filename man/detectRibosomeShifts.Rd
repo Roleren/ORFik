@@ -14,7 +14,8 @@ detectRibosomeShifts(
   minCDS = 150L,
   minThreeUTR = 30L,
   firstN = 150L,
-  tx = NULL
+  tx = NULL,
+  min_reads = 1000
 )
 }
 \arguments{
@@ -53,6 +54,9 @@ periodicity.}
 your own version. Example: extendLeaders(tx, 30)
 Where 30 bases will be new "leaders". Since each original transcript was
 either only CDS or non-coding (filtered out).}
+
+\item{min_reads}{default (1000), how many reads must a read-length have to
+be considered for periodicity.}
 }
 \value{
 a data.table with lengths of footprints and their predicted
@@ -72,7 +76,8 @@ and stop codons, so that you can verify visually whether this function
 detects correct shifts.
 
 NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
-33, but will remove 3S so final read width is 30 in ORFik.
+33, but will remove 3S so final read width is 30 in ORFik. This is standard
+for ribo-seq.
 }
 \examples{
 \dontrun{

@@ -1,0 +1,150 @@
+---
+title: "ORFikExperiment"
+author: "Haakon Tjeldnes & Kornel Labun"
+date: "`r BiocStyle::doc_date()`"
+package: "`r pkg_ver('ORFik')`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{ORFik Experiment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+Welcome to the introduction of ORFik experiment. This vignette will walk you through how to work with large amounts of sequencing data effectively in ORFik.
+`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq and CageSeq data, we advice you to read ORFikOverview vignette, before starting this one.
+
+## Motivation
+NGS libraries are becomming more and more numerous. As a bioinformatician you often need to use many data-sets, like RNA-seq or ribo-seq together, to do make some plots or statistics. A lot of things can go wrong when you scale up from just 1 data-set to many.
+
+Another problem is also that annotations like gff and fasta files combined with the NGS data, must be seperatly loaded. Making it possible to use wrong annotation for the NGS data, or wrong chromosome naming as chr1 vs 1 etc.
+
+## What is an ORFik experiment?
+It is an object to massivly simplify / error correcting your code, by having a table of all libraries and annotation of an experiment. That contains filepaths and info for each library / annotation files in the experiment. It also tries to guess grouping / types / pairs (paired end bam files etc.) by the file names. It is also a safety in that it verifies your experiments contain no duplicate files, or empty or non-accesible files.  Making it almost impossible to load the wrong data. In addition it checks chromosome naming of libraries and annotation, making sure you are not mixing chr1 vs 1 as name for chromosome 1 etc.
+
+The main reason to represent your NGS data as an ORFik experiment will now be shown.
+
+## Example of creating an ORFik experiment
+First load ORFik
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+library(ORFik)
+```
+
+Let's say we have a human experiment, containing RNA-seq, ribo-seq and CAGE.
+```{r eval = TRUE, echo = TRUE}
+# Read from (create.experiment() template)
+# 1. Pick directory (normally a folder with bam / bed / wig files)
+dir <- system.file("extdata", "", package = "ORFik")
+list.files(dir)
+```
+
+```{r eval = TRUE, echo = TRUE}
+# 2. Pick an experiment name
+exper <- "ORFik"
+# 3. Pick .gff/.gtf and fasta location
+txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+fasta <- system.file("extdata", "genome.fasta", package = "ORFik")
+template <- create.experiment(dir = dir,   # dir is the NGS files
+                              exper,       # Experiment name
+                              txdb = txdb, # gtf / gff / gff.db annotation
+                              fa = fasta,  # Fasta genome
+                              viewTemplate = FALSE)
+data.frame(template)
+```
+You see from the template, it excludes files with .bai or .fai, .rdata etc, and only
+doing using data of NGS libraries, defined by argument (type).
+
+You can also see it tries to guess library types, stages, replicates, condition etc.
+To fix the things it did not find, you either save the file and modify in excel / libre office, or do it directly in R.
+
+Let's update the template to have correct tissue in one of the samples.
+```{r eval = TRUE, echo = TRUE}
+template$X5[6] <- "heart" # <- fix non unique row
+# read experiment from template
+df <- read.experiment(template)
+```
+
+To save it, do:
+```{r eval = FALSE, echo = TRUE}
+save.experiment(df, file = "path/to/save/experiment.csv")
+```
+You can then load the experiment whenever you need it.
+
+## The experiment object
+To see the object, just show it like this:
+```{r eval = TRUE, echo = TRUE}
+df
+```
+You see here that file paths are hidden, you can acces them like this:
+
+```{r eval = TRUE, echo = TRUE}
+df$filepath
+```
+## Loading all data in experiment
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
+# First load experiment if not present
+# We use our already loaded experiment: (df) here
+
+# Load transcript annotation
+txdb <- loadTxdb(df) # transcript annotation
+# And now NGS data
+outputLibs(df, chrStyle = txdb) # Use txdb for seqlevelsStyle reference
+```
+By default all libraries are loaded into .GlobalEnv with names decided by
+columns in experiment, to see what the names will be, do:
+
+```{r eval = TRUE, echo = TRUE}
+bamVarName(df) #This will be the names:
+```
+
+You see here that the experiment name, "ORFik" is in the variable name
+If you are only doing 1 experiment, you don't need to add the name, since
+there is no possibility of duplicate naming. Then you can do this:
+```{r eval = TRUE, echo = TRUE}
+df@expInVarName <- FALSE
+bamVarName(df) #This will be the names:
+```
+Since we want NGS data names without "ORFik", let's remove them and load again.
+
+```{r eval = TRUE, echo = TRUE}
+df@expInVarName <- TRUE
+remove.experiments(df)
+df@expInVarName <- FALSE
+outputLibs(df, chrStyle = txdb) 
+```
+
+## Loading transcript regions
+Let's say we want to load all leaders, cds and 3' UTRs that are longer than 30.
+With ORFik experiment this is easy:
+```{r eval = TRUE, echo = TRUE}
+txNames <- filterTranscripts(txdb, minFiveUTR = 30,minCDS = 30, minThreeUTR = 30)
+loadRegions(txdb, parts = c("leaders", "cds", "trailers"), names.keep = txNames)
+```
+The regions are now loaded into .GlobalEnv, only keeping transcript after the filter
+
+## Plotting with ORFik experiments
+Lets make a plot with coverage over mrna in just ribo-seq
+```{r eval = TRUE, echo = TRUE, warning=FALSE}
+transcriptWindow(leaders, cds, trailers, df[3,])
+```
+
+## P-site shifting experiment
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+ORFik:::shiftFootprintsByExperiment(df[df$libtype == "ribo-seq",])
+```
+P-shifted ribo-seq will automaticly be stored as .bed files in a ./pshifted folder, relative to original libraries.
+
+To load p-shifted files, you can do:
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+# NOTE: Not implemented yet!
+#outputLibs(df, type = "pshifted")
+```
+
+## ORFik QC report
+ORFik also support a full QC report for post alignment statistics, correlation plots,
+simplified libraries for plotting etc.
+
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+ORFikQC(df)
+```

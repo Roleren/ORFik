@@ -27,7 +27,7 @@ loadRegions(txdb, names = ENST1000005), will return only that transcript}
 \item{envir}{Which environment to save to, default (.GlobalEnv)}
 }
 \value{
-NULL (regions set by envir assignment)
+invisible(NULL) (regions set by envir assignment)
 }
 \description{
 By default loads all parts to .GlobalEnv (global environemnt)

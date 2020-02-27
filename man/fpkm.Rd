@@ -18,10 +18,20 @@ usually of RiboSeq, RnaSeq, CageSeq, etc.}
 \item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
 avoid NA and inf values.}
 
-\item{librarySize}{either value or character vector. Default ("full"),
-librarySize is length of all (reads). If you just have a subset, you
-can give the value by librarySize = length(wholeLib), if you want lib size
-to be only reads overlapping grl, do: librarySize = "overlapping"}
+\item{librarySize}{either value or character vector.
+Default ("full"), number of alignments in library (reads).
+If you just have a subset, you can give the value by
+librarySize = length(wholeLib),
+if you want lib size to be only number of reads overlapping grl, do:
+librarySize = "overlapping"
+sum(countOverlaps(reads, grl) > 0)
+if reads[1] has 3 tx hits, and reads[2] has 4 tx hits,
+librarSize is will give 1.
+if you want lib size to be total number of overlaps, do:
+librarySize = "DESeq"
+This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
+sum(countOverlaps(grl, reads))
+if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5}
 }
 \value{
 a numeric vector with the fpkm values

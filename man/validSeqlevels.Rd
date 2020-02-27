@@ -15,7 +15,8 @@ validSeqlevels(grl, reads)
 a character vector of valid seqlevels
 }
 \description{
-Useful to avoid warnings in bioC
+Keep only seqnames in reads that are in grl
+Useful to avoid seqname warnings in bioC
 }
 \seealso{
 Other validity: 

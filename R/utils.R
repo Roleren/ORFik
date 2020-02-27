@@ -165,6 +165,8 @@ export.bedo <- function(object, out) {
 #' .bedo is a text based format with columns:
 #' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
 #' , duplicates of that read
+#'
+#' export with export.bedo
 #' @param path a character, location on disc (full path)
 #' @return GRanges object
 #' @importFrom tools file_ext
@@ -266,7 +268,8 @@ fimport <- function(path, chrStyle = NULL) {
 #'
 #' To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 #' @param range a ranged object, (GRanges, GAlignment etc)
-#' @param chrStyle a GRanges object, or a \code{\link{seqlevelsStyle}}
+#' @param chrStyle a GRanges object, TxDb, FaFile,
+#' or a \code{\link{seqlevelsStyle}}
 #' (Default: NULL) to get seqlevelsStyle from. Is chromosome 1
 #' called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 #' Will use 1st seqlevel-style if more are present.
@@ -283,7 +286,8 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
   if (!is.null(chrStyle)) {
     if (is.character(chrStyle)) {
       seqlevelsStyle(range) <- chrStyle[1]
-    } else if (is.gr_or_grl(chrStyle)) {
+    } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
+               is(chrStyle, "FaFile")) {
       seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
     } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
   }
@@ -395,6 +399,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' @importFrom methods is
 #' @return a \code{\link{FaFile}} or BSgenome
 #' @family utils
+#' @export
 #'
 findFa <- function(faFile) {
   if (is.character(faFile)) {

@@ -34,12 +34,10 @@ including smart grouping functions for easier prototyping.
 # Finding Open Reading Frames 
 
 In molecular genetics, an Open Reading Frame (ORF) is the part of a reading 
-frame that has the ability to be translated. It does not mean that every ORF is
-being translated or is functional, but to be able to find novel genes we must be
-able to firstly identify potential ORFs.
+frame that has the ability to be translated. Although not every ORF has the potential to be translated or to be functional, to find novel genes we must first be able to identify potential ORFs.
 
 To find all Open Reading Frames (ORFs) and possibly map them to genomic 
-coordinates `ORFik` gives you three main functions:
+coordinates,`ORFik` gives you three main functions:
 
 * `findORFs` - find ORFs in sequences of interest,
 * `findMapORFs` - find ORFs and map them to their respective genomic coordinates 
@@ -47,165 +45,175 @@ coordinates `ORFik` gives you three main functions:
 
 ## Example of finding ORFs in on 5' UTR of hg19
 
+Load libraries we need for examples
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
-library(ORFik)
-library(GenomicFeatures)
+library(ORFik)                        # This package
+library(GenomicFeatures)              # For basic transcript operations
+library(data.table)                   # For fast table operations
+library(BSgenome.Hsapiens.UCSC.hg19)  # Human genome
 ```
 
-After loading libraries, load example data from `GenomicFeatures`. We load gtf 
-file as txdb. We will extract the 5' leaders to find all upstream open reading 
-frames.
-
+After loading libraries, load human genome from `GenomicFeatures`. 
 ```{r eval = TRUE, echo = TRUE}
 txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite", 
                         package = "GenomicFeatures")
+```
+
+We load gtf file as txdb (transcript database).
+We will then extract the 5' leaders to find all upstream open reading 
+frames.
+```{r eval = TRUE, echo = TRUE}
 txdb <- loadTxdb(txdbFile)
-fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
+fiveUTRs <- loadRegion(txdb, "leaders")
 fiveUTRs[1]
 ```
-
 As we can see we have extracted 5' UTRs for hg19 annotations. Now we can load
-`BSgenome` version of human genome (hg19). If you don't have this package 
-installed you will not see the result from the code below. You might have to 
-install `BSgenome.Hsapiens.UCSC.hg19` and run the code for yourself as we don't
-install this package together with `ORFik`.
+`BSgenome` version of human genome (hg19).
 
+Either import fasta or BSgenome file to get sequences.
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-
-  # Extract sequences of fiveUTRs.
-  # Either you import fasta file of ranges, or you have some BSgenome.
-  tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 
-                                   fiveUTRs) 
-  
-  # Find all ORFs on those transcripts and get their genomic coordinates
-  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs, groupByTx = FALSE)
-  fiveUTR_ORFs
-}
+# Extract sequences of fiveUTRs.
+tx_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 
+                                 fiveUTRs) 
+tx_seqs[1]
 ```
 
-In the example above you can see that fiveUTR_ORFs are grouped by transcript, 
-the first group is from transcript "uc010ogz.1". Meta-column names contains name 
-of the transcript and identifier of the ORF separated by "_". When ORF is 
-separated into two exons you can see it twice, like the first ORF with name 
-"uc010ogz.1_1". The first ORF will always be the one most upstream for "+" 
-strand, and the least upstream for "-" strand.
+Find all ORFs on those transcripts and get their genomic coordinates.
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs, groupByTx = FALSE)
+fiveUTR_ORFs[1:2]
+```
+
+In the example above, you can see that fiveUTR_ORFs are grouped by ORF. 
+That means each group in the GRangesList is 1 ORF, that can have multiple exons.
+To get the transcript the ORF came from, do this:
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+txNames(fiveUTR_ORFs[1:2]) # <- Which transcript
+```
+You see that both ORFs are from transcript "uc010ogz.1"
+
+Meta-column names contains name 
+of the transcript and identifier of the ORF separated by "_". When a ORF is 
+separated into two exons you see it twice, as the first ORF with name 
+"uc010ogz.1_1". The first ORF will always be the one most upstream for + 
+strand, and the least upstream for - strand.
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+names(fiveUTR_ORFs[1:2]) # <- Which ORF
+```
 
 ## Getting fasta sequences of ORFs
-
-Now lets see how easy it is to get fasta sequences from the ranges
-
+Now lets see how easy it is to get fasta sequences from the ranges.
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  orf_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
-                                    fiveUTR_ORFs[1])
-  # To save as .fasta do:
-  # writeXStringSet(orf_seqs, filepath = "uorfs.fasta")
-  orf_seqs[1]
-}
+orf_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
+                                  fiveUTR_ORFs[1:3])
+orf_seqs
 ```
-You can see orf 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 codons. We will now look on ORFik functions to get startcodons and stopcodon etc.
+You can see ORF 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 codons. We will now look on ORFik functions to get startcodons and stopcodon etc.
+
+To save as .fasta do
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+writeXStringSet(orf_seqs, filepath = "uorfs.fasta")
+```
 
 # New GRanges and GRangesList utilities for ORFs
-
 `ORFik` contains functions that can be utilized to speed up your coding.
-Check documentations for these functions: `sortPerGroup`, `unlistGrl`, 
+Check documentation for these functions: `sortPerGroup`, `unlistGrl`, 
 `strandBool`, `tile1`.
 
 ## Grouping ORFs
 
 There are 2 main ways of grouping ORFs.
-Sometimes you want all ORFs grouped by which transcript they came from,
-or you might want each ORF as a group in the GRangesList. To
-do this more easily you can use the function `groupGRangesBy`.
+- Group by ORF
+- Group by transcript
 
+To do this more easily, you can use the function `groupGRangesBy`.
+
+Grouped by transcript:
+we use the names to group
 ```{r eval = TRUE, echo = TRUE}
-
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # The ORFs are now grouped by transcripts, but we want them grouped by ORFs:
-  # we use the orfs exon column called ($names) to group, it is made by ORFik.
-  unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
-  test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
-  print("Grouped by ORF")
-  print(test_ranges[1:2])
-  # the orfs are now grouped by orfs. If we want to go back to transcripts we do:
-  unlisted_ranges <- unlistGrl(test_ranges)
-  test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping by names
-  print("Grouped by Transcript")
-  print(test_ranges)
-}
+unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
+test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping by names
+test_ranges[1]
 ```
+
+Grouped by ORF:
+we use the orfs meta column called ($names) to group, it is made by ORFik.
+```{r eval = TRUE, echo = TRUE}
+unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
+test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
+test_ranges[1:2]
+```
+
 
 ## Filtering example
 
 Lets say you found some ORFs, and you want to filter out some of them.
 ORFik provides several functions for filtering. A problem with the
-original GenomicRanges container, is that filtering on GRanges objects
-are much easier than on GRangesList objects, ORFik tries to fix this.
+original GenomicRanges container is that filtering on GRanges objects
+are much easier than on a GRangesList object, ORFik tries to fix this.
 
-In this example we will filter out all orfs as following:
+In this example we will filter out all ORFs as following:
 
-- 1. First group GRangesList by ORFs
-- 2. width < 60
-- 3. number of exons < 2
-- 4. strand is negative
+1. First group GRangesList by ORFs
+2. width < 60
+3. number of exons < 2
+4. strand is negative
 
+1. Group by ORFs, if ORFs are grouped by transcripts it would make no sense.
+lets use the fiveUTR_ORFs
 ```{r eval = TRUE, echo = TRUE}
-
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # lets use the fiveUTR_ORFs
-  #1. Group by ORFs, if ORFs are grouped by transcripts it would make no sense.
   unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
   ORFs <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
-  print(length(ORFs))
-  #2. Remove widths < 60
+  length(ORFs) # length means how many ORFs left in set
+```
+2. Remove widths < 60
+```{r eval = TRUE, echo = TRUE}
   ORFs <- ORFs[widthPerGroup(ORFs) >= 60]
-  print(length(ORFs))
-  #3. Keep only ORFs with at least 2 exons
+  length(ORFs)
+```
+3. Keep only ORFs with at least 2 exons
+```{r eval = TRUE, echo = TRUE}
   ORFs <- ORFs[numExonsPerGroup(ORFs) > 1]
-  print(length(ORFs))
+  length(ORFs)
+```
+4. Keep only positive ORFs
+```{r eval = TRUE, echo = TRUE}
   
-  #4. Keep only positive ORFs
   ORFs <- ORFs[strandPerGroup(ORFs) == "+"]
   # all remaining ORFs where on positive strand, so no change
   length(ORFs)
-}
 ```
 
 ## ORF interest regions
 
-Specific part of the ORF are usually of interest, like start and stop codons.
+Specific part of the ORF are usually of interest, as start and stop codons.
 Here we run an example to show what ORFik can do for you.
 
+1. Find the start and stop sites as GRanges
 ```{r eval = TRUE, echo = TRUE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # let's use the ORFs from the previous examples
-  #1. Find the start and stop sites as GRanges
-  startSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
-  stopSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
-  
-  #2. Lets find the start and stop codons,
-  # this takes care of potential 1 base exons etc. 
-  starts <- startCodons(fiveUTR_ORFs, is.sorted = TRUE)
-  stops <- stopCodons(fiveUTR_ORFs, is.sorted = TRUE)
-  print("Start codon ranges:")
-  print(starts[1:2])
-  
-  #3. Lets get the bases of the start and stop codons from the fasta file
-  # It's very important to check that ORFs are sorted here, set is.sorted to 
-  # FALSE if you are not certain if the exons are sorted.
-  txSeqsFromFa(starts, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
-  print("Stop codons")
-  txSeqsFromFa(stops, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
-  }
+startSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
+stopSites(fiveUTR_ORFs, asGR = TRUE, keep.names = TRUE, is.sorted = TRUE)
 ```
-
+2. Lets find the start and stop codons.
+This takes care of potential 1 base exons etc. 
+```{r eval = TRUE, echo = TRUE}
+starts <- startCodons(fiveUTR_ORFs, is.sorted = TRUE)
+stops <- stopCodons(fiveUTR_ORFs, is.sorted = TRUE)
+starts[1:2]
+```
+3. Lets get the bases of the start and stop codons from the fasta file
+It's very important to check that ORFs are sorted here, 
+```{r eval = TRUE, echo = TRUE}
+txSeqsFromFa(starts, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
+"Stop codons"
+txSeqsFromFa(stops, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
+```
 Many more operations are also supported for manipulation of ORFs
 
 # When to use which ORFfinding function
 
-ORFik supports multiple ORF finding functions, here we describe their specific
-use.
+ORFik supports multiple ORF finding functions. Here we describe their specific
+use cases:
 
 Which function you will use depend on which organism the data is from, and
 specific parameters, like circular or non circular genomes, will you use
@@ -213,19 +221,18 @@ a transcriptome etc.
 
 There are 4 standard ways of finding ORFs:
 
-- 1. You have some fasta file of the genome only. (For prokaryotes/circular  genomes)
-- 2. You have some fasta file of the genome and a spliced transcriptome annotation.  (For eucaryotes with splicing)
-- 3. You have a fasta file of transcripts (eucaryotes or prokaryotes)
-- 4. You have a vector of transcripts preloaded in R.
+1. You have some fasta file of the genome only. (For prokaryotes/circular  genomes)
+2. You have some fasta file of the genome and a spliced transcriptome annotation.  (For eucaryotes with splicing)
+3. You have a fasta file of transcripts (eucaryotes or prokaryotes)
+4. You have a vector of transcripts preloaded in R.
 
-Let's start with the simplest case, a vector of preloaded transcripts. 
+Let's start with the simplest case; a vector of preloaded transcripts. 
 
 Lets say you have some transcripts and want to find all ORFs on them.
 findORFs() will give you only 5' to 3' direction, so if you want both directions,
 you can do (for strands in both direction):
 ```{r eval = TRUE, echo = TRUE}
   library(Biostrings)
-  library(S4Vectors)
   # strand with ORFs in both directions
   seqs <- DNAStringSet("ATGAAATGAAGTAAATCAAAACAT")
   ######################>######################< (< > is direction of ORF)
@@ -235,15 +242,18 @@ you can do (for strands in both direction):
   # negative strands
   neg <- findORFs(reverseComplement(seqs),
                   startCodon = "ATG", minimumLength = 0)
-  # make GRanges since we want strand information
+```
+Merge into a GRanges object, since we want strand information
+```{r eval = TRUE, echo = TRUE}
   pos <- GRanges(pos, strand = "+")
   neg <- GRanges(neg, strand = "-")
   # as GRanges
   res <- c(pos, neg)
   # or merge together and make GRangesList
   res <- split(res, seq.int(1, length(pos) + length(neg)))
-  res
-```
+  res[1:2]
+```  
+
 Remember that these results are in transcript coordinates, sometimes you need
 to convert them to Genomic coordinates.
 
@@ -254,7 +264,7 @@ that we really want our result in genomic coordinates in the end.
 
 ## Prokaryote/Circular Genomes and fasta transcriptomes.
 Use findORFsFasta(is.circular = TRUE).
-Note that findORFsFasta automaticly finds (-) strand ORFs. Since that is 
+Note that findORFsFasta automaticly finds (-) strand too, because that is 
 normally used for genomes.
 
 ## Filter on strand
@@ -269,10 +279,10 @@ See individual functions for more examples.
 
 # CageSeq data for 5' UTR re-annotation
 
-In the prerevious example we used the refence annotation of the 5' UTRs
-from the package GenomicFeatures. Here we will use advantage of CageSeq data to 
-set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve
-tissue specific transcripts. 
+In the previous example we used the reference annotation of the 5' UTRs
+from Hg19. 
+
+Here we will use CageSeq data to set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve tissue specific transcripts. Since most eucaryotes usually have variance in TSS definitions. 
 
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 # path to example CageSeq data from hg19 heart sample
@@ -298,19 +308,18 @@ and shifted with respect to the shifts visible over the start and stop
 codons. `ORFik` has multiple functions for processing of RiboSeq data. We will
 go through an example processing of RiboSeq data below.
 
-Load example raw RiboSeq footprints (unshifted).
+Example raw RiboSeq footprints (unshifted):
 ```{r eval = TRUE, echo = TRUE} 
 bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 footprints <- readBam(bam_file)
 ```
 
-Investigate what footprint lengths are present in our data.
+What footprint lengths are present in our data:
 ```{r eval = TRUE, echo = TRUE} 
 table(readWidths(footprints))
 ```
 
-Lets look at how the reads distribute around the CDS per read length.
-
+Lets look at how the reads distribute around the CDS per read length:
 For that we need to prepare the transcriptome annotation.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
@@ -319,6 +328,11 @@ tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
 trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
+```
+
+Note in ORFik you can load all transcript annotation in one line:
+```{r eval = FALSE, echo = TRUE, warning = FALSE, message = FALSE} 
+loadRegions(gtf_file, parts = c("tx", "cds", "trailers"))
 ```
 
 Restrict footprints to their 5' starts (after shifting it will be a p-site).
@@ -334,9 +348,8 @@ The reads create a ladder going downwards, left to right. (see the blue steps)
   coverageHeatMap(hitMap, scoring = "transcriptNormalized")
 ```
 
-Now lets see how we can p-shift the reads, we will go into detail how this is 
-done. If you just want to run the function, without too much details, 
-skip down to after the 2 comming bar plots.
+If you only want to know how to run the function and no details, 
+skip down to after the 2 coming bar plots.
 
 For the sake of this example we will focus only on most abundant length of 29.
 ```{r eval = TRUE, echo = TRUE} 
@@ -352,7 +365,7 @@ them.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 txNames <- filterTranscripts(txdb) # <- get only transcripts that pass filter
 tx <- tx[txNames]; cds <- cds[txNames]; trailers <- trailers[txNames];
-windowsStart <- startRegion(cds[txNames], tx, TRUE, upstream = 30, 29)
+windowsStart <- startRegion(cds, tx, TRUE, upstream = 30, 29)
 windowsStop <- startRegion(trailers, tx, TRUE, upstream = 30, 29)
 windowsStart
 ```
@@ -371,7 +384,7 @@ Plot start/stop windows for length 29.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
   pSitePlot(hitMapStop, region = "stop")
 ```
-From these shifts ORFik uses a fourior transform to detect signal change needed 
+From these shifts ORFik uses a fourier transform to detect signal change needed 
 to scale all read lengths of Ribo-seq to the start of the meta-cds. 
 
 We can also use automatic detection of RiboSeq shifts using the code below. As
@@ -382,7 +395,7 @@ shifts <- detectRibosomeShifts(footprints, txdb, stop = TRUE)
 shifts
 ```
 
-Fortunately `ORFik` has function that can be used to shift footprints using 
+Fortunately `ORFik` has a function that can be used to shift footprints using 
 desired shifts. See documentation for more details.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
 shiftedFootprints <- shiftFootprints(footprints, shifts)
@@ -399,6 +412,7 @@ There are 2 main categories:
 * Sequence features (kozak, gc-content, etc.)
 * Read features (reads as: Ribo-seq, RNA-seq, TCP-seq, shape-seq etc)
 
+Some important read features are:
 - FLOSS `floss`   
 - coverage `coverage`  
 - ORFscore `orfScore`  
@@ -412,34 +426,31 @@ All of the features are implemented based on scientific article published in
 peer reviewed journal. `ORFik` supports seemingles calculation of all available 
 features. See example below.
 
+Find ORFs:
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
- if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  library(GenomicFeatures)
+fiveUTRs <- fiveUTRs[1:10]
+faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
+tx_seqs <- extractTranscriptSeqs(faFile, fiveUTRs)
 
-  # Extract sequences of fiveUTRs.
-  fiveUTRs <- fiveUTRs[1:10]
-  faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
-  tx_seqs <- extractTranscriptSeqs(faFile, fiveUTRs)
+fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs, groupByTx = FALSE)
+```
 
-  # Find all ORFs on those transcripts and get their genomic coordinates
-  fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
-  unlistedORFs <- unlistGrl(fiveUTR_ORFs)
-  # group GRanges by ORFs instead of Transcripts, use 4 first ORFs
-  fiveUTR_ORFs <- groupGRangesBy(unlistedORFs, unlistedORFs$names)[1:4]
+Make some toy ribo seq and rna seq data:
+```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
+starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
+RFP <- promoters(starts, upstream = 0, downstream = 1)
+score(RFP) <- rep(29, length(RFP)) # the original read widths
+# set RNA-seq seq to duplicate transcripts
+RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
+```
 
-  # make some toy ribo seq and rna seq data
-  starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
-  RFP <- promoters(starts, upstream = 0, downstream = 1)
-  score(RFP) <- rep(29, length(RFP)) # the original read widths
-
-  # set RNA seq to duplicate transcripts
-  RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
-  # transcript database
-  txdb <- loadTxdb(txdbFile)
-  dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, 
-                        orfFeatures =  TRUE)
-  dt
-}
+Find features of sequence and library data
+```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
+# transcript database
+txdb <- loadTxdb(txdbFile)
+dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, 
+                      orfFeatures =  TRUE)
+dt
 ```
 You will now get a data.table with one column per score, the columns are named after
 the different scores, you can now go further with prediction, or making plots.
@@ -452,37 +463,32 @@ To understand how strong the binding affinitity of an ORF promoter region might 
 several species. In the first example we use human kozak sequence,
 then we make a self defined kozak sequence.
 
+In this example we will find kozak score of cds' 
 ```{r eval = TRUE, echo = TRUE}
-  # In this example we will find kozak score of cds' 
+cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[1:10]
+tx <- exonsBy(txdb, by = "tx", use.names = TRUE)[names(cds)]
+faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
 
-  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+kozakSequenceScore(cds, tx, faFile, species = "human")
 
-    cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[1:10]
-    tx <- exonsBy(txdb, by = "tx", use.names = TRUE)[names(cds)]
-    faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
 
-    kozakSequenceScore(cds, tx, faFile, species = "human")
+```
+A few species are pre supported, if not, make your own input pfm.
 
-    # A few species are pre supported, if not, make your own input pfm.
+Here is an example where the human pfm is sent in again, even though it is already supported:
+```{r eval = TRUE, echo = TRUE}
+pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
+                             21,26,24,16,28,32,5,23,35,12,42,21,
+                             25,24,22,33,22,19,28,17,27,47,16,34,
+                             25,24,26,25,28,14,5,21,10,17,15,28)),
+                ncol = 4))
 
-    # here is an example where the human pfm is sent in again, even though
-    # it is already supported.
-
-    pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
-                                 21,26,24,16,28,32,5,23,35,12,42,21,
-                                 25,24,22,33,22,19,28,17,27,47,16,34,
-                                 25,24,26,25,28,14,5,21,10,17,15,28)),
-                    ncol = 4))
-
-   kozakSequenceScore(cds, tx, faFile, species = pfm)
-
-  }
-
+kozakSequenceScore(cds, tx, faFile, species = pfm)
 ```
 
 # Using ORFik in your package or scripts
 
-The focus of ORFik for development is to be a swiss army knife for 
+The focus of ORFik for development is to be a Swiss army knife for 
 transcriptomics. If you need functions for splicing, getting windows of exons
 per transcript, periodic windows of exons, speicific parts of exons etc, 
 ORFik can help you with this. 
@@ -496,7 +502,7 @@ maximum 33% of the reads. To only keep transcripts with a good spread of reads
 over the CDS. How would you make this filter ?
 
 ```{r eval = TRUE, echo = TRUE}
-  # First make som toy example
+  # First make some toy example
   cds <- GRanges("chr1", IRanges(c(1, 10, 20, 30, 40, 50, 60, 70, 80),
                                  c(5, 15, 25, 35, 45, 55, 65, 75, 85)),
                  "+")
@@ -529,62 +535,56 @@ some coverage plots from reads of Ribo-seq, RNA-seq, CAGE-seq, TCP-seq etc.
 
 Lets make 3 plots of Ribo-seq focused on CDS regions. 
 
+Load data as shown before and pshift the Ribo-seq:
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # Load data as shown before and pshift the Ribo-seq
-  # Get the annotation
-  txdb <- loadTxdb(gtf_file)
-  # Lets take all valid transcripts, with size restrictions:
-  # leader > 100 bases, cds > 100 bases, trailer > 100 bases
-  txNames <- filterTranscripts(txdb, 100, 100, 100) # valid transcripts
-  leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
-  cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
-  trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
-  tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
-  # Ribo-seq
-  bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
-  reads <- readGAlignments(bam_file)
-  shiftedReads <- shiftFootprints(reads, detectRibosomeShifts(reads, txdb))  
-}
+# Get the annotation
+txdb <- loadTxdb(gtf_file)
+# Ribo-seq
+bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+reads <- readGAlignments(bam_file)
+shiftedReads <- shiftFootprints(reads, detectRibosomeShifts(reads, txdb))  
 ```
 
-
+Make meta windows of leaders, cds' and trailers
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  library(data.table)
-  # Create meta coverage per part of transcript
-  leaderCov <- metaWindow(shiftedReads, leaders, scoring = NULL, 
-                          feature = "leaders")
+# Lets take all valid transcripts, with size restrictions:
+# leader > 100 bases, cds > 100 bases, trailer > 100 bases
+txNames <- filterTranscripts(txdb, 100, 100, 100) # valid transcripts
+loadRegions(txdb, parts = c("leaders", "cds", "trailers", "tx"), 
+            names.keep = txNames)
 
-  cdsCov <- metaWindow(shiftedReads, cds, scoring = NULL, 
-                       feature = "cds")
-  
-  trailerCov <- metaWindow(shiftedReads, trailers, scoring = NULL, 
-                           feature = "trailers")
-  # bind together
-  dt <- rbindlist(list(leaderCov, cdsCov, trailerCov))
-  # Now set info column
-  dt[, `:=` (fraction = "Ribo-seq")]
-  # NOTE: All of this is done in one line in function: windowPerTranscript
-  
-  # zscore gives shape, a good starting plot
-  windowCoveragePlot(dt, scoring = "zscore", title = "Ribo-seq metaplot") 
-}
+# Create meta coverage per part of transcript
+leaderCov <- metaWindow(shiftedReads, leaders, scoring = NULL, 
+                        feature = "leaders")
+
+cdsCov <- metaWindow(shiftedReads, cds, scoring = NULL, 
+                     feature = "cds")
+
+trailerCov <- metaWindow(shiftedReads, trailers, scoring = NULL, 
+                         feature = "trailers")
+```
+
+Bind together and plot:
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+dt <- rbindlist(list(leaderCov, cdsCov, trailerCov))
+dt[, `:=` (fraction = "Ribo-seq")] # Set info column
+# zscore gives shape, a good starting plot
+windowCoveragePlot(dt, scoring = "zscore", title = "Ribo-seq metaplot") 
 ```
 Z-score is good at showing overall shape. You see from the windows each region;
-leader, cds and trailer is scaled to 100.
+leader, cds and trailer is scaled to 100. NOTE: we can use the function windowPerTranscript 
+to do all of this in one call. 
+
+
 Lets use a median scoring to find median counts per meta window per positions. 
 ```{r eval = TRUE, echo = TRUE}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  windowCoveragePlot(dt, scoring = "median", title = "Ribo-seq metaplot") 
-}
+windowCoveragePlot(dt, scoring = "median", title = "Ribo-seq metaplot") 
 ```
 
 We see a big spike close to start of CDS, called the TIS.
 The median counts by transcript is close to 50 here.
 Lets look at the TIS region using the pshifting plot, seperated into 
 the 3 frames.
-
 ```{r eval = TRUE, echo = TRUE}
 if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # size 100 window: 50 upstream, 49 downstream of TIS
@@ -594,7 +594,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
 }
 ```
 
-Since these reads are p-shifted it is not that unexpected that the maximum 
+Since these reads are p-shifted, the maximum 
 number of reads are on the 0 position. We also see a clear pattern in the 
 Ribo-seq.
 
@@ -602,13 +602,9 @@ To see how the different read lengths distribute over the region, we make
 a heatmap. Where the colors represent the zscore of counts per position. 
 
 ```{r eval = TRUE, echo = TRUE, message = FALSE, fig.height=8}
-if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
-  # size 25 window (default): 5 upstream, 20 downstream of TIS
-  hitMap <- windowPerReadLength(cds, tx,  shiftedReads)
-  coverageHeatMap(hitMap, addFracPlot = TRUE)
-}
+hitMap <- windowPerReadLength(cds, tx,  shiftedReads)
+coverageHeatMap(hitMap, addFracPlot = TRUE)
 ```
-
 In the heatmap you can see that read length 30 has the strongest peak on the 
 TIS, while read length 28 has some reads in the leaders (the minus positions).
 
@@ -641,4 +637,6 @@ You see that the fraction column is what seperates the rows. You can have unlimi
 
 Our hope is that by using ORFik, we can simplify your analysis when 
 you focus on ORFs / transcript features and especially in combination with
-sequence libraries like RNA-seq and Ribo-seq etc.  
+sequence libraries like RNA-seq and Ribo-seq.  
+
+Happy coding!

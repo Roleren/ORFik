@@ -96,7 +96,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' detects correct shifts.
 #'
 #' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
-#' 33, but will remove 3S so final read width is 30 in ORFik.
+#' 33, but will remove 3S so final read width is 30 in ORFik. This is standard
+#' for ribo-seq.
 #' @param footprints (GAlignments) object of RiboSeq reads - footprints, can
 #' also be path to the file.
 #' @inheritParams loadTxdb
@@ -116,6 +117,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' your own version. Example: extendLeaders(tx, 30)
 #' Where 30 bases will be new "leaders". Since each original transcript was
 #' either only CDS or non-coding (filtered out).
+#' @param min_reads default (1000), how many reads must a read-length have to
+#' be considered for periodicity.
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -147,7 +150,7 @@ shiftFootprints <- function(footprints, shifts) {
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L, tx = NULL) {
+  firstN = 150L, tx = NULL, min_reads = 1000) {
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
@@ -169,9 +172,15 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   # find periodic read lengths
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
                                         addScoreColumn = TRUE)
+  # Filter if < 1000 counts read size
+  lengths <- data.table(score = footprints$score, size = footprints$size)
+  tab <- lengths[, .(counts = sum(score)), by = size]
+  tab <- tab[counts >= min_reads]
+
   periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
                       pShifted = FALSE, upstream = 0, downstream = 149,
-                      zeroPosition = 0, scoring = "periodic")
+                      zeroPosition = 0, scoring = "periodic",
+                      acceptedLengths = tab$size)
   validLengths <- periodicity[score == TRUE,]$fraction
 
   # find shifts
@@ -211,6 +220,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' default: dirname(df$filepath[1]), making a /pshifted
 #' folder at that location
 #' @inheritParams detectRibosomeShifts
+#' @param output_format default (bed), use export.bed or ORFik optimized
+#' (bedo) using \code{\link{export.bedo}} ?
 #' @return NULL (Objects are saved to out.dir/pshited/"name")
 #' @importFrom rtracklayer export.bed
 #' @family pshifting
@@ -220,7 +231,8 @@ shiftFootprintsByExperiment <- function(df,
                                         start = TRUE, stop = FALSE,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L, minThreeUTR = 30L,
-                                        firstN = 150L) {
+                                        firstN = 150L, min_reads = 1000,
+                                        output_format = "bed") {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
@@ -233,9 +245,14 @@ shiftFootprintsByExperiment <- function(df,
     shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
                                    top_tx = top_tx, minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
-                                   firstN = firstN)
+                                   firstN = firstN, min_reads = min_reads)
     shifted <- shiftFootprints(get(file), shifts)
     shifted$score <- shifted$size
-    export.bed(shifted, paste0(path, file,"_pshifted.bed"))
+
+    if (output_format == "bed") {
+      export.bed(shifted, paste0(path, file,"_pshifted.bed"))
+    } else if (output_format == "bedo") {
+      export.bedo(shifted, paste0(path, file,"_pshifted.bed"))
+    } else stop("output_format must be bed or bedo")
   }
 }

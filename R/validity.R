@@ -1,6 +1,7 @@
 #' Helper function to find overlaping seqlevels
 #'
-#' Useful to avoid warnings in bioC
+#' Keep only seqnames in reads that are in grl
+#' Useful to avoid seqname warnings in bioC
 #' @param grl a \code{\link{GRangesList}} or GRanges object
 #' @param reads a GRanges or GAlignment object
 #' @return a character vector of valid seqlevels

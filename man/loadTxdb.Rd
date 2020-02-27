@@ -11,7 +11,8 @@ loadTxdb(txdb, chrStyle = NULL)
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
 or an ORFik experiment}
 
-\item{chrStyle}{a GRanges object, or a \code{\link{seqlevelsStyle}}
+\item{chrStyle}{a GRanges object, TxDb, FaFile,
+or a \code{\link{seqlevelsStyle}}
 (Default: NULL) to get seqlevelsStyle from. Is chromosome 1
 called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.

@@ -18,3 +18,6 @@ GRanges object
 chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
 , duplicates of that read
 }
+\details{
+export with export.bedo
+}

@@ -169,29 +169,40 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' @param part a character, one of: tx, leader, cds, trailer, intron, mrna
 #' NOTE: difference between tx and mrna is that tx are all transcripts, while
 #' mrna are all transcripts with a cds
+#' @param names.keep a character vector of subset of names to keep. Example:
+#' loadRegions(txdb, names = ENST1000005), will return only that transcript
 #' @return a GrangesList of region
 #' @export
 #' @examples
 #' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' loadRegion(gtf, "intron")
-loadRegion <- function(txdb, part = "tx") {
+loadRegion <- function(txdb, part = "tx", names.keep = NULL) {
   if (is.grl(txdb)) return(txdb)
   txdb <- loadTxdb(txdb)
-  if (part %in% c("tx", "transcript", "transcripts")) {
-    return(exonsBy(txdb, by = "tx", use.names = TRUE))
-  } else if (part %in% c("leader", "leaders", "5'", "5", "5utr",
-                         "fiveUTRs", "5pUTR")) {
-    return(fiveUTRsByTranscript(txdb, use.names = TRUE))
-  } else if (part %in% c("cds", "CDS", "mORF")) {
-    return(cdsBy(txdb, by = "tx", use.names = TRUE))
-  } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr",
-                         "threeUTRs", "3pUTR")) {
-    return(threeUTRsByTranscript(txdb, use.names = TRUE))
-  } else if (part %in% c("intron", "introns")) {
-    return(intronsByTranscript(txdb, use.names = TRUE))
-  }  else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
-    return(loadRegion(txdb, "tx")[names(cdsBy(txdb, use.names = TRUE))])
-  } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
+  region <-
+    if (part %in% c("tx", "transcript", "transcripts")) {
+      exonsBy(txdb, by = "tx", use.names = TRUE)
+    } else if (part %in% c("leader", "leaders", "5'", "5", "5utr",
+                           "fiveUTRs", "5pUTR")) {
+      fiveUTRsByTranscript(txdb, use.names = TRUE)
+    } else if (part %in% c("cds", "CDS", "mORF")) {
+      cdsBy(txdb, by = "tx", use.names = TRUE)
+    } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr",
+                           "threeUTRs", "3pUTR")) {
+      threeUTRsByTranscript(txdb, use.names = TRUE)
+    } else if (part %in% c("intron", "introns")) {
+      intronsByTranscript(txdb, use.names = TRUE)
+    }  else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
+      loadRegion(txdb, "tx")[names(cdsBy(txdb, use.names = TRUE))]
+    } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
+
+  if (!is.null(names.keep)) { # If subset
+    subset <- names(region) %in% names.keep
+    if (length(subset) == 0)
+      stop(paste("Found no transcripts kepts, for region:", part))
+    region <- region[subset]
+  }
+  return(region)
 }
 
 #' Get all regions of transcripts specified to environment
@@ -204,7 +215,7 @@ loadRegion <- function(txdb, part = "tx") {
 #' @param names.keep a character vector of subset of names to keep. Example:
 #' loadRegions(txdb, names = ENST1000005), will return only that transcript
 #' @param envir Which environment to save to, default (.GlobalEnv)
-#' @return NULL (regions set by envir assignment)
+#' @return invisible(NULL) (regions set by envir assignment)
 #' @export
 #' @examples
 #' # Load all mrna regions to Global environment
@@ -214,21 +225,11 @@ loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", names.keep = NULL,
                         envir = .GlobalEnv) {
   txdb <- loadTxdb(txdb)
-  if (!is.null(names.keep)) { # If subset
-    for (i in parts) {
-      region <- loadRegion(txdb, i)
-      subset <- names(region) %in% names.keep
-      if (length(subset) == 0)
-        stop(paste("Found no transcripts kepts, for region:", i))
-      assign(x = paste0(i, extension),
-             value = region[subset], envir = envir)
-    }
-  } else {
-    for (i in parts)
-      assign(x = paste0(i, extension), value = loadRegion(txdb, i),
-             envir = envir)
+  for (i in parts) {
+    assign(x = paste0(i, extension), value = loadRegion(txdb, i, names.keep),
+           envir = envir)
   }
-  return(NULL)
+  return(invisible(NULL))
 }
 
 #' Load transcripts of given biotype

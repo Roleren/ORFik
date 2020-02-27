@@ -13,7 +13,8 @@
 #' @param colors Which colors to use, default (skyblue4)
 #' @param title title of ggplot
 #' @param windowSize size of binned windows, default: 100
-#' @param returnPlot return plot from function, default False
+#' @param returnPlot return plot from function, default is.null(outdir),
+#' so TRUE if outdir is not defined.
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
 #' normalize against
 #' @param idName A character ID to add to saved name of plot,
@@ -43,9 +44,9 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                              windowSize = min(100,
                                            min(widthPerGroup(leaders, FALSE)),
                                            min(widthPerGroup(cds, FALSE)),
-                                           min(widthPerGroup(trailers, FALSE)))
-                             , returnPlot = FALSE, dfr= NULL,
-                             idName = "") {
+                                           min(widthPerGroup(trailers, FALSE))),
+                             returnPlot = is.null(outdir),
+                             dfr= NULL, idName = "") {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))
 

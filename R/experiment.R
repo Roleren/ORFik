@@ -1,13 +1,15 @@
 #' experiment class definition
 #'
+#' It is an object to massivly simplify your coding, by having a
+#' table of all libraries of an experiment. That contains
+#' filepaths and info for each library in the experiment. It also tries
+#' to guess grouping / types / pairs by the file names.
+#' \cr
 #' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 #' more ease to find not only counts, but rather
 #' information about libraries, and annotation, so that more tasks are
 #' possible. Like coverage per position in some transcript etc.
-#' \cr It is an object to massivly simplify your coding, by having a
-#' table of all libraries of an experiment. That contains
-#' filepaths and info for each library in the experiment. It also tries
-#' to guess grouping / types / pairs by the file names.
+#'
 #'
 #' ## Constructor:
 #'
@@ -293,7 +295,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 save.experiment <- function(df, file) {
   write.table(x = df, file = file, sep = ",",
               row.names = FALSE, col.names = FALSE)
-  return(NULL)
+  return(invisible(NULL))
 }
 
 #' Find all candidate library types filenames
@@ -533,7 +535,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
       }
     }
   }
-  return(NULL)
+  return(invisible(NULL))
 }
 
 #' Will make a simplified version of NGS libraries
@@ -602,7 +604,9 @@ simpleLibs <- function(df,
 #' # Then remove them with: remove.experiments(df)
 remove.experiments <- function(df, envir = .GlobalEnv) {
   rm(list =  bamVarName(df), envir = envir)
-  return(NULL)
+  message(paste0("Removed loaded libraries from experiment:",
+                 df@experiment))
+  return(invisible(NULL))
 }
 
 #' Get all library files in folder

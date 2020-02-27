@@ -13,7 +13,9 @@ shiftFootprintsByExperiment(
   minFiveUTR = 30L,
   minCDS = 150L,
   minThreeUTR = 30L,
-  firstN = 150L
+  firstN = 150L,
+  min_reads = 1000,
+  output_format = "bed"
 )
 }
 \arguments{
@@ -46,6 +48,12 @@ transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 \item{firstN}{(integer) Represents how many bases of the transcripts
 downstream of start codons to use for initial estimation of the
 periodicity.}
+
+\item{min_reads}{default (1000), how many reads must a read-length have to
+be considered for periodicity.}
+
+\item{output_format}{default (bed), use export.bed or ORFik optimized
+(bedo) using \code{\link{export.bedo}} ?}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name")

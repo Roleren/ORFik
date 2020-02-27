@@ -6,14 +6,15 @@
 \alias{experiment}
 \title{experiment class definition}
 \description{
+It is an object to massivly simplify your coding, by having a
+table of all libraries of an experiment. That contains
+filepaths and info for each library in the experiment. It also tries
+to guess grouping / types / pairs by the file names.
+\cr
 Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather
 information about libraries, and annotation, so that more tasks are
 possible. Like coverage per position in some transcript etc.
-\cr It is an object to massivly simplify your coding, by having a
-table of all libraries of an experiment. That contains
-filepaths and info for each library in the experiment. It also tries
-to guess grouping / types / pairs by the file names.
 }
 \details{
 ## Constructor:

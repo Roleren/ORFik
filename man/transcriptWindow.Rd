@@ -16,7 +16,7 @@ transcriptWindow(
   title = "Coverage metaplot",
   windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
     FALSE)), min(widthPerGroup(trailers, FALSE))),
-  returnPlot = FALSE,
+  returnPlot = is.null(outdir),
   dfr = NULL,
   idName = ""
 )
@@ -43,7 +43,8 @@ see ?coverageScorings for possible scores.}
 
 \item{windowSize}{size of binned windows, default: 100}
 
-\item{returnPlot}{return plot from function, default False}
+\item{returnPlot}{return plot from function, default is.null(outdir),
+so TRUE if outdir is not defined.}
 
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
 normalize against}
