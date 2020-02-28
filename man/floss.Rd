@@ -26,7 +26,7 @@ a vector of FLOSS of length same as grl
 This feature is usually calcualted only for RiboSeq reads. For reads of
 width between `start` and `end`,
 sum the fraction of RiboSeq reads (per widths)
-that overlap ORFs and normalize by CDS.
+that overlap ORFs and normalize by CDS width fractions.
 }
 \details{
 Pseudo explanation of the function:

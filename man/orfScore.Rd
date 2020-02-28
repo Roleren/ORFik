@@ -20,7 +20,9 @@ each of the 3 tiles (frame_zero_RP, frame_one_RP, frame_two_RP)
 }
 \description{
 ORFscore tries to check whether the first frame of the 3 possible frames in
-an ORF has more reads than second and third frame.
+an ORF has more reads than second and third frame. IMPORTANT: Only use
+p-shifted libraries, see (\code{\link{detectRibosomeShifts}}).
+Else this score makes no sense.
 }
 \details{
 Pseudocode:

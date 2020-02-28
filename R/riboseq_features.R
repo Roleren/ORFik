@@ -133,7 +133,7 @@ entropy <- function(grl, reads) {
 #' This feature is usually calcualted only for RiboSeq reads. For reads of
 #' width between `start` and `end`,
 #' sum the fraction of RiboSeq reads (per widths)
-#' that overlap ORFs and normalize by CDS.
+#' that overlap ORFs and normalize by CDS width fractions.
 #'
 #' Pseudo explanation of the function:
 #' \preformatted{
@@ -169,6 +169,7 @@ entropy <- function(grl, reads) {
 floss <- function(grl, RFP, cds, start = 26, end = 34){
 
   if (start > end) stop("start is bigger than end")
+  if (end < start) stop("end is smaller than start")
   if (is.grl(class(RFP))) {
     stop("RFP must be either GAlignment or GRanges type")
   }
@@ -613,7 +614,9 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE) {
 #' Get ORFscore for a GRangesList of ORFs
 #'
 #' ORFscore tries to check whether the first frame of the 3 possible frames in
-#' an ORF has more reads than second and third frame.
+#' an ORF has more reads than second and third frame. IMPORTANT: Only use
+#' p-shifted libraries, see (\code{\link{detectRibosomeShifts}}).
+#' Else this score makes no sense.
 #'
 #' Pseudocode:
 #' assume rff - is reads fraction in specific frame

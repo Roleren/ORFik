@@ -31,7 +31,7 @@ First load ORFik
 library(ORFik)
 ```
 
-Let's say we have a human experiment, containing RNA-seq, ribo-seq and CAGE.
+Let's say we have a human experiment, containing annotation files (.gtf and .fasta genome) + Next generation sequencing libraries (NGS-data); RNA-seq, ribo-seq and CAGE.
 ```{r eval = TRUE, echo = TRUE}
 # Read from (create.experiment() template)
 # 1. Pick directory (normally a folder with bam / bed / wig files)
@@ -52,15 +52,14 @@ template <- create.experiment(dir = dir,   # dir is the NGS files
                               viewTemplate = FALSE)
 data.frame(template)
 ```
-You see from the template, it excludes files with .bai or .fai, .rdata etc, and only
-doing using data of NGS libraries, defined by argument (type).
+You see from the template, it excludes files with .bai or .fai, .rdata etc, and only using data of NGS libraries, defined by argument (type).
 
-You can also see it tries to guess library types, stages, replicates, condition etc.
+You can also see it tries to guess library types, stages, replicates, condition etc. It will also try to auto-detect paired end bam files.
 To fix the things it did not find, you either save the file and modify in excel / libre office, or do it directly in R.
 
 Let's update the template to have correct tissue in one of the samples.
 ```{r eval = TRUE, echo = TRUE}
-template$X5[6] <- "heart" # <- fix non unique row
+template$X5[6] <- "heart" # <- fix non unique row (tissue is heart)
 # read experiment from template
 df <- read.experiment(template)
 ```
@@ -91,7 +90,7 @@ txdb <- loadTxdb(df) # transcript annotation
 # And now NGS data
 outputLibs(df, chrStyle = txdb) # Use txdb for seqlevelsStyle reference
 ```
-By default all libraries are loaded into .GlobalEnv with names decided by
+By default all libraries are loaded into .GlobalEnv (global environment) with names decided by
 columns in experiment, to see what the names will be, do:
 
 ```{r eval = TRUE, echo = TRUE}
@@ -99,8 +98,10 @@ bamVarName(df) #This will be the names:
 ```
 
 You see here that the experiment name, "ORFik" is in the variable name
-If you are only doing 1 experiment, you don't need to add the name, since
-there is no possibility of duplicate naming. Then you can do this:
+If you are only working on one experiment, you do not need to include the name, since
+there is no possibility of duplicate naming (the experiment class validates all names are unique). 
+
+To remove experiment name, do this:
 ```{r eval = TRUE, echo = TRUE}
 df@expInVarName <- FALSE
 bamVarName(df) #This will be the names:
@@ -143,7 +144,7 @@ To load p-shifted files, you can do:
 
 ## ORFik QC report
 ORFik also support a full QC report for post alignment statistics, correlation plots,
-simplified libraries for plotting etc.
+simplified libraries for plotting, meta coverage, ++.
 
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 ORFikQC(df)
