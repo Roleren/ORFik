@@ -88,7 +88,7 @@ df$filepath
 # Load transcript annotation
 txdb <- loadTxdb(df) # transcript annotation
 # And now NGS data
-outputLibs(df, chrStyle = txdb) # Use txdb for seqlevelsStyle reference
+outputLibs(df, chrStyle = seqlevelsStyle(txdb)) # Use txdb as seqlevelsStyle reference
 ```
 By default all libraries are loaded into .GlobalEnv (global environment) with names decided by
 columns in experiment, to see what the names will be, do:
@@ -112,7 +112,7 @@ Since we want NGS data names without "ORFik", let's remove them and load again.
 df@expInVarName <- TRUE
 remove.experiments(df)
 df@expInVarName <- FALSE
-outputLibs(df, chrStyle = txdb) 
+outputLibs(df, chrStyle = seqlevelsStyle(txdb)) 
 ```
 
 ## Loading transcript regions
