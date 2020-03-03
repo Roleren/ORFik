@@ -7,7 +7,6 @@ template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"
                                                       "annotations.gtf",
                                                       package = "ORFik"),
                   viewTemplate = FALSE)
-template$X5[6] <- "heart"
 
 df <- read.experiment(template)
 
@@ -20,22 +19,25 @@ test_that("Experiment class created as intended", {
 test_that("Experiment class loaded as intended", {
   # load file
   outputLibs(df)
-  expect_equal(exists("ORFik_cage"), TRUE)
+  expect_equal(exists("ORFik_cage_heart"), TRUE)
 })
 
 test_that("Experiment class correct naming", {
   # load file
   names <- bamVarName(df)
-  expect_equal(names, c("ORFik_cage", "ORFik_ribo-seq_fheart",
-                        "ORFik_ribo-seq","ORFik_rna-seq"))
+  expect_equal(names, c("ORFik_cage_heart", "ORFik_ribo-seq_heart",
+                        "ORFik_ribo-seq","ORFik_rna-seq_heart"))
   names <- bamVarName(df, skip.experiment = TRUE)
-  expect_equal(names, c("cage", "ribo-seq_fheart",
-                        "ribo-seq","rna-seq"))
+  expect_equal(names, c("cage_heart", "ribo-seq_heart",
+                        "ribo-seq","rna-seq_heart"))
 
   names <- bamVarName(df, skip.experiment = TRUE, skip.fraction = TRUE)
+  expect_equal(names, c("cage_heart", "ribo-seq_heart",
+                        "ribo-seq","rna-seq_heart"))
+
+  names <- bamVarName(df, skip.experiment = TRUE, skip.stage = TRUE)
   expect_equal(names, c("cage", "ribo-seq",
                         "ribo-seq","rna-seq"))
-
 })
 
 

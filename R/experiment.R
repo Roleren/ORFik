@@ -249,7 +249,14 @@ create.experiment <- function(dir, exper, saveDir = NULL,
               "Sphere", "Shield", "Dome", "Oblong", "Bud",
               "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h", "_48h",
               "_02h", "_04h", "_06h", "_08h",
-              "1dpf", "2dpf", "3dpf", "4dpf", "5dpf")
+              "1dpf", "2dpf", "3dpf", "4dpf", "5dpf", "6dpf", "10dpf",
+              "21dpf", "24dpf")
+  cell_lines <- c("HEK293", "HeLa", "THP-1")
+  tissues <- c("adipose", "brain", "bladder", "blood", "breast", "colon",
+               "cortex", "eye", "fibroblast", "frontal lobe", "heart",
+               "kidney", "liver", "lung", "muscle","ovary", "prostate",
+               "rectum", "testis","urunary", "vagina", "skin", "tongue")
+  stages <- c(stages, tissues, cell_lines)
   df[5:(5+length(files)-1), 2] <- findFromPath(files, stages)
   # set rep
   df[5:(5+length(files)-1), 3] <- findFromPath(files, c("rep1", "rep2", "rep3",
