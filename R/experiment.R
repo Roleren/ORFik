@@ -251,7 +251,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
               "_02h", "_04h", "_06h", "_08h",
               "1dpf", "2dpf", "3dpf", "4dpf", "5dpf", "6dpf", "10dpf",
               "21dpf", "24dpf")
-  cell_lines <- c("HEK293", "HeLa", "THP-1")
+  cell_lines <- c("HEK293", "HeLa", "THP-1", "PC3")
   tissues <- c("adipose", "brain", "bladder", "blood", "breast", "colon",
                "cortex", "eye", "fibroblast", "frontal lobe", "heart",
                "kidney", "liver", "lung", "muscle","ovary", "prostate",
