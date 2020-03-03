@@ -185,7 +185,7 @@ read.experiment <-  function(file) {
 #' Create a template for new ORFik \code{\link{experiment}}
 #'
 #' Create information on runs / samples from an experiment as a single R object.
-#' By using files in a folder. It will try to make an experiment table
+#' By using files in a folder / folders. It will try to make an experiment table
 #' with information per sample. There will be several columns you can fill in,
 #' most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
 #' Wild type or mutant etc.
@@ -195,7 +195,7 @@ read.experiment <-  function(file) {
 #' of values.
 #' An extra column called "reverse" is made if there are paired data,
 #' like +/- strand wig files.
-#' @param dir Which directory to create experiment from
+#' @param dir Which directory / directories to create experiment from
 #' @param exper Short name of experiment, max 5 characters long
 #' @param saveDir Directory to save experiment csv file (NULL)
 #' @param types Default (bam, bed, wig), which types of libraries to allow
@@ -222,7 +222,8 @@ read.experiment <-  function(file) {
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
                               fa = "", viewTemplate = TRUE) {
-  if (!dir.exists(dir)) stop(paste(dir, "is not a valid directory!"))
+  notDir <- !all(dir.exists(dir))
+  if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a valid directory!"))
   file_dt <- findLibrariesInFolder(dir, types)
   if (is(file_dt, "data.table")) { # If paired data
     files <- file_dt$forward
@@ -616,16 +617,22 @@ remove.experiments <- function(df, envir = .GlobalEnv) {
   return(invisible(NULL))
 }
 
-#' Get all library files in folder
-#' @param dir The directory to find bam, bed, wig files.
+#' Get all library files in folder/folders of given types
+#'
+#' Will try to guess paris of wig pairs and paired end bam files.
+#' @param dir The directory/directories to find bam, bed, wig files.
 #' @param types All accepted types of bam, bed, wig files..
 #' @importFrom tools file_ext
 #' @return (data.table) All files found from types parameter.
 #' With 2 extra column (logical), is it wig pairs, and paired bam files.
 findLibrariesInFolder <- function(dir, types) {
   regex <- paste("\\.", types, collapse = "|", sep = "")
-  files <- grep(pattern = regex, x = list.files(dir, full.names = TRUE),
-                value = TRUE)
+  # Find files in multiple dirs in correct order
+  files <- unlist(lapply(dir,
+                         FUN = function(d)
+                           grep(pattern = regex,
+                                x = list.files(d, full.names = TRUE),
+                           value = TRUE)))
   files <- pasteDir(files)
   # Remove .bai bam index files etc
   fext <- file_ext(files)
@@ -654,7 +661,7 @@ findLibrariesInFolder <- function(dir, types) {
     if (length(files) == 0) stop("Found no valid files in folder")
   }
   # Paired end bam
-  # TODO Make pairs included, it should be optional
+  # TODO Make bam pairs included, it should be optional
   pairs <- c("_R1_00", "_F", "_Forward", "_forward",
              "_R2_00", "_R", "_Reverse", "_reverse")
   #pairInfo <- findFromPath(files, pairs)

@@ -2,12 +2,12 @@
 % Please edit documentation in R/experiment.R
 \name{findLibrariesInFolder}
 \alias{findLibrariesInFolder}
-\title{Get all library files in folder}
+\title{Get all library files in folder/folders of given types}
 \usage{
 findLibrariesInFolder(dir, types)
 }
 \arguments{
-\item{dir}{The directory to find bam, bed, wig files.}
+\item{dir}{The directory/directories to find bam, bed, wig files.}
 
 \item{types}{All accepted types of bam, bed, wig files..}
 }
@@ -16,5 +16,5 @@ findLibrariesInFolder(dir, types)
 With 2 extra column (logical), is it wig pairs, and paired bam files.
 }
 \description{
-Get all library files in folder
+Will try to guess paris of wig pairs and paired end bam files.
 }

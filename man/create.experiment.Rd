@@ -15,7 +15,7 @@ create.experiment(
 )
 }
 \arguments{
-\item{dir}{Which directory to create experiment from}
+\item{dir}{Which directory / directories to create experiment from}
 
 \item{exper}{Short name of experiment, max 5 characters long}
 
@@ -35,7 +35,7 @@ a data.frame, NOTE: this is not a ORFik experiment,
 }
 \description{
 Create information on runs / samples from an experiment as a single R object.
-By using files in a folder. It will try to make an experiment table
+By using files in a folder / folders. It will try to make an experiment table
 with information per sample. There will be several columns you can fill in,
 most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
 Wild type or mutant etc.
