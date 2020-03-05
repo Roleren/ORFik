@@ -8,6 +8,9 @@
 #' If you used CageSeq to reannotate your leaders, your txDB object must
 #' contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
 #'
+#' As a note the library is reduced to only reads overlapping 'tx', so the
+#' library size in fpkm calculation is done on this subset. This will help
+#' remove rRNA and other contaminants.
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 #' @param RFP RiboSeq reads as GAlignment, GRanges or GRangesList object

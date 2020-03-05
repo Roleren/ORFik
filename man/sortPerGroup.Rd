@@ -9,7 +9,7 @@ sortPerGroup(grl, ignore.strand = FALSE)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
 
-\item{ignore.strand}{a boolean, if FALSE: should minus strands be
+\item{ignore.strand}{a boolean, (default FALSE): should minus strands be
 sorted from highest to lowest ends. If TRUE: from lowest to highest ends.}
 }
 \value{

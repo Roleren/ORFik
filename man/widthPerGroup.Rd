@@ -9,7 +9,7 @@ widthPerGroup(grl, keep.names = TRUE)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
 
-\item{keep.names}{a boolean, keep names or not}
+\item{keep.names}{a boolean, keep names or not, default: (TRUE)}
 }
 \value{
 an integer vector (named/unnamed) of widths

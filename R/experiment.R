@@ -555,25 +555,36 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default: dirname(df$filepath[1]),
 #' if it is NULL, it will just reassign R objects to simplified libraries.
+#' @inheritParams convertToOneBasedRanges
+#' @param must.overlap default (NULL), else a GRanges / GRangesList object, so
+#' only reads that overlap (must.overlap) are kept. This is useful when you
+#' only need the reads over transcript annotation or subset etc.
 #' @return NULL (saves files to disc or R .GlobalEnv)
 simpleLibs <- function(df,
-                       out.dir = paste0(dirname(df$filepath[1]), "/bedo/")) {
+                       out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
+                       addScoreColumn = TRUE, addSizeColumn = TRUE,
+                       must.overlap = NULL) {
   validateExperiments(df)
+  if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
+    stop("must.overlap must be GRanges or GRangesList object!")
   if (!is.null(out.dir)) {
     dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
     if (!dir.exists(out.dir)) stop("could not create directory!")
     message(paste("Saving .bedo files to:", out.dir))
   }
 
-  outputLibs(df)
+  outputLibs(df, chrStyle = must.overlap)
 
   varNames <- bamVarName(df)
   i <- 1
   for (f in varNames) {
     message(f)
-    gr <- convertToOneBasedRanges(gr = get(f), addScoreColumn = TRUE,
-                                  addSizeColumn = TRUE,
+    gr <- convertToOneBasedRanges(gr = get(f),
+                                  addScoreColumn = addScoreColumn,
+                                  addSizeColumn = addSizeColumn,
                                   method = "None")
+    if (!is.null(must.overlap)) gr <- optimizeReads(must.overlap, gr)
+
     if (!is.null(out.dir)) {
       output <- paste0(out.dir,
                        remove.file_ext(df$filepath[i], basename = TRUE),
@@ -582,7 +593,6 @@ simpleLibs <- function(df,
     } else {
       assign(x = f, value = gr, envir = .GlobalEnv)
     }
-
     i <- i + 1
   }
 }

@@ -15,8 +15,8 @@ optimizeReads(grl, reads)
 the reads as GRanges or GAlignment
 }
 \description{
-If more than a million reads, keep only the ones that overlap within the
-grl ranges.
+Keep only the ones that overlap within the grl ranges.
+Also sort them in the end
 }
 \seealso{
 Other utils: 

@@ -9,7 +9,7 @@ numExonsPerGroup(grl, keep.names = TRUE)
 \arguments{
 \item{grl}{a GRangesList}
 
-\item{keep.names}{a boolean, keep names or not}
+\item{keep.names}{a logical, keep names or not, default: (TRUE)}
 }
 \value{
 an integer vector of counts

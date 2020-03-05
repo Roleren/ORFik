@@ -55,6 +55,10 @@ behind it. Look at the functions in the feature family to see all of them.
 \details{
 If you used CageSeq to reannotate your leaders, your txDB object must
 contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
+
+As a note the library is reduced to only reads overlapping 'tx', so the
+library size in fpkm calculation is done on this subset. This will help
+remove rRNA and other contaminants.
 }
 \examples{
 # Here we make an example from scratch

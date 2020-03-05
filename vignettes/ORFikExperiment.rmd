@@ -16,7 +16,7 @@ Welcome to the introduction of ORFik experiment. This vignette will walk you thr
 `ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq and CageSeq data, we advice you to read ORFikOverview vignette, before starting this one.
 
 ## Motivation
-NGS libraries are becomming more and more numerous. As a bioinformatician you often need to use many data-sets, like RNA-seq or ribo-seq together, to do make some plots or statistics. A lot of things can go wrong when you scale up from just 1 data-set to many.
+NGS libraries are becomming more and more numerous. As a bioinformatician you often need to use many data-sets, like RNA-seq or ribo-seq together, to make some plots or statistics. A lot of things can go wrong when you scale up from just 1 data-set to many.
 
 Another problem is also that annotations like gff and fasta files combined with the NGS data, must be seperatly loaded. Making it possible to use wrong annotation for the NGS data, or wrong chromosome naming as chr1 vs 1 etc.
 

@@ -296,8 +296,8 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
 
 #' Find optimized subset of valid reads
 #'
-#' If more than a million reads, keep only the ones that overlap within the
-#' grl ranges.
+#' Keep only the ones that overlap within the grl ranges.
+#' Also sort them in the end
 #' @inheritParams validSeqlevels
 #' @return the reads as GRanges or GAlignment
 #' @family utils
@@ -305,10 +305,11 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
 optimizeReads <- function(grl, reads) {
   seqMatch <- validSeqlevels(grl, reads)
   reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
-  if (length(reads) > 1e6) { # speedup on big libraries
-    reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
-    reads <- sort(reads)
-  }
+
+  reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
+  reads <- sort(reads)
+  if (length(reads) == 0) warning("No reads left in 'reads' after optimisation!")
+
   return(reads)
 }
 

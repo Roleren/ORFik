@@ -11,7 +11,7 @@ downstreamN <- function(grl, firstN = 150L) {
 
 #' Get list of widths per granges group
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return an integer vector (named/unnamed) of widths
 #' @export
 #' @examples
@@ -35,7 +35,7 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 
 #' Get list of seqnames per granges group
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @importFrom IRanges heads
 #' @return a character vector or Rle of seqnames(if seqnames == T)
 #' @export
@@ -119,7 +119,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #'
 #' Note: will not work if groups have equal names.
 #' @param grl a \code{\link{GRangesList}}
-#' @param ignore.strand a boolean, if FALSE: should minus strands be
+#' @param ignore.strand a boolean, (default FALSE): should minus strands be
 #' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.
 #' @return an equally named GRangesList, where each group is
 #'  sorted within group.
@@ -149,7 +149,7 @@ sortPerGroup <- function(grl, ignore.strand = FALSE){
 
 #' Get list of strands per granges group
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a vector named/unnamed of characters
 #' @importFrom IRanges heads
 #' @export
@@ -220,7 +220,7 @@ lastExonPerGroup <- function(grl) {
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = TRUE), or integer vector(FALSE)
 #' @export
 #' @examples
@@ -246,7 +246,7 @@ firstStartPerGroup <- function(grl, keep.names = TRUE) {
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
 #' @examples
@@ -270,7 +270,7 @@ firstEndPerGroup <- function(grl, keep.names = TRUE) {
 
 #' Get last end per granges group
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
 #' @examples
@@ -294,7 +294,7 @@ lastExonEndPerGroup <- function(grl,keep.names = TRUE) {
 
 #' Get last start per granges group
 #' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
 #' @examples
@@ -321,7 +321,7 @@ lastExonStartPerGroup <- function(grl, keep.names = TRUE) {
 #' Can also be used generaly to get number of GRanges object
 #'  per GRangesList group
 #' @param grl a GRangesList
-#' @param keep.names a boolean, keep names or not
+#' @param keep.names a logical, keep names or not, default: (TRUE)
 #' @return an integer vector of counts
 #' @export
 #' @examples
