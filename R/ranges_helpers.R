@@ -329,11 +329,10 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   }
 
   # Store original values we need
-  oldNames <- names(x)
-  oldTxNames <- names(transcripts)
-  xClass <- class(x)
-  xOriginal <- x
+  xOriginal <- x; oldNames <- names(x); xClass <- class(x)
   xWidths <- width(xOriginal)
+
+  oldTxNames <- names(transcripts)
   txWidths <- if (is.grl(transcripts)) {
     as.integer(sum(width(transcripts)))
   } else width(transcripts)
@@ -466,6 +465,8 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   }
   names(result) <- oldNames
   result <- reduce(result, drop.empty.ranges = FALSE)
+  if (is(result, "GRanges")) names(result) <- oldNames
+
   return(result)
 }
 
