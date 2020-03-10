@@ -317,16 +317,15 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #'
 pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
                               x.is.sorted = FALSE, tx.is.sorted = FALSE) {
-  if ((length(x) == 0))
-      return(x)
+  if ((length(x) == 0)) return(x)
 
   if (length(x) != length(transcripts)) {
     if (length(x) == 1) {
       x <- rep(x, length(transcripts))
     } else if(length(transcripts) == 1) {
       transcripts <- rep(transcripts, length(x))
-    } else stop("recycling is supported when length(x) == 1 or
-                length(transcripts) == 1; otherwise the lengths must match")
+    } else stop("recycling is supported when length(x) == 1 or,",
+                "length(transcripts) == 1; otherwise the lengths must match")
   }
 
   # Store original values we need
@@ -334,6 +333,11 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   oldTxNames <- names(transcripts)
   xClass <- class(x)
   xOriginal <- x
+  xWidths <- width(xOriginal)
+  txWidths <- if (is.grl(transcripts)) {
+    as.integer(sum(width(transcripts)))
+  } else width(transcripts)
+
   xStrandOriginal <- if(is.grl(xOriginal)) {
     as.character(strand(unlist(xOriginal)))
   } else if (is(xOriginal, "GRanges")) {
@@ -345,6 +349,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   if (is.gr_or_grl(x)) x <- ranges(x)
   if (is(x, "IRangesList")) {
     indices <- groupings(x)
+    xWidths <- as.integer(sum(xWidths))
     x = unlist(x, use.names = FALSE)
     names(x) <- NULL
   } else if (is(x, "IRanges")) {
@@ -357,25 +362,36 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   ignore.strand <- as.logical(ignore.strand)
   if (max(indices) > length(transcripts)) stop("invalid names of IRanges")
   if (length(x) != length(indices)) stop("length of ranges != indices")
-  notEqualSeqnames <- ORFik:::is.gr_or_grl(xOriginal) & ORFik:::is.gr_or_grl(transcripts) &
+  notEqualSeqnames <- is.gr_or_grl(xOriginal) & is.gr_or_grl(transcripts) &
                          !all(seqlevels(xOriginal) %in% seqlevels(transcripts))
   if (notEqualSeqnames) stop("subscript contains out-of-bounds indices")
   if (is.grl(transcripts) & !tx.is.sorted)
     transcripts <- sortPerGroup(transcripts, ignore.strand)
+  if (!all(xWidths <= txWidths)) {
+    stop("Invalid ranges to map, check them.",
+         " One has width bigger than its reference")
+  }
 
-
-  # Unlist tx
+  # Unlist tx, if list structure
   tx <- ranges(transcripts)
-  txStrand <- strandBool(transcripts)
   names <- names(tx)
   names(tx) <- NULL
-  if (!all(width(x) <= as.integer(sum(width(tx))))) {
-    stop("Invalid ranges to map, check them. One is bigger than its reference")
+  if (is.grl(transcripts) | is(transcripts, "IRangesList")) {
+    tx <- unlist(tx, use.names = FALSE)
+    groupings <- groupings(transcripts)
+    exonN <- lengths(transcripts)
+  } else { # not list
+    groupings <- seq.int(1, length(transcripts))
+    exonN <- seq.int(1, length(transcripts))
   }
-  tx <- unlist(tx, use.names = FALSE)
+
+  txStrand <- if (ignore.strand) { # If ignore strand, set all to '+'
+    rep(TRUE, length(transcripts))
+  } else strandBool(transcripts)
   xStrand <- if (ignore.strand) { # If ignore strand, set all to '+'
     rep(TRUE, length(indices))
-  } else strandBool(transcripts)[indices]
+  } else txStrand[indices]
+
   # Split indices for x into pos / neg-strand
   if (is.grl(xOriginal) | is(xOriginal, "IRangesList")) {
     indicesPos <- ORFik:::groupings(xOriginal[txStrand])
@@ -385,10 +401,8 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     indicesNeg <- seq_along(xOriginal[!txStrand])
   }
   # Make algorithm dynamic, by skipping if you know you can go to next transcript
-  groupings <- groupings(transcripts)
-  exonN <- numExonsPerGroup(transcripts)
-  exonCumSumPos <- (cumsum(exonN[txStrand]) - exonN[txStrand][1])[indicesPos]
-  exonCumSumNeg <- (cumsum(exonN[!txStrand]) - exonN[!txStrand][1])[indicesNeg]
+  exonCumSumPos <- c(0, cumsum(exonN[txStrand]))[indicesPos]
+  exonCumSumNeg <- c(0, cumsum(exonN[!txStrand]))[indicesNeg]
   txStrand <- txStrand[groupings]
 
   # Here is pos and neg direction of the algorithm ->
@@ -429,7 +443,9 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     result <- GRanges(seqnames = newSeqnames[indices],
                       ranges = IRanges(xStart, xEnd),
                       strand = strandPerGroup(transcripts, FALSE)[indices])
-    unmapped <- (strand(result) != xStrandOriginal) | (start(result) == 0)
+    unmapped <- start(result) == 0
+    if (!ignore.strand) # Check strand correction only if not ignore
+      unmapped <- unmapped | (strand(result) != xStrandOriginal)
     if (any(unmapped)) {
       ranges(result)[unmapped] <- IRanges(0, -1)
       strand(result)[unmapped] <- "*"
