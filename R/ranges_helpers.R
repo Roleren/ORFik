@@ -316,7 +316,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' pmapFromTranscriptF(ranges, grl, TRUE)
 #'
 pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
-                              x.is.sorted = FALSE, tx.is.sorted = FALSE) {
+                              x.is.sorted = TRUE, tx.is.sorted = TRUE) {
   if ((length(x) == 0)) return(x)
 
   if (length(x) != length(transcripts)) {
@@ -365,6 +365,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   notEqualSeqnames <- is.gr_or_grl(xOriginal) & is.gr_or_grl(transcripts) &
                          !all(seqlevels(xOriginal) %in% seqlevels(transcripts))
   if (notEqualSeqnames) stop("subscript contains out-of-bounds indices")
+  # TODO: add propper test for per row seqnames, not just seqlevels
   if (is.grl(transcripts) & !tx.is.sorted)
     transcripts <- sortPerGroup(transcripts, ignore.strand)
   if (!all(xWidths <= txWidths)) {
@@ -385,7 +386,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     exonN <- seq.int(1, length(transcripts))
   }
 
-  txStrand <- if (ignore.strand) { # If ignore strand, set all to '+'
+  txStrand <- if (ignore.strand) { # If ignore strand, set to '+'
     rep(TRUE, length(transcripts))
   } else strandBool(transcripts)
   xStrand <- if (ignore.strand) { # If ignore strand, set all to '+'
@@ -435,14 +436,20 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   xEnd[!xStrand] <- unlist(neg$ranges[2], use.names = FALSE)
 
   result <- IRanges(xStart, xEnd)
-  newSeqnames <- if (!is.null(oldTxNames)) {
-    oldTxNames
-  } else seq.int(length(result))
+
 
   if (is.gr_or_grl(xClass)) {
+    newSeqnames <- if (!is.null(oldTxNames)) {
+      oldTxNames
+    } else seq.int(length(result))
+    newStrand <- if (ignore.strand) {
+      "*"
+    } else if (is.grl(transcripts)) {
+      strandPerGroup(transcripts)[indices]
+    } else as.character(strand(transcripts))[indices]
     result <- GRanges(seqnames = newSeqnames[indices],
                       ranges = IRanges(xStart, xEnd),
-                      strand = strandPerGroup(transcripts, FALSE)[indices])
+                      strand = newStrand)
     unmapped <- start(result) == 0
     if (!ignore.strand) # Check strand correction only if not ignore
       unmapped <- unmapped | (strand(result) != xStrandOriginal)
