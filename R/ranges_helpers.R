@@ -334,11 +334,11 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
 
   oldTxNames <- names(transcripts)
   txWidths <- if (is.grl(transcripts)) {
-    as.integer(sum(width(transcripts)))
+    widthPerGroup(transcripts, FALSE)
   } else width(transcripts)
 
   xStrandOriginal <- if(is.grl(xOriginal)) {
-    as.character(strand(unlist(xOriginal)))
+    as.character(unlist(strand(xOriginal), use.names = FALSE))
   } else if (is(xOriginal, "GRanges")) {
     as.character(strand(xOriginal))
   } else NULL

@@ -51,9 +51,9 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
-    return(seqnames(heads(grl, 1L)))
+    return(heads(seqnames(grl), 1L))
   } else {
-    return(as.character(seqnames(heads(grl, 1L))))
+    return(as.character(heads(seqnames(grl), 1L)))
   }
 }
 
@@ -92,7 +92,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
       DT <- DT[order(group, end)]
     }
   }
-  # test naming, this is still not perfect
+  # TODO: test naming, this is still not perfect
   testName <- names(unlist(grl[1], use.names = FALSE)[1])
   if (!is.null(testName)) {
     DT[, grnames := names(unlist(grl, use.names = FALSE))]
@@ -165,9 +165,9 @@ sortPerGroup <- function(grl, ignore.strand = FALSE){
 strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (keep.names) {
-    return(strand(heads(grl, 1L)))
+    return(heads(strand(grl), 1L))
   } else {
-    return(as.character(strand(heads(grl, 1L))))
+    return(as.character(heads(strand(grl), 1L)))
   }
 }
 

@@ -31,11 +31,11 @@ Mapped position is computed by counting from the transcription start site
  (TSS) and is not affected by the value of ignore.strand.}
 
 \item{x.is.sorted}{if x is a GRangesList object, are "-" strand groups pre-sorted
-in decreasing order within group, default: FALSE}
+in decreasing order within group, default: TRUE}
 
 \item{tx.is.sorted}{if transcripts is a GRangesList object,
 are "-" strand groups pre-sorted in decreasing order within group,
-default: FALSE}
+default: TRUE}
 }
 \value{
 a GRangesList in transcript coordinates

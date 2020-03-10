@@ -8,8 +8,8 @@ pmapToTranscriptF(
   x,
   transcripts,
   ignore.strand = FALSE,
-  x.is.sorted = FALSE,
-  tx.is.sorted = FALSE
+  x.is.sorted = TRUE,
+  tx.is.sorted = TRUE
 )
 }
 \arguments{
@@ -31,11 +31,11 @@ Mapped position is computed by counting from the transcription start site
  (TSS) and is not affected by the value of ignore.strand.}
 
 \item{x.is.sorted}{if x is a GRangesList object, are "-" strand groups pre-sorted
-in decreasing order within group, default: FALSE}
+in decreasing order within group, default: TRUE}
 
 \item{tx.is.sorted}{if transcripts is a GRangesList object,
 are "-" strand groups pre-sorted in decreasing order within group,
-default: FALSE}
+default: TRUE}
 }
 \value{
 object of same class as input x, names from ranges are kept.
