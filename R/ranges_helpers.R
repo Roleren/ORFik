@@ -300,10 +300,10 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #'  Mapped position is computed by counting from the transcription start site
 #'   (TSS) and is not affected by the value of ignore.strand.
 #' @param x.is.sorted if x is a GRangesList object, are "-" strand groups pre-sorted
-#' in decreasing order within group, default: FALSE
+#' in decreasing order within group, default: TRUE
 #' @param tx.is.sorted if transcripts is a GRangesList object,
 #' are "-" strand groups pre-sorted in decreasing order within group,
-#' default: FALSE
+#' default: TRUE
 #' @return object of same class as input x, names from ranges are kept.
 #' @export
 #' @examples
@@ -445,7 +445,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     newStrand <- if (ignore.strand) {
       "*"
     } else if (is.grl(transcripts)) {
-      strandPerGroup(transcripts)[indices]
+      strandPerGroup(transcripts, FALSE)[indices]
     } else as.character(strand(transcripts))[indices]
     result <- GRanges(seqnames = newSeqnames[indices],
                       ranges = IRanges(xStart, xEnd),
