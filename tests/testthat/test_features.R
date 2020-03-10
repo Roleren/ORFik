@@ -29,7 +29,8 @@ RFP6 <- GRanges(seqnames = Rle(rep("1", 6)),
                                  end = c(30, 33, 63, 90, 110, 120)),
                 strand = Rle(strand(rep("-", 6))))
 RFP7 <- c(RFP5, RFP6)
-
+RFP8 <- GRanges("1", IRanges(c(190, 188), c(195, 188)), "-")
+RFP9 <- c(RFP, RFP8)
 RFP5GAlign <- as(RFP5, "GAlignments")
 
 
@@ -184,7 +185,12 @@ test_that("fractionLength works as intended", {
   expect_equal(round(scores, 3), c(0.085, 0.090, 0.090, 0.103))
 })
 
-
+test_that("OptimizeReads works as intended", {
+  scores <- optimizeReads(grl[1], RFP)
+  expect_equal(3, length(scores))
+  expect_warning(scores <- optimizeReads(grl[4], RFP))
+  expect_equal(0, length(scores))
+})
 
 test_that("disengagementScore works as intended", {
 
@@ -194,7 +200,7 @@ test_that("disengagementScore works as intended", {
 
   scores <- disengagementScore(grl, RFP7, GtfOrTx = tx)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.43, 0.80, 0.80, 0.14))
+  expect_equal(round(scores, 2), c(0.25, 0.25, 0.25, 0.14))
 })
 
 
@@ -264,7 +270,7 @@ test_that("insideOutsideORF works as intended", {
 
   scores <- insideOutsideORF(grl, RFP7, tx)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.43, 0.57, 0.57, 0.14))
+  expect_equal(round(scores, 2), c(0.25, 0.25, 0.25, 0.14))
   ds <- disengagementScore(grl, RFP7, tx)
   expect_equal(scores, insideOutsideORF(grl, RFP7, tx, ds))
 })
@@ -334,7 +340,7 @@ test_that("initiationScore works as intended", {
 
 test_that("computeFeatures works as intended", {
   # test from example table in orfik
-  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP7,
+  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP9,
                             RNA = RNAGAlign, tx = tx, fiveUTRs = fiveUTRs,
                             cds = cds, threeUTRs = threeUTRs, riboStart = 26,
                             riboStop = 34)
@@ -342,6 +348,7 @@ test_that("computeFeatures works as intended", {
   expect_equal(ncol(dt), 16)
   expect_equal(nrow(dt), 4)
   # load file
+  #save(featureExamples, file = "~/Desktop/ORFik/inst/extdata/features.rdata")
   load(system.file("extdata", "features.rdata", package = "ORFik"))
   expect_equal(setDF(dt), setDF(featureExamples))
   # should be equal to saved version

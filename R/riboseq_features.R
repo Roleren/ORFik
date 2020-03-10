@@ -313,9 +313,13 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
   tx <- loadRegion(GtfOrTx)
 
+  if(!RFP.sorted){
+    RFP <- optimizeReads(tx, RFP)
+  }
   # exclude non hits and set them to 0
   validIndices <- hasHits(tx, RFP)
   validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
+
   if (!any(validIndices)) { # if no hits
     score <- countOverlaps(grl, RFP) + 1
     names(score) <- NULL
@@ -326,11 +330,9 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
   grlStops <- stopSites(grl[validIndices], asGR = FALSE, is.sorted = TRUE)
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
                                        grlStops)
+
   # check for big lists
   if (length(downstreamTx) > 5e5) {
-    if(!RFP.sorted){
-      RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])
-    }
     ordering <- uniqueOrder(downstreamTx)
     downstreamTx <- uniqueGroups(downstreamTx)
     overlapDownstream[validIndices] <- countOverlaps(downstreamTx,

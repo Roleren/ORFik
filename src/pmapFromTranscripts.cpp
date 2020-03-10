@@ -14,7 +14,7 @@ using string = std::string;
 using namespace Rcpp;
 
 // Integer vector of cumulative sums of exons
-// (1,1,1,2,2,3,3,3) -> (0,3,5)
+// (1,1,1,2,2,3,3,3) -> (0,3,5) [this is now indices of first of every]
 vi nExonsCumSums(const int &xSize, const int &indexSize, const vi &indices){
   vi nExons(xSize);
   int ref = indices[0];

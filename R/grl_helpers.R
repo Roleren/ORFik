@@ -399,6 +399,7 @@ removeMetaCols <- function(grl) {
 #' ORFik:::groupings(grl)
 #'
 groupings <- function(grl){
+  if (length(grl) == 0) return(integer())
   l <- lengths(grl, use.names = FALSE)
   return(rep.int(seq.int(length(l)), l))
 }

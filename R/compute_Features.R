@@ -180,14 +180,13 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
 allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                               faFile, riboStart, riboStop, orfFeatures,
                               includeNonVarying, grl.is.sorted) {
-  if (!grl.is.sorted) {
-    grl <- sortPerGroup(grl)
-  }
-
+  # Clean and optimize
+  if (!grl.is.sorted) grl <- sortPerGroup(grl)
+  tx <- tx[txNames(grl)] # Subset tx to only those in grl.
   RFP <- optimizeReads(tx, RFP)
-  tx <- tx[txNames(grl)]
-  #### Get all features, append 1 at a time, to save memory ####
 
+
+  #### Get all features, append 1 at a time, to save memory ####
   scores <- data.table(countRFP = countOverlaps(grl, RFP))
   if (!is.null(RNA)) { # if rna seq is included
     TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
@@ -204,7 +203,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                                        countRFP + 1)]
   scores[, RSS := ribosomeStallingScore(grl, RFP, countRFP)]
 
-  if (includeNonVarying) {
+  if (includeNonVarying) { # sequence feature
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
   }
 
@@ -214,8 +213,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     scores[, ioScore := insideOutsideORF(grl, RFP, tx,
                                          scores$disengagementScores, TRUE)]
 
-    if (includeNonVarying) {
-
+    if (includeNonVarying) { # sequence features
       if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
         scores[, kozak := kozakSequenceScore(grl, tx, faFile)]
       } else {

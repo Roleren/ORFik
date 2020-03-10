@@ -4,7 +4,13 @@
 \alias{asTX}
 \title{Map genomic to transcript coordinates by reference}
 \usage{
-asTX(grl, reference)
+asTX(
+  grl,
+  reference,
+  ignore.strand = FALSE,
+  x.is.sorted = FALSE,
+  tx.is.sorted = FALSE
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} of ranges within
@@ -13,6 +19,23 @@ grouping for result}
 
 \item{reference}{a GrangesList of ranges that include and are bigger or
 equal to grl ig. cds is grl and gene can be reference}
+
+\item{ignore.strand}{When ignore.strand is TRUE, strand is ignored in
+overlaps operations (i.e., all strands are considered "+") and the
+strand in the output is '*'. \cr
+When ignore.strand is FALSE (default) strand in the output is taken from the
+transcripts argument. When transcripts is a GRangesList, all inner list
+elements of a common list element must have the same strand
+or an error is thrown. \cr
+Mapped position is computed by counting from the transcription start site
+ (TSS) and is not affected by the value of ignore.strand.}
+
+\item{x.is.sorted}{if x is a GRangesList object, are "-" strand groups pre-sorted
+in decreasing order within group, default: FALSE}
+
+\item{tx.is.sorted}{if transcripts is a GRangesList object,
+are "-" strand groups pre-sorted in decreasing order within group,
+default: FALSE}
 }
 \value{
 a GRangesList in transcript coordinates

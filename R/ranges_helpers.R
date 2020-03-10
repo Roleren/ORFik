@@ -142,17 +142,24 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
 #' grouping for result
 #' @param reference a GrangesList of ranges that include and are bigger or
 #' equal to grl ig. cds is grl and gene can be reference
+#' @inheritParams pmapToTranscriptF
 #' @return a GRangesList in transcript coordinates
 #' @family ExtendGenomicRanges
 #'
-asTX <- function(grl, reference) {
+asTX <- function(grl, reference,
+                 ignore.strand = FALSE,
+                 x.is.sorted = FALSE,
+                 tx.is.sorted = FALSE) {
   orfNames <- txNames(grl)
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
     stop("not all references are present, so can not map to transcripts.")
   }
   reference <- reference[orfNames]
   names(reference) <- NULL
-  return(pmapToTranscripts(grl, reference))
+  return(pmapToTranscriptF(grl, reference,
+                           ignore.strand = ignore.strand,
+                           x.is.sorted = x.is.sorted,
+                           tx.is.sorted = tx.is.sorted))
 }
 
 #' Faster pmapFromTranscript
@@ -264,6 +271,176 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
   result <- split(result, nIndices)
   names(result) <- names(transcripts)[temp]
   seqlevels(result) <- seqlevels(transcripts)
+  return(result)
+}
+
+#' Faster pmapToTranscript
+#'
+#' Map range coordinates between features in the transcriptome and
+#' genome (reference) space.
+#' The length of x must be the same as length of transcripts. Only exception is
+#' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
+#' to transcript 3 etc.
+#'
+#' This version tries to fix the shortcommings of GenomicFeature's version.
+#' Much faster and uses less memory.
+#' Implemented as dynamic program optimized c++ code.
+#' @param x GRangesList/GRanges/IRangesList/IRanges to map
+#' to transcriptomic coordinates
+#' @param transcripts a GRangesList/GRanges/IRangesList/IRanges to
+#'  map against (the genomic coordinates). Must be of lower abstraction level
+#'  than x. So if x is GRanges, transcripts can not be IRanges etc.
+#' @param ignore.strand When ignore.strand is TRUE, strand is ignored in
+#'  overlaps operations (i.e., all strands are considered "+") and the
+#'  strand in the output is '*'. \cr
+#'  When ignore.strand is FALSE (default) strand in the output is taken from the
+#'  transcripts argument. When transcripts is a GRangesList, all inner list
+#'  elements of a common list element must have the same strand
+#'  or an error is thrown. \cr
+#'  Mapped position is computed by counting from the transcription start site
+#'   (TSS) and is not affected by the value of ignore.strand.
+#' @param x.is.sorted if x is a GRangesList object, are "-" strand groups pre-sorted
+#' in decreasing order within group, default: FALSE
+#' @param tx.is.sorted if transcripts is a GRangesList object,
+#' are "-" strand groups pre-sorted in decreasing order within group,
+#' default: FALSE
+#' @return object of same class as input x, names from ranges are kept.
+#' @export
+#' @examples
+#' ranges <- IRanges(start = c(5, 6), end = c(10, 10))
+#' seqnames = rep("chr1", 2)
+#' strands = rep("-", 2)
+#' grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
+#'              c(1, 1))
+#' ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
+#' pmapFromTranscriptF(ranges, grl, TRUE)
+#'
+pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
+                              x.is.sorted = FALSE, tx.is.sorted = FALSE) {
+  if ((length(x) == 0))
+      return(x)
+
+  if (length(x) != length(transcripts)) {
+    if (length(x) == 1) {
+      x <- rep(x, length(transcripts))
+    } else if(length(transcripts) == 1) {
+      transcripts <- rep(transcripts, length(x))
+    } else stop("recycling is supported when length(x) == 1 or
+                length(transcripts) == 1; otherwise the lengths must match")
+  }
+
+  # Store original values we need
+  oldNames <- names(x)
+  oldTxNames <- names(transcripts)
+  xClass <- class(x)
+  xOriginal <- x
+  xStrandOriginal <- if(is.grl(xOriginal)) {
+    as.character(strand(unlist(xOriginal)))
+  } else if (is(xOriginal, "GRanges")) {
+    as.character(strand(xOriginal))
+  } else NULL
+
+  # subset to ranges and get indices for x
+  if (is.grl(x) & !x.is.sorted) x <- sortPerGroup(x, ignore.strand)
+  if (is.gr_or_grl(x)) x <- ranges(x)
+  if (is(x, "IRangesList")) {
+    indices <- groupings(x)
+    x = unlist(x, use.names = FALSE)
+    names(x) <- NULL
+  } else if (is(x, "IRanges")) {
+    indices <- seq.int(1, length(x))
+    names(x) <- NULL
+  } else stop("x must either be IRanges, IRangesList, GRanges or GRangesList")
+
+  # Sanity tests
+  if (!is.logical(ignore.strand)) stop("ignore.strand must be logical")
+  ignore.strand <- as.logical(ignore.strand)
+  if (max(indices) > length(transcripts)) stop("invalid names of IRanges")
+  if (length(x) != length(indices)) stop("length of ranges != indices")
+  notEqualSeqnames <- ORFik:::is.gr_or_grl(xOriginal) & ORFik:::is.gr_or_grl(transcripts) &
+                         !all(seqlevels(xOriginal) %in% seqlevels(transcripts))
+  if (notEqualSeqnames) stop("subscript contains out-of-bounds indices")
+  if (is.grl(transcripts) & !tx.is.sorted)
+    transcripts <- sortPerGroup(transcripts, ignore.strand)
+
+
+  # Unlist tx
+  tx <- ranges(transcripts)
+  txStrand <- strandBool(transcripts)
+  names <- names(tx)
+  names(tx) <- NULL
+  if (!all(width(x) <= as.integer(sum(width(tx))))) {
+    stop("Invalid ranges to map, check them. One is bigger than its reference")
+  }
+  tx <- unlist(tx, use.names = FALSE)
+  xStrand <- if (ignore.strand) { # If ignore strand, set all to '+'
+    rep(TRUE, length(indices))
+  } else strandBool(transcripts)[indices]
+  # Split indices for x into pos / neg-strand
+  if (is.grl(xOriginal) | is(xOriginal, "IRangesList")) {
+    indicesPos <- ORFik:::groupings(xOriginal[txStrand])
+    indicesNeg <- ORFik:::groupings(xOriginal[!txStrand])
+  } else {
+    indicesPos <- seq_along(xOriginal[txStrand])
+    indicesNeg <- seq_along(xOriginal[!txStrand])
+  }
+  # Make algorithm dynamic, by skipping if you know you can go to next transcript
+  groupings <- groupings(transcripts)
+  exonN <- numExonsPerGroup(transcripts)
+  exonCumSumPos <- (cumsum(exonN[txStrand]) - exonN[txStrand][1])[indicesPos]
+  exonCumSumNeg <- (cumsum(exonN[!txStrand]) - exonN[!txStrand][1])[indicesNeg]
+  txStrand <- txStrand[groupings]
+
+  # Here is pos and neg direction of the algorithm ->
+  # forward strand (c++ code)
+  if (any(txStrand)) {
+    pos <- pmapToTranscriptsCPP(start(x)[xStrand], end(x)[xStrand],
+                                start(tx)[txStrand], end(tx)[txStrand],
+                                groupings[txStrand], '+', exonCumSumPos)
+  } else {
+    pos <- list(ranges = list(vector("integer"), vector("integer")),
+                index = vector("integer"))
+  }
+
+  # reverse strand
+  if (any(!txStrand)) {
+    neg <- pmapToTranscriptsCPP(start(x)[!xStrand], end(x)[!xStrand],
+                                start(tx)[!txStrand], end(tx)[!txStrand],
+                                groupings[!txStrand], '-',
+                                exonCumSumNeg)
+  } else {
+    neg <- list(ranges = list(vector("integer"), vector("integer")),
+                index = vector("integer"))
+  }
+  xStart <- vector("integer", length(indices))
+  xStart[xStrand] <- unlist(pos$ranges[1], use.names = FALSE)
+  xStart[!xStrand] <- unlist(neg$ranges[1], use.names = FALSE)
+
+  xEnd <- vector("integer", length(indices))
+  xEnd[xStrand] <- unlist(pos$ranges[2], use.names = FALSE)
+  xEnd[!xStrand] <- unlist(neg$ranges[2], use.names = FALSE)
+
+  result <- IRanges(xStart, xEnd)
+  newSeqnames <- if (!is.null(oldTxNames)) {
+    oldTxNames
+  } else seq.int(length(result))
+
+  if (is.gr_or_grl(xClass)) {
+    result <- GRanges(seqnames = newSeqnames[indices],
+                      ranges = IRanges(xStart, xEnd),
+                      strand = strandPerGroup(transcripts, FALSE)[indices])
+    unmapped <- (strand(result) != xStrandOriginal) | (start(result) == 0)
+    if (any(unmapped)) {
+      ranges(result)[unmapped] <- IRanges(0, -1)
+      strand(result)[unmapped] <- "*"
+    }
+    if (is.grl(xClass)) {
+      result <- split(result, indices)
+    }
+    seqlengths(result) <- widthPerGroup(transcripts)
+  }
+  names(result) <- oldNames
+  result <- reduce(result, drop.empty.ranges = FALSE)
   return(result)
 }
 

@@ -17,3 +17,7 @@ pmapFromTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd,
     .Call('_ORFik_pmapFromTranscriptsCPP', PACKAGE = 'ORFik', xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty)
 }
 
+pmapToTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, nExonCumSum) {
+    .Call('_ORFik_pmapToTranscriptsCPP', PACKAGE = 'ORFik', xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, nExonCumSum)
+}
+
