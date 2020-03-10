@@ -448,8 +448,8 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
       strandPerGroup(transcripts, FALSE)[indices]
     } else as.character(strand(transcripts))[indices]
     result <- GRanges(seqnames = newSeqnames[indices],
-                      ranges = IRanges(xStart, xEnd),
-                      strand = newStrand)
+                      ranges = result, strand = newStrand)
+    # Fix unmapped, TODO: remove this when not needed
     unmapped <- start(result) == 0
     if (!ignore.strand) # Check strand correction only if not ignore
       unmapped <- unmapped | (strand(result) != xStrandOriginal)
@@ -460,7 +460,9 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     if (is.grl(xClass)) {
       result <- split(result, indices)
     }
-    seqlengths(result) <- widthPerGroup(transcripts)
+    seqlengths(result) <- if (is.grl(transcripts)) {
+      widthPerGroup(transcripts)
+    } else as.integer(width(transcripts))
   }
   names(result) <- oldNames
   result <- reduce(result, drop.empty.ranges = FALSE)

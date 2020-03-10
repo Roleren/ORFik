@@ -330,7 +330,7 @@ trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
 cds[1]
 ```
 
-Note in ORFik you can load all transcript annotation in one line:
+Note in ORFik you can load all transcript annotation in one line (this is same as above):
 ```{r eval = FALSE, echo = TRUE, warning = FALSE, message = FALSE} 
 loadRegions(gtf_file, parts = c("tx", "cds", "trailers"))
 ```
@@ -340,6 +340,11 @@ Restrict footprints to their 5' starts (after shifting it will be a p-site).
 footprintsGR <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE)
 footprintsGR
 ```
+The function convertToOneBasedRanges gives you a size column, that contains
+read length information. You can also choose to use the score column 
+for read information. But size has priority over score for deciding what 
+column defines read lengths.
+
 In the figure below we see why we need to p-shift, see that per length the 
 start of the read are in different positions relative to the CDS start site.
 The reads create a ladder going downwards, left to right. (see the blue steps)
