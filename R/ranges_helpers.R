@@ -148,8 +148,8 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
 #'
 asTX <- function(grl, reference,
                  ignore.strand = FALSE,
-                 x.is.sorted = FALSE,
-                 tx.is.sorted = FALSE) {
+                 x.is.sorted = TRUE,
+                 tx.is.sorted = TRUE) {
   orfNames <- txNames(grl)
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
     stop("not all references are present, so can not map to transcripts.")
@@ -160,118 +160,6 @@ asTX <- function(grl, reference,
                            ignore.strand = ignore.strand,
                            x.is.sorted = x.is.sorted,
                            tx.is.sorted = tx.is.sorted))
-}
-
-#' Faster pmapFromTranscript
-#'
-#' Map range coordinates between features in the transcriptome and
-#' genome (reference) space.
-#' The length of x must be the same as length of transcripts. Only exception is
-#' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
-#' to transcript 3 etc.
-#'
-#' This version tries to fix the shortcommings of GenomicFeature's version.
-#' Much faster and uses less memory.
-#' Implemented as dynamic program optimized c++ code.
-#' @param x IRangesList/IRanges/GRanges to map to genomic coordinates
-#' @param transcripts a GRangesList to map against (the genomic coordinates)
-#' @param removeEmpty a logical, remove non hit exons, else they are set
-#'  to 0. That is all exons in the reference that the transcript coordinates
-#'  do not span.
-#' @return a GRangesList of mapped reads, names from ranges are kept.
-#' @export
-#' @examples
-#' ranges <- IRanges(start = c( 5, 6), end = c(10, 10))
-#' seqnames = rep("chr1", 2)
-#' strands = rep("-", 2)
-#' grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
-#'              c(1, 1))
-#' ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
-#' pmapFromTranscriptF(ranges, grl, TRUE)
-#'
-pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
-  if (is.null(names(x))) {
-    if (length(x) != length(transcripts))
-      stop("invalid names of ranges, when length(x) != length(transcripts)")
-  }
-  if (is(x, "GRanges")) x <- ranges(x)
-  if (is(x, "IRangesList")) {
-    # Create Ranges object from orf scanner result
-    x = unlist(x, use.names = TRUE)
-    indices <- strtoi(names(x))
-    names(x) <- NULL
-  } else if (is(x, "IRanges")) {
-    if (is.null(names(x))) {
-      indices <- seq.int(1, length(x))
-    } else {
-      indices <- strtoi(names(x))
-    }
-    names(x) <- NULL
-  } else stop("x must either be IRanges, IRangesList or GRanges")
-
-  if (!is.logical(removeEmpty)) stop("removeEmpty must be logical")
-  removeEmpty <- as.logical(removeEmpty)
-  if (max(indices) > length(transcripts)) stop("invalid names of IRanges")
-  if (length(x) != length(indices)) stop("length of ranges != indices")
-
-  tx <- ranges(transcripts)
-  names <- names(tx)
-  names(tx) <- NULL
-  tx <- tx[indices]
-  if (!all(width(x) <= as.integer(sum(width(tx))))) {
-    stop("Invalid ranges to map, check them. One is bigger than its reference")
-  }
-  groupings <- groupings(tx)
-  tx <- unlist(tx, use.names = FALSE)
-  xStrand <- strandBool(transcripts)[indices]
-  txStrand <- xStrand[groupings]
-
-  # forward strand
-  if (any(txStrand)) {
-    pos <- pmapFromTranscriptsCPP(start(x)[xStrand], end(x)[xStrand],
-                                  start(tx)[txStrand], end(tx)[txStrand],
-                                  groupings[txStrand], '+', removeEmpty)
-  } else {
-    pos <- list(ranges = list(vector("integer"), vector("integer")),
-                     index = vector("integer"))
-  }
-
-  # reverse strand
-  if (any(!txStrand)) {
-    neg <- pmapFromTranscriptsCPP(start(x)[!xStrand], end(x)[!xStrand],
-                                  start(tx)[!txStrand], end(tx)[!txStrand],
-                                  groupings[!txStrand], '-', removeEmpty)
-  } else {
-    neg <- list(ranges = list(vector("integer"), vector("integer")),
-                     index = vector("integer"))
-  }
-
-  if (removeEmpty) {
-    txStrand <- order(c(pos$index, neg$index)) <=  length(pos$index)
-  }
-  temp <- indices
-  nIndices <- vector("integer", length(txStrand))
-  nIndices[txStrand] <- pos$index
-  nIndices[!txStrand] <- neg$index
-  indices <- indices[nIndices]
-
-  xStart <- vector("integer", length(txStrand))
-  xStart[txStrand] <- unlist(pos$ranges[1], use.names = FALSE)
-  xStart[!txStrand] <- unlist(neg$ranges[1], use.names = FALSE)
-
-  xEnd <- vector("integer", length(txStrand))
-  xEnd[txStrand] <- unlist(pos$ranges[2], use.names = FALSE)
-  xEnd[!txStrand] <- unlist(neg$ranges[2], use.names = FALSE)
-
-  result <- GRanges(seqnames = seqnamesPerGroup(transcripts, FALSE)[indices],
-                    ranges = IRanges(xStart, xEnd),
-                    strand = strandPerGroup(transcripts, FALSE)[indices])
-
-  names(result) <- names[indices]
-  result <- split(result, nIndices)
-  names(result) <- names(transcripts)[temp]
-  seqlevels(result) <- seqlevels(transcripts)
-  return(result)
 }
 
 #' Faster pmapToTranscript
@@ -470,6 +358,118 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   return(result)
 }
 
+#' Faster pmapFromTranscript
+#'
+#' Map range coordinates between features in the transcriptome and
+#' genome (reference) space.
+#' The length of x must be the same as length of transcripts. Only exception is
+#' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
+#' to transcript 3 etc.
+#'
+#' This version tries to fix the shortcommings of GenomicFeature's version.
+#' Much faster and uses less memory.
+#' Implemented as dynamic program optimized c++ code.
+#' @param x IRangesList/IRanges/GRanges to map to genomic coordinates
+#' @param transcripts a GRangesList to map against (the genomic coordinates)
+#' @param removeEmpty a logical, remove non hit exons, else they are set
+#'  to 0. That is all exons in the reference that the transcript coordinates
+#'  do not span.
+#' @return a GRangesList of mapped reads, names from ranges are kept.
+#' @export
+#' @examples
+#' ranges <- IRanges(start = c( 5, 6), end = c(10, 10))
+#' seqnames = rep("chr1", 2)
+#' strands = rep("-", 2)
+#' grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
+#'              c(1, 1))
+#' ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
+#' pmapFromTranscriptF(ranges, grl, TRUE)
+#'
+pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
+  if (is.null(names(x))) {
+    if (length(x) != length(transcripts))
+      stop("invalid names of ranges, when length(x) != length(transcripts)")
+  }
+  if (is(x, "GRanges")) x <- ranges(x)
+  if (is(x, "IRangesList")) {
+    # Create Ranges object from orf scanner result
+    x = unlist(x, use.names = TRUE)
+    indices <- strtoi(names(x))
+    names(x) <- NULL
+  } else if (is(x, "IRanges")) {
+    if (is.null(names(x))) {
+      indices <- seq.int(1, length(x))
+    } else {
+      indices <- strtoi(names(x))
+    }
+    names(x) <- NULL
+  } else stop("x must either be IRanges, IRangesList or GRanges")
+
+  if (!is.logical(removeEmpty)) stop("removeEmpty must be logical")
+  removeEmpty <- as.logical(removeEmpty)
+  if (max(indices) > length(transcripts)) stop("invalid names of IRanges")
+  if (length(x) != length(indices)) stop("length of ranges != indices")
+
+  tx <- ranges(transcripts)
+  names <- names(tx)
+  names(tx) <- NULL
+  tx <- tx[indices]
+  if (!all(width(x) <= as.integer(sum(width(tx))))) {
+    stop("Invalid ranges to map, check them. One is bigger than its reference")
+  }
+  groupings <- groupings(tx)
+  tx <- unlist(tx, use.names = FALSE)
+  xStrand <- strandBool(transcripts)[indices]
+  txStrand <- xStrand[groupings]
+
+  # forward strand
+  if (any(txStrand)) {
+    pos <- pmapFromTranscriptsCPP(start(x)[xStrand], end(x)[xStrand],
+                                  start(tx)[txStrand], end(tx)[txStrand],
+                                  groupings[txStrand], '+', removeEmpty)
+  } else {
+    pos <- list(ranges = list(vector("integer"), vector("integer")),
+                index = vector("integer"))
+  }
+
+  # reverse strand
+  if (any(!txStrand)) {
+    neg <- pmapFromTranscriptsCPP(start(x)[!xStrand], end(x)[!xStrand],
+                                  start(tx)[!txStrand], end(tx)[!txStrand],
+                                  groupings[!txStrand], '-', removeEmpty)
+  } else {
+    neg <- list(ranges = list(vector("integer"), vector("integer")),
+                index = vector("integer"))
+  }
+
+  if (removeEmpty) {
+    txStrand <- order(c(pos$index, neg$index)) <=  length(pos$index)
+  }
+  temp <- indices
+  nIndices <- vector("integer", length(txStrand))
+  nIndices[txStrand] <- pos$index
+  nIndices[!txStrand] <- neg$index
+  indices <- indices[nIndices]
+
+  xStart <- vector("integer", length(txStrand))
+  xStart[txStrand] <- unlist(pos$ranges[1], use.names = FALSE)
+  xStart[!txStrand] <- unlist(neg$ranges[1], use.names = FALSE)
+
+  xEnd <- vector("integer", length(txStrand))
+  xEnd[txStrand] <- unlist(pos$ranges[2], use.names = FALSE)
+  xEnd[!txStrand] <- unlist(neg$ranges[2], use.names = FALSE)
+
+  result <- GRanges(seqnames = seqnamesPerGroup(transcripts, FALSE)[indices],
+                    ranges = IRanges(xStart, xEnd),
+                    strand = strandPerGroup(transcripts, FALSE)[indices])
+
+  names(result) <- names[indices]
+  result <- split(result, nIndices)
+  names(result) <- names(transcripts)[temp]
+  seqlevels(result) <- seqlevels(transcripts)
+  return(result)
+}
+
 #' Get transcript sequence from a GrangesList and a faFile or BSgenome
 #'
 #' For each GRanges object, find the sequence of it from faFile or BSgenome.
@@ -531,7 +531,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 #'
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
-  g <- asTX(gr, tx)
+  g <- asTX(gr, tx, tx.is.sorted = TRUE)
   indices <- chmatch(txNames(gr), names(tx))
 
   txEnds <- widthPerGroup(tx[indices], FALSE)

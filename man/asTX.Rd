@@ -8,8 +8,8 @@ asTX(
   grl,
   reference,
   ignore.strand = FALSE,
-  x.is.sorted = FALSE,
-  tx.is.sorted = FALSE
+  x.is.sorted = TRUE,
+  tx.is.sorted = TRUE
 )
 }
 \arguments{
