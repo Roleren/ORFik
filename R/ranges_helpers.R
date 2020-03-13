@@ -684,11 +684,14 @@ subsetToFrame <- function(x, frame) {
 #' with sorting negative strands descending for GRangesList.
 #' @param grl a \code{\link{GRangesList}} or GRanges object
 #' @param drop.empty.ranges (FALSE) if a group is empty (width 0), delete it.
-#' @param min.gapwidth (1L) how long gap can it be to say they belong together
+#' @param min.gapwidth (1L) how long gap can it be between two ranges,
+#' to merge them.
 #' @param with.revmap (FALSE) return info on which mapped to which
 #' @param with.inframe.attrib (FALSE) For internal use.
 #' @param ignore.strand (FALSE), can different strands be reduced together.
 #' @param keep.names (FALSE) keep the names and meta columns of the GRangesList
+#' @param min.strand.decreasing (TRUE), if GRangesList, return minus strand group
+#' ranges in decreasing order (1-5, 30-50) -> (30-50, 1-5)
 #' @return A reduced GRangesList
 #' @export
 #' @family ExtendGenomicRanges
@@ -705,14 +708,15 @@ subsetToFrame <- function(x, frame) {
 reduceKeepAttr <- function(grl, keep.names = FALSE,
                            drop.empty.ranges = FALSE, min.gapwidth = 1L,
                            with.revmap = FALSE, with.inframe.attrib = FALSE,
-                           ignore.strand = FALSE) {
+                           ignore.strand = FALSE, min.strand.decreasing = TRUE) {
   if (!is.gr_or_grl(class(grl))) stop("grl must be GRanges or GRangesList")
 
   reduced <- GenomicRanges::reduce(grl, drop.empty.ranges, min.gapwidth,
                                    with.revmap, with.inframe.attrib,
                                    ignore.strand)
-  if (is.grl(class(grl))) {
-    reduced <- sortPerGroup(reduced)
+  if (is.grl(class(grl)) & min.strand.decreasing) {
+    minus <- !strandBool(reduced)
+    reduced[minus]@unlistData@ranges <- rev(reduced[minus]@unlistData@ranges)
   }
   if (keep.names) { # return with names
     if (!is.grl(class(grl))) {

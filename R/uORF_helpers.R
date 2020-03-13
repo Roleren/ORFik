@@ -46,7 +46,7 @@ addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
   fiveUTRsWithCdsExons <- pc(fiveUTRs, grl)
   ## should we use reduceKeepAttr here ?, we will lose
   ## exon_id if not.
-  return(reduce(fiveUTRsWithCdsExons))
+  return(reduceKeepAttr(fiveUTRsWithCdsExons))
 }
 
 #' Create search space to look for uORFs

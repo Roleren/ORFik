@@ -121,6 +121,9 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' @param grl a \code{\link{GRangesList}}
 #' @param ignore.strand a boolean, (default FALSE): should minus strands be
 #' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.
+#' @param quick.rev default: FALSE, if TRUE, given that you know all ranges are
+#' sorted from min to max for both strands, it will only reverse coordinates for
+#' minus strand groups. Much quicker
 #' @return an equally named GRangesList, where each group is
 #'  sorted within group.
 #' @export
@@ -134,7 +137,12 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' sortPerGroup(grl)
 #'
-sortPerGroup <- function(grl, ignore.strand = FALSE){
+sortPerGroup <- function(grl, ignore.strand = FALSE, quick.rev = FALSE){
+  if (quick.rev) {
+    grl[!strandBool(grl)]@unlistData@ranges <-
+      rev(grl[!strandBool(grl)]@unlistData@ranges)
+    return(grl)
+  }
   if (!ignore.strand) {
     indicesPos <- strandBool(grl)
 

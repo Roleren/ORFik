@@ -281,7 +281,6 @@ test_that("distToCds works as intended", {
   scores <- distToCds(grl, extendLeaders(fiveUTRs, 5), cds)
   expect_is(scores, "numeric")
   expect_equal(scores, c(19, 7, 1, 19))
-
 })
 
 
