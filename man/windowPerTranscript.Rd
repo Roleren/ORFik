@@ -9,7 +9,8 @@ windowPerTranscript(
   reads,
   splitIn3 = TRUE,
   windowSize = 100,
-  fraction = "1"
+  fraction = "1",
+  weight = "score"
 )
 }
 \arguments{
@@ -23,6 +24,13 @@ windowPerTranscript(
 
 \item{fraction}{a character (1), info on reads (which read length,
 or which type (RNA seq))}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
 }
 \value{
 a data.table with columns position, score

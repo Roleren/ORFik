@@ -10,18 +10,20 @@ coveragePerTiling(
   is.sorted = FALSE,
   keep.names = TRUE,
   as.data.table = FALSE,
-  withFrames = FALSE
+  withFrames = FALSE,
+  weight = "score"
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}
-of 5' utrs or transcripts.}
+\item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{reads}{a GAlignment or GRanges object of RiboSeq, RnaSeq etc.}
+\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
+column in 'reads'}
 
-\item{is.sorted}{logical (F), is grl sorted.}
+\item{is.sorted}{logical (FALSE), is grl sorted.}
 
-\item{keep.names}{logical (T), keep names or not.}
+\item{keep.names}{logical (TRUE), keep names or not.}
 
 \item{as.data.table}{a logical (FALSE), return as data.table with 2 columns,
 position and count.}
@@ -29,6 +31,13 @@ position and count.}
 \item{withFrames}{a logical (FALSE), only available if as.data.table is
 TRUE, return the ORF frame, 1,2,3, where position 1 is 1, 2 is 2 and
 4 is 1 etc.}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
 }
 \value{
 a RleList, one integer-Rle per group with # of hits per position.
@@ -42,9 +51,11 @@ A range from 1:5 will split into c(1,2,3,4,5) and count hits on each.
 This is a safer speedup of coverageByTranscript from GenomicFeatures.
 It also gives the possibility to return as data.table, for faster
 computations.
-NOTE: If reads contains a $score column, it will presume that this is the number
-of replicates per reads, weights for the coverage() function.
-So delete the score column if this is wrong.
+NOTE: If reads contains a $score column, it will presume that this is
+the number of replicates per reads, weights for the
+coverage() function.
+So delete the score column or set weight to something else if this
+is not wanted.
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
@@ -62,7 +73,6 @@ coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE,
 \seealso{
 Other ExtendGenomicRanges: 
 \code{\link{asTX}()},
-\code{\link{overlapsToCoverage}()},
 \code{\link{reduceKeepAttr}()},
 \code{\link{tile1}()},
 \code{\link{txSeqsFromFa}()},

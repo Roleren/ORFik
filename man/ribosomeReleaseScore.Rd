@@ -9,26 +9,35 @@ ribosomeReleaseScore(
   RFP,
   GtfOrThreeUtrs,
   RNA = NULL,
-  overlapGrl = countOverlaps(grl, RFP) + 1
+  weight.RFP = 1L,
+  weight.RNA = 1L,
+  overlapGrl = NULL
 )
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
-with usually either leaders,
-cds', 3' utrs or ORFs.}
+with usually either leaders, cds', 3' utrs or ORFs.}
 
-\item{RFP}{RiboSeq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignments, GRanges
 or GRangesList object}
 
 \item{GtfOrThreeUtrs}{if Gtf: a TxDb object of a gtf file transcripts is
 called from: `threeUTRsByTranscript(Gtf, use.names = TRUE)`,
 if object is GRangesList, it is presumed to be the 3' utrs}
 
-\item{RNA}{RnaSeq reads as GAlignment, GRanges
-or GRangesList object}
+\item{RNA}{RnaSeq reads as \code{\link{GAlignments}},
+\code{\link{GRanges}} or GRangesList object}
+
+\item{weight.RFP}{a vector (default: 1L). Can also be character name of
+column in RFP. As in translationalEff(weight = "score") for:
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
+\item{weight.RNA}{Same as weightRFP but for RNA weights.
+(default: 1L)}
 
 \item{overlapGrl}{an integer vector of overlaps
-(default: countOverlaps(grl, RFP) + 1)}
+(default: NULL), added for speed if you already have it}
 }
 \value{
 a named vector of numeric values of scores, NA means that
@@ -61,6 +70,7 @@ doi: 10.1016/j.cell.2013.06.009
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

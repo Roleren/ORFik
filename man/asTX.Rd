@@ -52,7 +52,6 @@ by index. And it has a security fix.
 \seealso{
 Other ExtendGenomicRanges: 
 \code{\link{coveragePerTiling}()},
-\code{\link{overlapsToCoverage}()},
 \code{\link{reduceKeepAttr}()},
 \code{\link{tile1}()},
 \code{\link{txSeqsFromFa}()},

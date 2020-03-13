@@ -10,7 +10,10 @@
 #'
 #' As a note the library is reduced to only reads overlapping 'tx', so the
 #' library size in fpkm calculation is done on this subset. This will help
-#' remove rRNA and other contaminants.
+#' remove rRNA and other contaminants.\cr
+#' Also if you have only unique reads with a weight column, explaining the
+#' number of duplicated reads, set weights to make calculations correct.
+#' See \code{\link{getWeights}}
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 #' @param RFP RiboSeq reads as GAlignment, GRanges or GRangesList object
@@ -25,6 +28,7 @@
 #' fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
 #' @param grl.is.sorted logical (F), a speed up if you know argument grl
 #'  is sorted, set this to TRUE.
+#' @inheritParams translationalEff
 #' @return a data.table with scores, each column is one score type, name of
 #' columns are the names of the scores, i.g [floss()]
 #' or [fpkm()]
@@ -48,7 +52,8 @@
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
                             riboStart = 26, riboStop = 34, orfFeatures = TRUE,
-                            includeNonVarying = TRUE, grl.is.sorted = FALSE) {
+                            includeNonVarying = TRUE, grl.is.sorted = FALSE,
+                            weight.RFP = 1L, weight.RNA = 1L) {
   #### Check input and load data ####
   validGRL(class(grl), "grl")
   checkRFP(class(RFP))
@@ -56,14 +61,14 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
   Gtf <- loadTxdb(Gtf)
 
   # get transcript parts
-  fiveUTRs <- fiveUTRsByTranscript(Gtf, use.names = TRUE)
-  cds <- cdsBy(Gtf, by = "tx", use.names = TRUE)
-  threeUTRs <- threeUTRsByTranscript(Gtf, use.names = TRUE)
+  fiveUTRs <- loadRegion(Gtf, "leaders")
+  cds <- loadRegion(Gtf, "cds")
+  threeUTRs <- loadRegion(Gtf, "trailers")
   tx <- loadRegion(Gtf)
 
   return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
                            riboStart, riboStop, orfFeatures, includeNonVarying,
-                           grl.is.sorted))
+                           grl.is.sorted, weight.RFP, weight.RNA))
 }
 
 #' Get all possible features in ORFik
@@ -137,7 +142,8 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
                                 fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
                                 orfFeatures = TRUE, includeNonVarying = TRUE,
-                                grl.is.sorted = FALSE) {
+                                grl.is.sorted = FALSE, weight.RFP = 1L,
+                                weight.RNA = 1L) {
   #### Check input and load data ####
   validGRL(class(grl))
   checkRFP(class(RFP))
@@ -169,7 +175,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
     }
   return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
                            riboStart, riboStop, orfFeatures, includeNonVarying,
-                           grl.is.sorted))
+                           grl.is.sorted, weight.RFP, weight.RNA))
 }
 
 #' Calculate the features in computeFeatures
@@ -179,29 +185,36 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
 #' @return a data.table with features
 allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                               faFile, riboStart, riboStop, orfFeatures,
-                              includeNonVarying, grl.is.sorted) {
+                              includeNonVarying, grl.is.sorted,
+                              weight.RFP = 1L, weight.RNA = 1L) {
   # Clean and optimize
-  if (!grl.is.sorted) grl <- sortPerGroup(grl)
+  if (!grl.is.sorted){
+    grl <- sortPerGroup(grl)
+    grl.is.sorted <- TRUE
+  }
   tx <- tx[txNames(grl)] # Subset tx to only those in grl.
   RFP <- optimizeReads(tx, RFP)
-
+  weight.RFP <- getWeights(RFP, weight.RFP)
 
   #### Get all features, append 1 at a time, to save memory ####
-  scores <- data.table(countRFP = countOverlaps(grl, RFP))
+  scores <- data.table(countRFP = countOverlapsW(grl, RFP, weight.RFP))
   if (!is.null(RNA)) { # if rna seq is included
-    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE)
+    TE <- translationalEff(grl, RNA, RFP, tx, with.fpkm = TRUE,
+                           weight.RFP = weight.RFP, weight.RNA = weight.RNA)
     scores[, te := TE$te]
     scores[, fpkmRFP := TE$fpkmRFP]
     scores[, fpkmRNA := TE$fpkmRNA]
   } else {
-    scores[, fpkmRFP := fpkm_calc(countRFP, widthPerGroup(grl), length(RFP))]
+    scores[, fpkmRFP := fpkm_calc(countRFP, widthPerGroup(grl),
+                                  sum(weight.RFP))]
   }
-  scores[, floss := floss(grl, RFP, cds, riboStart, riboStop)]
-  scores[, entropyRFP := entropy(grl, RFP)]
-  scores[, disengagementScores := disengagementScore(grl, RFP, tx, TRUE)]
+  scores[, floss := floss(grl, RFP, cds, riboStart, riboStop, weight.RFP)]
+  scores[, entropyRFP := entropy(grl, RFP, weight.RFP)]
+  scores[, disengagementScores := disengagementScore(grl, RFP, tx, TRUE,
+                                                     weight.RFP, countRFP)]
   scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA,
-                                       countRFP + 1)]
-  scores[, RSS := ribosomeStallingScore(grl, RFP, countRFP)]
+                                       weight.RFP, weight.RNA, countRFP)]
+  scores[, RSS := ribosomeStallingScore(grl, RFP, weight.RFP, countRFP)]
 
   if (includeNonVarying) { # sequence feature
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
@@ -209,9 +222,11 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
 
 
   if (orfFeatures) { # if features are found for orfs
-    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted)$ORFScores]
+    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted,
+                                   weight.RFP)$ORFScores]
     scores[, ioScore := insideOutsideORF(grl, RFP, tx,
-                                         scores$disengagementScores, TRUE)]
+                                         scores$disengagementScores, TRUE,
+                                         weight.RFP, countRFP)]
 
     if (includeNonVarying) { # sequence features
       if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {

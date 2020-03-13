@@ -10,14 +10,15 @@ startRegionCoverage(
   tx = NULL,
   is.sorted = TRUE,
   upstream = 2L,
-  downstream = 2L
+  downstream = 2L,
+  weight = 1L
 )
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges or GRangesList object}
+\item{RFP}{ribo seq reads as GAlignments, GRanges or GRangesList object}
 
 \item{tx}{default NULL, a GRangesList of transcripts or (container region),
 names of tx must contain all grl names. The names of grl can also be the
@@ -28,6 +29,15 @@ ORFik orf names. that is "txName_id"}
 \item{upstream}{an integer (2), relative region to get upstream from.}
 
 \item{downstream}{an integer (2), relative region to get downstream from}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
 }
 \value{
 a numeric vector of counts
@@ -47,6 +57,7 @@ a maximum of grl width. Since there is no reference for splicing.
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

@@ -13,7 +13,8 @@ windowPerReadLength(
   downstream = if (pShifted) 20 else 5,
   acceptedLengths = NULL,
   zeroPosition = upstream,
-  scoring = "transcriptNormalized"
+  scoring = "transcriptNormalized",
+  weight = "score"
 )
 }
 \arguments{
@@ -24,8 +25,9 @@ with usually either leaders, cds', 3' utrs or ORFs}
 names of tx must contain all grl names. The names of grl can also be the
 ORFik orf names. that is "txName_id"}
 
-\item{reads}{any type of reads, usualy ribo seq. As GAlignment, GRanges
-or GRangesList object.}
+\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
+column in 'reads'}
 
 \item{pShifted}{a logical (TRUE), are riboseq reads p-shifted to size
 1 width reads? If upstream and downstream is set, this argument is
@@ -46,6 +48,13 @@ NOTE!: if windows have different widths, this will be ignored.}
 (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
 see ?coverageScorings. Use to decide a scoring of hits per position
 for metacoverage etc.}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
 }
 \value{
 a data.table with lengths by coverage / vector of proportions

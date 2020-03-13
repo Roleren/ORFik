@@ -14,7 +14,9 @@ computeFeatures(
   riboStop = 34,
   orfFeatures = TRUE,
   includeNonVarying = TRUE,
-  grl.is.sorted = FALSE
+  grl.is.sorted = FALSE,
+  weight.RFP = 1L,
+  weight.RNA = 1L
 )
 }
 \arguments{
@@ -41,6 +43,14 @@ fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 
 \item{grl.is.sorted}{logical (F), a speed up if you know argument grl
 is sorted, set this to TRUE.}
+
+\item{weight.RFP}{a vector (default: 1L). Can also be character name of
+column in RFP. As in translationalEff(weight = "score") for:
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
+\item{weight.RNA}{Same as weightRFP but for RNA weights.
+(default: 1L)}
 }
 \value{
 a data.table with scores, each column is one score type, name of
@@ -58,7 +68,10 @@ contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
 
 As a note the library is reduced to only reads overlapping 'tx', so the
 library size in fpkm calculation is done on this subset. This will help
-remove rRNA and other contaminants.
+remove rRNA and other contaminants.\cr
+Also if you have only unique reads with a weight column, explaining the
+number of duplicated reads, set weights to make calculations correct.
+See \code{\link{getWeights}}
 }
 \examples{
 # Here we make an example from scratch
@@ -79,6 +92,7 @@ suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
 \seealso{
 Other features: 
 \code{\link{computeFeaturesCage}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

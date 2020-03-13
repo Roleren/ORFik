@@ -38,6 +38,7 @@ a maximum of grl width. Since there is no reference for splicing.
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

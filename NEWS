@@ -31,3 +31,21 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
     o mapToGRanges is now much faster and uses much less memory. A c++
       reimplementation of pmapFromTranscripts from GenomicFeatures.
+
+CHANGES IN VERSION 1.7.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The ORFik experiment syntax is ready, to simplifiy ORFik usage
+    with big data.
+
+
+CHANGES IN VERSION 1.7.17
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Added pmapToTranscriptsF, a much faster pmapToTranscripts.
+    o All of ORFik now supports weights for representing duplicated reads.
+    This will speed up all function related to NGS data a lot.

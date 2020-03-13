@@ -4,18 +4,26 @@
 \alias{ribosomeStallingScore}
 \title{Ribosome Stalling Score (RSS)}
 \usage{
-ribosomeStallingScore(grl, RFP, overlapGrl = countOverlaps(grl, RFP))
+ribosomeStallingScore(grl, RFP, weight = 1L, overlapGrl = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
-with usually either leaders,
-cds', 3' utrs or ORFs.}
+with usually either leaders, cds', 3' utrs or ORFs.}
 
-\item{RFP}{RiboSeq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignments, GRanges
 or GRangesList object}
 
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
 \item{overlapGrl}{an integer vector of overlaps
-(default: countOverlaps(grl, RFP))}
+(default: NULL), added for speed if you already have it}
 }
 \value{
 a named vector of numeric values of RSS scores
@@ -41,6 +49,7 @@ doi: 10.1016/j.cels.2017.08.004
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

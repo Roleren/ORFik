@@ -12,9 +12,11 @@
 #' @param windowSize an integer (100), size of windows
 #' @param fraction a character (1), info on reads (which read length,
 #' or which type (RNA seq))
+#' @inheritParams coveragePerTiling
 #' @return a data.table with columns position, score
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
-                                windowSize = 100, fraction = "1") {
+                                windowSize = 100, fraction = "1",
+                                weight = "score") {
   # Load data
   txdb <- loadTxdb(txdb)
 
@@ -34,7 +36,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     if (!any(txNames)) stop(paste0("no valid transcripts with length",
                                    windowSize))
     tx <- tx[txNames]
-    txCov <- scaledWindowPositions(tx, reads, windowSize)
+    txCov <- scaledWindowPositions(tx, reads, windowSize, weight = weight)
     txCov[, `:=` (fraction = fraction, feature = "transcript")]
   }
   txCov[] # for print
@@ -53,7 +55,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' @inheritParams windowPerTranscript
 #' @return a data.table with columns position, score
 splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
-                       fraction = "1") {
+                       fraction = "1", weight = "score") {
   leaderCov <- scaledWindowPositions(leaders, reads, windowSize)
   leaderCov[, `:=` (feature = "leaders")]
   cdsCov <- scaledWindowPositions(cds, reads, windowSize)
@@ -91,6 +93,7 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' gene name, transcript part like cds, leader, or CpG motifs etc.
 #' @param forceUniqueEven, a logical (TRUE), if TRUE; require that all windows
 #' are of same width and even. To avoid bugs. FALSE if score is NULL.
+#' @inheritParams coveragePerTiling
 #' @return A data.table with scored counts (score) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).
@@ -110,7 +113,8 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                        zeroPosition = NULL, scaleTo = 100,
                        fraction = NULL, feature = NULL,
-                       forceUniqueEven = !is.null(scoring)) {
+                       forceUniqueEven = !is.null(scoring),
+                       weight = "score") {
   window_size <- unique(widthPerGroup(windows))
   if (!is.null(zeroPosition) & !is.numeric(zeroPosition))
     stop("zeroPosition must be numeric if defined")
@@ -123,11 +127,11 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 
 
   if (length(window_size) != 1) {
-    hitMap <- scaledWindowPositions(windows, x, scaleTo)
+    hitMap <- scaledWindowPositions(windows, x, scaleTo, weight = weight)
   } else {
     hitMap <- coveragePerTiling(windows, x, is.sorted = TRUE,
                                 keep.names = TRUE, as.data.table = TRUE,
-                                withFrames = FALSE)
+                                withFrames = FALSE, weight = weight)
     zeroPosition <- ifelse(is.null(zeroPosition), (window_size)/2,
                            zeroPosition)
     hitMap[, position := position - (zeroPosition + 1) ]
@@ -163,6 +167,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #'  i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
 #'  1 number per grl group.
 #' @param scoring a character, one of (meanPos, sumPos)
+#' @inheritParams coveragePerTiling
 #' @return A data.table with scored counts (counts) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame).
@@ -178,12 +183,13 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #' scaledWindowPositions(windows, x, scaleTo = 100)
 #'
 scaledWindowPositions <- function(grl, reads, scaleTo = 100,
-                                  scoring = "meanPos") {
+                                  scoring = "meanPos", weight = "score") {
   if ((length(scaleTo) != 1) & length(scaleTo) != length(grl))
     stop("length of scaleTo must either be 1 or length(grl)")
 
   count <- coveragePerTiling(grl, reads, is.sorted = FALSE, keep.names = TRUE,
-                              as.data.table = TRUE, withFrames = FALSE)
+                             as.data.table = TRUE, withFrames = FALSE,
+                             weight = weight)
   count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
   count[, position := ceiling(scalingFactor * position)]
 
@@ -326,40 +332,6 @@ coverageScorings <- function(coverage, scoring = "zscore") {
   return(res)
 }
 
-#' Get overlaps and convert to Rle coverage list
-#'
-#' Basicly a count overlap transformed to Rle.
-#' @param gr a \code{\link{GRanges}} object, to get coverage of.
-#' @param reads a GAlignment or GRanges object of RiboSeq, RnaSeq etc.
-#' @param keep.names logical (T), keep names or not.
-#' @param type a string (any), argument for countOverlaps.
-#' @return a Rle, one list per group with # of hits per position.
-#' @export
-#' @family ExtendGenomicRanges
-#' @examples
-#' ORF <- GRanges(seqnames = "1",
-#'                ranges = IRanges(start = c(1, 10, 20),
-#'                                 end = c(5, 15, 25)),
-#'                strand = "+")
-#' names(ORF) <- "tx1"
-#' reads <- GRanges("1", IRanges(25, 25), "+")
-#' overlapsToCoverage(ORF, reads)
-#'
-overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
-  counts <- countOverlaps(gr, reads, type = type)
-
-  names <- names(counts)
-  names(counts) <- NULL
-  countList <- split(counts, names)
-  if (!keep.names) {
-    countList <- IRanges::RleList(countList)
-    names(countList) <- NULL
-    return(countList)
-  }
-  return(IRanges::RleList(countList))
-}
-
-
 #' Get coverage per group
 #'
 #' It tiles each GRangesList group to width 1, and finds hits per position.
@@ -368,18 +340,28 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #' This is a safer speedup of coverageByTranscript from GenomicFeatures.
 #' It also gives the possibility to return as data.table, for faster
 #' computations.
-#' NOTE: If reads contains a $score column, it will presume that this is the number
-#' of replicates per reads, weights for the coverage() function.
-#' So delete the score column if this is wrong.
-#' @param grl a \code{\link{GRangesList}}
-#'  of 5' utrs or transcripts.
-#' @param is.sorted logical (F), is grl sorted.
-#' @inheritParams overlapsToCoverage
+#' NOTE: If reads contains a $score column, it will presume that this is
+#' the number of replicates per reads, weights for the
+#' coverage() function.
+#' So delete the score column or set weight to something else if this
+#' is not wanted.
+#' @param grl a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.
+#' @param reads a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+#' RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
+#' column in 'reads'
+#' @param is.sorted logical (FALSE), is grl sorted.
+#' @param keep.names logical (TRUE), keep names or not.
 #' @param as.data.table a logical (FALSE), return as data.table with 2 columns,
 #' position and count.
 #' @param withFrames a logical (FALSE), only available if as.data.table is
 #' TRUE, return the ORF frame, 1,2,3, where position 1 is 1, 2 is 2 and
 #' 4 is 1 etc.
+#' @param weight (default: 'score'), if defined a character name
+#' of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+#' would mean score column tells that this alignment region was found 5 times.
+#' ORFik .bedo files, contains a score column like this.
+#' As do CAGEr CAGE files and many other package formats.
+#' You can also assign a score column manually.
 #' @return a RleList, one integer-Rle per group with # of hits per position.
 #' Or data.table if as.data.table is TRUE.
 #' @export
@@ -398,10 +380,10 @@ overlapsToCoverage <- function(gr, reads, keep.names = TRUE, type = "any") {
 #'
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE, as.data.table = FALSE,
-                              withFrames = FALSE) {
+                              withFrames = FALSE, weight = "score") {
   if (!is.sorted) grl <- sortPerGroup(grl)
-  if (!is.null(mcols(reads)$score)) {
-    coverage <- coverageByTranscriptW(reads, grl, weight = "score")
+  if (is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))) {
+    coverage <- coverageByTranscriptW(reads, grl, weight = weight)
   } else coverage <- coverageByTranscript(reads, grl)
 
   if (!keep.names) names(coverage) <- NULL
@@ -442,8 +424,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' going into downstream region of the object.
 #'
 #' @inheritParams startRegion
-#' @param reads any type of reads, usualy ribo seq. As GAlignment, GRanges
-#'  or GRangesList object.
+#' @inheritParams coveragePerTiling
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted to size
 #'  1 width reads? If upstream and downstream is set, this argument is
 #'  irrelevant.
@@ -468,7 +449,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 downstream = if (pShifted) 20 else 5,
                                 acceptedLengths = NULL,
                                 zeroPosition = upstream,
-                                scoring = "transcriptNormalized") {
+                                scoring = "transcriptNormalized",
+                                weight = "score") {
 
   if (is.null(tx)) upstream <- min(upstream, 0)
 
@@ -491,7 +473,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   for(l in all_lengths){
     dt <- rbindlist(list(dt, metaWindow(
       x = reads[rWidth == l], windows = windows, scoring = scoring,
-      zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l)))
+      zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l,
+      weight = weight)))
   }
 
   dt[] # for print

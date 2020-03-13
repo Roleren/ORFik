@@ -47,6 +47,7 @@ doi: 10.1242/dev.098343
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

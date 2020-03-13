@@ -18,7 +18,9 @@ computeFeaturesCage(
   riboStop = 34,
   orfFeatures = TRUE,
   includeNonVarying = TRUE,
-  grl.is.sorted = FALSE
+  grl.is.sorted = FALSE,
+  weight.RFP = 1L,
+  weight.RNA = 1L
 )
 }
 \arguments{
@@ -58,6 +60,14 @@ fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
 
 \item{grl.is.sorted}{logical (F), a speed up if you know argument grl
 is sorted, set this to TRUE.}
+
+\item{weight.RFP}{a vector (default: 1L). Can also be character name of
+column in RFP. As in translationalEff(weight = "score") for:
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
+\item{weight.RNA}{Same as weightRFP but for RNA weights.
+(default: 1L)}
 }
 \value{
 a data.table with scores, each column is one score type, name of
@@ -121,6 +131,7 @@ try ?floss
 \seealso{
 Other features: 
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

@@ -4,13 +4,20 @@
 \alias{disengagementScore}
 \title{Disengagement score (DS)}
 \usage{
-disengagementScore(grl, RFP, GtfOrTx, RFP.sorted = FALSE)
+disengagementScore(
+  grl,
+  RFP,
+  GtfOrTx,
+  RFP.sorted = FALSE,
+  weight = 1L,
+  overlapGrl = NULL
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs.}
 
-\item{RFP}{RiboSeq reads as GAlignment, GRanges
+\item{RFP}{RiboSeq reads as GAlignments, GRanges
 or GRangesList object}
 
 \item{GtfOrTx}{If it is \code{\link{TxDb}} object
@@ -21,6 +28,18 @@ Else it must be \code{\link{GRangesList}}}
 \item{RFP.sorted}{logical (F), an optimizer, have you ran this line:
 \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 Normally not touched, for internal optimization purposes.}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
+\item{overlapGrl}{an integer vector of overlaps
+(default: NULL), added for speed if you already have it}
 }
 \value{
 a named vector of numeric values of scores
@@ -47,6 +66,7 @@ doi: 10.1242/dev.098344
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},
 \code{\link{entropy}()},

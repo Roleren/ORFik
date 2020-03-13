@@ -4,7 +4,13 @@
 \alias{scaledWindowPositions}
 \title{Scale (bin) windows to a meta window of given size}
 \usage{
-scaledWindowPositions(grl, reads, scaleTo = 100, scoring = "meanPos")
+scaledWindowPositions(
+  grl,
+  reads,
+  scaleTo = 100,
+  scoring = "meanPos",
+  weight = "score"
+)
 }
 \arguments{
 \item{grl}{GRangesList or GRanges of your ranges}
@@ -18,6 +24,13 @@ i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
 1 number per grl group.}
 
 \item{scoring}{a character, one of (meanPos, sumPos)}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
 }
 \value{
 A data.table with scored counts (counts) of

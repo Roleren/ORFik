@@ -4,18 +4,29 @@
 \alias{translationalEff}
 \title{Translational efficiency}
 \usage{
-translationalEff(grl, RNA, RFP, tx, with.fpkm = FALSE, pseudoCount = 0)
+translationalEff(
+  grl,
+  RNA,
+  RFP,
+  tx,
+  with.fpkm = FALSE,
+  pseudoCount = 0,
+  librarySize = "full",
+  weight.RFP = 1L,
+  weight.RNA = 1L
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
-ORFs as a special case (uORFs, potential new cds' etc).}
+ORFs as a special case (uORFs, potential new cds' etc). If
+regions are not spliced you can send a \code{\link{GRanges}} object.}
 
-\item{RNA}{RnaSeq reads as GAlignment, GRanges
-or GRangesList object}
+\item{RNA}{RnaSeq reads as \code{\link{GAlignments}},
+\code{\link{GRanges}} or GRangesList object}
 
-\item{RFP}{RiboSeq reads as GAlignment, GRanges
-or GRangesList object}
+\item{RFP}{RiboSeq reads as \code{\link{GAlignments}},
+\code{\link{GRanges}} or GRangesList object}
 
 \item{tx}{a GRangesList of the transcripts. If you used cage data, then
 the tss for the the leaders have changed, therefor the tx lengths have
@@ -24,15 +35,38 @@ changed. To account for that call:
 translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
 ` where cageFiveUTRs are the reannotated by CageSeq data leaders.}
 
-\item{with.fpkm}{logical F, if true return the fpkm values together with
-translational efficiency}
+\item{with.fpkm}{logical, default: FALSE, if true return the fpkm
+values together with translational efficiency as a data.table}
 
-\item{pseudoCount}{an integer, 0, set it to 1 if you want to avoid NA and
-inf values. It also helps against bias from low depth libraries.}
+\item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
+avoid NA and inf values.}
+
+\item{librarySize}{either value or character vector.
+Default ("full"), number of alignments in library (reads).
+If you just have a subset, you can give the value by
+librarySize = length(wholeLib),
+if you want lib size to be only number of reads overlapping grl, do:
+librarySize = "overlapping"
+sum(countOverlaps(reads, grl) > 0)
+if reads[1] has 3 tx hits, and reads[2] has 4 tx hits,
+librarSize is will give 1.
+if you want lib size to be total number of overlaps, do:
+librarySize = "DESeq"
+This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
+sum(countOverlaps(grl, reads))
+if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5}
+
+\item{weight.RFP}{a vector (default: 1L). Can also be character name of
+column in RFP. As in translationalEff(weight = "score") for:
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
+\item{weight.RNA}{Same as weightRFP but for RNA weights.
+(default: 1L)}
 }
 \value{
 a numeric vector of fpkm ratios, if with.fpkm is TRUE, return a
-data.table with te and fpkm values
+data.table with te and fpkm values (total 3 columns then)
 }
 \description{
 Uses RnaSeq and RiboSeq to get translational efficiency of every element in
@@ -62,6 +96,7 @@ doi: 10.1126/science.1168978
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

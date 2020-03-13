@@ -1,3 +1,47 @@
+#' CountOverlaps with weights
+#'
+#' Similar to countOverlaps, but takes an optional weight column.
+#' This is usually the score column
+#'
+#' @param query IRanges, IRangesList, GRanges, GRangesList object.
+#' Usually transcript a transcript region.
+#' @param subject GRanges, GRangesList, GAlignment, usually reads.
+#' @param weight (default: NULL), if defined either numeric or character name
+#' of valid meta column in subject. If weight is single numeric, it is used
+#' for all. A normall weight is the score column given as weight = "score".
+#' GRanges("chr1", 1, "+", score = 5), would mean score column tells
+#' that this alignment region was found 5 times.
+#' @param ... additional arguments passed to countOverlaps/findOverlaps
+#' @return a named vector of number of overlaps to subject weigthed
+#'  by 'weight' column.
+#' @family features
+#' @export
+#' @examples
+#' gr1 <- GRanges(seqnames="chr1",
+#'                ranges=IRanges(start = c(4, 9, 10, 30),
+#'                               end = c(4, 15, 20, 31)),
+#'                strand="+")
+#' gr2 <- GRanges(seqnames="chr1",
+#'                ranges=IRanges(start = c(1, 4, 15, 25),
+#'                               end = c(2, 4, 20, 26)),
+#'                strand=c("+"),
+#'                score=c(10, 20, 15, 5))
+#' countOverlaps(gr1, gr2)
+#' countOverlapsW(gr1, gr2, weight = "score")
+countOverlapsW <- function(query, subject, weight = NULL, ...) {
+  if (is.null(weight)) return(countOverlaps(query, subject, ...))
+
+  weight <- getWeights(subject, weight)
+  hits = as(findOverlaps(query, subject, ...), "List")
+  weightedCount = sum(extractList(weight, hits))
+
+  names(weightedCount) <- names(query)
+  return(weightedCount)
+}
+
+
+
+
 #' Get read hits per codon
 #'
 #' Helper for entropy function, normally not used directly
@@ -9,10 +53,14 @@
 #' 10 bases, will give 3 codons, 1 base codons does not exist.
 #' @param grl a \code{\link{GRangesList}}
 #' @param reads a GRanges or GAlignment
+#' @param weight (default: 'score'), if defined a character name
+#' of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+#' would mean score column tells
+#' that this alignment region was found 5 times.
 #' @return a data.table with codon sums
 #'
-codonSumsPerGroup <- function(grl, reads) {
-  dt <- scaledWindowPositions(grl, reads, numCodons(grl))
+codonSumsPerGroup <- function(grl, reads, weight = "score") {
+  dt <- scaledWindowPositions(grl, reads, numCodons(grl), weight = weight)
   dt[, `:=` (codonSums = score / sum(score)), by = genes]
   return(dt)
 }

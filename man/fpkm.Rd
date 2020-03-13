@@ -4,7 +4,7 @@
 \alias{fpkm}
 \title{Create normalizations of overlapping read counts.}
 \usage{
-fpkm(grl, reads, pseudoCount = 0, librarySize = "full")
+fpkm(grl, reads, pseudoCount = 0, librarySize = "full", weight = 1L)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -12,8 +12,8 @@ can be either transcripts, 5' utrs, cds', 3' utrs or
 ORFs as a special case (uORFs, potential new cds' etc). If
 regions are not spliced you can send a \code{\link{GRanges}} object.}
 
-\item{reads}{a GAlignment, GRanges or GRangesList object,
-usually of RiboSeq, RnaSeq, CageSeq, etc.}
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}} or
+\code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.}
 
 \item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
 avoid NA and inf values.}
@@ -32,6 +32,15 @@ librarySize = "DESeq"
 This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
 sum(countOverlaps(grl, reads))
 if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
 }
 \value{
 a numeric vector with the fpkm values
@@ -58,6 +67,10 @@ grl <- GRangesList(tx1_1 = ORF)
 RFP <- GRanges("1", IRanges(25, 25),"+")
 fpkm(grl, RFP)
 
+# With weights (10 reads at position 25)
+RFP <- GRanges("1", IRanges(25, 25),"+", score = 10)
+fpkm(grl, RFP, weight = "score")
+
 }
 \references{
 doi: 10.1038/nbt.1621
@@ -66,6 +79,7 @@ doi: 10.1038/nbt.1621
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

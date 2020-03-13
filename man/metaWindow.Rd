@@ -13,7 +13,8 @@ metaWindow(
   scaleTo = 100,
   fraction = NULL,
   feature = NULL,
-  forceUniqueEven = !is.null(scoring)
+  forceUniqueEven = !is.null(scoring),
+  weight = "score"
 )
 }
 \arguments{
@@ -47,6 +48,13 @@ gene name, transcript part like cds, leader, or CpG motifs etc.}
 
 \item{forceUniqueEven, }{a logical (TRUE), if TRUE; require that all windows
 are of same width and even. To avoid bugs. FALSE if score is NULL.}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
 }
 \value{
 A data.table with scored counts (score) of

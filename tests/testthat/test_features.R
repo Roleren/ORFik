@@ -24,6 +24,7 @@ RFP5 <- GRanges(seqnames = Rle(rep("1", 6)),
                 ranges = IRanges(start = c(1, 4, 30, 60, 80, 90),
                                  end = c(30, 33, 63, 90, 110, 120)),
                 strand = Rle(strand(rep("+", 6))))
+RFP5GAlign <- as(RFP5, "GAlignments")
 RFP6 <- GRanges(seqnames = Rle(rep("1", 6)),
                 ranges = IRanges(start = c(1, 4, 30, 60, 80, 90),
                                  end = c(30, 33, 63, 90, 110, 120)),
@@ -31,7 +32,7 @@ RFP6 <- GRanges(seqnames = Rle(rep("1", 6)),
 RFP7 <- c(RFP5, RFP6)
 RFP8 <- GRanges("1", IRanges(c(190, 188), c(195, 188)), "-")
 RFP9 <- c(RFP, RFP8)
-RFP5GAlign <- as(RFP5, "GAlignments")
+
 
 
 
@@ -242,7 +243,7 @@ test_that("floss works as intended", {
 
   scores <- floss(grl, RFP7, cds, 26, 34)
   expect_is(scores, "numeric")
-  expect_equal(round(scores, 2), c(0.25, 0.08, 0.08, 0.00))
+  expect_equal(round(scores, 2), c(0.00, 0.04, 0.04, 0.00))
 })
 
 

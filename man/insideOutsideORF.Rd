@@ -4,24 +4,46 @@
 \alias{insideOutsideORF}
 \title{Inside/Outside score (IO)}
 \usage{
-insideOutsideORF(grl, RFP, GtfOrTx, ds = NULL, RFP.sorted = FALSE)
+insideOutsideORF(
+  grl,
+  RFP,
+  GtfOrTx,
+  ds = NULL,
+  RFP.sorted = FALSE,
+  weight = 1L,
+  overlapGrl = NULL
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
-with usually either leaders, cds', 3' utrs or ORFs}
+with usually either leaders, cds', 3' utrs or ORFs.}
 
-\item{RFP}{ribo seq reads as GAlignment, GRanges or GRangesList object}
+\item{RFP}{RiboSeq reads as GAlignments, GRanges
+or GRangesList object}
 
-\item{GtfOrTx}{if Gtf: a TxDb object of a gtf file that transcripts will be
-extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
-a GrangesList will use as is}
+\item{GtfOrTx}{If it is \code{\link{TxDb}} object
+transcripts will be extracted using
+\code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
+Else it must be \code{\link{GRangesList}}}
 
 \item{ds}{numeric vector (NULL), disengagement score. If you have already
 calculated \code{\link{disengagementScore}}, input here to save time.}
 
-\item{RFP.sorted}{logical (F), have you ran this line:
+\item{RFP.sorted}{logical (F), an optimizer, have you ran this line:
 \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 Normally not touched, for internal optimization purposes.}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
+
+\item{overlapGrl}{an integer vector of overlaps
+(default: NULL), added for speed if you already have it}
 }
 \value{
 a named vector of numeric values of scores
@@ -60,6 +82,7 @@ doi: 10.1242/dev.098345
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

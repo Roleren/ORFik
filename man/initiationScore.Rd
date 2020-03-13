@@ -4,7 +4,7 @@
 \alias{initiationScore}
 \title{Get initiation score for a GRangesList of ORFs}
 \usage{
-initiationScore(grl, cds, tx, reads, pShifted = TRUE)
+initiationScore(grl, cds, tx, reads, pShifted = TRUE, weight = "score")
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with ORFs}
@@ -13,10 +13,19 @@ initiationScore(grl, cds, tx, reads, pShifted = TRUE)
 
 \item{tx}{a GrangesList of transcripts covering grl.}
 
-\item{reads}{ribosomal footprints, given as Galignment object or
-Granges}
+\item{reads}{ribo seq reads as \code{\link{GAlignments}},
+GRanges or GRangesList object}
 
 \item{pShifted}{a logical (TRUE), are riboseq reads p-shifted?}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
 }
 \value{
 an integer vector, 1 score per ORF, with names of grl
@@ -32,6 +41,9 @@ As result there is one value per ORF:
 0.000: means that ORF had no reads
 -1.000: means that ORF is identical to average of CDS
 1.000: means that orf is maximum different than average of CDS
+
+If a score column is defined, it will use it as weights,
+see \code{\link{getWeights}}
 }
 \examples{
 # Good hiting ORF
@@ -63,6 +75,7 @@ doi: 10.1186/s12915-017-0416-0
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

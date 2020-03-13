@@ -4,15 +4,24 @@
 \alias{orfScore}
 \title{Get ORFscore for a GRangesList of ORFs}
 \usage{
-orfScore(grl, RFP, is.sorted = FALSE)
+orfScore(grl, RFP, is.sorted = FALSE, weight = "score")
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object with ORFs}
+\item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{RFP}{ribosomal footprints, given as Galignment object,
-Granges or GRangesList}
+\item{RFP}{ribosomal footprints, given as \code{\link{GAlignments}}
+or \code{\link{GRanges}} object,
+must be already shifted and resized to the p-site. Requires a $size column
+with original read lengths.}
 
-\item{is.sorted}{logical (F), is grl sorted.}
+\item{is.sorted}{logical (FALSE), is grl sorted.}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
 }
 \value{
 a data.table with 4 columns, the orfscore (ORFScores) and score of
@@ -40,8 +49,13 @@ will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
 is that only the 5' end is important, so that only frame1 = 1,
 to get this, you first resize reads to 5'end only.
 
-NOTE: p shifting is not exact, so some functional ORFs will get a
-bad ORF score.
+NOTES:
+1. p shifting is not exact, so some functional ORFs will get a
+bad ORF score. \cr
+2. If a score column is defined, it will use it as weights, set
+to weight = 1L if you don't have weight, and score column is
+something else.
+see \code{\link{getWeights}}
 }
 \examples{
 ORF <- GRanges(seqnames = "1",
@@ -66,6 +80,7 @@ doi: 10.1002/embj.201488411
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

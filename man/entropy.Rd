@@ -4,14 +4,25 @@
 \alias{entropy}
 \title{Calucalte entropy value of overlapping input reads per GRanges.}
 \usage{
-entropy(grl, reads)
+entropy(grl, reads, weight = 1L)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} that the reads will
-be overlapped with}
+\item{grl}{a \code{\link{GRangesList}} object
+can be either transcripts, 5' utrs, cds', 3' utrs or
+ORFs as a special case (uORFs, potential new cds' etc). If
+regions are not spliced you can send a \code{\link{GRanges}} object.}
 
-\item{reads}{a GAlignment, GRanges or GRangesList object,
-usually of RiboSeq, RnaSeq, CageSeq, etc.}
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}} or
+\code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
 }
 \value{
 A numeric vector containing one entropy value per element in
@@ -45,6 +56,7 @@ entropy(cds, reads)
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

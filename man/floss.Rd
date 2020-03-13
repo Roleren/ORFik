@@ -4,51 +4,80 @@
 \alias{floss}
 \title{Fragment Length Organization Similarity Score}
 \usage{
-floss(grl, RFP, cds, start = 26, end = 34)
+floss(grl, RFP, cds, start = 26, end = 34, weight = 1L)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object with ORFs}
+\item{grl}{a \code{\link{GRangesList}} object
+can be either transcripts, 5' utrs, cds', 3' utrs or
+ORFs as a special case (uORFs, potential new cds' etc). If
+regions are not spliced you can send a \code{\link{GRanges}} object.}
 
-\item{RFP}{ribosomal footprints, given as Galignment or GRanges object,
-must be already shifted and resized to the p-site}
+\item{RFP}{ribosomal footprints, given as \code{\link{GAlignments}}
+or \code{\link{GRanges}} object,
+must be already shifted and resized to the p-site. Requires a $size column
+with original read lengths.}
 
 \item{cds}{a \code{\link{GRangesList}} of coding sequences,
 cds has to have names as grl so that they can be matched}
 
-\item{start}{usually 26, the start of the floss interval}
+\item{start}{usually 26, the start of the floss interval (inclusive)}
 
-\item{end}{usually 34, the end of the floss interval}
+\item{end}{usually 34, the end of the floss interval (inclusive)}
+
+\item{weight}{a vector (default: 1L, if 1L it is identical to
+countOverlaps()),
+if single number (!= 1), it applies for all,
+if more than one must be equal size of 'reads'.
+else it must be the string name of a defined meta column in subject
+"reads", that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment region was found 5 times.}
 }
 \value{
-a vector of FLOSS of length same as grl
+a vector of FLOSS of length same as grl, 0 means no RFP reads
+in range, 1 is perfect match.
 }
 \description{
 This feature is usually calcualted only for RiboSeq reads. For reads of
 width between `start` and `end`,
-sum the fraction of RiboSeq reads (per widths)
-that overlap ORFs and normalize by CDS width fractions.
+sum the fraction of RiboSeq reads (per read widths)
+that overlap ORFs and normalize by CDS read width fractions.
+So if all read length are width 34 in ORFs and CDS, value is 1.
+If width is 33 in ORFs and 34 in CDS, value is 0.
+If width is 33 in ORFs and 50/50 (33 and 34) in CDS, values will be
+0.5 (for 33).
 }
 \details{
 Pseudo explanation of the function:
 \preformatted{
 SUM[start to stop]((grl[start:end][name]/grl) / (cds[start:end][name]/cds))
 }
+Where 'name' is transcript names.\cr
 Please read more in the article.
 }
 \examples{
-ORF <- GRanges(seqnames = "1",
+ORF1 <- GRanges(seqnames = "1",
                ranges = IRanges(start = c(1, 12, 22),
                end = c(10, 20, 32)),
                strand = "+")
-grl <- GRangesList(tx1_1 = ORF)
+grl <- GRangesList(tx1_1 = ORF1)
 # RFP is 1 width position based GRanges
 RFP <- GRanges("1", IRanges(c(1, 25, 35, 38), width = 1), "+")
-score(RFP) <- c(28, 28, 28, 29) # original width in score col
+RFP$size <- c(28, 28, 28, 29) # original width in size col
 cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44), "+"))
 # grl must have same names as cds + _1 etc, so that they can be matched.
 floss(grl, RFP, cds)
 # or change ribosome start/stop, more strict
 floss(grl, RFP, cds, 28, 28)
+
+# With repeated alignments in score column
+ORF2 <- GRanges(seqnames = "1",
+               ranges = IRanges(start = c(12, 22, 36),
+               end = c(20, 32, 38)),
+               strand = "+")
+grl <- GRangesList(tx1_1 = ORF1, tx1_2 = ORF2)
+score(RFP) <- c(5, 10, 5, 10)
+floss(grl, RFP, cds, weight = "score")
 
 }
 \references{
@@ -58,6 +87,7 @@ doi: 10.1016/j.celrep.2014.07.045
 Other features: 
 \code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},

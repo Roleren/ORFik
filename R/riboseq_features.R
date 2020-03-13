@@ -15,8 +15,8 @@
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
 #'  ORFs as a special case (uORFs, potential new cds' etc). If
 #'  regions are not spliced you can send a \code{\link{GRanges}} object.
-#' @param reads a GAlignment, GRanges or GRangesList object,
-#'  usually of RiboSeq, RnaSeq, CageSeq, etc.
+#' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}} or
+#' \code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.
 #' @param pseudoCount an integer, by default is 0, set it to 1 if you want to
 #' avoid NA and inf values.
 #' @param librarySize either value or character vector.
@@ -33,6 +33,7 @@
 #' This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
 #' sum(countOverlaps(grl, reads))
 #' if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5
+#' @inheritParams getWeights
 #' @return a numeric vector with the fpkm values
 #' @export
 #' @family features
@@ -45,21 +46,27 @@
 #' RFP <- GRanges("1", IRanges(25, 25),"+")
 #' fpkm(grl, RFP)
 #'
-fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full") {
+#' # With weights (10 reads at position 25)
+#' RFP <- GRanges("1", IRanges(25, 25),"+", score = 10)
+#' fpkm(grl, RFP, weight = "score")
+#'
+fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
+                 weight = 1L) {
   if (is.gr_or_grl(grl)) {
     if(is.grl(grl)) {
       grl_len <- widthPerGroup(grl, FALSE)
     } else grl_len <- width(grl)
   } else stop("grl must be GRangesList or GRanges")
 
-  overlaps <- countOverlaps(grl, reads)
+  overlaps <- countOverlapsW(grl, reads, weight)
 
   if (librarySize == "full") {
-    librarySize <- length(reads)
+    librarySize <- sum(getWeights(reads, weight))
   } else if (is.numeric(librarySize)) {
     # Use value directly
   } else if (librarySize == "overlapping") {
-    librarySize <- sum(countOverlaps(reads, grl) > 0)
+    librarySize <- sum((countOverlaps(reads, grl) > 0) *
+                         getWeights(reads, weight))
   } else if (librarySize == "DESeq") {
     librarySize <- sum(overlaps)
   } else stop("librarySize must be numeric or full, overlapping, DESeq!")
@@ -72,10 +79,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full") {
 #' The entropy value per group is a real number in the interval (0:1),
 #' where 0 indicates no variance in reads over group.
 #' For example c(0,0,0,0) has 0 entropy, since no reads overlap.
-#' @param grl a \code{\link{GRangesList}} that the reads will
-#' be overlapped with
-#' @param reads a GAlignment, GRanges or GRangesList object,
-#'  usually of RiboSeq, RnaSeq, CageSeq, etc.
+#' @inheritParams fpkm
 #' @return A numeric vector containing one entropy value per element in
 #' `grl`
 #' @family features
@@ -97,7 +101,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full") {
 #' cds <-  GRangesList(tx1 = cdsORF)
 #' entropy(cds, reads)
 #'
-entropy <- function(grl, reads) {
+entropy <- function(grl, reads, weight = 1L) {
   # Optimize: Get count list of only groups with hits
   validIndices <- hasHits(grl, reads)
   if (!any(validIndices)) { # no variance in countList, 0 entropy
@@ -108,7 +112,7 @@ entropy <- function(grl, reads) {
 
   # entropy function, interval 0:1 real number
   # Xi is the ratio of hits per postion per group
-  Xi <- codonSumsPerGroup(grl, reads)
+  Xi <- codonSumsPerGroup(grl, reads, weight)
 
   validXi <- Xi$codonSums > 0 # avoid log2(0)
   Xi[, `:=` (Hx = rep(0, nrow(Xi)))]
@@ -132,96 +136,99 @@ entropy <- function(grl, reads) {
 #'
 #' This feature is usually calcualted only for RiboSeq reads. For reads of
 #' width between `start` and `end`,
-#' sum the fraction of RiboSeq reads (per widths)
-#' that overlap ORFs and normalize by CDS width fractions.
+#' sum the fraction of RiboSeq reads (per read widths)
+#' that overlap ORFs and normalize by CDS read width fractions.
+#' So if all read length are width 34 in ORFs and CDS, value is 1.
+#' If width is 33 in ORFs and 34 in CDS, value is 0.
+#' If width is 33 in ORFs and 50/50 (33 and 34) in CDS, values will be
+#' 0.5 (for 33).
 #'
 #' Pseudo explanation of the function:
 #' \preformatted{
 #' SUM[start to stop]((grl[start:end][name]/grl) / (cds[start:end][name]/cds))
 #' }
+#' Where 'name' is transcript names.\cr
 #' Please read more in the article.
 #' @references doi: 10.1016/j.celrep.2014.07.045
-#' @param grl a \code{\link{GRangesList}} object with ORFs
-#' @param RFP ribosomal footprints, given as Galignment or GRanges object,
-#' must be already shifted and resized to the p-site
+#' @inheritParams fpkm
+#' @param RFP ribosomal footprints, given as \code{\link{GAlignments}}
+#' or \code{\link{GRanges}} object,
+#' must be already shifted and resized to the p-site. Requires a $size column
+#' with original read lengths.
 #' @param cds a \code{\link{GRangesList}} of coding sequences,
 #' cds has to have names as grl so that they can be matched
-#' @param start usually 26, the start of the floss interval
-#' @param end usually 34, the end of the floss interval
-#' @return a vector of FLOSS of length same as grl
+#' @param start usually 26, the start of the floss interval (inclusive)
+#' @param end usually 34, the end of the floss interval (inclusive)
+#' @return a vector of FLOSS of length same as grl, 0 means no RFP reads
+#' in range, 1 is perfect match.
 #' @family features
 #' @export
 #' @examples
-#' ORF <- GRanges(seqnames = "1",
+#' ORF1 <- GRanges(seqnames = "1",
 #'                ranges = IRanges(start = c(1, 12, 22),
 #'                end = c(10, 20, 32)),
 #'                strand = "+")
-#' grl <- GRangesList(tx1_1 = ORF)
+#' grl <- GRangesList(tx1_1 = ORF1)
 #' # RFP is 1 width position based GRanges
 #' RFP <- GRanges("1", IRanges(c(1, 25, 35, 38), width = 1), "+")
-#' score(RFP) <- c(28, 28, 28, 29) # original width in score col
+#' RFP$size <- c(28, 28, 28, 29) # original width in size col
 #' cds <-  GRangesList(tx1 = GRanges("1", IRanges(35, 44), "+"))
 #' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' floss(grl, RFP, cds)
 #' # or change ribosome start/stop, more strict
 #' floss(grl, RFP, cds, 28, 28)
 #'
-floss <- function(grl, RFP, cds, start = 26, end = 34){
+#' # With repeated alignments in score column
+#' ORF2 <- GRanges(seqnames = "1",
+#'                ranges = IRanges(start = c(12, 22, 36),
+#'                end = c(20, 32, 38)),
+#'                strand = "+")
+#' grl <- GRangesList(tx1_1 = ORF1, tx1_2 = ORF2)
+#' score(RFP) <- c(5, 10, 5, 10)
+#' floss(grl, RFP, cds, weight = "score")
+#'
+floss <- function(grl, RFP, cds, start = 26, end = 34, weight = 1L){
 
   if (start > end) stop("start is bigger than end")
   if (end < start) stop("end is smaller than start")
   if (is.grl(class(RFP))) {
     stop("RFP must be either GAlignment or GRanges type")
   }
+  # Get all weights
+  dt <- data.table(weights = getWeights(RFP, weight),
+                   widths  = readWidths(RFP))
+
   # for orfs
   overlaps <- findOverlaps(grl, RFP)
-  rfpWidth <- readWidths(RFP[to(overlaps)])
-  rfpPassFilter <- (rfpWidth >= start) & (rfpWidth <= end)
-  rfpValidMatch <- rfpWidth[rfpPassFilter]
-  ORFGrouping <- from(overlaps)[rfpPassFilter]
-  if (sum(as.numeric(ORFGrouping)) == 0) {
+  dt.rfp <- dt[to(overlaps), ] # keep only matches to grl
+  dt.rfp[, ORFGrouping := from(overlaps)]
+  dt.rfp <-  dt.rfp[(widths >= start) & (widths <= end),] # matches to widths
+  if (nrow(dt.rfp) == 0) { # if no valid hits
     return(as.numeric(rep(0, length(grl))))
   }
-  whichNoHit <- NULL # which ribo-seq did not hit grl
-  if (length(unique(ORFGrouping)) != length(grl)) {
-    whichNoHit <- S4Vectors::setdiff.Vector(
-      seq_along(grl), unique(ORFGrouping))
-  }
-  orfFractions <- split(rfpValidMatch, ORFGrouping)
-  listing<- IRanges::RleList(orfFractions)
-  tableFracs <- table(listing)
-  colnames(tableFracs) <- NULL
-  orfFractions <- lapply(seq_along(listing), function(x) {
-    tableFracs[x,] / sum(tableFracs[x,])
-  })
+  # Get total reads per read length per valid ORF
+  orfFractions <- dt.rfp[, .(weights = sum(weights)),
+                         by = .(ORFGrouping, widths)]
+  orfFractions <- orfFractions[, .(widths, fraction = weights / sum(weights)), by = .(ORFGrouping)]
 
   # for cds
-  overlapsCds <- findOverlaps(cds, RFP)
-  rfpWidth <- readWidths(RFP[to(overlapsCds)])
-  rfpPassFilterCDS <- ((rfpWidth >= start) & (rfpWidth <= end))
-  rfpValidMatchCDS <- rfpWidth[rfpPassFilterCDS]
-  cdsFractions <- split(rfpValidMatchCDS, rfpValidMatchCDS)
-  totalLength <- length(rfpValidMatchCDS)
-  cdsFractions <- vapply(cdsFractions, FUN.VALUE = c(1.0), FUN = function(x) {
-    length(x) / totalLength
-  })
-  cdsFractions <- as.double(cdsFractions)
-  # floss score ->
-  score <- vapply(seq_along(orfFractions), FUN.VALUE = c(1.0),
-                  FUN = function(x) {
-                    sum(abs(orfFractions[[x]] - cdsFractions)) * 0.5
-  })
-  if (!is.null(whichNoHit)) {
-    tempScores <- as.numeric(rep(NA, length(grl)))
-    tempScores[unique(ORFGrouping)] <- score
-    tempScores[whichNoHit] <- 0.
-    score <- tempScores
+  overlaps <- findOverlaps(cds, RFP)
+  dt.cds <- dt[to(overlaps), ] # keep only matches to grl
+  dt.cds[, CDSGrouping := from(overlaps)]
+  dt.cds <-  dt.cds[(widths >= start) & (widths <= end),] # matches to widths
+  if (nrow(dt.cds) == 0) { # if no valid hits
+    warning("No valid reads over CDS, check annotation")
+    return(as.numeric(rep(0, length(grl))))
   }
-  if (length(score) != length(grl) || anyNA(score)) {
-    stop("could not find floss-score for all objects, most",
-         "likely objects are wrongly annotated.")
-  }
-  return(score)
+  # Get total reads per read length per valid ORF
+  cdsFractions <- dt.cds[, .(weights = sum(weights)), by = .(widths)]
+  cdsFractions <- cdsFractions[, .(widths, fraction = weights / sum(weights))]
+  merged <- data.table::merge.data.table(orfFractions, cdsFractions, by = "widths")
+  score <- merged[, sum(abs(fraction.x - fraction.y))*0.5, by = ORFGrouping]
+
+  zero <- rep(0, length(grl)) # Put 0 for all without hits
+  zero[score$ORFGrouping] <- score$V1
+  return(zero)
 }
 
 #' Translational efficiency
@@ -232,25 +239,27 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' (density of RPF within ORF) / (RNA expression of ORFs transcript)
 #' }
 #' @references doi: 10.1126/science.1168978
-#' @param grl a \code{\link{GRangesList}} object
-#'  can be either transcripts, 5' utrs, cds', 3' utrs or
-#'  ORFs as a special case (uORFs, potential new cds' etc).
-#' @param RNA RnaSeq reads as GAlignment, GRanges
-#'  or GRangesList object
-#' @param RFP RiboSeq reads as GAlignment, GRanges
-#'  or GRangesList object
+#' @param RNA RnaSeq reads as \code{\link{GAlignments}},
+#' \code{\link{GRanges}} or GRangesList object
+#' @param RFP RiboSeq reads as \code{\link{GAlignments}},
+#' \code{\link{GRanges}} or GRangesList object
 #' @param tx a GRangesList of the transcripts. If you used cage data, then
 #' the tss for the the leaders have changed, therefor the tx lengths have
 #' changed. To account for that call:
 #' `
 #' translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
 #' ` where cageFiveUTRs are the reannotated by CageSeq data leaders.
-#' @param with.fpkm logical F, if true return the fpkm values together with
-#' translational efficiency
-#' @param pseudoCount an integer, 0, set it to 1 if you want to avoid NA and
-#' inf values. It also helps against bias from low depth libraries.
+#' @param with.fpkm logical, default: FALSE, if true return the fpkm
+#' values together with translational efficiency as a data.table
+#' @inheritParams fpkm
+#' @param weight.RFP a vector (default: 1L). Can also be character name of
+#' column in RFP. As in translationalEff(weight = "score") for:
+#' GRanges("chr1", 1, "+", score = 5), would mean score column tells
+#' that this alignment region was found 5 times.
+#' @param weight.RNA Same as weightRFP but for RNA weights.
+#' (default: 1L)
 #' @return a numeric vector of fpkm ratios, if with.fpkm is TRUE, return a
-#' data.table with te and fpkm values
+#' data.table with te and fpkm values (total 3 columns then)
 #' @export
 #' @importFrom data.table data.table
 #' @family features
@@ -268,12 +277,13 @@ floss <- function(grl, RFP, cds, start = 26, end = 34){
 #' te$te
 #'
 translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
-                             pseudoCount = 0) {
+                             pseudoCount = 0, librarySize = "full",
+                             weight.RFP = 1L, weight.RNA = 1L) {
   tx <- tx[txNames(grl)]
   #normalize by tx lengths
-  fpkmRNA <- fpkm(tx, RNA, pseudoCount)
+  fpkmRNA <- fpkm(tx, RNA, pseudoCount, librarySize, weight.RNA)
   #normalize by grl lengths
-  fpkmRFP <- fpkm(grl, RFP, pseudoCount)
+  fpkmRFP <- fpkm(grl, RFP, pseudoCount, librarySize, weight.RFP)
   if (with.fpkm) {
     return(data.table(fpkmRFP = fpkmRFP, fpkmRNA = fpkmRNA,
                       te = fpkmRFP / fpkmRNA))
@@ -289,7 +299,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' @references doi: 10.1242/dev.098344
 #' @param grl a \code{\link{GRangesList}} object
 #' with usually either leaders, cds', 3' utrs or ORFs.
-#' @param RFP RiboSeq reads as GAlignment, GRanges
+#' @param RFP RiboSeq reads as GAlignments, GRanges
 #' or GRangesList object
 #' @param GtfOrTx If it is \code{\link{TxDb}} object
 #'  transcripts will be extracted using
@@ -298,6 +308,9 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' @param RFP.sorted logical (F), an optimizer, have you ran this line:
 #' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 #' Normally not touched, for internal optimization purposes.
+#' @param overlapGrl an integer vector of overlaps
+#' (default: NULL), added for speed if you already have it
+#' @inheritParams fpkm
 #' @return a named vector of numeric values of scores
 #' @export
 #' @family features
@@ -310,18 +323,22 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' RFP <- GRanges("1", IRanges(c(1,10,20,30,40), width = 3), "+")
 #' disengagementScore(grl, RFP, tx)
 #'
-disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
+disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
+                               weight = 1L,
+                               overlapGrl = NULL) {
   tx <- loadRegion(GtfOrTx)
+  # Optimize
+  if(!RFP.sorted) RFP <- optimizeReads(tx, RFP)
+  if (is.null(overlapGrl))
+    overlapGrl <- countOverlapsW(grl, RFP, weight)
+  overlapGrl <- overlapGrl + 1 # Pseudo count
 
-  if(!RFP.sorted){
-    RFP <- optimizeReads(tx, RFP)
-  }
   # exclude non hits and set them to 0
   validIndices <- hasHits(tx, RFP)
   validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
 
   if (!any(validIndices)) { # if no hits
-    score <- countOverlaps(grl, RFP) + 1
+    overlapGrl
     names(score) <- NULL
     return(score)
   }
@@ -335,14 +352,11 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
   if (length(downstreamTx) > 5e5) {
     ordering <- uniqueOrder(downstreamTx)
     downstreamTx <- uniqueGroups(downstreamTx)
-    overlapDownstream[validIndices] <- countOverlaps(downstreamTx,
-                                                     RFP)[ordering] + 1
+    overlapDownstream[validIndices] <- countOverlapsW(downstreamTx,
+                                                     RFP, weight)[ordering] + 1
   } else {
-    overlapDownstream[validIndices] <- countOverlaps(downstreamTx, RFP) + 1
+    overlapDownstream[validIndices] <- countOverlapsW(downstreamTx, RFP, weight) + 1
   }
-
-  overlapGrl <- countOverlaps(grl, RFP) + 1
-
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
   return(score)
@@ -354,17 +368,9 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
 #' \preformatted{(reads over ORF)/(reads outside ORF and within transcript)}
 #' A pseudo-count of one is added to both the ORF and outside sums.
 #' @references doi: 10.1242/dev.098345
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually either leaders, cds', 3' utrs or ORFs
-#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
-#' @param GtfOrTx if Gtf: a TxDb object of a gtf file that transcripts will be
-#' extracted with `exonsBy(Gtf, by = "tx", use.names = TRUE)`, if
-#' a GrangesList will use as is
+#' @inheritParams disengagementScore
 #' @param ds numeric vector (NULL), disengagement score. If you have already
 #'  calculated \code{\link{disengagementScore}}, input here to save time.
-#' @param RFP.sorted logical (F), have you ran this line:
-#' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
-#' Normally not touched, for internal optimization purposes.
 #' @return a named vector of numeric values of scores
 #' @importFrom data.table rbindlist
 #' @family features
@@ -391,12 +397,16 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE) {
 #' insideOutsideORF(grl, RFP, tx)
 #'
 insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
-                             RFP.sorted = FALSE) {
+                             RFP.sorted = FALSE,
+                             weight = 1L,
+                             overlapGrl = NULL) {
   tx <- loadRegion(GtfOrTx)
+  # Optimize
+  if(!RFP.sorted) RFP <- optimizeReads(tx, RFP)
+  if (is.null(overlapGrl))
+    overlapGrl <- countOverlapsW(grl, RFP, weight)
+  overlapGrl <- overlapGrl + 1 # Pseudo count
 
-  if (!RFP.sorted) RFP <- optimizeReads(tx, RFP)
-
-  overlapGrl <- countOverlaps(grl, RFP) + 1
   # find tx with hits
   validIndices <- hasHits(tx, RFP)
   validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
@@ -413,15 +423,15 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
   if (!is.null(ds)) { # save time here if ds is defined
     downstreamCounts <- 1 / (ds / overlapGrl)
     upstreamCounts <- rep(1, length(validIndices))
-    upstreamCounts[validIndices] <- countOverlaps(upstreamTx, RFP)
+    upstreamCounts[validIndices] <- countOverlapsW(upstreamTx, RFP, weight)
     overlapTxOutside <- downstreamCounts + upstreamCounts
 
   } else { # else make ds again
     grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
     downstreamTx <- downstreamOfPerGroup(tx, grlStops)
 
-    overlapTxOutside[validIndices] <- countOverlaps(upstreamTx, RFP) +
-      countOverlaps(downstreamTx, RFP) + 1
+    overlapTxOutside[validIndices] <- countOverlaps(upstreamTx, RFP, weight) +
+      countOverlapsW(downstreamTx, RFP, weight) + 1
   }
 
   scores <- overlapGrl / overlapTxOutside
@@ -439,18 +449,11 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #' It can be understood as a ribosome stalling feature.
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' @references doi: 10.1016/j.cell.2013.06.009
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually either leaders,
-#'  cds', 3' utrs or ORFs.
-#' @param RFP RiboSeq reads as GAlignment, GRanges
-#'  or GRangesList object
+#' @inheritParams insideOutsideORF
+#' @inheritParams translationalEff
 #' @param GtfOrThreeUtrs if Gtf: a TxDb object of a gtf file transcripts is
 #'  called from: `threeUTRsByTranscript(Gtf, use.names = TRUE)`,
 #'  if object is GRangesList, it is presumed to be the 3' utrs
-#' @param RNA RnaSeq reads as GAlignment, GRanges
-#'  or GRangesList object
-#' @param overlapGrl an integer vector of overlaps
-#' (default: countOverlaps(grl, RFP) + 1)
 #' @return a named vector of numeric values of scores, NA means that
 #' no 3' utr was found for that transcript.
 #' @export
@@ -466,8 +469,14 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 #' ribosomeReleaseScore(grl, RFP, threeUTRs, RNA)
 #'
 ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
-                                 overlapGrl = countOverlaps(grl, RFP) + 1){
+                                 weight.RFP = 1L, weight.RNA = 1L,
+                                 overlapGrl = NULL) {
   threeUTRs <- loadRegion(GtfOrThreeUtrs, part = "trailer")
+  # Optimize
+  if (is.null(overlapGrl))
+    overlapGrl <- countOverlapsW(grl, RFP, weight.RFP)
+  overlapGrl <- overlapGrl + 1 # Pseudo count
+
   # check that naming is correct, else change it.
   orfNames <- txNames(grl, FALSE)
   validNamesThree <- names(threeUTRs) %in% orfNames
@@ -477,16 +486,16 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
     threeUTRs <- threeUTRs[validNamesThree]
     grl <- grl[validNamesGRL]
   }
-
+  overlapGrl <- overlapGrl[validNamesGRL]
   threeUTRs <- threeUTRs[orfNames[validNamesGRL]]
-  overlapThreeUtrs <- countOverlaps(threeUTRs, RFP) + 1
+  overlapThreeUtrs <- countOverlapsW(threeUTRs, RFP, weight.RFP) + 1
 
   rrs[validNamesGRL] <- (overlapGrl / widthPerGroup(grl)) /
     (overlapThreeUtrs / widthPerGroup(threeUTRs))
 
   if (!is.null(RNA)) { # normalize by rna ratio
-    rnaRatio <- (countOverlaps(grl, RNA) + 1) /
-      (countOverlaps(threeUTRs, RNA) + 1)
+    rnaRatio <- (countOverlapsW(grl, RNA, weight.RNA) + 1) /
+      (countOverlaps(threeUTRs, RNA, weight.RNA) + 1)
     rrs[validNamesGRL] <- rrs[validNamesGRL] / rnaRatio
   }
   names(rrs) <- NULL
@@ -499,13 +508,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
 #' and normalized by lengths
 #' A pseudo-count of one was added to both the ORF and downstream sums.
 #' @references doi: 10.1016/j.cels.2017.08.004
-#' @param grl a \code{\link{GRangesList}} object
-#'  with usually either leaders,
-#'  cds', 3' utrs or ORFs.
-#' @param RFP RiboSeq reads as GAlignment, GRanges
-#'  or GRangesList object
-#' @param overlapGrl an integer vector of overlaps
-#' (default: countOverlaps(grl, RFP))
+#' @inheritParams disengagementScore
 #' @return a named vector of numeric values of RSS scores
 #' @export
 #' @family features
@@ -517,13 +520,17 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
 #' RFP <- GRanges("1", IRanges(25, 25), "+")
 #' ribosomeStallingScore(grl, RFP)
 #'
-ribosomeStallingScore <- function(grl, RFP,
-                                  overlapGrl = countOverlaps(grl, RFP)) {
+ribosomeStallingScore <- function(grl, RFP, weight = 1L, overlapGrl = NULL) {
+  # Optimize
+  if (is.null(overlapGrl))
+    overlapGrl <- countOverlapsW(grl, RFP, weight)
+  overlapGrl <- overlapGrl + 1 # Pseudo count
+
   grl_len <- widthPerGroup(grl, FALSE)
   stopCodons <- stopCodons(grl, is.sorted = TRUE)
-  overlapStop <- countOverlaps(stopCodons, RFP)
+  overlapStop <- countOverlapsW(stopCodons, RFP, weight) + 1
 
-  rss <- ((overlapStop + 1) / 3) / ((overlapGrl + 1) / grl_len)
+  rss <- (overlapStop / 3) / (overlapGrl / grl_len)
   names(rss) <- NULL
   return(rss)
 }
@@ -538,14 +545,15 @@ ribosomeStallingScore <- function(grl, RFP,
 #'
 #' If tx is null, then upstream will be force to 0 and downstream to
 #' a maximum of grl width. Since there is no reference for splicing.
-#' @param RFP ribo seq reads as GAlignment, GRanges or GRangesList object
+#' @param RFP ribo seq reads as GAlignments, GRanges or GRangesList object
 #' @inheritParams startRegion
+#' @inheritParams getWeights
 #' @family features
 #' @return a numeric vector of counts
 startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
-                                upstream = 2L, downstream = 2L) {
+                                upstream = 2L, downstream = 2L, weight = 1L) {
   region <- startRegion(grl, tx, is.sorted, upstream, downstream)
-  return(countOverlaps(region, RFP))
+  return(countOverlapsW(region, RFP, weight))
 }
 
 #' Get initiation score for a GRangesList of ORFs
@@ -559,13 +567,17 @@ startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
 #' 0.000: means that ORF had no reads
 #' -1.000: means that ORF is identical to average of CDS
 #' 1.000: means that orf is maximum different than average of CDS
+#'
+#' If a score column is defined, it will use it as weights,
+#' see \code{\link{getWeights}}
 #' @references doi: 10.1186/s12915-017-0416-0
 #' @param grl a \code{\link{GRangesList}} object with ORFs
+#' @param reads ribo seq reads as \code{\link{GAlignments}},
+#' GRanges or GRangesList object
 #' @param cds a \code{\link{GRangesList}} object with coding sequences
 #' @param tx a GrangesList of transcripts covering grl.
-#' @param reads ribosomal footprints, given as Galignment object or
-#'  Granges
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
+#' @inheritParams getWeights
 #' @family features
 #' @return an integer vector, 1 score per ORF, with names of grl
 #' @export
@@ -592,14 +604,16 @@ startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
 #'
 #' initiationScore(grl, cds, tx, reads, pShifted = TRUE)
 #'
-initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE) {
+initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
+                            weight = "score") {
   if (length(grl) == 0) stop("grl must have length > 0")
   # meta coverage of cds
-  cdsMeta <- windowPerReadLength(cds, tx, reads, pShifted = pShifted)
+  cdsMeta <- windowPerReadLength(cds, tx, reads, pShifted = pShifted,
+                                 weight = weight)
 
   # coverage per ORF
   prop <- windowPerReadLength(grl, tx, reads, pShifted = pShifted,
-                              scoring = "fracPos")
+                              scoring = "fracPos", weight = weight)
 
   # find a better scoring pattern
   prop[, `:=` (dif = abs(score - cdsMeta$score))]
@@ -635,13 +649,16 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE) {
 #' is that only the 5' end is important, so that only frame1 = 1,
 #' to get this, you first resize reads to 5'end only.
 #'
-#' NOTE: p shifting is not exact, so some functional ORFs will get a
-#' bad ORF score.
+#' NOTES:
+#' 1. p shifting is not exact, so some functional ORFs will get a
+#' bad ORF score. \cr
+#' 2. If a score column is defined, it will use it as weights, set
+#' to weight = 1L if you don't have weight, and score column is
+#' something else.
+#' see \code{\link{getWeights}}
 #' @references doi: 10.1002/embj.201488411
-#' @param grl a \code{\link{GRangesList}} object with ORFs
-#' @param RFP ribosomal footprints, given as Galignment object,
-#'  Granges or GRangesList
-#' @param is.sorted logical (F), is grl sorted.
+#' @inheritParams coveragePerTiling
+#' @inheritParams floss
 #' @importFrom data.table .SD
 #' @importFrom data.table .N
 #' @family features
@@ -663,7 +680,7 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE) {
 #' score(RFP) <- c(28, 29, 31, 28) # original width
 #' orfScore(grl, RFP)
 #'
-orfScore <- function(grl, RFP, is.sorted = FALSE) {
+orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score") {
   if (any(widthPerGroup(grl, FALSE) < 3)) stop("width < 3 ORFs not allowed")
 
   counts <- coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,

@@ -394,8 +394,8 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
 
   # Split indices for x into pos / neg-strand
   if (is.grl(xOriginal) | is(xOriginal, "IRangesList")) {
-    indicesPos <- ORFik:::groupings(xOriginal[txStrand])
-    indicesNeg <- ORFik:::groupings(xOriginal[!txStrand])
+    indicesPos <- groupings(xOriginal[txStrand])
+    indicesNeg <- groupings(xOriginal[!txStrand])
   } else {
     indicesPos <- seq_along(xOriginal[txStrand])
     indicesNeg <- seq_along(xOriginal[!txStrand])

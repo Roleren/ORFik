@@ -4,12 +4,17 @@
 \alias{codonSumsPerGroup}
 \title{Get read hits per codon}
 \usage{
-codonSumsPerGroup(grl, reads)
+codonSumsPerGroup(grl, reads, weight = "score")
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
 
 \item{reads}{a GRanges or GAlignment}
+
+\item{weight}{(default: 'score'), if defined a character name
+of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
+would mean score column tells
+that this alignment region was found 5 times.}
 }
 \value{
 a data.table with codon sums

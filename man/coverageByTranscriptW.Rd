@@ -14,7 +14,10 @@ coverageByTranscriptW(x, transcripts, ignore.strand = FALSE, weight = 1L)
 \item{ignore.strand}{a logical (default: FALSE)}
 
 \item{weight}{a vector (default: 1L), if single number applies for all,
-else equal size as x}
+else it must be the string name of a defined meta column in "x",
+that gives number of times a read was found.
+GRanges("chr1", 1, "+", score = 5), would mean score column tells
+that this alignment was found 5 times.}
 }
 \value{
 Integer Rle of coverage, 1 per transcript

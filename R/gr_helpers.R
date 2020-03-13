@@ -117,3 +117,30 @@ readWidths <- function(reads, after.softclips = TRUE) {
   }
   return(readWidth)
 }
+
+#' Get weights from a subject GenomicRanges object
+#' @param subject a GAlignment, GRanges or IRanges object
+#' @param weight a vector (default: 1L, if 1L it is identical to
+#' countOverlaps()),
+#' if single number (!= 1), it applies for all,
+#' if more than one must be equal size of 'reads'.
+#' else it must be the string name of a defined meta column in subject
+#' "reads", that gives number of times a read was found.
+#' GRanges("chr1", 1, "+", score = 5), would mean score column tells
+#' that this alignment region was found 5 times.
+#' @return a numeric vector of weights of equal size to subject
+getWeights <- function(subject, weight = 1L) {
+  weight <- if (is.numeric(weight)) {
+    if (length(weight) == 1) {
+      rep.int(weight, length(subject))
+    } else if (length(weight) != length(subject)) {
+      stop("weight does not have equal length to subject")
+    } else weight
+  } else if (is.character(weight)) {
+    error <- paste("weights:", weight, "is not a mcol in 'reads'")
+    if (!(weight %in% colnames(mcols(subject)))) stop(error)
+    mcols(subject)[, weight]
+  } else stop("weight must be numeric or character",
+              "name of valid mcol in subject")
+  return(weight)
+}

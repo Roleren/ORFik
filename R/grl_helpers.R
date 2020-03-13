@@ -412,7 +412,10 @@ groupings <- function(grl){
 #' @param transcripts \code{\link{GRangesList}}
 #' @param ignore.strand a logical (default: FALSE)
 #' @param weight a vector (default: 1L), if single number applies for all,
-#' else equal size as x
+#' else it must be the string name of a defined meta column in "x",
+#' that gives number of times a read was found.
+#' GRanges("chr1", 1, "+", score = 5), would mean score column tells
+#' that this alignment was found 5 times.
 #' @importFrom S4Vectors wmsg isTRUEorFALSE
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
@@ -438,11 +441,18 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
     uex_cvg <- cvg[uex]
   }
   else {
+    pluss <- BiocGenerics::`%in%`(strand(x), c("+", "*"))
+    minus <- BiocGenerics::`%in%`(strand(x), c("-", "*"))
+    x1 <- x[pluss]
+    x2 <- x[minus]
+    if (length(weight) > 1) {
+      cvg1 <- coverage(x1, weight = weight[as.logical(pluss)])
+      cvg2 <- coverage(x2, weight = weight[as.logical(minus)])
+    } else {
+      cvg1 <- coverage(x1, weight = weight)
+      cvg2 <- coverage(x2, weight = weight)
+    }
 
-    x1 <- x[BiocGenerics::`%in%`(strand(x), c("+", "*"))]
-    x2 <- x[BiocGenerics::`%in%`(strand(x), c("-", "*"))]
-    cvg1 <- coverage(x1, weight = weight)
-    cvg2 <- coverage(x2, weight = weight)
     is_plus_ex <- strand(uex) == "+"
     is_minus_ex <- strand(uex) == "-"
     if (!identical(is_plus_ex, !is_minus_ex))
