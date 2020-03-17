@@ -15,11 +15,11 @@ allFeaturesHelper(
   faFile,
   riboStart,
   riboStop,
-  orfFeatures,
-  includeNonVarying,
+  sequenceFeatures,
   grl.is.sorted,
   weight.RFP = 1L,
-  weight.RNA = 1L
+  weight.RNA = 1L,
+  st = NULL
 )
 }
 \arguments{
@@ -49,11 +49,9 @@ normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 
 \item{riboStop}{usually 34, the end of the floss interval}
 
-\item{orfFeatures}{a logical, is the grl a list of orfs?}
-
-\item{includeNonVarying}{a logical, if TRUE, include all features not
-dependent on RiboSeq data and RNASeq data, that is: Kozak,
-fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx}
+\item{sequenceFeatures}{a logical, default TRUE, include all sequence
+features, that is: Kozak, fractionLengths, distORFCDS, isInFrame,
+isOverlapping and rankInTx}
 
 \item{grl.is.sorted}{logical (F), a speed up if you know argument grl
 is sorted, set this to TRUE.}
@@ -65,6 +63,8 @@ that this alignment region was found 5 times.}
 
 \item{weight.RNA}{Same as weightRFP but for RNA weights.
 (default: 1L)}
+
+\item{st}{(NULL), if defined must be: st = startRegion(grl, tx, T, -3, 9)}
 }
 \value{
 a data.table with features

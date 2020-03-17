@@ -4,13 +4,17 @@
 \alias{sortPerGroup}
 \title{Sort a GRangesList}
 \usage{
-sortPerGroup(grl, ignore.strand = FALSE)
+sortPerGroup(grl, ignore.strand = FALSE, quick.rev = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
 
 \item{ignore.strand}{a boolean, (default FALSE): should minus strands be
 sorted from highest to lowest ends. If TRUE: from lowest to highest ends.}
+
+\item{quick.rev}{default: FALSE, if TRUE, given that you know all ranges are
+sorted from min to max for both strands, it will only reverse coordinates for
+minus strand groups. Much quicker}
 }
 \value{
 an equally named GRangesList, where each group is

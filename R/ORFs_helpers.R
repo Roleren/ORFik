@@ -354,7 +354,10 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #'
 startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
                         upstream = 2L, downstream = 2L) {
-  if (!is.sorted) grl <- sortPerGroup(grl)
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
+    is.sorted <- TRUE
+  }
   if (is.null(tx)) {
     tx <- grl
     names(tx) <- txNames(tx)

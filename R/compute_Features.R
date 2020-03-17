@@ -22,10 +22,9 @@
 #' @param faFile a FaFile or BSgenome from the fasta file, see ?FaFile
 #' @param riboStart usually 26, the start of the floss interval, see ?floss
 #' @param riboStop usually 34, the end of the floss interval
-#' @param orfFeatures a logical, is the grl a list of orfs?
-#' @param includeNonVarying a logical, if TRUE, include all features not
-#' dependent on RiboSeq data and RNASeq data, that is: Kozak,
-#' fractionLengths, distORFCDS, isInFrame, isOverlapping and rankInTx
+#' @param sequenceFeatures a logical, default TRUE, include all sequence
+#' features, that is: Kozak, fractionLengths, distORFCDS, isInFrame,
+#' isOverlapping and rankInTx
 #' @param grl.is.sorted logical (F), a speed up if you know argument grl
 #'  is sorted, set this to TRUE.
 #' @inheritParams translationalEff
@@ -51,8 +50,8 @@
 #' # For more details see vignettes.
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
-                            riboStart = 26, riboStop = 34, orfFeatures = TRUE,
-                            includeNonVarying = TRUE, grl.is.sorted = FALSE,
+                            riboStart = 26, riboStop = 34,
+                            sequenceFeatures = TRUE, grl.is.sorted = FALSE,
                             weight.RFP = 1L, weight.RNA = 1L) {
   #### Check input and load data ####
   validGRL(class(grl), "grl")
@@ -67,7 +66,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
   tx <- loadRegion(Gtf)
 
   return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
-                           riboStart, riboStop, orfFeatures, includeNonVarying,
+                           riboStart, riboStop, sequenceFeatures,
                            grl.is.sorted, weight.RFP, weight.RNA))
 }
 
@@ -131,7 +130,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 #'   # set RNA seq to duplicate transcripts
 #'   RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 #'
-#'   computeFeaturesCage(grl = fiveUTR_ORFs, orfFeatures =  TRUE, RFP = RFP,
+#'   computeFeaturesCage(grl = fiveUTR_ORFs, RFP = RFP,
 #'    RNA = RNA, Gtf = txdb, faFile = faFile)
 #'
 #' }
@@ -141,9 +140,8 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
                                 fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
-                                orfFeatures = TRUE, includeNonVarying = TRUE,
-                                grl.is.sorted = FALSE, weight.RFP = 1L,
-                                weight.RNA = 1L) {
+                                sequenceFeatures = TRUE, grl.is.sorted = FALSE,
+                                weight.RFP = 1L, weight.RNA = 1L) {
   #### Check input and load data ####
   validGRL(class(grl))
   checkRFP(class(RFP))
@@ -174,7 +172,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
       }
     }
   return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
-                           riboStart, riboStop, orfFeatures, includeNonVarying,
+                           riboStart, riboStop, sequenceFeatures,
                            grl.is.sorted, weight.RFP, weight.RNA))
 }
 
@@ -182,11 +180,13 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
 #'
 #' Not used directly, calculates all features.
 #' @inheritParams computeFeaturesCage
+#' @param st (NULL), if defined must be: st = startRegion(grl, tx, T, -3, 9)
 #' @return a data.table with features
 allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
-                              faFile, riboStart, riboStop, orfFeatures,
-                              includeNonVarying, grl.is.sorted,
-                              weight.RFP = 1L, weight.RNA = 1L) {
+                              faFile, riboStart, riboStop,
+                              sequenceFeatures, grl.is.sorted,
+                              weight.RFP = 1L, weight.RNA = 1L,
+                              st = NULL) {
   # Clean and optimize
   if (!grl.is.sorted){
     grl <- sortPerGroup(grl)
@@ -215,34 +215,44 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
   scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA,
                                        weight.RFP, weight.RNA, countRFP)]
   scores[, RSS := ribosomeStallingScore(grl, RFP, weight.RFP, countRFP)]
+  scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted,
+                                 weight.RFP)$ORFScores]
+  scores[, ioScore := insideOutsideORF(grl, RFP, tx,
+                                       scores$disengagementScores, TRUE,
+                                       weight.RFP, countRFP)]
+  scores[, startCodonCoverage := startRegionCoverage(grl, RFP, tx)]
 
-  if (includeNonVarying) { # sequence feature
-    scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
-  }
+  if (is.null(st)) st <- startRegion(grl, tx, T, -3, 9)
+  st <- (countOverlapsW(st, RFP, weight.RFP)  /
+           pmax(widthPerGroup(st), 1) / 3) # normalize to same size as startCodon
+  scores[, startRegionCoverage := st]
+  scores[, startRegionRelative := (startCodonCoverage + 1) /
+           (startRegionCoverage + 1)] # Relative score
 
+  if (sequenceFeatures) { # sequence features
+    if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
+      scores[, kozak := kozakSequenceScore(grl, tx, faFile)]
+      scores[, gc := gcContent(grl, faFile)]
 
-  if (orfFeatures) { # if features are found for orfs
-    scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted,
-                                   weight.RFP)$ORFScores]
-    scores[, ioScore := insideOutsideORF(grl, RFP, tx,
-                                         scores$disengagementScores, TRUE,
-                                         weight.RFP, countRFP)]
-
-    if (includeNonVarying) { # sequence features
-      if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
-        scores[, kozak := kozakSequenceScore(grl, tx, faFile)]
-      } else {
-        message("faFile not included, skipping kozak sequence score")
-      }
-      # switch five with tx, is it possible to use ?
-      scores[, distORFCDS := distToCds(grl, fiveUTRs, cds)]
-      scores[, inFrameCDS := isInFrame(distORFCDS)]
-      scores[, isOverlappingCds := isOverlapping(distORFCDS)]
-      scores[, rankInTx := rankOrder(grl)]
+      # Start and stop codons
+      starts <- startCodons(grl, is.sorted = TRUE)
+      stops <- stopCodons(grl, is.sorted = TRUE)
+      scores[, StartCodons := txSeqsFromFa(starts, faFile, TRUE)]
+      scores[, StopCodons := txSeqsFromFa(stops, faFile, TRUE)]
+    } else {
+      message("faFile not included, skipping features dependent fasta genome")
     }
+    # switch five with tx, is it possible to use ?
+    scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
+    scores[, distORFCDS := distToCds(grl, fiveUTRs, cds)]
+    scores[, inFrameCDS := isInFrame(distORFCDS)]
+    scores[, isOverlappingCds := isOverlapping(distORFCDS)]
+    scores[, rankInTx := rankOrder(grl)]
   } else {
-    message("orfFeatures set to False, dropping all orf features.")
+    message("sequenceFeatures set to False,",
+    "dropping all sequenceFeatures features.")
   }
+
   scores[] # for print
   return(scores)
 }

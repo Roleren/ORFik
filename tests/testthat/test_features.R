@@ -340,12 +340,12 @@ test_that("initiationScore works as intended", {
 
 test_that("computeFeatures works as intended", {
   # test from example table in orfik
-  dt <- computeFeaturesCage(grl = grl, orfFeatures = TRUE, RFP = RFP9,
+  dt <- computeFeaturesCage(grl = grl, RFP = RFP9,
                             RNA = RNAGAlign, tx = tx, fiveUTRs = fiveUTRs,
                             cds = cds, threeUTRs = threeUTRs, riboStart = 26,
                             riboStop = 34)
   expect_is(dt, "data.table")
-  expect_equal(ncol(dt), 16)
+  expect_equal(ncol(dt), 19)
   expect_equal(nrow(dt), 4)
   # load file
   #save(featureExamples, file = "~/Desktop/ORFik/inst/extdata/features.rdata")

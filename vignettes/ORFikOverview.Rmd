@@ -454,7 +454,7 @@ Find features of sequence and library data
 # transcript database
 txdb <- loadTxdb(txdbFile)
 dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, 
-                      orfFeatures =  TRUE)
+                      sequenceFeatures = TRUE)
 dt
 ```
 You will now get a data.table with one column per score, the columns are named after

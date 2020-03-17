@@ -11,7 +11,8 @@ reduceKeepAttr(
   min.gapwidth = 1L,
   with.revmap = FALSE,
   with.inframe.attrib = FALSE,
-  ignore.strand = FALSE
+  ignore.strand = FALSE,
+  min.strand.decreasing = TRUE
 )
 }
 \arguments{
@@ -21,13 +22,17 @@ reduceKeepAttr(
 
 \item{drop.empty.ranges}{(FALSE) if a group is empty (width 0), delete it.}
 
-\item{min.gapwidth}{(1L) how long gap can it be to say they belong together}
+\item{min.gapwidth}{(1L) how long gap can it be between two ranges,
+to merge them.}
 
 \item{with.revmap}{(FALSE) return info on which mapped to which}
 
 \item{with.inframe.attrib}{(FALSE) For internal use.}
 
 \item{ignore.strand}{(FALSE), can different strands be reduced together.}
+
+\item{min.strand.decreasing}{(TRUE), if GRangesList, return minus strand group
+ranges in decreasing order (1-5, 30-50) -> (30-50, 1-5)}
 }
 \value{
 A reduced GRangesList
