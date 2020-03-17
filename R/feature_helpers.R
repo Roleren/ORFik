@@ -51,16 +51,12 @@ countOverlapsW <- function(query, subject, weight = NULL, ...) {
 #' Example: counts c(1,0,0,1), with reg_len = 2, gives
 #' c(1,0) and c(0,1), these are summed and returned as data.table
 #' 10 bases, will give 3 codons, 1 base codons does not exist.
-#' @param grl a \code{\link{GRangesList}}
-#' @param reads a GRanges or GAlignment
-#' @param weight (default: 'score'), if defined a character name
-#' of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
-#' would mean score column tells
-#' that this alignment region was found 5 times.
+#' @inheritParams scaledWindowPositions
 #' @return a data.table with codon sums
 #'
-codonSumsPerGroup <- function(grl, reads, weight = "score") {
-  dt <- scaledWindowPositions(grl, reads, numCodons(grl), weight = weight)
+codonSumsPerGroup <- function(grl, reads, weight = "score", is.sorted = FALSE) {
+  dt <- scaledWindowPositions(grl, reads, numCodons(grl), weight = weight,
+                              is.sorted = is.sorted)
   dt[, `:=` (codonSums = score / sum(score)), by = genes]
   return(dt)
 }

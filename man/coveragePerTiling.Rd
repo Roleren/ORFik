@@ -21,7 +21,8 @@ coveragePerTiling(
 RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
 column in 'reads'}
 
-\item{is.sorted}{logical (FALSE), is grl sorted.}
+\item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
+increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 
 \item{keep.names}{logical (TRUE), keep names or not.}
 

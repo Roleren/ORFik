@@ -14,7 +14,8 @@ or \code{\link{GRanges}} object,
 must be already shifted and resized to the p-site. Requires a $size column
 with original read lengths.}
 
-\item{is.sorted}{logical (FALSE), is grl sorted.}
+\item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
+increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),

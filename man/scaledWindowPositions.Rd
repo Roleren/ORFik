@@ -9,7 +9,8 @@ scaledWindowPositions(
   reads,
   scaleTo = 100,
   scoring = "meanPos",
-  weight = "score"
+  weight = "score",
+  is.sorted = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ would mean score column tells that this alignment region was found 5 times.
 ORFik .bedo files, contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
+
+\item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
+increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 }
 \value{
 A data.table with scored counts (counts) of

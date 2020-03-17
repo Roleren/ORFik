@@ -4,17 +4,22 @@
 \alias{codonSumsPerGroup}
 \title{Get read hits per codon}
 \usage{
-codonSumsPerGroup(grl, reads, weight = "score")
+codonSumsPerGroup(grl, reads, weight = "score", is.sorted = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{GRangesList or GRanges of your ranges}
 
-\item{reads}{a GRanges or GAlignment}
+\item{reads}{GRanges object of your reads.}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
-would mean score column tells
-that this alignment region was found 5 times.}
+would mean score column tells that this alignment region was found 5 times.
+ORFik .bedo files, contains a score column like this.
+As do CAGEr CAGE files and many other package formats.
+You can also assign a score column manually.}
+
+\item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
+increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 }
 \value{
 a data.table with codon sums

@@ -183,11 +183,12 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #' scaledWindowPositions(windows, x, scaleTo = 100)
 #'
 scaledWindowPositions <- function(grl, reads, scaleTo = 100,
-                                  scoring = "meanPos", weight = "score") {
+                                  scoring = "meanPos", weight = "score",
+                                  is.sorted = FALSE) {
   if ((length(scaleTo) != 1) & length(scaleTo) != length(grl))
     stop("length of scaleTo must either be 1 or length(grl)")
 
-  count <- coveragePerTiling(grl, reads, is.sorted = FALSE, keep.names = TRUE,
+  count <- coveragePerTiling(grl, reads, is.sorted = is.sorted, keep.names = TRUE,
                              as.data.table = TRUE, withFrames = FALSE,
                              weight = weight)
   count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
@@ -349,7 +350,8 @@ coverageScorings <- function(coverage, scoring = "zscore") {
 #' @param reads a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
 #' RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
 #' column in 'reads'
-#' @param is.sorted logical (FALSE), is grl sorted.
+#' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
+#' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @param keep.names logical (TRUE), keep names or not.
 #' @param as.data.table a logical (FALSE), return as data.table with 2 columns,
 #' position and count.

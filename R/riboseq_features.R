@@ -80,6 +80,8 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 #' where 0 indicates no variance in reads over group.
 #' For example c(0,0,0,0) has 0 entropy, since no reads overlap.
 #' @inheritParams fpkm
+#' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
+#' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @return A numeric vector containing one entropy value per element in
 #' `grl`
 #' @family features
@@ -101,7 +103,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 #' cds <-  GRangesList(tx1 = cdsORF)
 #' entropy(cds, reads)
 #'
-entropy <- function(grl, reads, weight = 1L) {
+entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE) {
   # Optimize: Get count list of only groups with hits
   validIndices <- hasHits(grl, reads)
   if (!any(validIndices)) { # no variance in countList, 0 entropy
@@ -112,7 +114,7 @@ entropy <- function(grl, reads, weight = 1L) {
 
   # entropy function, interval 0:1 real number
   # Xi is the ratio of hits per postion per group
-  Xi <- codonSumsPerGroup(grl, reads, weight)
+  Xi <- codonSumsPerGroup(grl, reads, weight, is.sorted)
 
   validXi <- Xi$codonSums > 0 # avoid log2(0)
   Xi[, `:=` (Hx = rep(0, nrow(Xi)))]

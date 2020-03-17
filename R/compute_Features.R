@@ -209,7 +209,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                                   sum(weight.RFP))]
   }
   scores[, floss := floss(grl, RFP, cds, riboStart, riboStop, weight.RFP)]
-  scores[, entropyRFP := entropy(grl, RFP, weight.RFP)]
+  scores[, entropyRFP := entropy(grl, RFP, weight.RFP, grl.is.sorted)]
   scores[, disengagementScores := disengagementScore(grl, RFP, tx, TRUE,
                                                      weight.RFP, countRFP)]
   scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA,
