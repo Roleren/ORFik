@@ -192,8 +192,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     grl <- sortPerGroup(grl)
     grl.is.sorted <- TRUE
   }
-  tx <- tx[txNames(grl)] # Subset tx to only those in grl.
   RFP <- optimizeReads(tx, RFP)
+  tx <- tx[txNames(grl)] # Subset tx to only those in grl.
   weight.RFP <- getWeights(RFP, weight.RFP)
 
   #### Get all features, append 1 at a time, to save memory ####
