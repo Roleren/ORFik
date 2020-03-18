@@ -326,8 +326,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' disengagementScore(grl, RFP, tx)
 #'
 disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
-                               weight = 1L,
-                               overlapGrl = NULL) {
+                               weight = 1L, overlapGrl = NULL) {
   tx <- loadRegion(GtfOrTx)
   # Optimize
   if(!RFP.sorted) RFP <- optimizeReads(tx, RFP)
@@ -355,9 +354,10 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
     ordering <- uniqueOrder(downstreamTx)
     downstreamTx <- uniqueGroups(downstreamTx)
     overlapDownstream[validIndices] <- countOverlapsW(downstreamTx,
-                                                     RFP, weight)[ordering] + 1
+                                                      RFP, weight)[ordering] + 1
   } else {
-    overlapDownstream[validIndices] <- countOverlapsW(downstreamTx, RFP, weight) + 1
+    overlapDownstream[validIndices] <- countOverlapsW(downstreamTx, RFP,
+                                                      weight) + 1
   }
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
@@ -400,8 +400,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
 #'
 insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
                              RFP.sorted = FALSE,
-                             weight = 1L,
-                             overlapGrl = NULL) {
+                             weight = 1L, overlapGrl = NULL) {
   tx <- loadRegion(GtfOrTx)
   # Optimize
   if(!RFP.sorted) RFP <- optimizeReads(tx, RFP)
@@ -419,17 +418,20 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
   tx <- tx[txNames(grl)][validIndices]
   grl <- grl[validIndices]
 
-  grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE)
+  grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE,
+                          keep.names = FALSE)
   upstreamTx <- upstreamOfPerGroup(tx, grlStarts, allowOutside = FALSE)
   overlapTxOutside <- rep(1, length(validIndices))
   if (!is.null(ds)) { # save time here if ds is defined
     downstreamCounts <- 1 / (ds / overlapGrl)
     upstreamCounts <- rep(1, length(validIndices))
-    upstreamCounts[validIndices] <- countOverlapsW(upstreamTx, RFP, weight)
+    upstreamCounts[validIndices] <- countOverlapsW(upstreamTx, RFP,
+                                                   weight)
     overlapTxOutside <- downstreamCounts + upstreamCounts
 
   } else { # else make ds again
-    grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE)
+    grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE,
+                          keep.names = FALSE)
     downstreamTx <- downstreamOfPerGroup(tx, grlStops)
 
     overlapTxOutside[validIndices] <- countOverlaps(upstreamTx, RFP, weight) +

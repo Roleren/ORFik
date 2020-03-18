@@ -308,7 +308,8 @@ optimizeReads <- function(grl, reads) {
 
   reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
   reads <- sort(reads)
-  if (length(reads) == 0) warning("No reads left in 'reads' after optimisation!")
+  if (length(reads) == 0) warning("No reads left in 'reads' after",
+                                    "optimisation!")
 
   return(reads)
 }

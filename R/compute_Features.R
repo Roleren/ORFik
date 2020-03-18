@@ -192,9 +192,12 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     grl <- sortPerGroup(grl)
     grl.is.sorted <- TRUE
   }
+  #type <- ifelse(all(unique(width(RFP)) == 1), "within", "any")
   RFP <- optimizeReads(tx, RFP)
+  tx_old <- tx
   tx <- tx[txNames(grl)] # Subset tx to only those in grl.
   weight.RFP <- getWeights(RFP, weight.RFP)
+
 
   #### Get all features, append 1 at a time, to save memory ####
   scores <- data.table(countRFP = countOverlapsW(grl, RFP, weight.RFP))
@@ -210,17 +213,18 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
   }
   scores[, floss := floss(grl, RFP, cds, riboStart, riboStop, weight.RFP)]
   scores[, entropyRFP := entropy(grl, RFP, weight.RFP, grl.is.sorted)]
-  scores[, disengagementScores := disengagementScore(grl, RFP, tx, TRUE,
+  scores[, disengagementScores := disengagementScore(grl, RFP, tx_old, TRUE,
                                                      weight.RFP, countRFP)]
   scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA,
                                        weight.RFP, weight.RNA, countRFP)]
   scores[, RSS := ribosomeStallingScore(grl, RFP, weight.RFP, countRFP)]
   scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted,
                                  weight.RFP)$ORFScores]
-  scores[, ioScore := insideOutsideORF(grl, RFP, tx,
+  scores[, ioScore := insideOutsideORF(grl, RFP, tx_old,
                                        scores$disengagementScores, TRUE,
                                        weight.RFP, countRFP)]
-  scores[, startCodonCoverage := startRegionCoverage(grl, RFP, tx)]
+  scores[, startCodonCoverage := startRegionCoverage(grl, RFP, tx,
+                                                     weight = weight.RFP)]
 
   if (is.null(st)) st <- startRegion(grl, tx, T, -3, 9)
   st <- (countOverlapsW(st, RFP, weight.RFP)  /

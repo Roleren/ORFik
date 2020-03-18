@@ -100,8 +100,7 @@ startRegionString <- function(grl, tx, faFile, upstream = 20,
 #'
 #' Finding GRanges groups that have overlap hits with reads
 #' Similar to %over%.
-#' @param grl a GRanges or GRangesList
-#' @param reads a GAlignment or GRanges object with reads
+#' @inheritParams optimizeReads
 #' @param keep.names logical (F), keep names or not
 #' @return a list of logicals, T == hit, F == no hit
 #'
