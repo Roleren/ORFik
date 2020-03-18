@@ -686,7 +686,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score") {
   if (any(widthPerGroup(grl, FALSE) < 3)) stop("width < 3 ORFs not allowed")
 
   counts <- coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
-                              withFrames = TRUE)
+                              withFrames = TRUE, weight = weight)
   total <- coverageScorings(counts, scoring = "frameSum")
   countsTile1 <- total[frame == 0,]$score
   countsTile2 <- total[frame == 1,]$score

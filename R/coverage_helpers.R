@@ -391,7 +391,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!keep.names) names(coverage) <- NULL
 
   if (as.data.table) {
-    window_size <- unique(widthPerGroup(grl))
+    window_size <- unique(widthPerGroup(grl, FALSE))
     count <- data.table(count = unlist(IntegerList(coverage),
                                        use.names = FALSE))
     count[, genes := groupings(coverage)]
