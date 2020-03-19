@@ -4,7 +4,7 @@
 \alias{txSeqsFromFa}
 \title{Get transcript sequence from a GrangesList and a faFile or BSgenome}
 \usage{
-txSeqsFromFa(grl, faFile, is.sorted = FALSE)
+txSeqsFromFa(grl, faFile, is.sorted = FALSE, keep.names = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object}
@@ -13,7 +13,10 @@ txSeqsFromFa(grl, faFile, is.sorted = FALSE)
 ORFik \code{\link{experiment}}. This file used to find the
 transcript sequences}
 
-\item{is.sorted}{a speedup, if you know the ranges are sorted}
+\item{is.sorted}{a speedup, if you know the grl ranges are sorted}
+
+\item{keep.names}{a logical, default (TRUE), if FALSE: return as
+character vector without names.}
 }
 \value{
 a \code{\link{DNAStringSet}} of the transcript sequences

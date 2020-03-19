@@ -453,7 +453,7 @@ Find features of sequence and library data
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
 # transcript database
 txdb <- loadTxdb(txdbFile)
-dt <- computeFeatures(fiveUTR_ORFs, RFP, RNA, txdb, faFile, 
+dt <- computeFeatures(fiveUTR_ORFs[1:4], RFP, RNA, txdb, faFile, 
                       sequenceFeatures = TRUE)
 dt
 ```

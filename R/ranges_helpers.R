@@ -481,17 +481,22 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' above line will give you which chromosome it is missing.
 #' @param grl a \code{\link{GRangesList}} object
 #' @inheritParams findFa
-#' @param is.sorted a speedup, if you know the ranges are sorted
+#' @param is.sorted a speedup, if you know the grl ranges are sorted
+#' @param keep.names a logical, default (TRUE), if FALSE: return as
+#' character vector without names.
 #' @export
 #' @return a \code{\link{DNAStringSet}} of the transcript sequences
 #' @family ExtendGenomicRanges
 #'
-txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
+txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
+                         keep.names = TRUE) {
   faFile <- findFa(faFile)
   if (!any(seqlevels(grl) %in% seqlevels(faFile)))
     stop("FaFile had no matching seqlevels to ranges object")
   if (!is.sorted) grl <- sortPerGroup(grl)
-  return(extractTranscriptSeqs(faFile, transcripts = grl))
+  seqs <- extractTranscriptSeqs(faFile, transcripts = grl)
+  if (!keep.names) return(as.character(seqs, use.names = FALSE))
+  return(seqs)
 }
 
 #' Get window region of GRanges object

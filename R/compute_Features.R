@@ -241,8 +241,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
       # Start and stop codons
       starts <- startCodons(grl, is.sorted = TRUE)
       stops <- stopCodons(grl, is.sorted = TRUE)
-      scores[, StartCodons := txSeqsFromFa(starts, faFile, TRUE)]
-      scores[, StopCodons := txSeqsFromFa(stops, faFile, TRUE)]
+      scores[, StartCodons := txSeqsFromFa(starts, faFile, TRUE, FALSE)]
+      scores[, StopCodons := txSeqsFromFa(stops, faFile, TRUE, FALSE)]
     } else {
       message("faFile not included, skipping features dependent fasta genome")
     }

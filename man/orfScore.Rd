@@ -4,7 +4,7 @@
 \alias{orfScore}
 \title{Get ORFscore for a GRangesList of ORFs}
 \usage{
-orfScore(grl, RFP, is.sorted = FALSE, weight = "score")
+orfScore(grl, RFP, is.sorted = FALSE, weight = "score", overlapGrl = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
