@@ -17,6 +17,29 @@ ORFranges3 <- GRanges(seqnames = Rle(rep("1", 3)),
                                        end = c(25, 35, 45)),
                       strand = Rle(strand(rep("+", 3))))
 
+# Create data for get_all_ORFs_as_GRangesList test_that#1
+seqname <- c("tx1", "tx2", "tx3", "tx4")
+seqs <- c("ATGGGTATTTATA", "ATGGGTAATA",
+          "ATGGG", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+grIn1 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(21, 10), end = c(23, 19)),
+                 strand = rep("-", 2), names = rep(seqname[1], 2))
+grIn2 <- GRanges(seqnames = rep("1", 1),
+                 ranges = IRanges(start = c(1010), end = c(1019)),
+                 strand = rep("-", 1), names = rep(seqname[2], 1))
+
+grIn3 <- GRanges(seqnames = rep("1", 1),
+                 ranges = IRanges(start = c(2000), end = c(2004)),
+                 strand = rep("-", 1), names = rep(seqname[3], 1))
+
+grIn4 <- GRanges(seqnames = rep("1", 2),
+                 ranges = IRanges(start = c(3030, 3000), end = c(3036, 3029)),
+                 strand = rep("-", 2), names = rep(seqname[4], 2))
+
+grl <- GRangesList(grIn1, grIn2, grIn3, grIn4)
+names(grl) <- seqname
+
+
 test_that("defineTrailer works as intended for plus strand", {
 
   #at the start
@@ -144,29 +167,6 @@ test_that("findORFs works as intended for plus strand", {
 })
 
 
-
-# Create data for get_all_ORFs_as_GRangesList test_that#1
-seqname <- c("tx1", "tx2", "tx3", "tx4")
-seqs <- c("ATGGGTATTTATA", "ATGGGTAATA",
-          "ATGGG", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-grIn1 <- GRanges(seqnames = rep("1", 2),
-                 ranges = IRanges(start = c(21, 10), end = c(23, 19)),
-                 strand = rep("-", 2), names = rep(seqname[1], 2))
-grIn2 <- GRanges(seqnames = rep("1", 1),
-                 ranges = IRanges(start = c(1010), end = c(1019)),
-                 strand = rep("-", 1), names = rep(seqname[2], 1))
-
-grIn3 <- GRanges(seqnames = rep("1", 1),
-                 ranges = IRanges(start = c(2000), end = c(2004)),
-                 strand = rep("-", 1), names = rep(seqname[3], 1))
-
-grIn4 <- GRanges(seqnames = rep("1", 2),
-                 ranges = IRanges(start = c(3030, 3000), end = c(3036, 3029)),
-                 strand = rep("-", 2), names = rep(seqname[4], 2))
-
-grl <- GRangesList(grIn1, grIn2, grIn3, grIn4)
-names(grl) <- seqname
-
 test_that("findMapORFs works as intended for minus strand", {
 
   #longestORF F with different frames
@@ -262,7 +262,6 @@ test_that("mapToGRanges works as intended for strange exons negative strand", {
 
 namesTx <- c("tx1", "tx2", "tx3", "tx4")
 seqs <- c("ATGATGTAATAA", "ATGTAA", "AAAATGAAATAAA", "AAAATGAAATAA")
-
 
 grIn3 <- GRanges(seqnames = rep("1", 2),
                  ranges = IRanges(start = c(2000, 2008), end = c(2004, 2015)),
@@ -489,8 +488,9 @@ test_that("startRegion works as intended", {
 
   test_ranges <- startRegion(grl, transcriptRanges)
   expect_equal(as.integer(unlist(start(test_ranges))), c(1, 4, 10, 14, 20))
-  test_ranges <- startRegion(grl)
   expect_equal(as.integer(unlist(end(test_ranges))), c(3, 5, 12, 15, 22))
+  test_ranges <- startRegion(grl)
+  expect_equal(as.integer(unlist(end(test_ranges))), c(3, 12, 22))
 })
 
 test_that("uniqueGroups works as intended", {

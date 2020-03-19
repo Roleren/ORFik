@@ -4,11 +4,15 @@
 \alias{txNames}
 \title{Get transcript names from orf names}
 \usage{
-txNames(grl, unique = FALSE)
+txNames(grl, ref = NULL, unique = FALSE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} grouped by ORF
-or GRanges object}
+, GRanges object or IRanges object.}
+
+\item{ref}{a reference \code{\link{GRangesList}}. The object
+you want grl to subset by names. Add to make sure naming is
+valid.}
 
 \item{unique}{a boolean, if true unique the names,
 used if several orfs map to same transcript and you only

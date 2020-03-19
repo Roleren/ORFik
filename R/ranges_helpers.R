@@ -150,7 +150,7 @@ asTX <- function(grl, reference,
                  ignore.strand = FALSE,
                  x.is.sorted = TRUE,
                  tx.is.sorted = TRUE) {
-  orfNames <- txNames(grl)
+  orfNames <- txNames(grl, reference)
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
     stop("not all references are present, so can not map to transcripts.")
   }
@@ -341,20 +341,18 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     if (!ignore.strand) # Check strand correction only if not ignore
       unmapped <- unmapped | (strand(result) != xStrandOriginal)
     if (any(unmapped)) {
-      ranges(result)[unmapped] <- IRanges(0, -1)
       strand(result)[unmapped] <- "*"
-    }
-    if (is.grl(xClass)) {
-      result <- split(result, indices)
     }
     seqlengths(result) <- if (is.grl(transcripts)) {
       widthPerGroup(transcripts)
     } else as.integer(width(transcripts))
   }
-  names(result) <- oldNames
-  result <- reduce(result, drop.empty.ranges = FALSE)
-  if (is(result, "GRanges")) names(result) <- oldNames
 
+  if (is.grl(xClass) | is(xOriginal, "IRangesList")) {
+    result <- split(result, indices)
+    names(result) <- oldNames
+    result <- reduce(result, drop.empty.ranges = FALSE)
+  } else names(result) <- oldNames
   return(result)
 }
 
@@ -513,12 +511,15 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #' This is usefull for things like countOverlaps, since 0 hits will then always
 #' be returned for the correct object. If you don't want the 0 width windows,
 #' use \code{reduce()} to remove 0-width windows.
-#' @param gr a GRanges object (startSites and others, must be single point)
+#' @param gr a GRanges/IRanges object (startSites or others,
+#'  must be single point per in genomic coordinates)
 #' @param tx a \code{\link{GRangesList}} of transcripts or (container region),
 #' names of tx must contain all gr names. The names of gr can also be the
-#' ORFik orf names. that is "txName_id"
-#' @param upstream an integer (0), relative region to get upstream from.
-#' @param downstream an integer (0), relative region to get downstream from
+#' ORFik orf names. that is "txName_id".
+#' @param upstream an integer, default (0), relative region to get
+#'  upstream from.
+#' @param downstream an integer, default (0), relative region to get
+#'  downstream from
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
 #' @family ExtendGenomicRanges
@@ -532,19 +533,19 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE) {
 #'
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   g <- asTX(gr, tx, tx.is.sorted = TRUE)
-  indices <- chmatch(txNames(gr), names(tx))
+  indices <- chmatch(txNames(gr, tx), names(tx))
 
   txEnds <- widthPerGroup(tx[indices], FALSE)
   starts <- pmin(pmax(start(g) - upstream, 1L), txEnds)
 
+  g <- ranges(g)
   if (downstream != 0L) {
-    ends <- pmin(pmax(end(g) + downstream, starts - 1),
-                 widthPerGroup(tx[indices], FALSE))
-    ranges(g) <- IRanges(starts, ends)
+    ends <- pmin(pmax(end(g) + downstream, starts - 1), txEnds)
+    if (is(g, "IRanges"))
+    g <- IRanges(starts, ends)
   } else {
     start(g) <- starts
   }
-  g <- ranges(g)
   names(g) <- indices
   region <- pmapFromTranscriptF(g, tx, TRUE)
   names(region) <- names(gr)

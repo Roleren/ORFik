@@ -11,15 +11,17 @@ startRegionString(grl, tx, faFile, upstream = 20, downstream = 20)
 
 \item{tx}{a \code{\link{GRangesList}} of transcripts or (container region),
 names of tx must contain all gr names. The names of gr can also be the
-ORFik orf names. that is "txName_id"}
+ORFik orf names. that is "txName_id".}
 
 \item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file used to find the
 transcript sequences}
 
-\item{upstream}{an integer (0), relative region to get upstream from.}
+\item{upstream}{an integer, default (0), relative region to get
+upstream from.}
 
-\item{downstream}{an integer (0), relative region to get downstream from}
+\item{downstream}{an integer, default (0), relative region to get
+downstream from}
 }
 \value{
 a character vector of start regions

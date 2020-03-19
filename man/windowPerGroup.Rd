@@ -7,15 +7,18 @@
 windowPerGroup(gr, tx, upstream = 0L, downstream = 0L)
 }
 \arguments{
-\item{gr}{a GRanges object (startSites and others, must be single point)}
+\item{gr}{a GRanges/IRanges object (startSites or others,
+must be single point per in genomic coordinates)}
 
 \item{tx}{a \code{\link{GRangesList}} of transcripts or (container region),
 names of tx must contain all gr names. The names of gr can also be the
-ORFik orf names. that is "txName_id"}
+ORFik orf names. that is "txName_id".}
 
-\item{upstream}{an integer (0), relative region to get upstream from.}
+\item{upstream}{an integer, default (0), relative region to get
+upstream from.}
 
-\item{downstream}{an integer (0), relative region to get downstream from}
+\item{downstream}{an integer, default (0), relative region to get
+downstream from}
 }
 \value{
 a GRanges, or GRangesList object if any group had > 1 exon.

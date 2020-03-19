@@ -74,7 +74,6 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' @param groupByTx logical (T), should output GRangesList be grouped by
 #' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
-#' @importFrom GenomicFeatures pmapFromTranscripts
 #' @family ORFHelpers
 #'
 mapToGRanges <- function(grl, result, groupByTx = TRUE) {
@@ -111,7 +110,10 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' ENST_123124124000 etc, it will crash, so substitute "_" with "."
 #' gsub("_", ".", names)
 #' @param grl a \code{\link{GRangesList}} grouped by ORF
-#'  or GRanges object
+#' , GRanges object or IRanges object.
+#' @param ref a reference \code{\link{GRangesList}}. The object
+#' you want grl to subset by names. Add to make sure naming is
+#' valid.
 #' @param unique a boolean, if true unique the names,
 #'  used if several orfs map to same transcript and you only
 #'  want the unique groups
@@ -130,9 +132,17 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' # there are 2 orfs, both the first on each transcript
 #' txNames(grl)
 #'
-txNames <- function(grl, unique = FALSE) {
-  if (!is.gr_or_grl(class(grl))) {
-    stop("grl must be GRangesList or GRanges Object")
+txNames <- function(grl, ref = NULL, unique = FALSE) {
+  if (!is.null(ref)) { # If reference is also ORFik ORF
+    if (length(grep("_\\d+", names(ref[1]))) > 0) {
+      if (unique) {
+        return(unique(names(grl)))
+      } else return(names(grl))
+    }
+  }
+
+  if (!is.range(grl)) {
+    stop("grl must be GRangesList, GRanges, IRangesList or IRanges Object")
   }
 
   if (is.null(names(grl))) {
@@ -361,7 +371,6 @@ startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
   }
   if (is.null(tx)) {
     tx <- grl
-    names(tx) <- txNames(tx)
   }
   region <- windowPerGroup(startSites(grl, TRUE, TRUE, is.sorted), tx,
                            upstream, downstream)
@@ -384,9 +393,10 @@ orfID <- function(grl, with.tx = FALSE) {
   seqnames <- seqnamesPerGroup(grl, FALSE)
   strands <- strandPerGroup(grl, FALSE)
 
-  exonInfo <- paste(start(grl),width(grl))
+  starts <- start(grl); names(starts) <- NULL
+  widths <- width(grl); names(widths) <- NULL
+  exonInfo <- paste(starts, widths)
   exonInfo <- paste(exonInfo, sep = '', collapse = ';')
-  names(exonInfo) <- NULL
 
   uorfID <- paste(seqnames, strands, exonInfo, sep = ",")
   if (with.tx) {

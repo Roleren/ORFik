@@ -25,6 +25,7 @@ Other validity:
 \code{\link{is.ORF}()},
 \code{\link{is.gr_or_grl}()},
 \code{\link{is.grl}()},
+\code{\link{is.range}()},
 \code{\link{validGRL}()}
 }
 \concept{validity}

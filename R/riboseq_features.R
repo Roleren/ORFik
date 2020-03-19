@@ -110,7 +110,7 @@ entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE) {
     return(rep(0, length(validIndices)))
   }
   grl <- grl[validIndices]
-  reOrdering <- uniqueOrder(grl)
+  #reOrdering <- uniqueOrder(grl)
 
   # entropy function, interval 0:1 real number
   # Xi is the ratio of hits per postion per group
@@ -129,8 +129,7 @@ entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE) {
   entropy <- rep(0.0, length(validIndices))
   # non 0 entropy values set to HX / MHX
   Xi[is.na(entropy), entropy := 0.]
-  tempEntro <- Xi$entropy[reOrdering] # order back from unique
-  entropy[validIndices] <- tempEntro # order back from hits
+  entropy[validIndices] <- Xi$entropy # order back from hits
   return(entropy)
 }
 
@@ -344,10 +343,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
     return(score)
   }
   overlapDownstream <- rep(1, length(grl))
-
-  grlStops <- stopSites(grl[validIndices], asGR = FALSE, is.sorted = TRUE)
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
-                                       grlStops)
+                                       grl[validIndices])
 
   # check for big lists
   if (length(downstreamTx) > 5e5) {
@@ -430,9 +427,7 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
     overlapTxOutside <- downstreamCounts + upstreamCounts
 
   } else { # else make ds again
-    grlStops <- stopSites(grl, asGR = FALSE, is.sorted = TRUE,
-                          keep.names = FALSE)
-    downstreamTx <- downstreamOfPerGroup(tx, grlStops)
+    downstreamTx <- downstreamOfPerGroup(tx, grl)
 
     overlapTxOutside[validIndices] <- countOverlaps(upstreamTx, RFP, weight) +
       countOverlapsW(downstreamTx, RFP, weight) + 1
@@ -684,8 +679,12 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #' score(RFP) <- c(28, 29, 31, 28) # original width
 #' orfScore(grl, RFP)
 #'
-orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score") {
+orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score",
+                     overlapGrl = NULL) {
   if (any(widthPerGroup(grl, FALSE) < 3)) stop("width < 3 ORFs not allowed")
+  if (is.null(overlapGrl)) overlapGrl <- countOverlaps(grl, RFP)
+  hasHits <- overlapGrl > 0
+  grl <- grl[hasHits]
 
   counts <- coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
                               withFrames = TRUE, weight = weight)
@@ -710,6 +709,13 @@ orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score") {
   ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
   ORFscore[is.na(ORFscore)] <- 0
   dfORFs$ORFScores <- ORFscore
-  dfORFs[] # for print
-  return(dfORFs)
+
+  # insert back empty ones
+  temp <- data.table(frame_zero_RP = rep.int(0, length(hasHits)),
+                     frame_one_RP = rep.int(0, length(hasHits)),
+                     frame_two_RP = rep.int(0, length(hasHits)),
+                     ORFScores = rep(0, length(hasHits)))
+  temp[hasHits, ] <- dfORFs
+  temp[] # for print
+  return(temp)
 }

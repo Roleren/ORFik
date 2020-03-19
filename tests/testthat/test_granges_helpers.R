@@ -45,6 +45,9 @@ tx2 <- GRanges(seqnames = Rle(rep("1", 5)),
                strand = Rle(strand(rep("+", 5))))
 txl <- GRangesList(tx1 = tx1, tx2 = tx2)
 
+txTst <- GRangesList(GRanges("1", IRanges(c(1,3,5), width = 1), "+"),
+                     GRanges("1", IRanges(c(5,3,1), width = 1), "-"))
+
 test_that("groupGRangesBy works as intended", {
 
   grltest <- groupGRangesBy(gr)
@@ -112,8 +115,7 @@ test_that("assignLastExonsStopSite works as intended", {
   expect_equal(length(reassigned), 2)
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), newStops)
 })
-txTst <- GRangesList(GRanges("1", IRanges(c(1,3,5), width = 1), "+"),
-                     GRanges("1", IRanges(c(5,3,1), width = 1), "-"))
+
 
 test_that("downstreamFromPerGroup works as intended", {
   downstreamFrom <- as.integer(c(3, 3))
@@ -128,7 +130,7 @@ test_that("downstreamOfPerGroup works as intended", {
   reassigned <- downstreamOfPerGroup(tx = grl, downstreamOf)
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
-  expect_equal(firstStartPerGroup(reassigned, FALSE), downstreamOf)
+  expect_equal(firstStartPerGroup(reassigned, FALSE), downstreamOf + 1)
 })
 
 test_that("upstreamFromPerGroup works as intended", {
@@ -304,4 +306,16 @@ test_that("convertToOneBasedRanges works as intended", {
   expect_equal(start(res), c(22, 23, 25))
 })
 
+test_that("pmapToTranscriptF works as intended", {
+  res <- pmapToTranscriptF(grl, grl)
+  expect_equal(startSites(res), c(1,1))
+  expect_equal(stopSites(res), c(17,18))
+  expect_equal(names(res), c("tx1_1", "tx1_2"))
 
+  res <- pmapToTranscriptF(ranges(grl), grl)
+  expect_equal(unlist(end(res), use.names = F), c(17,18))
+  res <- pmapToTranscriptF(stopSites(grl, asGR = T), grl)
+  expect_equal(end(res), c(17,18))
+  res <- pmapToTranscriptF(ranges(stopSites(grl, asGR = T)), grl)
+  expect_equal(end(res), c(17,18))
+})

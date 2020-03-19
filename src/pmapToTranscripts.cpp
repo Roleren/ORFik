@@ -143,6 +143,10 @@ List pmapToTranscriptsCPP(const std::vector<int> &xStart,
 
   int counter = 0;
   vi all_orfs(2 * xSize);
+  // -1 for stop sites
+  for (auto i = 1; i < 2 * xSize; i = i + 2) {
+    all_orfs[i] = -1;
+  }
 
   if(direction == '+'){
     pmapToPositive(all_orfs, xSize, counter, xWidths, nExonCumSum,
