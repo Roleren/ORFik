@@ -4,7 +4,7 @@
 \alias{hasHits}
 \title{Hits from reads}
 \usage{
-hasHits(grl, reads, keep.names = FALSE)
+hasHits(grl, reads, keep.names = FALSE, overlaps = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} or GRanges object}
@@ -12,6 +12,9 @@ hasHits(grl, reads, keep.names = FALSE)
 \item{reads}{a GRanges or GAlignment object}
 
 \item{keep.names}{logical (F), keep names or not}
+
+\item{overlaps}{default NULL, if not null must be
+countOverlaps(grl, reads), input if you have it already.}
 }
 \value{
 a list of logicals, T == hit, F == no hit

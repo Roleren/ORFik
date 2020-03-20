@@ -22,8 +22,9 @@ else it must be the string name of a defined meta column in subject
 GRanges("chr1", 1, "+", score = 5), would mean score column tells
 that this alignment region was found 5 times.}
 
-\item{overlapGrl}{an integer vector of overlaps
-(default: NULL), added for speed if you already have it}
+\item{overlapGrl}{an integer, (default: NULL),
+if defined must be countOverlaps(grl, RFP),
+added for speed if you already have it}
 }
 \value{
 a named vector of numeric values of RSS scores

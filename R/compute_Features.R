@@ -16,6 +16,7 @@
 #' See \code{\link{getWeights}}
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
+#'  This is the regions you want to score.
 #' @param RFP RiboSeq reads as GAlignment, GRanges or GRangesList object
 #' @param RNA RnaSeq reads as GAlignment, GRanges or GRangesList object
 #' @param Gtf a TxDb object of a gtf file or path to gtf, gff .sqlite etc.
@@ -86,7 +87,8 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 #' @param tx a GrangesList of transcripts,
 #'  normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 #'  only add this if you are not including Gtf file
-#'  You do not need to reassign these to the cage peaks, it will do it for you.
+#'  If you are using CAGE, you do not need to reassign these to the cage
+#'  peaks, it will do it for you.
 #' @param fiveUTRs fiveUTRs as GRangesList, if you used cage-data to
 #'  extend 5' utrs, remember to input CAGE assigned version and not original!
 #' @param cds a GRangesList of coding sequences
@@ -193,6 +195,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     grl.is.sorted <- TRUE
   }
   #type <- ifelse(all(unique(width(RFP)) == 1), "within", "any")
+  tx <- tx[names(tx) %in% txNames(grl, tx, unique = TRUE)]
   RFP <- optimizeReads(tx, RFP)
   tx_old <- tx
   tx <- tx[txNames(grl)] # Subset tx to only those in grl.
@@ -212,14 +215,15 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                                   sum(weight.RFP))]
   }
   scores[, floss := floss(grl, RFP, cds, riboStart, riboStop, weight.RFP)]
-  scores[, entropyRFP := entropy(grl, RFP, weight.RFP, grl.is.sorted)]
+  scores[, entropyRFP := entropy(grl, RFP, weight.RFP, grl.is.sorted,
+                                 overlapGrl = countRFP)]
   scores[, disengagementScores := disengagementScore(grl, RFP, tx_old, TRUE,
                                                      weight.RFP, countRFP)]
   scores[, RRS := ribosomeReleaseScore(grl, RFP, threeUTRs, RNA,
                                        weight.RFP, weight.RNA, countRFP)]
   scores[, RSS := ribosomeStallingScore(grl, RFP, weight.RFP, countRFP)]
   scores[, ORFScores := orfScore(grl, RFP, grl.is.sorted,
-                                 weight.RFP)$ORFScores]
+                                 weight.RFP, overlapGrl = countRFP)$ORFScores]
   scores[, ioScore := insideOutsideORF(grl, RFP, tx_old,
                                        scores$disengagementScores, TRUE,
                                        weight.RFP, countRFP)]

@@ -102,10 +102,12 @@ startRegionString <- function(grl, tx, faFile, upstream = 20,
 #' Similar to %over%.
 #' @inheritParams optimizeReads
 #' @param keep.names logical (F), keep names or not
+#' @param overlaps default NULL, if not null must be
+#' countOverlaps(grl, reads), input if you have it already.
 #' @return a list of logicals, T == hit, F == no hit
 #'
-hasHits <- function(grl, reads, keep.names = FALSE) {
-  overlaps <- countOverlaps(grl, reads)
+hasHits <- function(grl, reads, keep.names = FALSE, overlaps = NULL) {
+  if (is.null(overlaps)) overlaps <- countOverlaps(grl, reads)
   if (!keep.names) {
     names(overlaps) <- NULL
   }

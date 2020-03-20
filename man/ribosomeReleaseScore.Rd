@@ -36,8 +36,9 @@ that this alignment region was found 5 times.}
 \item{weight.RNA}{Same as weightRFP but for RNA weights.
 (default: 1L)}
 
-\item{overlapGrl}{an integer vector of overlaps
-(default: NULL), added for speed if you already have it}
+\item{overlapGrl}{an integer, (default: NULL),
+if defined must be countOverlaps(grl, RFP),
+added for speed if you already have it}
 }
 \value{
 a named vector of numeric values of scores, NA means that

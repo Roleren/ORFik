@@ -23,6 +23,10 @@ would mean score column tells that this alignment region was found 5 times.
 ORFik .bedo files, contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
+
+\item{overlapGrl}{an integer, (default: NULL),
+if defined must be countOverlaps(grl, RFP),
+added for speed if you already have it}
 }
 \value{
 a data.table with 4 columns, the orfscore (ORFScores) and score of

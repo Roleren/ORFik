@@ -24,7 +24,8 @@ allFeaturesHelper(
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
-with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
+with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
+This is the regions you want to score.}
 
 \item{RFP}{RiboSeq reads as GAlignment, GRanges or GRangesList object}
 
@@ -33,7 +34,8 @@ with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
 \item{tx}{a GrangesList of transcripts,
 normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 only add this if you are not including Gtf file
-You do not need to reassign these to the cage peaks, it will do it for you.}
+If you are using CAGE, you do not need to reassign these to the cage
+peaks, it will do it for you.}
 
 \item{fiveUTRs}{fiveUTRs as GRangesList, if you used cage-data to
 extend 5' utrs, remember to input CAGE assigned version and not original!}

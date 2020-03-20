@@ -4,7 +4,7 @@
 \alias{entropy}
 \title{Calucalte entropy value of overlapping input reads per GRanges.}
 \usage{
-entropy(grl, reads, weight = 1L, is.sorted = FALSE)
+entropy(grl, reads, weight = 1L, is.sorted = FALSE, overlapGrl = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -26,6 +26,10 @@ that this alignment region was found 5 times.}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
+
+\item{overlapGrl}{an integer, (default: NULL),
+if defined must be countOverlaps(grl, RFP),
+added for speed if you already have it}
 }
 \value{
 A numeric vector containing one entropy value per element in

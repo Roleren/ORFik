@@ -20,7 +20,8 @@ computeFeatures(
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
-with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.}
+with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
+This is the regions you want to score.}
 
 \item{RFP}{RiboSeq reads as GAlignment, GRanges or GRangesList object}
 

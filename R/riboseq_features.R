@@ -82,6 +82,9 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 #' @inheritParams fpkm
 #' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
+#' @param overlapGrl an integer, (default: NULL),
+#' if defined must be countOverlaps(grl, RFP),
+#' added for speed if you already have it
 #' @return A numeric vector containing one entropy value per element in
 #' `grl`
 #' @family features
@@ -103,9 +106,10 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 #' cds <-  GRangesList(tx1 = cdsORF)
 #' entropy(cds, reads)
 #'
-entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE) {
+entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE,
+                    overlapGrl = NULL) {
   # Optimize: Get count list of only groups with hits
-  validIndices <- hasHits(grl, reads)
+  validIndices <- hasHits(grl, reads, overlap = overlapGrl)
   if (!any(validIndices)) { # no variance in countList, 0 entropy
     return(rep(0, length(validIndices)))
   }
@@ -309,8 +313,9 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' @param RFP.sorted logical (F), an optimizer, have you ran this line:
 #' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 #' Normally not touched, for internal optimization purposes.
-#' @param overlapGrl an integer vector of overlaps
-#' (default: NULL), added for speed if you already have it
+#' @param overlapGrl an integer, (default: NULL),
+#' if defined must be countOverlaps(grl, RFP),
+#' added for speed if you already have it
 #' @inheritParams fpkm
 #' @return a named vector of numeric values of scores
 #' @export
@@ -328,7 +333,9 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
                                weight = 1L, overlapGrl = NULL) {
   tx <- loadRegion(GtfOrTx)
   # Optimize
-  if(!RFP.sorted) RFP <- optimizeReads(tx, RFP)
+  if(!RFP.sorted) {
+    RFP <- optimizeReads(tx, RFP)
+  }
   if (is.null(overlapGrl))
     overlapGrl <- countOverlapsW(grl, RFP, weight)
   overlapGrl <- overlapGrl + 1 # Pseudo count
@@ -346,16 +353,18 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
   downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
                                        grl[validIndices])
 
-  # check for big lists
-  if (length(downstreamTx) > 5e5) {
-    ordering <- uniqueOrder(downstreamTx)
-    downstreamTx <- uniqueGroups(downstreamTx)
-    overlapDownstream[validIndices] <- countOverlapsW(downstreamTx,
-                                                      RFP, weight)[ordering] + 1
-  } else {
-    overlapDownstream[validIndices] <- countOverlapsW(downstreamTx, RFP,
-                                                      weight) + 1
-  }
+  # # check for big lists
+  # if (length(downstreamTx) > 5e5) {
+  #   ordering <- uniqueOrder(downstreamTx)
+  #   downstreamTx <- uniqueGroups(downstreamTx)
+  #   overlapDownstream[validIndices] <- countOverlapsW(downstreamTx,
+  #                                                     RFP, weight)[ordering] + 1
+  # } else {
+  #   overlapDownstream[validIndices] <- countOverlapsW(downstreamTx, RFP,
+  #                                                     weight) + 1
+  # }
+  overlapDownstream[validIndices] <- countOverlapsW(downstreamTx, RFP,
+                                                    weight) + 1
   score <- overlapGrl / overlapDownstream
   names(score) <- NULL
   return(score)
@@ -658,6 +667,7 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #' @references doi: 10.1002/embj.201488411
 #' @inheritParams coveragePerTiling
 #' @inheritParams floss
+#' @inheritParams entropy
 #' @importFrom data.table .SD
 #' @importFrom data.table .N
 #' @family features
@@ -681,9 +691,10 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score",
                      overlapGrl = NULL) {
-  if (any(widthPerGroup(grl, FALSE) < 3)) stop("width < 3 ORFs not allowed")
-  if (is.null(overlapGrl)) overlapGrl <- countOverlaps(grl, RFP)
-  hasHits <- overlapGrl > 0
+  if (any(widthPerGroup(grl, FALSE) < 3))
+    stop("ORFs with width < 3  not allowed")
+
+  hasHits <- hasHits(grl, RFP, overlaps = overlapGrl)
   grl <- grl[hasHits]
 
   counts <- coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
