@@ -39,9 +39,6 @@ countOverlapsW <- function(query, subject, weight = NULL, ...) {
   return(weightedCount)
 }
 
-
-
-
 #' Get read hits per codon
 #'
 #' Helper for entropy function, normally not used directly

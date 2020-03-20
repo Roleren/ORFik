@@ -310,7 +310,7 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #'  transcripts will be extracted using
 #'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
 #'  Else it must be \code{\link{GRangesList}}
-#' @param RFP.sorted logical (F), an optimizer, have you ran this line:
+#' @param RFP.sorted logical (FALSE), an optimizer, have you ran this line:
 #' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 #' Normally not touched, for internal optimization purposes.
 #' @param overlapGrl an integer, (default: NULL),

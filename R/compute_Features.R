@@ -231,8 +231,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                                                      weight = weight.RFP)]
 
   if (is.null(st)) st <- startRegion(grl, tx, T, -3, 9)
-  st <- (countOverlapsW(st, RFP, weight.RFP)  /
-           pmax(widthPerGroup(st), 1) / 3) # normalize to same size as startCodon
+  st <- countOverlapsW(st, RFP, weight.RFP)  /
+           (pmax(widthPerGroup(st), 1) / 5) # normalize to same size as startCodon
   scores[, startRegionCoverage := st]
   scores[, startRegionRelative := (startCodonCoverage + 1) /
            (startRegionCoverage + 1)] # Relative score
