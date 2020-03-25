@@ -29,7 +29,7 @@ Else it must be \code{\link{GRangesList}}}
 \item{ds}{numeric vector (NULL), disengagement score. If you have already
 calculated \code{\link{disengagementScore}}, input here to save time.}
 
-\item{RFP.sorted}{logical (F), an optimizer, have you ran this line:
+\item{RFP.sorted}{logical (FALSE), an optimizer, have you ran this line:
 \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 Normally not touched, for internal optimization purposes.}
 
@@ -39,7 +39,7 @@ if single number (!= 1), it applies for all,
 if more than one must be equal size of 'reads'.
 else it must be the string name of a defined meta column in subject
 "reads", that gives number of times a read was found.
-GRanges("chr1", 1, "+", score = 5), would mean score column tells
+GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
 that this alignment region was found 5 times.}
 
 \item{overlapGrl}{an integer, (default: NULL),

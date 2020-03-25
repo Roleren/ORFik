@@ -30,7 +30,7 @@ if single number (!= 1), it applies for all,
 if more than one must be equal size of 'reads'.
 else it must be the string name of a defined meta column in subject
 "reads", that gives number of times a read was found.
-GRanges("chr1", 1, "+", score = 5), would mean score column tells
+GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
 that this alignment region was found 5 times.}
 }
 \value{
