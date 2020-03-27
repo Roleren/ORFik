@@ -178,6 +178,7 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' loadRegion(gtf, "intron")
 loadRegion <- function(txdb, part = "tx", names.keep = NULL) {
   if (is.grl(txdb)) return(txdb)
+  if (length(part) != 1) stop("argument: (path) must be length 1")
   txdb <- loadTxdb(txdb)
   region <-
     if (part %in% c("tx", "transcript", "transcripts")) {

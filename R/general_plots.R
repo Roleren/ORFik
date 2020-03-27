@@ -4,17 +4,20 @@
 #' And some score, ribo-seq fpkm, TE etc.
 #' Create a heatmap divided per letter in seqs, by how strong the score is.
 #'
-#' It will create blocks around best rate per position
+#' It will create blocks around the highest rate per position
 #' @param seqs the sequences (character vector, DNAStringSet)
 #' @param rate a scoring vector (equal size to seqs)
-#' @param start position in seqs to start at (first is 1)
-#' @param stop position in seqs to stop at (first is 1)
+#' @param start position in seqs to start at (first is 1), default 1.
+#' @param stop position in seqs to stop at (first is 1),
+#'  default max(nchar(seqs)), that is the longest sequence length
 #' @param center position in seqs to center at (first is 1), center will
 #' be +1 in heatmap
-#' @param min.observations How many observations per position per letter to accept?
-#' numeric or quantile, default (">q1", bigger than quartile 1 (25 percentile)).
-#' You can do (10), to get all with more than 10 observations.
-#' @param skip.startCodon startCodon is defined as after centering (position 1, 2 and 3).
+#' @param min.observations How many observations per position per letter
+#' to accept? numeric or quantile, default (">q1", bigger than quartile 1
+#' (25 percentile)). You can do (10), to get all with more than
+#' 10 observations.
+#' @param skip.startCodon startCodon is defined as after centering
+#'  (position 1, 2 and 3).
 #' Should they be skipped ? default (FALSE).
 #' Not relevant if you are not doing Translation initiation sites (TIS).
 #' @param xlab Region you are checking, default (TIS)
@@ -42,12 +45,22 @@
 #' }
 #' }
 #'
-kozakHeatmap <- function(seqs, rate, start, stop, center = ceiling((stop - start + 1)/2),
+kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
+                         , center = ceiling((stop - start + 1)/2),
                          min.observations = ">q1", skip.startCodon = FALSE,
                          xlab = "TIS", type = "ribo-seq") {
   if (length(seqs) != length(rate)) stop("Length of rate and seq must be equal!")
   if (length(seqs) == 0 | length(rate) == 0) stop("Length of rate and seq must be > 0!")
+  if (start > stop) stop("Stop must be bigger or equal to start")
   if (is.null(names(seqs))) names(seqs) <- as.character(seq(1, length(seqs)))
+
+  # Update to only full length seqs
+  hits <- nchar(seqs) >= stop
+  seqs <- seqs[hits]; rate <- rate[hits]
+  if (!all(hits)) { # inform that not all seqs are full length
+    message("Not all sequences can be used, not full length")
+    print(summary(hits))
+  } else if (all(!hits)) stop("No seqs long enough for interval start, stop!")
 
   dt <- data.table(X.gene_id = names(seqs))
   vars <- c()
@@ -56,6 +69,8 @@ kozakHeatmap <- function(seqs, rate, start, stop, center = ceiling((stop - start
     vars <- c(vars, paste0("seq", i))
   }
   dt$rate <- rate
+
+
   dt.melt <- melt(dt, id.vars = c("X.gene_id", "rate"))
   codon.table <- dt.melt[, .(median_score = median(rate, na.rm = TRUE),
                              count_seq_pos_with_count = .N),
@@ -110,3 +125,130 @@ kozakHeatmap <- function(seqs, rate, start, stop, center = ceiling((stop - start
   }
   return(plot_matrix2_log)
 }
+
+#' TOP Motif ecdf plot
+#'
+#' Given sequences, DNA or RNA.
+#' And some score, scanning efficiency (SE), ribo-seq fpkm, TE etc.
+#'
+#' Top motif defined as a TSS of C and 4 T's or C's (pyrimidins) downstream
+#' of TSS C.
+#' @param seqs the sequences (character vector, DNAStringSet).
+#' See example below for input.
+#' @param rate a scoring vector (equal size to seqs)
+#' @param start position in seqs to start at (first is 1), default 1.
+#' @param stop position in seqs to stop at (first is 1),
+#'  default max(nchar(seqs)), that is the longest sequence length
+#' @param xlim What interval of rate values you want to show
+#' type: numeric or quantile of length 2,
+#' 1. default c("q10","q99"). bigger than 10 percentile
+#'  and less than 99 percentile.
+#' 2. Set to numeric values, like c(5, 1000),
+#' 3. Set to NULL if you want all values. Backend uses coord_cartesian.
+#' @param type What type is the rate scoring ? default ("Scanning efficiency")
+#' @return a ggplot gtable of the TOP motifs in 2 plots
+#' @importFrom gridExtra grid.arrange
+#' @export
+#' @examples
+#'
+#' \dontrun{
+#' if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+#'   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                           package = "GenomicFeatures")
+#'   #Extract sequences of Coding sequences.
+#'   leaders <- loadRegion(txdbFile, "leaders")
+#'
+#'   # Should update by CAGE if not already done
+#'   cageData <- system.file("extdata", "cage-seq-heart.bed.bgz",
+#'                           package = "ORFik")
+#'   leadersCage <- reassignTSSbyCage(leaders, cageData)
+#'   # Get region to check
+#'   seqs <- startRegionString(leadersCage, NULL,
+#'         BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 0, 4)
+#'   # Some toy ribo-seq fpkm scores on cds
+#'   fpkm <- sample(1:115, length(leadersCage), replace = TRUE)
+#'   # Standard arguments
+#'   TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM")
+#'
+#'   # with no zoom on x-axis:
+#'   TOP.Motif.ecdf(seqs, fpkm, xlim = NULL)
+#' }
+#' }
+#'
+TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
+                         xlim = c("q10","q99"),
+                         type = "Scanning efficiency") {
+  if (length(seqs) != length(rate)) stop("Length of rate and seq must be equal!")
+  if (length(seqs) == 0 | length(rate) == 0) stop("Length of rate and seq must be > 0!")
+  if (start > stop) stop("Stop must be bigger or equal to start")
+  if (is.null(names(seqs))) names(seqs) <- as.character(seq(1, length(seqs)))
+
+  # Update to only full length seqs
+  hits <- nchar(seqs) >= stop
+  seqs <- seqs[hits]; rate <- rate[hits]
+  if (!all(hits)) { # inform that not all seqs are full length
+    message("Not all sequences can be used, here is how many valid (TRUE):")
+    print(summary(hits))
+  } else if (all(!hits)) stop("No seqs long enough for interval start, stop!")
+
+  dt <- data.table(X.gene_id = names(seqs))
+  vars <- c()
+  for (i in seq(start, stop)) {
+    dt[,paste0("seq", i)] <- substring(seqs, i, i)
+    vars <- c(vars, paste0("seq", i))
+  }
+  dt$rate <- rate
+  dt$TOP <- "OTHER"
+  pyri <-  c("C", "T") # pyrimidins
+  dt[seq1 == "C",]$TOP <- "C"
+  dt[seq1 == "C" & (seq2 %in% pyri) & (seq3 %in% pyri) &
+       (seq4 %in% pyri) & (seq5 %in% pyri),]$TOP <- "TOP"
+  message("Distribution of TOP motifs:")
+  print(table(dt$TOP))
+
+  # Define plot settings:
+  new_pallet_1 <- c("#E495A5","#ABB065","#39BEB1","#ACA4E2")
+  new_pallet_2 <- c("#39BEB1", "#ACA4E2", "#E495A5")
+  tl <- theme(legend.position = c(0.2, 0.67), legend.background=element_blank())
+  tlb <- theme(legend.position = c(0.8, 0.3), legend.background=element_blank(),
+               axis.ticks.y=element_blank(), axis.text.y = element_blank())
+  tit <- labs(color = "First nucleotide")
+  titb <- labs(color = "Motif")
+
+  se1 <- ggplot(data=dt, aes((rate), colour = seq1)) +
+    stat_ecdf() +
+    scale_x_log10() +
+    scale_color_manual(values=new_pallet_1) +
+    ylab("") +
+    xlab("") +
+    theme_bw() +
+    tl + tit
+
+  se2 <- ggplot(data=dt, aes((rate), colour = TOP)) +
+    stat_ecdf() +
+    scale_x_log10() +
+    scale_color_manual(values=new_pallet_2) +
+    ylab("") +
+    xlab("") +
+    theme_bw() +
+    tlb + titb
+
+  if (!is.null(xlim)) {
+    if (length(xlim) != 2) stop("xlim must be length 2 if defined!")
+    if (is.character(xlim)) {
+      xlim <- as.numeric(gsub("q", "", xlim)) / 100
+      if (any(xlim > 1 | xlim < 0)) stop("when xlim is percentiles,",
+                                         "range must be 0 to 100")
+      xlim <- quantile(dt$rate, xlim)
+    }
+    if (!is.numeric(xlim)) stop("xlim must be valid character or numeric!")
+
+    se1 <- se1 + coord_cartesian(xlim = xlim)
+    se2 <- se2 + coord_cartesian(xlim = xlim)
+  }
+
+  comb <- grid.arrange(se1, se2, bottom = paste0("log10(", type, ")"),
+                       nrow = 1)
+  return(comb)
+}
+

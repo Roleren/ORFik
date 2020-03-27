@@ -15,6 +15,7 @@
 #' @return a named vector of number of overlaps to subject weigthed
 #'  by 'weight' column.
 #' @family features
+#' @importFrom methods as
 #' @export
 #' @examples
 #' gr1 <- GRanges(seqnames="chr1",
@@ -32,8 +33,8 @@ countOverlapsW <- function(query, subject, weight = NULL, ...) {
   if (is.null(weight)) return(countOverlaps(query, subject, ...))
 
   weight <- getWeights(subject, weight)
-  hits = as(findOverlaps(query, subject, ...), "List")
-  weightedCount = sum(extractList(weight, hits))
+  hits <- methods::as(findOverlaps(query, subject, ...), "List")
+  weightedCount <- sum(extractList(weight, hits))
 
   names(weightedCount) <- names(query)
   return(weightedCount)

@@ -95,7 +95,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
   } else stop("downstreamOf must be GRangesList, or numeric of equal",
               "size to tx")
   return(windowPerGroup(downstreamOf, tx, upstream = -1,
-                      downstream = max(widthPerGroup(tx, F))))
+                      downstream = max(widthPerGroup(tx, FALSE))))
 }
 # downstreamOfPerGroup <- function(tx, downstreamOf) {
 #   # Needs speed update!

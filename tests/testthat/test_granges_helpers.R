@@ -313,9 +313,9 @@ test_that("pmapToTranscriptF works as intended", {
   expect_equal(names(res), c("tx1_1", "tx1_2"))
 
   res <- pmapToTranscriptF(ranges(grl), grl)
-  expect_equal(unlist(end(res), use.names = F), c(17,18))
-  res <- pmapToTranscriptF(stopSites(grl, asGR = T), grl)
+  expect_equal(unlist(end(res), use.names = FALSE), c(17,18))
+  res <- pmapToTranscriptF(stopSites(grl, asGR = TRUE), grl)
   expect_equal(end(res), c(17,18))
-  res <- pmapToTranscriptF(ranges(stopSites(grl, asGR = T)), grl)
+  res <- pmapToTranscriptF(ranges(stopSites(grl, asGR = TRUE)), grl)
   expect_equal(end(res), c(17,18))
 })

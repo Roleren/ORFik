@@ -230,7 +230,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
   scores[, startCodonCoverage := startRegionCoverage(grl, RFP, tx,
                                                      weight = weight.RFP)]
 
-  if (is.null(st)) st <- startRegion(grl, tx, T, -3, 9)
+  if (is.null(st)) st <- startRegion(grl, tx, TRUE, -3, 9)
   st <- countOverlapsW(st, RFP, weight.RFP)  /
            (pmax(widthPerGroup(st), 1) / 5) # normalize to same size as startCodon
   scores[, startRegionCoverage := st]

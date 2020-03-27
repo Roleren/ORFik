@@ -7,8 +7,8 @@
 kozakHeatmap(
   seqs,
   rate,
-  start,
-  stop,
+  start = 1,
+  stop = max(nchar(seqs)),
   center = ceiling((stop - start + 1)/2),
   min.observations = ">q1",
   skip.startCodon = FALSE,
@@ -21,18 +21,21 @@ kozakHeatmap(
 
 \item{rate}{a scoring vector (equal size to seqs)}
 
-\item{start}{position in seqs to start at (first is 1)}
+\item{start}{position in seqs to start at (first is 1), default 1.}
 
-\item{stop}{position in seqs to stop at (first is 1)}
+\item{stop}{position in seqs to stop at (first is 1),
+default max(nchar(seqs)), that is the longest sequence length}
 
 \item{center}{position in seqs to center at (first is 1), center will
 be +1 in heatmap}
 
-\item{min.observations}{How many observations per position per letter to accept?
-numeric or quantile, default (">q1", bigger than quartile 1 (25 percentile)).
-You can do (10), to get all with more than 10 observations.}
+\item{min.observations}{How many observations per position per letter
+to accept? numeric or quantile, default (">q1", bigger than quartile 1
+(25 percentile)). You can do (10), to get all with more than
+10 observations.}
 
-\item{skip.startCodon}{startCodon is defined as after centering (position 1, 2 and 3).
+\item{skip.startCodon}{startCodon is defined as after centering
+ (position 1, 2 and 3).
 Should they be skipped ? default (FALSE).
 Not relevant if you are not doing Translation initiation sites (TIS).}
 
@@ -49,7 +52,7 @@ And some score, ribo-seq fpkm, TE etc.
 Create a heatmap divided per letter in seqs, by how strong the score is.
 }
 \details{
-It will create blocks around best rate per position
+It will create blocks around the highest rate per position
 }
 \examples{
 

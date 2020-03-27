@@ -167,6 +167,7 @@ entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE,
 #' @return a vector of FLOSS of length same as grl, 0 means no RFP reads
 #' in range, 1 is perfect match.
 #' @family features
+#' @importFrom BiocGenerics weights
 #' @export
 #' @examples
 #' ORF1 <- GRanges(seqnames = "1",
