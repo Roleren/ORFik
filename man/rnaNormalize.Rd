@@ -13,7 +13,7 @@ position), it is possible to have additionals: (genes, fraction, feature)}
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
-normalize against}
+normalize against. Will add RNA normalized to plot name if this is done.}
 
 \item{tx}{a \code{\link{GRangesList}} of mrna transcripts}
 

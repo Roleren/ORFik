@@ -18,7 +18,8 @@ transcriptWindow(
     FALSE)), min(widthPerGroup(trailers, FALSE))),
   returnPlot = is.null(outdir),
   dfr = NULL,
-  idName = ""
+  idName = "",
+  format = ".png"
 )
 }
 \arguments{
@@ -47,12 +48,14 @@ see ?coverageScorings for possible scores.}
 so TRUE if outdir is not defined.}
 
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
-normalize against}
+normalize against. Will add RNA normalized to plot name if this is done.}
 
 \item{idName}{A character ID to add to saved name of plot,
 if you make several plots in the same folder,
 and same experiment, like splitting transcripts in two groups like
 targets / nontargets etc. (default: "")}
+
+\item{format}{default (".png"), do ".pdf" if you want as pdf}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE

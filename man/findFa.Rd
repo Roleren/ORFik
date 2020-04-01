@@ -21,6 +21,7 @@ Get fasta file object, to find sequences in file.
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{export.bed12}()},
 \code{\link{fimport}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

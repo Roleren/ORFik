@@ -7,8 +7,10 @@
 #' `grl`. It is equal to RPKM given that you do not have paired end reads.
 #'
 #' Note also that you must consider if you will use the whole read
-#' library or just the reads overlapping `grl`.
-#' To only overlap do:
+#' library or just the reads overlapping `grl` for library size.
+#' A normal question here is, does it make sense to include rRNA in library
+#' size ?
+#' If you only want overlapping grl, do:
 #' librarySize = "overlapping"
 #' @references doi: 10.1038/nbt.1621
 #' @param grl a \code{\link{GRangesList}} object
@@ -19,20 +21,21 @@
 #' \code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.
 #' @param pseudoCount an integer, by default is 0, set it to 1 if you want to
 #' avoid NA and inf values.
-#' @param librarySize either value or character vector.
+#' @param librarySize either numeric value or character vector.
 #' Default ("full"), number of alignments in library (reads).
 #' If you just have a subset, you can give the value by
 #' librarySize = length(wholeLib),
 #' if you want lib size to be only number of reads overlapping grl, do:
 #' librarySize = "overlapping"
-#' sum(countOverlaps(reads, grl) > 0)
-#' if reads[1] has 3 tx hits, and reads[2] has 4 tx hits,
-#' librarSize is will give 1.
+#' sum(countOverlaps(reads, grl) > 0),
+#' if reads[1] has 3 hits in grl, and reads[2] has 2 hits,
+#' librarySize will be 2, not 5.
+#' You can also get the inverse overlap,
 #' if you want lib size to be total number of overlaps, do:
 #' librarySize = "DESeq"
 #' This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
 #' sum(countOverlaps(grl, reads))
-#' if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5
+#' if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5, not 2.
 #' @inheritParams getWeights
 #' @return a numeric vector with the fpkm values
 #' @export
@@ -646,7 +649,7 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #' Pseudocode:
 #' assume rff - is reads fraction in specific frame
 #' \preformatted{ORFScore = log(rrf1 + rrf2 + rrf3)}
-#' For all ORFs where rrf2 or rrf3 is bigger than rff1,
+#' If rrf2 or rrf3 is bigger than rff1,
 #' negate the resulting value.
 #' \preformatted{ORFScore[rrf1Smaller] <- ORFScore[rrf1Smaller] * -1}
 #'

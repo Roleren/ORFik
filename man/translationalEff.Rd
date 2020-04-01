@@ -41,20 +41,21 @@ values together with translational efficiency as a data.table}
 \item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
 avoid NA and inf values.}
 
-\item{librarySize}{either value or character vector.
+\item{librarySize}{either numeric value or character vector.
 Default ("full"), number of alignments in library (reads).
 If you just have a subset, you can give the value by
 librarySize = length(wholeLib),
 if you want lib size to be only number of reads overlapping grl, do:
 librarySize = "overlapping"
-sum(countOverlaps(reads, grl) > 0)
-if reads[1] has 3 tx hits, and reads[2] has 4 tx hits,
-librarSize is will give 1.
+sum(countOverlaps(reads, grl) > 0),
+if reads[1] has 3 hits in grl, and reads[2] has 2 hits,
+librarySize will be 2, not 5.
+You can also get the inverse overlap,
 if you want lib size to be total number of overlaps, do:
 librarySize = "DESeq"
 This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
 sum(countOverlaps(grl, reads))
-if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5}
+if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5, not 2.}
 
 \item{weight.RFP}{a vector (default: 1L). Can also be character name of
 column in RFP. As in translationalEff(weight = "score") for:

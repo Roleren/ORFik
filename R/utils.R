@@ -64,6 +64,54 @@ fread.bed <- function(filePath, chrStyle = NULL) {
   return(matchSeqStyle(bed, chrStyle))
 }
 
+#' Export as bed12 format
+#'
+#' bed format for multiple exons per group, as transcripts.
+#' Can be use as alternative as a sparse .gff format for ORFs.
+#' Can be direct input for ucsc browser or IGV
+#'
+#' If grl has no names, groups will be named 1,2,3,4..
+#' @param grl A GRangesList
+#' @param file a character path to valid output file name
+#' @return NULL (File is saved as .bed)
+#' @importFrom data.table fwrite
+#' @export
+#' @family utils
+#' @examples
+#' grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
+#' # export.bed12(grl, "output/path/orfs.bed")
+export.bed12 <- function(grl, file){
+  if (!is.grl(class(grl))) stop("grl, must be of class GRangesList")
+  if (!is.character(file)) stop("file must be of class character")
+  if (is.null(names(grl))) names(grl) <- seq.int(length(grl))
+  grl <- sortPerGroup(grl, ignore.strand = TRUE) # <- sort bed way!
+
+  dt.grl <- data.table(seqnames = seqnamesPerGroup(grl, FALSE))
+  dt.grl$start <- as.integer(firstStartPerGroup(grl,keep.names = FALSE) -1)
+  dt.grl$end <- lastExonEndPerGroup(grl, keep.names = FALSE)#non inclusive end
+  dt.grl$name <- names(grl)
+  dt.grl$score <- widthPerGroup(grl, keep.names = FALSE)
+  dt.grl$strand <- strandPerGroup(grl, FALSE)
+  dt.grl$thickStart <- dt.grl$start
+  dt.grl$thickEnd <- dt.grl$end
+  dt.grl$rgb <- rep(0, length(grl))
+  dt.grl$blockCount <- numExonsPerGroup(grl)
+  blockSizes <- paste(width(grl), collapse = ",")
+  names(blockSizes) <- NULL
+  dt.grl$blockSizes <- blockSizes
+  relativeStarts <- (start(grl) -1) - dt.grl$start
+  blockStarts <- paste(relativeStarts, collapse = ",")
+  names(blockStarts) <- NULL
+  dt.grl$blockStarts <- blockStarts
+
+  #chromStart + chromStarts[last] + blockSizes[last])
+  #must equal chromEnd.
+  data.table::fwrite(x = dt.grl, file = file,
+                     sep = "\t", col.names = FALSE, row.names = FALSE,
+                     quote = FALSE)
+  return(invisible(NULL))
+}
+
 #' Custom bam reader
 #'
 #' Only for single end reads

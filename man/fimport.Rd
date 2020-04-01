@@ -42,6 +42,7 @@ fimport(bam_file, "NCBI")
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{export.bed12}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},

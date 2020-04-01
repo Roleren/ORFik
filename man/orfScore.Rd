@@ -42,7 +42,7 @@ Else this score makes no sense.
 Pseudocode:
 assume rff - is reads fraction in specific frame
 \preformatted{ORFScore = log(rrf1 + rrf2 + rrf3)}
-For all ORFs where rrf2 or rrf3 is bigger than rff1,
+If rrf2 or rrf3 is bigger than rff1,
 negate the resulting value.
 \preformatted{ORFScore[rrf1Smaller] <- ORFScore[rrf1Smaller] * -1}
 

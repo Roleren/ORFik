@@ -16,11 +16,12 @@
 #' @param returnPlot return plot from function, default is.null(outdir),
 #' so TRUE if outdir is not defined.
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
-#' normalize against
+#' normalize against. Will add RNA normalized to plot name if this is done.
 #' @param idName A character ID to add to saved name of plot,
 #' if you make several plots in the same folder,
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
+#' @param format default (".png"), do ".pdf" if you want as pdf
 #' @export
 #' @return NULL, or ggplot object if returnPlot is TRUE
 #' @examples
@@ -46,7 +47,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(cds, FALSE)),
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
-                             dfr= NULL, idName = "") {
+                             dfr = NULL, idName = "", format = ".png") {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))
 
@@ -90,7 +91,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                 title = title)
         if (!is.null(outdir)) {
           ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s,
-                                         "_", idName,".png")), a, height = 10)
+                                         "_", idName, format)), a,
+                 height = 10)
         }
       }
     }

@@ -30,6 +30,7 @@ does not matter, it will search for forward and reverse.
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{export.bed12}()},
 \code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},

@@ -57,7 +57,7 @@ You see from the template, it excludes files with .bai or .fai, .rdata etc, and 
 You can also see it tries to guess library types, stages, replicates, condition etc. It will also try to auto-detect paired end bam files.
 To fix the things it did not find, you either save the file and modify in excel / libre office, or do it directly in R.
 
-Let's update the template to have correct tissue-fration in one of the samples.
+Let's update the template to have correct tissue-fraction in one of the samples.
 ```{r eval = TRUE, echo = TRUE}
 template$X5[6] <- "heart_valve" # <- fix non unique row (tissue fraction is heart valve)
 # read experiment from template
