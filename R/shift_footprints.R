@@ -21,7 +21,7 @@
 #' 33, but will remove 3S so final read width is 30 in ORFik.
 #' @param footprints \code{\link{GAlignments}} object of RiboSeq reads
 #' @param shifts a data.frame / data.table with minimum 2 columns,
-#' selected_lengths and selected_shifts.
+#' fraction (selected_lengths) and selected_shifts (relative position).
 #' Output from \code{\link{detectRibosomeShifts}}
 #' @return A \code{\link{GRanges}} object of shifted footprints, sorted and
 #' resized to 1bp of p-site,
@@ -119,6 +119,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' either only CDS or non-coding (filtered out).
 #' @param min_reads default (1000), how many reads must a read-length have to
 #' be considered for periodicity.
+#' @param accepted.lengths accepted readlengths, default 1:1000, usually ribo-seq
+#' is between 26:34.
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -150,7 +152,7 @@ shiftFootprints <- function(footprints, shifts) {
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L, tx = NULL, min_reads = 1000) {
+  firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 1:1000) {
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
@@ -172,10 +174,12 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   # find periodic read lengths
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
                                         addScoreColumn = TRUE)
-  # Filter if < 1000 counts read size
+  # Filter if < 1000 counts read size or not in accepted.lengths
   lengths <- data.table(score = footprints$score, size = footprints$size)
   tab <- lengths[, .(counts = sum(score)), by = size]
-  tab <- tab[counts >= min_reads]
+  tab <- tab[(counts >= min_reads) & (size %in% accepted.lengths),]
+  if (nrow(tab) == 0) stop("No valid read lengths found with",
+                            "accepted.lengths and counts > min_reads")
 
   periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
                       pShifted = FALSE, upstream = 0, downstream = 149,
@@ -232,20 +236,22 @@ shiftFootprintsByExperiment <- function(df,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L, min_reads = 1000,
+                                        accepted.lengths = 1:1000,
                                         output_format = "bed") {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
   varNames <- bamVarName(df)
-  outputLibs(df)
   txdb <- loadTxdb(df)
+  outputLibs(df, txdb)
   message(paste0("Shifting reads in experiment:", df@experiment))
   for (file in varNames) {
     message(file)
     shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
                                    top_tx = top_tx, minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
-                                   firstN = firstN, min_reads = min_reads)
+                                   firstN = firstN, min_reads = min_reads,
+                                   accepted.lengths = accepted.lengths)
     shifted <- shiftFootprints(get(file), shifts)
     shifted$score <- shifted$size
 

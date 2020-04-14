@@ -10,7 +10,7 @@ shiftFootprints(footprints, shifts)
 \item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads}
 
 \item{shifts}{a data.frame / data.table with minimum 2 columns,
-selected_lengths and selected_shifts.
+fraction (selected_lengths) and selected_shifts (relative position).
 Output from \code{\link{detectRibosomeShifts}}}
 }
 \value{

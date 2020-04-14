@@ -244,8 +244,10 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   # Set library type (RNA-seq etc)
   df[5:(5+length(files)-1), 1] <- findFromPath(files)
   # set stage
-  stages <- c("2-4cell", "64cell", "256cell", "1Kcell",
-              "2-4Cell", "64Cell", "256Cell", "1KCell",
+  stages <- c("unfertalized", "_fertalized",
+              "2-4cell", "64cell", "256cell", "512cell","1Kcell",
+              "2-4Cell", "64Cell", "256Cell", "512Cell","1KCell",
+              "64_cell", "256_cell", "512_cell",
               "sphere", "shield", "dome", "oblong", "bud",
               "Sphere", "Shield", "Dome", "Oblong", "Bud",
               "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h", "_48h",
