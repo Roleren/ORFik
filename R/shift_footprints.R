@@ -226,7 +226,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @inheritParams detectRibosomeShifts
 #' @param output_format default (bed), use export.bed or ORFik optimized
 #' (bedo) using \code{\link{export.bedo}} ?
-#' @return NULL (Objects are saved to out.dir/pshited/"name")
+#' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
+#' or .bedo)
 #' @importFrom rtracklayer export.bed
 #' @family pshifting
 shiftFootprintsByExperiment <- function(df,
@@ -245,6 +246,7 @@ shiftFootprintsByExperiment <- function(df,
   txdb <- loadTxdb(df)
   outputLibs(df, txdb)
   message(paste0("Shifting reads in experiment:", df@experiment))
+  i <- 1
   for (file in varNames) {
     message(file)
     shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
@@ -254,11 +256,13 @@ shiftFootprintsByExperiment <- function(df,
                                    accepted.lengths = accepted.lengths)
     shifted <- shiftFootprints(get(file), shifts)
     shifted$score <- shifted$size
-
+    name <- paste0(path, remove.file_ext(df$filepath[i], basename = TRUE))
     if (output_format == "bed") {
-      export.bed(shifted, paste0(path, file,"_pshifted.bed"))
+      export.bed(shifted, paste0(name, "_pshifted.bed"))
     } else if (output_format == "bedo") {
-      export.bedo(shifted, paste0(path, file,"_pshifted.bed"))
+      export.bedo(shifted, paste0(name, "_pshifted.bedo"))
     } else stop("output_format must be bed or bedo")
+    i <- i + 1
   }
+
 }

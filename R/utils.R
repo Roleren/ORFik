@@ -220,7 +220,7 @@ export.bedo <- function(object, out) {
 #' @importFrom tools file_ext
 #' @export
 import.bedo <- function(path) {
-  if (file_ext(path) != "bedo") stop("export.bedo can only load .bedo files!")
+  if (file_ext(path) != "bedo") stop("import.bedo can only load .bedo files!")
   return(makeGRangesFromDataFrame(fread(input = path), keep.extra.columns = TRUE))
 }
 

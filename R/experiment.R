@@ -527,6 +527,20 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
                                                             basename = TRUE)
                                             , ".bedo")
                           } else type <- "default"
+                        } else if (type == "pshifted") {
+                          out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")
+                          if (dir.exists(out.dir)) {
+                            input <- paste0(out.dir,
+                                            remove.file_ext(x,
+                                                            basename = TRUE)
+                                            , "_pshifted.bedo")
+                            if (!file.exists(input)) {
+                              input <- paste0(out.dir,
+                                              remove.file_ext(x,
+                                                              basename = TRUE)
+                                              , "_pshifted.bed")
+                            } else type <- "default"
+                          } else type <- "default"
                         }
                         if (type == "default") {
                           if (!is.null(df$reverse)) {

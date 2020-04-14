@@ -136,10 +136,9 @@ ORFik:::shiftFootprintsByExperiment(df[df$libtype == "ribo-seq",])
 ```
 P-shifted ribo-seq will automaticly be stored as .bed files in a ./pshifted folder, relative to original libraries.
 
-To load p-shifted files, you can do:
+To load p-shifted libraries, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-# NOTE: Not implemented yet!
-#outputLibs(df, type = "pshifted")
+outputLibs(df[df$libtype == "ribo-seq",], type = "pshifted")
 ```
 
 ## ORFik QC report

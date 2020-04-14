@@ -60,7 +60,8 @@ is between 26:34.}
 (bedo) using \code{\link{export.bedo}} ?}
 }
 \value{
-NULL (Objects are saved to out.dir/pshited/"name")
+NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
+or .bedo)
 }
 \description{
 Saves files to a specified location as .bed, it will include a score column
