@@ -472,7 +472,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
     all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
   dt <- data.table()
 
-  for(l in all_lengths){
+  for(l in all_lengths) {
     dt <- rbindlist(list(dt, metaWindow(
       x = reads[rWidth == l], windows = windows, scoring = scoring,
       zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l,
