@@ -393,7 +393,7 @@ optimizeReads <- function(grl, reads) {
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
-#' @param after.softclips logical (TRUE), TRUE: include softclips in size
+#' @inheritParams readWidths
 #' @return  Converted GRanges object
 #' @export
 #' @family utils
@@ -401,13 +401,15 @@ optimizeReads <- function(grl, reads) {
 convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE,
                                     addSizeColumn = FALSE,
-                                    after.softclips = TRUE) {
+                                    after.softclips = TRUE,
+                                    along.reference = FALSE) {
   if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
                                       load as GAlignments instead!")
 
   if (addSizeColumn & is.null(mcols(gr)$size)) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
-                                      size = readWidths(gr, after.softclips))
+                                      size = readWidths(gr, after.softclips,
+                                                        along.reference))
   }
   if (addScoreColumn) {
     dt <- data.table(seqnames = as.character(seqnames(gr)),

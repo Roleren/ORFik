@@ -50,7 +50,7 @@ shiftFootprints <- function(footprints, shifts) {
   selected_lengths <- shifts$fraction
   selected_shifts <- shifts$offsets_start
 
-  lengthsAll <- readWidths(footprints)
+  lengthsAll <- readWidths(footprints, along.reference = TRUE)
   validLengths <- lengthsAll %in% selected_lengths
   lengthsAll <- lengthsAll[validLengths]
   footprints <- footprints[validLengths]
@@ -105,6 +105,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' codons. Default TRUE.
 #' @param stop (logical) Whether to include predictions based on the stop
 #' codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
+#' If peridicity around stop codon is stronger than at the start codon, use
+#' stop instead of start region for p-shifting.
 #' @param top_tx (integer) Specify which % of the top covered by RiboSeq reads
 #' transcripts to use for estimation of the shifts. By default we take top 10%
 #' top covered transcripts as they represent less noisy dataset. This is only
@@ -173,7 +175,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 
   # find periodic read lengths
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
-                                        addScoreColumn = TRUE)
+                                        addScoreColumn = TRUE,
+                                        along.reference = TRUE)
   # Filter if < 1000 counts read size or not in accepted.lengths
   lengths <- data.table(score = footprints$score, size = footprints$size)
   tab <- lengths[, .(counts = sum(score)), by = size]
@@ -264,5 +267,4 @@ shiftFootprintsByExperiment <- function(df,
     } else stop("output_format must be bed or bedo")
     i <- i + 1
   }
-
 }

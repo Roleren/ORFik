@@ -30,7 +30,9 @@ folder at that location}
 codons. Default TRUE.}
 
 \item{stop}{(logical) Whether to include predictions based on the stop
-codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.}
+codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
+If peridicity around stop codon is stronger than at the start codon, use
+stop instead of start region for p-shifting.}
 
 \item{top_tx}{(integer) Specify which % of the top covered by RiboSeq reads
 transcripts to use for estimation of the shifts. By default we take top 10%

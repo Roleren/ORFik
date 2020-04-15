@@ -9,7 +9,8 @@ convertToOneBasedRanges(
   method = "5prime",
   addScoreColumn = FALSE,
   addSizeColumn = FALSE,
-  after.softclips = TRUE
+  after.softclips = TRUE,
+  along.reference = FALSE
 )
 }
 \arguments{
@@ -27,7 +28,14 @@ between reads with same start and stop, but different length.}
 for each read, that gives original width of read. Useful if you need
 original read lengths. This takes care of soft clips etc.}
 
-\item{after.softclips}{logical (TRUE), TRUE: include softclips in size}
+\item{after.softclips}{logical (TRUE), include softclips in width. Does not
+apply if along.reference is TRUE.}
+
+\item{along.reference}{logical (FALSE), example: The cigar "26MI2" is
+by default width 28, but if along.reference is TRUE, it will be 26.
+The length of the read along the reference. Also "1D20M" will be
+21 if by along.reference is TRUE. Intronic regions (cigar: N) will
+be removed. So: "1M200N19M" is 20, not 220.}
 }
 \value{
 Converted GRanges object

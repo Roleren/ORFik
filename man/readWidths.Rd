@@ -4,12 +4,19 @@
 \alias{readWidths}
 \title{Get read widths}
 \usage{
-readWidths(reads, after.softclips = TRUE)
+readWidths(reads, after.softclips = TRUE, along.reference = FALSE)
 }
 \arguments{
 \item{reads}{a GRanges or GAlignment object.}
 
-\item{after.softclips}{logical (TRUE), include softclips in width}
+\item{after.softclips}{logical (TRUE), include softclips in width. Does not
+apply if along.reference is TRUE.}
+
+\item{along.reference}{logical (FALSE), example: The cigar "26MI2" is
+by default width 28, but if along.reference is TRUE, it will be 26.
+The length of the read along the reference. Also "1D20M" will be
+21 if by along.reference is TRUE. Intronic regions (cigar: N) will
+be removed. So: "1M200N19M" is 20, not 220.}
 }
 \value{
 an integer vector of widths
