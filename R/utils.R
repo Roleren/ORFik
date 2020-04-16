@@ -179,10 +179,11 @@ findWigPairs <- function(paths) {
       length(forwardPath) == 0 | length(reversePath) == 0) return(paths)
   dt <- data.table(forward = paths[forwardPath],
                    reverse = paths[reversePath], match = FALSE)
-  for (row in seq(nrow(dt))) {
-    if (gsub(pattern = "forward\\.wig*|fwd\\.wig*", x = dt$forward[row], "")
-        == gsub(pattern = "reverse\\.wig*|rev\\.wig*", x = dt$reverse[row], ""))
-        dt$match[row] = TRUE
+  dt.sub <- dt[, .(forward = gsub(pattern = "forward\\.wig*|fwd\\.wig*", x = forward, ""),
+                   reverse = gsub(pattern ="reverse\\.wig*|rev\\.wig*", x = reverse, ""))]
+  matches <- chmatch(dt.sub$forward, dt.sub$reverse)
+  if (!anyNA(matches)) {
+    dt <- dt[, .(forward, reverse = reverse[matches], match = TRUE)]
   }
   if (all(dt$match)) {
     return(dt)
