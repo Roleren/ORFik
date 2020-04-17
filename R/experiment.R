@@ -242,36 +242,16 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   # set file paths
   df[5:(5+length(files)-1), 6] <- files
   # Set library type (RNA-seq etc)
-  df[5:(5+length(files)-1), 1] <- findFromPath(files)
+  df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames())
   # set stage
-  stages <- c("unfertalized", "_fertalized",
-              "2-4cell", "2to4cell", "64cell", "256cell", "512cell","1Kcell",
-              "2-4Cell", "2to4Cell","64Cell", "256Cell", "512Cell","1KCell",
-              "2-4_cell", "2to4_cell", "64_cell", "256_cell", "512_cell",
-              "sphere", "shield", "dome", "oblong", "bud",
-              "Sphere", "Shield", "Dome", "Oblong", "Bud",
-              "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h", "_48h",
-              "_02h", "_04h", "_06h", "_08h",
-              "2hpf", "4hpf", "6hpf", "8hpf", "12hpf", "24hpf", "28hpf",
-              "48hpf",
-              "1dpf", "2dpf", "3dpf", "4dpf", "5dpf", "6dpf", "10dpf",
-              "21dpf", "24dpf")
-  cell_lines <- c("HEK293", "HeLa", "THP-1", "PC3")
-  tissues <- c("adipose", "brain", "bladder", "blood", "breast", "colon",
-               "cortex", "eye", "fibroblast", "frontal lobe", "heart",
-               "kidney", "liver", "lung", "muscle","ovary", "prostate",
-               "rectum", "testis","urunary", "vagina", "skin", "tongue")
-  stages <- c(stages, tissues, cell_lines)
+  stages <- rbind(stageNames(), tissueNames(), cellLineNames())
   df[5:(5+length(files)-1), 2] <- findFromPath(files, stages)
   # set rep
-  df[5:(5+length(files)-1), 3] <- findFromPath(files, c("rep1", "rep2", "rep3",
-                                                       "Rep1", "Rep2", "Rep3",
-                                                       "run1", "run2", "run3",
-                                                       "_r1_", "_r2_", "_r3_"))
+  df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames())
   # Set condition
   conditions <- c("WT", "control", "MZ", "dicer", "4Ei", "4ei", "silvesterol",
                   "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
-  df[5:(5+length(files)-1), 4] <- findFromPath(files, conditions)
+  df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames())
 
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
@@ -314,16 +294,12 @@ save.experiment <- function(df, file) {
 #'
 #' From the given \code{\link{experiment}}
 #' @param filepaths path to all files
-#' @param candidates Possible names to search for.
+#' @param candidates a data.table with 2 columns,
+#' Possible names to search for, see experiment_naming family for candidates.
 #' @return a candidate library types (character vector)
-findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq",
-                                                   "Rna-seq", "RNA-seq",
-                                                   "RFP", "RPF", "ribo-seq",
-                                                   "Ribo-seq", "mrna",
-                                                   "mrna-seq", "mRNA-seq",
-                                                   "CAGE", "cage", "LSU",
-                                                   "SSU", "ATAC", "tRNA",
-                                                   "SHAPE", "PRPF")) {
+findFromPath <- function(filepaths, candidates) {
+  dt <- candidates
+  candidates <- unlist(dt$allNames)
   types <- c()
   for (path in filepaths) {
     hit <- unlist(sapply(candidates, grep, x = path))
@@ -332,8 +308,10 @@ findFromPath <- function(filepaths, candidates = c("RNA", "rna-seq",
     over <- hit[names(hit) %in% names(hitRel)]
     type <- ifelse(length(over) == 1, names(over),
                    ifelse(is.null(type), "", type))
-    types <- c(types, gsub(pattern = "_", "", type))
+    types <- c(types, type)
   }
+  types <- mainNames(types, dt)
+
   return(types)
 }
 
