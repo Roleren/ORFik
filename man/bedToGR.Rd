@@ -2,22 +2,22 @@
 % Please edit documentation in R/utils.R
 \name{bedToGR}
 \alias{bedToGR}
-\title{Converts different type of files to Granges}
+\title{Converts bed style data.frame to Granges}
 \usage{
-bedToGR(x, bed6 = TRUE)
+bedToGR(x, skip.name = TRUE)
 }
 \arguments{
 \item{x}{A \code{\link{data.frame}} from imported bed-file,
 to convert to GRanges}
 
-\item{bed6}{If bed6, no meta column is added}
+\item{skip.name}{default (TRUE), skip name column (column 4)}
 }
 \value{
 a \code{\link{GRanges}} object from bed
 }
 \description{
-column 5 will be set to score
-Only Accepts bed files for now, standard format from Fantom5
+For info on columns, see:
+https://www.ensembl.org/info/website/upload/bed.html
 }
 \seealso{
 Other utils: 

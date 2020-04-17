@@ -14,10 +14,12 @@ GRanges object
 }
 \description{
 .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
-.bedo is a text based format with columns:
-chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
-, duplicates of that read
+.bedo is a text based format with columns (6 maximum):\cr
+1. chromosome\cr 2. start\cr 3. end\cr 4. strand\cr
+5. ref width (cigar # M's, match/mismatch total)\cr
+6. duplicates of that read\cr
 }
 \details{
+Positions are 1-based, not 0-based as .bed.
 export with export.bedo
 }

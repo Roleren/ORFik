@@ -7,7 +7,9 @@
 readBam(path, chrStyle = NULL)
 }
 \arguments{
-\item{path}{a character path to .bam file}
+\item{path}{a character path to .bam file. If paired end bam files,
+input must be a data.table with two columns: forward and reverse,
+or a character vector of length 2, forward will be index 1.}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
 or a \code{\link{seqlevelsStyle}}
@@ -20,7 +22,6 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 a \code{\link{GAlignments}} object of bam file
 }
 \description{
-Only for single end reads
 Safer version that handles the most important error done.
 In the future will use a faster .bam loader for big .bam files in R.
 }

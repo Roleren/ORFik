@@ -16,5 +16,5 @@ findLibrariesInFolder(dir, types)
 With 2 extra column (logical), is it wig pairs, and paired bam files.
 }
 \description{
-Will try to guess paris of wig pairs and paired end bam files.
+Will try to guess paired / unpaired wig, bed, bam files.
 }

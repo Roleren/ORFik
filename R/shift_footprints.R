@@ -248,6 +248,7 @@ shiftFootprintsByExperiment <- function(df,
   varNames <- bamVarName(df)
   txdb <- loadTxdb(df)
   outputLibs(df, txdb)
+  message(paste("Saving", output_format, "files to:", out.dir))
   message(paste0("Shifting reads in experiment:", df@experiment))
   i <- 1
   for (file in varNames) {

@@ -245,13 +245,15 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   df[5:(5+length(files)-1), 1] <- findFromPath(files)
   # set stage
   stages <- c("unfertalized", "_fertalized",
-              "2-4cell", "64cell", "256cell", "512cell","1Kcell",
-              "2-4Cell", "64Cell", "256Cell", "512Cell","1KCell",
-              "64_cell", "256_cell", "512_cell",
+              "2-4cell", "2to4cell", "64cell", "256cell", "512cell","1Kcell",
+              "2-4Cell", "2to4Cell","64Cell", "256Cell", "512Cell","1KCell",
+              "2-4_cell", "2to4_cell", "64_cell", "256_cell", "512_cell",
               "sphere", "shield", "dome", "oblong", "bud",
               "Sphere", "Shield", "Dome", "Oblong", "Bud",
               "_2h", "_4h", "_6h", "_8h", "_12h", "_24h", "_28h", "_48h",
               "_02h", "_04h", "_06h", "_08h",
+              "2hpf", "4hpf", "6hpf", "8hpf", "12hpf", "24hpf", "28hpf",
+              "48hpf",
               "1dpf", "2dpf", "3dpf", "4dpf", "5dpf", "6dpf", "10dpf",
               "21dpf", "24dpf")
   cell_lines <- c("HEK293", "HeLa", "THP-1", "PC3")
@@ -546,6 +548,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
             }
             if (type == "default") {
               if (!is.null(df$reverse)) {
+                if (df[i,]$reverse != "")
                 input <- c(x, df[i,]$reverse)
               } else input <- x
             }
@@ -566,12 +569,13 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 
 #' Will make a simplified version of NGS libraries
 #'
-#' An .obed file containing chromosome, start, stop, strand,
-#' readWidth and number of duplicate reads.
-#' A bed file with 2 score columns
+#' Export files as .bedo files. It is a bed file with 2 score columns.
 #' Gives a massive speedup when cigar strings are not needed.
+#'
+#' See \code{\link{export.bedo}} for information on file format
 #' @param df an ORFik \code{\link{experiment}}
-#' @param out.dir optional output directory, default: dirname(df$filepath[1]),
+#' @param out.dir optional output directory, default:
+#' paste0(dirname(df$filepath[1]), "/bedo/"),
 #' if it is NULL, it will just reassign R objects to simplified libraries.
 #' @inheritParams convertToOneBasedRanges
 #' @param must.overlap default (NULL), else a GRanges / GRangesList object, so
@@ -647,7 +651,7 @@ remove.experiments <- function(df, envir = .GlobalEnv) {
 
 #' Get all library files in folder/folders of given types
 #'
-#' Will try to guess paris of wig pairs and paired end bam files.
+#' Will try to guess paired / unpaired wig, bed, bam files.
 #' @param dir The directory/directories to find bam, bed, wig files.
 #' @param types All accepted types of bam, bed, wig files..
 #' @importFrom tools file_ext
@@ -675,24 +679,30 @@ findLibrariesInFolder <- function(dir, types) {
     }
     files <- files[fext %in% types]
   }
+  filesOld <- files
   # Wig pairs
-  wig_files <- findWigPairs(files[fext == "wig"])
-  if (is(wig_files, "data.table")) {
-    if (nrow(wig_files)*2 != length(files)) { # if more than just matched wig
-      others <- files[!(files %in% c(wig_files$forward, wig_files$reverse))]
-      file_dt <- data.table(forward = others, reverse = "", match = FALSE)
-      files <- rbind(wig_files, file_dt)
-    } else files <- wig_files
+  wig_files <- findNGSPairs(files[fext == "wig"])
+  # Bed pairs
+  bed_pairs <- findNGSPairs(filesOld[fext == "bed"], format = "bed")
+  # Paired end bam
+  bam_pairs <- findNGSPairs(filesOld[fext == "bam"],
+                                    f = c("_R1_00", "_F", "_Forward", "_forward"),
+                                    r = c("_R2_00", "_R", "_Reverse", "_reverse"),
+                                    format = "bam")
+  pairs <- data.table()
+  if (is(wig_files, "data.table")) pairs <- rbind(pairs, wig_files)
+  if (is(bed_pairs, "data.table")) pairs <- rbind(pairs, bed_pairs)
+  if (is(bam_pairs, "data.table")) pairs <- rbind(pairs, bam_pairs)
 
+  if (nrow(pairs) > 0) {
+    if (nrow(pairs)*2 != length(files)) { # if more than just matched pairs
+      others <- files[!(files %in% c(pairs$forward, pairs$reverse))]
+      file_dt <- data.table(forward = others, reverse = "", match = FALSE)
+      files <- rbind(pairs, file_dt)
+    } else files <- pairs
     if (nrow(files) == 0) stop("Found no valid files in folder")
   } else {
     if (length(files) == 0) stop("Found no valid files in folder")
   }
-  # Paired end bam
-  # TODO Make bam pairs included, it should be optional
-  pairs <- c("_R1_00", "_F", "_Forward", "_forward",
-             "_R2_00", "_R", "_Reverse", "_reverse")
-  #pairInfo <- findFromPath(files, pairs)
-
   return(files)
 }

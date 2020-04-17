@@ -15,7 +15,8 @@ simpleLibs(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{out.dir}{optional output directory, default: dirname(df$filepath[1]),
+\item{out.dir}{optional output directory, default:
+paste0(dirname(df$filepath[1]), "/bedo/"),
 if it is NULL, it will just reassign R objects to simplified libraries.}
 
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
@@ -36,8 +37,9 @@ only need the reads over transcript annotation or subset etc.}
 NULL (saves files to disc or R .GlobalEnv)
 }
 \description{
-An .obed file containing chromosome, start, stop, strand,
-readWidth and number of duplicate reads.
-A bed file with 2 score columns
+Export files as .bedo files. It is a bed file with 2 score columns.
 Gives a massive speedup when cigar strings are not needed.
+}
+\details{
+See \code{\link{export.bedo}} for information on file format
 }

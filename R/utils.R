@@ -1,25 +1,26 @@
 
-#' Converts different type of files to Granges
+#' Converts bed style data.frame to Granges
 #'
-#' column 5 will be set to score
-#' Only Accepts bed files for now, standard format from Fantom5
+#' For info on columns, see:
+#' https://www.ensembl.org/info/website/upload/bed.html
 #' @param x A \code{\link{data.frame}} from imported bed-file,
 #'  to convert to GRanges
-#' @param bed6 If bed6, no meta column is added
+#' @param skip.name default (TRUE), skip name column (column 4)
 #' @return a \code{\link{GRanges}} object from bed
 #' @family utils
 #'
-bedToGR <- function(x, bed6 = TRUE) {
-
-  if (!bed6) {
-    gr <- GRanges(x[, 1L], IRanges(x[, 2L] + 1L, x[, 3L]))
-    return(gr)
-  }
+bedToGR <- function(x, skip.name = TRUE) {
+  if (ncol(x) < 3) stop("bed file must have a least 3 columns!")
   starts <- x[, 2L] + 1L
   ends <- x[, 3L]
-  gr <- GRanges(x[, 1L], IRanges(starts, ends),
-                strand = x[, 6L])
-  mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = x[, 5L])
+  gr <- GRanges(x[, 1L], IRanges(starts, ends))
+
+  bed4 <- (ncol(x) >= 4) & !skip.name #name column
+  if (bed4) mcols(gr) <- S4Vectors::DataFrame(mcols(gr), name = x[, 4L])
+  bed5 <- ncol(x) >= 5 # score column
+  if (bed5) mcols(gr) <- S4Vectors::DataFrame(mcols(gr), score = x[, 5L])
+  bed6 <- ncol(x) >= 6
+  if (bed6) strand(gr) <- x[, 6L]
   if (ncol(x) > 6L) mcols(gr) <- x[, 7L:ncol(x)]
   return(gr)
 }
@@ -114,10 +115,11 @@ export.bed12 <- function(grl, file){
 
 #' Custom bam reader
 #'
-#' Only for single end reads
 #' Safer version that handles the most important error done.
 #' In the future will use a faster .bam loader for big .bam files in R.
-#' @param path a character path to .bam file
+#' @param path a character path to .bam file. If paired end bam files,
+#' input must be a data.table with two columns: forward and reverse,
+#' or a character vector of length 2, forward will be index 1.
 #' @inheritParams matchSeqStyle
 #' @return a \code{\link{GAlignments}} object of bam file
 #' @export
@@ -126,7 +128,14 @@ export.bed12 <- function(grl, file){
 #' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 #' readBam(bam_file, "UCSC")
 readBam <- function(path, chrStyle = NULL) {
+  if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
   if (is(path, "factor")) path <- as.character(path)
+  if (is(path, "data.table")) # Will read pairs as combination
+    return(matchSeqStyle(c(readGAlignments(path$forward),
+                           readGAlignments(path$reverse)), chrStyle))
+  if (length(path) == 2) # Will read pairs as combination
+    return(matchSeqStyle(c(readGAlignments(path[1]),
+                           readGAlignments(path[2])), chrStyle))
   return(matchSeqStyle(readGAlignments(path), chrStyle))
 }
 
@@ -136,6 +145,7 @@ readBam <- function(path, chrStyle = NULL) {
 #' Merge them and return as GRanges object.
 #' If they contain name reverse and forward, first and second order
 #' does not matter, it will search for forward and reverse.
+#'
 #' @param path a character path to two .wig files, or a data.table
 #' with 2 columns, (forward, filepath) and reverse, only 1 row.
 #' @inheritParams matchSeqStyle
@@ -167,20 +177,32 @@ readWig <- function(path, chrStyle = NULL) {
   strand(reverse) <- "-"
   return(matchSeqStyle(c(forward, reverse), chrStyle))
 }
-#' Find pair of forward and reverse strand wig files
-#' @param paths a character path at least one .wig file
+
+#' Find pair of forward and reverse strand wig / bed files and
+#' paired end bam files
+#'
+#' @param paths a character path at least one .wig / .bed file
+#' @param f Default (c("forward", "fwd")
+#' a character vector for forward direction regex.
+#' @param r Default (c("reverse", "rev")
+#' a character vector for reverse direction regex.
+#' @param format default "wig", for bed do "bed". Also searches
+#' compressions of these variants.
 #' @return if not all are paired, return original list,
 #' if they are all paired, return a data.table with matches as 2 columns
-findWigPairs <- function(paths) {
-  forwardPath <- grep("forward\\.wig*|fwd\\.wig*", paths)
-  reversePath <- grep("reverse\\.wig*|rev\\.wig*", paths)
+findNGSPairs <- function(paths, f = c("forward", "fwd"),
+                         r = c("reverse", "rev"), format = "wig") {
+  f <- paste0(f, "\\.", format, "*", collapse = "|")
+  r <- paste0(r, "\\.", format, "*", collapse = "|")
+  forwardPath <- grep(f, paths)
+  reversePath <- grep(r, paths)
 
   if ((length(forwardPath) != length(reversePath)) |
       length(forwardPath) == 0 | length(reversePath) == 0) return(paths)
   dt <- data.table(forward = paths[forwardPath],
                    reverse = paths[reversePath], match = FALSE)
-  dt.sub <- dt[, .(forward = gsub(pattern = "forward\\.wig*|fwd\\.wig*", x = forward, ""),
-                   reverse = gsub(pattern ="reverse\\.wig*|rev\\.wig*", x = reverse, ""))]
+  dt.sub <- dt[, .(forward = gsub(pattern = f, x = forward, ""),
+                   reverse = gsub(pattern = r, x = reverse, ""))]
   matches <- chmatch(dt.sub$forward, dt.sub$reverse)
   if (!anyNA(matches)) {
     dt <- dt[, .(forward, reverse = reverse[matches], match = TRUE)]
@@ -193,10 +215,15 @@ findWigPairs <- function(paths) {
 
 #' Store GRanges object as .bedo
 #'
-#' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
-#' .bedo is a text based format with columns:
-#' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
-#' , duplicates of that read
+#' .bedo is .bed ORFik, an optimized bed format for coverage reads with
+#' read lengths .bedo is a text based format with columns (6 maximum):\cr
+#' 1. chromosome\cr 2. start\cr 3. end\cr 4. strand\cr
+#' 5. ref width (cigar # M's, match/mismatch total)\cr
+#' 6. duplicates of that read\cr
+#'
+#' Positions are 1-based, not 0-based as .bed.
+#' End will be removed if all ends equals all starts.
+#' Import with import.bedo
 #' @param object a GRanges object
 #' @param out a character, location on disc (full path)
 #' @return NULL, object saved to disc
@@ -205,16 +232,21 @@ findWigPairs <- function(paths) {
 export.bedo <- function(object, out) {
   if (!is(object, "GRanges")) stop("object must be GRanges")
   dt <- setDT(as.data.frame(object))
+  uwidths <- unique(dt$width)
+  if (all(uwidths == 1)) dt$end <- NULL
+  dt$width <- NULL
   fwrite(dt, file = out)
 }
 
 #' Load GRanges object from .bedo
 #'
 #' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths
-#' .bedo is a text based format with columns:
-#' chromosome, start, stop, width, strand, (cigar # M's, match/mismatch total)
-#' , duplicates of that read
+#' .bedo is a text based format with columns (6 maximum):\cr
+#' 1. chromosome\cr 2. start\cr 3. end\cr 4. strand\cr
+#' 5. ref width (cigar # M's, match/mismatch total)\cr
+#' 6. duplicates of that read\cr
 #'
+#' Positions are 1-based, not 0-based as .bed.
 #' export with export.bedo
 #' @param path a character, location on disc (full path)
 #' @return GRanges object
@@ -222,7 +254,9 @@ export.bedo <- function(object, out) {
 #' @export
 import.bedo <- function(path) {
   if (file_ext(path) != "bedo") stop("import.bedo can only load .bedo files!")
-  return(makeGRangesFromDataFrame(fread(input = path), keep.extra.columns = TRUE))
+  dt <- fread(input = path)
+  if (is.null(dt$end)) dt$end <- dt$start
+  return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
 }
 
 #' Remove file extension of path
