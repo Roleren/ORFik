@@ -445,8 +445,8 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
   # Add only underscore if x is not ""
   spaste <- function(x, y, reverse = FALSE) {
     if (reverse)
-      return(paste(x, y, sep = ifelse(y == "", "", "_")))
-    return(paste(x, y, sep = ifelse(x == "", "", "_")))
+      return(paste(x, y, sep = ifelse(y %in% "", "", "_")))
+    return(paste(x, y, sep = ifelse(x %in% "", "", "_")))
   }
   if (!skip.libtype)
     current <- lib
@@ -465,6 +465,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     current <- spaste(df@experiment, current, TRUE)
 
   current <- gsub(pattern = "__", "_", current)
+  # TODO: FIX _NA for replicates
   return(gsub("_$", "", current))
 }
 
