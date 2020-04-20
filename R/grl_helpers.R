@@ -139,9 +139,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #'
 sortPerGroup <- function(grl, ignore.strand = FALSE, quick.rev = FALSE){
   if (quick.rev) {
-    grl[!strandBool(grl)]@unlistData@ranges <-
-      rev(grl[!strandBool(grl)]@unlistData@ranges)
-    return(grl)
+    return(reverseMinusStrandPerGroup(grl))
   }
   if (!ignore.strand) {
     indicesPos <- strandBool(grl)
@@ -154,6 +152,17 @@ sortPerGroup <- function(grl, ignore.strand = FALSE, quick.rev = FALSE){
   return(gSort(grl))
 }
 
+#' Reverse minus strand
+#'
+#' Reverse minus strand per group in a GRangesList
+#' @param grl a \code{\link{GRangesList}}
+#' @return a \code{\link{GRangesList}}
+reverseMinusStrandPerGroup <- function(grl) {
+  minus <- !strandBool(grl)
+  oldGrl <- rev(grl)
+  oldGrl[rev(minus)]@unlistData@ranges <- rev(grl[minus]@unlistData@ranges)
+  return(rev(oldGrl))
+}
 
 #' Get list of strands per granges group
 #' @param grl a \code{\link{GRangesList}}

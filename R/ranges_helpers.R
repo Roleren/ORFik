@@ -721,8 +721,7 @@ reduceKeepAttr <- function(grl, keep.names = FALSE,
                                    with.revmap, with.inframe.attrib,
                                    ignore.strand)
   if (is.grl(class(grl)) & min.strand.decreasing) {
-    minus <- !strandBool(reduced)
-    reduced[minus]@unlistData@ranges <- rev(reduced[minus]@unlistData@ranges)
+    reduced <- reverseMinusStrandPerGroup(reduced)
   }
   if (keep.names) { # return with names
     if (!is.grl(class(grl))) {
