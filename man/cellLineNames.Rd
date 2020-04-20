@@ -11,6 +11,7 @@ a data.table with 2 columns, the main name, and all name variants
 of the main name in second column as a list.
 }
 \description{
+Used to standardize nomeclature for experiments.\cr
 Example: THP-1 is main naming, but a variant is THP1
 THP1 will then be renamed to THP-1
 }

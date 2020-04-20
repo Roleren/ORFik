@@ -170,7 +170,6 @@ read.experiment <-  function(file) {
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
 
-
   exper <- info[1, 2]
   txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
   fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
@@ -243,12 +242,12 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   df[5:(5+length(files)-1), 6] <- files
   # Set library type (RNA-seq etc)
   df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames())
-  # set stage
+  # set stage (sphere, shield etc)
   stages <- rbind(stageNames(), tissueNames(), cellLineNames())
   df[5:(5+length(files)-1), 2] <- findFromPath(files, stages)
-  # set rep
+  # set rep (1, 2, 3 etc)
   df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames())
-  # Set condition
+  # Set condition (control, mutant etc)
   conditions <- c("WT", "control", "MZ", "dicer", "4Ei", "4ei", "silvesterol",
                   "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
   df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames())
@@ -339,7 +338,7 @@ validateExperiments <- function(df) {
   libTypes <- libraryTypes(df)
   if (!is(df, "experiment")) stop("df must be experiment!")
   if (!all((c("stage", "libtype") %in% colnames(df))))
-    stop("stage, libtype and experiment must be colnames in df!")
+    stop("stage and libtype must be colnames in df!")
   if (length(libTypes) == 0) stop("df have no valid sequencing libraries!")
   if (nrow(df) == 0) stop("df must have at least 1 row!")
   if (!is.null(df$reverse)) {

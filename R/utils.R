@@ -130,12 +130,17 @@ export.bed12 <- function(grl, file){
 readBam <- function(path, chrStyle = NULL) {
   if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
   if (is(path, "factor")) path <- as.character(path)
-  if (is(path, "data.table")) # Will read pairs as combination
+  if (is(path, "data.table")) { # Will read pairs as combination
+    message("ORFik reads paired end bam in as combination: c(forward, reverse)")
     return(matchSeqStyle(c(readGAlignments(path$forward),
                            readGAlignments(path$reverse)), chrStyle))
-  if (length(path) == 2) # Will read pairs as combination
+  }
+  if (length(path) == 2){ # Will read pairs as combination
+    message("ORFik reads paired end bam in as combination: c(forward, reverse)")
     return(matchSeqStyle(c(readGAlignments(path[1]),
                            readGAlignments(path[2])), chrStyle))
+  }
+
   return(matchSeqStyle(readGAlignments(path), chrStyle))
 }
 

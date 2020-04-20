@@ -1,5 +1,6 @@
-#' Get stage name variants
+#' Get library name variants
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: RFP is main naming, but a variant is ribo-seq
 #' ribo-seq will then be renamed to RFP
 #' @family experiment_naming
@@ -25,25 +26,26 @@ libNames <- function() {
 
 #' Get stage name variants
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: 64Cell stage is same as 2 hours post fertilization,
 #' so all 2hpf will be converted to 64Cell etc.
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
 stageNames <- function() {
-  mainName <- c("unfertalized", "fertalized",
+  mainName <- c("unfertilized", "fertilized",
                 "2to4Cell", "4Cell", "8Cell", "64Cell", "256Cell", "512Cell",
                 "1KCell", "High", "Oblong", "Sphere", "Dome", "Shield", "Bud",
                 "Somite", "24hpf", "2dpf", "3dpf", "4dpf", "5dpf", "6dpf",
                 "10dpf", "21dpf", "24dpf")
   allNames <-
-    list(c("unfertalized", "Unfertalized"),
-         c("_fertalized", "_Fertalized"),
+    list(c("unfertilized", "Unfertilized"),
+         c("_fertilized", "_Fertilized"),
          c("2to4Cell", "2to4cell", "2to4_cell", "2-4cell", "2-4Cell", "2-4_cell"),
          c("4cell", "4Cell", "4_cell"),
          c("8cell", "8Cell", "8_cell"),
-         c("64cell", "64Cell", "64_cell", "_2h", "_02h", "2hpf"),
-         c("256cell", "256Cell", "256_cell"),
+         c("64cell", "64Cell", "64_cell", "64_Cell", "_2h", "_02h", "2hpf"),
+         c("256cell", "256Cell", "256_cell", "256_Cell"),
          c("512cell", "512Cell", "512_cell"),
          c("1Kcell", "1KCell", "1K_cell", "_3h", "_03h", "3hpf"),
          c("High", "high"),
@@ -62,6 +64,7 @@ stageNames <- function() {
 
 #' Get tissue name variants
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: testis is main naming, but a variant is testicles.
 #' testicles will then be renamed to testis.
 #' @family experiment_naming
@@ -103,6 +106,7 @@ tissueNames <- function() {
 }
 #' Get cell-line name variants
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: THP-1 is main naming, but a variant is THP1
 #' THP1 will then be renamed to THP-1
 #' @family experiment_naming
@@ -122,6 +126,7 @@ cellLineNames <- function() {
 
 #' Get replicate name variants
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: 1 is main naming, but a variant is rep1
 #' rep1 will then be renamed to 1
 #' @family experiment_naming
@@ -143,6 +148,7 @@ repNames <- function() {
 
 #' Get condition name variants
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: WT is main naming, but a variant is control
 #' control will then be renamed to WT
 #' @family experiment_naming
@@ -165,6 +171,7 @@ conditionNames <- function() {
 
 #' Get main name from variant name
 #'
+#' Used to standardize nomeclature for experiments.\cr
 #' Example: RFP is main naming, but a variant is ribo-seq
 #' ribo-seq will then be renamed to RFP
 #' @param names a character vector of names that must exist in dt$allNames

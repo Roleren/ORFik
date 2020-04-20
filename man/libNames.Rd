@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_naming.R
 \name{libNames}
 \alias{libNames}
-\title{Get stage name variants}
+\title{Get library name variants}
 \usage{
 libNames()
 }
@@ -11,6 +11,7 @@ a data.table with 2 columns, the main name, and all name variants
 of the main name in second column as a list.
 }
 \description{
+Used to standardize nomeclature for experiments.\cr
 Example: RFP is main naming, but a variant is ribo-seq
 ribo-seq will then be renamed to RFP
 }

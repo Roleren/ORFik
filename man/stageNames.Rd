@@ -11,6 +11,7 @@ a data.table with 2 columns, the main name, and all name variants
 of the main name in second column as a list.
 }
 \description{
+Used to standardize nomeclature for experiments.\cr
 Example: 64Cell stage is same as 2 hours post fertilization,
 so all 2hpf will be converted to 64Cell etc.
 }
