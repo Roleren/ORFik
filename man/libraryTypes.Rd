@@ -20,6 +20,7 @@ Other ORFik_experiment:
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
+\code{\link{filepath}()},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},
 \code{\link{save.experiment}()},

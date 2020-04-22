@@ -7,8 +7,11 @@
 fimport(path, chrStyle = NULL)
 }
 \arguments{
-\item{path}{a character path to file or a GRanges/Galignment object etc.
-Any Ranged object.}
+\item{path}{a character path to file (1 or 2 files),
+or data.table with 2 colums(forward&reverse)
+or a GRanges/Galignment object etc. If it is
+ranged object it will presume to be
+already loaded, so will return the object as it is.}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
 or a \code{\link{seqlevelsStyle}}

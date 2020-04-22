@@ -446,6 +446,56 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
   return(gsub("_$", "", current))
 }
 
+#' Get filepaths to ORFik experiment
+#' @inheritParams outputLibs
+#' @return a character vector of paths, or a list of character with 2 paths per,
+#' if paired libraries exists
+#' @export
+#' @family ORFik_experiment
+#' @examples
+#' # df <- read.experiment("ORFik_exp")
+#' # filepath(df, "default")
+#' # filepath(df, "bedo")
+filepath <- function(df, type) {
+  paths <- lapply(df$filepath, function(x, df, type) {
+    i <- which(df$filepath == x)
+    if (type == "bedo") {
+      out.dir <- paste0(dirname(df$filepath[1]), "/bedo/")
+      if (dir.exists(out.dir)) {
+        input <- paste0(out.dir,
+                        remove.file_ext(x,
+                                        basename = TRUE)
+                        , ".bedo")
+      } else type <- "default"
+    } else if (type == "pshifted") {
+      out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")
+      if (dir.exists(out.dir)) {
+        input <- paste0(out.dir,
+                        remove.file_ext(x,
+                                        basename = TRUE)
+                        , "_pshifted.bedo")
+        if (!file.exists(input)) {
+          input <- paste0(out.dir,
+                          remove.file_ext(x,
+                                          basename = TRUE)
+                          , "_pshifted.bed")
+          if (!file.exists(input))
+            type <- "default"
+        }
+      } else type <- "default"
+    }
+    if (type == "default") {
+      if (!is.null(df$reverse)) {
+        if (df[i,]$reverse != "")
+          input <- c(x, df[i,]$reverse)
+      } else input <- x
+    }
+    return(input)
+  }, df = df, type = type)
+  if (all(lengths(paths) == 1)) paths <- unlist(paths)
+  return(paths)
+}
+
 #' Output bam/bed/bedo/wig files to R as variables
 #'
 #' Variable names defined by df (ORFik experiment DataFrame)
@@ -493,48 +543,13 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     }
     # Par apply
     if (!all(loaded)) {
-      message(paste0("Ouputing libraries from: ",df@experiment))
-      libs <- bplapply(df$filepath,
-          function(x, chrStyle, df, type) {
-            i <- which(df$filepath == x)
-            varNames <- bamVarName(df)
-            message(paste(i, ": ", varNames[i]))
-            if (type == "bedo") {
-              out.dir <- paste0(dirname(df$filepath[1]), "/bedo/")
-              if (dir.exists(out.dir)) {
-                input <- paste0(out.dir,
-                                remove.file_ext(x,
-                                                basename = TRUE)
-                                , ".bedo")
-              } else type <- "default"
-            } else if (type == "pshifted") {
-              out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")
-              if (dir.exists(out.dir)) {
-                input <- paste0(out.dir,
-                                remove.file_ext(x,
-                                                basename = TRUE)
-                                , "_pshifted.bedo")
-                if (!file.exists(input)) {
-                  input <- paste0(out.dir,
-                                  remove.file_ext(x,
-                                                  basename = TRUE)
-                                  , "_pshifted.bed")
-                  if (!file.exists(input))
-                    type <- "default"
-                  }
-              } else type <- "default"
-            }
-            if (type == "default") {
-              if (!is.null(df$reverse)) {
-                if (df[i,]$reverse != "")
-                input <- c(x, df[i,]$reverse)
-              } else input <- x
-            }
-            return(fimport(input, chrStyle))
-          },
-          BPPARAM = BPPARAM, chrStyle = chrStyle,
-          df = df, type = type
-      )
+      message(paste0("Ouputing libraries from: ", df@experiment))
+      paths <- filepath(df, type)
+      libs <- bplapply(paths, function(input, df, chrStyle) {
+        varNames <- bamVarName(df)
+        message(paste(i, ": ", varNames[i]))
+        fimport(input, chrStyle)
+      }, BPPARAM = BPPARAM, chrStyle = chrStyle, df = df)
 
       # assign to environment
       for (i in 1:nrow(df)) { # For each stage

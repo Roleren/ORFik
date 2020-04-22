@@ -42,6 +42,7 @@ What will each sample be called given the columns of the experiment?
 Other ORFik_experiment: 
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
+\code{\link{filepath}()},
 \code{\link{libraryTypes}()},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},

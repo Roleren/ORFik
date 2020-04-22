@@ -21,6 +21,7 @@ Other ORFik_experiment:
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
+\code{\link{filepath}()},
 \code{\link{libraryTypes}()},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},

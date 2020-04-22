@@ -64,6 +64,7 @@ df <- read.experiment(template)
 Other ORFik_experiment: 
 \code{\link{bamVarName}()},
 \code{\link{experiment-class}},
+\code{\link{filepath}()},
 \code{\link{libraryTypes}()},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},

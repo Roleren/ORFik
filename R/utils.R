@@ -299,8 +299,11 @@ remove.file_ext <- function(path, basename = FALSE) {
 #' forward and reverse stranded objects. You can also just send 1 wig file,
 #' it will then have "*" as strand.
 #'
-#' @param path a character path to file or a GRanges/Galignment object etc.
-#' Any Ranged object.
+#' @param path a character path to file (1 or 2 files),
+#'  or data.table with 2 colums(forward&reverse)
+#'  or a GRanges/Galignment object etc. If it is
+#'  ranged object it will presume to be
+#'  already loaded, so will return the object as it is.
 #' @inheritParams matchSeqStyle
 #' @importFrom tools file_ext
 #' @importFrom tools file_path_sans_ext
@@ -316,6 +319,13 @@ remove.file_ext <- function(path, basename = FALSE) {
 #' fimport(bam_file, "NCBI")
 #'
 fimport <- function(path, chrStyle = NULL) {
+  if (is(path, "data.table")) {
+    if (ncol(path) == 2 & colnames(path) == c("forward", "reverse")) {
+      path <- c(path$forward, path$reverse)
+      path <- path[path != ""]
+    } else stop("When path is data.table,",
+                "it must have 2 columns (forward&reverse)")
+  }
   if (is.character(path)) {
     if (all(file.exists(path))) {
       fext <- file_ext(path)
