@@ -270,7 +270,7 @@ txNamesToGeneNames <- function(txNames, txdb) {
   g <- mcols(transcripts(txdb, columns = c("tx_name", "gene_id")))
   match <- chmatch(txNames, g$tx_name)
   if (anyNA(match)) stop("Not all txNames are exists in txdb, check for spelling errors!")
-  return(as.character(match$gene_id)[match])
+  return(as.character(g$gene_id)[match])
 }
 
 #' Filter transcripts by lengths
