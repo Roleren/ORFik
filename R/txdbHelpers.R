@@ -268,8 +268,9 @@ loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
 txNamesToGeneNames <- function(txNames, txdb) {
   txdb <- loadTxdb(txdb)
   g <- mcols(transcripts(txdb, columns = c("tx_name", "gene_id")))
-  match <- g[g$tx_name %in% txNames,]
-  return(as.character(match$gene_id))
+  match <- chmatch(txNames, g$tx_name)
+  if (anyNA(match)) stop("Not all txNames are exists in txdb, check for spelling errors!")
+  return(as.character(match$gene_id)[match])
 }
 
 #' Filter transcripts by lengths
