@@ -166,6 +166,10 @@ test_that("extendLeaders works as intended", {
   expect_equal(length(reassigned), 2)
   expect_equal(firstStartPerGroup(reassigned, FALSE), as.integer(c(-4, 145)))
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(115, 215)))
+
+  reassigned <- extendLeaders(fiveUTRs, fiveUTRs)
+  expect_equal(startSites(fiveUTRs, is.sorted = TRUE),
+               startSites(reassigned, is.sorted = TRUE))
 })
 
 test_that("extendTrailers works as intended", {

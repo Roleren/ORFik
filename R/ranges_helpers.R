@@ -601,7 +601,7 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
     newStarts[!posIndices] <- as.integer(end(promo[!posIndices]))
   } else if (is.grl(class(grl))) {
     starts <- startSites(extension)
-    changedGRL <-downstreamOfPerGroup(grl[names(extension)], starts)
+    changedGRL <- downstreamFromPerGroup(grl[names(extension)], starts)
     return(changedGRL)
   } else {
     stop("extension must either be an integer, or a GRangesList")
