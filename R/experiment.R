@@ -448,15 +448,18 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 
 #' Get filepaths to ORFik experiment
 #' @inheritParams outputLibs
+#' @param basename logical, default (FALSE).
+#' Get relative paths instead of full. Only use for inspection!
 #' @return a character vector of paths, or a list of character with 2 paths per,
 #' if paired libraries exists
+#' @importFrom BiocGenerics basename
 #' @export
 #' @family ORFik_experiment
 #' @examples
 #' # df <- read.experiment("ORFik_exp")
 #' # filepath(df, "default")
 #' # filepath(df, "bedo")
-filepath <- function(df, type) {
+filepath <- function(df, type, basename = FALSE) {
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
     if (type == "bedo") {
@@ -490,6 +493,7 @@ filepath <- function(df, type) {
           input <- c(x, df[i,]$reverse)
       } else input <- x
     }
+    if (basename) input <- basename(input)
     return(input)
   }, df = df, type = type)
   if (all(lengths(paths) == 1)) paths <- unlist(paths)

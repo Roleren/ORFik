@@ -4,7 +4,7 @@
 \alias{filepath}
 \title{Get filepaths to ORFik experiment}
 \usage{
-filepath(df, type)
+filepath(df, type, basename = FALSE)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -12,6 +12,9 @@ filepath(df, type)
 \item{type}{a character(default: "defualt"), load files in experiment
 or some precomputed variant, either "bedo" or "pshifted".
 These are made with ORFik:::simpleLibs()}
+
+\item{basename}{logical, default (FALSE).
+Get relative paths instead of full. Only use for inspection!}
 }
 \value{
 a character vector of paths, or a list of character with 2 paths per,

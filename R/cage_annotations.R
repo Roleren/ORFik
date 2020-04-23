@@ -9,8 +9,9 @@
 filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
                        preCleanup = TRUE) {
   cage <- fimport(cage, seqlevelsStyle(fiveUTRs))
-  if (is.null(score(cage))) {
-    cage <- convertToOneBasedRanges(cage, addScoreColumn = TRUE)
+  noScore <- is.null(score(cage))
+  if (noScore | (max(width(cage)) > 1)) {
+    cage <- convertToOneBasedRanges(cage, addScoreColumn = noScore)
   }
 
   if (filterValue == 0) {
@@ -133,7 +134,7 @@ findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
     shiftedfiveUTRs <- restrictTSSByUpstreamLeader(fiveUTRs, shiftedfiveUTRs)
   }
 
-  cageOverlaps <- findOverlaps(query = cageData, subject = shiftedfiveUTRs)
+  cageOverlaps <- findOverlaps(cageData, shiftedfiveUTRs, type = "within")
   maxPeakPosition <- findMaxPeaks(cageOverlaps, cageData)
   return(maxPeakPosition)
 }

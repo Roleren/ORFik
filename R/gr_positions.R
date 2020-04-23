@@ -97,43 +97,6 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
   return(windowPerGroup(downstreamOf, tx, upstream = -1,
                       downstream = max(widthPerGroup(tx, FALSE))))
 }
-# downstreamOfPerGroup <- function(tx, downstreamOf) {
-#   # Needs speed update!
-#   posIndices <- strandBool(tx)
-#   posEnds <- end(tx[posIndices])
-#   negEnds <- start(tx[!posIndices])
-#   posDown <- downstreamOf[posIndices]
-#   negDown <- downstreamOf[!posIndices]
-#   pos <- posEnds > posDown
-#   neg <- negEnds < negDown
-#   posTx <- tx[posIndices][pos]
-#   negTx <- tx[!posIndices][neg]
-#   downTx <- tx
-#   downTx[posIndices] <- posTx
-#   downTx[!posIndices] <- negTx
-#   #check if anyone hits boundary, set those to boundary
-#   if (anyNA(strandPerGroup(downTx, FALSE))) {
-#     boundaryHits <- which(is.na(strandPerGroup(downTx, FALSE)))
-#     downTx[boundaryHits] <- firstExonPerGroup(tx[boundaryHits])
-#     ir <- IRanges(start = downstreamOf[boundaryHits],
-#                   end = downstreamOf[boundaryHits])
-#     irl <- split(ir, seq_along(ir))
-#     names(irl) <- names(tx[boundaryHits])
-#     ranges(downTx[boundaryHits]) <- irl
-#   }
-#   # check boundaries within group exons
-#   startSites <- startSites(downTx, FALSE, FALSE, TRUE)
-#   posChecks <- startSites[posIndices] > downstreamOf[posIndices] & any(!pos)
-#   negChecks <- startSites[!posIndices] < downstreamOf[!posIndices] & any(!neg)
-#   if (any(posChecks)) {
-#     downstreamOf[posIndices][posChecks] <- startSites[posIndices][posChecks]
-#   }
-#   if (any(negChecks)) {
-#     downstreamOf[!posIndices][negChecks] <- startSites[!posIndices][negChecks]
-#   }
-#
-#   return(assignFirstExonsStartSite(downTx, downstreamOf))
-# }
 
 #' Get rest of objects downstream (inclusive)
 #'
