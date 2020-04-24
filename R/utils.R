@@ -434,7 +434,7 @@ optimizeReads <- function(grl, reads) {
 #'
 #' NOTE: Does not support paired end reads for the moment!
 #' @param gr GRanges, GAlignment Object to reduce
-#' @param method the method to reduce, see info. (5prime defualt)
+#' @param method the method to reduce ranges, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per unique range This will make each read unique, so
 #'  that each read is 1 time, and score column gives the number of hits.

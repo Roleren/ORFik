@@ -9,7 +9,8 @@ simpleLibs(
   out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
   addScoreColumn = TRUE,
   addSizeColumn = TRUE,
-  must.overlap = NULL
+  must.overlap = NULL,
+  method = "None"
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ original read lengths. This takes care of soft clips etc.}
 \item{must.overlap}{default (NULL), else a GRanges / GRangesList object, so
 only reads that overlap (must.overlap) are kept. This is useful when you
 only need the reads over transcript annotation or subset etc.}
+
+\item{method}{character, default "None", the method to reduce ranges,
+for more info see \code{\link{convertToOneBasedRanges}}}
 }
 \value{
 NULL (saves files to disc or R .GlobalEnv)

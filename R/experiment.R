@@ -578,11 +578,13 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param must.overlap default (NULL), else a GRanges / GRangesList object, so
 #' only reads that overlap (must.overlap) are kept. This is useful when you
 #' only need the reads over transcript annotation or subset etc.
+#' @param method character, default "None", the method to reduce ranges,
+#' for more info see \code{\link{convertToOneBasedRanges}}
 #' @return NULL (saves files to disc or R .GlobalEnv)
 simpleLibs <- function(df,
                        out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
-                       must.overlap = NULL) {
+                       must.overlap = NULL, method = "None") {
   validateExperiments(df)
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
     stop("must.overlap must be GRanges or GRangesList object!")
@@ -601,7 +603,7 @@ simpleLibs <- function(df,
     gr <- convertToOneBasedRanges(gr = get(f),
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,
-                                  method = "None")
+                                  method = method)
     if (!is.null(must.overlap)) gr <- optimizeReads(must.overlap, gr)
 
     if (!is.null(out.dir)) {
