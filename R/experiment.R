@@ -549,11 +549,12 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     if (!all(loaded)) {
       message(paste0("Ouputing libraries from: ", df@experiment))
       paths <- filepath(df, type)
-      libs <- bplapply(paths, function(input, df, chrStyle) {
+      libs <- bplapply(seq_along(paths),
+                       function(i, paths, df, chrStyle) {
         varNames <- bamVarName(df)
         message(paste(i, ": ", varNames[i]))
-        fimport(input, chrStyle)
-      }, BPPARAM = BPPARAM, chrStyle = chrStyle, df = df)
+        fimport(paths[i], chrStyle)
+      }, BPPARAM = BPPARAM, paths = paths, chrStyle = chrStyle, df = df)
 
       # assign to environment
       for (i in 1:nrow(df)) { # For each stage
