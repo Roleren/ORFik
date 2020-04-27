@@ -16,7 +16,8 @@ shiftFootprintsByExperiment(
   firstN = 150L,
   min_reads = 1000,
   accepted.lengths = 1:1000,
-  output_format = "bed"
+  output_format = "bed",
+  BPPARAM = bpparam()
 )
 }
 \arguments{
@@ -60,6 +61,8 @@ is between 26:34.}
 
 \item{output_format}{default (bed), use export.bed or ORFik optimized
 (bedo) using \code{\link{export.bedo}} ?}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"

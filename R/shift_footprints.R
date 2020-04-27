@@ -229,6 +229,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @inheritParams detectRibosomeShifts
 #' @param output_format default (bed), use export.bed or ORFik optimized
 #' (bedo) using \code{\link{export.bedo}} ?
+#' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
 #' or .bedo)
 #' @importFrom rtracklayer export.bed
@@ -241,24 +242,28 @@ shiftFootprintsByExperiment <- function(df,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 1:1000,
-                                        output_format = "bed") {
+                                        output_format = "bed",
+                                        BPPARAM = bpparam()) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
-  varNames <- bamVarName(df)
-  txdb <- loadTxdb(df)
-  outputLibs(df, txdb)
   message(paste("Saving", output_format, "files to:", out.dir))
   message(paste0("Shifting reads in experiment:", df@experiment))
-  i <- 1
-  for (file in varNames) {
+
+  txdb <- loadTxdb(df)
+  rfpFiles <- filepath(df)
+  bplapply(rfpFiles, FUN = function(file, path, txdb, start, stop,
+                                    top_tx, minFiveUTR, minCDS, minThreeUTR,
+                                    firstN, min_reads, accepted.lengths,
+                                    output_format) {
     message(file)
-    shifts <- detectRibosomeShifts(get(file), txdb, start = start, stop = stop,
+    rfp <- fimport(file)
+    shifts <- detectRibosomeShifts(rfp, txdb, start = start, stop = stop,
                                    top_tx = top_tx, minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
                                    firstN = firstN, min_reads = min_reads,
                                    accepted.lengths = accepted.lengths)
-    shifted <- shiftFootprints(get(file), shifts)
+    shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(df$filepath[i], basename = TRUE))
     if (output_format == "bed") {
       shifted$score <- shifted$size
@@ -268,6 +273,12 @@ shiftFootprintsByExperiment <- function(df,
                                          addSizeColumn = TRUE)
       export.bedo(shifted, paste0(name, "_pshifted.bedo"))
     } else stop("output_format must be bed or bedo")
-    i <- i + 1
-  }
+    return(invisible(NULL))
+  }, path = path, txdb = txdb, start = start, stop = stop,
+      top_tx = top_tx, minFiveUTR = minFiveUTR,
+      minCDS = minCDS, minThreeUTR = minThreeUTR,
+      firstN = firstN, min_reads = min_reads,
+      accepted.lengths = accepted.lengths, output_format = output_format,
+      BPPARAM = BPPARAM)
+  return(invisible(NULL))
 }

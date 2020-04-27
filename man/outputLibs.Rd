@@ -28,7 +28,7 @@ These are made with ORFik:::simpleLibs()}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 
-\item{BPPARAM}{how many cores? default: bpparam()}
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 NULL (libraries set by envir assignment)

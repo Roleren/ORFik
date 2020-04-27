@@ -510,7 +510,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' or some precomputed variant, either "bedo" or "pshifted".
 #' These are made with ORFik:::simpleLibs()
 #' @param envir environment to save to, default (.GlobalEnv)
-#' @param BPPARAM how many cores? default: bpparam()
+#' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return NULL (libraries set by envir assignment)
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam
