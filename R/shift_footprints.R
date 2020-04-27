@@ -264,7 +264,8 @@ shiftFootprintsByExperiment <- function(df,
       shifted$score <- shifted$size
       export.bed(shifted, paste0(name, "_pshifted.bed"))
     } else if (output_format == "bedo") {
-      shifted <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE)
+      shifted <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                         addSizeColumn = TRUE)
       export.bedo(shifted, paste0(name, "_pshifted.bedo"))
     } else stop("output_format must be bed or bedo")
     i <- i + 1

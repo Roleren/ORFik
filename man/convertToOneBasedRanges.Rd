@@ -22,7 +22,8 @@ convertToOneBasedRanges(
 sums up the hits per unique range This will make each read unique, so
 that each read is 1 time, and score column gives the number of hits.
 A useful compression. If addSizeColumn is FALSE, it will not differentiate
-between reads with same start and stop, but different length.}
+between reads with same start and stop, but different length. If
+addSizeColumn is FALSE, it will remove it.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
