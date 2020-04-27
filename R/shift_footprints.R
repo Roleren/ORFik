@@ -264,7 +264,7 @@ shiftFootprintsByExperiment <- function(df,
                                    firstN = firstN, min_reads = min_reads,
                                    accepted.lengths = accepted.lengths)
     shifted <- shiftFootprints(rfp, shifts)
-    name <- paste0(path, remove.file_ext(df$filepath[i], basename = TRUE))
+    name <- paste0(path, remove.file_ext(file, basename = TRUE))
     if (output_format == "bed") {
       shifted$score <- shifted$size
       export.bed(shifted, paste0(name, "_pshifted.bed"))
