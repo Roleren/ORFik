@@ -251,7 +251,7 @@ shiftFootprintsByExperiment <- function(df,
   message(paste0("Shifting reads in experiment:", df@experiment))
 
   txdb <- loadTxdb(df)
-  rfpFiles <- filepath(df)
+  rfpFiles <- filepath(df, "default")
   bplapply(rfpFiles, FUN = function(file, path, txdb, start, stop,
                                     top_tx, minFiveUTR, minCDS, minThreeUTR,
                                     firstN, min_reads, accepted.lengths,
