@@ -14,7 +14,7 @@ sorted from highest to lowest ends. If TRUE: from lowest to highest ends.}
 
 \item{quick.rev}{default: FALSE, if TRUE, given that you know all ranges are
 sorted from min to max for both strands, it will only reverse coordinates for
-minus strand groups. Much quicker}
+minus strand groups, and only if they are in increasing order. Much quicker}
 }
 \value{
 an equally named GRangesList, where each group is

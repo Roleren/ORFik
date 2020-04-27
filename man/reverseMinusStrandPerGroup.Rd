@@ -4,14 +4,17 @@
 \alias{reverseMinusStrandPerGroup}
 \title{Reverse minus strand}
 \usage{
-reverseMinusStrandPerGroup(grl)
+reverseMinusStrandPerGroup(grl, onlyIfIncreasing = TRUE)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}}}
+
+\item{onlyIfIncreasing}{logical, default (TRUE), only reverse if decreasing}
 }
 \value{
 a \code{\link{GRangesList}}
 }
 \description{
 Reverse minus strand per group in a GRangesList
+Only reverse if minus strand is in increasing order
 }

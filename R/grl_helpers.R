@@ -123,7 +123,7 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.
 #' @param quick.rev default: FALSE, if TRUE, given that you know all ranges are
 #' sorted from min to max for both strands, it will only reverse coordinates for
-#' minus strand groups. Much quicker
+#' minus strand groups, and only if they are in increasing order. Much quicker
 #' @return an equally named GRangesList, where each group is
 #'  sorted within group.
 #' @export
@@ -155,10 +155,18 @@ sortPerGroup <- function(grl, ignore.strand = FALSE, quick.rev = FALSE){
 #' Reverse minus strand
 #'
 #' Reverse minus strand per group in a GRangesList
+#' Only reverse if minus strand is in increasing order
 #' @param grl a \code{\link{GRangesList}}
+#' @param onlyIfIncreasing logical, default (TRUE), only reverse if decreasing
 #' @return a \code{\link{GRangesList}}
-reverseMinusStrandPerGroup <- function(grl) {
+reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
   minus <- !strandBool(grl)
+  if (onlyIfIncreasing) {
+    minGrl <- grl[minus & numExonsPerGroup(grl, FALSE) > 1]
+    if (length(minGrl) == 0) return(grl)
+    decreasing <- start(minGrl[[1]])[1] > start(minGrl[[1]])[2]
+    if (decreasing) return(grl)
+  }
   oldGrl <- rev(grl)
   oldGrl[rev(minus)]@unlistData@ranges <- rev(grl[minus]@unlistData@ranges)
   return(rev(oldGrl))
