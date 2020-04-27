@@ -4,12 +4,16 @@
 \alias{export.bed12}
 \title{Export as bed12 format}
 \usage{
-export.bed12(grl, file)
+export.bed12(grl, file, rgb = 0)
 }
 \arguments{
 \item{grl}{A GRangesList}
 
 \item{file}{a character path to valid output file name}
+
+\item{rgb}{integer vector, default (0), either single integer or
+vector of same size as grl to specify groups. It is adviced to not
+use more than 8 different groups}
 }
 \value{
 NULL (File is saved as .bed)

@@ -74,6 +74,9 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' If grl has no names, groups will be named 1,2,3,4..
 #' @param grl A GRangesList
 #' @param file a character path to valid output file name
+#' @param rgb integer vector, default (0), either single integer or
+#' vector of same size as grl to specify groups. It is adviced to not
+#' use more than 8 different groups
 #' @return NULL (File is saved as .bed)
 #' @importFrom data.table fwrite
 #' @export
@@ -81,9 +84,11 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @examples
 #' grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
 #' # export.bed12(grl, "output/path/orfs.bed")
-export.bed12 <- function(grl, file){
+export.bed12 <- function(grl, file, rgb = 0) {
   if (!is.grl(class(grl))) stop("grl, must be of class GRangesList")
   if (!is.character(file)) stop("file must be of class character")
+  if (length(rgb) != 1 & length(rgb) != length(grl))
+    stop("rgb must be integer of size 1 or length(grl)")
   if (is.null(names(grl))) names(grl) <- seq.int(length(grl))
   grl <- sortPerGroup(grl, ignore.strand = TRUE) # <- sort bed way!
 
@@ -95,7 +100,7 @@ export.bed12 <- function(grl, file){
   dt.grl$strand <- strandPerGroup(grl, FALSE)
   dt.grl$thickStart <- dt.grl$start
   dt.grl$thickEnd <- dt.grl$end
-  dt.grl$rgb <- rep(0, length(grl))
+  dt.grl$rgb <- if(length(rgb) > 1) rgb else rep(rgb, length(grl))
   dt.grl$blockCount <- numExonsPerGroup(grl)
   blockSizes <- paste(width(grl), collapse = ",")
   names(blockSizes) <- NULL
@@ -105,8 +110,7 @@ export.bed12 <- function(grl, file){
   names(blockStarts) <- NULL
   dt.grl$blockStarts <- blockStarts
 
-  #chromStart + chromStarts[last] + blockSizes[last])
-  #must equal chromEnd.
+  # Write without colnames
   data.table::fwrite(x = dt.grl, file = file,
                      sep = "\t", col.names = FALSE, row.names = FALSE,
                      quote = FALSE)
