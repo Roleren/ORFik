@@ -252,14 +252,15 @@ shiftFootprintsByExperiment <- function(df,
 
   txdb <- loadTxdb(df)
   rfpFiles <- filepath(df, "default")
-  bplapply(rfpFiles, FUN = function(file, path, txdb, start, stop,
+  bplapply(rfpFiles, FUN = function(file, path, df, start, stop,
                                     top_tx, minFiveUTR, minCDS, minThreeUTR,
                                     firstN, min_reads, accepted.lengths,
                                     output_format) {
     message(file)
     rfp <- fimport(file)
-    shifts <- detectRibosomeShifts(rfp, txdb, start = start, stop = stop,
-                                   top_tx = top_tx, minFiveUTR = minFiveUTR,
+    shifts <- detectRibosomeShifts(rfp, txdb = loadTxdb(df), start = start,
+                                   stop = stop, top_tx = top_tx,
+                                   minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
                                    firstN = firstN, min_reads = min_reads,
                                    accepted.lengths = accepted.lengths)
@@ -274,7 +275,7 @@ shiftFootprintsByExperiment <- function(df,
       export.bedo(shifted, paste0(name, "_pshifted.bedo"))
     } else stop("output_format must be bed or bedo")
     return(invisible(NULL))
-  }, path = path, txdb = txdb, start = start, stop = stop,
+  }, path = path, df = df, start = start, stop = stop,
       top_tx = top_tx, minFiveUTR = minFiveUTR,
       minCDS = minCDS, minThreeUTR = minThreeUTR,
       firstN = firstN, min_reads = min_reads,
