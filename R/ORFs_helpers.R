@@ -324,8 +324,7 @@ stopCodons <- function(grl, is.sorted = FALSE) {
   validWidths <- widths >= 3L
   if (!all(validWidths)) { # fix short exons by tiling
     needToFix <- grl[!validWidths]
-    tileBy1 <- tile1(needToFix, matchNaming = FALSE,
-                     sort.on.return = FALSE)
+    tileBy1 <- tile1(needToFix, matchNaming = FALSE)
     fixedStops <- reduceKeepAttr(tails(tileBy1, 3L))
     grl[!validWidths] <- fixedStops
   }

@@ -463,6 +463,12 @@ test_that("stopCodons works as intended", {
                            tx1_2 = GRanges("1", c(15, 13, 11, 9), "-"))
   expect_equal(stopSites(stopCodons(negStopss, FALSE), is.sorted = TRUE),
                c(1,9))
+
+  negStopss <- GRangesList(tx1_1 = GRanges("1", IRanges(c(9325,8012),
+                                                        c(9418, 8013)),
+                                           "-"))
+  expect_equal(startSites(stopCodons(negStopss, FALSE), is.sorted = TRUE),
+               9325)
 })
 
 ORFranges <- GRanges(seqnames = Rle(rep("1", 3)),

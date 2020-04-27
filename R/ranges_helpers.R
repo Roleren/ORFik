@@ -120,10 +120,10 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
     tilex <- groupGRangesBy(tilex, grouping)
   }
 
-  # only negative must be sorted
+  # only negative with > 1 exons must be sorted
   if (sort.on.return) {
-    posIndices <- strandBool(tilex)
-    tilex[!posIndices] <- sortPerGroup(tilex[!posIndices])
+    negIndices <- !strandBool(tilex) & numExonsPerGroup(tilex) > 1
+    tilex[negIndices] <- sortPerGroup(tilex[negIndices])
   }
   return(tilex)
 }
