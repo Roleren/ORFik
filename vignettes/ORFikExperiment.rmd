@@ -132,7 +132,7 @@ transcriptWindow(leaders, cds, trailers, df[3,])
 
 ## P-site shifting experiment
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-ORFik:::shiftFootprintsByExperiment(df[df$libtype == "ribo-seq",])
+shiftFootprintsByExperiment(df[df$libtype == "ribo-seq",])
 ```
 P-shifted ribo-seq will automaticly be stored as .bed files in a ./pshifted folder, relative to original libraries.
 

@@ -234,6 +234,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' or .bedo)
 #' @importFrom rtracklayer export.bed
 #' @family pshifting
+#' @export
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(
                                           df$filepath[1]), "/pshifted/"),

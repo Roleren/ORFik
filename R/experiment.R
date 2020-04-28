@@ -582,6 +582,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param method character, default "None", the method to reduce ranges,
 #' for more info see \code{\link{convertToOneBasedRanges}}
 #' @return NULL (saves files to disc or R .GlobalEnv)
+#' @export
 simpleLibs <- function(df,
                        out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
