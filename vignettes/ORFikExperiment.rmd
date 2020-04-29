@@ -77,8 +77,11 @@ df
 ```
 You see here that file paths are hidden, you can acces them like this:
 
+If you have varying version of libraries, like p-shifted, bam, simplified wig files, you can get
+filepaths to different version with this function.
+
 ```{r eval = TRUE, echo = TRUE}
-df$filepath
+filepath(df, type = "default")
 ```
 ## Loading all data in experiment
 ```{r eval = TRUE, echo = TRUE, warning = FALSE}
@@ -132,13 +135,18 @@ transcriptWindow(leaders, cds, trailers, df[3,])
 
 ## P-site shifting experiment
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-shiftFootprintsByExperiment(df[df$libtype == "ribo-seq",])
+shiftFootprintsByExperiment(df[df$libtype == "RFP",], output_format = "bedo")
 ```
 P-shifted ribo-seq will automaticly be stored as .bed files in a ./pshifted folder, relative to original libraries.
 
+To see the location of pshifted files:
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+filepath(df[df$libtype == "RFP",], type = "pshifted")
+```
+
 To load p-shifted libraries, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-outputLibs(df[df$libtype == "ribo-seq",], type = "pshifted")
+outputLibs(df[df$libtype == "RFP",], type = "pshifted")
 ```
 
 ## ORFik QC report
@@ -147,4 +155,42 @@ simplified libraries for plotting, meta coverage, ++.
 
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 ORFikQC(df)
+```
+
+## Using the ORFik system in your script
+
+There are 2 ways to run loops for the data:
+
+1. if you know you have enough memory to load all data at once
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+outputLibs(df, type = "pshifted")
+libs <- bamVarName(df) # <- here are names of the libs that were outputed
+cds <- loadRegion(df, "cds")
+# parallel loop
+bplapply(libs, FUN = function(lib, cds) { 
+    return(entropy(cds, get(lib)))
+}, cds = cds)
+
+```
+
+2. Not loading data to global environment
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+files <- filepath(df, type = "pshifted")
+cds <- loadRegion(df, "cds")
+# parallel loop
+res <- bplapply(files, FUN = function(file, cds) { 
+    return(entropy(cds, fimport(file)))
+}, cds = cds)
+
+```
+
+3. No parallel evaluation
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+files <- filepath(df, type = "pshifted")
+cds <- loadRegion(df, "cds")
+# Single thread loop
+lapply(files, FUN = function(file, cds) { 
+    return(entropy(cds, fimport(file)))
+}, cds = cds)
+
 ```

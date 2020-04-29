@@ -12,10 +12,12 @@ vignette: >
 
 # Introduction
 
-Welcome to the `ORFik` package. This vignette will walk you through our detailed package usage with examples.
-`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq, TCPseq and CageSeq data 
-related to analysis of translation initation, focusing on 5' UTRs (leaders), it is generalized in the 
+Welcome to the `ORFik` package. 
+`ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data,
+RiboSeq, RNASeq, TCPseq and CAGE, focusing on 5' UTRs (leaders), it is generalized in the 
 sense that any transcript region can be analysed. 
+This vignette will walk you through our detailed package usage with examples.
+
 
 `ORFik` currently supports:  
 

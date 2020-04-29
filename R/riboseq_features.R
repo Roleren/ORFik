@@ -112,7 +112,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE,
                     overlapGrl = NULL) {
   # Optimize: Get count list of only groups with hits
-  validIndices <- hasHits(grl, reads, overlap = overlapGrl)
+  validIndices <- hasHits(grl, reads, overlaps = overlapGrl)
   if (!any(validIndices)) { # no variance in countList, 0 entropy
     return(rep(0, length(validIndices)))
   }

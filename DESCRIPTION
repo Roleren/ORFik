@@ -9,8 +9,10 @@ Authors@R: c(
   person(given = "Katarzyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
   person(given = "Yamila", family = "Torres Cleuren", email = "yamilatorrescleuren@gmail.com", role = c("ctb", "ths")),
   person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")))
-Description: Tools for analysis of translation initation through 
+Description: R package for analysis of transcript and translation features through 
   manipulation of sequence-, RiboSeq-, RNASeq-, TCPseq- and CAGE-data. 
+  Focusing on 5' UTRs (leaders), it is generalized in the 
+  sense that any transcript region can be analysed. 
   ORFik is extremely fast through use of C, data.table and GenomicRanges. 
   Package allows to reassign starts of the transcripts with the use of CageSeq data,
   automatic shifting of RiboSeq reads, finding of Open Reading Frames for
