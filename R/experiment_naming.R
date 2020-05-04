@@ -36,8 +36,8 @@ stageNames <- function() {
   mainName <- c("unfertilized", "fertilized",
                 "2to4Cell", "4Cell", "8Cell", "64Cell", "256Cell", "512Cell",
                 "1KCell", "High", "Oblong", "Sphere", "Dome", "Shield", "Bud",
-                "Somite", "24hpf", "2dpf", "3dpf", "4dpf", "5dpf", "6dpf",
-                "10dpf", "21dpf", "24dpf")
+                "Somite", "24hpf", "prim6", "prim20", "2dpf", "3dpf", "4dpf",
+                "5dpf", "6dpf", "10dpf", "21dpf", "24dpf")
   allNames <-
     list(c("unfertilized", "Unfertilized"),
          c("_fertilized", "_Fertilized"),
@@ -55,7 +55,9 @@ stageNames <- function() {
          c("Shield", "shield", "_6h", "_06h", "6hpf"),
          c("Bud", "bud", "_10h", "10hpf"),
          c("Somite", "somite", "_12h", "12hpf"),
-         c("24hpf", "1dfp"),
+         c("24hpf", "_24h", "1dfp"),
+         c("prim6", "prim_6", "25hpf", "_25h"),
+         c("prim20", "prim_20", "33hpf", "_33h"),
          "2dpf","3dpf", "4dpf", "5dpf", "6dpf", "10dpf", "21dpf", "24dpf"
          )
   dt <- data.table(mainName, allNames)

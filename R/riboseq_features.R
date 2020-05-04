@@ -76,7 +76,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
   return(fpkm_calc(overlaps, grl_len, librarySize) + pseudoCount)
 }
 
-#' Calucalte entropy value of overlapping input reads per GRanges.
+#' Percentage of maximum entropy
 #'
 #' Calculates entropy of the `reads` coverage over each `grl` group.
 #' The entropy value per group is a real number in the interval (0:1),

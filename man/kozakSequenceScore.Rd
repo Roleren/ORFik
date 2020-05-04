@@ -17,7 +17,8 @@ ORFik \code{\link{experiment}}. This file used to find the
 transcript sequences}
 
 \item{species}{("human"), which species to use,
-currently supports human, zebrafish and mouse (m. musculus).
+currently supports human (Homo sapiens), zebrafish (Danio rerio) and mouse (Mus musculus).
+Both scientific or common name for these species will work.
 You can also specify a pfm for your own species.
 Syntax of pfm is an rectangular integer matrix,
 where all columns must sum to the same value, normally 100.

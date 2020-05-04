@@ -83,7 +83,8 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #'  must have a coresponding tx.
 #' @inheritParams findFa
 #' @param species ("human"), which species to use,
-#' currently supports human, zebrafish and mouse (m. musculus).
+#' currently supports human (Homo sapiens), zebrafish (Danio rerio) and mouse (Mus musculus).
+#' Both scientific or common name for these species will work.
 #' You can also specify a pfm for your own species.
 #' Syntax of pfm is an rectangular integer matrix,
 #' where all columns must sum to the same value, normally 100.
@@ -123,24 +124,24 @@ kozakSequenceScore <- function(grl, tx, faFile, species = "human",
   if (length(validSeqs) == 0) return(rep(0., length(sequences)))
   sequences <- sequences[validSeqs]
 
-  if(is(species, "matrix")){
+  if(is(species, "matrix")) {
     # self defined pfm
     pfm <- species
-  } else if (species == "human") {
+  } else if (species %in% c("human", "Homo sapiens")) {
     # human pfm, see article reference
     pfm <- t(matrix(as.integer(c(20,20,21,21,19,24,46,29,19,22,28,16,
                                  27,33,32,23,32,38,10,38,45,15,39,26,
                                  35,29,28,39,30,26,37,20,28,49,18,37,
                                  18,18,19,17,19,12,7,13,8,14,15,21)),
                     ncol = 4))
-  } else if (species == "mouse") {
+  } else if (species %in% c("mouse", "Mus musculus")) {
     # zebrafish pfm, see article reference
     pfm <- t(matrix(as.integer(c(20,19,21,20,18,25,49,28,17,23,28,15,
                                  27,34,31,23,32,38,9,39,47,14,40,26,
                                  34,28,27,39,29,25,36,20,28,49,18,37,
                                  19,19,21,18,21,12,6,13,8,14,14,22)),
                     ncol = 4))
-  } else if (species == "zebrafish") {
+  } else if (species %in% c("zebrafish", "Danio rerio")) {
     # zebrafish pfm, see article reference
     pfm <- t(matrix(as.integer(c(29,26,28,26,22,35,62,39,28,24,27,17,
                                  21,26,24,16,28,32,5,23,35,12,42,21,

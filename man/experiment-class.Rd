@@ -43,6 +43,11 @@ Paired forward / reverse wig files, must have same name except
 
 Not supported yet:\cr
 Paired end bam files not supported yet!
+
+Naming:
+Will try to guess naming for tissues / stages, replicates etc.
+If it finds more than one hit for one file, it will not guess.
+Always check that it guessed correctly.
 }
 \examples{
 \dontrun{

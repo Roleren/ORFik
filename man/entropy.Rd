@@ -2,7 +2,7 @@
 % Please edit documentation in R/riboseq_features.R
 \name{entropy}
 \alias{entropy}
-\title{Calucalte entropy value of overlapping input reads per GRanges.}
+\title{Percentage of maximum entropy}
 \usage{
 entropy(grl, reads, weight = 1L, is.sorted = FALSE, overlapGrl = NULL)
 }

@@ -36,6 +36,11 @@
 #'
 #' Not supported yet:\cr
 #' Paired end bam files not supported yet!
+#'
+#' Naming:
+#' Will try to guess naming for tissues / stages, replicates etc.
+#' If it finds more than one hit for one file, it will not guess.
+#' Always check that it guessed correctly.
 #' @importFrom methods new
 #' @examples
 #' \dontrun{
