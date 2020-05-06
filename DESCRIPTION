@@ -14,7 +14,7 @@ Description: R package for analysis of transcript and translation features throu
   Focusing on 5' UTRs (leaders), it is generalized in the 
   sense that any transcript region can be analysed. 
   ORFik is extremely fast through use of C, data.table and GenomicRanges. 
-  Package allows to reassign starts of the transcripts with the use of CageSeq data,
+  Package allows to reassign starts of the transcripts with the use of CAGE-Seq data,
   automatic shifting of RiboSeq reads, finding of Open Reading Frames for
   whole genomes and much more.
 biocViews: ImmunoOncology, Software, Sequencing, RiboSeq, RNASeq, FunctionalGenomics, Coverage, Alignment, DataImport
@@ -47,7 +47,7 @@ Imports:
   gridExtra (>= 2.3),
   GGally (>= 1.4.0),
   methods (>= 3.6.0)
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Suggests:
   testthat,
   rmarkdown,

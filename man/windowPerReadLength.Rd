@@ -29,9 +29,9 @@ ORFik orf names. that is "txName_id"}
 RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
 column in 'reads'}
 
-\item{pShifted}{a logical (TRUE), are riboseq reads p-shifted to size
+\item{pShifted}{a logical (TRUE), are Ribo-seq reads p-shifted to size
 1 width reads? If upstream and downstream is set, this argument is
-irrelevant.}
+irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.}
 
 \item{upstream}{an integer (5), relative region to get upstream from.}
 

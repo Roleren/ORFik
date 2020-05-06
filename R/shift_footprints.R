@@ -121,8 +121,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' either only CDS or non-coding (filtered out).
 #' @param min_reads default (1000), how many reads must a read-length have to
 #' be considered for periodicity.
-#' @param accepted.lengths accepted readlengths, default 1:1000, usually ribo-seq
-#' is between 26:34.
+#' @param accepted.lengths accepted readlengths, default 26:34, usually ribo-seq
+#' is strongest between 27:32.
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -154,7 +154,7 @@ shiftFootprints <- function(footprints, shifts) {
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 1:1000) {
+  firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34) {
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
@@ -222,11 +222,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' containing read width.
 #'
 #' For more details, see: \code{\link{detectRibosomeShifts}}
+#' @inheritParams detectRibosomeShifts
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir output directory for files,
 #' default: dirname(df$filepath[1]), making a /pshifted
 #' folder at that location
-#' @inheritParams detectRibosomeShifts
 #' @param output_format default (bed), use export.bed or ORFik optimized
 #' (bedo) using \code{\link{export.bedo}} ?
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
@@ -235,6 +235,9 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @importFrom rtracklayer export.bed
 #' @family pshifting
 #' @export
+#' @examples
+#' #df <- read.experiment("ORFik_example")
+#' #shiftFootprintsByExperiment(df, output_format = "bedo)
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(
                                           df$filepath[1]), "/pshifted/"),
@@ -242,14 +245,14 @@ shiftFootprintsByExperiment <- function(df,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L, min_reads = 1000,
-                                        accepted.lengths = 1:1000,
+                                        accepted.lengths = 26:34,
                                         output_format = "bed",
                                         BPPARAM = bpparam()) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
   message(paste("Saving", output_format, "files to:", out.dir))
-  message(paste0("Shifting reads in experiment:", df@experiment))
+  message(paste("Shifting reads in experiment:", df@experiment))
 
   txdb <- loadTxdb(df)
   rfpFiles <- filepath(df, "default")
@@ -283,4 +286,42 @@ shiftFootprintsByExperiment <- function(df,
       accepted.lengths = accepted.lengths, output_format = output_format,
       BPPARAM = BPPARAM)
   return(invisible(NULL))
+}
+
+#' Plot shifted heatmaps per library
+#'
+#' A good validation for you p-shifting
+#' @inheritParams shiftFootprintsByExperiment
+#' @param output name to save file, full path. (Default NULL) No saving.
+#' @param scoring which scoring scheme to use for heatmap, default
+#' "transcriptNormalized". Some alternatives: "sum", "zscore".
+#' @param title Title for top of plot, default "Ribo-seq".
+#' A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"
+#' @importFrom gridExtra grid.arrange
+#' @return a ggplot2 grob object
+#' @export
+#' @examples
+#' #df <- read.experiment("ORFik_example")
+#' #shiftFootprintsByExperiment(df, output_format = "bedo)
+#' #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
+shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
+                       scoring = "transcriptNormalized",
+                       BPPARAM = bpparam()) {
+  txNames <- filterTranscripts(df, 20, 21, 1)
+  cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
+  mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
+  style <- seqlevelsStyle(cds)
+  plots <- bplapply(filepath(df, "pshifted"),
+                    function(x, cds, mrna, style) {
+    hitMap <- windowPerReadLength(cds, mrna,  fimport(x, style),
+                                  pShifted = TRUE)
+    coverageHeatMap(hitMap, scoring = scoring,
+                    addFracPlot = FALSE)
+  }, cds = cds, mrna = mrna, style = style, BPPARAM = BPPARAM)
+  res <- do.call("grid.arrange", c(plots, ncol=1, top = title))
+  if (!is.null(output))
+    ggsave(output, res,
+           width = 225, height = (length(res) -1)*65,
+           units = "mm", dpi = 300)
+  return(res)
 }

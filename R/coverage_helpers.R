@@ -427,9 +427,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #'
 #' @inheritParams startRegion
 #' @inheritParams coveragePerTiling
-#' @param pShifted a logical (TRUE), are riboseq reads p-shifted to size
+#' @param pShifted a logical (TRUE), are Ribo-seq reads p-shifted to size
 #'  1 width reads? If upstream and downstream is set, this argument is
-#'  irrelevant.
+#'  irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.
 #' @param upstream an integer (5), relative region to get upstream from.
 #' @param downstream an integer (20), relative region to get downstream from
 #' @param acceptedLengths an integer vector (NULL), the read lengths accepted.

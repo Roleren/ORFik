@@ -16,7 +16,7 @@ detectRibosomeShifts(
   firstN = 150L,
   tx = NULL,
   min_reads = 1000,
-  accepted.lengths = 1:1000
+  accepted.lengths = 26:34
 )
 }
 \arguments{
@@ -61,8 +61,8 @@ either only CDS or non-coding (filtered out).}
 \item{min_reads}{default (1000), how many reads must a read-length have to
 be considered for periodicity.}
 
-\item{accepted.lengths}{accepted readlengths, default 1:1000, usually ribo-seq
-is between 26:34.}
+\item{accepted.lengths}{accepted readlengths, default 26:34, usually ribo-seq
+is strongest between 27:32.}
 }
 \value{
 a data.table with lengths of footprints and their predicted

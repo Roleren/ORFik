@@ -137,7 +137,15 @@ transcriptWindow(leaders, cds, trailers, df[3,])
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 shiftFootprintsByExperiment(df[df$libtype == "RFP",], output_format = "bedo")
 ```
-P-shifted ribo-seq will automaticly be stored as .bed files in a ./pshifted folder, relative to original libraries.
+P-shifted ribo-seq will automaticly be stored as .bed files in a ./pshifted folder, relative to original libraries. The file-format .bedo is an optimized ORFik bed format. It does not work to load it at IGV at this time, so output as bed if you
+need to check it in a Genome browser.
+
+To validate p-shifting, use shiftPlots. Here is an example from Bazzini et al. 2014 I made.
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+df.baz <- read.experiment("zf_bazzini14_RFP")
+shiftPlots(df.baz, title = "Ribo-seq, zebrafish, Bazzini et al. 2014")
+```
+![p-site analysis](../inst/images/pshift_bazzini.png)
 
 To see the location of pshifted files:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
@@ -158,8 +166,9 @@ ORFikQC(df)
 ```
 
 ## Using the ORFik system in your script
-
-There are 2 ways to run loops for the data:
+Usually you want to do some operation on multiple data-sets. With ORFik experiment, 
+this operation is simple.
+There are 3 ways to run loops for the data:
 
 1. if you know you have enough memory to load all data at once
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}

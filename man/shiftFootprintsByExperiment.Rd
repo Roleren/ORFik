@@ -15,7 +15,7 @@ shiftFootprintsByExperiment(
   minThreeUTR = 30L,
   firstN = 150L,
   min_reads = 1000,
-  accepted.lengths = 1:1000,
+  accepted.lengths = 26:34,
   output_format = "bed",
   BPPARAM = bpparam()
 )
@@ -56,8 +56,8 @@ periodicity.}
 \item{min_reads}{default (1000), how many reads must a read-length have to
 be considered for periodicity.}
 
-\item{accepted.lengths}{accepted readlengths, default 1:1000, usually ribo-seq
-is between 26:34.}
+\item{accepted.lengths}{accepted readlengths, default 26:34, usually ribo-seq
+is strongest between 27:32.}
 
 \item{output_format}{default (bed), use export.bed or ORFik optimized
 (bedo) using \code{\link{export.bedo}} ?}
@@ -74,6 +74,10 @@ containing read width.
 }
 \details{
 For more details, see: \code{\link{detectRibosomeShifts}}
+}
+\examples{
+#df <- read.experiment("ORFik_example")
+#shiftFootprintsByExperiment(df, output_format = "bedo)
 }
 \seealso{
 Other pshifting: 

@@ -6,7 +6,7 @@ This package is still under development, although this version is stable and can
 #### About
 
 
-ORFik is a R package containing various functions for analysis of Ribo-Seq, RNA-Seq, Cage-Seq and TCP-seq data related to transcriptomics. ORFik currently supports:
+ORFik is a R package containing various functions for analysis of Ribo-Seq, RNA-Seq, CAGE and TCP-seq data related to transcriptomics. ORFik currently supports:
 
 - Finding Open Reading Frames (very fast) in the genome of interest or on the set of transcripts.
 - Metaplots for Ribo-Seq allowing to spot the shift.

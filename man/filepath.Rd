@@ -27,6 +27,7 @@ Get filepaths to ORFik experiment
 # df <- read.experiment("ORFik_exp")
 # filepath(df, "default")
 # filepath(df, "bedo")
+# filepath(df, "pshifted")
 }
 \seealso{
 Other ORFik_experiment: 

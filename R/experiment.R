@@ -464,7 +464,10 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' # df <- read.experiment("ORFik_exp")
 #' # filepath(df, "default")
 #' # filepath(df, "bedo")
+#' # filepath(df, "pshifted")
 filepath <- function(df, type, basename = FALSE) {
+  if (!is(df, "experiment")) stop("df must be ORFik experiment!")
+
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
     if (type == "bedo") {
