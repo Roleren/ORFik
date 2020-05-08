@@ -42,6 +42,9 @@ NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 33, but will remove 3S so final read width is 30 in ORFik.
 }
 \examples{
+# Basic run
+#shiftFootprints(footprints, shifts)
+# Full example
 \dontrun{
 # input path to gtf, or load it as TxDb.
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")

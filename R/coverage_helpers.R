@@ -9,9 +9,9 @@
 #' @param txdb a TxDb object or a path to gtf/gff/db file.
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
-#' @param windowSize an integer (100), size of windows
+#' @param windowSize an integer (100), size of windows (columns)
 #' @param fraction a character (1), info on reads (which read length,
-#' or which type (RNA seq))
+#' or which type (RNA seq)) (row names)
 #' @inheritParams coveragePerTiling
 #' @return a data.table with columns position, score
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,

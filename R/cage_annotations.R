@@ -326,6 +326,9 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' @family CAGE
 #' @export
 #' @examples
+#'  # assignTSSByCage(txdbFile, cagePath)
+#'  # Minimum 20 cage tags for new TSS
+#'  # assignTSSByCage(txdbFile, cagePath, filterValue = 20)
 #'  \dontrun{
 #'  library(GenomicFeatures)
 #'  # Get the gtf txdb file
@@ -333,7 +336,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #'  package = "GenomicFeatures")
 #'  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
 #'  package = "ORFik")
-#'  reassignTxDbByCage(txdbFile, cagePath)
+#'  assignTSSByCage(txdbFile, cagePath)
 #'  }
 #' @return a TxDb obect of reassigned transcripts
 assignTSSByCage <- function(txdb, cage, extension = 1000,

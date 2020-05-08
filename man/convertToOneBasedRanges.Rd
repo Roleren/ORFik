@@ -63,6 +63,20 @@ were in the specified region.
 
 NOTE: Does not support paired end reads for the moment!
 }
+\examples{
+gr <- GRanges("chr1", 1:10,"+")
+# 5 prime ends
+convertToOneBasedRanges(gr)
+# is equal to convertToOneBasedRanges(gr, method = "5prime")
+# 3 prime ends
+convertToOneBasedRanges(gr, method = "3prime")
+# With lengths
+convertToOneBasedRanges(gr, addSizeColumn = TRUE)
+# With score (# of replicates)
+gr <- rep(gr, 2)
+convertToOneBasedRanges(gr, addSizeColumn = TRUE, addScoreColumn = TRUE)
+
+}
 \seealso{
 Other utils: 
 \code{\link{bedToGR}()},

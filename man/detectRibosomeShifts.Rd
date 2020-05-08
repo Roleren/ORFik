@@ -86,6 +86,9 @@ NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 for ribo-seq.
 }
 \examples{
+# Basic run
+#detectRibosomeShifts(footprints, txdb)
+# Full example
 \dontrun{
 # Transcriptome annotation ->
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")

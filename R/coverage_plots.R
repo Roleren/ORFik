@@ -197,6 +197,8 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @param legendPos a character, Default "right". Where should the fill legend
 #' be ? ("top", "bottom", "right", "left")
 #' @param addFracPlot Add plot on top of heatmap with fractions per positions
+#' @param xlab the x-axis label, default "Position relative to start site"
+#' @param ylab the y-axis label, default "Protected fragment length"
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
@@ -218,7 +220,9 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' # See vignette for more examples
 #'
 coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
-                            legendPos = "right", addFracPlot = FALSE) {
+                            legendPos = "right", addFracPlot = FALSE,
+                            xlab = "Position relative to start site",
+                            ylab = "Protected fragment length") {
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
@@ -228,8 +232,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
     scale_fill_gradientn(colours = c("white", "yellow2", "yellow3",
                                      "lightblue", "blue", "navy"),
                          name = prettyScoring(scoring)) +
-    xlab("Position relative to start site") +
-    ylab("Protected fragment length") +
+    xlab(xlab) +
+    ylab(ylab) +
     scale_x_continuous(breaks = xAxisScaler(coverage$position)) +
     theme_bw() + theme(panel.grid.major = element_blank(),
                        panel.grid.minor = element_blank()) +

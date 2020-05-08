@@ -9,7 +9,9 @@ coverageHeatMap(
   output = NULL,
   scoring = "zscore",
   legendPos = "right",
-  addFracPlot = FALSE
+  addFracPlot = FALSE,
+  xlab = "Position relative to start site",
+  ylab = "Protected fragment length"
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
 be ? ("top", "bottom", "right", "left")}
 
 \item{addFracPlot}{Add plot on top of heatmap with fractions per positions}
+
+\item{xlab}{the x-axis label, default "Position relative to start site"}
+
+\item{ylab}{the y-axis label, default "Protected fragment length"}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

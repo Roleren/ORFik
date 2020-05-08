@@ -452,6 +452,18 @@ optimizeReads <- function(grl, reads) {
 #' @return  Converted GRanges object
 #' @export
 #' @family utils
+#' @examples
+#' gr <- GRanges("chr1", 1:10,"+")
+#' # 5 prime ends
+#' convertToOneBasedRanges(gr)
+#' # is equal to convertToOneBasedRanges(gr, method = "5prime")
+#' # 3 prime ends
+#' convertToOneBasedRanges(gr, method = "3prime")
+#' # With lengths
+#' convertToOneBasedRanges(gr, addSizeColumn = TRUE)
+#' # With score (# of replicates)
+#' gr <- rep(gr, 2)
+#' convertToOneBasedRanges(gr, addSizeColumn = TRUE, addScoreColumn = TRUE)
 #'
 convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE,

@@ -38,6 +38,15 @@ variable names of libraries (character vector)
 \description{
 What will each sample be called given the columns of the experiment?
 }
+\examples{
+#df <- read.experiment("template")
+#bamVarName(df)
+
+# without libtype
+#bamVarName(df, skip.libtype = TRUE)
+# With experiment name
+#bamVarName(df, skip.experiment = FALSE)
+}
 \seealso{
 Other ORFik_experiment: 
 \code{\link{create.experiment}()},

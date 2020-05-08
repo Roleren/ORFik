@@ -383,6 +383,14 @@ validateExperiments <- function(df) {
 #' @return variable names of libraries (character vector)
 #' @export
 #' @family ORFik_experiment
+#' @examples
+#' #df <- read.experiment("template")
+#' #bamVarName(df)
+#'
+#' # without libtype
+#' #bamVarName(df, skip.libtype = TRUE)
+#' # With experiment name
+#' #bamVarName(df, skip.experiment = FALSE)
 bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.condition = length(unique(df$condition)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
@@ -591,6 +599,11 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' for more info see \code{\link{convertToOneBasedRanges}}
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
+#' @examples
+#' #df <- read.experiment("template")
+#' #simpleLibs(df)
+#' # Keep only 5' ends of reads
+#' #simpleLibs(df, method = "5prime")
 simpleLibs <- function(df,
                        out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,

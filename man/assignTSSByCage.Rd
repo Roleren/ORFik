@@ -65,6 +65,9 @@ be the positioned where the cage read (with highest read count in the
 interval).
 }
 \examples{
+ # assignTSSByCage(txdbFile, cagePath)
+ # Minimum 20 cage tags for new TSS
+ # assignTSSByCage(txdbFile, cagePath, filterValue = 20)
  \dontrun{
  library(GenomicFeatures)
  # Get the gtf txdb file
@@ -72,7 +75,7 @@ interval).
  package = "GenomicFeatures")
  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
  package = "ORFik")
- reassignTxDbByCage(txdbFile, cagePath)
+ assignTSSByCage(txdbFile, cagePath)
  }
 }
 \seealso{

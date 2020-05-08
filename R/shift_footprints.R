@@ -30,6 +30,9 @@
 #' @family pshifting
 #' @export
 #' @examples
+#' # Basic run
+#' #shiftFootprints(footprints, shifts)
+#' # Full example
 #' \dontrun{
 #' # input path to gtf, or load it as TxDb.
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
@@ -45,7 +48,7 @@
 #' }
 shiftFootprints <- function(footprints, shifts) {
   if (!is(shifts, "data.frame")) stop("shifts must be data.frame/data.table")
-  if (nrow(shifts) == 0) stop("No shifts in data.frame")
+  if (nrow(shifts) == 0) stop("No shifts found in data.frame")
 
   selected_lengths <- shifts$fraction
   selected_shifts <- shifts$offsets_start
@@ -128,6 +131,9 @@ shiftFootprints <- function(footprints, shifts) {
 #' @family pshifting
 #' @export
 #' @examples
+#' # Basic run
+#' #detectRibosomeShifts(footprints, txdb)
+#' # Full example
 #' \dontrun{
 #' # Transcriptome annotation ->
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
