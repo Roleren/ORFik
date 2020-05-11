@@ -115,7 +115,7 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
   rows <- seq(from = length(unique(codon.table.filtered$value)) - 0.5, to = 0.5)
   names(rows) <- unique(codon.table.filtered$value)
   xmin <- -0.5
-  for(col in unique(codon.table.filtered$variable)){
+  for(col in unique(codon.table.filtered$variable)) {
     mat <- codon.table.filtered[codon.table.filtered$variable == col,]
     highest <- rows[names(rows) == mat$value[which.max(mat$median_score)]]
     xmin = xmin + 1;xmax = xmin + 1; ymin = highest;ymax = ymin + 1

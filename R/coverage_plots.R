@@ -55,7 +55,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
       theme(axis.ticks.x = element_blank(),
             axis.text.x = element_blank()) +
       theme(panel.background=element_rect(fill="white", colour="gray")) +
-      scale_y_continuous(breaks = c(min(hitMap$score), max(hitMap$score))) +
+      scale_y_continuous(n.breaks = 2) +
       scale_fill_grey()
   } else {
     plot <- plot +
