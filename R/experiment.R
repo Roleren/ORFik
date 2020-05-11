@@ -553,7 +553,6 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 
   for (df in dfl) {
     validateExperiments(df)
-    libTypes <- libraryTypes(df)
     varNames <- bamVarName(df)
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage

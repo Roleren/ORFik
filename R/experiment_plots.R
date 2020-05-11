@@ -115,7 +115,6 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
                                 outdir = NULL, scores = c("sum", "zscore"),
                                 reads, returnCoverage = FALSE,
                                 windowSize = 100) {
-
   libTypes <- libraryTypes(df)
   if (is(reads, "list") | is(reads, "GAlignmentsList") |
       is(reads, "GRangesList")) {

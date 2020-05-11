@@ -104,9 +104,11 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
   plot_matrix2_log <- ggplot(data=codon.table.filtered,
                              aes(x=variable, y=value, fill=log2(median_score))) +
     theme(panel.background=element_rect(fill="lightgrey", colour="lightgrey")) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
     geom_tile(color = "lightgrey") +
     scale_fill_gradientn(colors = c("blue", "white", "red"), na.value = 'lightgrey',
-                         name = paste0("log2(median_", type,")")) +
+                         name = paste0("log2(median ", type,")")) +
     xlab(paste0("Position realitive to ", xlab)) +
     ylab("Nucleotide")
 
@@ -209,10 +211,13 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
   # Define plot settings:
   new_pallet_1 <- c("#E495A5","#ABB065","#39BEB1","#ACA4E2")
   new_pallet_2 <- c("#39BEB1", "#ACA4E2", "#E495A5")
-  tl <- theme(legend.position = c(0.2, 0.67), legend.background=element_blank())
-  tlb <- theme(legend.position = c(0.8, 0.3), legend.background=element_blank(),
+  background <- element_rect(fill=alpha("white", 0.4),
+                             linetype="solid",
+                             colour = alpha("white", 0.4))
+  tl <- theme(legend.position = c(0.25, 0.70), legend.background=background)
+  tlb <- theme(legend.position = c(0.8, 0.20), legend.background=background,
                axis.ticks.y=element_blank(), axis.text.y = element_blank())
-  tit <- labs(color = "First nucleotide")
+  tit <- labs(color = "1st nucleotide")
   titb <- labs(color = "Motif")
 
   se1 <- ggplot(data=dt, aes((rate), colour = seq1)) +

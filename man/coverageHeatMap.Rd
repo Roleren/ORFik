@@ -69,6 +69,8 @@ coverage <- windowPerReadLength(grl, reads = reads, upstream = 0,
 
 coverageHeatMap(coverage)
 
+# With top sum bar
+coverageHeatMap(coverage, addFracPlot = TRUE)
 # See vignette for more examples
 
 }

@@ -60,10 +60,9 @@ You can also assign a score column manually.}
 a data.table with lengths by coverage / vector of proportions
 }
 \description{
-This is like a more detailed floss score, where floss score takes fraction
-of reads per read length over whole window, this is defined as:
-Fraction of reads  per read length, per position in whole window (by
-upstream and downstream)
+This is defined as:
+Fraction of reads  per read length, per position in whole window (defined
+by upstream and downstream)
 }
 \details{
 If tx is not NULL, it gives a metaWindow, centered around startSite of

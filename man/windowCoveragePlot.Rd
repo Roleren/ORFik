@@ -10,7 +10,7 @@ windowCoveragePlot(
   scoring = "zscore",
   colors = c("skyblue4", "orange"),
   title = "Coverage metaplot",
-  type = "transcript",
+  type = "transcripts",
   scaleEqual = FALSE,
   setMinToZero = FALSE
 )
@@ -29,8 +29,8 @@ using binary splits with colors c('skyblue4', 'orange').}
 
 \item{title}{a character (metaplot) (what is the title of plot?)}
 
-\item{type}{a character (transcript), what should legends say is
-the whole region? Transcript, gene, non coding rna etc.}
+\item{type}{a character (transcripts), what should legends say is
+the whole region? Transcripts, genes, non coding rnas etc.}
 
 \item{scaleEqual}{a logical (FALSE), should all fractions (rows), have same
 max value, for easy comparison of max values if needed.}

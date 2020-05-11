@@ -20,10 +20,10 @@ windowPerTranscript(
 
 \item{splitIn3}{a logical(TRUE), split window in 3 (leader, cds, trailer)}
 
-\item{windowSize}{an integer (100), size of windows}
+\item{windowSize}{an integer (100), size of windows (columns)}
 
 \item{fraction}{a character (1), info on reads (which read length,
-or which type (RNA seq))}
+or which type (RNA seq)) (row names)}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),

@@ -17,7 +17,7 @@
 #' @param type character (canonical CDS), type for plot
 #' @param scoring character (Average sum) which scoring did you use ?
 #' @param forHeatmap a logical (FALSE), should the plot be part of
-#' a heatmap? It will scale it differently. Removing x and y labels, and
+#' a heatmap? It will scale it differently. Removing title, x and y labels, and
 #' truncate spaces between bars.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
@@ -52,7 +52,11 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
       geom_bar(stat = "identity", width = 1) +
       xlab("") +
       ylab("") +
-      scale_x_continuous(breaks = xAxisScaler(hitMap$position))
+      theme(axis.ticks.x = element_blank(),
+            axis.text.x = element_blank()) +
+      theme(panel.background=element_rect(fill="white", colour="gray")) +
+      scale_y_continuous(breaks = c(min(hitMap$score), max(hitMap$score))) +
+      scale_fill_grey()
   } else {
     plot <- plot +
       geom_bar(stat = "identity") +
@@ -62,7 +66,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
       scale_x_continuous(breaks = xAxisScaler(hitMap$position))
   }
 
-  return(return(savePlot(plot, output)))
+  return(savePlot(plot, output))
 }
 
 #' Get meta coverage plot of reads
@@ -90,8 +94,8 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @param colors character vector colors to use in plot, will fix automaticly,
 #' using binary splits with colors c('skyblue4', 'orange').
 #' @param title a character (metaplot) (what is the title of plot?)
-#' @param type a character (transcript), what should legends say is
-#' the whole region? Transcript, gene, non coding rna etc.
+#' @param type a character (transcripts), what should legends say is
+#' the whole region? Transcripts, genes, non coding rnas etc.
 #' @param scaleEqual a logical (FALSE), should all fractions (rows), have same
 #'  max value, for easy comparison of max values if needed.
 #' @param setMinToZero a logical (FALSE), should minimum y-value be 0 (TRUE).
@@ -121,7 +125,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
                                colors = c('skyblue4', 'orange'),
                                title = "Coverage metaplot",
-                               type = "transcript", scaleEqual = FALSE,
+                               type = "transcripts", scaleEqual = FALSE,
                                setMinToZero = FALSE) {
   cov <- setDT(copy(coverage))
   if (is.null(cov$feature))
@@ -217,6 +221,8 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #'
 #' coverageHeatMap(coverage)
 #'
+#' # With top sum bar
+#' coverageHeatMap(coverage, addFracPlot = TRUE)
 #' # See vignette for more examples
 #'
 coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
@@ -271,20 +277,23 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150,
       stop("output does not name a valid directory")
     }
     return(NULL)
-  } else return(plot)
+  }
+  return(plot)
 }
 
 #' Scale x axis correctly
 #'
 #' Works for all coverage plots, that need 0 position aligning
 #'
+#' It basicly bins the x axis on floor(length of x axis / 30) or
+#' 1 if x < 30.
 #' @param covPos a numeric vector of positions in coverage
 #' @return a numeric vector from the seq() function, aligned to 0.
 xAxisScaler <- function(covPos) {
   pos <- length(unique(covPos))
   min <- min(covPos)
   max <- max(covPos)
-  by <- ifelse(pos > 55, ifelse(pos > 150, ifelse(pos > 300, 9, 6), 3), 1)
+  by <- max(floor(pos / 30), 1)
 
   return(seq(min, max, by) - (min %% by))
 }
@@ -311,10 +320,13 @@ yAxisScaler <- function(covPos) {
 #' @param scoring a character (the scoring)
 #' @return a new scoring name or the same if pretty
 prettyScoring <- function(scoring) {
+  if (is.null(scoring)) return("raw")
   if (scoring == "log2sum") {
     scoring <- "log2(sum)"
   } else if (scoring == "log10sum") {
     scoring <- "log10(sum)"
+  } else if (scoring == "transcriptNormalized") {
+    scoring <- "Transcript Normalized"
   }
   return(scoring)
 }

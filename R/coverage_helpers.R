@@ -414,10 +414,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 
 #' Find proportion of reads per position per read length in window
 #'
-#' This is like a more detailed floss score, where floss score takes fraction
-#' of reads per read length over whole window, this is defined as:
-#' Fraction of reads  per read length, per position in whole window (by
-#' upstream and downstream)
+#' This is defined as:
+#' Fraction of reads  per read length, per position in whole window (defined
+#' by upstream and downstream)
 #'
 #' If tx is not NULL, it gives a metaWindow, centered around startSite of
 #' grl from upstream and downstream. If tx is NULL, it will use only downstream
@@ -463,7 +462,11 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   windows <- startRegion(grl, tx, TRUE, upstream, downstream)
   noHits <- widthPerGroup(windows) < windowSize
   if (all(noHits)) {
-    warning("no grl ranges had valid window size!")
+    warning("No object in grl had valid window size!")
+    message(paste("First window should be:", windowSize, "it is:",
+                  widthPerGroup(windows[1])))
+    print(grl[noHits][1])
+    message("Maybe you forgot extendLeaders()?")
     return(data.table())
   }
   rWidth <- readWidths(reads)
