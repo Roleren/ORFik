@@ -10,7 +10,9 @@ TOP.Motif.ecdf(
   start = 1,
   stop = max(nchar(seqs)),
   xlim = c("q10", "q99"),
-  type = "Scanning efficiency"
+  type = "Scanning efficiency",
+  legend.position.1st = c(0.25, 0.7),
+  legend.position.motif = c(0.8, 0.2)
 )
 }
 \arguments{
@@ -32,6 +34,12 @@ type: numeric or quantile of length 2,
 3. Set to NULL if you want all values. Backend uses coord_cartesian.}
 
 \item{type}{What type is the rate scoring ? default ("Scanning efficiency")}
+
+\item{legend.position.1st}{adjust left plot label position, default c(0.25, 0.70),
+("none", "left", "right", "bottom", "top", or two-element numeric vector)}
+
+\item{legend.position.motif}{adjust right plot label position, default c(0.8, 0.20),
+("none", "left", "right", "bottom", "top", or two-element numeric vector)}
 }
 \value{
 a ggplot gtable of the TOP motifs in 2 plots

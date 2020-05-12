@@ -148,8 +148,12 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #' 2. Set to numeric values, like c(5, 1000),
 #' 3. Set to NULL if you want all values. Backend uses coord_cartesian.
 #' @param type What type is the rate scoring ? default ("Scanning efficiency")
+#' @param legend.position.1st adjust left plot label position, default c(0.25, 0.70),
+#' ("none", "left", "right", "bottom", "top", or two-element numeric vector)
+#' @param legend.position.motif adjust right plot label position, default c(0.8, 0.20),
+#' ("none", "left", "right", "bottom", "top", or two-element numeric vector)
 #' @return a ggplot gtable of the TOP motifs in 2 plots
-#' @importFrom gridExtra grid.arrange
+#' @importFrom cowplot plot_grid
 #' @export
 #' @examples
 #'
@@ -179,7 +183,9 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #'
 TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
                          xlim = c("q10","q99"),
-                         type = "Scanning efficiency") {
+                         type = "Scanning efficiency",
+                         legend.position.1st = "bottom",
+                         legend.position.motif = "bottom") {
   if (length(seqs) != length(rate)) stop("Length of rate and seq must be equal!")
   if (length(seqs) == 0 | length(rate) == 0) stop("Length of rate and seq must be > 0!")
   if (start > stop) stop("Stop must be bigger or equal to start")
@@ -211,11 +217,9 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
   # Define plot settings:
   new_pallet_1 <- c("#E495A5","#ABB065","#39BEB1","#ACA4E2")
   new_pallet_2 <- c("#39BEB1", "#ACA4E2", "#E495A5")
-  background <- element_rect(fill=alpha("white", 0.4),
-                             linetype="solid",
-                             colour = alpha("white", 0.4))
-  tl <- theme(legend.position = c(0.25, 0.70), legend.background=background)
-  tlb <- theme(legend.position = c(0.8, 0.20), legend.background=background,
+
+  tl <- theme(legend.position = legend.position.1st, legend.background=element_blank())
+  tlb <- theme(legend.position = legend.position.motif, legend.background=element_blank(),
                axis.ticks.y=element_blank(), axis.text.y = element_blank())
   tit <- labs(color = "1st nucleotide")
   titb <- labs(color = "Motif")
@@ -227,7 +231,7 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     ylab("") +
     xlab("") +
     theme_bw() +
-    tl + tit
+    tl + tit + theme(plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"))
 
   se2 <- ggplot(data=dt, aes((rate), colour = TOP)) +
     stat_ecdf() +
@@ -236,7 +240,7 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     ylab("") +
     xlab("") +
     theme_bw() +
-    tlb + titb
+    tlb + titb + theme(plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"))
 
   if (!is.null(xlim)) {
     if (length(xlim) != 2) stop("xlim must be length 2 if defined!")
@@ -251,9 +255,8 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     se1 <- se1 + coord_cartesian(xlim = xlim)
     se2 <- se2 + coord_cartesian(xlim = xlim)
   }
-
-  comb <- grid.arrange(se1, se2, bottom = paste0("log10(", type, ")"),
-                       nrow = 1)
+  title <- ggplot() + ggtitle(paste0("log10(", type, ")"))
+  comb <- plot_grid(se1, se2, nrow = 1, align = "v")
   return(comb)
 }
 
