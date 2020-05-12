@@ -148,12 +148,13 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #' 2. Set to numeric values, like c(5, 1000),
 #' 3. Set to NULL if you want all values. Backend uses coord_cartesian.
 #' @param type What type is the rate scoring ? default ("Scanning efficiency")
-#' @param legend.position.1st adjust left plot label position, default c(0.25, 0.70),
+#' @param legend.position.1st adjust left plot label position, default c(0.75, 0.28),
 #' ("none", "left", "right", "bottom", "top", or two-element numeric vector)
-#' @param legend.position.motif adjust right plot label position, default c(0.8, 0.20),
+#' @param legend.position.motif adjust right plot label position, default c(0.75, 0.28),
 #' ("none", "left", "right", "bottom", "top", or two-element numeric vector)
 #' @return a ggplot gtable of the TOP motifs in 2 plots
 #' @importFrom cowplot plot_grid
+#' @importFrom gridExtra grid.arrange
 #' @export
 #' @examples
 #'
@@ -174,18 +175,21 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #'   # Some toy ribo-seq fpkm scores on cds
 #'   fpkm <- sample(1:115, length(leadersCage), replace = TRUE)
 #'   # Standard arguments
-#'   TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM")
-#'
+#'   TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM",
+#'                  legend.position.1st = "bottom",
+#'                  legend.position.motif = "bottom")
 #'   # with no zoom on x-axis:
-#'   TOP.Motif.ecdf(seqs, fpkm, xlim = NULL)
+#'   TOP.Motif.ecdf(seqs, fpkm, xlim = NULL,
+#'                  legend.position.1st = "bottom",
+#'                  legend.position.motif = "bottom")
 #' }
 #' }
 #'
 TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
                          xlim = c("q10","q99"),
                          type = "Scanning efficiency",
-                         legend.position.1st = "bottom",
-                         legend.position.motif = "bottom") {
+                         legend.position.1st = c(0.75, 0.28),
+                         legend.position.motif = c(0.75, 0.28)) {
   if (length(seqs) != length(rate)) stop("Length of rate and seq must be equal!")
   if (length(seqs) == 0 | length(rate) == 0) stop("Length of rate and seq must be > 0!")
   if (start > stop) stop("Stop must be bigger or equal to start")
@@ -240,7 +244,7 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     ylab("") +
     xlab("") +
     theme_bw() +
-    tlb + titb + theme(plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"))
+    tlb + titb + theme(plot.margin = unit(c(0.1, 1, 0.1, 0.1), "cm"))
 
   if (!is.null(xlim)) {
     if (length(xlim) != 2) stop("xlim must be length 2 if defined!")
@@ -255,8 +259,9 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     se1 <- se1 + coord_cartesian(xlim = xlim)
     se2 <- se2 + coord_cartesian(xlim = xlim)
   }
-  title <- ggplot() + ggtitle(paste0("log10(", type, ")"))
+
   comb <- plot_grid(se1, se2, nrow = 1, align = "v")
+  comb <- grid.arrange(comb, bottom = paste0("log10(", type, ")"))
   return(comb)
 }
 

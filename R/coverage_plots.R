@@ -52,8 +52,8 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
       geom_bar(stat = "identity", width = 1) +
       xlab("") +
       ylab("") +
-      theme(axis.ticks.x = element_blank(),
-            axis.text.x = element_blank(),
+      theme(axis.ticks = element_blank(),
+            axis.text = element_blank(),
             plot.margin = unit(c(0.1,1,-0.5,1), "cm")) +
       theme(panel.background=element_rect(fill="white", colour="gray")) +
       scale_y_continuous(n.breaks = 2) +

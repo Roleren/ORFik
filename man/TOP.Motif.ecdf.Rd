@@ -11,8 +11,8 @@ TOP.Motif.ecdf(
   stop = max(nchar(seqs)),
   xlim = c("q10", "q99"),
   type = "Scanning efficiency",
-  legend.position.1st = c(0.25, 0.7),
-  legend.position.motif = c(0.8, 0.2)
+  legend.position.1st = c(0.75, 0.28),
+  legend.position.motif = c(0.75, 0.28)
 )
 }
 \arguments{
@@ -35,10 +35,10 @@ type: numeric or quantile of length 2,
 
 \item{type}{What type is the rate scoring ? default ("Scanning efficiency")}
 
-\item{legend.position.1st}{adjust left plot label position, default c(0.25, 0.70),
+\item{legend.position.1st}{adjust left plot label position, default c(0.75, 0.28),
 ("none", "left", "right", "bottom", "top", or two-element numeric vector)}
 
-\item{legend.position.motif}{adjust right plot label position, default c(0.8, 0.20),
+\item{legend.position.motif}{adjust right plot label position, default c(0.75, 0.28),
 ("none", "left", "right", "bottom", "top", or two-element numeric vector)}
 }
 \value{
@@ -71,10 +71,13 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   # Some toy ribo-seq fpkm scores on cds
   fpkm <- sample(1:115, length(leadersCage), replace = TRUE)
   # Standard arguments
-  TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM")
-
+  TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM",
+                 legend.position.1st = "bottom",
+                 legend.position.motif = "bottom")
   # with no zoom on x-axis:
-  TOP.Motif.ecdf(seqs, fpkm, xlim = NULL)
+  TOP.Motif.ecdf(seqs, fpkm, xlim = NULL,
+                 legend.position.1st = "bottom",
+                 legend.position.motif = "bottom")
 }
 }
 
