@@ -45,6 +45,7 @@ Imports:
   DESeq2 (>= 1.24.0),
   ggplot2 (>= 2.2.1),
   gridExtra (>= 2.3),
+  cowplot (>= 1.0.0),
   GGally (>= 1.4.0),
   methods (>= 3.6.0)
 RoxygenNote: 7.1.0

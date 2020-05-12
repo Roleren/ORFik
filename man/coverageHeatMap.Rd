@@ -26,7 +26,8 @@ transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
 \item{legendPos}{a character, Default "right". Where should the fill legend
 be ? ("top", "bottom", "right", "left")}
 
-\item{addFracPlot}{Add plot on top of heatmap with fractions per positions}
+\item{addFracPlot}{Add margin histogram plot on top of heatmap with
+fractions per positions}
 
 \item{xlab}{the x-axis label, default "Position relative to start site"}
 

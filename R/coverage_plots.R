@@ -53,7 +53,8 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
       xlab("") +
       ylab("") +
       theme(axis.ticks.x = element_blank(),
-            axis.text.x = element_blank()) +
+            axis.text.x = element_blank(),
+            plot.margin = unit(c(0,1,-0.5,1), "cm")) +
       theme(panel.background=element_rect(fill="white", colour="gray")) +
       scale_y_continuous(n.breaks = 2) +
       scale_fill_grey()
@@ -200,13 +201,14 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @inheritParams windowCoveragePlot
 #' @param legendPos a character, Default "right". Where should the fill legend
 #' be ? ("top", "bottom", "right", "left")
-#' @param addFracPlot Add plot on top of heatmap with fractions per positions
+#' @param addFracPlot Add margin histogram plot on top of heatmap with
+#'  fractions per positions
 #' @param xlab the x-axis label, default "Position relative to start site"
 #' @param ylab the y-axis label, default "Protected fragment length"
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
-#' @importFrom gridExtra grid.arrange
+#' @importFrom cowplot plot_grid
 #' @family coveragePlot
 #' @export
 #' @examples
@@ -248,10 +250,11 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 
   if (addFracPlot) {
     plot2 <- pSitePlot(coverage, forHeatmap = TRUE)
-    plot <- grid.arrange(plot2, plot + theme(legend.position = "bottom"),
-                                             heights = c(1, 4))
+    plot <- plot_grid(plot2,
+                      plot + theme(legend.position = "bottom",
+                                   plot.margin = unit(c(0,1,0,1), "cm")),
+                      ncol = 1, rel_heights = c(1,4), align = "v")
   }
-
   return(savePlot(plot, output))
 }
 
