@@ -16,6 +16,6 @@ a numeric vector from the seq() function, aligned to 0.
 Works for all coverage plots, that need 0 position aligning
 }
 \details{
-It basicly bins the x axis on floor(length of x axis / 30) or
-1 if x < 30.
+It basicly bins the x axis on floor(length of x axis / 20) or
+1 if x < 20
 }

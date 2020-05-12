@@ -54,7 +54,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
       ylab("") +
       theme(axis.ticks = element_blank(),
             axis.text = element_blank(),
-            plot.margin = unit(c(0.1,1,-0.5,1), "cm")) +
+            plot.margin = unit(c(0.1,0.3,-0.5,0.8), "cm")) +
       theme(panel.background=element_rect(fill="white", colour="gray")) +
       scale_y_continuous(n.breaks = 2) +
       scale_fill_grey()
@@ -252,7 +252,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
     plot2 <- pSitePlot(coverage, forHeatmap = TRUE)
     plot <- plot_grid(plot2,
                       plot + theme(legend.position = "bottom",
-                                   plot.margin = unit(c(0,1,0,1), "cm")),
+                                   plot.margin = unit(c(0,0.3,0,0.8), "cm")),
                       ncol = 1, rel_heights = c(1,4), align = "v")
   }
   return(savePlot(plot, output))
@@ -288,15 +288,15 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150,
 #'
 #' Works for all coverage plots, that need 0 position aligning
 #'
-#' It basicly bins the x axis on floor(length of x axis / 30) or
-#' 1 if x < 30.
+#' It basicly bins the x axis on floor(length of x axis / 20) or
+#' 1 if x < 20
 #' @param covPos a numeric vector of positions in coverage
 #' @return a numeric vector from the seq() function, aligned to 0.
 xAxisScaler <- function(covPos) {
   pos <- length(unique(covPos))
   min <- min(covPos)
   max <- max(covPos)
-  by <- max(floor(pos / 30), 1)
+  by <- max(floor(pos / 20), 1)
 
   return(seq(min, max, by) - (min %% by))
 }
