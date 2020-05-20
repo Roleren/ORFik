@@ -81,8 +81,8 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
   xPos <- seq(start, stop + 1) - start + 1 - center
   xPos <- xPos[-center]
   xPos[xPos > 0] <- paste0("+", xPos[xPos > 0])
-  codon.table$variable <- factor(codon.table$variable, levels=vars,
-                                 labels=xPos)
+  codon.table$variable <- factor(codon.table$variable, levels = vars,
+                                 labels = xPos)
 
   if (skip.startCodon) {
     codon.table[codon.table$variable %in% c("+1", "+2", "+3"), ]$median_score <- NA
@@ -115,8 +115,11 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
   rows <- seq(from = length(unique(codon.table.filtered$value)) - 0.5, to = 0.5)
   names(rows) <- unique(codon.table.filtered$value)
   xmin <- -0.5
+  # Per position/column (set the black max box)
   for(col in unique(codon.table.filtered$variable)) {
     mat <- codon.table.filtered[codon.table.filtered$variable == col,]
+    # Bug here, if not all letters are remaining
+
     highest <- rows[names(rows) == mat$value[which.max(mat$median_score)]]
     xmin = xmin + 1;xmax = xmin + 1; ymin = highest;ymax = ymin + 1
     if (length(highest) == 0) next
@@ -135,6 +138,10 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #'
 #' Top motif defined as a TSS of C and 4 T's or C's (pyrimidins) downstream
 #' of TSS C.
+#'
+#' The right plot groups:
+#' C nucleotide, TOP motif (C, then 4 pyrimidines) and
+#' OTHER (all other TSS variants).
 #' @param seqs the sequences (character vector, DNAStringSet).
 #' See example below for input.
 #' @param rate a scoring vector (equal size to seqs)

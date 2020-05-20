@@ -148,22 +148,23 @@ There are 2 main ways of grouping ORFs.
 
 To do this more easily, you can use the function `groupGRangesBy`.
 
-Grouped by transcript:
-we use the names to group
+1. Grouped by transcript:
+We use the names() to group, 
 ```{r eval = TRUE, echo = TRUE}
 unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
-test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping by names
+test_ranges <- groupGRangesBy(unlisted_ranges) # <- defualt is tx grouping by names()
 test_ranges[1]
 ```
+All orfs within a transcript grouped together as one group, the names column seperates the orfs.
 
-Grouped by ORF:
+2. Grouped by ORF:
 we use the orfs meta column called ($names) to group, it is made by ORFik.
 ```{r eval = TRUE, echo = TRUE}
 unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
 test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
 test_ranges[1:2]
 ```
-
+Here you see each group is one ORF only.
 
 ## Filtering example
 

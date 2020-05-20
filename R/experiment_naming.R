@@ -162,14 +162,16 @@ repNames <- function() {
 #' of the main name in second column as a list.
 conditionNames <- function() {
   mainName <- c("WT", "MZ", "4Ei", "Silvesterol",
-                "Mutant", "cas9")
+                "Mutant", "cas9", "NMDA", "DHPG")
   allNames <-
-    list(c("WT", "wt", "control", "Control"),
+    list(c("WT", "wt", "control", "Control", "Basal"),
          c("MZ", "dicer"),
          c("4Ei", "4ei"),
          c("silvesterol", "Silvesterol"),
          c("mutant", "Mutant"),
-         c("Cas9", "cas9")
+         c("Cas9", "cas9"),
+         c("NMDA"),
+         c("DHPG")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
