@@ -247,7 +247,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 
   plot <- ggplot(coverage, aes(x = position, y = fraction, fill = score)) +
     geom_tile()  +
-    scale_fill_gradientn(colors,
+    scale_fill_gradientn(colours = colors,
                          name = prettyScoring(scoring)) +
     xlab(xlab) +
     ylab(ylab) +
