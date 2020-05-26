@@ -24,8 +24,9 @@ Remember to resize them beforehand to width of 1 to focus on
 
 \item{windows}{GRangesList or GRanges of your ranges}
 
-\item{scoring}{a character, one of (zscore, transcriptNormalized,
-mean, median, sum, sumLength, NULL), see ?coverageScorings}
+\item{scoring}{a character, default: "sum", one of
+(zscore, transcriptNormalized, mean, median, sum, sumLength, NULL),
+see ?coverageScorings for info and more alternatives.}
 
 \item{withFrames}{a logical (TRUE), return positions with the 3 frames,
 relative to zeroPosition. zeroPosition is frame 0.}

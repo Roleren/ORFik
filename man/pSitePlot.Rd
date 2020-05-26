@@ -27,7 +27,9 @@ to path given. If no format is given, is save as pdf.}
 
 \item{type}{character (canonical CDS), type for plot}
 
-\item{scoring}{character (Average sum) which scoring did you use ?}
+\item{scoring}{character, default: (Averaged counts),
+which scoring did you use ?
+see ?coverageScorings for info and more alternatives.}
 
 \item{forHeatmap}{a logical (FALSE), should the plot be part of
 a heatmap? It will scale it differently. Removing title, x and y labels, and

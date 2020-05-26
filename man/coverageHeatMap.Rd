@@ -12,7 +12,8 @@ coverageHeatMap(
   addFracPlot = FALSE,
   xlab = "Position relative to start site",
   ylab = "Protected fragment length",
-  colors = "default"
+  colors = "default",
+  title = NULL
 )
 }
 \arguments{
@@ -21,8 +22,10 @@ coverageHeatMap(
 \item{output}{character string (NULL), if set, saves the plot as pdf or png
 to path given. If no format is given, is save as pdf.}
 
-\item{scoring}{character vector (zscore), either of zScore,
-transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
+\item{scoring}{character vector, default "zscore",
+Which scoring did you use to create? either of zscore,
+transcriptNormalized, sum, mean, median, ..
+see ?coverageScorings for info and more alternatives.}
 
 \item{legendPos}{a character, Default "right". Where should the fill legend
 be ? ("top", "bottom", "right", "left")}
@@ -37,6 +40,9 @@ fractions per positions}
 \item{colors}{character vector, default: "default", this gives you:
 c("white", "yellow2", "yellow3", "lightblue", "blue", "navy"),
 do "high" for more high contrasts, or specify your own colors.}
+
+\item{title}{a character, default NULL (no title),
+what is the top title of plot?}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

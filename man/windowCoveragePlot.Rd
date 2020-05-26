@@ -21,8 +21,9 @@ windowCoveragePlot(
 \item{output}{character string (NULL), if set, saves the plot as pdf or png
 to path given. If no format is given, is save as pdf.}
 
-\item{scoring}{character vector (zscore), either of zScore,
-transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.}
+\item{scoring}{character vector, default "zscore", either of zscore,
+transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
+see ?coverageScorings for info and more alternatives.}
 
 \item{colors}{character vector colors to use in plot, will fix automaticly,
 using binary splits with colors c('skyblue4', 'orange').}

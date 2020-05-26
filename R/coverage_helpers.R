@@ -75,8 +75,9 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' Remember to resize them beforehand to width of 1 to focus on
 #' 5' ends of footprints etc, if that is wanted.
 #' @param windows GRangesList or GRanges of your ranges
-#' @param scoring a character, one of (zscore, transcriptNormalized,
-#' mean, median, sum, sumLength, NULL), see ?coverageScorings
+#' @param scoring a character, default: "sum", one of
+#' (zscore, transcriptNormalized, mean, median, sum, sumLength, NULL),
+#' see ?coverageScorings for info and more alternatives.
 #' @param withFrames a logical (TRUE), return positions with the 3 frames,
 #' relative to zeroPosition. zeroPosition is frame 0.
 #' @param zeroPosition an integer DEFAULT (NULL), the point if all windows
@@ -438,8 +439,8 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' NOTE!: if windows have different widths, this will be ignored.
 #' @param scoring a character (transcriptNormalized), one of
 #' (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
-#' see ?coverageScorings. Use to decide a scoring of hits per position
-#' for metacoverage etc.
+#' see ?coverageScorings for more info. Use to decide a scoring of hits
+#' per position for metacoverage etc.
 #' @return a data.table with lengths by coverage / vector of proportions
 #' @family coverage
 #' @importFrom data.table rbindlist

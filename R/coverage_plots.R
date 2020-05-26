@@ -15,7 +15,9 @@
 #' @param output character (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param type character (canonical CDS), type for plot
-#' @param scoring character (Average sum) which scoring did you use ?
+#' @param scoring character, default: (Averaged counts),
+#' which scoring did you use ?
+#' see ?coverageScorings for info and more alternatives.
 #' @param forHeatmap a logical (FALSE), should the plot be part of
 #' a heatmap? It will scale it differently. Removing title, x and y labels, and
 #' truncate spaces between bars.
@@ -90,8 +92,9 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @param coverage a data.table, e.g. output of scaledWindowCoverage
 #' @param output character string (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
-#' @param scoring character vector (zscore), either of zScore,
+#' @param scoring character vector, default "zscore", either of zscore,
 #' transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
+#' see ?coverageScorings for info and more alternatives.
 #' @param colors character vector colors to use in plot, will fix automaticly,
 #' using binary splits with colors c('skyblue4', 'orange').
 #' @param title a character (metaplot) (what is the title of plot?)
@@ -208,6 +211,12 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @param colors character vector, default: "default", this gives you:
 #'  c("white", "yellow2", "yellow3", "lightblue", "blue", "navy"),
 #'  do "high" for more high contrasts, or specify your own colors.
+#' @param scoring character vector, default "zscore",
+#' Which scoring did you use to create? either of zscore,
+#' transcriptNormalized, sum, mean, median, ..
+#' see ?coverageScorings for info and more alternatives.
+#' @param title a character, default NULL (no title),
+#' what is the top title of plot?
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
@@ -234,7 +243,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
                             legendPos = "right", addFracPlot = FALSE,
                             xlab = "Position relative to start site",
                             ylab = "Protected fragment length",
-                            colors = "default") {
+                            colors = "default", title = NULL) {
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
@@ -258,12 +267,12 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
     theme(legend.position = legendPos)
 
   if (addFracPlot) {
-    plot2 <- pSitePlot(coverage, forHeatmap = TRUE)
+    plot2 <- pSitePlot(coverage, forHeatmap = TRUE) + ggtitle(title)
     plot <- plot_grid(plot2,
                       plot + theme(legend.position = "bottom",
                                    plot.margin = unit(c(0,0.3,0,0.8), "cm")),
                       ncol = 1, rel_heights = c(1,4), align = "v")
-  }
+  } else plot <- plot + ggtitle(title)
   return(savePlot(plot, output))
 }
 

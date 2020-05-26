@@ -46,8 +46,8 @@ NOTE!: if windows have different widths, this will be ignored.}
 
 \item{scoring}{a character (transcriptNormalized), one of
 (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
-see ?coverageScorings. Use to decide a scoring of hits per position
-for metacoverage etc.}
+see ?coverageScorings for more info. Use to decide a scoring of hits
+per position for metacoverage etc.}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
