@@ -51,6 +51,10 @@ And some score, scanning efficiency (SE), ribo-seq fpkm, TE etc.
 \details{
 Top motif defined as a TSS of C and 4 T's or C's (pyrimidins) downstream
 of TSS C.
+
+The right plot groups:
+C nucleotide, TOP motif (C, then 4 pyrimidines) and
+OTHER (all other TSS variants).
 }
 \examples{
 

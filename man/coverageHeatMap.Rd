@@ -11,7 +11,8 @@ coverageHeatMap(
   legendPos = "right",
   addFracPlot = FALSE,
   xlab = "Position relative to start site",
-  ylab = "Protected fragment length"
+  ylab = "Protected fragment length",
+  colors = "default"
 )
 }
 \arguments{
@@ -32,6 +33,10 @@ fractions per positions}
 \item{xlab}{the x-axis label, default "Position relative to start site"}
 
 \item{ylab}{the y-axis label, default "Protected fragment length"}
+
+\item{colors}{character vector, default: "default", this gives you:
+c("white", "yellow2", "yellow3", "lightblue", "blue", "navy"),
+do "high" for more high contrasts, or specify your own colors.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

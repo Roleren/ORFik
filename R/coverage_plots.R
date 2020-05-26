@@ -205,6 +205,9 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #'  fractions per positions
 #' @param xlab the x-axis label, default "Position relative to start site"
 #' @param ylab the y-axis label, default "Protected fragment length"
+#' @param colors character vector, default: "default", this gives you:
+#'  c("white", "yellow2", "yellow3", "lightblue", "blue", "navy"),
+#'  do "high" for more high contrasts, or specify your own colors.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
@@ -230,15 +233,21 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
                             legendPos = "right", addFracPlot = FALSE,
                             xlab = "Position relative to start site",
-                            ylab = "Protected fragment length") {
+                            ylab = "Protected fragment length",
+                            colors = "default") {
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
+  if (colors == "default") {
+    colors = c("white", "yellow2", "yellow3", "lightblue", "blue", "navy")
+  } else if (colors == "high") {
+    colors <- c("white", "yellow2", "yellow3", "lightblue", "blue", "blue",
+                "blue", "navy", "black")
+  }
 
   plot <- ggplot(coverage, aes(x = position, y = fraction, fill = score)) +
     geom_tile()  +
-    scale_fill_gradientn(colours = c("white", "yellow2", "yellow3",
-                                     "lightblue", "blue", "navy"),
+    scale_fill_gradientn(colors,
                          name = prettyScoring(scoring)) +
     xlab(xlab) +
     ylab(ylab) +
