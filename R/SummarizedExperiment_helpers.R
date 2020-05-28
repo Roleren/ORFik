@@ -228,10 +228,10 @@ countTable <- function(df, region = "mrna", type = "count",
       if (type == "summarized") return(res)
       if (type == "deseq") {
         # remove replicate from formula
-        formula <- colData(res)
+        formula <- colnames(colData(res))
         if ("replicate" %in% formula)
           formula <- formula[-grep("replicate", formula)]
-        formula <- as.formula(paste(c("~", paste(colnames(formula),
+        formula <- as.formula(paste(c("~", paste(formula,
                                     collapse = " + ")), collapse = " "))
         return(DESeqDataSet(res, design = formula))
       }
