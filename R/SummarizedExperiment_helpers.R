@@ -173,6 +173,8 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #'  of whole mrnas or one of (leaders, cds, trailers).
 #' @param type default: "count" (raw counts matrix),
 #' "summarized" (SummarizedExperiment object),
+#' "deseq" (Deseq2 experiment, design will be all valid non-unique
+#' columns except replicates, change by using DESeq2::design,
 #' normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm"
 #' @param collapse a logical/character (default FALSE), if TRUE all samples
 #' within the group SAMPLE will be collapsed to one. If "all", all
@@ -180,6 +182,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' as rowSum(elements_per_group) / ncol(elements_per_group)
 #' @return a data.table of columns as counts per library, column name
 #' is name of library. Rownames must be unique for now. Might change.
+#' @importFrom DESeq2 DESeqDataSet
 #' @export
 #' @examples
 #' # 1. Pick directory
@@ -204,6 +207,11 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # countTable(df, "mrna", type = "count")
 #' # Get count Table of mrnas with collapsed replicates
 #' # countTable(df, "mrna", collapse = TRUE)
+#' # Get count Table of mrnas as summarizedExperiment
+#' # countTable(df, "mrna", type = "summarized")
+#' # Get count Table of mrnas as DESeq2 object,
+#' # for differential expression analysis
+#' # countTable(df, "mrna", type = "deseq")
 countTable <- function(df, region = "mrna", type = "count",
                        collapse = FALSE) {
   if (is(df, "experiment")) {
@@ -218,6 +226,15 @@ countTable <- function(df, region = "mrna", type = "count",
     if (length(df) == 1) {
       res <- readRDS(df)
       if (type == "summarized") return(res)
+      if (type == "deseq") {
+        # remove replicate from formula
+        formula <- colData(res)
+        if ("replicate" %in% formula)
+          formula <- formula[-grep("replicate", formula)]
+        formula <- as.formula(paste(c("~", paste(colnames(formula),
+                                    collapse = " + ")), collapse = " "))
+        return(DESeqDataSet(res, design = formula))
+      }
       ress <- scoreSummarizedExperiment(res, type, collapse)
       if (is(ress, "matrix")) {
         ress <- as.data.table(ress)

@@ -145,7 +145,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
       message("Could not find raw read count of your data, setting to 20 M")
     } else {
       finals[order,]$Raw_reads <- raw_data$raw_reads
-      finals$ratio_raw_aligned = round(finals$Aligned_reads /
+      finals$ratio_aligned_raw = round(finals$Aligned_reads /
                                          finals$Raw_reads, 4)
     }
     setwd(oldDir)

@@ -496,7 +496,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
 #'
 #' Normally not used directly!
 #' @param logicals size 2 logical vector, the is.null checks for each column,
-#' @param grouping which grouping to perform
+#' @param grouping which grouping to perform, default "GF"
+#' Gene & Fraction grouping. Alternative "FGF", Fraction & position & feature.
 #' @return a quote of the grouping to pass to data.table
 coverageGroupings <- function(logicals, grouping = "GF") {
   one <- !logicals[1]

@@ -17,8 +17,10 @@
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 #'  This is the regions you want to score.
-#' @param RFP RiboSeq reads as GAlignment, GRanges or GRangesList object
-#' @param RNA RnaSeq reads as GAlignment, GRanges or GRangesList object
+#' @param RFP RiboSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
+#'  or \code{\link{GRangesList}} object
+#' @param RNA RnaSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
+#'  or \code{\link{GRangesList}} object
 #' @param Gtf a TxDb object of a gtf file or path to gtf, gff .sqlite etc.
 #' @param faFile a FaFile or BSgenome from the fasta file, see ?FaFile
 #' @param riboStart usually 26, the start of the floss interval, see ?floss

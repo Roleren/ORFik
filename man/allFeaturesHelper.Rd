@@ -27,9 +27,11 @@ allFeaturesHelper(
 with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 This is the regions you want to score.}
 
-\item{RFP}{RiboSeq reads as GAlignment, GRanges or GRangesList object}
+\item{RFP}{RiboSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
+or \code{\link{GRangesList}} object}
 
-\item{RNA}{RnaSeq reads as GAlignment, GRanges or GRangesList object}
+\item{RNA}{RnaSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
+or \code{\link{GRangesList}} object}
 
 \item{tx}{a GrangesList of transcripts,
 normally called from: exonsBy(Gtf, by = "tx", use.names = T)

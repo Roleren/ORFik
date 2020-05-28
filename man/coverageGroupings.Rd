@@ -9,7 +9,8 @@ coverageGroupings(logicals, grouping = "GF")
 \arguments{
 \item{logicals}{size 2 logical vector, the is.null checks for each column,}
 
-\item{grouping}{which grouping to perform}
+\item{grouping}{which grouping to perform, default "GF"
+Gene & Fraction grouping. Alternative "FGF", Fraction & position & feature.}
 }
 \value{
 a quote of the grouping to pass to data.table

@@ -15,6 +15,8 @@ of whole mrnas or one of (leaders, cds, trailers).}
 
 \item{type}{default: "count" (raw counts matrix),
 "summarized" (SummarizedExperiment object),
+"deseq" (Deseq2 experiment, design will be all valid non-unique
+columns except replicates, change by using DESeq2::design,
 normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm"}
 
 \item{collapse}{a logical/character (default FALSE), if TRUE all samples
@@ -61,4 +63,9 @@ df <- read.experiment(template)
 # countTable(df, "mrna", type = "count")
 # Get count Table of mrnas with collapsed replicates
 # countTable(df, "mrna", collapse = TRUE)
+# Get count Table of mrnas as summarizedExperiment
+# countTable(df, "mrna", type = "summarized")
+# Get count Table of mrnas as DESeq2 object,
+# for differential expression analysis
+# countTable(df, "mrna", type = "deseq")
 }
