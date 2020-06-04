@@ -460,6 +460,12 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 }
 
 #' Get filepaths to ORFik experiment
+#'
+#' If other type than "default" is given and that type is not found,
+#' it will return you default filepaths without warning. \cr
+#'
+#' For pshifted libraries, it will load "bedo" prioritized over "bed", if
+#' there exists both file types for the same file.
 #' @inheritParams outputLibs
 #' @param basename logical, default (FALSE).
 #' Get relative paths instead of full. Only use for inspection!
@@ -478,13 +484,13 @@ filepath <- function(df, type, basename = FALSE) {
 
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
-    if (type == "bedo") {
-      out.dir <- paste0(dirname(df$filepath[1]), "/bedo/")
+    if (type %in% c("bedo", "bed")) {
+      out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir,
                         remove.file_ext(x,
                                         basename = TRUE)
-                        , ".bedo")
+                        , ".", type)
       } else type <- "default"
     } else if (type == "pshifted") {
       out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")

@@ -225,16 +225,19 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' Shift footprints of each file in experiment
 #'
 #' Saves files to a specified location as .bed, it will include a score column
-#' containing read width.
-#'
+#' containing read width. \cr
 #' For more details, see: \code{\link{detectRibosomeShifts}}
+#'
+#' Remember that different species might have different default Ribosome
+#' read lengths, for human, mouse etc, normally around 27:30.
 #' @inheritParams detectRibosomeShifts
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir output directory for files,
 #' default: dirname(df$filepath[1]), making a /pshifted
 #' folder at that location
-#' @param output_format default (bed), use export.bed or ORFik optimized
-#' (bedo) using \code{\link{export.bedo}} ?
+#' @param output_format default c("bed", "bedo"), use export.bed or
+#' ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
+#' The bed format version can be used in IGV, bedo is faster to load in R.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
 #' or .bedo)
@@ -252,12 +255,15 @@ shiftFootprintsByExperiment <- function(df,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 26:34,
-                                        output_format = "bed",
+                                        output_format = c("bed", "bedo"),
                                         BPPARAM = bpparam()) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
-  message(paste("Saving", output_format, "files to:", out.dir))
+  if (!any(c("bed","bedo") %in% output_format))
+    stop("output_format must be bed, bedo or both")
+  for (out.form in output_format)
+    message(paste("Saving", out.form, "files to:", out.dir))
   message(paste("Shifting reads in experiment:", df@experiment))
 
   txdb <- loadTxdb(df)
@@ -276,14 +282,16 @@ shiftFootprintsByExperiment <- function(df,
                                    accepted.lengths = accepted.lengths)
     shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
-    if (output_format == "bed") {
+    if ("bedo" %in% output_format) {
+      shiftedb <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                         addSizeColumn = TRUE)
+      export.bedo(shiftedb, paste0(name, "_pshifted.bedo"))
+    }
+    if ("bed" %in% output_format) {
       shifted$score <- shifted$size
       export.bed(shifted, paste0(name, "_pshifted.bed"))
-    } else if (output_format == "bedo") {
-      shifted <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
-                                         addSizeColumn = TRUE)
-      export.bedo(shifted, paste0(name, "_pshifted.bedo"))
-    } else stop("output_format must be bed or bedo")
+    }
+
     return(invisible(NULL))
   }, path = path, df = df, start = start, stop = stop,
       top_tx = top_tx, minFiveUTR = minFiveUTR,
