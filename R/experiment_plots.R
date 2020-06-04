@@ -22,8 +22,10 @@
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
 #' @param format default (".png"), do ".pdf" if you want as pdf
+#' @inheritParams outputLibs
 #' @export
 #' @return NULL, or ggplot object if returnPlot is TRUE
+#' @family experiment plots
 #' @examples
 #' # Make ORFik experiment
 #' dir <- system.file("extdata", "", package = "ORFik")
@@ -47,7 +49,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(cds, FALSE)),
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
-                             dfr = NULL, idName = "", format = ".png") {
+                             dfr = NULL, idName = "", format = ".png",
+                             type = "default") {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))
 
@@ -55,7 +58,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
     varNames <- bamVarName(df)
-    outputLibs(df, leaders)
+    outputLibs(df, leaders, type = type)
     coverage <- data.table()
     if (!allTogether) {
       stop("fix!")
@@ -110,6 +113,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
 #' @param reads a GRanges / GAligment object of reads
 #' @param returnCoverage return data.table with coverage (default: FALSE)
 #' @param windowSize size of binned windows, default: 100
+#' @family experiment plots
 #' @return NULL, or ggplot object if returnPlot is TRUE
 transcriptWindowPer <- function(leaders, cds, trailers, df,
                                 outdir = NULL, scores = c("sum", "zscore"),
@@ -136,6 +140,51 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
   return(plotHelper(coverage, df, outdir, scores, returnCoverage))
 }
 
+#' Meta coverage over all transcripts
+#'
+#' Given as single window
+#' @inheritParams transcriptWindow
+#' @return NULL, or ggplot object if returnPlot is TRUE
+#' @family experiment plots
+#'
+transcriptWindow1 <- function(df, outdir = NULL,
+                       scores = c("sum", "zscore"),
+                       colors = rep("skyblue4", nrow(df)),
+                       title = "Coverage metaplot",
+                       windowSize = 100,
+                       returnPlot = is.null(outdir),
+                       dfr = NULL, idName = "", format = ".png",
+                       type = "default") {
+  dfl <- df
+  if(!is(dfl, "list")) dfl <- list(dfl)
+  for (df in dfl) {
+    varNames <- bamVarName(df)
+    outputLibs(df, leaders, type = type)
+    coverage <- data.table()
+    for (f in varNames) { # For each stage
+      print(f)
+      temp <-  windowPerTranscript(df.rna, reads = get(f),
+                                   splitIn3 = FALSE, fraction = f, )
+      coverage <- rbindlist(list(coverage, temp))
+    }
+    if (!is.null(dfr)) {
+      tx <- loadRegion(df, "tx")
+      tx <- tx[widthPerGroup(tx, FALSE) >= windowSize]
+      coverage <- rnaNormalize(coverage, df, dfr, )
+      title <- paste0(title, " RNA-normalized")
+    }
+    for(s in scores) {
+      a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
+                              title = title)
+      if (!is.null(outdir)) {
+        ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_tx_all_", s,
+                                       "_", idName, format)), a,
+               height = 10)
+      }
+    }
+  }
+  if (returnPlot) return(a)
+}
 #' Normalize a data.table of coverage by RNA seq per position
 #'
 #' Normalizes per position per gene by this function:

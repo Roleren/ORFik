@@ -7,17 +7,17 @@
 #' so you get a good understanding of how good the quality of your NGS
 #' data production + aligner step were.
 #' You will also get count tables over mrna, leader, cds and trailer
-#' separately, similar to HTseq count tables.
-#'
-#'
+#' separately, similar to HTseq count tables. \cr
 #' Everything will be outputed in the directory of your NGS data,
 #' inside the folder ./QC_STATS/, relative to data location in 'df'.
-#' You can specify new out location with out.dir if you want.
-#'
-#' To make a ORFik experiment, see ?ORFik::experiment
+#' You can specify new out location with out.dir if you want.\cr
+#' To make a ORFik experiment, see ?ORFik::experiment \cr
+#' To see some normal mrna coverage profiles of different RNA-seq protocols:
+#' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default: dirname(df$filepath[1])
 #' @return NULL (objects stored to disc)
+#' @family ORFikQC
 #' @export
 #' @examples
 #' # 1. Pick directory
@@ -164,15 +164,19 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' Correlation and coverage plots for ORFikQC
 #'
 #' Correlation plots default to mRNA covering reads.
-#' Meta plots defaults to leader, cds, trailer.
-#'
+#' Meta plots defaults to leader, cds, trailer.\cr
 #' Output will be stored in same folder as the
-#' libraries in df.
+#' libraries in df.\cr
+#' Correlation plots will be raw count correlation and
+#' log2(count + 1) correlation between samples.
+#'
+#' Is part of \code{\link{ORFikQC}}
 #' @param df an ORFik \code{\link{experiment}}
 #' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save
-#' @return NULL (objects stored to disc)
+#' @return invisible(NULL) (objects stored to disc)
+#' @family ORFikQC
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
 QCplots <- function(df, region = "mrna",
@@ -188,7 +192,7 @@ QCplots <- function(df, region = "mrna",
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
          height=400, width=400, units = 'mm', dpi=300)
-  paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs)),
+  paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs) + 1),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot_log2.png"), paired_plot,
          height=400, width=400, units = 'mm', dpi=300)
@@ -205,4 +209,7 @@ QCplots <- function(df, region = "mrna",
                    trailers[txNames], df = df, outdir = stats_folder,
                    allTogether = TRUE,
                    scores = c("sum", "zscore", "transcriptNormalized"))
+  transcriptWindow1(df = df, outdir = stats_folder,
+                    scores = c("sum", "zscore", "transcriptNormalized"))
+  return(invisible(NULL))
 }

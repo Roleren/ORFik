@@ -46,3 +46,9 @@ Make 100 bases size meta window for one library in experiment
 Gives you binned meta coverage plots, either saved seperatly or
 all in one.
 }
+\seealso{
+Other experiment plots: 
+\code{\link{transcriptWindow1}()},
+\code{\link{transcriptWindow}()}
+}
+\concept{experiment plots}

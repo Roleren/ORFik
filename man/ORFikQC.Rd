@@ -22,14 +22,13 @@ It will also make you some correlation plots and meta coverage plots,
 so you get a good understanding of how good the quality of your NGS
 data production + aligner step were.
 You will also get count tables over mrna, leader, cds and trailer
-separately, similar to HTseq count tables.
-}
-\details{
+separately, similar to HTseq count tables. \cr
 Everything will be outputed in the directory of your NGS data,
 inside the folder ./QC_STATS/, relative to data location in 'df'.
-You can specify new out location with out.dir if you want.
-
-To make a ORFik experiment, see ?ORFik::experiment
+You can specify new out location with out.dir if you want.\cr
+To make a ORFik experiment, see ?ORFik::experiment \cr
+To see some normal mrna coverage profiles of different RNA-seq protocols:
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/
 }
 \examples{
 # 1. Pick directory
@@ -47,3 +46,8 @@ df <- read.experiment(template)
 
 # ORFikQC(df)
 }
+\seealso{
+Other ORFikQC: 
+\code{\link{QCplots}()}
+}
+\concept{ORFikQC}

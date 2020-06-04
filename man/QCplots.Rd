@@ -19,13 +19,21 @@ whole mrnas or one of (leaders, cds, trailers)}
 \item{stats_folder}{directory to save}
 }
 \value{
-NULL (objects stored to disc)
+invisible(NULL) (objects stored to disc)
 }
 \description{
 Correlation plots default to mRNA covering reads.
-Meta plots defaults to leader, cds, trailer.
+Meta plots defaults to leader, cds, trailer.\cr
+Output will be stored in same folder as the
+libraries in df.\cr
+Correlation plots will be raw count correlation and
+log2(count + 1) correlation between samples.
 }
 \details{
-Output will be stored in same folder as the
-libraries in df.
+Is part of \code{\link{ORFikQC}}
 }
+\seealso{
+Other ORFikQC: 
+\code{\link{ORFikQC}()}
+}
+\concept{ORFikQC}
