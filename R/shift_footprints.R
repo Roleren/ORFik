@@ -239,6 +239,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
 #' The bed format version can be used in IGV, bedo is faster to load in R.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
+#' @param log logical, default (TRUE), output a log with parameters used.
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
 #' or .bedo)
 #' @importFrom rtracklayer export.bed
@@ -256,7 +257,8 @@ shiftFootprintsByExperiment <- function(df,
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 26:34,
                                         output_format = c("bed", "bedo"),
-                                        BPPARAM = bpparam()) {
+                                        BPPARAM = bpparam(),
+                                        log = TRUE) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
@@ -299,6 +301,13 @@ shiftFootprintsByExperiment <- function(df,
       firstN = firstN, min_reads = min_reads,
       accepted.lengths = accepted.lengths, output_format = output_format,
       BPPARAM = BPPARAM)
+
+  if (log) {
+    fileConn<-file(paste0(path, "/pshifting_arguments.txt"))
+    writeLines("All arguments not specificed below are default:", fileConn)
+    writeLines(sys.call(), fileConn)
+    close(fileConn)
+  }
   return(invisible(NULL))
 }
 
