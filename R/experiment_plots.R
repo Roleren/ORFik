@@ -163,8 +163,8 @@ transcriptWindow1 <- function(df, outdir = NULL,
     coverage <- data.table()
     for (f in varNames) { # For each stage
       print(f)
-      temp <-  windowPerTranscript(df.rna, reads = get(f),
-                                   splitIn3 = FALSE, fraction = f, )
+      temp <-  windowPerTranscript(df, reads = get(f),
+                                   splitIn3 = FALSE, fraction = f)
       coverage <- rbindlist(list(coverage, temp))
     }
     if (!is.null(dfr)) {
