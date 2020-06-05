@@ -34,6 +34,7 @@ Is part of \code{\link{ORFikQC}}
 }
 \seealso{
 Other ORFikQC: 
-\code{\link{ORFikQC}()}
+\code{\link{ORFikQC}()},
+\code{\link{QCreport}()}
 }
 \concept{ORFikQC}

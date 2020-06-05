@@ -48,6 +48,7 @@ df <- read.experiment(template)
 }
 \seealso{
 Other ORFikQC: 
-\code{\link{QCplots}()}
+\code{\link{QCplots}()},
+\code{\link{QCreport}()}
 }
 \concept{ORFikQC}

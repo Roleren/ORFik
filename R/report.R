@@ -86,7 +86,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     message(s)
     lib <- get(s)
     # Raw stats
-    res <- data.frame(Sample = s, Raw_reads = 2e7,
+    res <- data.frame(Sample = s, Raw_reads = NA,
                       Aligned_reads = length(lib))
     res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
 
@@ -141,7 +141,11 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
                            function(p) grep(pattern = p, x = df$filepath)))
     notMatch <-
       !all(seq(nrow(df)) %in% order) | length(seq(nrow(df))) != length(order)
-    if (notMatch) { # did not match all
+    if (length(order) != nrow(raw_data)) {
+      message(paste0("ORFik experiment has ", nrow(df), "libraries"))
+      message(paste0("Trim folder had", nrow(raw_data), "libraries"))
+      print(raw_data); stop()
+    } else if (notMatch) { # did not match all
       message("Could not find raw read count of your data, setting to 20 M")
     } else {
       finals[order,]$Raw_reads <- raw_data$raw_reads
@@ -150,7 +154,7 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
     }
     setwd(oldDir)
   } else {
-    message("Could not find raw read counts of data, setting to 20 M")
+    message("Could not find raw read counts of data, setting to NA")
     message(paste0("No folder called:", paste0(exp_dir, "/../trim/")))
   }
 
@@ -192,7 +196,7 @@ QCplots <- function(df, region = "mrna",
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
          height=400, width=400, units = 'mm', dpi=300)
-  paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs) + 1),
+  paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot_log2.png"), paired_plot,
          height=400, width=400, units = 'mm', dpi=300)
@@ -212,4 +216,23 @@ QCplots <- function(df, region = "mrna",
   transcriptWindow1(df = df, outdir = stats_folder,
                     scores = c("sum", "zscore", "transcriptNormalized"))
   return(invisible(NULL))
+}
+
+#' Load QC Statistics report
+#'
+#' @inheritParams ORFikQC
+#' @param path path to QC statistics report, default:
+#' paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")
+#' @family ORFikQC
+#' @return data.table of QC report or NULL if not exists
+#' @examples
+#' # df <- read.experiment("experiment/path")
+#' # report <- QCreport(df)
+QCreport <- function(df, path = paste0(dirname(df$filepath[1]),
+                                       "/QC_STATS/STATS.csv")) {
+  if (!file.exists(path)) {
+    message("No QC report made, run ORFikQC. Or wrong path given.")
+    return(invisible(NULL))
+  }
+  return(fread(path, header = TRUE))
 }
