@@ -16,7 +16,8 @@ QCplots(
 \item{region}{a character (default: mrna), make raw count matrices of
 whole mrnas or one of (leaders, cds, trailers)}
 
-\item{stats_folder}{directory to save}
+\item{stats_folder}{directory to save, default:
+paste0(dirname(df$filepath[1]), "/QC_STATS/")}
 }
 \value{
 invisible(NULL) (objects stored to disc)
@@ -30,11 +31,11 @@ Correlation plots will be raw count correlation and
 log2(count + 1) correlation between samples.
 }
 \details{
-Is part of \code{\link{ORFikQC}}
+Is part of \code{\link{QCreport}}
 }
 \seealso{
-Other ORFikQC: 
-\code{\link{ORFikQC}()},
-\code{\link{QCreport}()}
+Other QC report: 
+\code{\link{QCreport}()},
+\code{\link{QCstats}()}
 }
-\concept{ORFikQC}
+\concept{QC report}

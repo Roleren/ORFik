@@ -162,9 +162,13 @@ ORFik also support a full QC report for post alignment statistics, correlation p
 simplified libraries for plotting, meta coverage, ++.
 
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-ORFikQC(df)
+QCreport(df)
 ```
-
+The plots and statistics are saved to disc.
+To see the statistics, you can do:
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+QCstats(df)
+```
 ## Using the ORFik system in your script
 Usually you want to do some operation on multiple data-sets. With ORFik experiment, 
 this operation is simple.

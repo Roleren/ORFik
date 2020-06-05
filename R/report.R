@@ -17,7 +17,7 @@
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default: dirname(df$filepath[1])
 #' @return NULL (objects stored to disc)
-#' @family ORFikQC
+#' @family QC report
 #' @export
 #' @examples
 #' # 1. Pick directory
@@ -33,8 +33,8 @@
 #' df <- read.experiment(template)
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 #'
-#' # ORFikQC(df)
-ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
+#' # QCreport(df)
+QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
   validateExperiments(df)
@@ -174,13 +174,14 @@ ORFikQC <- function(df, out.dir = dirname(df$filepath[1])) {
 #' Correlation plots will be raw count correlation and
 #' log2(count + 1) correlation between samples.
 #'
-#' Is part of \code{\link{ORFikQC}}
+#' Is part of \code{\link{QCreport}}
 #' @param df an ORFik \code{\link{experiment}}
 #' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
-#' @param stats_folder directory to save
+#' @param stats_folder directory to save, default:
+#' paste0(dirname(df$filepath[1]), "/QC_STATS/")
 #' @return invisible(NULL) (objects stored to disc)
-#' @family ORFikQC
+#' @family QC report
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
 QCplots <- function(df, region = "mrna",
@@ -220,18 +221,22 @@ QCplots <- function(df, region = "mrna",
 
 #' Load QC Statistics report
 #'
-#' @inheritParams ORFikQC
+#' @inheritParams QCreport
 #' @param path path to QC statistics report, default:
 #' paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")
-#' @family ORFikQC
+#' @family QC report
 #' @return data.table of QC report or NULL if not exists
+#' @export
 #' @examples
 #' # df <- read.experiment("experiment/path")
-#' # report <- QCreport(df)
-QCreport <- function(df, path = paste0(dirname(df$filepath[1]),
+#'
+#' ## First make QC report
+#' # QCreport(df)
+#' # stats <- QCstats(df)
+QCstats <- function(df, path = paste0(dirname(df$filepath[1]),
                                        "/QC_STATS/STATS.csv")) {
   if (!file.exists(path)) {
-    message("No QC report made, run ORFikQC. Or wrong path given.")
+    message("No QC report made, run QCreport. Or wrong path given.")
     return(invisible(NULL))
   }
   return(fread(path, header = TRUE))
