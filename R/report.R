@@ -165,6 +165,11 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   message(paste("Everything done, saved QC to:", stats_folder))
 }
 
+# Keep for legacy purpose for now
+
+#' @inherit QCreport
+ORFikQC <- QCreport
+
 #' Correlation and coverage plots for ORFikQC
 #'
 #' Correlation plots default to mRNA covering reads.
