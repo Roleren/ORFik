@@ -16,8 +16,9 @@ shiftFootprintsByExperiment(
   firstN = 150L,
   min_reads = 1000,
   accepted.lengths = 26:34,
-  output_format = "bed",
-  BPPARAM = bpparam()
+  output_format = c("bed", "bedo"),
+  BPPARAM = bpparam(),
+  log = TRUE
 )
 }
 \arguments{
@@ -59,10 +60,13 @@ be considered for periodicity.}
 \item{accepted.lengths}{accepted readlengths, default 26:34, usually ribo-seq
 is strongest between 27:32.}
 
-\item{output_format}{default (bed), use export.bed or ORFik optimized
-(bedo) using \code{\link{export.bedo}} ?}
+\item{output_format}{default c("bed", "bedo"), use export.bed or
+ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
+The bed format version can be used in IGV, bedo is faster to load in R.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
+
+\item{log}{logical, default (TRUE), output a log with parameters used.}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
@@ -70,10 +74,12 @@ or .bedo)
 }
 \description{
 Saves files to a specified location as .bed, it will include a score column
-containing read width.
+containing read width. \cr
+For more details, see: \code{\link{detectRibosomeShifts}}
 }
 \details{
-For more details, see: \code{\link{detectRibosomeShifts}}
+Remember that different species might have different default Ribosome
+read lengths, for human, mouse etc, normally around 27:30.
 }
 \examples{
 #df <- read.experiment("ORFik_example")

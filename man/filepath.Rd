@@ -21,7 +21,12 @@ a character vector of paths, or a list of character with 2 paths per,
 if paired libraries exists
 }
 \description{
-Get filepaths to ORFik experiment
+If other type than "default" is given and that type is not found,
+it will return you default filepaths without warning. \cr
+}
+\details{
+For pshifted libraries, it will load "bedo" prioritized over "bed", if
+there exists both file types for the same file.
 }
 \examples{
 # df <- read.experiment("ORFik_exp")
