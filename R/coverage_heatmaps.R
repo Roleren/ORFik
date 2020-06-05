@@ -297,11 +297,11 @@ heatMap_single <- function(region, tx, reads, outdir,
                             acceptedLengths = acceptedLengths)
 
   plot <- coverageHeatMap(coverage = dt, scoring = scores, addFracPlot = addFracPlot,
-                          xlab = p("Position relative to ", location), colors = colors,
+                          xlab = paste0("Position relative to ", location), colors = colors,
                           legendPos = legendPos, title = title)
 
-  ggsave(filename = outdir, plot = plot, width = 350, height = 180, units = "mm",
-         dpi = 300, limitsize = FALSE)
+  ggsave(filename = outdir, plot = plot, width = 350, height = 180,
+         units = "mm", dpi = 300, limitsize = FALSE)
   # return coverage or the plot
   if (returnCoverage) return(dt)
   return(plot)
