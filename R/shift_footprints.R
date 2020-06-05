@@ -305,7 +305,7 @@ shiftFootprintsByExperiment <- function(df,
   if (log) {
     fileConn<-file(paste0(path, "/pshifting_arguments.txt"))
     writeLines("All arguments not specificed below are default:", fileConn)
-    writeLines(sys.call(), fileConn)
+    writeLines(as.character(sys.call()), fileConn)
     close(fileConn)
   }
   return(invisible(NULL))
