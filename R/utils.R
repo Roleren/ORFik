@@ -360,8 +360,8 @@ fimport <- function(path, chrStyle = NULL) {
     } else stop("When path is data.table,",
                 "it must have 2 columns (forward&reverse)")
   } else if (is(path, "list")) {
-    if (length(path) == 2) {
-      path <- c(path[1], path[2])
+    if ((lengths(path) == 2) & length(path) == 1) {
+      path <- unlist(path)
       path <- path[path != ""]
     } else stop("When path is list,",
                 "it must have 2 elements (forward&reverse)")
