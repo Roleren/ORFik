@@ -746,7 +746,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
   } else if (length(files) > 0) {
     if (any(pairedEndBam)) {
       files <- data.table(forward = files, reverse = pairedEndBam, match = TRUE)
-      files[reverse,] <- "paired-end"
+      files[reverse,]$reverse <- "paired-end"
     }
   } else stop("Found no valid files in folder")
   return(files)
