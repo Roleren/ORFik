@@ -238,10 +238,9 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   if (is(file_dt, "data.table")) { # If paired data
     files <- file_dt$forward
     df <- data.frame(matrix(ncol = 7, nrow = length(files) + 4))
+    # set lib column names
     df[4,] <- c("libtype", "stage", "rep", "condition", "fraction","filepath",
                 "reverse")
-    # set lib column names
-    pairedEndBam
     df[5:(5+length(files)-1), 7] <- file_dt$reverse
   } else { # only single libraries
     files <- file_dt
@@ -746,7 +745,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
     if (nrow(files) == 0) stop("Found no valid files in folder")
   } else if (length(files) > 0) {
     if (any(pairedEndBam)) {
-      files <- data.table(forward = others, reverse = pairedEndBam, match = TRUE)
+      files <- data.table(forward = files, reverse = pairedEndBam, match = TRUE)
       files[reverse,] <- "paired-end"
     }
   } else stop("Found no valid files in folder")
