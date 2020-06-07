@@ -74,7 +74,7 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' Remember to think about how you define length. Like the question:
 #' is a Illumina error mismatch sufficient to reduce size of read and how
 #' do you know what is biological variance and what are Illumina errors?
-#' @param reads a GRanges or GAlignment object.
+#' @param reads a GRanges, GAlignment or GAlignmentPairs object.
 #' @param after.softclips logical (TRUE), include softclips in width. Does not
 #' apply if along.reference is TRUE.
 #' @param along.reference logical (FALSE), example: The cigar "26MI2" is
@@ -83,6 +83,8 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' 21 if by along.reference is TRUE. Intronic regions (cigar: N) will
 #' be removed. So: "1M200N19M" is 20, not 220.
 #' @return an integer vector of widths
+#' @importFrom GenomicAlignments first
+#' @importFrom GenomicAlignments last
 #' @export
 #' @examples
 #' gr <- GRanges("chr1", 1)
@@ -117,10 +119,18 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
       }
     }
   } else {
+    cigar <- if (is(reads, "GAlignmentPairs")) {
+      paste0(cigar(GenomicAlignments::first(reads)),
+             cigar(GenomicAlignments::last(reads)))
+    } else if (is(reads, "GAlignments")) {
+      cigar(reads)
+    } else stop("reads must be either GRanges, GAlignments or GAlignmentPairs")
+
+    cigar(reads)
     readWidth <- if (along.reference) {
-      cigarWidthAlongReferenceSpace(cigar(reads), N.regions.removed = TRUE)
+      cigarWidthAlongReferenceSpace(cigar, N.regions.removed = TRUE)
     } else {
-      cigarWidthAlongQuerySpace(cigar(reads),
+      cigarWidthAlongQuerySpace(cigar,
                                 after.soft.clipping =
                                   after.softclips)
     }

@@ -9,7 +9,7 @@ hasHits(grl, reads, keep.names = FALSE, overlaps = NULL)
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} or GRanges object}
 
-\item{reads}{a GRanges or GAlignment object}
+\item{reads}{a GRanges, GAlignment or GAlignmentPairs object}
 
 \item{keep.names}{logical (F), keep names or not}
 

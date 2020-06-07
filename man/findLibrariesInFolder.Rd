@@ -4,12 +4,17 @@
 \alias{findLibrariesInFolder}
 \title{Get all library files in folder/folders of given types}
 \usage{
-findLibrariesInFolder(dir, types)
+findLibrariesInFolder(dir, types, pairedEndBam = FALSE)
 }
 \arguments{
-\item{dir}{The directory/directories to find bam, bed, wig files.}
+\item{dir}{Which directory / directories to create experiment from}
 
-\item{types}{All accepted types of bam, bed, wig files..}
+\item{types}{Default (bam, bed, wig), which types of libraries to allow}
+
+\item{pairedEndBam}{logical FALSE, else TRUE, or a logical list of
+TRUE/FALSE per library you see will be included (run first without and check
+what order the files will come in) 1 paired end file, then two single will
+be c(T, F, F)}
 }
 \value{
 (data.table) All files found from types parameter.
@@ -17,4 +22,7 @@ With 2 extra column (logical), is it wig pairs, and paired bam files.
 }
 \description{
 Will try to guess paired / unpaired wig, bed, bam files.
+}
+\details{
+Set pairedEndBam if you have paired end reads as a single bam file.
 }

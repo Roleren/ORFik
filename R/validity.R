@@ -3,7 +3,7 @@
 #' Keep only seqnames in reads that are in grl
 #' Useful to avoid seqname warnings in bioC
 #' @param grl a \code{\link{GRangesList}} or GRanges object
-#' @param reads a GRanges or GAlignment object
+#' @param reads a GRanges, GAlignment or GAlignmentPairs object
 #' @return a character vector of valid seqlevels
 #' @family validity
 #'

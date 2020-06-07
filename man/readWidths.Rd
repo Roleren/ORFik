@@ -7,7 +7,7 @@
 readWidths(reads, after.softclips = TRUE, along.reference = FALSE)
 }
 \arguments{
-\item{reads}{a GRanges or GAlignment object.}
+\item{reads}{a GRanges, GAlignment or GAlignmentPairs object.}
 
 \item{after.softclips}{logical (TRUE), include softclips in width. Does not
 apply if along.reference is TRUE.}

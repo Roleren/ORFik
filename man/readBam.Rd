@@ -8,8 +8,17 @@ readBam(path, chrStyle = NULL)
 }
 \arguments{
 \item{path}{a character path to .bam file. If paired end bam files,
-input must be a data.table with two columns: forward and reverse,
-or a character vector of length 2, forward will be index 1.}
+input must be a data.table with two columns (forward and reverse)
+and one row:\cr
+if paired end reads in single bam file:\cr
+forward contains paired end bam file path, reverse must be
+either "paired-end" or "" (single end).\cr
+if paired end reads split in two files:\cr
+forward contains paired end bam file path (R1), reverse must be
+paired end bam file path (R2 file), this is a rare case\cr
+If all are single-end or
+you don't need to load data as paired end, the reverse column
+can be skipped.}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
 or a \code{\link{seqlevelsStyle}}

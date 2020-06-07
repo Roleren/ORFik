@@ -14,6 +14,7 @@ heatMapL(
   downstream,
   zeroPosition = upstream,
   acceptedLengths = NULL,
+  type = "bedo",
   legendPos = "right",
   colors = "default",
   addFracPlot = TRUE,
@@ -55,6 +56,10 @@ NOTE!: if windows have different widths, this will be ignored.}
 
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}
+
+\item{type}{character, default: "bedo". Type of library:
+either "default", usually bam format (the one you gave to experiment),
+"pshifted" pshifted reads, "bed", "bedo" optimized bed, or "wig"}
 
 \item{legendPos}{a character, Default "right". Where should the fill legend
 be ? ("top", "bottom", "right", "left")}

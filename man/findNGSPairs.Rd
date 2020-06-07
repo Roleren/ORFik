@@ -3,7 +3,7 @@
 \name{findNGSPairs}
 \alias{findNGSPairs}
 \title{Find pair of forward and reverse strand wig / bed files and
-paired end bam files}
+paired end bam files split in two}
 \usage{
 findNGSPairs(
   paths,
@@ -30,5 +30,5 @@ if they are all paired, return a data.table with matches as 2 columns
 }
 \description{
 Find pair of forward and reverse strand wig / bed files and
-paired end bam files
+paired end bam files split in two
 }

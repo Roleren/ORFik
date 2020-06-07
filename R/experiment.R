@@ -206,6 +206,10 @@ read.experiment <-  function(file) {
 #' @param txdb A path to gff/gtf file used for libraries
 #' @param fa A path to fasta genome/sequences used for libraries
 #' @param viewTemplate run View() on template when finished, default (TRUE)
+#' @param pairedEndBam logical FALSE, else TRUE, or a logical list of
+#' TRUE/FALSE per library you see will be included (run first without and check
+#' what order the files will come in) 1 paired end file, then two single will
+#' be c(T, F, F)
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @export
@@ -225,16 +229,19 @@ read.experiment <-  function(file) {
 #' @family ORFik_experiment
 create.experiment <- function(dir, exper, saveDir = NULL,
                               types = c("bam", "bed", "wig"), txdb = "",
-                              fa = "", viewTemplate = TRUE) {
+                              fa = "", viewTemplate = TRUE,
+                              pairedEndBam = FALSE) {
   notDir <- !all(dir.exists(dir))
   if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a valid directory!"))
-  file_dt <- findLibrariesInFolder(dir, types)
+  file_dt <- findLibrariesInFolder(dir, types, pairedEndBam)
+
   if (is(file_dt, "data.table")) { # If paired data
     files <- file_dt$forward
     df <- data.frame(matrix(ncol = 7, nrow = length(files) + 4))
     df[4,] <- c("libtype", "stage", "rep", "condition", "fraction","filepath",
                 "reverse")
     # set lib column names
+    pairedEndBam
     df[5:(5+length(files)-1), 7] <- file_dt$reverse
   } else { # only single libraries
     files <- file_dt
@@ -252,9 +259,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   df[5:(5+length(files)-1), 2] <- findFromPath(files, stages)
   # set rep (1, 2, 3 etc)
   df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames())
-  # Set condition (control, mutant etc)
-  conditions <- c("WT", "control", "MZ", "dicer", "4Ei", "4ei", "silvesterol",
-                  "Silvesterol", "mutant", "Mutant", "cas9", "Cas9")
+  # Set condition (WT, control, mutant etc)
   df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames())
 
   df[1, seq(2)] <- c("name", exper)
@@ -518,7 +523,9 @@ filepath <- function(df, type, basename = FALSE) {
     if (basename) input <- basename(input)
     return(input)
   }, df = df, type = type)
-  if (all(lengths(paths) == 1)) paths <- unlist(paths)
+  if (all(lengths(paths) == 1)) {
+    paths <- unlist(paths)
+  }
   return(paths)
 }
 
@@ -679,12 +686,13 @@ remove.experiments <- function(df, envir = .GlobalEnv) {
 #' Get all library files in folder/folders of given types
 #'
 #' Will try to guess paired / unpaired wig, bed, bam files.
-#' @param dir The directory/directories to find bam, bed, wig files.
-#' @param types All accepted types of bam, bed, wig files..
+#'
+#' Set pairedEndBam if you have paired end reads as a single bam file.
+#' @inheritParams create.experiment
 #' @importFrom tools file_ext
 #' @return (data.table) All files found from types parameter.
 #' With 2 extra column (logical), is it wig pairs, and paired bam files.
-findLibrariesInFolder <- function(dir, types) {
+findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
   regex <- paste("\\.", types, collapse = "|", sep = "")
   # Find files in multiple dirs in correct order
   files <- unlist(lapply(dir,
@@ -726,6 +734,14 @@ findLibrariesInFolder <- function(dir, types) {
       others <- files[!(files %in% c(pairs$forward, pairs$reverse))]
       file_dt <- data.table(forward = others, reverse = "", match = FALSE)
       files <- rbind(pairs, file_dt)
+      if (any(pairedEndBam)) {
+        if (length(pairedEndBam) == 1) {
+          files[files$reverse == "",] <- "paired-end"
+        } else if (length(pairedEndBam) == nrow(files)) {
+          files[(files$reverse == "") & pairedEndBam,] <- "paired-end"
+        } else stop("pairedEndBam must be either length 1 or
+                    number of files in experiment")
+      }
     } else files <- pairs
     if (nrow(files) == 0) stop("Found no valid files in folder")
   } else {

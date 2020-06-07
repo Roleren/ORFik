@@ -64,7 +64,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   } else gff.df <- import(df@txdb)
   types <- unique(gff.df$transcript_biotype)
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
-                             "rRNA", "ribozyme", "Mt_tRNA")]
+                             "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
 
   # Make count tables
   message("Making count tables for region:")

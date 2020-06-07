@@ -14,7 +14,7 @@ convertToOneBasedRanges(
 )
 }
 \arguments{
-\item{gr}{GRanges, GAlignment Object to reduce}
+\item{gr}{GRanges, GAlignment or GAlignmentPairs object to reduce.}
 
 \item{method}{the method to reduce ranges, see info. (5prime defualt)}
 
@@ -42,26 +42,27 @@ be removed. So: "1M200N19M" is 20, not 220.}
 Converted GRanges object
 }
 \description{
-There are 5 ways of doing this
-1. Take 5' ends, reduce away rest (5prime)
-2. Take 3' ends, reduce away rest (3prime)
-3. Tile to 1-mers and include all (tileAll)
-4. Take middle point per GRanges (middle)
-5. Get original with metacolumns (None)
-}
-\details{
+There are 5 ways of doing this\cr
+1. Take 5' ends, reduce away rest (5prime)\cr
+2. Take 3' ends, reduce away rest (3prime)\cr
+3. Tile to 1-mers and include all (tileAll)\cr
+4. Take middle point per GRanges (middle)\cr
+5. Get original with metacolumns (None)\cr
 You can also do multiple at a time, then output is GRangesList, where
-each list group is the operation (5prime is [1], 3prime is [2] etc)
-
-
+each list group is the operation (5prime is [1], 3prime is [2] etc)\cr
 Many other ways to do this have their own functions, like startSites and
 stopSites etc.
 To retain information on original width, set addSizeColumn to TRUE.
 To compress data, 1 GRanges object per unique read, set addScoreColumn to
 TRUE. This will give you a score column with how many duplicated reads there
 were in the specified region.
-
-NOTE: Does not support paired end reads for the moment!
+}
+\details{
+NOTE: For special case of GAlignmentPairs, 5prime will only use left (first)
+5' end and read and 3prime will use only right (last) 3' end of read
+in pair. tileAll and middle can possibly find poinst that are not in the
+reads since: lets say pair is 1-5 and 10-15, middle is 7, which is not in
+the read.
 }
 \examples{
 gr <- GRanges("chr1", 1:10,"+")

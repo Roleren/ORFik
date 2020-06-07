@@ -11,7 +11,8 @@ create.experiment(
   types = c("bam", "bed", "wig"),
   txdb = "",
   fa = "",
-  viewTemplate = TRUE
+  viewTemplate = TRUE,
+  pairedEndBam = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,11 @@ create.experiment(
 \item{fa}{A path to fasta genome/sequences used for libraries}
 
 \item{viewTemplate}{run View() on template when finished, default (TRUE)}
+
+\item{pairedEndBam}{logical FALSE, else TRUE, or a logical list of
+TRUE/FALSE per library you see will be included (run first without and check
+what order the files will come in) 1 paired end file, then two single will
+be c(T, F, F)}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,

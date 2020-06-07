@@ -122,8 +122,17 @@ export.bed12 <- function(grl, file, rgb = 0) {
 #' Safer version that handles the most important error done.
 #' In the future will use a faster .bam loader for big .bam files in R.
 #' @param path a character path to .bam file. If paired end bam files,
-#' input must be a data.table with two columns: forward and reverse,
-#' or a character vector of length 2, forward will be index 1.
+#' input must be a data.table with two columns (forward and reverse)
+#' and one row:\cr
+#' if paired end reads in single bam file:\cr
+#' forward contains paired end bam file path, reverse must be
+#' either "paired-end" or "" (single end).\cr
+#' if paired end reads split in two files:\cr
+#' forward contains paired end bam file path (R1), reverse must be
+#' paired end bam file path (R2 file), this is a rare case\cr
+#' If all are single-end or
+#' you don't need to load data as paired end, the reverse column
+#' can be skipped.
 #' @inheritParams matchSeqStyle
 #' @return a \code{\link{GAlignments}} object of bam file
 #' @export
@@ -134,17 +143,37 @@ export.bed12 <- function(grl, file, rgb = 0) {
 readBam <- function(path, chrStyle = NULL) {
   if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
   if (is(path, "factor")) path <- as.character(path)
-  if (is(path, "data.table")) { # Will read pairs as combination
-    message("ORFik reads paired end bam in as combination: c(forward, reverse)")
-    return(matchSeqStyle(c(readGAlignments(path$forward),
-                           readGAlignments(path$reverse)), chrStyle))
+  # If data.table path
+  if (is(path, "data.table")) {
+    if (path$reverse == "paired-end") {
+      message("ORFik reads this paired end bam as readGAlignmentPairs")
+      bam <- matchSeqStyle(readGAlignmentPairs(path$forward), chrStyle)
+      if (length(bam) == 0)
+        stop(paste("File", path$forward,
+                   "was read as one paired-end file, but had 0 paired reads!"))
+      return(bam)
+    } else {
+      message("ORFik reads these split paired end bams as readGAlignments combination")
+      return(matchSeqStyle(c(readGAlignments(path$forward),
+                             readGAlignments(path$reverse)), chrStyle))
+    }
   }
-  if (length(path) == 2){ # Will read pairs as combination
-    message("ORFik reads paired end bam in as combination: c(forward, reverse)")
-    return(matchSeqStyle(c(readGAlignments(path[1]),
-                           readGAlignments(path[2])), chrStyle))
+  # If character path
+  if (is(path, "character") & length(path) == 2) {
+    if (path[2] == "paired-end"){
+      message("ORFik reads paired end bam in as readGAlignmentPairs")
+      bam <- matchSeqStyle(readGAlignmentPairs(path[1]), chrStyle)
+      if (length(bam) == 0)
+        stop(paste("File", path$forward,
+                   "was read as one paired-end file, but had 0 paired reads!"))
+      return(bam)
+    } else {
+      message("ORFik reads these split paired end bams as readGAlignments combination")
+      return(matchSeqStyle(c(readGAlignments(path[1]),
+                             readGAlignments(path[2])), chrStyle))
+    }
   }
-
+  # else single end bam file
   return(matchSeqStyle(readGAlignments(path), chrStyle))
 }
 
@@ -188,7 +217,7 @@ readWig <- function(path, chrStyle = NULL) {
 }
 
 #' Find pair of forward and reverse strand wig / bed files and
-#' paired end bam files
+#' paired end bam files split in two
 #'
 #' @param paths a character path at least one .wig / .bed file
 #' @param f Default (c("forward", "fwd")
@@ -305,9 +334,10 @@ remove.file_ext <- function(path, basename = FALSE) {
 #'
 #' @param path a character path to file (1 or 2 files),
 #'  or data.table with 2 colums(forward&reverse)
-#'  or a GRanges/Galignment object etc. If it is
-#'  ranged object it will presume to be
-#'  already loaded, so will return the object as it is.
+#'  or a GRanges/Galignment/GAlignmentPairs object etc.
+#'  If it is ranged object it will presume to be
+#'  already loaded, so will return the object as it is,
+#'  updating the seqlevelsStyle if given.
 #' @inheritParams matchSeqStyle
 #' @importFrom tools file_ext
 #' @importFrom tools file_path_sans_ext
@@ -329,7 +359,14 @@ fimport <- function(path, chrStyle = NULL) {
       path <- path[path != ""]
     } else stop("When path is data.table,",
                 "it must have 2 columns (forward&reverse)")
+  } else if (is(path, "list")) {
+    if (length(path) == 2) {
+      path <- c(path[1], path[2])
+      path <- path[path != ""]
+    } else stop("When path is list,",
+                "it must have 2 elements (forward&reverse)")
   }
+
   if (is.character(path)) {
     if (all(file.exists(path))) {
       fext <- file_ext(path)
@@ -337,14 +374,13 @@ fimport <- function(path, chrStyle = NULL) {
       areCompressed <- fext %in% compressions
       fext[areCompressed] <- file_ext(file_path_sans_ext(path[areCompressed],
                                                compression = FALSE))
-      if (length(path) > 1) { # Multiple file paths
+      if (length(path) == 2) { # Multiple file paths
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
-        } else if (all(fext %in% c("bam"))) {
-          stop("only wig format allowed for multiple files!,
-               is this paired end bam?")
-        } else stop("only wig format allowed for multiple files!")
-      } else { # Only 1 file path given
+        } else if (any(fext %in% c("bam"))) {
+          return(readBam(path, chrStyle))
+        } else stop("only wig and valid bam format allowed for 2 files input!")
+      } else if (length(path) == 1) { # Only 1 file path given
         if (fext == "bam") {
           return(readBam(path, chrStyle))
         } else if (fext == "bed" |
@@ -356,9 +392,10 @@ fimport <- function(path, chrStyle = NULL) {
         } else if (fext == "bedo") {
           return(matchSeqStyle(import.bedo(path), chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
-      }
+      } else stop("fimport takes either 1 or 2 files!")
     } else stop(paste0(path, "does not exist as File/Files!"))
-  } else if (is.gr_or_grl(path) | is(path, "GAlignments")) {
+  } else if (is.gr_or_grl(path) | is(path, "GAlignments") |
+             is(path, "GAlignmentPairs")) {
     return(matchSeqStyle(path, chrStyle))
   } else {
     stop("path must be either a valid character",
@@ -401,7 +438,8 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
 #' Keep only the ones that overlap within the grl ranges.
 #' Also sort them in the end
 #' @inheritParams validSeqlevels
-#' @return the reads as GRanges or GAlignment
+#' @return the reads as GRanges,  GAlignment or GAlignmentPairs
+#' @importFrom GenomicAlignments first
 #' @family utils
 #'
 optimizeReads <- function(grl, reads) {
@@ -409,7 +447,10 @@ optimizeReads <- function(grl, reads) {
   reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
 
   reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
-  reads <- sort(reads)
+  reads <- if (is(reads, "GAlignmentPairs")) {
+    reads <- reads[order(GenomicAlignments::first(reads))]
+    } else reads <- sort(reads)
+
   if (length(reads) == 0) warning("No reads left in 'reads' after",
                                     "optimisation!")
 
@@ -418,17 +459,14 @@ optimizeReads <- function(grl, reads) {
 
 #' Convert a GRanges Object to 1 width reads
 #'
-#' There are 5 ways of doing this
-#' 1. Take 5' ends, reduce away rest (5prime)
-#' 2. Take 3' ends, reduce away rest (3prime)
-#' 3. Tile to 1-mers and include all (tileAll)
-#' 4. Take middle point per GRanges (middle)
-#' 5. Get original with metacolumns (None)
-#'
+#' There are 5 ways of doing this\cr
+#' 1. Take 5' ends, reduce away rest (5prime)\cr
+#' 2. Take 3' ends, reduce away rest (3prime)\cr
+#' 3. Tile to 1-mers and include all (tileAll)\cr
+#' 4. Take middle point per GRanges (middle)\cr
+#' 5. Get original with metacolumns (None)\cr
 #' You can also do multiple at a time, then output is GRangesList, where
-#' each list group is the operation (5prime is [1], 3prime is [2] etc)
-#'
-#'
+#' each list group is the operation (5prime is [1], 3prime is [2] etc)\cr
 #' Many other ways to do this have their own functions, like startSites and
 #' stopSites etc.
 #' To retain information on original width, set addSizeColumn to TRUE.
@@ -436,8 +474,13 @@ optimizeReads <- function(grl, reads) {
 #' TRUE. This will give you a score column with how many duplicated reads there
 #' were in the specified region.
 #'
-#' NOTE: Does not support paired end reads for the moment!
-#' @param gr GRanges, GAlignment Object to reduce
+#' NOTE: For special case of GAlignmentPairs, 5prime will only use left (first)
+#' 5' end and read and 3prime will use only right (last) 3' end of read
+#' in pair. tileAll and middle can possibly find poinst that are not in the
+#' reads since: lets say pair is 1-5 and 10-15, middle is 7, which is not in
+#' the read.
+#'
+#' @param gr GRanges, GAlignment or GAlignmentPairs object to reduce.
 #' @param method the method to reduce ranges, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per unique range This will make each read unique, so
@@ -449,6 +492,8 @@ optimizeReads <- function(grl, reads) {
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
 #' @inheritParams readWidths
+#' @importFrom GenomicAlignments first
+#' @importFrom GenomicAlignments last
 #' @return  Converted GRanges object
 #' @export
 #' @family utils
@@ -470,8 +515,6 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addSizeColumn = FALSE,
                                     after.softclips = TRUE,
                                     along.reference = FALSE) {
-  if (is(gr, "GAlignmentPairs")) stop("Paired end reads not supported,
-                                      load as GAlignments instead!")
 
   if (addSizeColumn & is.null(mcols(gr)$size)) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
@@ -479,9 +522,16 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                                         along.reference))
   }
   if (addScoreColumn) {
+    starts <- if (is(gr, "GAlignmentPairs")) {
+     start(GenomicAlignments::first(gr))
+    } else  start(gr)
+    ends <- if (is(gr, "GAlignmentPairs")) {
+      end(GenomicAlignments::last(gr))
+    } else  end(gr)
+
     dt <- data.table(seqnames = as.character(seqnames(gr)),
-                     start = start(gr),
-                     end = end(gr),
+                     start = starts,
+                     end = ends,
                      strand = as.character(strand(gr)))
     if (addSizeColumn) {
       dt[, size := mcols(gr)$size]
