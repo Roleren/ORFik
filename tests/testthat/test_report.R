@@ -71,6 +71,18 @@ test_that("count tables loaded as intended", {
   expect_equal(table[1,3], data.table("ORFik_RFP" = 8670))
 })
 
+test_that("filepath work as intended", {
+  # Summairzed Experiment load
+  res <- filepath(df, "default")
+  expect_equal(length(res), 4)
+
+  # dff <- ORFik:::experiment(listData = list(libtype = c("RFP", "RFP"), rep = c(1,2),
+  #                                           filepath = c("file1",
+  #                                                        "file2"),
+  #                                           reverse = c("", "paired-end")))
+
+})
+
 test_that("transcriptWindow plots correctly", {
   df <- df[3,]
   expect_warning(loadRegions(df))
