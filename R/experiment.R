@@ -600,7 +600,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' Will make a simplified version of NGS libraries
 #'
 #' Export files as .bedo files. It is a bed file with 2 score columns.
-#' Gives a massive speedup when cigar strings are not needed.
+#' Gives a massive speedup when cigar string and bam flags are not needed.
 #'
 #' See \code{\link{export.bedo}} for information on file format
 #' @param df an ORFik \code{\link{experiment}}

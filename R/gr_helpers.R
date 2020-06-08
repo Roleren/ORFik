@@ -119,6 +119,8 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
       }
     }
   } else {
+    # Now the cigar of paired end reads are merged together
+    # Is this the smartest way ?
     cigar <- if (is(reads, "GAlignmentPairs")) {
       paste0(cigar(GenomicAlignments::first(reads)),
              cigar(GenomicAlignments::last(reads)))
@@ -126,7 +128,6 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
       cigar(reads)
     } else stop("reads must be either GRanges, GAlignments or GAlignmentPairs")
 
-    cigar(reads)
     readWidth <- if (along.reference) {
       cigarWidthAlongReferenceSpace(cigar, N.regions.removed = TRUE)
     } else {
