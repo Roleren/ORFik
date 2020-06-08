@@ -350,9 +350,11 @@ validateExperiments <- function(df) {
     stop("stage and libtype must be colnames in df!")
   if (length(libTypes) == 0) stop("df have no valid sequencing libraries!")
   if (nrow(df) == 0) stop("df must have at least 1 row!")
+  files <- df$filepath
   if (!is.null(df$reverse)) {
-    files <- c(df$filepath, df$reverse)
-  } else files <- df$filepath
+    reversePaths <- df$reverse[!(df$reverse %in% c("", "paired-end"))]
+    files <- c(files, reversePaths)
+  }
 
   emptyFiles <- c()
   for (i in files) {
