@@ -530,16 +530,9 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                                         along.reference))
   }
   if (addScoreColumn) {
-    starts <- if (is(gr, "GAlignmentPairs")) {
-     start(GenomicAlignments::first(gr))
-    } else  start(gr)
-    ends <- if (is(gr, "GAlignmentPairs")) {
-      end(GenomicAlignments::last(gr))
-    } else  end(gr)
-
     dt <- data.table(seqnames = as.character(seqnames(gr)),
-                     start = starts,
-                     end = ends,
+                     start = start(ranges(gr)),
+                     end = end(ranges(gr)),
                      strand = as.character(strand(gr)))
     if (addSizeColumn) {
       dt[, size := mcols(gr)$size]
