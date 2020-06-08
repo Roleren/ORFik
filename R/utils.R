@@ -165,7 +165,7 @@ readBam <- function(path, chrStyle = NULL) {
       bam <- matchSeqStyle(readGAlignmentPairs(path[1]), chrStyle)
       if (length(bam) == 0)
         stop(paste("File", path$forward,
-                   "was read as one paired-end file, but had 0 paired reads!"))
+                   "was read as paired-end file, but had 0 paired reads!"))
       return(bam)
     } else {
       message("ORFik reads these split paired end bams as readGAlignments combination")
@@ -366,6 +366,13 @@ fimport <- function(path, chrStyle = NULL) {
   }
   path <- unlist(path)
   path <- path[path != ""]
+  pairedEndBam <- FALSE
+  if (length(path) == 2) {
+    if (path[2] == "paired-end") {
+      pairedEndBam <- TRUE
+      path <- path[1]
+    }
+  }
 
   if (is.character(path)) {
     if (all(file.exists(path))) {
@@ -377,11 +384,12 @@ fimport <- function(path, chrStyle = NULL) {
       if (length(path) == 2) { # Multiple file paths
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
-        } else if (any(fext %in% c("bam"))) {
+        } else if (all(fext %in% c("bam"))) {
           return(readBam(path, chrStyle))
         } else stop("only wig and valid bam format allowed for 2 files input!")
       } else if (length(path) == 1) { # Only 1 file path given
         if (fext == "bam") {
+          if (pairedEndBam) path <- c(path, "paired-end")
           return(readBam(path, chrStyle))
         } else if (fext == "bed" |
                    file_ext(file_path_sans_ext(path,
@@ -393,7 +401,7 @@ fimport <- function(path, chrStyle = NULL) {
           return(matchSeqStyle(import.bedo(path), chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
       } else stop("fimport takes either 1 or 2 files!")
-    } else stop(paste0(path, "does not exist as File/Files!"))
+    } else stop(paste(path, "does not exist as File/Files!"))
   } else if (is.gr_or_grl(path) | is(path, "GAlignments") |
              is(path, "GAlignmentPairs")) {
     return(matchSeqStyle(path, chrStyle))
