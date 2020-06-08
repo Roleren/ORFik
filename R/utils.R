@@ -356,16 +356,16 @@ fimport <- function(path, chrStyle = NULL) {
   if (is(path, "data.table")) {
     if (ncol(path) == 2 & colnames(path) == c("forward", "reverse")) {
       path <- c(path$forward, path$reverse)
-      path <- path[path != ""]
     } else stop("When path is data.table,",
                 "it must have 2 columns (forward&reverse)")
   } else if (is(path, "list")) {
-    if ((lengths(path) == 2) & length(path) == 1) {
-      path <- unlist(path)
-      path <- path[path != ""]
-    } else stop("When path is list,",
-                "it must have 2 elements (forward&reverse)")
+    if (!(all(lengths(path) %in% c(1,2))) | length(path) != 1) {
+      stop("When path is list,",
+           "it must have 1 or 2 elements (forward, reverse)")
+    }
   }
+  path <- unlist(path)
+  path <- path[path != ""]
 
   if (is.character(path)) {
     if (all(file.exists(path))) {
