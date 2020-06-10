@@ -245,15 +245,15 @@ loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
 #' @param object a TxDb, ORFik experiment or path to gtf/gff,
 #' @param part a character, default rRNA. Can also be:
 #' snoRNA, tRNA etc. As long as that biotype is defined in the gtf.
-#' @param tx a GRangesList of transcripts (Optional, default NULL),
-#'  add to save run time.
+#' @param tx a GRangesList of transcripts (Optional, default NULL,
+#' all transcript of that type), else it must be names a list to subset on.
 #' @return a GRangesList of transcript of that type
 loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
   type <- importGtfFromTxdb(object)
 
   valids <- type[grep(x = type$transcript_biotype, pattern = part)]
   if (length(valids) == 0) stop("found no valid transcript of type", part)
-  if (is.null(tx)) tx <- loadRegion(path)
+  if (is.null(tx)) tx <- loadRegion(object)
 
   return(tx[unique(valids$transcript_id)])
 }
