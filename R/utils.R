@@ -364,15 +364,18 @@ fimport <- function(path, chrStyle = NULL) {
            "it must have 1 or 2 elements (forward, reverse)")
     }
   }
-  path <- unlist(path)
-  path <- path[path != ""]
-  pairedEndBam <- FALSE
-  if (length(path) == 2) {
-    if (path[2] == "paired-end") {
-      pairedEndBam <- TRUE
-      path <- path[1]
+  if (is(path, "list") | is(path, "data.table") | is(path, "character")) {
+    path <- unlist(path)
+    path <- path[path != ""]
+    pairedEndBam <- FALSE
+    if (length(path) == 2) {
+      if (path[2] == "paired-end") {
+        pairedEndBam <- TRUE
+        path <- path[1]
+      }
     }
   }
+
 
   if (is.character(path)) {
     if (all(file.exists(path))) {
