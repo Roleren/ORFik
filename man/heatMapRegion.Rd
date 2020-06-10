@@ -21,7 +21,7 @@ heatMapRegion(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{region}{a character, default "TIS", can be either combination of the
+\item{region}{a character, default "TIS", can be any combination of the
 set: c("TSS", "TIS", "TTS"), which are: Transcription start site
 (5' end of mrna), Translation initation site (5' end of CDS),
 Translation termination site (3' end of CDS)}

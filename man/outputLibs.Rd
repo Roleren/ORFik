@@ -59,6 +59,7 @@ Other ORFik_experiment:
 \code{\link{experiment-class}},
 \code{\link{filepath}()},
 \code{\link{libraryTypes}()},
+\code{\link{organism.df}()},
 \code{\link{read.experiment}()},
 \code{\link{save.experiment}()},
 \code{\link{validateExperiments}()}

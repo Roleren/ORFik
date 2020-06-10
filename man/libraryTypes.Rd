@@ -21,6 +21,7 @@ Other ORFik_experiment:
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
 \code{\link{filepath}()},
+\code{\link{organism.df}()},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},
 \code{\link{save.experiment}()},

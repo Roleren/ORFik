@@ -54,14 +54,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   }
 
   # Special regions rRNA etc..
-  if (!(file_ext(df@txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
-    # Try to use reference of sqlite
-    if (!(file_ext(metadata(txdb)[3,2]) %in%
-          c("gtf", "gff", "gff3", "gff2"))) {
-      stop("Could not find valid gtf / gff file, only data base object!")
-    }
-    gff.df <- import(metadata(txdb)[3,2])
-  } else gff.df <- import(df@txdb)
+  gff.db <- importGtfFromTxdb(txdb)
   types <- unique(gff.df$transcript_biotype)
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]

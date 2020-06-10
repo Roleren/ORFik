@@ -756,3 +756,29 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
   } else stop("Found no valid files in folder")
   return(files)
 }
+
+#' Get organism of the ORFik experiment
+#'
+#' Uses the txdb / gtf organism information, if existing.
+#' @param df an ORFik \code{\link{experiment}}
+#' @return organism (character vector), if no organism set: NA
+#' @family ORFik_experiment
+#' @importFrom BiocGenerics organism
+#' @examples
+#' # if you have set organism in txdb of
+#' # ORFik experiment:
+#' # df <- read.experiment("experiment-path")
+#' # organism.df(df)
+#'
+#' #' If you have not set the organism you can do:
+#' #txdb <- GenomicFeatures::makeTxDbFromGFF("pat/to/gff_or_gff")
+#' #BiocGenerics::organism(txdb) <- "Homo sapiens"
+#' #saveDb(txdb, paste0("pat/to/gff_or_gff", ".db"))
+#' # then use this txdb in you ORFik experiment and load:
+#' # create.experiment() ...
+#' # organism.df(read.experiment("new-experiment))
+organism.df <- function(df) {
+  org <- BiocGenerics::organism(loadTxdb(df))
+  if (isNA(org)) message("Organism not set in txdb of gtf")
+  return(org)
+}

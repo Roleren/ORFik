@@ -102,7 +102,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' Input CAGE file if you use TSS and want improved 5' annotation.
 #'
 #' @inheritParams heatMapL
-#' @param region a character, default "TIS", can be either combination of the
+#' @param region a character, default "TIS", can be any combination of the
 #'  set: c("TSS", "TIS", "TTS"), which are: Transcription start site
 #'  (5' end of mrna), Translation initation site (5' end of CDS),
 #'  Translation termination site (3' end of CDS)
@@ -146,7 +146,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- loadRegion(txdb, "mrna")[txNames]
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TIS", shifting = shifting,
-             skip.last = FALSE, acceptedLengths = acceptedLengths)
+             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   if ("TSS" %in% region) {
     message("TSS")
@@ -164,7 +164,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- extendLeaders(mrna, 51)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TSS", shifting = c("5prime", "3prime"),
-             skip.last = FALSE, acceptedLengths = acceptedLengths)
+             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   if ("TTS" %in% region) {
     message("TTS")
@@ -173,7 +173,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- loadRegion(txdb, "mrna")[txNames]
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TTS", shifting = c("5prime", "3prime"),
-             skip.last = FALSE, acceptedLengths = acceptedLengths)
+             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   return(invisible(NULL))
 }

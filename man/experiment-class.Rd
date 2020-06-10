@@ -91,6 +91,7 @@ Other ORFik_experiment:
 \code{\link{create.experiment}()},
 \code{\link{filepath}()},
 \code{\link{libraryTypes}()},
+\code{\link{organism.df}()},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},
 \code{\link{save.experiment}()},

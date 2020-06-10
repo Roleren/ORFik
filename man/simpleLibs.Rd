@@ -43,7 +43,7 @@ NULL (saves files to disc or R .GlobalEnv)
 }
 \description{
 Export files as .bedo files. It is a bed file with 2 score columns.
-Gives a massive speedup when cigar strings are not needed.
+Gives a massive speedup when cigar string and bam flags are not needed.
 }
 \details{
 See \code{\link{export.bedo}} for information on file format

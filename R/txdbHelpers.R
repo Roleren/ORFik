@@ -242,15 +242,14 @@ loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
 #' use a resource like repeatmasker and download a gtf:
 #' https://genome.ucsc.edu/cgi-bin/hgTables
 #' @references doi: 10.1002/0471250953.bi0410s25
-#' @param path path to gtf/gff
+#' @param object a TxDb, ORFik experiment or path to gtf/gff,
 #' @param part a character, default rRNA. Can also be:
 #' snoRNA, tRNA etc. As long as that biotype is defined in the gtf.
 #' @param tx a GRangesList of transcripts (Optional, default NULL),
 #'  add to save run time.
 #' @return a GRangesList of transcript of that type
-loadTranscriptType <- function(path, part = "rRNA", tx = NULL) {
-  if (!is.character(path)) stop("path must be a file path to gtf/gff")
-  type <- import(path)
+loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
+  type <- importGtfFromTxdb(object)
 
   valids <- type[grep(x = type$transcript_biotype, pattern = part)]
   if (length(valids) == 0) stop("found no valid transcript of type", part)
@@ -272,6 +271,34 @@ txNamesToGeneNames <- function(txNames, txdb) {
   if (anyNA(match)) stop("Not all txNames are exists in txdb, check for spelling errors!")
   return(as.character(g$gene_id)[match])
 }
+
+#' Import the GTF / GFF that made the txdb
+#'
+#' @param txdb a TxDb, path to txdb / gff or ORFik experiment object
+#' @return data.frame, the gtf/gff object imported with rtracklayer::import
+importGtfFromTxdb <- function(txdb) {
+  if (is(txdb, "experiment")) txdb <- txdb@txdb
+  if(is(txdb, "character")) {
+    if (!(file_ext(txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
+      # It means it shoud be a TxDb path
+      txdb <- loadTxdb(txdb)
+
+      stop("txdb does not name valid path to either of: gtf, gff, gff3 or gff2 file!")
+    }
+  }
+  if (is(txdb, "TxDb")) {
+    if (!(file_ext(metadata(txdb)[3,2]) %in%
+          c("gtf", "gff", "gff3", "gff2"))) {
+      message("This is error txdb ->")
+      message("It should be found by: metadata(txdb)[3,2]")
+      print(txdb)
+      stop("Could not find valid gtf / gff file, only data base object!")
+    }
+    txdb <- metadata(txdb)[3,2]
+  }
+  return(import(txdb))
+}
+
 
 #' Filter transcripts by lengths
 #'
