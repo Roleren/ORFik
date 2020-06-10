@@ -282,8 +282,6 @@ importGtfFromTxdb <- function(txdb) {
     if (!(file_ext(txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
       # It means it shoud be a TxDb path
       txdb <- loadTxdb(txdb)
-
-      stop("txdb does not name valid path to either of: gtf, gff, gff3 or gff2 file!")
     }
   }
   if (is(txdb, "TxDb")) {
