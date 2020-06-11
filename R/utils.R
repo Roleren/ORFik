@@ -164,7 +164,7 @@ readBam <- function(path, chrStyle = NULL) {
       message("ORFik reads paired end bam in as readGAlignmentPairs")
       bam <- matchSeqStyle(readGAlignmentPairs(path[1]), chrStyle)
       if (length(bam) == 0)
-        stop(paste("File", path$forward,
+        stop(paste("File", path[1],
                    "was read as paired-end file, but had 0 paired reads!"))
       return(bam)
     } else {

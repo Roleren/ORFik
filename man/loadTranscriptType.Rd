@@ -12,8 +12,8 @@ loadTranscriptType(object, part = "rRNA", tx = NULL)
 \item{part}{a character, default rRNA. Can also be:
 snoRNA, tRNA etc. As long as that biotype is defined in the gtf.}
 
-\item{tx}{a GRangesList of transcripts (Optional, default NULL),
-add to save run time.}
+\item{tx}{a GRangesList of transcripts (Optional, default NULL,
+all transcript of that type), else it must be names a list to subset on.}
 }
 \value{
 a GRangesList of transcript of that type

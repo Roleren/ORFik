@@ -14,14 +14,10 @@ to guess grouping / types / pairs by the file names.
 Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather
 information about libraries, and annotation, so that more tasks are
-possible. Like coverage per position in some transcript etc.
-}
-\details{
-## Constructor:
-
-Simplest way to make is to call:
-create.experiment(dir)
-
+possible. Like coverage per position in some transcript etc.\cr
+## Constructor:\cr
+Simplest way to make is to call:\cr
+create.experiment(dir)\cr
 On some folder with libraries and see what you get. Some of the fields
 might be needed to fill in manually. Each resulting row must be unique
 (excluding filepath), that means
@@ -33,16 +29,14 @@ rep (replicate): 1,2,3 etc\cr
 condition: WT (wild-type), control, target, mzdicer, starved etc.\cr
 fraction: 18, 19 (fractinations), or other ways to split library.\cr
 filepath: Full filepath to file
-
-
+}
+\details{
 Special rules:\cr
 Supported:\cr
 Single end bam, bed, wig + compressions of these\cr
 Paired forward / reverse wig files, must have same name except
- _forward / _reverse etc
-
-Not supported yet:\cr
-Paired end bam files not supported yet!
+ _forward / _reverse etc\cr
+Paired end bam, set pairedEndBam = c(T, T, T, F) etc.
 
 Naming:
 Will try to guess naming for tissues / stages, replicates etc.

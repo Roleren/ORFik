@@ -8,11 +8,12 @@ create.experiment(
   dir,
   exper,
   saveDir = NULL,
-  types = c("bam", "bed", "wig"),
   txdb = "",
   fa = "",
+  organism = "",
+  pairedEndBam = FALSE,
   viewTemplate = TRUE,
-  pairedEndBam = FALSE
+  types = c("bam", "bed", "wig")
 )
 }
 \arguments{
@@ -22,18 +23,21 @@ create.experiment(
 
 \item{saveDir}{Directory to save experiment csv file (NULL)}
 
-\item{types}{Default (bam, bed, wig), which types of libraries to allow}
-
 \item{txdb}{A path to gff/gtf file used for libraries}
 
 \item{fa}{A path to fasta genome/sequences used for libraries}
 
-\item{viewTemplate}{run View() on template when finished, default (TRUE)}
+\item{organism}{character, default: "" (no organism set), scientific name
+of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.}
 
 \item{pairedEndBam}{logical FALSE, else TRUE, or a logical list of
 TRUE/FALSE per library you see will be included (run first without and check
 what order the files will come in) 1 paired end file, then two single will
 be c(T, F, F)}
+
+\item{viewTemplate}{run View() on template when finished, default (TRUE)}
+
+\item{types}{Default (bam, bed, wig), which types of libraries to allow}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,

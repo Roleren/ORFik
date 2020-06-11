@@ -8,14 +8,10 @@
 #' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 #' more ease to find not only counts, but rather
 #' information about libraries, and annotation, so that more tasks are
-#' possible. Like coverage per position in some transcript etc.
-#'
-#'
-#' ## Constructor:
-#'
-#' Simplest way to make is to call:
-#' create.experiment(dir)
-#'
+#' possible. Like coverage per position in some transcript etc.\cr
+#' ## Constructor:\cr
+#' Simplest way to make is to call:\cr
+#' create.experiment(dir)\cr
 #' On some folder with libraries and see what you get. Some of the fields
 #' might be needed to fill in manually. Each resulting row must be unique
 #' (excluding filepath), that means
@@ -32,10 +28,8 @@
 #' Supported:\cr
 #' Single end bam, bed, wig + compressions of these\cr
 #' Paired forward / reverse wig files, must have same name except
-#'  _forward / _reverse etc
-#'
-#' Not supported yet:\cr
-#' Paired end bam files not supported yet!
+#'  _forward / _reverse etc\cr
+#' Paired end bam, set pairedEndBam = c(T, T, T, F) etc.
 #'
 #' Naming:
 #' Will try to guess naming for tissues / stages, replicates etc.
@@ -83,6 +77,7 @@ experiment <- setClass("experiment",
                        slots=list(experiment = "character",
                                   txdb = "character",
                                   fafile = "character",
+                                  organism = "character",
                                   expInVarName = "logical"),
                        contains = "DataFrame")
 
@@ -174,12 +169,14 @@ read.experiment <-  function(file) {
     listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
-
+  org <- ifelse(info[2,5] == "organism" & !isNA(info[2,6]),
+                info[2,6], "")
   exper <- info[1, 2]
   txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
   fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
 
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
+                   organism = org,
                    listData = listData, expInVarName = TRUE)
 
   validateExperiments(df)
@@ -206,6 +203,8 @@ read.experiment <-  function(file) {
 #' @param txdb A path to gff/gtf file used for libraries
 #' @param fa A path to fasta genome/sequences used for libraries
 #' @param viewTemplate run View() on template when finished, default (TRUE)
+#' @param organism character, default: "" (no organism set), scientific name
+#' of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.
 #' @param pairedEndBam logical FALSE, else TRUE, or a logical list of
 #' TRUE/FALSE per library you see will be included (run first without and check
 #' what order the files will come in) 1 paired end file, then two single will
@@ -228,9 +227,10 @@ read.experiment <-  function(file) {
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 #' @family ORFik_experiment
 create.experiment <- function(dir, exper, saveDir = NULL,
-                              types = c("bam", "bed", "wig"), txdb = "",
-                              fa = "", viewTemplate = TRUE,
-                              pairedEndBam = FALSE) {
+                              txdb = "", fa = "", organism = "",
+                              pairedEndBam = FALSE,
+                              viewTemplate = TRUE,
+                              types = c("bam", "bed", "wig")) {
   notDir <- !all(dir.exists(dir))
   if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a valid directory!"))
   file_dt <- findLibrariesInFolder(dir, types, pairedEndBam)
@@ -264,6 +264,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
   df[3, seq(2)] <- c("fasta", fa)
+  if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
   df[is.na(df)] <- ""
   if (!is.null(saveDir))
     save.experiment(df, pasteDir(saveDir, exper,".csv"))
@@ -764,6 +765,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' @return organism (character vector), if no organism set: NA
 #' @family ORFik_experiment
 #' @importFrom BiocGenerics organism
+#' @export
 #' @examples
 #' # if you have set organism in txdb of
 #' # ORFik experiment:
@@ -778,7 +780,9 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' # create.experiment() ...
 #' # organism.df(read.experiment("new-experiment))
 organism.df <- function(df) {
+  if (df@organism != "") return(df@organism)
   org <- BiocGenerics::organism(loadTxdb(df))
-  if (isNA(org)) message("Organism not set in txdb of gtf")
+  if (isNA(org))
+    message("Organism not set in either of experiment and txdb of gtf")
   return(org)
 }
