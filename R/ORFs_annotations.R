@@ -1,3 +1,57 @@
+#' Create small artificial orfs from cds
+#'
+#' Split cds first in two, a start part and stop part.
+#' Then say how large the two parts can be and merge them together.
+#' It will sample a value in range give.\cr
+#' Parts will be forced to not overlap and can not extend outside
+#' original cds
+#' @param cds a GRangesList of orfs, must have
+#'  width %% 3 == 0 and length >= 6
+#' @param start5 integer, default: 1 (start of orf)
+#' @param end5 integer, default: 4 (max 4 codons from start codon)
+#' @param start3 integer, default -4 (max 4 codons from stop codon)
+#' @param end3 integer, default: 0 (end of orf)
+#' @return GRangesList of new ORFs
+artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
+  #start5 = 1; end5 = 4; start3 = -4; end3 = 0
+  ORFik:::validGRL(class(cds), type = "cds")
+  widths <- widthPerGroup(cds)
+  names <- names(cds)
+  if (start5 > end5) stop ("start5 > end5 argument")
+  if (!all(widths %% 3 == 0)) stop("not all cds has width moduls 3 = 0")
+  if (!all(widths >= 6)) stop("not all cds has width >= 6")
+  possible_start <- data.table(max = widths - 3,
+                               random = sample(seq.int(3, 3 + (end5 * 3), by = 3),
+                                               size = length(widths)))
+  possible_start[, min := pmin(max, random)]
+  possible_start[, pick := pmin(max, min)]
+  start_part <- IRanges(start5, possible_start$pick)
+  start_part; widths; possible_start
+
+  rand <- sample(seq.int((start3*3) + 1, end3, by = 3), size = length(widths)
+                 ,replace = TRUE) + widths
+  possible_end <- data.table(min = possible_start$pick + 1,
+                             random = rand)
+  possible_end[, max := pmax(min, random)]
+  possible_end[, pick := pmax(max, min)]
+  end_part <- IRanges(possible_end$pick, widths)
+  end_part; widths; possible_end
+
+  start_part
+  end_part
+
+  start_grl <- pmapFromTranscriptF(start_part, cds, removeEmpty = TRUE)
+  end_grl <- pmapFromTranscriptF(end_part, cds, removeEmpty = TRUE)
+
+  merged_gr <- split(c(unlistGrl(start_grl), unlistGrl(end_grl)), rep(names(cds), 2))
+  merged_gr <- reduce(merged_gr)
+  new_widths <- widthPerGroup(merged_gr)
+  if (!all(new_widths > 0) | !all(new_widths %% 3 == 0))
+    stop("Error during creation of artifical ORFs!")
+  return(merged_gr)
+}
+
+
 #' Overlaps GRanges object with provided annotations.
 #'
 #' @param rel_orf - GRanges object of your ORF.

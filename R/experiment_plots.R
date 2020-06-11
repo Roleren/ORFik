@@ -93,8 +93,9 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
         a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
                                 title = title)
         if (!is.null(outdir)) {
+          idName <- ifelse(idName == "", "", paste0("_", idName))
           ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s,
-                                         "_", idName, format)), a,
+                                         idName, format)), a,
                  height = 10)
         }
       }
@@ -177,8 +178,9 @@ transcriptWindow1 <- function(df, outdir = NULL,
       a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
                               title = title)
       if (!is.null(outdir)) {
+        idName <- ifelse(idName == "", "", paste0("_", idName))
         ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_tx_all_", s,
-                                       "_", idName, format)), a,
+                                       idName, format)), a,
                height = 10)
       }
     }

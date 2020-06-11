@@ -541,4 +541,11 @@ test_that("findUORFs works as intended", {
    }
 
 })
-
+test_that("artificial.orfs works as intended", {
+  cds <- GRangesList(tx1 = GRanges("chr1", IRanges(start = c(100), end = 150),"+"),
+                     tx2 = GRanges("chr1", IRanges(200, 205), "+"),
+                     tx3 = GRanges("chr1", IRanges(300, 311), "+"),
+                     tx4 = GRanges("chr1", IRanges(400, 999), "+"),
+                     tx5 = GRanges("chr1", IRanges(500, 511), "-"))
+  artificial.orfs(cds)
+})
