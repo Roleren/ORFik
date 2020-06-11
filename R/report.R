@@ -54,8 +54,8 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   }
 
   # Special regions rRNA etc..
-  gff.db <- importGtfFromTxdb(txdb)
-  types <- unique(gff.db$transcript_biotype)
+  gff.df <- importGtfFromTxdb(txdb)
+  types <- unique(gff.df$transcript_biotype)
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
 
