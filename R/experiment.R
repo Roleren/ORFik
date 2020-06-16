@@ -274,7 +274,6 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 
 #' Save \code{\link{experiment}} to disc
 #'
-#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param file name of file to save df as
 #' @export

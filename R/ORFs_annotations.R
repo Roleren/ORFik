@@ -5,8 +5,8 @@
 #' It will sample a value in range give.\cr
 #' Parts will be forced to not overlap and can not extend outside
 #' original cds
-#' @param cds a GRangesList of orfs, must have
-#'  width %% 3 == 0 and length >= 6
+#' @param cds a GRangesList of orfs, must have width
+#'  \%\% 3 == 0 and length >= 6
 #' @param start5 integer, default: 1 (start of orf)
 #' @param end5 integer, default: 4 (max 4 codons from start codon)
 #' @param start3 integer, default -4 (max 4 codons from stop codon)
@@ -17,13 +17,13 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   ORFik:::validGRL(class(cds), type = "cds")
   widths <- widthPerGroup(cds)
   names <- names(cds)
-  if (start5 > end5) stop ("start5 > end5 argument")
-  if (start3 < end3) stop ("start5 > end5 argument")
+  if (start5 > end5) stop("start5 > end5 argument")
+  if (start3 > end3) stop("start3 > end3 argument")
   if (!all(widths %% 3 == 0)) stop("not all cds has width moduls 3 = 0")
   if (!all(widths >= 6)) stop("not all cds has width >= 6")
   possible_start <- data.table(max = widths - 3,
                                random = sample(seq.int(3, 3 + (end5 * 3), by = 3),
-                                               size = length(widths)))
+                                               size = length(widths), replace = TRUE))
   possible_start[, min := pmin(max, random)]
   possible_start[, pick := pmin(max, min)]
   start_part <- IRanges(start5, possible_start$pick)

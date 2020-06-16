@@ -547,5 +547,6 @@ test_that("artificial.orfs works as intended", {
                      tx3 = GRanges("chr1", IRanges(300, 311), "+"),
                      tx4 = GRanges("chr1", IRanges(400, 999), "+"),
                      tx5 = GRanges("chr1", IRanges(500, 511), "-"))
-  artificial.orfs(cds)
+  res <- artificial.orfs(cds)
+  expect_equal(100, startSites(res[1]))
 })
