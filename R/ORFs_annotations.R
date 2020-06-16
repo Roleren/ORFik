@@ -18,6 +18,7 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   widths <- widthPerGroup(cds)
   names <- names(cds)
   if (start5 > end5) stop ("start5 > end5 argument")
+  if (start3 < end3) stop ("start5 > end5 argument")
   if (!all(widths %% 3 == 0)) stop("not all cds has width moduls 3 = 0")
   if (!all(widths >= 6)) stop("not all cds has width >= 6")
   possible_start <- data.table(max = widths - 3,
