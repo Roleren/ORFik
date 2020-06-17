@@ -250,7 +250,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
       scores[, StartCodons := txSeqsFromFa(starts, faFile, TRUE, FALSE)]
       scores[, StopCodons := txSeqsFromFa(stops, faFile, TRUE, FALSE)]
     } else {
-      message("faFile not included, skipping features dependent fasta genome")
+      message("Notification: faFile not included,",
+      "skipping features dependent fasta genome")
     }
     # switch five with tx, is it possible to use ?
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
@@ -259,7 +260,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     scores[, isOverlappingCds := isOverlapping(distORFCDS)]
     scores[, rankInTx := rankOrder(grl)]
   } else {
-    message("sequenceFeatures set to False,",
+    message("Notification: sequenceFeatures set to False,",
     "dropping all sequenceFeatures features.")
   }
 

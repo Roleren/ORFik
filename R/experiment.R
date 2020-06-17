@@ -169,7 +169,7 @@ read.experiment <-  function(file) {
     listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
-  org <- ifelse(info[2,5] == "organism" & !isNA(info[2,6]),
+  org <- ifelse(info[2,5] == "organism" & !is.na(info[2,6]),
                 info[2,6], "")
   exper <- info[1, 2]
   txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
