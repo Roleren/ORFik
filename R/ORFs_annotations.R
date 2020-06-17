@@ -14,7 +14,7 @@
 #' @return GRangesList of new ORFs
 artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   #start5 = 1; end5 = 4; start3 = -4; end3 = 0
-  ORFik:::validGRL(class(cds), type = "cds")
+  validGRL(class(cds), type = "cds")
   widths <- widthPerGroup(cds)
   names <- names(cds)
   if (start5 > end5) stop("start5 > end5 argument")
@@ -43,8 +43,8 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
 
   start_grl <- pmapFromTranscriptF(start_part, cds, removeEmpty = TRUE)
   end_grl <- pmapFromTranscriptF(end_part, cds, removeEmpty = TRUE)
-
-  merged_gr <- split(c(unlistGrl(start_grl), unlistGrl(end_grl)), rep(names(cds), 2))
+  merged_gr <- c(unlistGrl(start_grl), unlistGrl(end_grl))
+  merged_gr <- split(merged_gr, names(merged_gr))
   merged_gr <- reduce(merged_gr)
   new_widths <- widthPerGroup(merged_gr)
   if (!all(new_widths > 0) | !all(new_widths %% 3 == 0))
