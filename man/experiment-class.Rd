@@ -18,9 +18,10 @@ possible. Like coverage per position in some transcript etc.\cr
 ## Constructor:\cr
 Simplest way to make is to call:\cr
 create.experiment(dir)\cr
-On some folder with libraries and see what you get. Some of the fields
+On some folder with NGS libraries (usually bam files) and see what you get.
+Some of the fields
 might be needed to fill in manually. Each resulting row must be unique
-(excluding filepath), that means
+(not including filepath, they are always unique), that means
 if it has replicates then that must be said explicit. And all
 filepaths must be unique and have files with size > 0.
 Syntax (columns):\cr
@@ -36,8 +37,7 @@ Supported:\cr
 Single end bam, bed, wig + compressions of these\cr
 Paired forward / reverse wig files, must have same name except
  _forward / _reverse etc\cr
-Paired end bam, set pairedEndBam = c(T, T, T, F) etc.
-
+Paired end bam, set pairedEndBam = c(T, T, T, F) etc.\cr
 Naming:
 Will try to guess naming for tissues / stages, replicates etc.
 If it finds more than one hit for one file, it will not guess.

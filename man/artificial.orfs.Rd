@@ -19,7 +19,8 @@ artificial.orfs(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0)
 \item{end3}{integer, default: 0 (end of orf)}
 }
 \value{
-GRangesList of new ORFs
+GRangesList of new ORFs (sorted: + strand increasing start,
+ - strand decreasing start)
 }
 \description{
 Split cds first in two, a start part and stop part.

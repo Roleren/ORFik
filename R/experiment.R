@@ -12,9 +12,10 @@
 #' ## Constructor:\cr
 #' Simplest way to make is to call:\cr
 #' create.experiment(dir)\cr
-#' On some folder with libraries and see what you get. Some of the fields
+#' On some folder with NGS libraries (usually bam files) and see what you get.
+#' Some of the fields
 #' might be needed to fill in manually. Each resulting row must be unique
-#' (excluding filepath), that means
+#' (not including filepath, they are always unique), that means
 #' if it has replicates then that must be said explicit. And all
 #' filepaths must be unique and have files with size > 0.
 #' Syntax (columns):\cr
@@ -29,8 +30,7 @@
 #' Single end bam, bed, wig + compressions of these\cr
 #' Paired forward / reverse wig files, must have same name except
 #'  _forward / _reverse etc\cr
-#' Paired end bam, set pairedEndBam = c(T, T, T, F) etc.
-#'
+#' Paired end bam, set pairedEndBam = c(T, T, T, F) etc.\cr
 #' Naming:
 #' Will try to guess naming for tissues / stages, replicates etc.
 #' If it finds more than one hit for one file, it will not guess.
@@ -176,8 +176,8 @@ read.experiment <-  function(file) {
   fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
 
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
-                   organism = org,
-                   listData = listData, expInVarName = TRUE)
+                   organism = org, listData = listData,
+                   expInVarName = TRUE)
 
   validateExperiments(df)
   return(df)
@@ -219,10 +219,16 @@ read.experiment <-  function(file) {
 #' exper <- "ORFik"
 #' # 3. Pick .gff/.gtf location
 #' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' # 4. Pick fasta genome of organism
+#' fa <- system.file("extdata", "genome.fasta", package = "ORFik")
+#' # 5. Set organism (optional)
+#' org <- "Homo sapiens"
 #' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               fa = fa, organism = org,
 #'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
+#' # Now fix non-unique rows: either is libre orfice, microsoft excel, or in R
+#' template$X5[6] <- "heart"
+#' # read experiment (if you set correctly)
 #' df <- read.experiment(template)
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 #' @family ORFik_experiment

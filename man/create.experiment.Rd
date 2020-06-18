@@ -63,10 +63,16 @@ dir <- system.file("extdata", "", package = "ORFik")
 exper <- "ORFik"
 # 3. Pick .gff/.gtf location
 txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+# 4. Pick fasta genome of organism
+fa <- system.file("extdata", "genome.fasta", package = "ORFik")
+# 5. Set organism (optional)
+org <- "Homo sapiens"
 template <- create.experiment(dir = dir, exper, txdb = txdb,
+                              fa = fa, organism = org,
                               viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment
+# Now fix non-unique rows: either is libre orfice, microsoft excel, or in R
+template$X5[6] <- "heart"
+# read experiment (if you set correctly)
 df <- read.experiment(template)
 # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 }

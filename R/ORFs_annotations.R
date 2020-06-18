@@ -11,7 +11,8 @@
 #' @param end5 integer, default: 4 (max 4 codons from start codon)
 #' @param start3 integer, default -4 (max 4 codons from stop codon)
 #' @param end3 integer, default: 0 (end of orf)
-#' @return GRangesList of new ORFs
+#' @return GRangesList of new ORFs (sorted: + strand increasing start,
+#'  - strand decreasing start)
 artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   #start5 = 1; end5 = 4; start3 = -4; end3 = 0
   validGRL(class(cds), type = "cds")
@@ -27,7 +28,6 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   possible_start[, min := pmin(max, random)]
   possible_start[, pick := pmin(max, min)]
   start_part <- IRanges(start5, possible_start$pick)
-  start_part; widths; possible_start
 
   rand <- sample(seq.int((start3*3) + 1, end3, by = 3), size = length(widths)
                  ,replace = TRUE) + widths
@@ -36,10 +36,6 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   possible_end[, max := pmax(min, random)]
   possible_end[, pick := pmax(max, min)]
   end_part <- IRanges(possible_end$pick, widths)
-  end_part; widths; possible_end
-
-  start_part
-  end_part
 
   start_grl <- pmapFromTranscriptF(start_part, cds, removeEmpty = TRUE)
   end_grl <- pmapFromTranscriptF(end_part, cds, removeEmpty = TRUE)
@@ -49,7 +45,7 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   new_widths <- widthPerGroup(merged_gr)
   if (!all(new_widths > 0) | !all(new_widths %% 3 == 0))
     stop("Error during creation of artifical ORFs!")
-  return(merged_gr)
+  return(sortPerGroup(merged_gr))
 }
 
 
