@@ -28,7 +28,7 @@
 #'  - strand decreasing start)
 artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
                             bin.if.few = TRUE) {
-  #start5 = 1; end5 = 4; start3 = -4; end3 = 0;bin.if.few = TRUE
+  #start5 = 1; end5 = 4; start3 = -4; end3 = 0;bin.if.few = TRUE; groupings <- ORFik:::groupings
   validGRL(class(cds), type = "cds")
   widths <- widthPerGroup(cds)
   names <- names(cds)
@@ -74,7 +74,7 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
   start_grl <- pmapFromTranscriptF(start_part, cds, removeEmpty = TRUE)
   end_grl <- pmapFromTranscriptF(end_part, cds, removeEmpty = TRUE)
   merged_gr <- c(unlistGrl(start_grl), unlistGrl(end_grl))
-  merged_gr <- split(merged_gr, rep(seq(length(cds)), 2))
+  merged_gr <- split(merged_gr, c(groupings(start_grl), groupings(end_grl)))
   names(merged_gr) <- names(cds)
   merged_gr <- reduce(merged_gr)
   new_widths <- widthPerGroup(merged_gr, FALSE)
