@@ -550,9 +550,9 @@ filepath <- function(df, type, basename = FALSE) {
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams matchSeqStyle
-#' @param type a character(default: "defualt"), load files in experiment
-#' or some precomputed variant, either "bedo" or "pshifted".
-#' These are made with ORFik:::simpleLibs()
+#' @param type a character(default: "default"), load files in experiment
+#' or some precomputed variant, either "bedo", "bedo" or "pshifted".
+#' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return NULL (libraries set by envir assignment)

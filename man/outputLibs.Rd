@@ -22,9 +22,9 @@ called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
-\item{type}{a character(default: "defualt"), load files in experiment
-or some precomputed variant, either "bedo" or "pshifted".
-These are made with ORFik:::simpleLibs()}
+\item{type}{a character(default: "default"), load files in experiment
+or some precomputed variant, either "bedo", "bedo" or "pshifted".
+These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 

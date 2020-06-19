@@ -58,9 +58,9 @@ targets / nontargets etc. (default: "")}
 
 \item{format}{default (".png"), do ".pdf" if you want as pdf}
 
-\item{type}{a character(default: "defualt"), load files in experiment
-or some precomputed variant, either "bedo" or "pshifted".
-These are made with ORFik:::simpleLibs()}
+\item{type}{a character(default: "default"), load files in experiment
+or some precomputed variant, either "bedo", "bedo" or "pshifted".
+These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE

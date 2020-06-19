@@ -62,11 +62,14 @@ is strongest between 27:32.}
 
 \item{output_format}{default c("bed", "bedo"), use export.bed or
 ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
-The bed format version can be used in IGV, bedo is faster to load in R.}
+The bed format version can be used in IGV, the score column is counts of that
+read with that read length, the cigar reference width is lost,
+bedo is much faster to save and load in R, and retain cigar reference width,
+but can not be used in IGV.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 
-\item{log}{logical, default (TRUE), output a log with parameters used.}
+\item{log}{logical, default (TRUE), output a log file with parameters used.}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"

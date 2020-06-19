@@ -36,8 +36,7 @@ Imports:
   Rcpp (>= 1.0.0), 
   data.table (>= 1.11.8),
   Biostrings (>= 2.51.1),
-  stats,
-  tools,
+  biomartr,
   Rsamtools (>= 1.35.0),
   BiocGenerics (>= 0.29.1),
   BiocParallel (>= 1.19.0),
@@ -47,7 +46,10 @@ Imports:
   gridExtra (>= 2.3),
   cowplot (>= 1.0.0),
   GGally (>= 1.4.0),
-  methods (>= 3.6.0)
+  methods (>= 3.6.0),
+  R.utils,
+  stats,
+  tools
 RoxygenNote: 7.1.0
 Suggests:
   testthat,

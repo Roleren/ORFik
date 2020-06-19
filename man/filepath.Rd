@@ -9,9 +9,9 @@ filepath(df, type, basename = FALSE)
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{type}{a character(default: "defualt"), load files in experiment
-or some precomputed variant, either "bedo" or "pshifted".
-These are made with ORFik:::simpleLibs()}
+\item{type}{a character(default: "default"), load files in experiment
+or some precomputed variant, either "bedo", "bedo" or "pshifted".
+These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 
 \item{basename}{logical, default (FALSE).
 Get relative paths instead of full. Only use for inspection!}

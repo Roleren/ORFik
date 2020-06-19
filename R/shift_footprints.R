@@ -237,9 +237,12 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' folder at that location
 #' @param output_format default c("bed", "bedo"), use export.bed or
 #' ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
-#' The bed format version can be used in IGV, bedo is faster to load in R.
+#' The bed format version can be used in IGV, the score column is counts of that
+#' read with that read length, the cigar reference width is lost,
+#' bedo is much faster to save and load in R, and retain cigar reference width,
+#' but can not be used in IGV.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
-#' @param log logical, default (TRUE), output a log with parameters used.
+#' @param log logical, default (TRUE), output a log file with parameters used.
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
 #' or .bedo)
 #' @importFrom rtracklayer export.bed
@@ -289,13 +292,15 @@ shiftFootprintsByExperiment <- function(df,
                                    accepted.lengths = accepted.lengths)
     shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
+
     if ("bedo" %in% output_format) {
       shiftedb <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
                                          addSizeColumn = TRUE)
       export.bedo(shiftedb, paste0(name, "_pshifted.bedo"))
     }
     if ("bed" %in% output_format) {
-      shifted$score <- shifted$size
+      shifted <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                         addSizeColumn = FALSE)
       export.bed(shifted, paste0(name, "_pshifted.bed"))
     }
 
