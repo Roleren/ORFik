@@ -43,8 +43,8 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
   combinations <- floor((max.size - 1) / 3)
   if (combinations < 1) stop("No possible combination with input")
   bin <- 3
-  if (bin.if.few) {
-    while ((length(cds) < (30 * combinations)) & (max.size / bin > 2)) {
+  if (bin.if.few & (length(cds) < (30 * combinations))) {
+    while (((max.size / bin) * 30 > length(cds)) & (max.size / bin > 2)) {
       bin <- bin + 3
     }
   }
