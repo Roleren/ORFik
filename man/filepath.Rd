@@ -29,9 +29,11 @@ For pshifted libraries, it will load "bedo" prioritized over "bed", if
 there exists both file types for the same file.
 }
 \examples{
-# df <- read.experiment("ORFik_exp")
-# filepath(df, "default")
+df <- ORFik.template.experiment()
+filepath(df, "default")
+# If you have bedo files, see simpleLibs():
 # filepath(df, "bedo")
+# If you have pshifted files, see shiftFootprintsByExperiment():
 # filepath(df, "pshifted")
 }
 \seealso{

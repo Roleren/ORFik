@@ -158,8 +158,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
 #' Extract count table directly from experiment
 #'
-#' Used to quickly load read count tables to R.
-#'
+#' Used to quickly load read count tables to R. \cr
 #' If df is experiment:
 #' Extracts by getting /QC_STATS directory, and searching for region
 #' Requires \code{\link{ORFikQC}} to have been run on experiment!
@@ -183,6 +182,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' @return a data.table of columns as counts per library, column name
 #' is name of library. Rownames must be unique for now. Might change.
 #' @importFrom DESeq2 DESeqDataSet
+#' @importFrom stats as.formula
 #' @export
 #' @examples
 #' # 1. Pick directory

@@ -82,7 +82,8 @@ Remember that different species might have different default Ribosome
 read lengths, for human, mouse etc, normally around 27:30.
 }
 \examples{
-#df <- read.experiment("ORFik_example")
+df <- ORFik.template.experiment()
+df <- df[3,] #lets only p-shift RFP sample at index 3
 #shiftFootprintsByExperiment(df, output_format = "bedo)
 }
 \seealso{

@@ -49,7 +49,7 @@ Gives a massive speedup when cigar string and bam flags are not needed.
 See \code{\link{export.bedo}} for information on file format
 }
 \examples{
-#df <- read.experiment("template")
+df <- ORFik.template.experiment()
 #simpleLibs(df)
 # Keep only 5' ends of reads
 #simpleLibs(df, method = "5prime")

@@ -18,18 +18,9 @@ NULL (objects removed from envir specified)
 Variable names defined by df, in envir defined
 }
 \examples{
-# 1. Pick directory
-dir <- system.file("extdata", "", package = "ORFik")
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb,
-                              viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment
-df <- read.experiment(template)
+df <- ORFik.template.experiment()
 # Output to .GlobalEnv with:
 # outputLibs(df)
-# Then remove them with: remove.experiments(df)
+# Then remove them with:
+# remove.experiments(df)
 }

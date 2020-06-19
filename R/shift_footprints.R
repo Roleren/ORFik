@@ -246,7 +246,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @family pshifting
 #' @export
 #' @examples
-#' #df <- read.experiment("ORFik_example")
+#' df <- ORFik.template.experiment()
+#' df <- df[3,] #lets only p-shift RFP sample at index 3
 #' #shiftFootprintsByExperiment(df, output_format = "bedo)
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(
@@ -324,13 +325,15 @@ shiftFootprintsByExperiment <- function(df,
 #' @return a ggplot2 grob object
 #' @export
 #' @examples
-#' #df <- read.experiment("ORFik_example")
+#' df <- ORFik.template.experiment()
+#' df <- df[3,] #lets only p-shift RFP sample at index 3
 #' #shiftFootprintsByExperiment(df, output_format = "bedo)
 #' #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        scoring = "transcriptNormalized",
                        BPPARAM = bpparam()) {
   txNames <- filterTranscripts(df, 20, 21, 1)
+  txdb <- loadTxdb(df)
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
   style <- seqlevelsStyle(cds)

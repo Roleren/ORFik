@@ -29,13 +29,12 @@ a data.table of columns as counts per library, column name
 is name of library. Rownames must be unique for now. Might change.
 }
 \description{
-Used to quickly load read count tables to R.
-}
-\details{
+Used to quickly load read count tables to R. \cr
 If df is experiment:
 Extracts by getting /QC_STATS directory, and searching for region
 Requires \code{\link{ORFikQC}} to have been run on experiment!
-
+}
+\details{
 If df is path to folder:
 Loads the the file in that directory with the regex region.rds,
 where region is what is defined by argument.

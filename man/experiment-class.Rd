@@ -44,16 +44,19 @@ If it finds more than one hit for one file, it will not guess.
 Always check that it guessed correctly.
 }
 \examples{
+# To see an internal ORFik example
+df <- ORFik.template.experiment()
+# This is how to make it:
 \dontrun{
 library(ORFik)
 
 # 1. Update path to experiment data  directory (bam, bed, wig files etc)
 exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 
-# 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, etc)
+# 2. Set a 5 character name for experiment, (Lee et al 2013 -> Lee13, etc)
 exper_name = "Lee13"
 
-# 3. Create a template experiment
+# 3. Create a template experiment (gtf and fasta genome)
 temp <- create.experiment(exp_dir, exper_name,
  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
@@ -65,7 +68,7 @@ temp <- create.experiment(exp_dir, exper_name,
 
 temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are library types
 
-# You can also do this in your spread sheet program (excel, libre..)
+# You can also do this in your spread sheet program (excel, libre office)
 # Now save new version, if you did not use spread sheet.
 saveName <- paste0("/data/processed_data/experiment_tables_for_R/",
  exper_name,".csv")

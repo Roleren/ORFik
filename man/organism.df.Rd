@@ -18,15 +18,16 @@ Uses the txdb / gtf organism information, if existing.
 \examples{
 # if you have set organism in txdb of
 # ORFik experiment:
-# df <- read.experiment("experiment-path")
-# organism.df(df)
+df <- ORFik.template.experiment()
+#organism.df(df)
 
 #' If you have not set the organism you can do:
 #txdb <- GenomicFeatures::makeTxDbFromGFF("pat/to/gff_or_gff")
 #BiocGenerics::organism(txdb) <- "Homo sapiens"
 #saveDb(txdb, paste0("pat/to/gff_or_gff", ".db"))
 # then use this txdb in you ORFik experiment and load:
-# create.experiment() ...
+# create.experiment(exper = "new_experiment",
+#   txdb = paste0("pat/to/gff_or_gff", ".db")) ...
 # organism.df(read.experiment("new-experiment))
 }
 \seealso{

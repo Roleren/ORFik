@@ -37,16 +37,19 @@
 #' Always check that it guessed correctly.
 #' @importFrom methods new
 #' @examples
+#' # To see an internal ORFik example
+#' df <- ORFik.template.experiment()
+#' # This is how to make it:
 #' \dontrun{
 #' library(ORFik)
 #'
 #' # 1. Update path to experiment data  directory (bam, bed, wig files etc)
 #' exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 #'
-#' # 2. Set a 5 character name for experiment, (Lee 2013 -> Lee13, etc)
+#' # 2. Set a 5 character name for experiment, (Lee et al 2013 -> Lee13, etc)
 #' exper_name = "Lee13"
 #'
-#' # 3. Create a template experiment
+#' # 3. Create a template experiment (gtf and fasta genome)
 #' temp <- create.experiment(exp_dir, exper_name,
 #'  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
 #'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
@@ -58,7 +61,7 @@
 #'
 #' temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are library types
 #'
-#' # You can also do this in your spread sheet program (excel, libre..)
+#' # You can also do this in your spread sheet program (excel, libre office)
 #' # Now save new version, if you did not use spread sheet.
 #' saveName <- paste0("/data/processed_data/experiment_tables_for_R/",
 #'  exper_name,".csv")
@@ -396,8 +399,8 @@ validateExperiments <- function(df) {
 #' @export
 #' @family ORFik_experiment
 #' @examples
-#' #df <- read.experiment("template")
-#' #bamVarName(df)
+#' df <- ORFik.template.experiment()
+#' bamVarName(df)
 #'
 #' # without libtype
 #' #bamVarName(df, skip.libtype = TRUE)
@@ -487,9 +490,11 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' @export
 #' @family ORFik_experiment
 #' @examples
-#' # df <- read.experiment("ORFik_exp")
-#' # filepath(df, "default")
+#' df <- ORFik.template.experiment()
+#' filepath(df, "default")
+#' # If you have bedo files, see simpleLibs():
 #' # filepath(df, "bedo")
+#' # If you have pshifted files, see shiftFootprintsByExperiment():
 #' # filepath(df, "pshifted")
 filepath <- function(df, type, basename = FALSE) {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
@@ -622,7 +627,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
 #' @examples
-#' #df <- read.experiment("template")
+#' df <- ORFik.template.experiment()
 #' #simpleLibs(df)
 #' # Keep only 5' ends of reads
 #' #simpleLibs(df, method = "5prime")
@@ -672,20 +677,11 @@ simpleLibs <- function(df,
 #' @return NULL (objects removed from envir specified)
 #' @export
 #' @examples
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
-#' df <- read.experiment(template)
+#' df <- ORFik.template.experiment()
 #' # Output to .GlobalEnv with:
 #' # outputLibs(df)
-#' # Then remove them with: remove.experiments(df)
+#' # Then remove them with:
+#' # remove.experiments(df)
 remove.experiments <- function(df, envir = .GlobalEnv) {
   rm(list =  bamVarName(df), envir = envir)
   message(paste0("Removed loaded libraries from experiment:",
@@ -774,20 +770,42 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' @examples
 #' # if you have set organism in txdb of
 #' # ORFik experiment:
-#' # df <- read.experiment("experiment-path")
-#' # organism.df(df)
+#' df <- ORFik.template.experiment()
+#' #organism.df(df)
 #'
 #' #' If you have not set the organism you can do:
 #' #txdb <- GenomicFeatures::makeTxDbFromGFF("pat/to/gff_or_gff")
 #' #BiocGenerics::organism(txdb) <- "Homo sapiens"
 #' #saveDb(txdb, paste0("pat/to/gff_or_gff", ".db"))
 #' # then use this txdb in you ORFik experiment and load:
-#' # create.experiment() ...
+#' # create.experiment(exper = "new_experiment",
+#' #   txdb = paste0("pat/to/gff_or_gff", ".db")) ...
 #' # organism.df(read.experiment("new-experiment))
 organism.df <- function(df) {
   if (df@organism != "") return(df@organism)
   org <- BiocGenerics::organism(loadTxdb(df))
-  if (isNA(org))
+  if (is.na(org))
     message("Organism not set in either of experiment and txdb of gtf")
   return(org)
+}
+
+#' An ORFik experiment to see how it looks
+#'
+#' NOTE! This experiment should only be used for testing, since
+#' it is just sampled data internal in ORFik.
+#' @return an ORFik \code{\link{experiment}}
+#' @export
+#' @examples
+#' ORFik.template.experiment()
+ORFik.template.experiment <- function() {
+  dir <- system.file("extdata", "", package = "ORFik")
+  # 2. Pick an experiment name
+  exper <- "ORFik"
+  # 3. Pick .gff/.gtf location
+  txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+  fa <- system.file("extdata", "genome.fasta", package = "ORFik")
+  template <- create.experiment(dir = dir, exper, txdb = txdb, fa = fa,
+                                viewTemplate = FALSE)
+  # read experiment
+  return(read.experiment(template))
 }

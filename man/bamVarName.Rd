@@ -39,8 +39,8 @@ variable names of libraries (character vector)
 What will each sample be called given the columns of the experiment?
 }
 \examples{
-#df <- read.experiment("template")
-#bamVarName(df)
+df <- ORFik.template.experiment()
+bamVarName(df)
 
 # without libtype
 #bamVarName(df, skip.libtype = TRUE)

@@ -32,7 +32,8 @@ a ggplot2 grob object
 A good validation for you p-shifting
 }
 \examples{
-#df <- read.experiment("ORFik_example")
+df <- ORFik.template.experiment()
+df <- df[3,] #lets only p-shift RFP sample at index 3
 #shiftFootprintsByExperiment(df, output_format = "bedo)
 #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 }

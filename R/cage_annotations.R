@@ -324,21 +324,19 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' @inheritParams reassignTxDbByCage
 #' @importFrom data.table setkeyv
 #' @family CAGE
+#' @return a TxDb obect of reassigned transcripts
 #' @export
 #' @examples
-#'  # assignTSSByCage(txdbFile, cagePath)
-#'  # Minimum 20 cage tags for new TSS
-#'  # assignTSSByCage(txdbFile, cagePath, filterValue = 20)
-#'  \dontrun{
-#'  library(GenomicFeatures)
-#'  # Get the gtf txdb file
-#'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#' txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'  package = "GenomicFeatures")
-#'  cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
+#' cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
 #'  package = "ORFik")
-#'  assignTSSByCage(txdbFile, cagePath)
-#'  }
-#' @return a TxDb obect of reassigned transcripts
+#'
+#' \dontrun{
+#'   assignTSSByCage(txdbFile, cagePath)
+#'   Minimum 20 cage tags for new TSS
+#'   assignTSSByCage(txdbFile, cagePath, filterValue = 20)
+#' }
 assignTSSByCage <- function(txdb, cage, extension = 1000,
                             filterValue = 1, restrictUpstreamToTx = FALSE,
                             removeUnused = FALSE, preCleanup = TRUE) {
