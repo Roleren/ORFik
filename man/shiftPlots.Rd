@@ -9,6 +9,7 @@ shiftPlots(
   output = NULL,
   title = "Ribo-seq",
   scoring = "transcriptNormalized",
+  addFracPlot = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -22,6 +23,9 @@ A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"}
 
 \item{scoring}{which scoring scheme to use for heatmap, default
 "transcriptNormalized". Some alternatives: "sum", "zscore".}
+
+\item{addFracPlot}{logical, default TRUE, add positional sum plot on top
+per heatmap.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

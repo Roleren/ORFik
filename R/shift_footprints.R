@@ -321,6 +321,8 @@ shiftFootprintsByExperiment <- function(df,
 #' "transcriptNormalized". Some alternatives: "sum", "zscore".
 #' @param title Title for top of plot, default "Ribo-seq".
 #' A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"
+#' @param addFracPlot logical, default TRUE, add positional sum plot on top
+#' per heatmap.
 #' @importFrom gridExtra grid.arrange
 #' @return a ggplot2 grob object
 #' @export
@@ -331,19 +333,22 @@ shiftFootprintsByExperiment <- function(df,
 #' #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        scoring = "transcriptNormalized",
+                       addFracPlot = TRUE,
                        BPPARAM = bpparam()) {
   txNames <- filterTranscripts(df, 20, 21, 1)
   txdb <- loadTxdb(df)
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
   style <- seqlevelsStyle(cds)
-  plots <- bplapply(filepath(df, "pshifted"),
-                    function(x, cds, mrna, style) {
-    hitMap <- windowPerReadLength(cds, mrna,  fimport(x, style),
+  plots <- bplapply(seq(nrow(df)),
+                    function(x, cds, mrna, style, paths, df) {
+    miniTitle <- gsub("_", " ", bamVarName(df, skip.experiment = TRUE)[x])
+    hitMap <- windowPerReadLength(cds, mrna,  fimport(paths[x], style),
                                   pShifted = TRUE)
-    coverageHeatMap(hitMap, scoring = scoring,
-                    addFracPlot = FALSE)
-  }, cds = cds, mrna = mrna, style = style, BPPARAM = BPPARAM)
+    coverageHeatMap(hitMap, scoring = scoring, addFracPlot = addFracPlot,
+                    title = miniTitle)
+  }, cds = cds, mrna = mrna, style = style, BPPARAM = BPPARAM,
+  paths = filepath(df, "pshifted"), df = df)
   res <- do.call("grid.arrange", c(plots, ncol=1, top = title))
   if (!is.null(output))
     ggsave(output, res,
