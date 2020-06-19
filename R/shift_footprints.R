@@ -248,7 +248,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @examples
 #' df <- ORFik.template.experiment()
 #' df <- df[3,] #lets only p-shift RFP sample at index 3
-#' #shiftFootprintsByExperiment(df, output_format = "bedo)
+#' # If you want to check it in IGV do:
+#' shiftFootprintsByExperiment(df)
+#' # Then use the bed files that are created, which are readable in IGV.
+#' # If you only need in R, do: (then you get no .bed files)
+#' #shiftFootprintsByExperiment(df, output_format = "bedo")
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(
                                           df$filepath[1]), "/pshifted/"),

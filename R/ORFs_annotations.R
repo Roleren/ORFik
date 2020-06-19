@@ -1,38 +1,72 @@
 #' Create small artificial orfs from cds
 #'
+#' Usefull to see if short ORFs prediction is dependent on length.\cr
 #' Split cds first in two, a start part and stop part.
 #' Then say how large the two parts can be and merge them together.
 #' It will sample a value in range give.\cr
 #' Parts will be forced to not overlap and can not extend outside
 #' original cds
+#'
+#' If artificial cds length is not divisible by 2, like 3 codons,
+#' the second codon will always be from the start region etc.\cr
+#' Also If there are many very short original cds, the distribution
+#' will be skewed towards more smaller artificial cds.
 #' @param cds a GRangesList of orfs, must have width
 #'  \%\% 3 == 0 and length >= 6
 #' @param start5 integer, default: 1 (start of orf)
 #' @param end5 integer, default: 4 (max 4 codons from start codon)
 #' @param start3 integer, default -4 (max 4 codons from stop codon)
 #' @param end3 integer, default: 0 (end of orf)
+#' @param bin.if.few logical, default TRUE, instead of per codon,
+#' do per 2, 3, 4 codons if you have few samples compared to lengths wanted,
+#' If you have 4 cds' and you want 7 different lengths, which is the standard,
+#' it will give you possible nt length: 6-12-18-24 instead of original
+#' 6-9-12-15-18-21-24.\cr
+#' If you have more than 30x cds than lengths wanted this is skipped.
+#' (for default arguments this is: 7*30 = 210 cds)
 #' @return GRangesList of new ORFs (sorted: + strand increasing start,
 #'  - strand decreasing start)
-artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
+artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
+                            bin.if.few = TRUE) {
   #start5 = 1; end5 = 4; start3 = -4; end3 = 0
   validGRL(class(cds), type = "cds")
   widths <- widthPerGroup(cds)
   names <- names(cds)
+
   if (start5 > end5) stop("start5 > end5 argument")
   if (start3 > end3) stop("start3 > end3 argument")
   if (!all(widths %% 3 == 0)) stop("not all cds has width moduls 3 = 0")
   if (!all(widths >= 6)) stop("not all cds has width >= 6")
-  possible_start <- data.table(max = widths - 3,
-                               random = sample(seq.int(3, 3 + (end5 * 3), by = 3),
-                                               size = length(widths), replace = TRUE))
+  if (length(cds) < 4) stop("No meaningful test for so few cds!")
+  # Make random cuts, distribute them equally
+  max.size <- (end5 * 3) - (start3 * 3)
+  combinations <- floor((max.size - 1) / 3)
+  if (combinations < 1) stop("No possible combination with input")
+  bin <- 3
+  if (bin.if.few) {
+    while ((length(cds) < (30 * combinations)) & (max.size / bin > 2)) {
+      bin <- bin + 3
+    }
+  }
+  possible <- seq.int(6, max.size, by = bin)
+  possible <- rep(possible, length(cds) / length(possible))
+  miss <- length(cds) - length(possible)
+  if (miss > 0) possible <- c(possible, sample(possible, size = miss))
+  possible <- sample(possible)
+
+  rand5 <- possible / 2
+  dif <- rand5 %% 1
+  rand5 <- rand5 + (dif*3)
+  rand3 <- (possible / 2) - (dif*3)
+  if (!all(possible == (rand5 + rand3))) stop("Bug, report on github page!")
+  rand3 <- widths - rand3 + 1
+
+  possible_start <- data.table(max = widths - 3, random = rand5)
   possible_start[, min := pmin(max, random)]
   possible_start[, pick := pmin(max, min)]
   start_part <- IRanges(start5, possible_start$pick)
 
-  rand <- sample(seq.int((start3*3) + 1, end3, by = 3), size = length(widths)
-                 ,replace = TRUE) + widths
-  possible_end <- data.table(min = possible_start$pick + 1,
-                             random = rand)
+  possible_end <- data.table(min = possible_start$pick + 1, random = rand3)
   possible_end[, max := pmax(min, random)]
   possible_end[, pick := pmax(max, min)]
   end_part <- IRanges(possible_end$pick, widths)
@@ -40,11 +74,16 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0) {
   start_grl <- pmapFromTranscriptF(start_part, cds, removeEmpty = TRUE)
   end_grl <- pmapFromTranscriptF(end_part, cds, removeEmpty = TRUE)
   merged_gr <- c(unlistGrl(start_grl), unlistGrl(end_grl))
-  merged_gr <- split(merged_gr, names(merged_gr))
+  merged_gr <- split(merged_gr, seq(length(merged_gr)))
+  names(merged_gr) <- names(cds)
   merged_gr <- reduce(merged_gr)
-  new_widths <- widthPerGroup(merged_gr)
+  new_widths <- widthPerGroup(merged_gr, FALSE)
   if (!all(new_widths > 0) | !all(new_widths %% 3 == 0))
     stop("Error during creation of artifical ORFs!")
+  message("Grouping statistics:")
+  dt <- data.table(widths = new_widths)
+  print(summary(dt[, .(group.size = .N), by = widths]))
+  message("If minimum group.size is < 30, it can be hard to use for statistical purpose!")
   return(sortPerGroup(merged_gr))
 }
 

@@ -4,7 +4,14 @@
 \alias{artificial.orfs}
 \title{Create small artificial orfs from cds}
 \usage{
-artificial.orfs(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0)
+artificial.orfs(
+  cds,
+  start5 = 1,
+  end5 = 4,
+  start3 = -4,
+  end3 = 0,
+  bin.if.few = TRUE
+)
 }
 \arguments{
 \item{cds}{a GRangesList of orfs, must have width
@@ -17,15 +24,30 @@ artificial.orfs(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0)
 \item{start3}{integer, default -4 (max 4 codons from stop codon)}
 
 \item{end3}{integer, default: 0 (end of orf)}
+
+\item{bin.if.few}{logical, default TRUE, instead of per codon,
+do per 2, 3, 4 codons if you have few samples compared to lengths wanted,
+If you have 4 cds' and you want 7 different lengths, which is the standard,
+it will give you possible nt length: 6-12-18-24 instead of original
+6-9-12-15-18-21-24.\cr
+If you have more than 30x cds than lengths wanted this is skipped.
+(for default arguments this is: 7*30 = 210 cds)}
 }
 \value{
 GRangesList of new ORFs (sorted: + strand increasing start,
  - strand decreasing start)
 }
 \description{
+Usefull to see if short ORFs prediction is dependent on length.\cr
 Split cds first in two, a start part and stop part.
 Then say how large the two parts can be and merge them together.
 It will sample a value in range give.\cr
 Parts will be forced to not overlap and can not extend outside
 original cds
+}
+\details{
+If artificial cds length is not divisible by 2, like 3 codons,
+the second codon will always be from the start region etc.\cr
+Also If there are many very short original cds, the distribution
+will be skewed towards more smaller artificial cds.
 }
