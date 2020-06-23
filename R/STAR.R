@@ -3,7 +3,8 @@
 #' Used as reference when aligning data \cr
 #' Get genome and gtf by running getGenomeAndFasta()
 #'
-#' Can only run on unix systems (Linux and Mac)
+#' Can only run on unix systems (Linux and Mac), and requires
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
 #' @param arguments a named character vector containing paths wanted to
 #' use for index creation. They must be named correctly:
 #' names must be a subset of:
@@ -16,7 +17,9 @@
 #' set path to a runnable star if you already have it.
 #' @param max.cpus integer, default: min(90, detectCores() - 1),
 #'  number of threads to use. Default is minimum of 90 and maximum cores - 1
-#' @param script location of STAR script
+#' @param script location of STAR index script,
+#' default internal ORFik file. You can change it and give your own if you
+#' need special alignments.
 #' @inheritParams base::system
 #' @return output.dir, can be used as as input for STAR.align..
 #' @family STAR
@@ -29,7 +32,9 @@
 STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
                        star.path = STAR.install(), max.cpus = min(90, detectCores() - 1),
                        wait = TRUE,
-                       script = "/export/valenfs/projects/Pipelines/STAR_Aligner/STAR_MAKE_INDEX.sh") {
+                       script = system.file("STAR_Aligner",
+                                            "STAR_MAKE_INDEX.sh",
+                                            package = "ORFik")) {
   if (!file.exists(script)) stop("STAR index script not found, check path of script!")
   if (is.null(names(arguments))) stop("arguments must have names, see ?STAR.index")
   possible <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
@@ -66,11 +71,14 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' index was aborted early, then you need to run:
 #' STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 #'
-#' Can only run on unix systems (Linux and Mac)
+#' Can only run on unix systems (Linux and Mac), and requires
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
 #' @param input.dir path to fast files to align
 #' @param index.dir path to STAR index
 #' @param fastp path to fastp trimmer, default: install.fastp(), if you
-#' have it somewhere else already installed, give the path.
+#' have it somewhere else already installed, give the path. If you are not on linux
+#' and you want to trim, use your favorite trimmer and give the output files from that
+#' trimmer as input.dir here.
 #' @param paired.end default "no", alternative "yes". Will auto detect
 #'  pairs by names.
 #' @param steps a character, default: "tr-ge", trimming --> genome alignment\cr
@@ -87,6 +95,12 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @param alignment.type default: "Local": standard local alignment with soft-clipping allowed,
 #' "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.
 #' @param include.subfolders "n" (no), do recursive search downwards for fast files if "y".
+#' @param script.folder location of STAR index script,
+#' default internal ORFik file. You can change it and give your own if you
+#' need special alignments.
+#' @param script.single location of STAR single file alignment script,
+#' default internal ORFik file. You can change it and give your own if you
+#' need special alignments.
 #' @inheritParams STAR.index
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
@@ -99,15 +113,26 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
                               wait = TRUE,
                               include.subfolders = "n",
-                              script = "/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline_folder.sh") {
-  if (!file.exists(script)) stop("STAR alignment script not found, check path of script!")
+                              script.folder = system.file("STAR_Aligner",
+                                                          "RNA_Align_pipeline_folder.sh",
+                                                          package = "ORFik"),
+                              script.single = system.file("STAR_Aligner",
+                                                          "RNA_Align_pipeline.sh",
+                                                          package = "ORFik")) {
+  if (!file.exists(script.folder))
+    stop("STAR folder alignment script not found, check path of script!")
+  if (!file.exists(script.single))
+    stop("STAR single file alignment script not found, check path of script!")
+  cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
+                         package = "ORFik", mustWork = TRUE)
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
+  fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
 
   full <- paste(script, "-f", input.dir, "-o", output.dir, "-p", paired.end,
                 "-l", min.length, "-g", index.dir, "-s", steps,
                 "-a", adapter.sequence, "-t", trim.front,
                 "-A", alignment.type, "-m", max.cpus, "-i", include.subfolders,
-                star.path)
+                star.path, fastp, "-I",script.single, "-C", cleaning)
   if (.Platform$OS.type == "unix") {
     print(full)
     message("Starting alignment at time:")
@@ -125,6 +150,9 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' If genome aligner halts at .... loading genome, it means the star
 #' index was aborted early, then you need to run:
 #' STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
+#'
+#' Can only run on unix systems (Linux and Mac), and requires
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
 #' @inheritParams STAR.align.folder
 #' @param file1 library file, if paired must be R1 file
 #' @param file2 default NULL, set if paired end to R2 file
@@ -139,17 +167,25 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               min.length = 15, trim.front = 0,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
                               wait = TRUE, resume = NULL,
-                              script = "/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh"
+                              script.single = system.file("STAR_Aligner",
+                                                   "RNA_Align_pipeline.sh",
+                                                   package = "ORFik")
 ) {
-  if (!file.exists(script)) stop("STAR alignment script not found, check path of script!")
+  if (!file.exists(script.single))
+    stop("STAR single file alignment script not found, check path of script!")
+  cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
+                          package = "ORFik", mustWork = TRUE)
+
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
+  fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
 
   full <- paste(script, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-g", index.dir, "-s", steps,
                 resume, "-a", adapter.sequence, "-t", trim.front,
-                "-A", alignment.type, "-m", max.cpus, star.path)
+                "-A", alignment.type, "-m", max.cpus, star.path, fastp,
+                "-C", cleaning)
   if (.Platform$OS.type == "unix") {
     print(full)
     message("Starting alignment at time:")
@@ -170,15 +206,18 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #'
 #' Will create a R transcript database (TxDb object) from the genome. \cr
 #' It will also index the genome \cr
-#' If you misspelled something or crashed, delete wrong files and run again.\cr
+#' If you misspelled something or crashed, delete wrong files and
+#' run again.\cr
 #' Do remake = TRUE, to do it all over again.
 #' @param organism scientific name of organism
-#' @param output.folder folder to save downloaded data
-#' @param db database to use, default adviced: "ensembl"
+#' @param output.dir directory to save downloaded data
+#' @param db database to use for genome and GTF,
+#' default adviced: "ensembl" (will contain haplotypes, large file!).
+#' Alternatives: "refseq" (primary assembly) and "genbank" (mix)
 #' @param GTF logical, default: TRUE, download gtf of organism
 #' @param genome logical, default: TRUE, download genome of organism
-#' @param fasta path to genome fast file
-#' @param phix logical, default FALSE, download phix sequence to filter out with.
+#' @param phix logical, default FALSE, download phix sequence to filter
+#'  out with.
 #' Only use if illumina sequencing. Phix is used in Illumina sequencers for
 #' sequencing quality control. Genome is: refseq, Escherichia virus phiX174
 #' @param ncRNA chatacter, default "" (no download), a contaminant genome,
@@ -201,15 +240,19 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' @importFrom biomartr getGenome
 #' @importFrom R.utils gunzip
 #' @importFrom utils download.file
+#' @importFrom AnnotationDbi saveDb
 #' @return a character vector of genomeas and gtf downloaded
 #' @family STAR
 #' @export
+#' @examples
+#' output.dir <- "/Bio_data/references/zebrafish"
+#' #getGenomeAndFasta("Danio rerio", output.dir)
 getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
                               GTF = TRUE, genome = TRUE, phix = FALSE,
                               ncRNA = "", tRNA = "", rRNA = "",
                               gunzip = TRUE, remake = FALSE) {
   finished.file <- paste0(output.dir, "/outputs.rds")
-  if (file.exists(finished.file) | !remake) {
+  if (file.exists(finished.file) & !remake) {
     message("Loading premade files information,
             do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
@@ -239,6 +282,7 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
 
   if (genome != FALSE) { # fasta genome of organism
     genome  <- biomartr::getGenome(db = db, organism, path = output.dir, gunzip = gunzip)
+    message("Making .fai index of genome")
     indexFa(genome)
   } else { # check if it already exists
     genome <- grep(pattern = gsub(" ", "_", organism),
@@ -252,11 +296,12 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
     gtf <- biomartr::getGTF(   db = db, organism, path = output.dir)
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
+    message("Making txdb of GTF")
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organism)
     if (genome != FALSE)
       seqlevelsStyle(txdb) <- seqlevelsStyle(FaFile(genome))[1]
     txdb_file <- paste0(gtf, ".db")
-    saveDb(txdb, txdb_file)
+    AnnotationDbi::saveDb(txdb, txdb_file)
   } else { # check if it already exists
     gtf <- grep(pattern = gsub(" ", "_", organism),
                 x = list.files(output.dir, full.names = TRUE),
@@ -287,7 +332,8 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
 #' Download and prepare STAR
 #'
 #' Will not run "make", only use precompiled STAR file.\cr
-#' Only works for Linux and Mac (unix systems)
+#' Can only run on unix systems (Linux and Mac), and requires
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
 #' @param folder path to folder for download, fille will be named
 #' "STAR-version", where version is version wanted.
 #' @param version default "2.7.4a"
@@ -296,6 +342,7 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
 #' @return path to runnable STAR
 #' @export
 #' @references https://www.ncbi.nlm.nih.gov/pubmed/23104886
+#' @family STAR
 #' @examples
 #' #STAR.install("~/bin", version = "2.7.4a")
 STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
@@ -332,6 +379,7 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
 #' @return path to runnable fastp
 #' @export
 #' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6129281/
+#' @family STAR
 #' @examples
 #' #install.fastp()
 install.fastp <- function(folder = "~/bin") {
@@ -357,6 +405,7 @@ install.fastp <- function(folder = "~/bin") {
 #' @inheritParams STAR.index
 #' @return return value from system, 0 if all good.
 #' @export
+#' @family STAR
 #' @examples
 #' # STAR.remove.crashed.genome(index.path = "/home/data/human_index/phix/)
 STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {

@@ -2,7 +2,7 @@ usage(){
 cat << EOF
 usage: $0 options
 
-script to process and align genomic single end or paired end fastq datasets 
+script to clean up after STAR run
 
 OPTIONS:
 	input: path to folder of STAR output files
@@ -16,7 +16,7 @@ echo "cleaning up $out_dir"
 # temp files
 
 # Logs to seperate folder
-function cleanup_all() 
+function cleanup_all()
 {
 
 	if [ -d $1 ]; then

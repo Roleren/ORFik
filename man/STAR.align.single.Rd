@@ -19,7 +19,8 @@ STAR.align.single(
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
   resume = NULL,
-  script = "/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh"
+  script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
+    "ORFik")
 )
 }
 \arguments{
@@ -38,7 +39,9 @@ if you don't have STAR installed at default location, it will install it there,
 set path to a runnable star if you already have it.}
 
 \item{fastp}{path to fastp trimmer, default: install.fastp(), if you
-have it somewhere else already installed, give the path.}
+have it somewhere else already installed, give the path. If you are not on linux
+and you want to trim, use your favorite trimmer and give the output files from that
+trimmer as input.dir here.}
 
 \item{steps}{a character, default: "tr-ge", trimming --> genome alignment\cr
 steps of depletion and alignment wanted:
@@ -72,7 +75,9 @@ number of threads to use. Default is minimum of 90 and maximum cores - 1}
 (trim, phix depletion, genome alignment) and resume is "ph", you will use the trimmed
 data and continue from there starting at phix, usefull if something crashed.}
 
-\item{script}{location of STAR script}
+\item{script.single}{location of STAR single file alignment script,
+default internal ORFik file. You can change it and give your own if you
+need special alignments.}
 }
 \description{
 If you want more than two files use: STAR.align.folder\cr
@@ -80,10 +85,17 @@ If genome aligner halts at .... loading genome, it means the star
 index was aborted early, then you need to run:
 STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 }
+\details{
+Can only run on unix systems (Linux and Mac), and requires
+minimum 30GB memory on genomes like human, rat, zebrafish etc.
+}
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.index}()},
-\code{\link{getGenomeAndFasta}()}
+\code{\link{STAR.install}()},
+\code{\link{STAR.remove.crashed.genome}()},
+\code{\link{getGenomeAndFasta}()},
+\code{\link{install.fastp}()}
 }
 \concept{STAR}

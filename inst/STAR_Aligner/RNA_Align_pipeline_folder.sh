@@ -36,12 +36,16 @@ OPTIONS:
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
 
+	Path arguments:
+	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
+	-P      path to fastp (trimmer) (default: ~/bin/fastp)
+	-C	path to cleaning script, internal
+
 	Less important options:
 	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s, 
 			             (if you want a continue from crash specify the step you want to start 
 				      from, as defined in -s, start on genome, do -r "ge")
 	-m	max cpus allowed (defualt 90)
-	-S	path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-i	include subfolders (defualt n, for no), if you want subfolder do y, for yes.
 	-h	this help message
 
@@ -70,7 +74,10 @@ subfolders="n"
 trim_front=3
 paired="no"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
-while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:h" opt; do
+fastp="~/bin/fastp"
+align_single="/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh"
+cleaning="/export/valenfs/projects/Pipelines/STAR_Aligner/cleanup_folders.sh"
+while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
     case $opt in 
     f)
         in_dir=$OPTARG
@@ -123,6 +130,18 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:h" opt; do
     S)
 	STAR=$OPTARG
 	echo "-S STAR location: $OPTARG"
+        ;;
+    P)
+	fastp=$OPTARG
+	echo "-P fastp location: $OPTARG"
+        ;;
+    C)
+	cleaning=$OPTARG
+	echo "-C cleaning location: $OPTARG"
+        ;;
+    I)
+	align_single=$OPTARG
+	echo "-I align_single location: $OPTARG"
         ;;
     h)
         usage
@@ -186,7 +205,7 @@ function findPairs()
 			keep="n"
 		fi
 		
-		/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp"
         		
 	done			
 } 
@@ -208,7 +227,7 @@ function findPairsSub()
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
 		
-		/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k "y"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp"
         		
 	done			
 } 
@@ -236,12 +255,12 @@ else
 			keep="n"
 		fi
 		  
-		/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh -o "$out_dir" -f "$f"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep
+		eval $align_single -o "$out_dir" -f "$f"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp"
 	done
 fi
 
 ### Cleanup
 # Folder cleanup
-/export/valenfs/projects/Pipelines/STAR_Aligner/cleanup_folders.sh $out_dir
+eval cleaning $out_dir
 # Log command run
-echo "/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline_folder.sh $@" > $out_dir/runCommand.log
+echo "./RNA_Align_pipeline_folder.sh $@" > $out_dir/runCommand.log

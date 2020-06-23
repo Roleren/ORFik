@@ -22,3 +22,13 @@ This happens if you abort STAR run early, and it halts at: ..... loading genome
 \examples{
 # STAR.remove.crashed.genome(index.path = "/home/data/human_index/phix/)
 }
+\seealso{
+Other STAR: 
+\code{\link{STAR.align.folder}()},
+\code{\link{STAR.align.single}()},
+\code{\link{STAR.index}()},
+\code{\link{STAR.install}()},
+\code{\link{getGenomeAndFasta}()},
+\code{\link{install.fastp}()}
+}
+\concept{STAR}

@@ -10,7 +10,7 @@ STAR.index(
   star.path = STAR.install(),
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
-  script = "/export/valenfs/projects/Pipelines/STAR_Aligner/STAR_MAKE_INDEX.sh"
+  script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik")
 )
 }
 \arguments{
@@ -37,7 +37,9 @@ number of threads to use. Default is minimum of 90 and maximum cores - 1}
     asynchronously, no output will be displayed on the \code{Rgui}
     console in Windows (it will be dropped, instead).}
 
-\item{script}{location of STAR script}
+\item{script}{location of STAR index script,
+default internal ORFik file. You can change it and give your own if you
+need special alignments.}
 }
 \value{
 output.dir, can be used as as input for STAR.align..
@@ -47,7 +49,8 @@ Used as reference when aligning data \cr
 Get genome and gtf by running getGenomeAndFasta()
 }
 \details{
-Can only run on unix systems (Linux and Mac)
+Can only run on unix systems (Linux and Mac), and requires
+minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
 \examples{
 # In this argument specify the one you want
@@ -59,6 +62,9 @@ Can only run on unix systems (Linux and Mac)
 Other STAR: 
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.align.single}()},
-\code{\link{getGenomeAndFasta}()}
+\code{\link{STAR.install}()},
+\code{\link{STAR.remove.crashed.genome}()},
+\code{\link{getGenomeAndFasta}()},
+\code{\link{install.fastp}()}
 }
 \concept{STAR}

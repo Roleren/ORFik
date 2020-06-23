@@ -35,8 +35,11 @@ OPTIONS:
 	-t	trim front (default 3) How many bases to pre trim reads 5' end, 
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
-	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 
+	Path arguments:
+	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
+	-P      path to fastp (trimmer) (default: ~/bin/fastp)
+	
 	Less important options:
 	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s, 
 			             (if you want a continue from crash specify the step you want to start 
@@ -72,7 +75,8 @@ maxCPU=90
 trim_front=3
 keep="n"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
-while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:h" opt; do
+fastp="~/bin/fastp"
+while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:P:h" opt; do
     case $opt in 
     f)
         in_file=$OPTARG
@@ -121,6 +125,10 @@ while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:h" opt; do
     S)
 	STAR=$OPTARG
 	echo "-S STAR location: $OPTARG"
+        ;;
+    P)
+	fastp=$OPTARG
+	echo "-P fastp location: $OPTARG"
         ;;
     k)
 	keep=$OPTARG
@@ -384,7 +392,7 @@ fi
     if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
 	echo trimming	
 	if [ $adapter == "disable" ]; then
-		~/bin/fastp \
+		eval $fastp \
 		--in1=${in_file} \
 		--in2="${in_file_two}" \
 		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \
@@ -397,7 +405,7 @@ fi
 		--disable_quality_filtering \
 		--thread $(nCores 16 $maxCPU)
 	elif [ $adapter == "auto" ]; then
-		~/bin/fastp \
+		eval $fastp \
 		--in1=${in_file} \
 		--in2="${in_file_two}" \
 		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \
@@ -410,7 +418,7 @@ fi
 		--disable_quality_filtering \
 		--thread $(nCores 16 $maxCPU)
 	else
-		~/bin/fastp \
+		eval $fastp \
 		--in1=${in_file} \
 		--in2="${in_file_two}" \
 		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \

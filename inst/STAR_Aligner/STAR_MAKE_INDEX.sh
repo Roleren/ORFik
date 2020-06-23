@@ -46,7 +46,7 @@ genomeGTF=""
 genome=""
 species=""
 while getopts ":o:s:p:r:n:t:f:g:G:S:m:h" opt; do
-    case $opt in 
+    case $opt in
     s)
 	species=$OPTARG
 	echo "-s using species: $OPTARG"
@@ -96,7 +96,7 @@ while getopts ":o:s:p:r:n:t:f:g:G:S:m:h" opt; do
         usage
         exit
         ;;
-    ?) 
+    ?)
         echo "Invalid option: -$OPTARG"
         usage
         exit 1
@@ -109,12 +109,12 @@ if [[ $species == "zebrafish" ]]; then
 	tRNA=/export/valenfs/data/references/Zv10_zebrafish/tRNAscan-SE-2.0/GRcZ10_tRNA_scan_output.fa
 	ncRNA=/export/valenfs/data/references/Zv10_zebrafish/ncrna_edited/Danio_rerio.GRCz10.ncrna
 	genome=/export/valenfs/data/references/Zv10_zebrafish/Danio_rerio.GRCz10.fa \
-	genomeGTF=/export/valenfs/data/references/Zv10_zebrafish/Danio_rerio.GRCz10.81.gtf	
+	genomeGTF=/export/valenfs/data/references/Zv10_zebrafish/Danio_rerio.GRCz10.81.gtf
 elif [[ $species == "human" ]];then
 	tRNA=/export/valenfs/data/references/trna/hg38-tRNAs.fa
 	ncRNA=/export/valenfs/data/references/GRCh38_human/ncrna/Homo_sapiens.GRCh38.ncrna.fa
 	genome=/export/valenfs/projects/uORFome/Annotations/Homo_sapiens.GRCh38.dna.primary_assembly.chr.fa
-	genomeGTF=/export/valenfs/projects/uORFome/Annotations/Homo_sapiens.GRCh38.79.chr.NO_PATCH.gtf	
+	genomeGTF=/export/valenfs/projects/uORFome/Annotations/Homo_sapiens.GRCh38.79.chr.NO_PATCH.gtf
 elif [[ $species == "yeast" ]];then
 	tRNA=/export/valenfs/data/references/R64_1_1_yeast/tRNAscan-SE-2.0/R64_tRNA_scan_output.fa
 	ncRNA=/export/valenfs/data/references/R64_1_1_yeast/ncrna_edited/Saccharomyces_cerevisiae.R64-1-1.ncrna.fa
@@ -191,7 +191,7 @@ if [ ${genome} != "" ]; then
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \
 	--sjdbOverhang 72 \
-	--limitGenomeGenerateRAM 200000000000
+	--limitGenomeGenerateRAM 30000000000
 fi
 # phix (--genomeSAindexNbases 5 for small genome)
 if [ $phix != "" ]; then
@@ -201,23 +201,23 @@ if [ $phix != "" ]; then
 	--genomeFastaFiles ${phix} \
 	--genomeDir ${out_dir}/PhiX_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 80000000000 \
+	--limitGenomeGenerateRAM 80000000 \
 	--genomeSAindexNbases 2
 fi
 
 # rrna (checked --genomeChrBinNbits log2(2462064000/1641376) for many sequences)
-if [ $rRNA != "" ]; then 
+if [ $rRNA != "" ]; then
 	echo ""; echo "rRNA index:"
 	eval $STAR \
 	--runMode genomeGenerate \
 	--genomeFastaFiles ${rRNA} \
 	--genomeDir ${out_dir}/rRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 3000000000000 \
-	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation 
+	--limitGenomeGenerateRAM 300000000000 \
+	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation
 fi
 # ncRNA (small genome 5)
-if [ $ncRNA != "" ]; then 
+if [ $ncRNA != "" ]; then
 	echo ""; echo "ncRNA index:"
 	eval $STAR \
 	--runMode genomeGenerate \
@@ -225,20 +225,20 @@ if [ $ncRNA != "" ]; then
 	--genomeDir ${out_dir}/ncRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM 300000000000 \
-	--genomeSAindexNbases 5 
+	--genomeSAindexNbases 5
 fi
 # trna (mix of both, many sequences and small genome)
 # Check SA index size is valid
-if [ $tRNA != "" ]; then 
+if [ $tRNA != "" ]; then
 	echo ""; echo "tRNA index:"
 	SA=6
 	size=($(wc -m $tRNA))
 	if [ "100000" -gt "$size" ]; then
 		if [ "90000" -gt "$size" ]; then
 			SA=4
-		else 
+		else
 			SA=5
-		fi	
+		fi
 	fi
 
 	eval $STAR \
@@ -246,7 +246,7 @@ if [ $tRNA != "" ]; then
 	--genomeFastaFiles $tRNA \
 	--genomeDir ${out_dir}/tRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 100000000000 \
+	--limitGenomeGenerateRAM 10000000000 \
 	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11
 fi

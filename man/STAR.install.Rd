@@ -17,7 +17,8 @@ path to runnable STAR
 }
 \description{
 Will not run "make", only use precompiled STAR file.\cr
-Only works for Linux and Mac (unix systems)
+Can only run on unix systems (Linux and Mac), and requires
+minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
 \examples{
 #STAR.install("~/bin", version = "2.7.4a")
@@ -25,3 +26,13 @@ Only works for Linux and Mac (unix systems)
 \references{
 https://www.ncbi.nlm.nih.gov/pubmed/23104886
 }
+\seealso{
+Other STAR: 
+\code{\link{STAR.align.folder}()},
+\code{\link{STAR.align.single}()},
+\code{\link{STAR.index}()},
+\code{\link{STAR.remove.crashed.genome}()},
+\code{\link{getGenomeAndFasta}()},
+\code{\link{install.fastp}()}
+}
+\concept{STAR}

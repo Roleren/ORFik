@@ -19,8 +19,10 @@ STAR.align.folder(
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
   include.subfolders = "n",
- 
-    script = "/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline_folder.sh"
+  script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
+    "ORFik"),
+  script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
+    "ORFik")
 )
 }
 \arguments{
@@ -37,7 +39,9 @@ if you don't have STAR installed at default location, it will install it there,
 set path to a runnable star if you already have it.}
 
 \item{fastp}{path to fastp trimmer, default: install.fastp(), if you
-have it somewhere else already installed, give the path.}
+have it somewhere else already installed, give the path. If you are not on linux
+and you want to trim, use your favorite trimmer and give the output files from that
+trimmer as input.dir here.}
 
 \item{paired.end}{default "no", alternative "yes". Will auto detect
 pairs by names.}
@@ -72,7 +76,13 @@ number of threads to use. Default is minimum of 90 and maximum cores - 1}
 
 \item{include.subfolders}{"n" (no), do recursive search downwards for fast files if "y".}
 
-\item{script}{location of STAR script}
+\item{script.folder}{location of STAR index script,
+default internal ORFik file. You can change it and give your own if you
+need special alignments.}
+
+\item{script.single}{location of STAR single file alignment script,
+default internal ORFik file. You can change it and give your own if you
+need special alignments.}
 }
 \value{
 output.dir, can be used as as input in ORFik::create.experiment
@@ -85,12 +95,16 @@ index was aborted early, then you need to run:
 STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 }
 \details{
-Can only run on unix systems (Linux and Mac)
+Can only run on unix systems (Linux and Mac), and requires
+minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.single}()},
 \code{\link{STAR.index}()},
-\code{\link{getGenomeAndFasta}()}
+\code{\link{STAR.install}()},
+\code{\link{STAR.remove.crashed.genome}()},
+\code{\link{getGenomeAndFasta}()},
+\code{\link{install.fastp}()}
 }
 \concept{STAR}

@@ -23,3 +23,13 @@ Only works for Linux
 \references{
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6129281/
 }
+\seealso{
+Other STAR: 
+\code{\link{STAR.align.folder}()},
+\code{\link{STAR.align.single}()},
+\code{\link{STAR.index}()},
+\code{\link{STAR.install}()},
+\code{\link{STAR.remove.crashed.genome}()},
+\code{\link{getGenomeAndFasta}()}
+}
+\concept{STAR}

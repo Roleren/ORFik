@@ -21,13 +21,16 @@ getGenomeAndFasta(
 \arguments{
 \item{organism}{scientific name of organism}
 
+\item{output.dir}{directory to save downloaded data}
+
 \item{db}{database to use, default adviced: "ensembl"}
 
 \item{GTF}{logical, default: TRUE, download gtf of organism}
 
 \item{genome}{logical, default: TRUE, download genome of organism}
 
-\item{phix}{logical, default FALSE, download phix sequence to filter out with.
+\item{phix}{logical, default FALSE, download phix sequence to filter
+ out with.
 Only use if illumina sequencing. Phix is used in Illumina sequencers for
 sequencing quality control. Genome is: refseq, Escherichia virus phiX174}
 
@@ -51,10 +54,6 @@ https://www.arb-silva.de/}
 that are zipped as default}
 
 \item{remake}{logical, default: FALSE, if TRUE remake everything specified}
-
-\item{output.folder}{folder to save downloaded data}
-
-\item{fasta}{path to genome fast file}
 }
 \value{
 a character vector of genomeas and gtf downloaded
@@ -62,13 +61,21 @@ a character vector of genomeas and gtf downloaded
 \description{
 Will create a R transcript database (TxDb object) from the genome. \cr
 It will also index the genome \cr
-If you misspelled something or crashed, delete wrong files and run again.\cr
+If you misspelled something or crashed, delete wrong files and
+run again.\cr
 Do remake = TRUE, to do it all over again.
+}
+\examples{
+output.dir <- "/Bio_data/references/zebrafish"
+#getGenomeAndFasta("Danio rerio", output.dir)
 }
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.align.single}()},
-\code{\link{STAR.index}()}
+\code{\link{STAR.index}()},
+\code{\link{STAR.install}()},
+\code{\link{STAR.remove.crashed.genome}()},
+\code{\link{install.fastp}()}
 }
 \concept{STAR}
