@@ -10,8 +10,8 @@ txSeqsFromFa(grl, faFile, is.sorted = FALSE, keep.names = TRUE)
 \item{grl}{a \code{\link{GRangesList}} object}
 
 \item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
-ORFik \code{\link{experiment}}. This file used to find the
-transcript sequences}
+ORFik \code{\link{experiment}}. This file is usually used to find the
+transcript sequences from some GRangesList.}
 
 \item{is.sorted}{a speedup, if you know the grl ranges are sorted}
 

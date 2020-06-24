@@ -13,8 +13,8 @@ kozakSequenceScore(grl, tx, faFile, species = "human", include.N = FALSE)
 must have a coresponding tx.}
 
 \item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
-ORFik \code{\link{experiment}}. This file used to find the
-transcript sequences}
+ORFik \code{\link{experiment}}. This file is usually used to find the
+transcript sequences from some GRangesList.}
 
 \item{species}{("human"), which species to use,
 currently supports human (Homo sapiens), zebrafish (Danio rerio) and mouse (Mus musculus).

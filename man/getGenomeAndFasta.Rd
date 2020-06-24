@@ -23,35 +23,44 @@ getGenomeAndFasta(
 
 \item{output.dir}{directory to save downloaded data}
 
-\item{db}{database to use, default adviced: "ensembl"}
+\item{db}{database to use for genome and GTF,
+default adviced: "ensembl" (will contain haplotypes, large file!).
+Alternatives: "refseq" (primary assembly) and "genbank" (mix)}
 
 \item{GTF}{logical, default: TRUE, download gtf of organism}
 
-\item{genome}{logical, default: TRUE, download genome of organism}
+\item{genome}{logical, default: TRUE, download genome of organism.
+Will download the primary assembly for ensembl}
 
 \item{phix}{logical, default FALSE, download phix sequence to filter
  out with.
 Only use if illumina sequencing. Phix is used in Illumina sequencers for
 sequencing quality control. Genome is: refseq, Escherichia virus phiX174}
 
-\item{ncRNA}{chatacter, default "" (no download), a contaminant genome,
-if not "" it must be a character vector
-of species common name (not scientific) Homo sapiens is human, Rattus norwegicus is rat etc,
-download ncRNA sequence to filter out with. From NONCODE online server, if you cant find
+\item{ncRNA}{character, default "" (no download), a contaminant genome.
+Alternatives: "auto" or manual assign like "human".
+If "auto" will try to find ncRNA file from organism, Homo sapiens -> human
+etc. "auto" will not work for all, then you must specify the name used by
+NONCODE, go to the link below and find it.
+If not "auto" / "" it must be a character vector
+of species common name (not scientific name) Homo sapiens is human,
+Rattus norwegicus is rat etc, download ncRNA sequence to filter out with.
+From NONCODE online server, if you cant find
 common name see: http://www.noncode.org/download.php/}
 
 \item{tRNA}{chatacter, default "" (not used),
 if not "" it must be a character vector  to valid path of mature
-tRNAs fasta file to remove as contaminants. Find and download your wanted mtRNA at:
-http://gtrnadb.ucsc.edu/, or run trna-scan on you genome.}
+tRNAs fasta file to remove as contaminants on your disc. Find and download
+your wanted mtRNA at: http://gtrnadb.ucsc.edu/, or run trna-scan on
+you genome.}
 
 \item{rRNA}{chatacter, default "" (not used),
 if not "" it must be a character vector to valid path of mature
-rRNA fasta file to remove as contaminants. Find and download your wanted rRNA at:
-https://www.arb-silva.de/}
+rRNA fasta file to remove as contaminants on your disc. Find and download
+your wanted rRNA at: https://www.arb-silva.de/}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
-that are zipped as default}
+that are zipped when downloaded, should be TRUE!}
 
 \item{remake}{logical, default: FALSE, if TRUE remake everything specified}
 }

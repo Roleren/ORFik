@@ -566,8 +566,8 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #'
 #' Get fasta file object, to find sequences in file.
 #' @param faFile \code{\link{FaFile}}, BSgenome, fasta/index file path or an
-#' ORFik \code{\link{experiment}}. This file used to find the
-#' transcript sequences
+#' ORFik \code{\link{experiment}}. This file is usually used to find the
+#' transcript sequences from some GRangesList.
 #' @importFrom Rsamtools FaFile
 #' @importFrom methods is
 #' @return a \code{\link{FaFile}} or BSgenome

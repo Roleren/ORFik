@@ -8,8 +8,8 @@ findFa(faFile)
 }
 \arguments{
 \item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
-ORFik \code{\link{experiment}}. This file used to find the
-transcript sequences}
+ORFik \code{\link{experiment}}. This file is usually used to find the
+transcript sequences from some GRangesList.}
 }
 \value{
 a \code{\link{FaFile}} or BSgenome

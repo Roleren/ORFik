@@ -215,29 +215,37 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' default adviced: "ensembl" (will contain haplotypes, large file!).
 #' Alternatives: "refseq" (primary assembly) and "genbank" (mix)
 #' @param GTF logical, default: TRUE, download gtf of organism
-#' @param genome logical, default: TRUE, download genome of organism
+#' @param genome logical, default: TRUE, download genome of organism.
+#' Will download the primary assembly for ensembl
 #' @param phix logical, default FALSE, download phix sequence to filter
 #'  out with.
 #' Only use if illumina sequencing. Phix is used in Illumina sequencers for
 #' sequencing quality control. Genome is: refseq, Escherichia virus phiX174
-#' @param ncRNA chatacter, default "" (no download), a contaminant genome,
-#' if not "" it must be a character vector
-#' of species common name (not scientific) Homo sapiens is human, Rattus norwegicus is rat etc,
-#' download ncRNA sequence to filter out with. From NONCODE online server, if you cant find
+#' @param ncRNA character, default "" (no download), a contaminant genome.
+#' Alternatives: "auto" or manual assign like "human".
+#' If "auto" will try to find ncRNA file from organism, Homo sapiens -> human
+#' etc. "auto" will not work for all, then you must specify the name used by
+#' NONCODE, go to the link below and find it.
+#' If not "auto" / "" it must be a character vector
+#' of species common name (not scientific name) Homo sapiens is human,
+#' Rattus norwegicus is rat etc, download ncRNA sequence to filter out with.
+#' From NONCODE online server, if you cant find
 #' common name see: http://www.noncode.org/download.php/
 #' @param tRNA chatacter, default "" (not used),
 #' if not "" it must be a character vector  to valid path of mature
-#' tRNAs fasta file to remove as contaminants. Find and download your wanted mtRNA at:
-#' http://gtrnadb.ucsc.edu/, or run trna-scan on you genome.
+#' tRNAs fasta file to remove as contaminants on your disc. Find and download
+#' your wanted mtRNA at: http://gtrnadb.ucsc.edu/, or run trna-scan on
+#' you genome.
 #' @param rRNA chatacter, default "" (not used),
 #' if not "" it must be a character vector to valid path of mature
-#' rRNA fasta file to remove as contaminants. Find and download your wanted rRNA at:
-#' https://www.arb-silva.de/
+#' rRNA fasta file to remove as contaminants on your disc. Find and download
+#' your wanted rRNA at: https://www.arb-silva.de/
 #' @param gunzip logical, default TRUE, uncompress downloaded files
-#' that are zipped as default
+#' that are zipped when downloaded, should be TRUE!
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
 #' @importFrom biomartr getGTF
 #' @importFrom biomartr getGenome
+#' @importFrom biomartr getENSEMBLInfo
 #' @importFrom R.utils gunzip
 #' @importFrom utils download.file
 #' @importFrom AnnotationDbi saveDb
@@ -269,6 +277,15 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
   }
 
   if (ncRNA != "") {
+    if (ncRNA == "auto") {
+      a <- biomartr::getENSEMBLInfo()
+      ncRNA <- a[grep(gsub(" ", "_", organism),
+                   a$name, TRUE),]$common_name
+      if (length(ncRNA) == 0) stop("ncRNA was auto,",
+                                   "but could not find organism")
+      message(paste0("ncRNA auto: organism common name:",
+                     ncRNA))
+    }
     message("Downloading ncRNA's")
     file <- "http://www.noncode.org/datadownload/NONCODEv5_"
     org <- ncRNA
@@ -281,7 +298,20 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
   }
 
   if (genome != FALSE) { # fasta genome of organism
-    genome  <- biomartr::getGenome(db = db, organism, path = output.dir, gunzip = gunzip)
+    if (db == "ensembl") {
+      message(paste("Starting primary assembly genome retrieval of",
+                    organism, "from ensembl: "))
+      genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
+                                          release = NULL,
+                                          id.type = "primary_assembly",
+                                          path = output.dir)[1]
+      if (gunzip) # unzip gtf file
+        genome <- R.utils::gunzip(genome, overwrite = TRUE)
+    } else {
+      genome  <- biomartr::getGenome(db = db, organism,
+                                     path = output.dir, gunzip = gunzip)
+    }
+
     message("Making .fai index of genome")
     indexFa(genome)
   } else { # check if it already exists
@@ -293,7 +323,7 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
     if (length(genome) != 1) genome <- FALSE
   }
   if (GTF) { # gtf of organism
-    gtf <- biomartr::getGTF(   db = db, organism, path = output.dir)
+    gtf <- biomartr::getGTF(db = db, organism, path = output.dir)
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     message("Making txdb of GTF")
@@ -312,12 +342,18 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
   }
   if (phix) {
     message("Downloading phix genome")
-    phix <- biomartr::getGenome(db = "refseq", "Escherichia virus phiX174",
-                                path = output.dir, gunzip = FALSE)
-    if (gunzip) # unzip gtf file
+    if (Sys.info()[1] == "Linux") { # Faster version for Linux
+      phix.url <- "ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/viral/Escherichia_virus_phiX174/all_assembly_versions/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_genomic.fna.gz"
+      phix <- paste0(output.dir, "Escherichia_virus_phiX174.fa.gz")
+      download.file(phix.url, destfile = phix,
+                    method = "wget", extra = "--passive-ftp")
+    } else {
+      phix <- biomartr::getGenome(db = "refseq", "Escherichia virus phiX174",
+                                  path = output.dir, gunzip = FALSE)
+    }
+    if (gunzip) # unzip phix file
       phix <- R.utils::gunzip(phix, overwrite = TRUE)
   }
-
 
   message("All data downloaded and ready at:")
   message(output.dir)
@@ -353,8 +389,7 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
   folder <- path.expand(folder)
   path <- paste0(folder, "/STAR-", version)
   pathgz <- paste0(path, ".tar.gz")
-  os <- Sys.info()
-  bin <- ifelse(os[1] == "Linux",
+  bin <- ifelse(Sys.info()[1] == "Linux",
                 paste0(path, "/bin/Linux_x86_64/STAR"),
                 paste0(path, "/bin/MacOSX_x86_64/STAR"))
   names(bin) <- "STAR"

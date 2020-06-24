@@ -14,8 +14,8 @@ names of tx must contain all gr names. The names of gr can also be the
 ORFik orf names. that is "txName_id".}
 
 \item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
-ORFik \code{\link{experiment}}. This file used to find the
-transcript sequences}
+ORFik \code{\link{experiment}}. This file is usually used to find the
+transcript sequences from some GRangesList.}
 
 \item{upstream}{an integer, default (0), relative region to get
 upstream from.}
