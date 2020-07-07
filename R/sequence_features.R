@@ -76,7 +76,7 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' Ranges that does not have minimum 15 length (the kozak requirement as a
 #' sliding window of size 15 around grl start),
 #' will be set to score 0. Since they should not have the posibility to make
-#' a ribosome binding.
+#' an efficient ribosome binding.
 #' @references doi: https://doi.org/10.1371/journal.pone.0108475
 #' @param grl a \code{\link{GRangesList}} grouped by ORF
 #' @param tx a \code{\link{GRangesList}}, the reference area for ORFs, each ORF

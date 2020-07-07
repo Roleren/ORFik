@@ -27,14 +27,14 @@ fashion, treated as p site.
 This function takes account for junctions in cigars of the reads. Length of
 the footprint is saved in size' parameter of GRanges output. Footprints are
 also sorted according to their genomic position, ready to be saved as a
-bed file.
+bed or wig file.
 }
 \details{
-The two columns in shift are:
+The two columns in shift are:\cr
 - fraction Numeric vector of lengths of footprints you select
-for shifting.
-- offsets_start Numeric vector of shifts for coresponding
-selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
+for shifting.\cr
+- offsets_start Numeric vector of shifts for corresponding
+selected_lengths. eg. c(-10, -10) with selected_lengths of c(31, 32) means
 length of 31 will be shifted left by 10. Footprints of length 32 will be
 shifted right by 10.
 
@@ -58,6 +58,9 @@ shifts <- detectRibosomeShifts(footprints, gtf_file)
 # shift the RiboSeq footprints
 shiftedReads <- shiftFootprints(footprints, shifts)
 }
+}
+\references{
+https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 }
 \seealso{
 Other pshifting: 

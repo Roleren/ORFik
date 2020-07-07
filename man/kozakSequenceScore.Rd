@@ -45,7 +45,7 @@ base per column was chosen).
 Ranges that does not have minimum 15 length (the kozak requirement as a
 sliding window of size 15 around grl start),
 will be set to score 0. Since they should not have the posibility to make
-a ribosome binding.
+an efficient ribosome binding.
 }
 \examples{
 # Usually the ORFs are found in orfik, which makes names for you etc.

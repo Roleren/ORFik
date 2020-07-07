@@ -28,7 +28,7 @@ Other STAR:
 \code{\link{STAR.align.single}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
-\code{\link{getGenomeAndFasta}()},
+\code{\link{getGenomeAndAnnotation}()},
 \code{\link{install.fastp}()}
 }
 \concept{STAR}

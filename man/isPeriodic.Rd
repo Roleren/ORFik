@@ -2,7 +2,7 @@
 % Please edit documentation in R/shift_footprints_helpers.R
 \name{isPeriodic}
 \alias{isPeriodic}
-\title{Find if there is periodicity in the vector}
+\title{Find if there is a periodicity of 3 in the vector}
 \usage{
 isPeriodic(x)
 }
@@ -14,9 +14,14 @@ RiboSeq data.}
 a logical, if it is periodic.
 }
 \description{
+It uses Fourier transform for finding periodic vectors on the transcript
+normalized counts over all CDS TIS regions from -30 to 29, where TIS is
+0.\cr
 Checks if there is a periodicity and if the periodicity is 3,
 more precisely between 2.9 and 3.1.
 }
 \details{
-It uses Fourier transform for finding periodic vectors
+Transcript normalized means per CDS TIS region, count reads per position,
+divide that number per position by the total of that transcript, then sum
+up these numbers per position for all transcripts.
 }

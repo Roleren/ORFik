@@ -7,13 +7,13 @@
 #' This function takes account for junctions in cigars of the reads. Length of
 #' the footprint is saved in size' parameter of GRanges output. Footprints are
 #' also sorted according to their genomic position, ready to be saved as a
-#' bed file.
+#' bed or wig file.
 #'
-#' The two columns in shift are:
+#' The two columns in shift are:\cr
 #' - fraction Numeric vector of lengths of footprints you select
-#' for shifting.
-#' - offsets_start Numeric vector of shifts for coresponding
-#' selected_lengths. eg. c(10, -10) with selected_lengths of c(31, 32) means
+#' for shifting.\cr
+#' - offsets_start Numeric vector of shifts for corresponding
+#' selected_lengths. eg. c(-10, -10) with selected_lengths of c(31, 32) means
 #' length of 31 will be shifted left by 10. Footprints of length 32 will be
 #' shifted right by 10.
 #'
@@ -28,6 +28,7 @@
 #' with metacolumn "size" indicating footprint size before shifting and
 #' resizing, sorted in increasing order.
 #' @family pshifting
+#' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 #' @export
 #' @examples
 #' # Basic run
@@ -49,6 +50,8 @@
 shiftFootprints <- function(footprints, shifts) {
   if (!is(shifts, "data.frame")) stop("shifts must be data.frame/data.table")
   if (nrow(shifts) == 0) stop("No shifts found in data.frame")
+  if (is.null(shifts$fraction) | is.null(shifts$offsets_start))
+    stop("Either fraction or offsets_start column in shifts is not set!")
 
   selected_lengths <- shifts$fraction
   selected_shifts <- shifts$offsets_start
@@ -87,7 +90,7 @@ shiftFootprints <- function(footprints, shifts) {
 
 #' Detect ribosome shifts
 #'
-#' Utilizes periodicity measurement (fourier transform) and change point
+#' Utilizes periodicity measurement (Fourier transform), and change point
 #' analysis to detect ribosomal footprint shifts for each of the ribosomal
 #' read lengths. Returns subset of read lengths and their shifts for which
 #' top covered transcripts follow periodicity measure. Each shift value
@@ -98,11 +101,15 @@ shiftFootprints <- function(footprints, shifts) {
 #' and stop codons, so that you can verify visually whether this function
 #' detects correct shifts.
 #'
+#' For how the Fourier transform works, see: \code{\link{isPeriodic}}\cr
+#' For how the changepoint analysis works, see: \code{\link{changePointAnalysis}}\cr
+#'
 #' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 #' 33, but will remove 3S so final read width is 30 in ORFik. This is standard
 #' for ribo-seq.
-#' @param footprints (GAlignments) object of RiboSeq reads - footprints, can
-#' also be path to the file.
+#'
+#' @param footprints \code{\link{GAlignments}} object of RiboSeq reads -
+#' footprints, can also be path to the .bam file.
 #' @inheritParams loadTxdb
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
@@ -110,8 +117,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 #' If peridicity around stop codon is stronger than at the start codon, use
 #' stop instead of start region for p-shifting.
-#' @param top_tx (integer) Specify which % of the top covered by RiboSeq reads
-#' transcripts to use for estimation of the shifts. By default we take top 10%
+#' @param top_tx (integer), default 10. Specify which % of the top covered by RiboSeq
+#' reads transcripts to use for estimation of the shifts. By default we take top 10%
 #' top covered transcripts as they represent less noisy dataset. This is only
 #' applicable when there are more than 1000 transcripts.
 #' @inheritParams filterTranscripts
@@ -126,9 +133,12 @@ shiftFootprints <- function(footprints, shifts) {
 #' be considered for periodicity.
 #' @param accepted.lengths accepted readlengths, default 26:34, usually ribo-seq
 #' is strongest between 27:32.
+#' @inheritParams footprints.analysis
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
+#' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
+#' @importFrom IRanges quantile
 #' @export
 #' @examples
 #' # Basic run
@@ -160,7 +170,9 @@ shiftFootprints <- function(footprints, shifts) {
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
-  firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34) {
+  firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
+  heatmap = FALSE) {
+
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
@@ -189,19 +201,26 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   tab <- tab[(counts >= min_reads) & (size %in% accepted.lengths),]
   if (nrow(tab) == 0) stop("No valid read lengths found with",
                             "accepted.lengths and counts > min_reads")
+  cds <- cds[countOverlapsW(cds, footprints, "score") > 0]
+  top_tx <- percentage_to_ratio(top_tx, cds)
 
-  periodicity <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
-                      pShifted = FALSE, upstream = 0, downstream = 149,
+  periodicity <- windowPerReadLength(cds, tx, footprints,
+                      pShifted = FALSE, upstream = 0, downstream = firstN - 1,
                       zeroPosition = 0, scoring = "periodic",
                       acceptedLengths = tab$size)
   validLengths <- periodicity[score == TRUE,]$fraction
 
+
   # find shifts
-  offset <- data.table()
   if (start) {
-    rw <- windowPerReadLength(grl = cds, tx = tx, reads = footprints,
-                              pShifted = FALSE, upstream = 30, downstream = 29,
-                              acceptedLengths = validLengths)
+    rw <- windowPerReadLength(cds, tx, footprints, pShifted,
+                              upstream = 30, downstream = 29,
+                              acceptedLengths = validLengths,
+                              scoring = NULL)
+    rw[, sum.count := sum(count), by = genes]
+    rw <- rw[sum.count >= quantile(sum.count, top_tx), ]
+    rw <- coverageScorings(rw, scoring = "sum")
+    footprints.analysis(rw, heatmap)
     offset <- rw[, .(offsets_start = changePointAnalysis(score)),
                  by = fraction]
     # Figure how this is possible ->
@@ -209,9 +228,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   }
   if (stop & !is.null(minThreeUTR)) {
     threeUTRs <- loadRegion(txdb, "trailers")[txNames]
-    rw <- windowPerReadLength(grl = threeUTRs, tx = tx, reads = footprints,
-                              pShifted = FALSE, upstream = 30, downstream = 29,
-                              acceptedLengths = validLengths)
+    rw <- windowPerReadLength(threeUTRs, tx, footprints, FALSE,
+                              upstream = 30, downstream = 29,
+                              acceptedLengths = validLengths,
+                              scoring = "sum")
+    footprints.analysis(rw, heatmap, region = "start of 3' UTR")
     if (nrow(offset) == 0) {
       offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
                    by = fraction]
@@ -247,6 +268,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' or .bedo)
 #' @importFrom rtracklayer export.bed
 #' @family pshifting
+#' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()

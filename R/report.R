@@ -18,6 +18,7 @@
 #' @param out.dir optional output directory, default: dirname(df$filepath[1])
 #' @return NULL (objects stored to disc)
 #' @family QC report
+#' @importFrom utils write.csv
 #' @export
 #' @examples
 #' # 1. Pick directory

@@ -29,6 +29,11 @@
 #' #arguments <- c(path.GTF, path.genome, path.phix, path.rrna, path.trna, path.ncrna)
 #' #names(arguments) <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
 #' #STAR.index(arguments, "output.dir")
+#'
+#' ## Or use ORFik way:
+#' output.dir <- "/Bio_data/references/Human"
+#' # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+#' # STAR.index(arguments, output.dir)
 STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
                        star.path = STAR.install(), max.cpus = min(90, detectCores() - 1),
                        wait = TRUE,
@@ -105,6 +110,15 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
 #' @export
+#' @examples
+#' # Use your own paths for annotation or the ORFik way
+#'
+#' ## use ORFik way:
+#' output.dir <- "/Bio_data/references/Human"
+#' # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+#' # index <- STAR.index(arguments, output.dir)
+#' # STAR.align.folder("data/raw_data/human_rna_seq", "data/processed/human_rna_seq",
+#' #                    index, paired.end = "no")
 STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
                               paired.end = "no",
@@ -159,8 +173,18 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' @param resume default: NULL, continue from step, lets say steps are "tr-ph-ge":
 #'  (trim, phix depletion, genome alignment) and resume is "ph", you will use the trimmed
 #'  data and continue from there starting at phix, usefull if something crashed.
+#' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
 #' @export
+#' @examples
+#' # Use your own paths for annotation or the ORFik way
+#'
+#' ## use ORFik way:
+#' output.dir <- "/Bio_data/references/Human"
+#' # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+#' # index <- STAR.index(arguments, output.dir)
+#' # STAR.align.single("data/raw_data/human_rna_seq/file1.bam", "data/processed/human_rna_seq",
+#' #                    index)
 STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
                               steps = "tr-ge", adapter.sequence = "auto",
@@ -202,19 +226,21 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #   system("samtools --help")
 # }
 
-#' Download genome (fasta), GTF and contaminants
+#' Download genome (fasta), (annotation) GTF and contaminants
 #'
-#' Will create a R transcript database (TxDb object) from the genome. \cr
+#' Will create a R transcript database (TxDb object) from the annotation. \cr
 #' It will also index the genome \cr
 #' If you misspelled something or crashed, delete wrong files and
 #' run again.\cr
 #' Do remake = TRUE, to do it all over again.
-#' @param organism scientific name of organism
+#' @param organism scientific name of organism, Homo sapiens,
+#' Danio rerio, Mus musculus, etc.
 #' @param output.dir directory to save downloaded data
 #' @param db database to use for genome and GTF,
 #' default adviced: "ensembl" (will contain haplotypes, large file!).
 #' Alternatives: "refseq" (primary assembly) and "genbank" (mix)
-#' @param GTF logical, default: TRUE, download gtf of organism
+#' @param GTF logical, default: TRUE, download gtf of organism.
+#' Only db = "ensembl" allowed for GTF.
 #' @param genome logical, default: TRUE, download genome of organism.
 #' Will download the primary assembly for ensembl
 #' @param phix logical, default FALSE, download phix sequence to filter
@@ -243,29 +269,40 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' @param gunzip logical, default TRUE, uncompress downloaded files
 #' that are zipped when downloaded, should be TRUE!
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
-#' @importFrom biomartr getGTF
-#' @importFrom biomartr getGenome
-#' @importFrom biomartr getENSEMBLInfo
+#' @param assembly_type a character string specifying from which assembly type the genome
+#' shall be retrieved from (ensembl only, else this argument is ignored):
+#' Default is
+#' \code{assembly_type = "toplevel")}.
+#' This will give you all multi-chromosomes (copies of the same chromosome with small variations).
+#' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
+#' To get primary assembly with 1 chromosome variant per chromosome:
+#' \code{assembly_type = "primary_assembly")}.
+#' As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed:
+#' @importFrom biomartr getGTF getGenome getENSEMBLInfo
+#' @importFrom Rsamtools indexFa
 #' @importFrom R.utils gunzip
 #' @importFrom utils download.file
 #' @importFrom AnnotationDbi saveDb
-#' @return a character vector of genomeas and gtf downloaded
+#' @return a character vector of path to genomes and gtf downloaded,
+#'  and additional contaminants if used.
 #' @family STAR
 #' @export
 #' @examples
 #' output.dir <- "/Bio_data/references/zebrafish"
-#' #getGenomeAndFasta("Danio rerio", output.dir)
-getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
-                              GTF = TRUE, genome = TRUE, phix = FALSE,
-                              ncRNA = "", tRNA = "", rRNA = "",
-                              gunzip = TRUE, remake = FALSE) {
+#' #getGenomeAndAnnotation("Danio rerio", output.dir)
+getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
+                            GTF = TRUE, genome = TRUE, phix = FALSE,
+                            ncRNA = "", tRNA = "", rRNA = "",
+                            gunzip = TRUE, remake = FALSE,
+                            assembly_type = "primary_assembly") {
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
     message("Loading premade files information,
             do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
-
+  if (!(assembly_type %in% c("toplevel", "primary_assembly")))
+    stop("Please select one the available assembly types: \ntoplevel, primary_assembly")
   dir.create(output.dir, recursive = TRUE)
   if (tRNA != "") {
     if (!file.exists(tRNA)) stop(paste("tRNA file is given and does not exist:",
@@ -303,7 +340,7 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
                     organism, "from ensembl: "))
       genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
                                           release = NULL,
-                                          id.type = "primary_assembly",
+                                          id.type = assembly_type,
                                           path = output.dir)[1]
       if (gunzip) # unzip gtf file
         genome <- R.utils::gunzip(genome, overwrite = TRUE)
@@ -323,7 +360,13 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
     if (length(genome) != 1) genome <- FALSE
   }
   if (GTF) { # gtf of organism
-    gtf <- biomartr::getGTF(db = db, organism, path = output.dir)
+    # gtf <- biomartr::getGTF(db = db, organism,
+    #                         path = output.dir,
+    #                         assembly_type = assembly_type)
+    gtf <- biomartr:::getENSEMBL.gtf(organism, type = "dna",
+                                     id.type = assembly_type,
+                                     output.dir)
+
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     message("Making txdb of GTF")
@@ -373,8 +416,7 @@ getGenomeAndFasta <- function(organism, output.dir, db = "ensembl",
 #' @param folder path to folder for download, fille will be named
 #' "STAR-version", where version is version wanted.
 #' @param version default "2.7.4a"
-#' @importFrom utils download.file
-#' @importFrom utils tar
+#' @importFrom utils download.file untar tar
 #' @return path to runnable STAR
 #' @export
 #' @references https://www.ncbi.nlm.nih.gov/pubmed/23104886

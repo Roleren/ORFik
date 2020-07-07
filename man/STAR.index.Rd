@@ -57,6 +57,11 @@ minimum 30GB memory on genomes like human, rat, zebrafish etc.
 #arguments <- c(path.GTF, path.genome, path.phix, path.rrna, path.trna, path.ncrna)
 #names(arguments) <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
 #STAR.index(arguments, "output.dir")
+
+## Or use ORFik way:
+output.dir <- "/Bio_data/references/Human"
+# arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+# STAR.index(arguments, output.dir)
 }
 \seealso{
 Other STAR: 
@@ -64,7 +69,7 @@ Other STAR:
 \code{\link{STAR.align.single}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.remove.crashed.genome}()},
-\code{\link{getGenomeAndFasta}()},
+\code{\link{getGenomeAndAnnotation}()},
 \code{\link{install.fastp}()}
 }
 \concept{STAR}

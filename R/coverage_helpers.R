@@ -281,6 +281,8 @@ coverageScorings <- function(coverage, scoring = "zscore") {
     groupFPF <- quote(list(genes, position))
     scoring <- "sum"
   } else if (scoring == "frameSum") {
+    if (is.null(coverage$frame))
+      stop("Can not use frameSum scoring when no frames are given!")
     groupFPF <- quote(list(genes, frame))
     scoring <- "sum"
   } else if (scoring == "periodic") {

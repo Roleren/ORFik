@@ -30,6 +30,6 @@ Other STAR:
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.remove.crashed.genome}()},
-\code{\link{getGenomeAndFasta}()}
+\code{\link{getGenomeAndAnnotation}()}
 }
 \concept{STAR}

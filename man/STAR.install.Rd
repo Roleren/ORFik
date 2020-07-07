@@ -32,7 +32,7 @@ Other STAR:
 \code{\link{STAR.align.single}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.remove.crashed.genome}()},
-\code{\link{getGenomeAndFasta}()},
+\code{\link{getGenomeAndAnnotation}()},
 \code{\link{install.fastp}()}
 }
 \concept{STAR}

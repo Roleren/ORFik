@@ -4,19 +4,39 @@
 \alias{changePointAnalysis}
 \title{Get the offset for specific RiboSeq read width}
 \usage{
-changePointAnalysis(x, feature = "start")
+changePointAnalysis(
+  x,
+  feature = "start",
+  max.pos = 40L,
+  interval = seq.int(15L, 35L)
+)
 }
 \arguments{
 \item{x}{a vector with count per position to analyse, assumes the zero
-is in the middle + 1 (position 0)}
+position (TIS) is in the middle + 1 (position 0). Default it is size 60,
+from -30 to 29 in p-shifting}
 
 \item{feature}{(character) either "start" or "stop"}
+
+\item{max.pos}{integer, default 40L, subset x to go from index 1 to max.pos,
+if tail is not relevant.}
+
+\item{interval}{integer vector, default seq.int(15L, 35L).
+Seperation points for upstream and downstream windows}
 }
 \value{
-a single numeric offset
+a single numeric offset, -12 would mean p-site is 12 bases upstream
 }
 \description{
-12 would mean p-site is 12 bases upstream
+Creates sliding windows of transcript normalized counts per position
+and check which window has most in upstream window vs downstream window.
+Pick the position with highest absolute value maximum of the window difference.
+Checks windows with split sites between positions -16 to +4, where 0 is TIS.
+}
+\details{
+Transcript normalized means per CDS TIS region, count reads per position,
+divide that number per position by the total of that transcript, then sum
+up these numbers per position for all transcripts.
 }
 \seealso{
 Other pshifting: 

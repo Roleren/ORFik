@@ -537,7 +537,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #' windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 #'
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
-  g <- asTX(gr, tx, tx.is.sorted = TRUE)
+  g <- ORFik:::asTX(gr, tx, tx.is.sorted = TRUE)
   indices <- chmatch(txNames(gr, tx), names(tx))
 
   txEnds <- widthPerGroup(tx[indices], FALSE)

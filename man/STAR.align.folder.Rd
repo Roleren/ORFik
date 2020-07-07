@@ -98,13 +98,23 @@ STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
+\examples{
+# Use your own paths for annotation or the ORFik way
+
+## use ORFik way:
+output.dir <- "/Bio_data/references/Human"
+# arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+# index <- STAR.index(arguments, output.dir)
+# STAR.align.folder("data/raw_data/human_rna_seq", "data/processed/human_rna_seq",
+#                    index, paired.end = "no")
+}
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.single}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.remove.crashed.genome}()},
-\code{\link{getGenomeAndFasta}()},
+\code{\link{getGenomeAndAnnotation}()},
 \code{\link{install.fastp}()}
 }
 \concept{STAR}

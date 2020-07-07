@@ -1,5 +1,5 @@
 ---
-title: "ORFikExperiment"
+title: "Data management"
 author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
@@ -12,7 +12,7 @@ vignette: >
 
 # Introduction
 
-Welcome to the introduction of ORFik experiment. This vignette will walk you through how to work with large amounts of sequencing data effectively in ORFik.
+Welcome to the introduction of data management with ORFik experiment. This vignette will walk you through how to work with large amounts of sequencing data effectively in ORFik.
 `ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq and CageSeq data, we advice you to read ORFikOverview vignette, before starting this one.
 
 ## Motivation

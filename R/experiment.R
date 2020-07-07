@@ -138,6 +138,7 @@ setMethod("nrow",
 #' @param file a .csv file following ORFik experiment style ("," as seperator)
 #' , or a template data.frame from \code{\link{create.experiment}}
 #' @return an ORFik \code{\link{experiment}}
+#' @importFrom utils read.table read.csv2
 #' @export
 #' @examples
 #' # From file
@@ -214,6 +215,7 @@ read.experiment <-  function(file) {
 #' be c(T, F, F)
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
+#' @importFrom utils View
 #' @export
 #' @examples
 #' # 1. Pick directory
@@ -286,6 +288,7 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 #' @param df an ORFik \code{\link{experiment}}
 #' @param file name of file to save df as
 #' @export
+#' @importFrom utils write.table
 #' @return NULL (experiment save only)
 #' @examples
 #' # 1. Pick directory

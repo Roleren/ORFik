@@ -79,6 +79,9 @@ data and continue from there starting at phix, usefull if something crashed.}
 default internal ORFik file. You can change it and give your own if you
 need special alignments.}
 }
+\value{
+output.dir, can be used as as input in ORFik::create.experiment
+}
 \description{
 If you want more than two files use: STAR.align.folder\cr
 If genome aligner halts at .... loading genome, it means the star
@@ -89,13 +92,23 @@ STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
+\examples{
+# Use your own paths for annotation or the ORFik way
+
+## use ORFik way:
+output.dir <- "/Bio_data/references/Human"
+# arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+# index <- STAR.index(arguments, output.dir)
+# STAR.align.single("data/raw_data/human_rna_seq/file1.bam", "data/processed/human_rna_seq",
+#                    index)
+}
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.remove.crashed.genome}()},
-\code{\link{getGenomeAndFasta}()},
+\code{\link{getGenomeAndAnnotation}()},
 \code{\link{install.fastp}()}
 }
 \concept{STAR}

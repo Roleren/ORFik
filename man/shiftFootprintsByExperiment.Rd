@@ -36,8 +36,8 @@ codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 If peridicity around stop codon is stronger than at the start codon, use
 stop instead of start region for p-shifting.}
 
-\item{top_tx}{(integer) Specify which % of the top covered by RiboSeq reads
-transcripts to use for estimation of the shifts. By default we take top 10%
+\item{top_tx}{(integer), default 10. Specify which % of the top covered by RiboSeq
+reads transcripts to use for estimation of the shifts. By default we take top 10%
 top covered transcripts as they represent less noisy dataset. This is only
 applicable when there are more than 1000 transcripts.}
 
@@ -92,6 +92,9 @@ shiftFootprintsByExperiment(df)
 # Then use the bed files that are created, which are readable in IGV.
 # If you only need in R, do: (then you get no .bed files)
 #shiftFootprintsByExperiment(df, output_format = "bedo")
+}
+\references{
+https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 }
 \seealso{
 Other pshifting: 

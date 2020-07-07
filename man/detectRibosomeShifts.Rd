@@ -16,12 +16,13 @@ detectRibosomeShifts(
   firstN = 150L,
   tx = NULL,
   min_reads = 1000,
-  accepted.lengths = 26:34
+  accepted.lengths = 26:34,
+  heatmap = FALSE
 )
 }
 \arguments{
-\item{footprints}{(GAlignments) object of RiboSeq reads - footprints, can
-also be path to the file.}
+\item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads -
+footprints, can also be path to the .bam file.}
 
 \item{txdb}{a TxDb file, a path to one of:
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
@@ -35,8 +36,8 @@ codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 If peridicity around stop codon is stronger than at the start codon, use
 stop instead of start region for p-shifting.}
 
-\item{top_tx}{(integer) Specify which % of the top covered by RiboSeq reads
-transcripts to use for estimation of the shifts. By default we take top 10%
+\item{top_tx}{(integer), default 10. Specify which % of the top covered by RiboSeq
+reads transcripts to use for estimation of the shifts. By default we take top 10%
 top covered transcripts as they represent less noisy dataset. This is only
 applicable when there are more than 1000 transcripts.}
 
@@ -63,13 +64,18 @@ be considered for periodicity.}
 
 \item{accepted.lengths}{accepted readlengths, default 26:34, usually ribo-seq
 is strongest between 27:32.}
+
+\item{heatmap}{a logical or character string, default FALSE.
+If TRUE, will plot heatmap of
+raw reads before p-shifting to console, to see if shifts given make sense.
+You can also set a filepath to save the file there.}
 }
 \value{
 a data.table with lengths of footprints and their predicted
 coresponding offsets
 }
 \description{
-Utilizes periodicity measurement (fourier transform) and change point
+Utilizes periodicity measurement (Fourier transform), and change point
 analysis to detect ribosomal footprint shifts for each of the ribosomal
 read lengths. Returns subset of read lengths and their shifts for which
 top covered transcripts follow periodicity measure. Each shift value
@@ -80,6 +86,9 @@ shift 5' anchored footprints to be on the p-site of the ribosome.
 Check out vignette for the examples of plotting RiboSeq metaplots over start
 and stop codons, so that you can verify visually whether this function
 detects correct shifts.
+
+For how the Fourier transform works, see: \code{\link{isPeriodic}}\cr
+For how the changepoint analysis works, see: \code{\link{changePointAnalysis}}\cr
 
 NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 33, but will remove 3S so final read width is 30 in ORFik. This is standard
@@ -113,6 +122,9 @@ detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
 
 }
 
+}
+\references{
+https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 }
 \seealso{
 Other pshifting: 

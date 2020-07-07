@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.9.3
+Version: 1.9.4
 Encoding: UTF-8
 Authors@R: c(
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "cre", "dtc")),
@@ -48,6 +48,7 @@ Imports:
   GGally (>= 1.4.0),
   methods (>= 3.6.0),
   R.utils,
+  utils,
   stats,
   tools
 RoxygenNote: 7.1.0
