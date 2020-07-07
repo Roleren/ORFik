@@ -37,3 +37,14 @@ extendTrailers(threeUTRs, extension = 1000)
 extendTrailers(tx, extension = 1000)
 
 }
+\seealso{
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{coveragePerTiling}()},
+\code{\link{extendLeaders}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{tile1}()},
+\code{\link{txSeqsFromFa}()},
+\code{\link{windowPerGroup}()}
+}
+\concept{ExtendGenomicRanges}

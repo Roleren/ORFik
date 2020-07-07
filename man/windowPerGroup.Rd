@@ -53,6 +53,8 @@ windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 Other ExtendGenomicRanges: 
 \code{\link{asTX}()},
 \code{\link{coveragePerTiling}()},
+\code{\link{extendLeaders}()},
+\code{\link{extendTrailers}()},
 \code{\link{reduceKeepAttr}()},
 \code{\link{tile1}()},
 \code{\link{txSeqsFromFa}()}

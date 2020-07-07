@@ -37,6 +37,8 @@ above line will give you which chromosome it is missing.
 Other ExtendGenomicRanges: 
 \code{\link{asTX}()},
 \code{\link{coveragePerTiling}()},
+\code{\link{extendLeaders}()},
+\code{\link{extendTrailers}()},
 \code{\link{reduceKeepAttr}()},
 \code{\link{tile1}()},
 \code{\link{windowPerGroup}()}

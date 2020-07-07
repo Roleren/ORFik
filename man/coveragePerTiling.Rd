@@ -74,6 +74,8 @@ coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE,
 \seealso{
 Other ExtendGenomicRanges: 
 \code{\link{asTX}()},
+\code{\link{extendLeaders}()},
+\code{\link{extendTrailers}()},
 \code{\link{reduceKeepAttr}()},
 \code{\link{tile1}()},
 \code{\link{txSeqsFromFa}()},

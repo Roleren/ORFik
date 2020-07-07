@@ -537,7 +537,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #' windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 #'
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
-  g <- ORFik:::asTX(gr, tx, tx.is.sorted = TRUE)
+  g <- asTX(gr, tx, tx.is.sorted = TRUE)
   indices <- chmatch(txNames(gr, tx), names(tx))
 
   txEnds <- widthPerGroup(tx[indices], FALSE)
@@ -576,6 +576,7 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' Do not add for transcripts, as they are already included.
 #' @return an extended GRangeslist
 #' @export
+#' @family ExtendGenomicRanges
 #' @examples
 #' library(GenomicFeatures)
 #' samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
@@ -626,6 +627,7 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
 #' to use as new starts.
 #' @return an extended GRangeslist
 #' @export
+#' @family ExtendGenomicRanges
 #' @examples
 #' library(GenomicFeatures)
 #' samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",

@@ -46,3 +46,14 @@ extendLeaders(fiveUTRs, extension = 1000, cds)
 extendLeaders(tx, extension = 1000)
 
 }
+\seealso{
+Other ExtendGenomicRanges: 
+\code{\link{asTX}()},
+\code{\link{coveragePerTiling}()},
+\code{\link{extendTrailers}()},
+\code{\link{reduceKeepAttr}()},
+\code{\link{tile1}()},
+\code{\link{txSeqsFromFa}()},
+\code{\link{windowPerGroup}()}
+}
+\concept{ExtendGenomicRanges}

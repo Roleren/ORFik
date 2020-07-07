@@ -63,6 +63,8 @@ reduceKeepAttr(grl, keep.names = TRUE)
 Other ExtendGenomicRanges: 
 \code{\link{asTX}()},
 \code{\link{coveragePerTiling}()},
+\code{\link{extendLeaders}()},
+\code{\link{extendTrailers}()},
 \code{\link{tile1}()},
 \code{\link{txSeqsFromFa}()},
 \code{\link{windowPerGroup}()}
