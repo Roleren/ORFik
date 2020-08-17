@@ -134,6 +134,8 @@ shiftFootprints <- function(footprints, shifts) {
 #' @param accepted.lengths accepted readlengths, default 26:34, usually ribo-seq
 #' is strongest between 27:32.
 #' @inheritParams footprints.analysis
+#' @param must.be.periodic logical TRUE, if FALSE will not filter on
+#' periodic read lengths. (The Fourier transform filter will be skipped).
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -171,7 +173,7 @@ shiftFootprints <- function(footprints, shifts) {
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
-  heatmap = FALSE) {
+  heatmap = FALSE, must.be.periodic = TRUE) {
 
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
@@ -203,13 +205,14 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
                             "accepted.lengths and counts > min_reads")
   cds <- cds[countOverlapsW(cds, footprints, "score") > 0]
   top_tx <- percentage_to_ratio(top_tx, cds)
-
-  periodicity <- windowPerReadLength(cds, tx, footprints,
-                      pShifted = FALSE, upstream = 0, downstream = firstN - 1,
-                      zeroPosition = 0, scoring = "periodic",
-                      acceptedLengths = tab$size)
-  validLengths <- periodicity[score == TRUE,]$fraction
-
+  if (must.be.periodic) {
+    periodicity <- windowPerReadLength(cds, tx, footprints,
+                                       pShifted = FALSE, upstream = 0,
+                                       downstream = firstN - 1,
+                                       zeroPosition = 0, scoring = "periodic",
+                                       acceptedLengths = tab$size)
+    validLengths <- periodicity[score == TRUE,]$fraction
+  } else validLengths <- accepted.lengths
 
   # find shifts
   if (start) {
@@ -223,7 +226,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     footprints.analysis(rw, heatmap)
     offset <- rw[, .(offsets_start = changePointAnalysis(score)),
                  by = fraction]
-    # Figure how this is possible ->
+    # Figure if we want to keep this.
     offset <- offset[offsets_start < 0, ]
   }
   if (stop & !is.null(minThreeUTR)) {

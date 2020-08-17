@@ -17,7 +17,8 @@ detectRibosomeShifts(
   tx = NULL,
   min_reads = 1000,
   accepted.lengths = 26:34,
-  heatmap = FALSE
+  heatmap = FALSE,
+  must.be.periodic = TRUE
 )
 }
 \arguments{
@@ -69,6 +70,9 @@ is strongest between 27:32.}
 If TRUE, will plot heatmap of
 raw reads before p-shifting to console, to see if shifts given make sense.
 You can also set a filepath to save the file there.}
+
+\item{must.be.periodic}{logical TRUE, if FALSE will not filter on
+periodic read lengths. (The Fourier transform filter will be skipped).}
 }
 \value{
 a data.table with lengths of footprints and their predicted

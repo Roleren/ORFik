@@ -84,19 +84,26 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
     stop("interval vector must be subset of x indices!")
   meta <- x[seq.int(max.pos)] # First 40 or other specified
   pos <- -(length(x)/2):(length(x)/2 - 1) # The positions
+  frames <- rep(c(0,1,2), 20)[seq.int(max.pos)]
+  max.frame = which.max(c(sum(meta[frames == 0]), sum(meta[frames == 1]),
+                        sum(meta[frames == 2]))) - 1
+  # subset to best frame
+  interval <- interval[c(0,1,2) %% 3 == max.frame] + 1
   if (feature == "start") {
     means <- c()
+    downs <- c()
+    ups <- c()
     # upstream window vs downstream window, Check counts in area: pos -16 to +4
     for (j in interval) {
-      down <- meta[seq.int(j, max.pos)]
-      only.per.third <- down[pos[seq.int(j, max.pos)] %% 3 == pos[j] %% 3]
-      downstream <- mean(only.per.third) # down window
-      upstream <- mean(meta[seq.int(j - 2L)]) # up window (-2 is skip 1 base, less noise)
+      down <- meta[seq.int(j, max.pos, by = 3)]
+      downstream <- mean(down) # down window
+      up <- meta[seq.int(1, j - 1, by = 3)]
+      upstream <- mean(up) * 3 # up window (penalize 3x)
       m <- downstream - upstream
+      downs <- c(downs, downstream); ups <- c(ups, upstream)
       means <- c(means, m)
     }
-    shift <- which.max(abs(means)) + min(interval) - 1 # +14 since we start on 15 in interval
-    offset <- pos[shift]
+    offset <- pos[interval[which.max(abs(means))]]
   } else if (feature == "stop") {
     shift <- which.max(meta)
     offset <- pos[shift] + 6
