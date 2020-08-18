@@ -4,7 +4,7 @@
 \alias{shiftFootprints}
 \title{Shift footprints by selected offsets}
 \usage{
-shiftFootprints(footprints, shifts)
+shiftFootprints(footprints, shifts, sort = TRUE)
 }
 \arguments{
 \item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads}
@@ -12,6 +12,10 @@ shiftFootprints(footprints, shifts)
 \item{shifts}{a data.frame / data.table with minimum 2 columns,
 fraction (selected_lengths) and selected_shifts (relative position).
 Output from \code{\link{detectRibosomeShifts}}}
+
+\item{sort}{logical, default TRUE. If False will keep original order of
+reads, and not sort output reads in increasing genomic location per
+chromosome and strand.}
 }
 \value{
 A \code{\link{GRanges}} object of shifted footprints, sorted and
@@ -30,7 +34,7 @@ also sorted according to their genomic position, ready to be saved as a
 bed or wig file.
 }
 \details{
-The two columns in shift are:\cr
+The two columns in the shift data.frame/data.table argument are:\cr
 - fraction Numeric vector of lengths of footprints you select
 for shifting.\cr
 - offsets_start Numeric vector of shifts for corresponding

@@ -9,7 +9,7 @@
 #' also sorted according to their genomic position, ready to be saved as a
 #' bed or wig file.
 #'
-#' The two columns in shift are:\cr
+#' The two columns in the shift data.frame/data.table argument are:\cr
 #' - fraction Numeric vector of lengths of footprints you select
 #' for shifting.\cr
 #' - offsets_start Numeric vector of shifts for corresponding
@@ -23,6 +23,9 @@
 #' @param shifts a data.frame / data.table with minimum 2 columns,
 #' fraction (selected_lengths) and selected_shifts (relative position).
 #' Output from \code{\link{detectRibosomeShifts}}
+#' @param sort logical, default TRUE. If False will keep original order of
+#' reads, and not sort output reads in increasing genomic location per
+#' chromosome and strand.
 #' @return A \code{\link{GRanges}} object of shifted footprints, sorted and
 #' resized to 1bp of p-site,
 #' with metacolumn "size" indicating footprint size before shifting and
@@ -47,7 +50,7 @@
 #' # shift the RiboSeq footprints
 #' shiftedReads <- shiftFootprints(footprints, shifts)
 #' }
-shiftFootprints <- function(footprints, shifts) {
+shiftFootprints <- function(footprints, shifts, sort = TRUE) {
   if (!is(shifts, "data.frame")) stop("shifts must be data.frame/data.table")
   if (nrow(shifts) == 0) stop("No shifts found in data.frame")
   if (is.null(shifts$fraction) | is.null(shifts$offsets_start))
@@ -60,31 +63,22 @@ shiftFootprints <- function(footprints, shifts) {
   validLengths <- lengthsAll %in% selected_lengths
   lengthsAll <- lengthsAll[validLengths]
   footprints <- footprints[validLengths]
-  cigarsAll <- cigar(footprints)
-
-  shiftsAll <- -selected_shifts[chmatch(as.character(lengthsAll),
-                          as.character(selected_lengths))]
+  shiftsAll <- -selected_shifts[match(lengthsAll,
+                          selected_lengths)] + 1
 
   # Shift cigar and map back to corrected GRanges.
   is_pos <- strandBool(footprints)
-  starts <- rep(NA, length(cigarsAll))
-  ends <- starts
-  starts[is_pos] <- shiftsAll[is_pos] + 1
-  ends[!is_pos] <- lengthsAll[!is_pos] - shiftsAll[!is_pos]
 
-  shiftedCigar <- cigarNarrow(cigarsAll, starts, ends)
-
-  pos <- start(footprints) + unlist(attributes(shiftedCigar),
-                                    use.names = FALSE)
-
-  shifted <- GAlignments(seqnames(footprints), pos = pos,
-                         cigar = shiftedCigar, strand = strand(footprints))
-  shifted <- convertToOneBasedRanges(shifted)
+  shiftsAll[!is_pos] <- -shiftsAll[!is_pos]
+  shifted <- qnarrow(footprints, shiftsAll, shiftsAll)
+  shifted <- GRanges(shifted)
   shifted$size <- lengthsAll
 
-  message("Sorting shifted footprints...")
   shifted <- sortSeqlevels(shifted)
-  shifted <- sort(shifted)
+  if (sort) {
+    message("Sorting shifted footprints...")
+    shifted <- sort(shifted)
+  }
   return(shifted)
 }
 
