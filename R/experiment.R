@@ -618,9 +618,10 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' Gives a massive speedup when cigar string and bam flags are not needed.\cr
 #' Export files as .bedoc files: If cigar is needed, gives you replicates
 #' and cigar, so a fast way to load a GAlignment object, other bam flags
-#' are lost.
+#' are lost. If type is bedoc addSizeColumn and method will be ignored.
 #'
-#' See \code{\link{export.bedo}} for information on file format
+#' See \code{\link{export.bedo}} and \code{\link{export.bedoc}}
+#' for information on file formats
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default:
 #' dirname(df$filepath[1]),
@@ -663,17 +664,27 @@ simpleLibs <- function(df,
   i <- 1
   for (f in varNames) {
     message(f)
+    if (type == "bedo") { # bedo
     gr <- convertToOneBasedRanges(gr = get(f),
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,
                                   method = method)
+    } else { # bedoc
+      gr <- collapseDuplicatedReads(gr = get(f),
+                                    addScoreColumn = addScoreColumn)
+    }
+
     if (!is.null(must.overlap)) gr <- optimizeReads(must.overlap, gr)
 
     if (!is.null(out.dir)) {
       output <- paste0(out.dir,
                        remove.file_ext(df$filepath[i], basename = TRUE),
-                       ".bedo")
-      export.bedo(gr, output)
+                       ".", type)
+      if (type == "bedo"){
+        export.bedo(gr, output)
+      } else
+        export.bedoc(gr, output)
+
     } else {
       assign(x = f, value = gr, envir = .GlobalEnv)
     }
