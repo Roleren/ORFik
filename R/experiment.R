@@ -670,7 +670,7 @@ simpleLibs <- function(df,
                                   addSizeColumn = addSizeColumn,
                                   method = method)
     } else { # bedoc
-      gr <- collapseDuplicatedReads(gr = get(f),
+      gr <- collapseDuplicatedReads(x = get(f),
                                     addScoreColumn = addScoreColumn)
     }
 
