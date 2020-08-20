@@ -15,7 +15,7 @@ transcriptWindow1(
   dfr = NULL,
   idName = "",
   format = ".png",
-  type = "default"
+  type = "bedoc"
 )
 }
 \arguments{
@@ -45,9 +45,10 @@ targets / nontargets etc. (default: "")}
 
 \item{format}{default (".png"), do ".pdf" if you want as pdf}
 
-\item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "bedo", "bedo" or "pshifted".
-These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
+\item{type}{a character(default: "bedoc"), load files in experiment
+or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
+These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
+Will load default if bedoc is not found}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE

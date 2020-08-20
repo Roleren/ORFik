@@ -554,7 +554,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams matchSeqStyle
 #' @param type a character(default: "default"), load files in experiment
-#' or some precomputed variant, either "bedo", "bedo" or "pshifted".
+#' or some precomputed variant, either "bedo", "bedoc" or "pshifted".
 #' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam()

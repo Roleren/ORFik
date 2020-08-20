@@ -23,7 +23,7 @@ Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "bedo", "bedo" or "pshifted".
+or some precomputed variant, either "bedo", "bedoc" or "pshifted".
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}

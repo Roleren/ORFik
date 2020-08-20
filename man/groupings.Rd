@@ -2,7 +2,7 @@
 % Please edit documentation in R/grl_helpers.R
 \name{groupings}
 \alias{groupings}
-\title{Get number of ranges per group as an iterator}
+\title{Get number of ranges per group as an iteration}
 \usage{
 groupings(grl)
 }
@@ -13,7 +13,7 @@ groupings(grl)
 an integer vector
 }
 \description{
-Get number of ranges per group as an iterator
+Get number of ranges per group as an iteration
 }
 \examples{
 grl <- GRangesList(GRanges("1", c(1, 3, 5), "+"),

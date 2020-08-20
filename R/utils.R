@@ -356,7 +356,18 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   return(gr)
 }
 
+#' Collapse duplicated reads
+#'
+#' For every GAlignments read, with the same:
+#' seqname, start, cigar and strand, collapse and give a new
+#' meta column called "score", which contains the number of duplicates
+#' of that read.
+#' @param x a GAlignments object
+#' @param addScoreColumn default TRUE, else only collapse and no
+#' score column added.
+#' @export
 setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
+
 
 setMethod("collapseDuplicatedReads", "GAlignments",
           function(x, addScoreColumn = TRUE) {

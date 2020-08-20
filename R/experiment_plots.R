@@ -22,7 +22,11 @@
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
 #' @param format default (".png"), do ".pdf" if you want as pdf
-#' @inheritParams outputLibs
+#' @param type a character(default: "bedoc"), load files in experiment
+#' or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
+#' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
+#' Will load default if bedoc is not found
+#' @param envir environment to save to, default (.GlobalEnv)
 #' @export
 #' @return NULL, or ggplot object if returnPlot is TRUE
 #' @family experiment plots
@@ -50,7 +54,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
                              dfr = NULL, idName = "", format = ".png",
-                             type = "default") {
+                             type = "bedoc") {
   if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
                                         It is ", windowSize))
 
@@ -155,7 +159,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
                        windowSize = 100,
                        returnPlot = is.null(outdir),
                        dfr = NULL, idName = "", format = ".png",
-                       type = "default") {
+                       type = "bedoc") {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {

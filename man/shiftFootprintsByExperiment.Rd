@@ -65,7 +65,9 @@ ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
 The bed format version can be used in IGV, the score column is counts of that
 read with that read length, the cigar reference width is lost,
 bedo is much faster to save and load in R, and retain cigar reference width,
-but can not be used in IGV.}
+but can not be used in IGV. \cr You can also do bedoc format, bed format
+keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
+p-shifting.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 

@@ -258,7 +258,9 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' The bed format version can be used in IGV, the score column is counts of that
 #' read with that read length, the cigar reference width is lost,
 #' bedo is much faster to save and load in R, and retain cigar reference width,
-#' but can not be used in IGV.
+#' but can not be used in IGV. \cr You can also do bedoc format, bed format
+#' keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
+#' p-shifting.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @param log logical, default (TRUE), output a log file with parameters used.
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
@@ -289,7 +291,7 @@ shiftFootprintsByExperiment <- function(df,
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
-  if (!any(c("bed","bedo") %in% output_format))
+  if (!any(c("bed", "bedo", "bedoc") %in% output_format))
     stop("output_format must be bed, bedo or both")
   for (out.form in output_format)
     message(paste("Saving", out.form, "files to:", out.dir))

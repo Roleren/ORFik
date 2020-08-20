@@ -7,7 +7,7 @@
 coverageByTranscriptW(x, transcripts, ignore.strand = FALSE, weight = 1L)
 }
 \arguments{
-\item{x}{reads (\code{\link{GRanges}}, GAlignment)}
+\item{x}{reads (\code{\link{GRanges}}, \code{\link{GAlignments}})}
 
 \item{transcripts}{\code{\link{GRangesList}}}
 

@@ -414,7 +414,7 @@ removeMetaCols <- function(grl) {
   return(grl)
 }
 
-#' Get number of ranges per group as an iterator
+#' Get number of ranges per group as an iteration
 #'
 #' @param grl GRangesList
 #' @return an integer vector
@@ -433,7 +433,7 @@ groupings <- function(grl){
 #'
 #'
 #' Allows weights, see \code{\link{coverageByTranscript}}
-#' @param x reads (\code{\link{GRanges}}, GAlignment)
+#' @param x reads (\code{\link{GRanges}}, \code{\link{GAlignments}})
 #' @param transcripts \code{\link{GRangesList}}
 #' @param ignore.strand a logical (default: FALSE)
 #' @param weight a vector (default: 1L), if single number applies for all,
@@ -461,6 +461,17 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
   is_unique <- sm == seq_along(sm)
   uex2ex <- which(is_unique)
   uex <- ex[uex2ex]
+  # Fix GAlignments not allowing mcol weight, remove when they fix it
+  # in GAlignments definition of coverage.
+  if (is(x, "GAlignments") & is.character(weight)) {
+    if (!(weight %in% colnames(mcols(x))))
+      stop("weight is character and not mcol of x,",
+           " check spelling of weight.")
+    weight <- mcols(x)[, weight]
+    x <- grglist(x) # convert to grl
+    weight = weight[groupings(x)] # repeat weight per group
+  }
+
   if (ignore.strand) {
     cvg <- coverage(x, weight = weight)
     uex_cvg <- cvg[uex]
@@ -471,8 +482,9 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
     x1 <- x[pluss]
     x2 <- x[minus]
     if (length(weight) > 1) {
-      cvg1 <- coverage(x1, weight = weight[as.logical(pluss)])
-      cvg2 <- coverage(x2, weight = weight[as.logical(minus)])
+      # Add unlist in case of GAlignments
+      cvg1 <- coverage(x1, weight = weight[as.logical(unlist(pluss))])
+      cvg2 <- coverage(x2, weight = weight[as.logical(unlist(minus))])
     } else {
       cvg1 <- coverage(x1, weight = weight)
       cvg2 <- coverage(x2, weight = weight)
