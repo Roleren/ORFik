@@ -16,7 +16,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
   validGRL(class(grl))
   g <- groupings(grl)
 
-  if (byTranscript) {
+  if (byTranscript & length(g) > 1) {
     inds <- rep.int(1L, length(g))
     oldNames <- names(grl)
     oldNames <- data.table::chmatch(oldNames, oldNames)

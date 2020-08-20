@@ -505,7 +505,7 @@ filepath <- function(df, type, basename = FALSE) {
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
     input <- NULL
-    if (type %in% c("bedo", "bed")) {
+    if (type %in% c("bedoc", "bedo", "bed")) {
       out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir,
@@ -613,13 +613,17 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 
 #' Will make a simplified version of NGS libraries
 #'
-#' Export files as .bedo files. It is a bed file with 2 score columns.
-#' Gives a massive speedup when cigar string and bam flags are not needed.
+#' Export as either .bedo or .bedoc files.\cr
+#' Export files as .bedo files: It is a bed file with 2 score columns.
+#' Gives a massive speedup when cigar string and bam flags are not needed.\cr
+#' Export files as .bedoc files: If cigar is needed, gives you replicates
+#' and cigar, so a fast way to load a GAlignment object, other bam flags
+#' are lost.
 #'
 #' See \code{\link{export.bedo}} for information on file format
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default:
-#' paste0(dirname(df$filepath[1]), "/bedo/"),
+#' dirname(df$filepath[1]),
 #' if it is NULL, it will just reassign R objects to simplified libraries.
 #' @inheritParams convertToOneBasedRanges
 #' @param must.overlap default (NULL), else a GRanges / GRangesList object, so
@@ -627,6 +631,8 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' only need the reads over transcript annotation or subset etc.
 #' @param method character, default "None", the method to reduce ranges,
 #' for more info see \code{\link{convertToOneBasedRanges}}
+#' @param type a character, "bedo" or "bedoc". Which format you want.
+#' Will make a folder within out.dir with this name containing the files.
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
 #' @examples
@@ -635,16 +641,20 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' # Keep only 5' ends of reads
 #' #simpleLibs(df, method = "5prime")
 simpleLibs <- function(df,
-                       out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
+                       out.dir = dirname(df$filepath[1]),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
-                       must.overlap = NULL, method = "None") {
+                       must.overlap = NULL, method = "None",
+                       type = "bedo") {
+  if (!(type %in% c("bedo", "bedoc")))
+    stop("type must be either bedo or bedoc")
+  out.dir <- paste0(out.dir, "/", type, "/")
   validateExperiments(df)
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
     stop("must.overlap must be GRanges or GRangesList object!")
   if (!is.null(out.dir)) {
     dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
     if (!dir.exists(out.dir)) stop("could not create directory!")
-    message(paste("Saving .bedo files to:", out.dir))
+    message(paste("Saving,", type, "files to:", out.dir))
   }
 
   outputLibs(df, chrStyle = must.overlap)

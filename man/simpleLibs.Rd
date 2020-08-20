@@ -6,18 +6,19 @@
 \usage{
 simpleLibs(
   df,
-  out.dir = paste0(dirname(df$filepath[1]), "/bedo/"),
+  out.dir = dirname(df$filepath[1]),
   addScoreColumn = TRUE,
   addSizeColumn = TRUE,
   must.overlap = NULL,
-  method = "None"
+  method = "None",
+  type = "bedo"
 )
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{out.dir}{optional output directory, default:
-paste0(dirname(df$filepath[1]), "/bedo/"),
+dirname(df$filepath[1]),
 if it is NULL, it will just reassign R objects to simplified libraries.}
 
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
@@ -37,13 +38,20 @@ only need the reads over transcript annotation or subset etc.}
 
 \item{method}{character, default "None", the method to reduce ranges,
 for more info see \code{\link{convertToOneBasedRanges}}}
+
+\item{type}{a character, "bedo" or "bedoc". Which format you want.
+Will make a folder within out.dir with this name containing the files.}
 }
 \value{
 NULL (saves files to disc or R .GlobalEnv)
 }
 \description{
-Export files as .bedo files. It is a bed file with 2 score columns.
-Gives a massive speedup when cigar string and bam flags are not needed.
+Export as either .bedo or .bedoc files.\cr
+Export files as .bedo files: It is a bed file with 2 score columns.
+Gives a massive speedup when cigar string and bam flags are not needed.\cr
+Export files as .bedoc files: If cigar is needed, gives you replicates
+and cigar, so a fast way to load a GAlignment object, other bam flags
+are lost.
 }
 \details{
 See \code{\link{export.bedo}} for information on file format

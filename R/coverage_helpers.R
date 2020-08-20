@@ -28,7 +28,8 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
     trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
-    txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction)
+    txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction,
+                        weight)
 
   } else {
     tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -56,11 +57,14 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' @return a data.table with columns position, score
 splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
                        fraction = "1", weight = "score") {
-  leaderCov <- scaledWindowPositions(leaders, reads, windowSize)
+  leaderCov <- scaledWindowPositions(leaders, reads, windowSize,
+                                     weight = weight)
   leaderCov[, `:=` (feature = "leaders")]
-  cdsCov <- scaledWindowPositions(cds, reads, windowSize)
+  cdsCov <- scaledWindowPositions(cds, reads, windowSize,
+                                  weight = weight)
   cdsCov[, `:=` (feature = "cds")]
-  trailerCov <- scaledWindowPositions(trailers, reads, windowSize)
+  trailerCov <- scaledWindowPositions(trailers, reads, windowSize,
+                                      weight = weight)
   trailerCov[, `:=` (feature = "trailers")]
 
   txCov <- rbindlist(list(leaderCov, cdsCov, trailerCov))
