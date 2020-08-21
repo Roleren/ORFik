@@ -158,7 +158,7 @@ import.bedo <- function(path) {
   return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
 }
 
-#' Store GAlignments object as .bedoc
+#' Load GAlignments object from .bedoc
 #'
 #' A much faster way to store, load and use bam files.\cr
 #' .bedoc is .bed ORFik, an optimized bed format for coverage reads with
@@ -178,6 +178,33 @@ import.bedoc <- function(path) {
   if (file_ext(path) != "bedoc")
     stop("import.bedoc can only load .bedoc files!")
   return(makeGAlignmentsFromDataFrame(fread(input = path)))
+}
+
+#' #' Load GRanges / GAlignments object from .ofst
+#'
+#' A much faster way to store, load and use bam files.\cr
+#' .ofst is ORFik fast serialized object,
+#' an optimized bed format for coverage reads with
+#' cigar and replicate number.\cr
+#' .ofst is a text based format with minimum 4 columns:\cr
+#' 1. chromosome\cr  2. start (left most position) \cr 3. strand (+, -, *)\cr
+#' 4. width (not added if cigar exists)\cr
+#' 5. cigar (not needed if width exists):
+#'  (cigar # M's, match/mismatch total) \cr
+#' 5. score: duplicates of that read\cr
+#' 6. size: qwidth according to reference of read
+#' Other columns can be named whatever you want and added to meta columns.
+#' Positions are 1-based, not 0-based as .bed.
+#' Import with import.ofst
+#' @param file a path to a .ofst file
+#' @return a GAlignment or GRanges object, dependent of if cigar is
+#' defined in .ofst file.
+#' @export
+import.ofst <- function(file) {
+  df <- read_fst(file)
+  if ("cigar" %in% colnames(df)) {
+    getGAlignments(df)
+  } else getGRanges(df)
 }
 
 #' Load any type of sequencing reads
@@ -261,7 +288,9 @@ fimport <- function(path, chrStyle = NULL) {
           return(matchSeqStyle(import.bedo(path), chrStyle))
         } else if (fext == "bedoc") {
           return(matchSeqStyle(import.bedoc(path), chrStyle))
-        } else return(matchSeqStyle(import(path), chrStyle))
+        } else if (fext == "ofst") {
+          return(matchSeqStyle(import.ofst(path), chrStyle))
+        }else return(matchSeqStyle(import(path), chrStyle))
       } else stop("fimport takes either 1 or 2 files!")
     } else stop(paste(path, "does not exist as File/Files!"))
   } else if (is.gr_or_grl(path) | is(path, "GAlignments") |

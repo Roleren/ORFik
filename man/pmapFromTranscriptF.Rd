@@ -26,7 +26,7 @@ if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
 to transcript 3 etc.
 }
 \details{
-This version tries to fix the shortcommings of GenomicFeature's version.
+This version tries to fix the short commings of GenomicFeature's version.
 Much faster and uses less memory.
 Implemented as dynamic program optimized c++ code.
 }

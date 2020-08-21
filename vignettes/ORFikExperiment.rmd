@@ -70,7 +70,7 @@ save.experiment(df, file = "path/to/save/experiment.csv")
 ```
 You can then load the experiment whenever you need it.
 
-## The experiment object
+# The experiment object
 To see the object, just show it like this:
 ```{r eval = TRUE, echo = TRUE}
 df

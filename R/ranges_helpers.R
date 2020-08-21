@@ -364,7 +364,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
 #' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
 #' to transcript 3 etc.
 #'
-#' This version tries to fix the shortcommings of GenomicFeature's version.
+#' This version tries to fix the short commings of GenomicFeature's version.
 #' Much faster and uses less memory.
 #' Implemented as dynamic program optimized c++ code.
 #' @param x IRangesList/IRanges/GRanges to map to genomic coordinates
@@ -559,14 +559,16 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 
 #' Extend the leaders transcription start sites.
 #'
-#' Will extend the leaders or transcripts upstream by extension.
+#' Will extend the leaders or transcripts upstream (5' end) by extension.
 #' Remember the extension is general not relative, that means splicing
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
 #' @param grl usually a \code{\link{GRangesList}} of 5' utrs or transcripts.
 #' Can be used for any extension of groups.
-#' @param extension an integer, how much to extend the leaders.
+#' @param extension an integer, how much to extend upstream (5' end).
+#' Eiter single value that will apply for all, or same as length of grl
+#' which will give 1 update value per grl object.
 #' Or a GRangesList where start / stops by strand are the positions
 #' to use as new starts.
 #' @param cds a \code{\link{GRangesList}} of coding sequences,
@@ -593,7 +595,7 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' extendLeaders(tx, extension = 1000)
 #'
 extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
-  if (is(extension, "numeric") && length(extension) == 1L) {
+  if (is(extension, "numeric") && length(extension) %in% c(1L, length(grl))) {
     posIndices <- strandBool(grl)
     promo <- promoters(unlist(firstExonPerGroup(grl), use.names = FALSE),
                        upstream = extension)
@@ -615,15 +617,17 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
 
 #' Extend the Trailers transcription stop sites
 #'
-#' Will extend the trailers or transcripts downstream by extension.
+#' Will extend the trailers or transcripts downstream (3' end) by extension.
 #' Remember the extension is general not relative, that means splicing
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
 #' @param grl usually a \code{\link{GRangesList}} of 3' utrs or transcripts.
 #' Can be used for any extension of groups.
-#' @param extension an integer, how much to extend the leaders.
-#' Or a GRangesList where start / stops by strand are the positions
+#' @param extension an integer, how much to extend downstream (3' end).
+#' Eiter single value that will apply for all, or same as length of grl
+#' which will give 1 update value per grl object.
+#' Or a GRangesList where start / stops sites by strand are the positions
 #' to use as new starts.
 #' @return an extended GRangeslist
 #' @export
@@ -641,7 +645,7 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
 #' extendTrailers(tx, extension = 1000)
 #'
 extendTrailers <- function(grl, extension = 1000L) {
-  if (is(extension, "numeric") && length(extension) == 1L) {
+  if (is(extension, "numeric") && length(extension) %in% c(1L, length(grl))) {
     posIndices <- strandBool(grl)
     promo <- flank(unlist(lastExonPerGroup(grl), use.names = FALSE),
                    width = extension, start = FALSE)

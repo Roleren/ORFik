@@ -315,9 +315,14 @@ shiftFootprintsByExperiment <- function(df,
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
 
     if ("bedo" %in% output_format) {
-      shiftedb <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
-                                         addSizeColumn = TRUE)
-      export.bedo(shiftedb, paste0(name, "_pshifted.bedo"))
+      export.bedo(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                          addSizeColumn = TRUE),
+                  paste0(name, "_pshifted.bedo"))
+    }
+    if ("ofst" %in% output_format) {
+      export.ofst(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                         addSizeColumn = TRUE),
+                 paste0(name, "_pshifted.ofst"))
     }
     if ("bed" %in% output_format) {
       shifted <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,

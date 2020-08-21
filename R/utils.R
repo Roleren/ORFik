@@ -24,6 +24,60 @@ bedToGR <- function(x, skip.name = TRUE) {
   return(gr)
 }
 
+#' Internal GRanges loader from fst data.frame
+#' @param df a data.frame with columns minimum 4 columns:
+#' seqnames, start, strand and width.\cr
+#' Additional columns will be assigned as meta columns
+#' @return GRanges object
+getGRanges <- function(df) {
+
+  ranges <- new2("IRanges", start = df$start,
+                 width = df$width,
+                 NAMES = df$NAMES,
+                 elementMetadata = NULL,
+                 check = FALSE)
+  seqinfo <- Seqinfo(levels(df$seqnames))
+  df$NAMES <- NULL
+  if (ncol(df) == 4){
+    mcols <- NULL
+  } else {
+    mcols <- df[,5:ncol(df)]
+    if (ncol(df) == 5) {
+      mcols <- data.frame(mcols)
+      names(mcols) <- names(df)[5]
+    }
+  }
+  mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
+
+  new2("GRanges", seqnames = Rle(df$seqnames), ranges = ranges, strand = Rle(df$strand),
+       elementMetadata = mcols, seqinfo = seqinfo, check = FALSE)
+}
+
+#' Internal GAlignments loader from fst data.frame
+#' @param df a data.frame with columns minimum 4 columns:
+#' seqnames, start, strand and width.\cr
+#' Additional columns will be assigned as meta columns
+#' @return GAlignments object
+getGAlignments <- function(df) {
+  seqinfo <- Seqinfo(levels(df$seqnames))
+  names <- df$NAMES
+  df$NAMES <- NULL
+  if (ncol(df) == 4){
+    mcols <- NULL
+  } else {
+    mcols <- df[,5:ncol(df)]
+    if (ncol(df) == 5) {
+      mcols <- data.frame(mcols)
+      names(mcols) <- names(df)[5]
+    }
+  }
+  mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
+  new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start,
+       cigar = as.character(df$cigar), strand = Rle(df$strand), elementMetadata = mcols,
+       seqinfo = seqinfo, check = FALSE)
+
+}
+
 #' Export as bed12 format
 #'
 #' bed format for multiple exons per group, as transcripts.
@@ -89,7 +143,7 @@ makeGAlignmentsFromDataFrame <- function(x) {
                     pos = as.integer(x$start),
                     strand = factor(x$strand, levels = c("+", "-", "*")))
   if (!is.null(x$score)) {
-    mcols(ga)$score <- x$score
+    mcols(ga) <- DataFrame(mcols(ga), x$score)
   }
   return(ga)
 }
@@ -182,6 +236,53 @@ export.bedoc <- function(object, out) {
   if (!is.null(mcols(object)$score)) dt$score = mcols(object)$score
   fwrite(dt, file = out)
 }
+
+#' Store GRanges / GAlignments object as .ofst
+#'
+#' A much faster way to store, load and use bam files.\cr
+#' .ofst is ORFik fast serialized object,
+#' an optimized bed format for coverage reads with
+#' cigar and replicate number.\cr
+#' .ofst is a text based format with minimum 4 columns:\cr
+#' 1. chromosome\cr  2. start (left most position) \cr 3. strand (+, -, *)\cr
+#' 4. width (not added if cigar exists)\cr
+#' 5. cigar (not needed if width exists):
+#'  (cigar # M's, match/mismatch total) \cr
+#' 5. score: duplicates of that read\cr
+#' 6. size: qwidth according to reference of read
+#' Other columns can be named whatever you want and added to meta columns.
+#' Positions are 1-based, not 0-based as .bed.
+#' Import with import.ofst
+#' @param x a GRanges, GAlignments object
+#' @param file a character, location on disc (full path)
+#' @param ... additional arguments for write_fst
+#' @return NULL, object saved to disc
+#' @importFrom fst write_fst
+#' @export
+#'
+setGeneric("export.ofst", function(x,...) standardGeneric("export.ofst"))
+
+setMethod("export.ofst", "GRanges",
+          function(x,file,...) {
+            df <- data.frame(seqnames = x@seqnames,
+                             start = x@ranges@start,
+                             width = x@ranges@width,
+                             strand = x@strand)
+            if (!is.null(x@ranges@NAMES)) df$NAMES <- x@ranges@NAMES
+            if (ncol(x@elementMetadata) > 0) df <- cbind(df,x@elementMetadata)
+            write_fst(df, file,...)
+          })
+
+setMethod("export.ofst", "GAlignments",
+          function(x,file,...) {
+            df <- data.frame(seqnames = x@seqnames,
+                             start = x@start,
+                             cigar = factor(x@cigar),
+                             strand = x@strand)
+            if (!is.null(x@NAMES)) df$NAMES <- x@ranges@NAMES
+            if (ncol(x@elementMetadata) > 0) df <- cbind(df,x@elementMetadata)
+            write_fst(df, file,...)
+          })
 
 #' Remove file extension of path
 #'

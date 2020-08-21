@@ -10,7 +10,9 @@ extendLeaders(grl, extension = 1000L, cds = NULL)
 \item{grl}{usually a \code{\link{GRangesList}} of 5' utrs or transcripts.
 Can be used for any extension of groups.}
 
-\item{extension}{an integer, how much to extend the leaders.
+\item{extension}{an integer, how much to extend upstream (5' end).
+Eiter single value that will apply for all, or same as length of grl
+which will give 1 update value per grl object.
 Or a GRangesList where start / stops by strand are the positions
 to use as new starts.}
 
@@ -24,7 +26,7 @@ Do not add for transcripts, as they are already included.}
 an extended GRangeslist
 }
 \description{
-Will extend the leaders or transcripts upstream by extension.
+Will extend the leaders or transcripts upstream (5' end) by extension.
 Remember the extension is general not relative, that means splicing
 will not be taken into account.
 Requires the \code{grl} to be sorted beforehand,

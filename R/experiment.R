@@ -519,14 +519,20 @@ filepath <- function(df, type, basename = FALSE) {
         input <- paste0(out.dir,
                         remove.file_ext(x,
                                         basename = TRUE)
-                        , "_pshifted.bedo")
-        if (!file.exists(input)) {
+                        , "_pshifted.ofst")
+        if (!file.exists(input)) { # if not ofst
           input <- paste0(out.dir,
                           remove.file_ext(x,
                                           basename = TRUE)
-                          , "_pshifted.bed")
-          if (!file.exists(input))
-            type <- "default"
+                          , "_pshifted.bedo")
+          if (!file.exists(input)) { # if not bedo
+            input <- paste0(out.dir,
+                            remove.file_ext(x,
+                                            basename = TRUE)
+                            , "_pshifted.bed")
+            if (!file.exists(input))
+              type <- "default"
+          }
         }
       } else type <- "default"
     }
@@ -547,14 +553,14 @@ filepath <- function(df, type, basename = FALSE) {
   return(paths)
 }
 
-#' Output bam/bed/bedo/wig files to R as variables
+#' Output bam/bed/bedo/bedoc/ofst/wig files to R as variables
 #'
 #' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams matchSeqStyle
 #' @param type a character(default: "default"), load files in experiment
-#' or some precomputed variant, either "bedo", "bedoc" or "pshifted".
+#' or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
 #' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
@@ -632,7 +638,8 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' only need the reads over transcript annotation or subset etc.
 #' @param method character, default "None", the method to reduce ranges,
 #' for more info see \code{\link{convertToOneBasedRanges}}
-#' @param type a character, "bedo" or "bedoc". Which format you want.
+#' @param type a character of format, default "ofst".
+#' Alternatives: "ofst", "bedo" or "bedoc". Which format you want.
 #' Will make a folder within out.dir with this name containing the files.
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
@@ -645,9 +652,9 @@ simpleLibs <- function(df,
                        out.dir = dirname(df$filepath[1]),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
                        must.overlap = NULL, method = "None",
-                       type = "bedo") {
-  if (!(type %in% c("bedo", "bedoc")))
-    stop("type must be either bedo or bedoc")
+                       type = "ofst") {
+  if (!(type %in% c("ofst", "bedo", "bedoc")))
+    stop("type must be either ofst, bedo or bedoc")
   out.dir <- paste0(out.dir, "/", type, "/")
   validateExperiments(df)
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
@@ -669,7 +676,7 @@ simpleLibs <- function(df,
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,
                                   method = method)
-    } else { # bedoc
+    } else { # bedoc or ofst
       gr <- collapseDuplicatedReads(x = get(f),
                                     addScoreColumn = addScoreColumn)
     }
@@ -682,6 +689,8 @@ simpleLibs <- function(df,
                        ".", type)
       if (type == "bedo"){
         export.bedo(gr, output)
+      } else if (type == "ofst"){
+        export.ofst(gr, output)
       } else
         export.bedoc(gr, output)
 

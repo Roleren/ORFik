@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{outputLibs}
 \alias{outputLibs}
-\title{Output bam/bed/bedo/wig files to R as variables}
+\title{Output bam/bed/bedo/bedoc/ofst/wig files to R as variables}
 \usage{
 outputLibs(
   df,
@@ -23,7 +23,7 @@ Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "bedo", "bedoc" or "pshifted".
+or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}

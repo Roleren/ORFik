@@ -11,7 +11,7 @@ simpleLibs(
   addSizeColumn = TRUE,
   must.overlap = NULL,
   method = "None",
-  type = "bedo"
+  type = "ofst"
 )
 }
 \arguments{
@@ -39,7 +39,8 @@ only need the reads over transcript annotation or subset etc.}
 \item{method}{character, default "None", the method to reduce ranges,
 for more info see \code{\link{convertToOneBasedRanges}}}
 
-\item{type}{a character, "bedo" or "bedoc". Which format you want.
+\item{type}{a character of format, default "ofst".
+Alternatives: "ofst", "bedo" or "bedoc". Which format you want.
 Will make a folder within out.dir with this name containing the files.}
 }
 \value{

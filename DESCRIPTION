@@ -50,6 +50,7 @@ Imports:
   R.utils,
   utils,
   stats,
+  fst (>= 0.9.2),
   tools
 RoxygenNote: 7.1.1
 Suggests:

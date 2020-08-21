@@ -10,7 +10,7 @@ filepath(df, type, basename = FALSE)
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "bedo", "bedoc" or "pshifted".
+or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 
 \item{basename}{logical, default (FALSE).

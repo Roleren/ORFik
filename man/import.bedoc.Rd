@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_imports.R
 \name{import.bedoc}
 \alias{import.bedoc}
-\title{Store GAlignments object as .bedoc}
+\title{Load GAlignments object from .bedoc}
 \usage{
 import.bedoc(path)
 }
