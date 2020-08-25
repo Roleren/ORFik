@@ -116,7 +116,7 @@ saveRDS(fiveUTR_ORFs[1:2], "save/path/uorfs.rds")
 
 2. If you want to use in IGV, UCSC genome browser etc:
 Save as bed12 format, that is a bed format with 1 row per ORF, that contains
-splicing information:
+splicing information and even possible color coding for visualizing groups of ORFs:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 export.bed12(fiveUTR_ORFs[1:2], "save/path/uorfs.rds")
 ```
@@ -128,13 +128,14 @@ orf_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
                                   fiveUTR_ORFs[1:3])
 orf_seqs
 ```
-You can see ORF 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 codons. We will now look on ORFik functions to get startcodons and stopcodon etc.
+You can see ORF 1 named (uc010ogz.1_1) has a CTG start codon, a TAG stop codon and 159/3 = 53 codons. 
 
 To save as .fasta do
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 writeXStringSet(orf_seqs, filepath = "uorfs.fasta")
 ```
 
+We will now look on ORFik functions to get startcodons and stopcodon etc.
 # New GRanges and GRangesList utilities for ORFs
 `ORFik` contains functions that can be utilized to speed up your coding.
 Check documentation for these functions: `sortPerGroup`, `unlistGrl`, 
@@ -521,7 +522,7 @@ rate <- fpkm(cds, RFP)
 ORFik:::kozakHeatmap(seqs, rate)
 
 ```
-It will be a black box around the strongest nucleotide per position 
+It will be a black boundary box around the strongest nucleotide per position 
 (what base at what position gives highest ribo-seq fpkm for the cds).
 See at the start codon (position +1 to +3) you have A, T, G.
 As known from the literature many C's before start codon and a G after 
