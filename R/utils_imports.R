@@ -199,6 +199,7 @@ import.bedoc <- function(path) {
 #' @param file a path to a .ofst file
 #' @return a GAlignment or GRanges object, dependent of if cigar is
 #' defined in .ofst file.
+#' @importFrom fst read_fst
 #' @export
 import.ofst <- function(file) {
   df <- read_fst(file)
