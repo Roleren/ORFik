@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #HT 12/02/19
-# script to process and align genomic non paired fastq datasets 
+# script to process and align genomic non paired fastq datasets
 #1 STAR INDICES (If not existing, must be done in seperate script for now)
 #2 make directories
 #3 Trim adaptor
@@ -15,7 +15,7 @@ usage(){
 cat << EOF
 usage: $0 options
 
-script to process and align genomic single end or paired end fastq datasets 
+script to process and align genomic single end or paired end fastq datasets
 
 OPTIONS:
 	Important options:
@@ -26,34 +26,34 @@ OPTIONS:
 	-g	genome dir for all indices (Standard is zebrafish: danrerio10, change to human index if needed etc)
 	-s	steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trimming, ph: phix depletion, rR: rrna depletion, 
-			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment) 
+			 tr: trimming, ph: phix depletion, rR: rrna depletion,
+			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write -s "tr-ge"
-	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable", 
+	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
 		to disable it or "standard" to get "AAAAAAAAAA", the illumina standard sequence.
-	-t	trim front (default 3) How many bases to pre trim reads 5' end, 
+	-t	trim front (default 3) How many bases to pre trim reads 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
 
 	Path arguments:
 	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-P      path to fastp (trimmer) (default: ~/bin/fastp)
-	
+
 	Less important options:
-	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s, 
-			             (if you want a continue from crash specify the step you want to start 
+	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s,
+			             (if you want a continue from crash specify the step you want to start
 				      from, as defined in -s, start on genome, do -r "ge")
 	-m	max cpus allowed (defualt 90)
 	-k	a character, Keep loaded genomes STAR index (y) or not (n), default (n)
 	-h	this help message
 
-fastp location must be: ~/bin/fastp 
+fastp location must be: ~/bin/fastp
 (if you don't have it install to bin folder from: https://github.com/OpenGene/fastp
 
 (if you don't have it install to bin folder from: https://github.com/alexdobin/STAR
 
-NOTES: 
+NOTES:
 if STAR is stuck on load, run this line:
 STAR --genomeDir /export/valenfs/projects/uORFome/STAR_INDEX_ZEBRAFISH/genomeDir/ --genomeLoad Remove
 Also the minimum read quality is set to 10, it will be removed if less.
@@ -77,7 +77,7 @@ keep="n"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
 while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:P:h" opt; do
-    case $opt in 
+    case $opt in
     f)
         in_file=$OPTARG
         echo "-f input file $OPTARG"
@@ -138,7 +138,7 @@ while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:P:h" opt; do
         usage
         exit
         ;;
-    ?) 
+    ?)
         echo "Invalid option: -$OPTARG"
         usage
         exit 1
@@ -178,7 +178,7 @@ else
 fi
 
 if [ ! -z $in_file_two ]; then
-	
+
 	if [ ! -f $in_file_two ]; then
 	    echo "Error input file 2 :F does not name existing file!"
 	    exit 1
@@ -195,7 +195,7 @@ fi
 # 1. mkdir
 
 if [ ! -d $out_dir ]; then
-    mkdir $out_dir
+    mkdir -p $out_dir
 fi
 
 if [ ! -d ${out_dir}/trim ]; then
@@ -251,10 +251,10 @@ function indexOf()
         		echo $i
 		fi
     	done
-} 
+}
 
 # 1 ${stepsArray[ind]} 2 ${out_dir} 3 ${ibn} 4 ${in_file_two}
-function pathList() 
+function pathList()
 {
 	if [ -z ${4} ]; then # if single end
 		case $1 in
@@ -272,7 +272,7 @@ function pathList()
 				;;
 			"tr")
 				echo "${2}/trim/trimmed_${3}.fastq"
-				;;	
+				;;
 		esac
 	else # if paired end
 		case $1 in
@@ -290,24 +290,24 @@ function pathList()
 				;;
 			"tr")
 				echo "${2}/trim/trimmed_${3}.fastq ${2}/trim/trimmed2_${3}.fastq"
-				;;	
+				;;
 		esac
-	fi	
+	fi
 }
 
 # Get fasta/bam file to use in this step
 # Parameters $resume $in_file current:'ge' ${out_dir} ${ibn} ${in_file_two}
 function inputFile()
 {
-    
+
 	var=$(indexOf "$3" ${stepsArray[@]})
-	if [ ${var} == "0" ]; then    	
+	if [ ${var} == "0" ]; then
 		echo "${2} ${6}"
 	else
 		ind=$(expr $var - 1)
 		echo $(pathList ${stepsArray[ind]} $4 $5 ${6})
 	fi
-    
+
 }
 
 # Parameters $resume current:'ge' $steps
@@ -315,7 +315,7 @@ function inputFile()
 function doThisStep()
 {
 
-    if [ $1 == "n" ]; then 
+    if [ $1 == "n" ]; then
 	if grep -q $2 <<< $3; then
 		echo "yes"
 	else
@@ -366,7 +366,7 @@ function trimPaired()
 {
 	if [ ! -z $3 ]; then
 		echo "${1}/trim/trimmed2_${2}.fastq"
-	else 
+	else
 		echo ""
 	fi
 }
@@ -390,7 +390,7 @@ fi
     #--disable_quality_filtering no fastq filtering
     #--adapter_sequence adapter sequence, normally set manually (normally needed)
     if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
-	echo trimming	
+	echo trimming
 	if [ $adapter == "disable" ]; then
 		eval $fastp \
 		--in1=${in_file} \
