@@ -466,6 +466,9 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' @param x a GAlignments object
 #' @param addScoreColumn default TRUE, else only collapse and no
 #' score column added.
+#' @param ... alternative arguments. addScoreColumn = TRUE, if FALSE,
+#' only collapse and not add score column.
+#' @return a GAlignments object
 #' @export
 setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
 

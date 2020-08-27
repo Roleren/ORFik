@@ -9,8 +9,14 @@ collapseDuplicatedReads(x, ...)
 \arguments{
 \item{x}{a GAlignments object}
 
+\item{...}{alternative arguments. addScoreColumn = TRUE, if FALSE,
+only collapse and not add score column.}
+
 \item{addScoreColumn}{default TRUE, else only collapse and no
 score column added.}
+}
+\value{
+a GAlignments object
 }
 \description{
 For every GAlignments read, with the same:
