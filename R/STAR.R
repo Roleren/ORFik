@@ -20,6 +20,7 @@
 #' @param script location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
+#' @param remake logical, default: FALSE, if TRUE remake everything specified
 #' @inheritParams base::system
 #' @return output.dir, can be used as as input for STAR.align..
 #' @family STAR
@@ -36,14 +37,24 @@
 #' # STAR.index(arguments, output.dir)
 STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
                        star.path = STAR.install(), max.cpus = min(90, detectCores() - 1),
-                       wait = TRUE,
+                       wait = TRUE, remake = FALSE,
                        script = system.file("STAR_Aligner",
                                             "STAR_MAKE_INDEX.sh",
                                             package = "ORFik")) {
-  if (!file.exists(script)) stop("STAR index script not found, check path of script!")
-  if (is.null(names(arguments))) stop("arguments must have names, see ?STAR.index")
+  finished.file <- paste0(output.dir, "/outputs.rds")
+  if (file.exists(finished.file) & !remake) {
+    message("Loading premade files information,
+            do remake = TRUE if you want to run again")
+    return(readRDS(finished.file))
+  }
+
+  if (!file.exists(script))
+    stop("STAR index script not found, check path of script!")
+  if (is.null(names(arguments)))
+    stop("arguments must have names, see ?STAR.index")
   possible <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
-  if (!all(names(arguments) %in% possible)) stop("At least one of arguments with invalid name!")
+  if (!all(names(arguments) %in% possible))
+    stop("At least one of arguments with invalid name!")
 
   # match which indices to make
   exts <- c("g", "f", "p", "r", "t", "n")
@@ -58,13 +69,16 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   message("STAR indexing:\n")
   print(full); print("\n")
   if (.Platform$OS.type == "unix") {
+
     message("Starting indexing at time:")
     print(Sys.time())
     out <- system(command = full, wait = wait)
     out <- ifelse(out == 0 & wait, "Index done", "Index process failed!")
-    if (!wait) out <- "Wait for index to be complete before you run Alignment!"
+    if (!wait)
+      out <- "Wait for index to be complete before you run Alignment!"
     message(out)
   } else stop("STAR is not supported on windows!")
+  saveRDS(object = output, finished.file)
   return(output.dir)
 }
 

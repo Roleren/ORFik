@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #HT 12/02/19
-# script to process and align genomic non paired fastq datasets 
+# script to process and align genomic non paired fastq datasets
 #1 STAR INDICES (If not existing, must be done in seperate script for now)
 #2 make directories
 #3 Trim adaptor
@@ -15,7 +15,7 @@ usage(){
 cat << EOF
 usage: $0 options
 
-script to process and align genomic single end or paired end fastq datasets 
+script to process and align genomic single end or paired end fastq datasets
 
 OPTIONS:
 	Important options:
@@ -27,12 +27,12 @@ OPTIONS:
 	-g	genome dir for all indices (Standard is zebrafish: danrerio10, change to human index if needed etc)
 	-s	steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome) 
+			 tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write -s "tr-ge"
-	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable", 
+	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
 		to disable it
-	-t	trim front (default 3) How many bases to pre trim reads 5' end, 
+	-t	trim front (default 3) How many bases to pre trim reads 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
 
@@ -42,8 +42,8 @@ OPTIONS:
 	-C	path to cleaning script, internal
 
 	Less important options:
-	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s, 
-			             (if you want a continue from crash specify the step you want to start 
+	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s,
+			             (if you want a continue from crash specify the step you want to start
 				      from, as defined in -s, start on genome, do -r "ge")
 	-m	max cpus allowed (defualt 90)
 	-i	include subfolders (defualt n, for no), if you want subfolder do y, for yes.
@@ -63,7 +63,7 @@ EOF
 # Default arguments:
 echo $'\nArguments for folder run are the following:'
 min_length=15
-gen_dir=/export/valenfs/data/references/Zv10_zebrafish_allsteps
+gen_dir=""
 allSteps="tr-ge"
 steps=$allSteps
 resume="n"
@@ -78,7 +78,7 @@ fastp="~/bin/fastp"
 align_single="/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh"
 cleaning="/export/valenfs/projects/Pipelines/STAR_Aligner/cleanup_folders.sh"
 while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
-    case $opt in 
+    case $opt in
     f)
         in_dir=$OPTARG
         echo "-f input folder $OPTARG"
@@ -89,7 +89,7 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
         ;;
     p)
 	paired=$OPTARG
-        echo "-p output folder $OPTARG"
+        echo "-p paired end $OPTARG"
         ;;
     l)
         min_length=$OPTARG
@@ -147,7 +147,7 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
         usage
         exit
         ;;
-    ?) 
+    ?)
         echo "Invalid option: -$OPTARG"
         usage
         exit 1
@@ -168,7 +168,7 @@ fi
 # Normal paired end read run
 # 1 check if there exists a grouping, and the are equal number in each grouping
 # 2 make a list for each end
-# send each end into the paired end function	
+# send each end into the paired end function
 #TODO: Fix checks, incase files are not in order
 function findPairs()
 {
@@ -183,14 +183,14 @@ function findPairs()
 		echo "folder must have even number of fasta/q files, for paired end run!"
 		exit 1
 	fi
-	
+
 	suffix="_001.fastq.gz"
         # remove suffix to get matched pairs
 	#for i in "${!myArray[@]}"; do
 
 		#bn=${myArray[i]} | sed  -e "s/$suffix$//"
 		#echo ${myArray[i]} | sed  -e "s/$suffix$//"
-        	#echo $(basename ${bn}) 
+        	#echo $(basename ${bn})
 
     	#done
 
@@ -204,11 +204,11 @@ function findPairs()
 		if [[ $i == $numOfFiles ]];then
 			keep="n"
 		fi
-		
+
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp"
-        		
-	done			
-} 
+
+	done
+}
 #TODO: find a way to remove this
 function findPairsSub()
 {
@@ -220,17 +220,17 @@ function findPairsSub()
 		echo "folder must have even number of fasta/q files, for paired end run!"
 		exit 1
 	fi
-	
+
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
     		echo "running paired end with subfolders for files: ${myArray[x]} and ${myArray[x+1]}"
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
-		
+
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp"
-        		
-	done			
-} 
+
+	done
+}
 # Run per file / pair
 listOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq')
 numOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq' | wc -l)
@@ -244,7 +244,7 @@ if [ $paired == "yes" ]; then
 	else
 		findPairsSub $(find ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq\|\.gz' | sort)
 	fi
-	
+
 else
 	for f in $listOfFiles
 	do
@@ -254,7 +254,7 @@ else
 		if [[ $i == $numOfFiles ]];then
 			keep="n"
 		fi
-		  
+
 		eval $align_single -o "$out_dir" -f "$f"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp"
 	done
 fi

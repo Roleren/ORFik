@@ -10,6 +10,7 @@ STAR.index(
   star.path = STAR.install(),
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
+  remake = FALSE,
   script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik")
 )
 }
@@ -36,6 +37,8 @@ number of threads to use. Default is minimum of 90 and maximum cores - 1}
     always wait) if \code{intern = TRUE}. When running the command
     asynchronously, no output will be displayed on the \code{Rgui}
     console in Windows (it will be dropped, instead).}
+
+\item{remake}{logical, default: FALSE, if TRUE remake everything specified}
 
 \item{script}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you

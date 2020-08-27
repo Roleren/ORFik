@@ -65,7 +65,7 @@ EOF
 
 # Default arguments:
 min_length=15
-gen_dir=/export/valenfs/data/references/Zv10_zebrafish_allsteps
+gen_dir=""
 allSteps="tr-ge"
 steps=$allSteps
 resume="n"
@@ -229,7 +229,10 @@ rRNA=$gen_dir/rRNA_genomeDir
 ncRNA=$gen_dir/ncRNA_genomeDir
 tRNA=$gen_dir/tRNA_genomeDir
 usedGenome=$gen_dir/genomeDir
-
+if [ ! -f $usedGenome ]; then
+	    echo "Error STAR index path does not exist!"
+	    exit 1
+fi
 
 ibn=$(basename ${in_file}) # <- name to use
 ibn=${ibn%.gz}

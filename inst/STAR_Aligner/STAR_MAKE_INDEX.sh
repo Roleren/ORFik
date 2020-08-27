@@ -4,8 +4,8 @@
 # Script to make genome index for species
 # 1 make directories
 # 2 STAR INDICES (TODO: ADD posibility to skip parts)
-
-
+# rRNA /export/valenfs/data/references/rrna/SILVA_119_bothSURef.fasta
+# phix /export/valenfs/data/references/phiX/phiX.fa
 usage(){
 cat << EOF
 usage: $0 options
@@ -14,7 +14,7 @@ Script to make genome index for species
 
 OPTIONS:
 	-o	   output folder for all indices
-	-s   	   species to use (zebrafish, soon human and yeast)
+	-s   	 species to use (zebrafish, soon human and yeast, only used on cbu UIB)
 	-p 	   path to phix fasta/fasta.gz file
 	-r	   path to rrna fasta/fasta.gz file
 	-n	   path to ncRNA fasta/fasta.gz file
@@ -35,8 +35,8 @@ To add new species download these 4 files for the species:
 Then add them to the species list in this script or input directly as arguments
 EOF
 }
-phix=/export/valenfs/data/references/phiX/phiX.fa
-rRNA=/export/valenfs/data/references/rrna/SILVA_119_bothSURef.fasta
+phix=""
+rRNA=""
 maxCPU=60
 STAR=~/bin/STAR-2.7.0c/source/STAR
 tRNA=""
@@ -105,6 +105,10 @@ while getopts ":o:s:p:r:n:t:f:g:G:S:m:h" opt; do
 done
 
 # Check species choice (Only used on University of Bergen, CBU, server)
+if [[ $species != "" ]]; then
+  rRNA = /export/valenfs/data/references/rrna/SILVA_119_bothSURef.fasta
+  phix = /export/valenfs/data/references/phiX/phiX.fa
+fi
 if [[ $species == "zebrafish" ]]; then
 	tRNA=/export/valenfs/data/references/Zv10_zebrafish/tRNAscan-SE-2.0/GRcZ10_tRNA_scan_output.fa
 	ncRNA=/export/valenfs/data/references/Zv10_zebrafish/ncrna_edited/Danio_rerio.GRCz10.ncrna
