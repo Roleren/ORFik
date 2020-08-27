@@ -142,7 +142,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
 
-  full <- paste(script, "-f", input.dir, "-o", output.dir, "-p", paired.end,
+  full <- paste(script.folder, "-f", input.dir, "-o", output.dir,
+                "-p", paired.end,
                 "-l", min.length, "-g", index.dir, "-s", steps,
                 "-a", adapter.sequence, "-t", trim.front,
                 "-A", alignment.type, "-m", max.cpus, "-i", include.subfolders,
@@ -205,7 +206,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
 
-  full <- paste(script, "-f", file1, file2, "-o", output.dir,
+  full <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-g", index.dir, "-s", steps,
                 resume, "-a", adapter.sequence, "-t", trim.front,
                 "-A", alignment.type, "-m", max.cpus, star.path, fastp,
