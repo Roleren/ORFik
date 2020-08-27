@@ -224,7 +224,7 @@ function findPairsSub()
   echo "#############################################"
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
-    echo "running paired end with subfolders for files: ${myArray[x]} and ${myArray[x+1]}"
+    echo "running paired end with subfolders for files:\n ${myArray[x]} and\n ${myArray[x+1]}"
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
 
