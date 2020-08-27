@@ -403,7 +403,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     message("Downloading phix genome")
     if (Sys.info()[1] == "Linux") { # Faster version for Linux
       phix.url <- "ftp://ftp.ncbi.nlm.nih.gov/genomes/refseq/viral/Escherichia_virus_phiX174/all_assembly_versions/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_genomic.fna.gz"
-      phix <- paste0(output.dir, "Escherichia_virus_phiX174.fa.gz")
+      phix <- paste0(output.dir, "/Escherichia_virus_phiX174.fa.gz")
       download.file(phix.url, destfile = phix,
                     method = "wget", extra = "--passive-ftp")
     } else {
