@@ -24,7 +24,7 @@ OPTIONS:
 	-o	path to output dir
 	-p	paired end? (yes, defualt: no)
 	-l	minimum length of reads (default: 15)
-	-g	genome dir for all indices (Standard is zebrafish: danrerio10, change to human index if needed etc)
+	-g	genome dir for all STAR indices
 	-s	steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
 			 tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
@@ -61,6 +61,7 @@ EOF
 }
 
 # Default arguments:
+echo "##############################################"
 echo $'\nArguments for folder run are the following:'
 min_length=15
 gen_dir=""
@@ -82,7 +83,7 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
     f)
         in_dir=$OPTARG
         echo "-f input folder $OPTARG"
-	;;
+	      ;;
     o)
         out_dir=$OPTARG
         echo "-o output folder $OPTARG"
@@ -97,7 +98,7 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
         ;;
     g)
         gen_dir=$OPTARG
-        echo "-g genome dir for all indices $OPTARG"
+        echo "-g genome dir for all STAR indices $OPTARG"
         ;;
     s)
         steps=$OPTARG
@@ -105,15 +106,15 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
         ;;
     a)
         adapter=$OPTARG
-        echo "-s adapter sequence $OPTARG"
+        echo "-a adapter sequence $OPTARG"
         ;;
     t)
         trim_front=$OPTARG
-        echo "-s trim front number $OPTARG"
+        echo "-t trim front number $OPTARG"
         ;;
     A)
         alignment=$OPTARG
-        echo "-s alignment type $OPTARG"
+        echo "-A alignment type $OPTARG"
         ;;
     r)
 	resume=$OPTARG
@@ -193,7 +194,7 @@ function findPairs()
         	#echo $(basename ${bn})
 
     	#done
-
+  echo "#############################################"
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
     		echo "running paired end for files: $f/${myArray[x]} and $f/${myArray[x+1]}"
@@ -205,8 +206,8 @@ function findPairs()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp"
-
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+    echo "-------------------------------------------"
 	done
 }
 #TODO: find a way to remove this
@@ -220,21 +221,22 @@ function findPairsSub()
 		echo "folder must have even number of fasta/q files, for paired end run!"
 		exit 1
 	fi
-
+  echo "#############################################"
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
-    		echo "running paired end with subfolders for files: ${myArray[x]} and ${myArray[x+1]}"
+    echo "running paired end with subfolders for files: ${myArray[x]} and ${myArray[x+1]}"
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp" -S "$STAR"
+		echo "-------------------------------------------"
 
 	done
 }
 # Run per file / pair
 listOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq')
 numOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq' | wc -l)
-echo "num files are:"
+echo "The total number of files are:"
 echo $numOfFiles
 i=0
 keep="y"
@@ -255,7 +257,8 @@ else
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$f"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp"
+		eval $align_single -o "$out_dir" -f "$f"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		echo "----------------------------------------------"
 	done
 fi
 
