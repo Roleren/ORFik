@@ -229,8 +229,8 @@ rRNA=$gen_dir/rRNA_genomeDir
 ncRNA=$gen_dir/ncRNA_genomeDir
 tRNA=$gen_dir/tRNA_genomeDir
 usedGenome=$gen_dir/genomeDir
-if [ ! -f $usedGenome ]; then
-	    echo "Error STAR index path does not exist!"
+if [ ! -d $usedGenome ]; then
+	    echo "Error: the given STAR index dir does not exist!"
 	    exit 1
 fi
 
