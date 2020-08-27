@@ -2,7 +2,7 @@
 % Please edit documentation in R/STAR.R
 \name{getGenomeAndAnnotation}
 \alias{getGenomeAndAnnotation}
-\title{Download genome (fasta), (annotation) GTF and contaminants}
+\title{Download genome (fasta), annotation (GTF) and contaminants}
 \usage{
 getGenomeAndAnnotation(
   organism,
@@ -29,10 +29,20 @@ Danio rerio, Mus musculus, etc.}
 default adviced: "ensembl" (will contain haplotypes, large file!).
 Alternatives: "refseq" (primary assembly) and "genbank" (mix)}
 
-\item{GTF}{logical, default: TRUE, download gtf of organism.
+\item{GTF}{logical, default: TRUE, download gtf of organism specified
+in "organism" argument. If FALSE, check if the downloaded
+file already exist. If you want to use a custom gtf from you hard drive,
+set GTF = FALSE,
+and assign: \cr annotation <- getGenomeAndAnnotation(gtf = FALSE)\cr
+annotation["gtf"] = "path/to/gtf.gtf".\cr
 Only db = "ensembl" allowed for GTF.}
 
-\item{genome}{logical, default: TRUE, download genome of organism.
+\item{genome}{logical, default: TRUE, download genome of organism
+specified in "organism" argument. If FALSE, check if the downloaded
+file already exist. If you want to use a custom gtf from you hard drive,
+set GTF = FALSE,
+and assign: \cr annotation <- getGenomeAndAnnotation(genome = FALSE)\cr
+annotation["genome"] = "path/to/genome.fasta".\cr
 Will download the primary assembly for ensembl}
 
 \item{phix}{logical, default FALSE, download phix sequence to filter
@@ -87,6 +97,13 @@ It will also index the genome \cr
 If you misspelled something or crashed, delete wrong files and
 run again.\cr
 Do remake = TRUE, to do it all over again.
+}
+\details{
+If you want custom genome or gtf from you hard drive, assign it back
+after you run this function, like this:\cr
+annotation <- getGenomeAndAnnotation(GTF = FALSE, genome = FALSE)\cr
+annotation["genome"] = "path/to/genome.fasta"\cr
+annotation["gtf"] = "path/to/gtf.gtf"
 }
 \examples{
 output.dir <- "/Bio_data/references/zebrafish"

@@ -253,8 +253,7 @@ export.bedoc <- function(object, out) {
 #' Other columns can be named whatever you want and added to meta columns.
 #' Positions are 1-based, not 0-based as .bed.
 #' Import with import.ofst
-#' @param x a GRanges, GAlignments object
-#' @param file a character, location on disc (full path)
+#' @param x a GRanges or GAlignments object
 #' @param ... additional arguments for write_fst
 #' @return NULL, object saved to disc
 #' @importFrom fst write_fst
@@ -262,8 +261,10 @@ export.bedoc <- function(object, out) {
 #'
 setGeneric("export.ofst", function(x,...) standardGeneric("export.ofst"))
 
+#' @inherit export.ofst
+#' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GRanges",
-          function(x,file,...) {
+          function(x, file,...) {
             df <- data.frame(seqnames = x@seqnames,
                              start = x@ranges@start,
                              width = x@ranges@width,
@@ -273,6 +274,8 @@ setMethod("export.ofst", "GRanges",
             write_fst(df, file,...)
           })
 
+#' @inherit export.ofst
+#' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GAlignments",
           function(x,file,...) {
             df <- data.frame(seqnames = x@seqnames,
@@ -464,15 +467,15 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' meta column called "score", which contains the number of duplicates
 #' of that read.
 #' @param x a GAlignments object
-#' @param addScoreColumn default TRUE, else only collapse and no
-#' score column added.
 #' @param ... alternative arguments. addScoreColumn = TRUE, if FALSE,
 #' only collapse and not add score column.
 #' @return a GAlignments object
 #' @export
 setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
 
-
+#' @inherit collapseDuplicatedReads
+#' @param addScoreColumn = TRUE, if FALSE,
+#' only collapse and not add score column.
 setMethod("collapseDuplicatedReads", "GAlignments",
           function(x, addScoreColumn = TRUE) {
 

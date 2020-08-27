@@ -226,22 +226,38 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #   system("samtools --help")
 # }
 
-#' Download genome (fasta), (annotation) GTF and contaminants
+#' Download genome (fasta), annotation (GTF) and contaminants
 #'
 #' Will create a R transcript database (TxDb object) from the annotation. \cr
 #' It will also index the genome \cr
 #' If you misspelled something or crashed, delete wrong files and
 #' run again.\cr
 #' Do remake = TRUE, to do it all over again.
+#'
+#' If you want custom genome or gtf from you hard drive, assign it back
+#' after you run this function, like this:\cr
+#' annotation <- getGenomeAndAnnotation(GTF = FALSE, genome = FALSE)\cr
+#' annotation["genome"] = "path/to/genome.fasta"\cr
+#' annotation["gtf"] = "path/to/gtf.gtf"
 #' @param organism scientific name of organism, Homo sapiens,
 #' Danio rerio, Mus musculus, etc.
 #' @param output.dir directory to save downloaded data
 #' @param db database to use for genome and GTF,
 #' default adviced: "ensembl" (will contain haplotypes, large file!).
 #' Alternatives: "refseq" (primary assembly) and "genbank" (mix)
-#' @param GTF logical, default: TRUE, download gtf of organism.
+#' @param GTF logical, default: TRUE, download gtf of organism specified
+#' in "organism" argument. If FALSE, check if the downloaded
+#' file already exist. If you want to use a custom gtf from you hard drive,
+#' set GTF = FALSE,
+#' and assign: \cr annotation <- getGenomeAndAnnotation(gtf = FALSE)\cr
+#' annotation["gtf"] = "path/to/gtf.gtf".\cr
 #' Only db = "ensembl" allowed for GTF.
-#' @param genome logical, default: TRUE, download genome of organism.
+#' @param genome logical, default: TRUE, download genome of organism
+#' specified in "organism" argument. If FALSE, check if the downloaded
+#' file already exist. If you want to use a custom gtf from you hard drive,
+#' set GTF = FALSE,
+#' and assign: \cr annotation <- getGenomeAndAnnotation(genome = FALSE)\cr
+#' annotation["genome"] = "path/to/genome.fasta".\cr
 #' Will download the primary assembly for ensembl
 #' @param phix logical, default FALSE, download phix sequence to filter
 #'  out with.
