@@ -299,7 +299,8 @@ function pathList()
 }
 
 # Get fasta/bam file to use in this step
-# Parameters $resume $in_file current:'ge' ${out_dir} ${ibn} ${in_file_two}
+# Parameters 1. $resume 2. $in_file 3.current:'ge'
+# 4. ${out_dir} 5. ${ibn} 6. ${in_file_two}
 function inputFile()
 {
 
@@ -313,7 +314,7 @@ function inputFile()
 
 }
 
-# Parameters $resume current:'ge' $steps
+# Parameters $resume (y, n), current:'ge', $steps tr-gr
 # TODO: fix for $1 == "c", the 1st order else statement
 function doThisStep()
 {
@@ -333,7 +334,7 @@ function doThisStep()
     fi
 }
 
-# Should STAR use zcat or no compression ?
+# Should STAR use zcat or no decompression ?
 function comp()
 {
 	if [[ $1 =~ .*\.(gz) ]]; then
@@ -461,6 +462,7 @@ if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 70 $maxCPU) \
+	--readFilesCommand $(comp $(inputFile $resume $in_file 'ph' ${out_dir} ${ibn})) \
 	--limitIObufferSize 50000000
 fi
 
@@ -481,6 +483,7 @@ if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 90 $maxCPU) \
+	--readFilesCommand $(comp $(inputFile $resume $in_file 'rR' ${out_dir} ${ibn})) \
 	--limitIObufferSize 50000000
 fi
 
@@ -500,6 +503,7 @@ if [ $(doThisStep $resume 'nc' $steps) == "yes" ]; then
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 80 $maxCPU) \
+	--readFilesCommand $(comp $(inputFile $resume $in_file 'nc' ${out_dir} ${ibn})) \
 	--limitIObufferSize 50000000
 fi
 
@@ -519,6 +523,7 @@ if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 70 $maxCPU) \
+  --readFilesCommand $(comp $(inputFile $resume $in_file 'tr' ${out_dir} ${ibn})) \
 	--limitIObufferSize 50000000
 fi
 #------------------------------------------------------------------------------------------

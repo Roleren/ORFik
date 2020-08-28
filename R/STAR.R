@@ -92,8 +92,11 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
 #' minimum 30GB memory on genomes like human, rat, zebrafish etc.
-#' @param input.dir path to fast files to align
-#' @param index.dir path to STAR index
+#' @param input.dir path to fast files to align, can either be
+#' fasta files (.fastq, .fq, .fa etc) or compressed files with .gz.
+#' Also either paired end or single end reads.
+#' @param index.dir path to STAR index folder. Path returned from ORFik function
+#' STAR.index, when you created the index folders.
 #' @param fastp path to fastp trimmer, default: install.fastp(), if you
 #' have it somewhere else already installed, give the path. If you are not on linux
 #' and you want to trim, use your favorite trimmer and give the output files from that
@@ -106,7 +109,12 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  In bash script it it reformated to this style:
 #'  (trimming and genome do: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
 #'  tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)\cr
-#'  genome: the step where you align to the genome, this is usually always included.
+#'  the step where you align to the genome is usually always included, unless you
+#'  are doing pure contaminant analysis.
+#'  For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
+#'  so when you made the
+#'  STAR index you need the rRNA step (usually just download a Silva rRNA database
+#'  for SSU&LSU at: https://www.arb-silva.de/)
 #' @param adapter.sequence "auto"
 #' @param min.length 15, minimum length of reads to pass filter.
 #' @param trim.front 0, default trim 0 bases 5'. For Ribo-seq set use 0.
