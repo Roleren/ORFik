@@ -37,9 +37,9 @@ OPTIONS:
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
 
 	Path arguments:
-	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
-	-P      path to fastp (trimmer) (default: ~/bin/fastp)
-	-C	path to cleaning script, internal
+	-S   path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
+	-P   path to fastp (trimmer) (default: ~/bin/fastp)
+	-C	 path to cleaning script, internal
 
 	Less important options:
 	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s,

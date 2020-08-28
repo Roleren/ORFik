@@ -11,6 +11,16 @@ EOF
 
 out_dir=$1
 echo "cleaning up $out_dir"
+if [ ! -d ${out_dir} ]; then
+        echo "$out_dir does not exist!"
+        exit 1
+fi
+
+if [ ! -d "${out_dir}/aligned" ]; then
+        echo "${out_dir}/aligned does not exist!"
+        exit 1
+fi
+
 # clean up
 
 # temp files
