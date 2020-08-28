@@ -248,22 +248,23 @@ if [ $paired == "yes" ]; then
 	fi
 
 else
-	for f in $listOfFiles
+	for x in $listOfFiles
 	do
-		echo "running single end for file: $f"
+		echo "running single end for file: $x"
 		echo "file  $i / $numOfFiles"
 		i=$((i + 1))
 		if [[ $i == $numOfFiles ]];then
 			keep="n"
 		fi
+    x=$f/$x
 
-		eval $align_single -o "$out_dir" -f "$f"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "----------------------------------------------"
 	done
 fi
 
 ### Cleanup
 # Folder cleanup
-eval cleaning $out_dir
+eval $cleaning $out_dir
 # Log command run
 echo "./RNA_Align_pipeline_folder.sh $@" > $out_dir/runCommand.log
