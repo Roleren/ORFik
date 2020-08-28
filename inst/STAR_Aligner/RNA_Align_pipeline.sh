@@ -81,11 +81,11 @@ while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:P:h" opt; do
     f)
         in_file=$OPTARG
         echo "-f input file $OPTARG"
-	;;
+	      ;;
     F)
-	in_file_two=$OPTARG
-	echo "-F input file 2 $OPTARG"
-	;;
+      	in_file_two=$OPTARG
+      	echo "-F input file 2 $OPTARG"
+	      ;;
     o)
         out_dir=$OPTARG
         echo "-o output folder $OPTARG"

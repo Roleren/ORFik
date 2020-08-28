@@ -256,7 +256,7 @@ else
 		if [[ $i == $numOfFiles ]];then
 			keep="n"
 		fi
-    x=$f/$x
+    x=$in_dir/$x
 
 		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "----------------------------------------------"
