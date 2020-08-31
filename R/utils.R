@@ -326,7 +326,7 @@ setMethod("export.ofst", "GAlignments",
 
 #' @inherit export.ofst
 #' @param file a character, location on disc (full path)
-setMethod("export.ofst", "GAlignments",
+setMethod("export.ofst", "GAlignmentPairs",
           function(x, file, ...) {
             # There is always equal seqname in a pair,
             # strand is always reverse of the other
