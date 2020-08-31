@@ -463,7 +463,8 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
   uex <- ex[uex2ex]
   # Fix GAlignments not allowing mcol weight, remove when they fix it
   # in GAlignments definition of coverage.
-  if (is(x, "GAlignments") & is.character(weight)) {
+  if ((is(x, "GAlignments") | is(x, "GAlignmentPairs"))
+      & is.character(weight)) {
     if (!(weight %in% colnames(mcols(x))))
       stop("weight is character and not mcol of x,",
            " check spelling of weight.")

@@ -98,17 +98,17 @@ getGAlignmentsPairs <- function(df) {
   }
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
   # reverse strand for last
-  strand2 <- strandTemp <- factor(df$strand, levels = c("+", "-", "*"))
+  strand2 <- strandTemp <- df$strand <- factor(df$strand, levels = c("+", "-", "*"))
   strandTemp[strand2 == "+"] <- "-"
   strandTemp[strand2 == "-"] <- "+"
   strand2 <- strandTemp
   new2("GAlignmentPairs",
        first = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start1,
-        cigar = as.character(df$cigar1), strand = Rle(df$strand), elementMetadata = mcols,
+        cigar = as.character(df$cigar1), strand = Rle(df$strand),
         seqinfo = seqinfo, check = FALSE),
        last = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start2,
-             cigar = as.character(df$cigar2), strand = Rle(strand2), elementMetadata = mcols,
-             seqinfo = seqinfo, check = FALSE), check = FALSE)
+             cigar = as.character(df$cigar2), strand = Rle(strand2),
+             seqinfo = seqinfo, check = FALSE), elementMetadata = mcols, check = FALSE)
 
 }
 
@@ -307,7 +307,8 @@ setMethod("export.ofst", "GRanges",
                              width = x@ranges@width,
                              strand = x@strand)
             if (!is.null(x@ranges@NAMES)) df$NAMES <- x@ranges@NAMES
-            if (ncol(x@elementMetadata) > 0) df <- cbind(df,x@elementMetadata)
+            if (ncol(x@elementMetadata) > 0)
+              df <- as.data.frame(cbind(df, x@elementMetadata))
             write_fst(df, file,...)
           })
 
@@ -320,7 +321,8 @@ setMethod("export.ofst", "GAlignments",
                              cigar = factor(x@cigar),
                              strand = x@strand)
             if (!is.null(x@NAMES)) df$NAMES <- x@ranges@NAMES
-            if (ncol(x@elementMetadata) > 0) df <- cbind(df,x@elementMetadata)
+            if (ncol(x@elementMetadata) > 0)
+              df <- as.data.frame(cbind(df, x@elementMetadata))
             write_fst(df, file,...)
           })
 
@@ -330,14 +332,15 @@ setMethod("export.ofst", "GAlignmentPairs",
           function(x, file, ...) {
             # There is always equal seqname in a pair,
             # strand is always reverse of the other
-            df <- data.frame(seqnames = x@seqnames,
+            df <- data.frame(seqnames = x@first@seqnames,
                              start1 = x@first@start,
                              start2 = x@last@start,
                              cigar1 = factor(x@first@cigar),
                              cigar2 = factor(x@last@cigar),
-                             strand = x@strand)
+                             strand = x@first@strand)
             if (!is.null(x@NAMES)) df$NAMES <- x@NAMES # Check that this is correct
-            if (ncol(x@elementMetadata) > 0) df <- cbind(df, x@elementMetadata)
+            if (ncol(x@elementMetadata) > 0)
+              df <- as.data.frame(cbind(df, x@elementMetadata))
             write_fst(df, file,...)
           })
 
@@ -478,6 +481,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addSizeColumn = FALSE,
                                     after.softclips = TRUE,
                                     along.reference = FALSE) {
+  if (is(gr, "GAlignmentPairs")) stop("Not working yet for GAlignmentPairs")
 
   if (addSizeColumn & is.null(mcols(gr)$size)) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
@@ -520,10 +524,10 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' seqname, start, cigar and strand, collapse and give a new
 #' meta column called "score", which contains the number of duplicates
 #' of that read.
-#' @param x a GAlignments object
+#' @param x a GAlignments / GAlignmentPairs object
 #' @param ... alternative arguments. addScoreColumn = TRUE, if FALSE,
 #' only collapse and not add score column.
-#' @return a GAlignments object
+#' @return a GAlignments or GAlignmentPairs object, same as input
 #' @export
 setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
 
@@ -540,4 +544,22 @@ setMethod("collapseDuplicatedReads", "GAlignments",
             dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
             if (!addScoreColumn) dt$score <- NULL
             return(makeGAlignmentsFromDataFrame(dt))
+          })
+
+#' @inherit collapseDuplicatedReads
+#' @param addScoreColumn = TRUE, if FALSE,
+#' only collapse and not add score column.
+setMethod("collapseDuplicatedReads", "GAlignmentPairs",
+          function(x, addScoreColumn = TRUE) {
+
+            df <- data.table(seqnames = x@first@seqnames,
+                             start1 = x@first@start,
+                             start2 = x@last@start,
+                             cigar1 = factor(x@first@cigar),
+                             cigar2 = factor(x@last@cigar),
+                             strand = x@first@strand)
+            dt <- dt[, .(score = .N), .(seqnames, start1, start2,
+                                        cigar1, cigar2, strand)]
+            if (!addScoreColumn) dt$score <- NULL
+            return(getGAlignmentsPairs(dt))
           })
