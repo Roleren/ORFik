@@ -19,6 +19,9 @@
 #' Can also be a \code{\link{GRangesList}}, then it uses this region directly.
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
+#' @param weight numeric or character, a column to score overlaps by. Default "score",
+#' will check for a metacolumn called "score" in libraries. If not found,
+#' will not use weights.
 #' @import SummarizedExperiment
 #' @export
 #' @return a \code{\link{SummarizedExperiment}} object or data.table if
@@ -44,7 +47,8 @@
 makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             longestPerGene = TRUE,
                                             geneOrTxNames = "tx",
-                                            region = "mrna", type = "count") {
+                                            region = "mrna", type = "count",
+                                            weight = "score") {
 
 
   if(!is.null(saveName)) {
@@ -70,7 +74,12 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                  nrow = length(tx)))
   for (i in seq(length(varNames))) { # For each sample
     print(varNames[i])
-    co <- countOverlaps(tx, get(varNames[i]))
+    if (is.character(weight) & length(weight) == 1) {
+      if (!(weight %in% colnames(mcols(get(varNames[i])))))
+        weight <- NULL
+    }
+
+    co <- countOverlapsW(tx, get(varNames[i]), weight = weight)
     rawCounts[, (paste0("V",i)) := co]
   }
   mat <- as.matrix(rawCounts);colnames(mat) <- NULL

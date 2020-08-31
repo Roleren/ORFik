@@ -10,7 +10,8 @@ makeSummarizedExperimentFromBam(
   longestPerGene = TRUE,
   geneOrTxNames = "tx",
   region = "mrna",
-  type = "count"
+  type = "count",
+  weight = "score"
 )
 }
 \arguments{
@@ -33,6 +34,10 @@ Can also be a \code{\link{GRangesList}}, then it uses this region directly.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
+
+\item{weight}{numeric or character, a column to score overlaps by. Default "score",
+will check for a metacolumn called "score" in libraries. If not found,
+will not use weights.}
 }
 \value{
 a \code{\link{SummarizedExperiment}} object or data.table if
