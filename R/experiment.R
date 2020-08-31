@@ -690,8 +690,8 @@ simpleLibs <- function(df,
       if (type == "bedo"){
         export.bedo(gr, output)
       } else if (type == "ofst"){
-        export.ofst(gr, output)
-      } else
+        export.ofst(gr, file = output)
+      } else # Must be bedoc, check done
         export.bedoc(gr, output)
 
     } else {

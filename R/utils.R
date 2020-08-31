@@ -66,7 +66,7 @@ getGAlignments <- function(df) {
     mcols <- NULL
   } else {
     mcols <- df[,5:ncol(df)]
-    if (ncol(df) == 5) {
+    if (ncol(df) == 5) { # Hm... Is this safe ? What if a score is there ?
       mcols <- data.frame(mcols)
       names(mcols) <- names(df)[5]
     }
@@ -75,6 +75,40 @@ getGAlignments <- function(df) {
   new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start,
        cigar = as.character(df$cigar), strand = Rle(df$strand), elementMetadata = mcols,
        seqinfo = seqinfo, check = FALSE)
+
+}
+
+#' Internal GAlignmentPairs loader from fst data.frame
+#' @param df a data.frame with columns minimum 6 columns:
+#' seqnames, start1/start2 (integers), cigar1/cigar2 and strand\cr
+#' Additional columns will be assigned as meta columns
+#' @return GAlignmentPairs object
+getGAlignmentsPairs <- function(df) {
+  seqinfo <- Seqinfo(levels(df$seqnames))
+  names <- df$NAMES
+  df$NAMES <- NULL
+  if (ncol(df) == 6){
+    mcols <- NULL
+  } else {
+    mcols <- df[,7:ncol(df)]
+    if (ncol(df) == 7) { # Hm... Is this safe ? What if a score is there ?
+      mcols <- data.frame(mcols)
+      names(mcols) <- names(df)[7]
+    }
+  }
+  mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
+  # reverse strand for last
+  strand2 <- strandTemp <- factor(df$strand, levels = c("+", "-", "*"))
+  strandTemp[strand2 == "+"] <- "-"
+  strandTemp[strand2 == "-"] <- "+"
+  strand2 <- strandTemp
+  new2("GAlignmentPairs",
+       first = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start1,
+        cigar = as.character(df$cigar1), strand = Rle(df$strand), elementMetadata = mcols,
+        seqinfo = seqinfo, check = FALSE),
+       last = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start2,
+             cigar = as.character(df$cigar2), strand = Rle(strand2), elementMetadata = mcols,
+             seqinfo = seqinfo, check = FALSE), check = FALSE)
 
 }
 
@@ -249,11 +283,14 @@ export.bedoc <- function(object, out) {
 #' 5. cigar (not needed if width exists):
 #'  (cigar # M's, match/mismatch total) \cr
 #' 5. score: duplicates of that read\cr
-#' 6. size: qwidth according to reference of read
+#' 6. size: qwidth according to reference of read\cr\cr
+#' If file is from GAlignmentPairs, it will contain a cigar1, cigar2 instead
+#' of cigar and start1 and start2 instead of start
+#'
 #' Other columns can be named whatever you want and added to meta columns.
 #' Positions are 1-based, not 0-based as .bed.
 #' Import with import.ofst
-#' @param x a GRanges or GAlignments object
+#' @param x a GRanges, GAlignments or GAlignmentPairs object
 #' @param ... additional arguments for write_fst
 #' @return NULL, object saved to disc
 #' @importFrom fst write_fst
@@ -264,7 +301,7 @@ setGeneric("export.ofst", function(x,...) standardGeneric("export.ofst"))
 #' @inherit export.ofst
 #' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GRanges",
-          function(x, file,...) {
+          function(x, file, ...) {
             df <- data.frame(seqnames = x@seqnames,
                              start = x@ranges@start,
                              width = x@ranges@width,
@@ -277,13 +314,30 @@ setMethod("export.ofst", "GRanges",
 #' @inherit export.ofst
 #' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GAlignments",
-          function(x,file,...) {
+          function(x, file, ...) {
             df <- data.frame(seqnames = x@seqnames,
                              start = x@start,
                              cigar = factor(x@cigar),
                              strand = x@strand)
             if (!is.null(x@NAMES)) df$NAMES <- x@ranges@NAMES
             if (ncol(x@elementMetadata) > 0) df <- cbind(df,x@elementMetadata)
+            write_fst(df, file,...)
+          })
+
+#' @inherit export.ofst
+#' @param file a character, location on disc (full path)
+setMethod("export.ofst", "GAlignments",
+          function(x, file, ...) {
+            # There is always equal seqname in a pair,
+            # strand is always reverse of the other
+            df <- data.frame(seqnames = x@seqnames,
+                             start1 = x@first@start,
+                             start2 = x@last@start,
+                             cigar1 = factor(x@first@cigar),
+                             cigar2 = factor(x@last@cigar),
+                             strand = x@strand)
+            if (!is.null(x@NAMES)) df$NAMES <- x@NAMES # Check that this is correct
+            if (ncol(x@elementMetadata) > 0) df <- cbind(df, x@elementMetadata)
             write_fst(df, file,...)
           })
 

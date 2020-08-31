@@ -26,13 +26,16 @@ STAR.align.folder(
 )
 }
 \arguments{
-\item{input.dir}{path to fast files to align}
+\item{input.dir}{path to fast files to align, can either be
+fasta files (.fastq, .fq, .fa etc) or compressed files with .gz.
+Also either paired end or single end reads.}
 
 \item{output.dir}{directory to save indices, default:
 paste0(dirname(arguments[1]), "/STAR_index/"), where arguments is the
 arguments input for this function.}
 
-\item{index.dir}{path to STAR index}
+\item{index.dir}{path to STAR index folder. Path returned from ORFik function
+STAR.index, when you created the index folders.}
 
 \item{star.path}{path to STAR, default: STAR.install(),
 if you don't have STAR installed at default location, it will install it there,
@@ -52,7 +55,12 @@ If not "all", a subset of these ("tr-ph-rR-nc-tR-ge")\cr
 In bash script it it reformated to this style:
 (trimming and genome do: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
 tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)\cr
-genome: the step where you align to the genome, this is usually always included.}
+the step where you align to the genome is usually always included, unless you
+are doing pure contaminant analysis.
+For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
+so when you made the
+STAR index you need the rRNA step (usually just download a Silva rRNA database
+for SSU&LSU at: https://www.arb-silva.de/)}
 
 \item{adapter.sequence}{"auto"}
 

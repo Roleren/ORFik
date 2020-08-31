@@ -1,6 +1,7 @@
 #' Load bed file as GRanges.
 #'
-#' Wraps around rtracklayer::import.bed and tries to speed up loading with the
+#' Wraps around \code{\link{rtracklayer::import.bed}} and
+#' tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle
 #' @param filePath The location of the bed file
@@ -192,19 +193,25 @@ import.bedoc <- function(path) {
 #' 5. cigar (not needed if width exists):
 #'  (cigar # M's, match/mismatch total) \cr
 #' 5. score: duplicates of that read\cr
-#' 6. size: qwidth according to reference of read
+#' 6. size: qwidth according to reference of read\cr\cr
+#' If file is from \code{\link{GAlignmentPairs}},
+#' it will contain a cigar1, cigar2 instead
+#' of cigar and start1 and start2 instead of start
+#'
 #' Other columns can be named whatever you want and added to meta columns.
 #' Positions are 1-based, not 0-based as .bed.
 #' Import with import.ofst
 #' @param file a path to a .ofst file
-#' @return a GAlignment or GRanges object, dependent of if cigar is
-#' defined in .ofst file.
+#' @return a GAlignment, GAlignmentPairs or GRanges object,
+#' dependent of if cigar/cigar1 is defined in .ofst file.
 #' @importFrom fst read_fst
 #' @export
 import.ofst <- function(file) {
   df <- read_fst(file)
   if ("cigar" %in% colnames(df)) {
     getGAlignments(df)
+  } else if ("cigar1" %in% colnames(df)) {
+    getGAlignmentsPairs(df)
   } else getGRanges(df)
 }
 

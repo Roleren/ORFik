@@ -451,7 +451,7 @@ fi
     #--limitIObufferSize hard drive buffer size (smaller is better when IO is bottle neck)
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
-	echo PhiX
+	echo "PhiX depletion:"
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "ph" ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${phix} \
@@ -472,7 +472,7 @@ fi
     #------------------------------------------------------------------------------------------
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
-	echo rRNA
+	echo "rRNA depletion:"
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "rR" ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${rRNA} \
@@ -492,7 +492,7 @@ fi
     #------------------------------------------------------------------------------------------
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'nc' $steps) == "yes" ]; then
-	echo ncRNA
+	echo "ncRNA depletion:"
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "nc" ${out_dir} ${ibn} ${in_file_two})\
 	--genomeDir ${ncRNA} \
@@ -512,7 +512,7 @@ fi
     #------------------------------------------------------------------------------------------
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
-	echo tRNA
+	echo "tRNA depletion"
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "tR" ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${tRNA} \
@@ -533,7 +533,7 @@ fi
     #--alignEndsType how to align (local alignment or whole read(harder if adapter or weak 3' end))
     # <(gunzip -c ${in_file})
 if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
-	echo "final mapping to genome"
+	echo "Final mapping to genome:"
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${usedGenome} \

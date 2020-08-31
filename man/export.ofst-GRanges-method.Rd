@@ -7,7 +7,7 @@
 \S4method{export.ofst}{GRanges}(x, file, ...)
 }
 \arguments{
-\item{x}{a GRanges or GAlignments object}
+\item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
 \item{file}{a character, location on disc (full path)}
 
@@ -27,7 +27,11 @@ cigar and replicate number.\cr
 5. cigar (not needed if width exists):
  (cigar # M's, match/mismatch total) \cr
 5. score: duplicates of that read\cr
-6. size: qwidth according to reference of read
+6. size: qwidth according to reference of read\cr\cr
+If file is from GAlignmentPairs, it will contain a cigar1, cigar2 instead
+of cigar and start1 and start2 instead of start
+}
+\details{
 Other columns can be named whatever you want and added to meta columns.
 Positions are 1-based, not 0-based as .bed.
 Import with import.ofst

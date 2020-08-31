@@ -10,8 +10,8 @@ import.ofst(file)
 \item{file}{a path to a .ofst file}
 }
 \value{
-a GAlignment or GRanges object, dependent of if cigar is
-defined in .ofst file.
+a GAlignment, GAlignmentPairs or GRanges object,
+dependent of if cigar/cigar1 is defined in .ofst file.
 }
 \description{
 A much faster way to store, load and use bam files.\cr
@@ -24,7 +24,12 @@ cigar and replicate number.\cr
 5. cigar (not needed if width exists):
  (cigar # M's, match/mismatch total) \cr
 5. score: duplicates of that read\cr
-6. size: qwidth according to reference of read
+6. size: qwidth according to reference of read\cr\cr
+If file is from \code{\link{GAlignmentPairs}},
+it will contain a cigar1, cigar2 instead
+of cigar and start1 and start2 instead of start
+}
+\details{
 Other columns can be named whatever you want and added to meta columns.
 Positions are 1-based, not 0-based as .bed.
 Import with import.ofst
