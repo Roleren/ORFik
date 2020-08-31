@@ -482,8 +482,8 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' If other type than "default" is given and that type is not found,
 #' it will return you default filepaths without warning. \cr
 #'
-#' For pshifted libraries, it will load "bedo" prioritized over "bed", if
-#' there exists both file types for the same file.
+#' For pshifted libraries, it will load ".bedo"
+#' prioritized over ".bed", if there exists both file types for the same file.
 #' @inheritParams outputLibs
 #' @param basename logical, default (FALSE).
 #' Get relative paths instead of full. Only use for inspection!
@@ -505,7 +505,7 @@ filepath <- function(df, type, basename = FALSE) {
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
     input <- NULL
-    if (type %in% c("bedoc", "bedo", "bed")) {
+    if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
       out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir,
@@ -665,10 +665,12 @@ simpleLibs <- function(df,
     message(paste("Saving,", type, "files to:", out.dir))
   }
 
-  outputLibs(df, chrStyle = must.overlap)
+  outputLibs(df, type = "ofst", chrStyle = must.overlap)
 
   varNames <- bamVarName(df)
   i <- 1
+  message("--------------------------")
+  message("Simplifying to new format:")
   for (f in varNames) {
     message(f)
     if (type == "bedo") { # bedo
