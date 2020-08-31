@@ -111,6 +111,7 @@ getGAlignmentsPairs <- function(df) {
              cigar = as.character(df$cigar2), strand = Rle(strand2),
              seqinfo = seqinfo, check = FALSE,
              elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
+       isProperPair = rep(TRUE, nrow(df)),
        elementMetadata = mcols, check = FALSE)
 
 }
