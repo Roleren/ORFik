@@ -105,10 +105,13 @@ getGAlignmentsPairs <- function(df) {
   new2("GAlignmentPairs",
        first = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start1,
         cigar = as.character(df$cigar1), strand = Rle(df$strand),
-        seqinfo = seqinfo, check = FALSE),
+        seqinfo = seqinfo, check = FALSE,
+        elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
        last = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start2,
              cigar = as.character(df$cigar2), strand = Rle(strand2),
-             seqinfo = seqinfo, check = FALSE), elementMetadata = mcols, check = FALSE)
+             seqinfo = seqinfo, check = FALSE,
+             elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
+       elementMetadata = mcols, check = FALSE)
 
 }
 
