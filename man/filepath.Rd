@@ -25,8 +25,8 @@ If other type than "default" is given and that type is not found,
 it will return you default filepaths without warning. \cr
 }
 \details{
-For pshifted libraries, it will load "bedo" prioritized over "bed", if
-there exists both file types for the same file.
+For pshifted libraries, it will load ".bedo"
+prioritized over ".bed", if there exists both file types for the same file.
 }
 \examples{
 df <- ORFik.template.experiment()

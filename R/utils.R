@@ -59,9 +59,11 @@ getGRanges <- function(df) {
 #' Additional columns will be assigned as meta columns
 #' @return GAlignments object
 getGAlignments <- function(df) {
+  if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
+    stop("df must at minimum have 4 columns named: seqnames, pos, cigar and strand")
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
-  df$NAMES <- NULL
+  if (!is.null(df$NAMES)) df$NAMES <- NULL
   if (ncol(df) == 4){
     mcols <- NULL
   } else {
@@ -86,7 +88,7 @@ getGAlignments <- function(df) {
 getGAlignmentsPairs <- function(df) {
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
-  df$NAMES <- NULL
+  if (!is.null(df$NAMES)) df$NAMES <- NULL
   if (ncol(df) == 6){
     mcols <- NULL
   } else {
@@ -114,24 +116,6 @@ getGAlignmentsPairs <- function(df) {
        isProperPair = rep(TRUE, nrow(df)),
        elementMetadata = mcols, check = FALSE)
 
-}
-
-#' Convert data.frame to GAlignment object
-#' @param x a data.frame / data.table with at least 4 columns:
-#' seqnames, pos, cigar and strand, can also have a 5th column score.
-#' @return a GAlignments object
-makeGAlignmentsFromDataFrame <- function(x) {
-  if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(x)))
-    stop("x must at minimum have 4 columns named: seqnames, pos, cigar and strand")
-  if (is.factor(x$cigar)) x$cigar <- as.character(x$cigar)
-
-  ga <- GAlignments(seqnames = as.factor(x$seqnames), cigar = x$cigar,
-                    pos = as.integer(x$start),
-                    strand = factor(x$strand, levels = c("+", "-", "*")))
-  if (!is.null(x$score)) {
-    mcols(ga) <- DataFrame(mcols(ga), x$score)
-  }
-  return(ga)
 }
 
 #' Find pair of forward and reverse strand wig / bed files and
@@ -368,7 +352,7 @@ setMethod("collapseDuplicatedReads", "GAlignments",
                              strand = as.character(strand(x)))
             dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
             if (!addScoreColumn) dt$score <- NULL
-            return(makeGAlignmentsFromDataFrame(dt))
+            return(getGAlignments(dt))
           })
 
 #' @inherit collapseDuplicatedReads
