@@ -61,7 +61,7 @@ export.bed12 <- function(grl, file, rgb = 0) {
 #' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
 #' Will be converted to 5' end position of original range.
 #' @param file a character path to valid output file name
-#' @return NULL (File is saved as 2 .wig files)
+#' @return invisible(NULL) (File is saved as 2 .wig files)
 #' @importFrom rtracklayer export.wig
 #' @export
 #' @family utils
@@ -72,11 +72,11 @@ export.wiggle <- function(x, file) {
   if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
      stop("x must be GRanges, GAlignments or GAlignmentPairs")
 
+  x <- resize(x, width = 1, fix = "start")
   if (!("score" %in% colnames(mcols(x)))) {
     if (!("size" %in% colnames(mcols(x)))) {
       mcols(x)[, "size"] <- NULL
     }
-    x <- resize(x, width = 1, fix = "start")
     x <- convertToOneBasedRanges(x, method = "None",
                                  addScoreColumn = TRUE,
                                  addSizeColumn = FALSE)
@@ -94,7 +94,7 @@ export.wiggle <- function(x, file) {
     export.wig(x[!strandBool(x)], reverse_file)
   }
 
-  return(NULL)
+  return(invisible(NULL))
 }
 
 #' Store GRanges object as .bedo

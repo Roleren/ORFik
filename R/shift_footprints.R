@@ -72,6 +72,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
   shiftsAll[!is_pos] <- -shiftsAll[!is_pos]
   shifted <- qnarrow(footprints, shiftsAll, shiftsAll)
   shifted <- GRanges(shifted)
+  resize(aa, width = 1)
   shifted$size <- lengthsAll
 
   shifted <- sortSeqlevels(shifted)
