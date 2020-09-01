@@ -707,6 +707,7 @@ convertLibs <- function(df,
 
 # Keep for legacy purpose for now
 #' @inherit convertLibs
+#' @export
 simpleLibs <- convertLibs
 
 
