@@ -48,6 +48,11 @@ names(ORF) <- "tx1_1" # ORF 1 on tx1
 tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
 windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 
+# With multiple extensions downstream
+ORF <- rep(ORF, 2)
+names(ORF)[2] <- "tx1_2"
+windowPerGroup(ORF, tx, upstream = 0, downstream = c(3, 5))
+
 }
 \seealso{
 Other ExtendGenomicRanges: 

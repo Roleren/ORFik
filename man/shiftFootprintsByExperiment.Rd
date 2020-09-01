@@ -18,7 +18,9 @@ shiftFootprintsByExperiment(
   accepted.lengths = 26:34,
   output_format = c("ofst", "wig"),
   BPPARAM = bpparam(),
-  log = TRUE
+  log = TRUE,
+  heatmap = FALSE,
+  must.be.periodic = TRUE
 )
 }
 \arguments{
@@ -72,6 +74,14 @@ p-shifting.}
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 
 \item{log}{logical, default (TRUE), output a log file with parameters used.}
+
+\item{heatmap}{a logical or character string, default FALSE.
+If TRUE, will plot heatmap of
+raw reads before p-shifting to console, to see if shifts given make sense.
+You can also set a filepath to save the file there.}
+
+\item{must.be.periodic}{logical TRUE, if FALSE will not filter on
+periodic read lengths. (The Fourier transform filter will be skipped).}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",

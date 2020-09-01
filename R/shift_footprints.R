@@ -290,7 +290,8 @@ shiftFootprintsByExperiment <- function(df,
                                         accepted.lengths = 26:34,
                                         output_format = c("ofst", "wig"),
                                         BPPARAM = bpparam(),
-                                        log = TRUE) {
+                                        log = TRUE, heatmap = FALSE,
+                                        must.be.periodic = TRUE) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
@@ -301,7 +302,7 @@ shiftFootprintsByExperiment <- function(df,
   message(paste("Shifting reads in experiment:", df@experiment))
 
   txdb <- loadTxdb(df)
-  rfpFiles <- filepath(df, "ofst") # If ofst file not present, use bam file
+  rfpFiles <- filepath(df, "ofst") # If ofst file not present, uses bam file
   bplapply(rfpFiles, FUN = function(file, path, df, start, stop,
                                     top_tx, minFiveUTR, minCDS, minThreeUTR,
                                     firstN, min_reads, accepted.lengths,
@@ -313,7 +314,9 @@ shiftFootprintsByExperiment <- function(df,
                                    minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
                                    firstN = firstN, min_reads = min_reads,
-                                   accepted.lengths = accepted.lengths)
+                                   accepted.lengths = accepted.lengths,
+                                   heatmap = heatmap,
+                                   must.be.periodic = must.be.periodic)
     shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
 
@@ -342,7 +345,8 @@ shiftFootprintsByExperiment <- function(df,
       minCDS = minCDS, minThreeUTR = minThreeUTR,
       firstN = firstN, min_reads = min_reads,
       accepted.lengths = accepted.lengths, output_format = output_format,
-      BPPARAM = BPPARAM)
+      BPPARAM = BPPARAM, heatmap = heatmap,
+      must.be.periodic = must.be.periodic)
 
   if (log) {
     fileConn<-file(paste0(path, "/pshifting_arguments.txt"))

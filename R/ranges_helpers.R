@@ -536,6 +536,11 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #' tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
 #' windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 #'
+#' # With multiple extensions downstream
+#' ORF <- rep(ORF, 2)
+#' names(ORF)[2] <- "tx1_2"
+#' windowPerGroup(ORF, tx, upstream = 0, downstream = c(3, 5))
+#'
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   g <- asTX(gr, tx, tx.is.sorted = TRUE)
   indices <- chmatch(txNames(gr, tx), names(tx))
@@ -544,9 +549,9 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   starts <- pmin(pmax(start(g) - upstream, 1L), txEnds)
 
   g <- ranges(g)
-  if (downstream != 0L) {
+  if (any(downstream != 0L)) {
     ends <- pmin(pmax(end(g) + downstream, starts - 1), txEnds)
-    if (is(g, "IRanges"))
+    if (is(g, "IRanges")) # Remove this ?
     g <- IRanges(starts, ends)
   } else {
     start(g) <- starts
