@@ -103,7 +103,9 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' for ribo-seq.
 #'
 #' @param footprints \code{\link{GAlignments}} object of RiboSeq reads -
-#' footprints, can also be path to the .bam file.
+#' footprints, can also be path to the .bam /.ofst file. If GAlignment object
+#' has a meta column called "score", this will be used as replicate numbering
+#' for that read.
 #' @inheritParams loadTxdb
 #' @param start (logical) Whether to include predictions based on the start
 #' codons. Default TRUE.
@@ -188,8 +190,9 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   tx <- tx[txNames]
 
   # find periodic read lengths
+  scoreExists <- "score" %in% colnames(mcols(a))
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
-                                        addScoreColumn = TRUE,
+                                        addScoreColumn = !scoreExists,
                                         along.reference = TRUE)
   # Filter if < 1000 counts read size or not in accepted.lengths
   lengths <- data.table(score = footprints$score, size = footprints$size)

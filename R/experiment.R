@@ -678,7 +678,7 @@ convertLibs <- function(df,
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,
                                   method = method)
-    } else { # bedoc, wig or ofst
+    } else if (type %in% c("bedoc", "ofst")) {
       gr <- collapseDuplicatedReads(x = get(f),
                                     addScoreColumn = addScoreColumn)
     }

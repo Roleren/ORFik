@@ -332,7 +332,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' For every GAlignments read, with the same:
 #' seqname, start, cigar and strand, collapse and give a new
 #' meta column called "score", which contains the number of duplicates
-#' of that read.
+#' of that read. If score column already exists, will return input object!
 #' @param x a GAlignments / GAlignmentPairs object
 #' @param ... alternative arguments. addScoreColumn = TRUE, if FALSE,
 #' only collapse and not add score column.
@@ -345,6 +345,7 @@ setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseD
 #' only collapse and not add score column.
 setMethod("collapseDuplicatedReads", "GAlignments",
           function(x, addScoreColumn = TRUE) {
+            if ("score" %in% colnames(mcols(x))) return(x)
 
             dt <- data.table(seqnames = as.character(seqnames(x)),
                              start = start(ranges(x)),
@@ -360,6 +361,7 @@ setMethod("collapseDuplicatedReads", "GAlignments",
 #' only collapse and not add score column.
 setMethod("collapseDuplicatedReads", "GAlignmentPairs",
           function(x, addScoreColumn = TRUE) {
+            if ("score" %in% colnames(mcols(x))) return(x)
 
             df <- data.table(seqnames = x@first@seqnames,
                              start1 = x@first@start,
