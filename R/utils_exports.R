@@ -72,8 +72,8 @@ export.wiggle <- function(x, file) {
   if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
      stop("x must be GRanges, GAlignments or GAlignmentPairs")
 
-  if (!("score" %in% mcols(x))) {
-    if (!("size" %in% mcols(x))) {
+  if (!("score" %in% colnames(mcols(x)))) {
+    if (!("size" %in% colnames(mcols(x)))) {
       mcols(x)[, "size"] <- NULL
     }
     x <- resize(x, width = 1, fix = "start")
