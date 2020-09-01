@@ -190,7 +190,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   tx <- tx[txNames]
 
   # find periodic read lengths
-  scoreExists <- "score" %in% colnames(mcols(a))
+  scoreExists <- "score" %in% colnames(mcols(footprints))
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
                                         addScoreColumn = !scoreExists,
                                         along.reference = TRUE)
