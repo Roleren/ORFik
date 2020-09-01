@@ -30,7 +30,8 @@ bedToGR <- function(x, skip.name = TRUE) {
 #' Additional columns will be assigned as meta columns
 #' @return GRanges object
 getGRanges <- function(df) {
-
+  if (!all(c("seqnames", "start", "width", "strand") %in% colnames(df)))
+    stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
   ranges <- new2("IRanges", start = df$start,
                  width = df$width,
                  NAMES = df$NAMES,
@@ -55,12 +56,12 @@ getGRanges <- function(df) {
 
 #' Internal GAlignments loader from fst data.frame
 #' @param df a data.frame with columns minimum 4 columns:
-#' seqnames, start, strand and width.\cr
+#' seqnames, start ("pos" in final GA object), strand and width.\cr
 #' Additional columns will be assigned as meta columns
 #' @return GAlignments object
 getGAlignments <- function(df) {
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
-    stop("df must at minimum have 4 columns named: seqnames, pos, cigar and strand")
+    stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
@@ -269,7 +270,7 @@ optimizeReads <- function(grl, reads) {
 #' @inheritParams readWidths
 #' @importFrom GenomicAlignments first
 #' @importFrom GenomicAlignments last
-#' @return  Converted GRanges object
+#' @return Converted GRanges object
 #' @export
 #' @family utils
 #' @examples
@@ -325,6 +326,32 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   } else stop("invalid type: must be 5prime, 3prime, None, tileAll or middle")
 
   return(gr)
+}
+
+#' Merge reads by sum of existing scores
+#'
+#' If you have multiple reads a same location but different read lengths,
+#' specified in meta column "size", it will sum up the scores
+#' (number of replicates) for all reads at that position
+#' @param x a GRanges object
+#' @return merged GRanges object
+#' @examples
+#' gr_s1 <- rep(GRanges("chr1", 1:10,"+"), 2)
+#' gr_s2 <- GRanges("chr1", 1:12,"+")
+#' gr2 <- GRanges("chr1", 21:40,"+")
+#' gr <- c(gr_s1, gr_s2, gr2)
+#' res <- convertToOneBasedRanges(gr,
+#'    addScoreColumn = TRUE, addSizeColumn = TRUE)
+#' collapse.by.scores(res)
+#'
+collapse.by.scores <- function(x) {
+  dt <- data.table(seqnames = as.character(seqnames(x)),
+                   start = start(ranges(x)),
+                   end = end(ranges(x)),
+                   strand = as.character(strand(x)),
+                   score = mcols(x)$score)
+  dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
+  return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
 }
 
 #' Collapse duplicated reads

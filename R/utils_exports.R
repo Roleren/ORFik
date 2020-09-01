@@ -59,7 +59,8 @@ export.bed12 <- function(grl, file, rgb = 0) {
 #'
 #' @references https://genome.ucsc.edu/goldenPath/help/wiggle.html
 #' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
-#' Will be converted to 5' end position of original range.
+#' Will be converted to 5' end position of original range. If score column
+#' does not exist, will group ranges and give replicates as score column.
 #' @param file a character path to valid output file name
 #' @return invisible(NULL) (File is saved as 2 .wig files)
 #' @importFrom rtracklayer export.wig
@@ -74,12 +75,11 @@ export.wiggle <- function(x, file) {
 
   x <- resize(x, width = 1, fix = "start")
   if (!("score" %in% colnames(mcols(x)))) {
-    if (!("size" %in% colnames(mcols(x)))) {
-      mcols(x)[, "size"] <- NULL
-    }
     x <- convertToOneBasedRanges(x, method = "None",
                                  addScoreColumn = TRUE,
                                  addSizeColumn = FALSE)
+  } else { # merge reads by sum of existing scores
+    x <- collapse.by.scores(x)
   }
   strands <- as.character(strand(x))
   if (all(strands == "*")) {

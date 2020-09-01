@@ -8,7 +8,8 @@ export.wiggle(x, file)
 }
 \arguments{
 \item{x}{A GRangesList, GAlignment GAlignmentPairs with score column.
-Will be converted to 5' end position of original range.}
+Will be converted to 5' end position of original range. If score column
+does not exist, will group ranges and give replicates as score column.}
 
 \item{file}{a character path to valid output file name}
 }
