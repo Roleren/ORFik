@@ -333,9 +333,7 @@ shiftFootprintsByExperiment <- function(df,
                  paste0(name, "_pshifted.bed"))
     }
     if ("wig" %in% output_format) {
-      export.bed(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
-                                         addSizeColumn = FALSE),
-                 paste0(name, "_pshifted.wig"))
+      export.wiggle(shifted, paste0(name, "_pshifted.wig"))
     }
 
     return(invisible(NULL))
