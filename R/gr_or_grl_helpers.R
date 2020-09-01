@@ -13,7 +13,7 @@
 #' strandBool(gr)
 #'
 strandBool <- function(grl) {
-  if (is(grl, "GRanges") | is(grl, "GAlignments")) {
+  if (is(grl, "GRanges") | is(grl, "GAlignments") | is(grl, "GAlignmentPairs")) {
     posIndices <- as.character(strand(grl)) == "+"
   } else {
     posIndices <- strandPerGroup(grl, FALSE) == "+"

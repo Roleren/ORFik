@@ -316,7 +316,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     gr <- resize(gr, width = 1, fix = "start")
   } else if(method == "3prime") {
     gr <- resize(gr, width = 1, fix = "end")
-  } else if(method == "None") {
+  } else if(method %in% c("None", "none")) {
   } else if(method == "tileAll") {
     gr <- unlist(tile(gr, width = 1), use.names = FALSE)
   } else if (method == "middle") {

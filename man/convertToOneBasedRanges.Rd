@@ -82,6 +82,7 @@ convertToOneBasedRanges(gr, addSizeColumn = TRUE, addScoreColumn = TRUE)
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{export.bed12}()},
+\code{\link{export.wiggle}()},
 \code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},

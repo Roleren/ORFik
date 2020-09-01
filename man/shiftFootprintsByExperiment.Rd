@@ -16,7 +16,7 @@ shiftFootprintsByExperiment(
   firstN = 150L,
   min_reads = 1000,
   accepted.lengths = 26:34,
-  output_format = c("bed", "bedo"),
+  output_format = c("ofst", "wig"),
   BPPARAM = bpparam(),
   log = TRUE
 )
@@ -60,11 +60,11 @@ be considered for periodicity.}
 \item{accepted.lengths}{accepted readlengths, default 26:34, usually ribo-seq
 is strongest between 27:32.}
 
-\item{output_format}{default c("bed", "bedo"), use export.bed or
-ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
-The bed format version can be used in IGV, the score column is counts of that
+\item{output_format}{default c("ofst", "wig"), use export.ofst or
+wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.
+The wig format version can be used in IGV, the score column is counts of that
 read with that read length, the cigar reference width is lost,
-bedo is much faster to save and load in R, and retain cigar reference width,
+ofst is much faster to save and load in R, and retain cigar reference width,
 but can not be used in IGV. \cr You can also do bedoc format, bed format
 keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
 p-shifting.}
@@ -74,12 +74,12 @@ p-shifting.}
 \item{log}{logical, default (TRUE), output a log file with parameters used.}
 }
 \value{
-NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
-or .bedo)
+NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",
+wig, bedo or .bedo)
 }
 \description{
-Saves files to a specified location as .bed, it will include a score column
-containing read width. \cr
+Saves files to a specified location as .ofst and .wig,
+.ofst will include a score column containing read width. \cr
 For more details, see: \code{\link{detectRibosomeShifts}}
 }
 \details{
@@ -92,8 +92,8 @@ df <- df[3,] #lets only p-shift RFP sample at index 3
 # If you want to check it in IGV do:
 shiftFootprintsByExperiment(df)
 # Then use the bed files that are created, which are readable in IGV.
-# If you only need in R, do: (then you get no .bed files)
-#shiftFootprintsByExperiment(df, output_format = "bedo")
+# If you only need in R, do: (then you get no .wig files)
+#shiftFootprintsByExperiment(df, output_format = "ofst")
 }
 \references{
 https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6

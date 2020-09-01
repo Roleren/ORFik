@@ -617,9 +617,9 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
   return(invisible(NULL))
 }
 
-#' Will make a simplified version of NGS libraries
+#' Converted format of NGS libraries
 #'
-#' Export as either .bedo or .bedoc files.\cr
+#' Export as either .ofst, .bedo or .bedoc files.\cr
 #' Export files as .bedo files: It is a bed file with 2 score columns.
 #' Gives a massive speedup when cigar string and bam flags are not needed.\cr
 #' Export files as .bedoc files: If cigar is needed, gives you replicates
@@ -639,7 +639,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param method character, default "None", the method to reduce ranges,
 #' for more info see \code{\link{convertToOneBasedRanges}}
 #' @param type a character of format, default "ofst".
-#' Alternatives: "ofst", "bedo" or "bedoc". Which format you want.
+#' Alternatives: "ofst", "wig","bedo" or "bedoc". Which format you want.
 #' Will make a folder within out.dir with this name containing the files.
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
@@ -648,12 +648,12 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' #simpleLibs(df)
 #' # Keep only 5' ends of reads
 #' #simpleLibs(df, method = "5prime")
-simpleLibs <- function(df,
+convertLibs <- function(df,
                        out.dir = dirname(df$filepath[1]),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
                        must.overlap = NULL, method = "None",
                        type = "ofst") {
-  if (!(type %in% c("ofst", "bedo", "bedoc")))
+  if (!(type %in% c("ofst", "bedo", "bedoc", "wig")))
     stop("type must be either ofst, bedo or bedoc")
   out.dir <- paste0(out.dir, "/", type, "/")
   validateExperiments(df)
@@ -670,7 +670,7 @@ simpleLibs <- function(df,
   varNames <- bamVarName(df)
   i <- 1
   message("--------------------------")
-  message("Simplifying to new format:")
+  message("Converting to new format:")
   for (f in varNames) {
     message(f)
     if (type == "bedo") { # bedo
@@ -678,7 +678,7 @@ simpleLibs <- function(df,
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,
                                   method = method)
-    } else { # bedoc or ofst
+    } else { # bedoc, wig or ofst
       gr <- collapseDuplicatedReads(x = get(f),
                                     addScoreColumn = addScoreColumn)
     }
@@ -693,6 +693,8 @@ simpleLibs <- function(df,
         export.bedo(gr, output)
       } else if (type == "ofst"){
         export.ofst(gr, file = output)
+      } else if (type == "wig"){
+        export.wiggle(gr, file = output)
       } else # Must be bedoc, check done
         export.bedoc(gr, output)
 
@@ -702,6 +704,10 @@ simpleLibs <- function(df,
     i <- i + 1
   }
 }
+
+# Keep for legacy purpose for now
+#' @inherit convertLibs
+simpleLibs <- convertLibs
 
 
 #' Remove bam/bed/wig files load in R as variables

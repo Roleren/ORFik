@@ -242,8 +242,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 
 #' Shift footprints of each file in experiment
 #'
-#' Saves files to a specified location as .bed, it will include a score column
-#' containing read width. \cr
+#' Saves files to a specified location as .ofst and .wig,
+#' .ofst will include a score column containing read width. \cr
 #' For more details, see: \code{\link{detectRibosomeShifts}}
 #'
 #' Remember that different species might have different default Ribosome
@@ -253,18 +253,18 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @param out.dir output directory for files,
 #' default: dirname(df$filepath[1]), making a /pshifted
 #' folder at that location
-#' @param output_format default c("bed", "bedo"), use export.bed or
-#' ORFik optimized (bedo) using \code{\link{export.bedo}} ? Default is both.
-#' The bed format version can be used in IGV, the score column is counts of that
+#' @param output_format default c("ofst", "wig"), use export.ofst or
+#' wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.
+#' The wig format version can be used in IGV, the score column is counts of that
 #' read with that read length, the cigar reference width is lost,
-#' bedo is much faster to save and load in R, and retain cigar reference width,
+#' ofst is much faster to save and load in R, and retain cigar reference width,
 #' but can not be used in IGV. \cr You can also do bedoc format, bed format
 #' keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
 #' p-shifting.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @param log logical, default (TRUE), output a log file with parameters used.
-#' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.bed"
-#' or .bedo)
+#' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",
+#' wig, bedo or .bedo)
 #' @importFrom rtracklayer export.bed
 #' @family pshifting
 #' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
@@ -275,8 +275,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' # If you want to check it in IGV do:
 #' shiftFootprintsByExperiment(df)
 #' # Then use the bed files that are created, which are readable in IGV.
-#' # If you only need in R, do: (then you get no .bed files)
-#' #shiftFootprintsByExperiment(df, output_format = "bedo")
+#' # If you only need in R, do: (then you get no .wig files)
+#' #shiftFootprintsByExperiment(df, output_format = "ofst")
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(
                                           df$filepath[1]), "/pshifted/"),
@@ -285,14 +285,14 @@ shiftFootprintsByExperiment <- function(df,
                                         minCDS = 150L, minThreeUTR = 30L,
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 26:34,
-                                        output_format = c("bed", "bedo"),
+                                        output_format = c("ofst", "wig"),
                                         BPPARAM = bpparam(),
                                         log = TRUE) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
-  if (!any(c("bed", "bedo", "bedoc") %in% output_format))
-    stop("output_format must be bed, bedo or both")
+  if (!any(c("bed", "bedo", "wig", "ofst") %in% output_format))
+    stop("output_format allowed bed, bedo, wig or ofst")
   for (out.form in output_format)
     message(paste("Saving", out.form, "files to:", out.dir))
   message(paste("Shifting reads in experiment:", df@experiment))
@@ -325,9 +325,14 @@ shiftFootprintsByExperiment <- function(df,
                  paste0(name, "_pshifted.ofst"))
     }
     if ("bed" %in% output_format) {
-      shifted <- convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
-                                         addSizeColumn = FALSE)
-      export.bed(shifted, paste0(name, "_pshifted.bed"))
+      export.bed(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                         addSizeColumn = FALSE),
+                 paste0(name, "_pshifted.bed"))
+    }
+    if ("wig" %in% output_format) {
+      export.bed(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                         addSizeColumn = FALSE),
+                 paste0(name, "_pshifted.wig"))
     }
 
     return(invisible(NULL))

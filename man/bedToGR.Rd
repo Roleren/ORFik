@@ -23,6 +23,7 @@ https://www.ensembl.org/info/website/upload/bed.html
 Other utils: 
 \code{\link{convertToOneBasedRanges}()},
 \code{\link{export.bed12}()},
+\code{\link{export.wiggle}()},
 \code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},

@@ -34,6 +34,7 @@ grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
 Other utils: 
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
+\code{\link{export.wiggle}()},
 \code{\link{fimport}()},
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},

@@ -50,6 +50,53 @@ export.bed12 <- function(grl, file, rgb = 0) {
   return(invisible(NULL))
 }
 
+#' Export as wiggle format
+#'
+#' Will create 2 files, 1 for + strand (*_forward.wig)
+#' and 1 for - strand (*_reverse.wig). If all
+#' files are * stranded, will output 1 file.
+#' Can be direct input for ucsc browser or IGV
+#'
+#' @references https://genome.ucsc.edu/goldenPath/help/wiggle.html
+#' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
+#' Will be converted to 5' end position of original range.
+#' @param file a character path to valid output file name
+#' @return NULL (File is saved as 2 .wig files)
+#' @importFrom rtracklayer export.wig
+#' @export
+#' @family utils
+#' @examples
+#' x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
+#' # export.wiggle(x, "output/path/rna.wig")
+export.wiggle <- function(x, file) {
+  if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
+     stop("x must be GRanges, GAlignments or GAlignmentPairs")
+
+  if (!("score" %in% mcols(x))) {
+    if (!("size" %in% mcols(x))) {
+      mcols(x)[, "size"] <- NULL
+    }
+    x <- resize(x, width = 1, fix = "start")
+    x <- convertToOneBasedRanges(x, method = "None",
+                                 addScoreColumn = TRUE,
+                                 addSizeColumn = FALSE)
+  }
+  strands <- as.character(strand(x))
+  if (all(strands == "*")) {
+    file <- gsub("\\.wig", "", file)
+    file <- paste0(file, ".wig")
+    export.wig(x, file)
+  } else {
+    file <- gsub("\\.wig", "", file)
+    forward_file <- paste0(file, "_forward.wig")
+    reverse_file <- paste0(file, "_reverse.wig")
+    export.wig(x[strandBool(x)], forward_file)
+    export.wig(x[!strandBool(x)], reverse_file)
+  }
+
+  return(NULL)
+}
+
 #' Store GRanges object as .bedo
 #'
 #' .bedo is .bed ORFik, an optimized bed format for coverage reads with
