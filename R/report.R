@@ -50,7 +50,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
   outputLibs(df, leaders, type = "ofst")
   libs <- bamVarName(df)
-  if (is(get(libs[1]), "GAlignments")) {
+  if (is(get(libs[1]), "GAlignments") | is(get(libs[1]), "GAlignmentPairs")) {
     simpleLibs(df, NULL) # Speedup by reducing unwanted information
   }
 
