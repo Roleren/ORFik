@@ -13,7 +13,7 @@ Will be converted to 5' end position of original range.}
 \item{file}{a character path to valid output file name}
 }
 \value{
-NULL (File is saved as 2 .wig files)
+invisible(NULL) (File is saved as 2 .wig files)
 }
 \description{
 Will create 2 files, 1 for + strand (*_forward.wig)

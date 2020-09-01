@@ -162,6 +162,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
 # Keep for legacy purpose for now
 
 #' @inherit QCreport
+#' @export
 ORFikQC <- QCreport
 
 #' Correlation and coverage plots for ORFikQC

@@ -19,5 +19,5 @@ a GAlignments or GAlignmentPairs object, same as input
 For every GAlignments read, with the same:
 seqname, start, cigar and strand, collapse and give a new
 meta column called "score", which contains the number of duplicates
-of that read.
+of that read. If score column already exists, will return input object!
 }
