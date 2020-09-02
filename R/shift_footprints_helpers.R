@@ -99,12 +99,16 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
       down <- meta[seq.int(j, max.pos, by = 3)]
       downstream <- mean(down) # down window
       up <- meta[seq.int(1, j - 1, by = 3)]
-      upstream <- mean(up) * 3 # up window (penalize 3x)
+      upstream <- mean(up) # up window
       m <- downstream - upstream
       downs <- c(downs, downstream); ups <- c(ups, upstream)
       means <- c(means, m)
     }
-    offset <- pos[interval[which.max(abs(means))]]
+    # New scaler, punishes regions far away from -12.
+    scaled_means <- means / (abs(pos[interval] + 12) + 1)
+    # Debug
+    # data.table(ups, downs, means, scaled_means, pos = pos[interval])
+    offset <- pos[interval[which.max(abs(scaled_means))]]
   } else if (feature == "stop") {
     shift <- which.max(meta)
     offset <- pos[shift] + 6

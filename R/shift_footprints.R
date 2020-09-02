@@ -223,8 +223,6 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     footprints.analysis(rw, heatmap)
     offset <- rw[, .(offsets_start = changePointAnalysis(score)),
                  by = fraction]
-    # Figure if we want to keep this.
-    offset <- offset[offsets_start < 0, ]
   }
   if (stop & !is.null(minThreeUTR)) {
     threeUTRs <- loadRegion(txdb, "trailers")[txNames]
