@@ -53,19 +53,12 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   if (is(get(libs[1]), "GAlignments") | is(get(libs[1]), "GAlignmentPairs")) {
     simpleLibs(df, NULL) # Speedup by reducing unwanted information
   }
-
-  # Special regions rRNA etc..
-  gff.df <- importGtfFromTxdb(txdb)
-  types <- unique(gff.df$transcript_biotype)
-  types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
-                             "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
-
   # Make count tables
   message("Making count tables for region:")
   countDir <- paste0(stats_folder, "countTable_")
   for (region in c("mrna", "leaders", "cds", "trailers")) {
     message(region)
-    path <- paste0(countDir,region)
+    path <- paste0(countDir, region)
     dt <- makeSummarizedExperimentFromBam(df, region = region,
                                           geneOrTxNames = "tx",
                                           longestPerGene = FALSE,
@@ -73,8 +66,12 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
     assign(paste0("ct_", region), colSums(assay(dt)))
   }
 
+  # Special regions rRNA etc..
+  gff.df <- importGtfFromTxdb(txdb)
+  types <- unique(gff.df$transcript_biotype)
+  types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
+                             "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
   # Put into csv, the standard stats
-
   message("Making summary counts for lib:")
   for (s in libs) { # For each library
     message(s)
@@ -86,7 +83,10 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
 
     # mRNA region stats
     sCo <- function(region, lib) {
-      return(sum(countOverlaps(region, lib)))
+      weight <- "score"
+      if (!(weight %in% colnames(mcols(lib))))
+        weight <- NULL
+      return(sum(countOverlapsW(region, lib, weight = weight)))
     }
     res_mrna <- data.table(mRNA = get("ct_mrna")[s],
                            LEADERS = get("ct_leaders")[s],
