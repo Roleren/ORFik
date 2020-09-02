@@ -72,13 +72,14 @@ isPeriodic <- function(x) {
 #' @param feature (character) either "start" or "stop"
 #' @param max.pos integer, default 40L, subset x to go from index 1 to max.pos,
 #'  if tail is not relevant.
-#' @param interval integer vector, default seq.int(15L, 35L).
-#'  Seperation points for upstream and downstream windows
+#' @param interval integer vector , default seq.int(14L, 24L).
+#'  Seperation points for upstream and downstream windows.
+#'  That is (+/- 5 from -12) position.
 #' @return a single numeric offset, -12 would mean p-site is 12 bases upstream
 #' @family pshifting
 #'
 changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
-                                interval = seq.int(15L, 35L)) {
+                                interval = seq.int(14L, 24L)) {
   if (max.pos > length(x)) stop("Can not subset max.pos > length of x")
   if (!all(interval %in% seq.int(x)))
     stop("interval vector must be subset of x indices!")
@@ -93,7 +94,7 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
     means <- c()
     downs <- c()
     ups <- c()
-    # upstream window vs downstream window, Check counts in area: pos -16 to +4
+    # upstream window vs downstream window, Check counts in area: pos -18 to -6
     for (j in interval) {
       down <- meta[seq.int(j, max.pos, by = 3)]
       downstream <- mean(down) # down window
