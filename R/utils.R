@@ -259,14 +259,20 @@ optimizeReads <- function(grl, reads) {
 #' @param gr GRanges, GAlignment or GAlignmentPairs object to reduce.
 #' @param method the method to reduce ranges, see info. (5prime defualt)
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
-#'  sums up the hits per unique range This will make each read unique, so
-#'  that each read is 1 time, and score column gives the number of hits.
+#'  sums up the hits per unique range. This will make each read unique, so
+#'  that each read is 1 time, and score column gives the number of
+#'  collapsed hits.
 #'  A useful compression. If addSizeColumn is FALSE, it will not differentiate
 #'  between reads with same start and stop, but different length. If
-#'  addSizeColumn is FALSE, it will remove it.
+#'  addSizeColumn is FALSE, it will remove it. Collapses after conversion.
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
+#'  @param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
+#'  and a score column exists, will sum up the scores to create a new score.
+#'  If FALSE, will skip old score column and create new according to number
+#'  of replicated reads after conversion.
+#'  If addScoreColumn is FALSE, this argument is ignored.
 #' @inheritParams readWidths
 #' @importFrom GenomicAlignments first
 #' @importFrom GenomicAlignments last
@@ -290,29 +296,15 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
                                     addScoreColumn = FALSE,
                                     addSizeColumn = FALSE,
                                     after.softclips = TRUE,
-                                    along.reference = FALSE) {
-  if (is(gr, "GAlignmentPairs")) stop("Not working yet for GAlignmentPairs")
-
+                                    along.reference = FALSE,
+                                    reuse.score.column = TRUE) {
   if (addSizeColumn & is.null(mcols(gr)$size)) {
     mcols(gr) <- S4Vectors::DataFrame(mcols(gr),
                                       size = readWidths(gr, after.softclips,
                                                         along.reference))
   }
-  if (addScoreColumn) {
-    dt <- data.table(seqnames = as.character(seqnames(gr)),
-                     start = start(ranges(gr)),
-                     end = end(ranges(gr)),
-                     strand = as.character(strand(gr)))
-    if (addSizeColumn) {
-      dt[, size := mcols(gr)$size]
-      dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
-    } else {
-      dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
-    }
-    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE)
-  }
-
-  gr <- GRanges(gr)
+  # Convert to positions wanted
+  if (!is(gr, "GRanges")) gr <- GRanges(gr)
   if (method == "5prime") {
     gr <- resize(gr, width = 1, fix = "start")
   } else if(method == "3prime") {
@@ -324,6 +316,31 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
     ranges(gr) <- IRanges(start(gr) + ceiling((end(gr) - start(gr)) / 2),
                           width = 1)
   } else stop("invalid type: must be 5prime, 3prime, None, tileAll or middle")
+  # Collapse after conversion
+  if (addScoreColumn) {
+    dt <- data.table(seqnames = as.character(seqnames(gr)),
+                     start = start(ranges(gr)),
+                     end = end(ranges(gr)),
+                     strand = as.character(strand(gr)))
+
+    if (reuse.score.column & ("score" %in% colnames(mcols(gr)))) { # reuse
+      dt[, score := mcols(gr)$score]
+      if (addSizeColumn) {
+        dt[, size := mcols(gr)$size]
+        dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand, size)]
+      } else {
+        dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
+      }
+    } else { # Do not reuse or "score" does not exist
+      if (addSizeColumn) {
+        dt[, size := mcols(gr)$size]
+        dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
+      } else {
+        dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
+      }
+    }
+    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE)
+  }
 
   return(gr)
 }

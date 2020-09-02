@@ -72,6 +72,7 @@ export.bed12 <- function(grl, file, rgb = 0) {
 export.wiggle <- function(x, file) {
   if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
      stop("x must be GRanges, GAlignments or GAlignmentPairs")
+  if (!is(x, "GRanges")) x <- GRanges(x)
 
   x <- resize(x, width = 1, fix = "start")
   if (!("score" %in% colnames(mcols(x)))) {

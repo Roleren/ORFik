@@ -10,7 +10,8 @@ convertToOneBasedRanges(
   addScoreColumn = FALSE,
   addSizeColumn = FALSE,
   after.softclips = TRUE,
-  along.reference = FALSE
+  along.reference = FALSE,
+  reuse.score.column = TRUE
 )
 }
 \arguments{
@@ -19,15 +20,21 @@ convertToOneBasedRanges(
 \item{method}{the method to reduce ranges, see info. (5prime defualt)}
 
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
-sums up the hits per unique range This will make each read unique, so
-that each read is 1 time, and score column gives the number of hits.
+sums up the hits per unique range. This will make each read unique, so
+that each read is 1 time, and score column gives the number of
+collapsed hits.
 A useful compression. If addSizeColumn is FALSE, it will not differentiate
 between reads with same start and stop, but different length. If
-addSizeColumn is FALSE, it will remove it.}
+addSizeColumn is FALSE, it will remove it. Collapses after conversion.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
-original read lengths. This takes care of soft clips etc.}
+original read lengths. This takes care of soft clips etc.
+@param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
+and a score column exists, will sum up the scores to create a new score.
+If FALSE, will skip old score column and create new according to number
+of replicated reads after conversion.
+If addScoreColumn is FALSE, this argument is ignored.}
 
 \item{after.softclips}{logical (TRUE), include softclips in width. Does not
 apply if along.reference is TRUE.}
