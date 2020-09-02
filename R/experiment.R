@@ -512,6 +512,7 @@ filepath <- function(df, type, basename = FALSE) {
                         remove.file_ext(x,
                                         basename = TRUE)
                         , ".", type)
+        if (!file.exists(input)) type <- "default"
       } else type <- "default"
     } else if (type == "pshifted") {
       out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")
@@ -632,7 +633,11 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param out.dir optional output directory, default:
 #' dirname(df$filepath[1]),
 #' if it is NULL, it will just reassign R objects to simplified libraries.
-#' @inheritParams convertToOneBasedRanges
+#' @param addScoreColumn logical, default TRUE, if FALSE will not add
+#' replicate numbers as score column, see ORFik::convertToOneBasedRanges.
+#' @param addSizeColumn logical, default TRUE, if FALSE will not add
+#' size (width) as size column, see ORFik::convertToOneBasedRanges.
+#' Does not apply for .ofst or .bedoc.
 #' @param must.overlap default (NULL), else a GRanges / GRangesList object, so
 #' only reads that overlap (must.overlap) are kept. This is useful when you
 #' only need the reads over transcript annotation or subset etc.

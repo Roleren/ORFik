@@ -21,16 +21,12 @@ simpleLibs(
 dirname(df$filepath[1]),
 if it is NULL, it will just reassign R objects to simplified libraries.}
 
-\item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
-sums up the hits per unique range This will make each read unique, so
-that each read is 1 time, and score column gives the number of hits.
-A useful compression. If addSizeColumn is FALSE, it will not differentiate
-between reads with same start and stop, but different length. If
-addSizeColumn is FALSE, it will remove it.}
+\item{addScoreColumn}{logical, default TRUE, if FALSE will not add
+replicate numbers as score column, see ORFik::convertToOneBasedRanges.}
 
-\item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
-for each read, that gives original width of read. Useful if you need
-original read lengths. This takes care of soft clips etc.}
+\item{addSizeColumn}{logical, default TRUE, if FALSE will not add
+size (width) as size column, see ORFik::convertToOneBasedRanges.
+Does not apply for .ofst or .bedoc.}
 
 \item{must.overlap}{default (NULL), else a GRanges / GRangesList object, so
 only reads that overlap (must.overlap) are kept. This is useful when you

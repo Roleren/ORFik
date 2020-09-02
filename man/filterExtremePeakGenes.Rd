@@ -38,7 +38,7 @@ before median filter is applied. Set to 1 to remove all 0 positions.}
 How to scale the multiplier argument, from median or mean of gene coverage.}
 }
 \value{
-
+GRangesList (filtered)
 }
 \description{
 For removing extreme peaks in coverage plots, use high quantiles, like

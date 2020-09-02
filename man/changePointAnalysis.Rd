@@ -8,7 +8,7 @@ changePointAnalysis(
   x,
   feature = "start",
   max.pos = 40L,
-  interval = seq.int(15L, 35L)
+  interval = seq.int(14L, 24L)
 )
 }
 \arguments{
@@ -21,8 +21,9 @@ from -30 to 29 in p-shifting}
 \item{max.pos}{integer, default 40L, subset x to go from index 1 to max.pos,
 if tail is not relevant.}
 
-\item{interval}{integer vector, default seq.int(15L, 35L).
-Seperation points for upstream and downstream windows}
+\item{interval}{integer vector , default seq.int(14L, 24L).
+Seperation points for upstream and downstream windows.
+That is (+/- 5 from -12) position.}
 }
 \value{
 a single numeric offset, -12 would mean p-site is 12 bases upstream

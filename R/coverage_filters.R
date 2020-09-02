@@ -18,7 +18,7 @@
 #' before median filter is applied. Set to 1 to remove all 0 positions.
 #' @param average character, default "median". Alternative: "mean".
 #' How to scale the multiplier argument, from median or mean of gene coverage.
-#' @return
+#' @return GRangesList (filtered)
 #' @export
 filterExtremePeakGenes <-
   function(tx, reads, upstream = NULL, downstream = NULL,
@@ -55,15 +55,38 @@ filterExtremePeakGenes <-
                      ratio = sum(count == 0) / .N)])
   print(paste("Using", average, "multiplier and minimum cutoff of:"))
   print(c(multiplier, min_cutoff))
-  print("Read count distribution:")
-  print(summary(coverage$count))
-  print("Hit positions in genes that will be filtered:")
-  print(toFilter)
-  print("Transcripts filtered out:")
-  print(names(tx[unique(toFilter$genes)]))
+  print("Read count distribution:");print(summary(coverage$count))
+  print("Hit positions in genes that will be filtered:");print(toFilter)
+  print("Transcripts filtered out:");print(names(tx[unique(toFilter$genes)]))
   if (length(toFilter$genes) == 0) {
     message("No genes filtered out, reduce filters if you want hits")
     return(tx)
   }
   return(tx[-unique(toFilter$genes)])
+  }
+
+#' Find max peak per gene
+#'
+#' For finding the highest peak per gene. With some default filters.
+#' @param tx a GRangesList
+#' @param reads a GAlignments or GRanges
+#' @param top_tx numeric, default 0.50 (50\% top tx by reads).
+#' @param min_reads_per_tx numeric, default 10. Gene must have at least
+#'  10 reads
+#' @return a data.table
+#' @export
+findMaxPeakPerGenes <- function(tx, reads, top_tx = 0.50,
+                                min_reads_per_tx = 10) {
+    # coverage track
+    coverage <- coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
+    coverage[, sum_per_gene := sum(count), by = genes]
+    coverage <- coverage[sum_per_gene >= max(quantile(sum_per_gene, tx_to_use),
+                                             min.reads.per.tx),]
+    coverage[, mean_per_gene := mean(count), by = genes]
+    coverage[, sd_per_gene := sd(count), by = genes]
+    coverage[, zscore := (count - mean_per_gene) / sd_per_gene, by = genes]
+    summary(coverage$zscore)
+    coverage[, gene_id := names(tx)[genes]]
+    coverage <- coverage[coverage[, .I[zscore == max(zscore)], by = genes]$V1]
+    return(coverage)
 }
