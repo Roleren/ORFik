@@ -390,12 +390,12 @@ setMethod("collapseDuplicatedReads", "GAlignmentPairs",
           function(x, addScoreColumn = TRUE) {
             if ("score" %in% colnames(mcols(x))) return(x)
 
-            df <- data.table(seqnames = x@first@seqnames,
+            df <- data.table(seqnames = as.character(x@first@seqnames),
                              start1 = x@first@start,
                              start2 = x@last@start,
                              cigar1 = factor(x@first@cigar),
                              cigar2 = factor(x@last@cigar),
-                             strand = x@first@strand)
+                             strand = as.character(x@first@strand))
             dt <- dt[, .(score = .N), .(seqnames, start1, start2,
                                         cigar1, cigar2, strand)]
             if (!addScoreColumn) dt$score <- NULL

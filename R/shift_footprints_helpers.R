@@ -89,7 +89,7 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
   max.frame = which.max(c(sum(meta[frames == 0]), sum(meta[frames == 1]),
                         sum(meta[frames == 2]))) - 1
   # subset to best frame
-  interval <- interval[c(0,1,2) %% 3 == max.frame] + 1
+  interval <- interval[c(0,1,2) %% 3 == max.frame] - (pos[interval[1]] %% 3)
   if (feature == "start") {
     means <- c()
     downs <- c()
