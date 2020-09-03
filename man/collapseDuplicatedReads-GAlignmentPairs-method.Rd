@@ -7,13 +7,13 @@
 \S4method{collapseDuplicatedReads}{GAlignmentPairs}(x, addScoreColumn = TRUE)
 }
 \arguments{
-\item{x}{a GAlignments / GAlignmentPairs object}
+\item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
 \item{addScoreColumn}{= TRUE, if FALSE,
 only collapse and not add score column.}
 }
 \value{
-a GAlignments or GAlignmentPairs object, same as input
+a GRanges, GAlignments or GAlignmentPairs object, same as input
 }
 \description{
 For every GAlignments read, with the same:

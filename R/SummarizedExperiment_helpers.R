@@ -223,6 +223,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # countTable(df, "mrna", type = "deseq")
 countTable <- function(df, region = "mrna", type = "count",
                        collapse = FALSE) {
+  # TODO fix bug if deseq!
   if (is(df, "experiment")) {
     dir = dirname(df$filepath[1])
     df <- paste0(dir, "/QC_STATS")

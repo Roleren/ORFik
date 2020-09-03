@@ -78,7 +78,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
       out <- "Wait for index to be complete before you run Alignment!"
     message(out)
   } else stop("STAR is not supported on windows!")
-  saveRDS(object = output, finished.file)
+  saveRDS(object = output.dir, finished.file)
   return(output.dir)
 }
 

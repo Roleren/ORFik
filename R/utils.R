@@ -268,6 +268,7 @@ optimizeReads <- function(grl, reads) {
 #' @param addSizeColumn logical (FALSE), if TRUE, add a size column that
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
+#'  If collapsing reads, each unique range will be grouped also by size.
 #'  @param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
 #'  and a score column exists, will sum up the scores to create a new score.
 #'  If FALSE, will skip old score column and create new according to number
@@ -318,30 +319,9 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
   } else stop("invalid type: must be 5prime, 3prime, None, tileAll or middle")
   # Collapse after conversion
   if (addScoreColumn) {
-    dt <- data.table(seqnames = as.character(seqnames(gr)),
-                     start = start(ranges(gr)),
-                     end = end(ranges(gr)),
-                     strand = as.character(strand(gr)))
-
-    if (reuse.score.column & ("score" %in% colnames(mcols(gr)))) { # reuse
-      dt[, score := mcols(gr)$score]
-      if (addSizeColumn) {
-        dt[, size := mcols(gr)$size]
-        dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand, size)]
-      } else {
-        dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
-      }
-    } else { # Do not reuse or "score" does not exist
-      if (addSizeColumn) {
-        dt[, size := mcols(gr)$size]
-        dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
-      } else {
-        dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
-      }
-    }
-    gr <- makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE)
+    gr <- collapseDuplicatedReads(gr, addSizeColumn = addSizeColumn,
+                            reuse.score.column = reuse.score.column)
   }
-
   return(gr)
 }
 
@@ -368,6 +348,7 @@ collapse.by.scores <- function(x) {
                    strand = as.character(strand(x)),
                    score = mcols(x)$score)
   dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
+  # TODO change makeGRangesFromDataFrame to internal fast function
   return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
 }
 
@@ -377,12 +358,50 @@ collapse.by.scores <- function(x) {
 #' seqname, start, cigar and strand, collapse and give a new
 #' meta column called "score", which contains the number of duplicates
 #' of that read. If score column already exists, will return input object!
-#' @param x a GAlignments / GAlignmentPairs object
+#' @param x a GRanges, GAlignments or GAlignmentPairs object
 #' @param ... alternative arguments. addScoreColumn = TRUE, if FALSE,
 #' only collapse and not add score column.
-#' @return a GAlignments or GAlignmentPairs object, same as input
+#' @return a GRanges, GAlignments or GAlignmentPairs object, same as input
 #' @export
 setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
+
+#' @inherit collapseDuplicatedReads
+#' @param addScoreColumn = TRUE, if FALSE,
+#' only collapse and not keep score column.
+#' @inheritParams convertToOneBasedRanges
+setMethod("collapseDuplicatedReads", "GRanges",
+          function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
+                   reuse.score.column = TRUE) {
+    if (addSizeColumn) {
+      if (!("size" %in% colnames(mcols(x))))
+        stop("addSizeColumn is TRUE, and no size column found!")
+    }
+
+    dt <- data.table(seqnames = as.character(seqnames(x)),
+                     start = start(ranges(x)),
+                     end = end(ranges(x)),
+                     strand = as.character(strand(x)))
+
+    if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
+      dt[, score := mcols(x)$score]
+      if (addSizeColumn) {
+        dt[, size := mcols(x)$size]
+        dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand, size)]
+      } else {
+        dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
+      }
+    } else { # Do not reuse or "score" does not exist
+      if (addSizeColumn) {
+        dt[, size := mcols(x)$size]
+        dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
+      } else {
+        dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
+      }
+    }
+    if (!addScoreColumn) dt$score <- NULL
+    # TODO change makeGRangesFromDataFrame to internal fast function
+    return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
+})
 
 #' @inherit collapseDuplicatedReads
 #' @param addScoreColumn = TRUE, if FALSE,
