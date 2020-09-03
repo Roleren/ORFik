@@ -339,7 +339,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' gr <- c(gr_s1, gr_s2, gr2)
 #' res <- convertToOneBasedRanges(gr,
 #'    addScoreColumn = TRUE, addSizeColumn = TRUE)
-#' collapse.by.scores(res)
+#' ORFik:::collapse.by.scores(res)
 #'
 collapse.by.scores <- function(x) {
   dt <- data.table(seqnames = as.character(seqnames(x)),
@@ -354,8 +354,8 @@ collapse.by.scores <- function(x) {
 
 #' Collapse duplicated reads
 #'
-#' For every GAlignments read, with the same:
-#' seqname, start, cigar and strand, collapse and give a new
+#' For every GRanges, GAlignments read, with the same:
+#' seqname, start, (cigar) / width and strand, collapse and give a new
 #' meta column called "score", which contains the number of duplicates
 #' of that read. If score column already exists, will return input object!
 #' @param x a GRanges, GAlignments or GAlignmentPairs object
@@ -363,6 +363,9 @@ collapse.by.scores <- function(x) {
 #' only collapse and not add score column.
 #' @return a GRanges, GAlignments or GAlignmentPairs object, same as input
 #' @export
+#' @examples
+#' gr <- rep(GRanges("chr1", 1:10,"+"), 2)
+#' collapseDuplicatedReads(gr)
 setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
 
 #' @inherit collapseDuplicatedReads
@@ -410,10 +413,10 @@ setMethod("collapseDuplicatedReads", "GAlignments",
           function(x, addScoreColumn = TRUE) {
             if ("score" %in% colnames(mcols(x))) return(x)
 
-            dt <- data.table(seqnames = as.character(seqnames(x)),
+            dt <- data.table(seqnames = factor(seqnames(x)),
                              start = start(ranges(x)),
                              cigar = cigar(x),
-                             strand = as.character(strand(x)))
+                             strand = factor(strand(x)))
             dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
             if (!addScoreColumn) dt$score <- NULL
             return(getGAlignments(dt))
@@ -426,12 +429,12 @@ setMethod("collapseDuplicatedReads", "GAlignmentPairs",
           function(x, addScoreColumn = TRUE) {
             if ("score" %in% colnames(mcols(x))) return(x)
 
-            dt <- data.table(seqnames = as.character(x@first@seqnames),
+            dt <- data.table(seqnames = factor(x@first@seqnames),
                              start1 = x@first@start,
                              start2 = x@last@start,
                              cigar1 = factor(x@first@cigar),
                              cigar2 = factor(x@last@cigar),
-                             strand = as.character(x@first@strand))
+                             strand = factor(x@first@strand))
             dt <- dt[, .(score = .N), .(seqnames, start1, start2,
                                         cigar1, cigar2, strand)]
             if (!addScoreColumn) dt$score <- NULL

@@ -16,8 +16,12 @@ only collapse and not add score column.}
 a GRanges, GAlignments or GAlignmentPairs object, same as input
 }
 \description{
-For every GAlignments read, with the same:
-seqname, start, cigar and strand, collapse and give a new
+For every GRanges, GAlignments read, with the same:
+seqname, start, (cigar) / width and strand, collapse and give a new
 meta column called "score", which contains the number of duplicates
 of that read. If score column already exists, will return input object!
+}
+\examples{
+gr <- rep(GRanges("chr1", 1:10,"+"), 2)
+collapseDuplicatedReads(gr)
 }

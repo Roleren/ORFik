@@ -24,6 +24,6 @@ gr2 <- GRanges("chr1", 21:40,"+")
 gr <- c(gr_s1, gr_s2, gr2)
 res <- convertToOneBasedRanges(gr,
    addScoreColumn = TRUE, addSizeColumn = TRUE)
-collapse.by.scores(res)
+ORFik:::collapse.by.scores(res)
 
 }
