@@ -304,7 +304,8 @@ shiftFootprintsByExperiment <- function(df,
   bplapply(rfpFiles, FUN = function(file, path, df, start, stop,
                                     top_tx, minFiveUTR, minCDS, minThreeUTR,
                                     firstN, min_reads, accepted.lengths,
-                                    output_format) {
+                                    output_format, heatmap = heatmap,
+                                    must.be.periodic = must.be.periodic) {
     message(file)
     rfp <- fimport(file)
     shifts <- detectRibosomeShifts(rfp, txdb = loadTxdb(df), start = start,
@@ -343,8 +344,8 @@ shiftFootprintsByExperiment <- function(df,
       minCDS = minCDS, minThreeUTR = minThreeUTR,
       firstN = firstN, min_reads = min_reads,
       accepted.lengths = accepted.lengths, output_format = output_format,
-      BPPARAM = BPPARAM, heatmap = heatmap,
-      must.be.periodic = must.be.periodic)
+      heatmap = heatmap, must.be.periodic = must.be.periodic,
+      BPPARAM = BPPARAM)
 
   if (log) {
     fileConn<-file(paste0(path, "/pshifting_arguments.txt"))

@@ -30,12 +30,7 @@ addSizeColumn is FALSE, it will remove it. Collapses after conversion.}
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
 original read lengths. This takes care of soft clips etc.
-If collapsing reads, each unique range will be grouped also by size.
-@param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
-and a score column exists, will sum up the scores to create a new score.
-If FALSE, will skip old score column and create new according to number
-of replicated reads after conversion.
-If addScoreColumn is FALSE, this argument is ignored.}
+If collapsing reads, each unique range will be grouped also by size.}
 
 \item{after.softclips}{logical (TRUE), include softclips in width. Does not
 apply if along.reference is TRUE.}
@@ -45,6 +40,12 @@ by default width 28, but if along.reference is TRUE, it will be 26.
 The length of the read along the reference. Also "1D20M" will be
 21 if by along.reference is TRUE. Intronic regions (cigar: N) will
 be removed. So: "1M200N19M" is 20, not 220.}
+
+\item{reuse.score.column}{logical (TRUE), if addScoreColumn is TRUE,
+and a score column exists, will sum up the scores to create a new score.
+If FALSE, will skip old score column and create new according to number
+of replicated reads after conversion.
+If addScoreColumn is FALSE, this argument is ignored.}
 }
 \value{
 Converted GRanges object

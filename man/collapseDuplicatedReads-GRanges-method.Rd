@@ -20,8 +20,9 @@ only collapse and not keep score column.}
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
 original read lengths. This takes care of soft clips etc.
-If collapsing reads, each unique range will be grouped also by size.
-@param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
+If collapsing reads, each unique range will be grouped also by size.}
+
+\item{reuse.score.column}{logical (TRUE), if addScoreColumn is TRUE,
 and a score column exists, will sum up the scores to create a new score.
 If FALSE, will skip old score column and create new according to number
 of replicated reads after conversion.

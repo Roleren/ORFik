@@ -20,6 +20,14 @@ filterExtremePeakGenes(
 
 \item{reads}{a GAlignments or GRanges}
 
+\item{upstream}{numeric or NULL, default NULL.
+if you want window of tx, instead of whole, specify how
+much upstream from start of tx, 10 is include 10 bases before start}
+
+\item{downstream}{numeric or NULL, default NULL.
+if you want window of tx, instead of whole, specify how
+much downstream from start of tx, 10 is go 10 bases into tx from start.}
+
 \item{multiplier}{a character or numeric, default "0.99",
 either a quantile if input is string[0-1],
 like "0.99", or numeric value if input is numeric.

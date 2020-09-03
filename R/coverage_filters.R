@@ -5,6 +5,12 @@
 #' pre_filter minimum and
 #' @param tx a GRangesList
 #' @param reads a GAlignments or GRanges
+#' @param upstream numeric or NULL, default NULL.
+#' if you want window of tx, instead of whole, specify how
+#' much upstream from start of tx, 10 is include 10 bases before start
+#' @param downstream numeric or NULL, default NULL.
+#' if you want window of tx, instead of whole, specify how
+#' much downstream from start of tx, 10 is go 10 bases into tx from start.
 #' @param multiplier a character or numeric, default "0.99",
 #' either a quantile if input is string[0-1],
 #' like "0.99", or numeric value if input is numeric.

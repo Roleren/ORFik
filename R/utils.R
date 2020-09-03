@@ -74,6 +74,7 @@ getGAlignments <- function(df) {
       names(mcols) <- names(df)[5]
     }
   }
+  df$strand <- factor(df$strand, levels = c("+", "-", "*"))
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
   new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start,
        cigar = as.character(df$cigar), strand = Rle(df$strand), elementMetadata = mcols,
@@ -101,7 +102,8 @@ getGAlignmentsPairs <- function(df) {
   }
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
   # reverse strand for last
-  strand2 <- strandTemp <- df$strand <- factor(df$strand, levels = c("+", "-", "*"))
+  strand2 <- strandTemp <- df$strand <-
+    factor(df$strand, levels = c("+", "-", "*"))
   strandTemp[strand2 == "+"] <- "-"
   strandTemp[strand2 == "-"] <- "+"
   strand2 <- strandTemp
@@ -111,12 +113,11 @@ getGAlignmentsPairs <- function(df) {
         seqinfo = seqinfo, check = FALSE,
         elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
        last = new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start2,
-             cigar = as.character(df$cigar2), strand = Rle(strand2),
+             cigar = as.character(df$cigar2), strand = Rle(factor(strand2, levels)),
              seqinfo = seqinfo, check = FALSE,
              elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
        isProperPair = rep(TRUE, nrow(df)),
        elementMetadata = mcols, check = FALSE)
-
 }
 
 #' Find pair of forward and reverse strand wig / bed files and
@@ -269,7 +270,7 @@ optimizeReads <- function(grl, reads) {
 #'  for each read, that gives original width of read. Useful if you need
 #'  original read lengths. This takes care of soft clips etc.
 #'  If collapsing reads, each unique range will be grouped also by size.
-#'  @param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
+#' @param reuse.score.column logical (TRUE), if addScoreColumn is TRUE,
 #'  and a score column exists, will sum up the scores to create a new score.
 #'  If FALSE, will skip old score column and create new according to number
 #'  of replicated reads after conversion.

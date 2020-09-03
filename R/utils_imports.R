@@ -1,6 +1,6 @@
 #' Load bed file as GRanges.
 #'
-#' Wraps around \code{\link{rtracklayer::import.bed}} and
+#' Wraps around \link[rtracklayer]{import.bed} and
 #' tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle
