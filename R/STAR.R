@@ -102,7 +102,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' and you want to trim, use your favorite trimmer and give the output files from that
 #' trimmer as input.dir here.
 #' @param paired.end default "no", alternative "yes". Will auto detect
-#'  pairs by names.
+#'  pairs by names. If yes running on a folder:
+#'  The folder must then contain an even number of files
+#'  and they must be named with the same prefix and sufix of either
+#'   _1 and _2, 1 and 2, etc.
 #' @param steps a character, default: "tr-ge", trimming --> genome alignment\cr
 #'  steps of depletion and alignment wanted:
 #'  If not "all", a subset of these ("tr-ph-rR-nc-tR-ge")\cr

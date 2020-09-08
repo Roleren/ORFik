@@ -47,7 +47,10 @@ and you want to trim, use your favorite trimmer and give the output files from t
 trimmer as input.dir here.}
 
 \item{paired.end}{default "no", alternative "yes". Will auto detect
-pairs by names.}
+pairs by names. If yes running on a folder:
+The folder must then contain an even number of files
+and they must be named with the same prefix and sufix of either
+ _1 and _2, 1 and 2, etc.}
 
 \item{steps}{a character, default: "tr-ge", trimming --> genome alignment\cr
 steps of depletion and alignment wanted:

@@ -1,0 +1,166 @@
+---
+title: "ORFik Annotations&Alignment"
+author: "Haakon Tjeldnes & Kornel Labun"
+date: "`r BiocStyle::doc_date()`"
+package: "`r pkg_ver('ORFik')`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{ORFik Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+Welcome to the `ORFik` package. 
+`ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data and NGS data.
+This vignette will walk you through how to how to download annotation and align data with ORFik.
+
+# Download and align: Yeast
+Here we will show a full example of aligning RNA-seq from yeast using the SacCer3 genome.
+
+## Download genome and gtf files
+To download annotation we use the getGenomeAndAnnotation function.
+We need to decide 3 things:
+
+-organism: Give scientific name of organism, with either " " or "_" between
+genus(saccharomyces) and species (cerevisiae).
+-output.dir: Where to output the annotation
+-assembly_type: If using ensembl as db argument, you need to decide if you want primary_assembly or toplevel. The uncompressed toplevel file of human genome is > 70 GB, so for big genomes you should usually set to primary_assembly. But for small organisms like yeast, they don't have a primary assembly so use "toplevel".
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  library(ORFik)                        # This package
+  annotation <- getGenomeAndAnnotation(
+                      organism = "saccharomyces_cerevisiae", 
+                      output.dir = "~/Bio_data/annotations/Yeast_SacCer3/",
+                      assembly_type = "toplevel"
+                      )
+```
+The function will also create a gtf.db object so speed up loading of annotation, and index your genome to a .fai file. 
+
+If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object, this makes it easy to rerun the script, when you have some steps already finished.
+
+If you you want to remove contaminants: phix, non coding RNAs, ribosomalRNAs, or tRNAs, also specify these in the function. The function can only download phix and
+noncoding RNAs for you, so rRNAs you must manually download and add from Silva database, and tRNAs from tRNA scan or similar databases. 
+
+## RNA-seq alignment
+ORFik uses the STAR aligner, which is splice aware and fast. This will only work on unix systems (Linux or Mac) for now.
+To align the data we need two steps, the indexing of the genome step and the 
+alignment to the genome step.
+
+### Indexing
+To index the genome just give it the annotation output from previous step. This will also make an index for each of the depletion steps like phix, if you specified them in the earlier step.
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+index <- STAR.index(annotation, wait = FALSE)
+```
+If you run this function again after you have run this function and indexed the genome once, it will not re-index, but just output the correct object.
+
+### Aligning the data
+First we need some data to align, I here just show what would work for the paired end RNA-seq experiment SRR453566.
+
+Here you will use your own data. If you want to follow the same example you can in terminal do for unix:
+```{}
+mkdir ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
+cd ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
+# Install fastq-dump (https://ncbi.github.io/sra-tools/install_config.html)
+fastq-dump  --split-files --gzip --skip-technical --readids --read-filter pass --clip SRR453566 
+```
+
+ORFik uses the fastp from trimming reads, this only works on linux. So for Mac users, do the trimming step first with your favorit trimmer if needed, then pass the trimmed files as input argument here. 
+
+We need usually 9 arguments:
+-input.dir.rna: directory with fastq files (or trimmed files on mac)
+-output.dir.rna: output directory for bam files
+-index: the STAR index from previous step
+-paired.end: "yes" in this case, or "no" if single end.
+-steps: steps of depletion and alignment wanted:
+		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
+			 tr: trimming, ph: phix depletion, rR: rrna depletion,
+			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
+		Write your wanted steps, seperated by "-". Order does not matter.
+		To just do trim and alignment to genome write "tr-ge"
+		On mac you can not do tr, so trim first then pass the trimmed files as input      and uses steps = "ge"..
+-adapter.sequence "auto", or if you know add it, usually more secure with manual. 
+-max.cpus How many cpus maximum to use
+-trim.front How many bases to trim front. Only if you believe there are low quality reads in front.
+-min.length minimum length of reads that pass to the bam file. 
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+input.dir.rna <- "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
+output.dir.rna <- "~/Bio_data/processed_data/RNAseq/Yeast_SRR453566/aligned_sacCer3/"
+alignment <- 
+  STAR.align.folder(input.dir.rna, output.dir.rna, index,
+                    paired.end = "yes",
+                    steps = "tr-ge", # (trim needed: adapters found, then genome)
+                    adapter.sequence = "auto",
+                    max.cpus = 30, trim.front = 3, min.length = 20)
+```
+If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC.
+## Create an ORFik experiment of the Yeast data
+To simplify coding and sharing of your work, you should make a ORFik experiment, check out the ORFik experiment vignette if you are unfamiliar with this class.
+You should first rename the bam files to more meaningful names, like RNA_WT_1 etc. Remember to keep a table of which SRA numbers correspond to which new file name. You do not need to do this, but this will make the ORFik experiment able to guess correctly what the data is. If there are replicates etc. 
+
+We can now easily make an ORFik experiment from the data we have:
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+txdb_file <- paste0(annotation["gtf"], ".db") # Get txdb file, not raw gtf
+fa <- annotation["genome"]
+create.experiment(exper = "Chew_13_RFP_Z11",
+                  dir = paste0(output.dir.rna, "/aligned/"),
+                  saveDir = "~/Bio_data/ORFik_experiments/",
+                  txdb = txdb_file, fa = fa, 
+                  organism = "Saccharomyces cerevisiae",
+                  viewTemplate = FALSE, 
+                  pairedEndBam = c(T) # True/False per bam file
+                  )
+```
+
+Now verify that the object is correct, then you can try to read it:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+df <- read.experiment(
+  file = "~/Bio_data/ORFik_experiments/Chew_13_RFP_Z11"
+  )
+```
+If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in excel, libre office or another spreadsheet viewer. 
+
+### convert libraries to new formats
+If you want optimzed format identical to bam file, use .ofst.
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  remove.experiments(df)
+  convertLibs(df, type = "ofst")
+```
+If you want peaks only, use wig files
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  remove.experiments(df)
+  outputLibs(df, type = "wig")
+```
+
+As an example of how to load the data to R in the optimized format .ofst.
+### Outputting libraries to R
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+remove.experiments(df)
+outputLibs(df, type = "ofst")
+```
+If I rather want the wig format files:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  remove.experiments(df)
+  outputLibs(df, type = "wig")
+```
+
+### Post alignment QC report
+See ?QCreport for details of what you will get as output
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  QCreport(df)
+```
+
+### FPKM values (normalized counts)
+After you have run QCreport you will have count tables of peaks over the mrna's, 5' UTRs, CDS and 3' UTRs.
+
+Let's do an example to find the ratio between fpkm of between the CDS and mRNAs transcript regions.
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  mrna <- countTable(df, region = "mrna", type = "fpkm")
+  cds <- countTable(df, region = "cds", type = "fpkm")
+  ratio <- cds / mrna
+```
+We now have a ratio of fpkm values between CDS and mrna.
