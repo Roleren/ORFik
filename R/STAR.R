@@ -257,7 +257,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' run again.\cr
 #' Do remake = TRUE, to do it all over again.
 #'
-#' If you want custom genome or gtf from you hard drive, assign it back
+#' If you want custom genome or gtf from you hard drive, assign it
 #' after you run this function, like this:\cr
 #' annotation <- getGenomeAndAnnotation(GTF = FALSE, genome = FALSE)\cr
 #' annotation["genome"] = "path/to/genome.fasta"\cr
@@ -308,15 +308,16 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' @param gunzip logical, default TRUE, uncompress downloaded files
 #' that are zipped when downloaded, should be TRUE!
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
-#' @param assembly_type a character string specifying from which assembly type the genome
-#' shall be retrieved from (ensembl only, else this argument is ignored):
+#' @param assembly_type a character string specifying from which assembly type
+#' the genome shall be retrieved from (ensembl only, else this argument is ignored):
 #' Default is
+#' \code{assembly_type = "primary_assembly")}.
+#' This will give you all no copies of any chromosomes.
+#' As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 #' \code{assembly_type = "toplevel")}.
 #' This will give you all multi-chromosomes (copies of the same chromosome with small variations).
 #' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
 #' To get primary assembly with 1 chromosome variant per chromosome:
-#' \code{assembly_type = "primary_assembly")}.
-#' As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed:
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
 #' @importFrom R.utils gunzip
@@ -343,6 +344,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   if (!(assembly_type %in% c("toplevel", "primary_assembly")))
     stop("Please select one the available assembly types: \ntoplevel, primary_assembly")
   dir.create(output.dir, recursive = TRUE)
+  organism <- gsub(" ", "_", organism)
   if (tRNA != "") {
     if (!file.exists(tRNA)) stop(paste("tRNA file is given and does not exist:",
                                        tRNA))
@@ -355,8 +357,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   if (ncRNA != "") {
     if (ncRNA == "auto") {
       a <- biomartr::getENSEMBLInfo()
-      ncRNA <- a[grep(gsub(" ", "_", organism),
-                   a$name, TRUE),]$common_name
+      ncRNA <- a[grep(organism, a$name, TRUE),]$common_name
       if (length(ncRNA) == 0) stop("ncRNA was auto,",
                                    "but could not find organism")
       message(paste0("ncRNA auto: organism common name:",
@@ -375,12 +376,18 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
 
   if (genome != FALSE) { # fasta genome of organism
     if (db == "ensembl") {
-      message(paste("Starting primary assembly genome retrieval of",
+      message(paste("Starting", assembly_type, "genome retrieval of",
                     organism, "from ensembl: "))
       genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
                                           release = NULL,
                                           id.type = assembly_type,
                                           path = output.dir)[1]
+      if (genome == FALSE) {
+        message("Remember some small genome organisms like yeast,",
+                 " does not have primary assemblies, ",
+                 "then change assembly_type to toplevel or use",
+                  "db = refseq.")
+      }
       if (gunzip) # unzip gtf file
         genome <- R.utils::gunzip(genome, overwrite = TRUE)
     } else {
@@ -391,7 +398,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     message("Making .fai index of genome")
     indexFa(genome)
   } else { # check if it already exists
-    genome <- grep(pattern = gsub(" ", "_", organism),
+    genome <- grep(pattern = organism,
                   x = list.files(output.dir, full.names = TRUE),
                   value = TRUE)
     genome <- grep(pattern = "\\.fa", x = genome, value = TRUE)
@@ -409,13 +416,16 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     message("Making txdb of GTF")
-    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organism)
+    organismCapital <- paste0(toupper(substr(organism, 1, 1)),
+                               substr(organism, 2, nchar(organism)))
+    organismCapital <- gsub("_", " ", organismCapital)
+    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
     if (genome != FALSE)
       seqlevelsStyle(txdb) <- seqlevelsStyle(FaFile(genome))[1]
     txdb_file <- paste0(gtf, ".db")
     AnnotationDbi::saveDb(txdb, txdb_file)
   } else { # check if it already exists
-    gtf <- grep(pattern = gsub(" ", "_", organism),
+    gtf <- grep(pattern = organism,
                 x = list.files(output.dir, full.names = TRUE),
                 value = TRUE)
     gtf <- grep(pattern = "\\.gtf", x = gtf, value = TRUE)

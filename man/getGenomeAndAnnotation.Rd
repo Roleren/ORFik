@@ -77,15 +77,16 @@ that are zipped when downloaded, should be TRUE!}
 
 \item{remake}{logical, default: FALSE, if TRUE remake everything specified}
 
-\item{assembly_type}{a character string specifying from which assembly type the genome
-shall be retrieved from (ensembl only, else this argument is ignored):
+\item{assembly_type}{a character string specifying from which assembly type
+the genome shall be retrieved from (ensembl only, else this argument is ignored):
 Default is
+\code{assembly_type = "primary_assembly")}.
+This will give you all no copies of any chromosomes.
+As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 \code{assembly_type = "toplevel")}.
 This will give you all multi-chromosomes (copies of the same chromosome with small variations).
 As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-To get primary assembly with 1 chromosome variant per chromosome:
-\code{assembly_type = "primary_assembly")}.
-As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed:}
+To get primary assembly with 1 chromosome variant per chromosome:}
 }
 \value{
 a character vector of path to genomes and gtf downloaded,
@@ -99,7 +100,7 @@ run again.\cr
 Do remake = TRUE, to do it all over again.
 }
 \details{
-If you want custom genome or gtf from you hard drive, assign it back
+If you want custom genome or gtf from you hard drive, assign it
 after you run this function, like this:\cr
 annotation <- getGenomeAndAnnotation(GTF = FALSE, genome = FALSE)\cr
 annotation["genome"] = "path/to/genome.fasta"\cr

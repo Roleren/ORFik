@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_imports.R
 \name{fread.bed}
 \alias{fread.bed}
-\title{Load bed file as GRanges.}
+\title{Load bed file as GRanges}
 \usage{
 fread.bed(filePath, chrStyle = NULL)
 }
@@ -20,7 +20,7 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 a \code{\link{GRanges}} object
 }
 \description{
-Wraps around \link[rtracklayer]{import.bed} and
+Wraps around \link[rtracklayer]{import} and
 tries to speed up loading with the
 use of data.table. Supports gzip, gz, bgz and bed formats.
 Also safer chromosome naming with the argument chrStyle

@@ -1,6 +1,6 @@
-#' Load bed file as GRanges.
+#' Load bed file as GRanges
 #'
-#' Wraps around \link[rtracklayer]{import.bed} and
+#' Wraps around \link[rtracklayer]{import} and
 #' tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle
@@ -224,7 +224,6 @@ import.ofst <- function(file) {
 #' NOTE: For wig you can send in 2 files, so that it automaticly merges
 #' forward and reverse stranded objects. You can also just send 1 wig file,
 #' it will then have "*" as strand.
-#'
 #' @param path a character path to file (1 or 2 files),
 #'  or data.table with 2 colums(forward&reverse)
 #'  or a GRanges/Galignment/GAlignmentPairs object etc.
@@ -337,5 +336,3 @@ findFa <- function(faFile) {
   }
   stop("faFile must be FaFile, BSgenome, valid filePath, or ORFik experiment")
 }
-
-
