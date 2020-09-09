@@ -96,8 +96,8 @@ findPeaksPerGenes <- function(tx, reads, top_tx = 0.50,
   # coverage track
   coverage <- coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
   coverage[, sum_per_gene := sum(count), by = genes]
-  coverage <- coverage[sum_per_gene >= max(quantile(sum_per_gene, tx_to_use),
-                                           min.reads.per.tx),]
+  coverage <- coverage[sum_per_gene >= max(quantile(sum_per_gene, top_tx),
+                                           min_reads_per_tx),]
   coverage[, mean_per_gene := mean(count), by = genes]
   coverage[, sd_per_gene := sd(count), by = genes]
   coverage[, zscore := (count - mean_per_gene) / sd_per_gene, by = genes]
