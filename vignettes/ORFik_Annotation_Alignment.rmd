@@ -1,11 +1,11 @@
 ---
-title: "ORFik Annotations&Alignment"
+title: "ORFik_Annotation_Alignment"
 author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
 output: BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{ORFik Overview}
+  %\VignetteIndexEntry{ORFik_Annotation_Alignment}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

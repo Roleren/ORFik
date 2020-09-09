@@ -89,7 +89,9 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' read lengths. Returns subset of read lengths and their shifts for which
 #' top covered transcripts follow periodicity measure. Each shift value
 #' assumes 5' anchoring of the reads, so that output offsets values will
-#' shift 5' anchored footprints to be on the p-site of the ribosome.
+#' shift 5' anchored footprints to be on the p-site of the ribosome. The
+#' E-site will be shift + 3 and A site will be shift - 3. So update to these,
+#' if you rather want those.
 #'
 #' Check out vignette for the examples of plotting RiboSeq metaplots over start
 #' and stop codons, so that you can verify visually whether this function
