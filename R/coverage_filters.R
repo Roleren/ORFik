@@ -71,28 +71,44 @@ filterExtremePeakGenes <-
   return(tx[-unique(toFilter$genes)])
   }
 
-#' Find max peak per gene
+#' Find peaks per gene
 #'
-#' For finding the highest peak per gene. With some default filters.
+#' For finding the peaks per gene, with some default filters.
+#' A peak is basically a position of very high coverage compared to
+#' its surrounding area.
 #' @param tx a GRangesList
-#' @param reads a GAlignments or GRanges
+#' @param reads a GAlignments or GRanges, must be 1 width reads like p-shifts,
+#' or other reads that is single positioned.
 #' @param top_tx numeric, default 0.50 (50\% top tx by reads).
 #' @param min_reads_per_tx numeric, default 10. Gene must have at least
 #'  10 reads
-#' @return a data.table
+#' @param type character, default "max". Get only max peak per gene.
+#' Alternatives: "all", all peaks passing the input filter will be returned.
+#' "median", only peaks that is higher than the median of all peaks
+#' @return a data.table of gene_id, position, counts of the peak, zscore
+#' and standard deviation of the peak compared to rest of gene area.
 #' @export
-findMaxPeakPerGenes <- function(tx, reads, top_tx = 0.50,
-                                min_reads_per_tx = 10) {
-    # coverage track
-    coverage <- coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
-    coverage[, sum_per_gene := sum(count), by = genes]
-    coverage <- coverage[sum_per_gene >= max(quantile(sum_per_gene, tx_to_use),
-                                             min.reads.per.tx),]
-    coverage[, mean_per_gene := mean(count), by = genes]
-    coverage[, sd_per_gene := sd(count), by = genes]
-    coverage[, zscore := (count - mean_per_gene) / sd_per_gene, by = genes]
-    summary(coverage$zscore)
-    coverage[, gene_id := names(tx)[genes]]
+findPeaksPerGenes <- function(tx, reads, top_tx = 0.50,
+                              min_reads_per_tx = 10,
+                              type = "max") {
+  if (!(type %in% c("max", "median", "all")))
+    stop("type must be either max, median or all")
+  # coverage track
+  coverage <- coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
+  coverage[, sum_per_gene := sum(count), by = genes]
+  coverage <- coverage[sum_per_gene >= max(quantile(sum_per_gene, tx_to_use),
+                                           min.reads.per.tx),]
+  coverage[, mean_per_gene := mean(count), by = genes]
+  coverage[, sd_per_gene := sd(count), by = genes]
+  coverage[, zscore := (count - mean_per_gene) / sd_per_gene, by = genes]
+  summary(coverage$zscore)
+  coverage[, gene_id := names(tx)[genes]]
+
+  if (type == "max") {
     coverage <- coverage[coverage[, .I[zscore == max(zscore)], by = genes]$V1]
-    return(coverage)
+    coverage <- coverage[!duplicated(gene_id), ]
+  } else if (type == "median") {
+    coverage <- coverage[zscore > median(zscore), ]
+  }
+  return(coverage)
 }
