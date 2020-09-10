@@ -32,7 +32,8 @@ a single numeric offset, -12 would mean p-site is 12 bases upstream
 Creates sliding windows of transcript normalized counts per position
 and check which window has most in upstream window vs downstream window.
 Pick the position with highest absolute value maximum of the window difference.
-Checks windows with split sites between positions -16 to +4, where 0 is TIS.
+Checks windows with split sites between positions -17 to -7, where 0 is TIS.
+Normally you expect the shift around -12.
 }
 \details{
 Transcript normalized means per CDS TIS region, count reads per position,

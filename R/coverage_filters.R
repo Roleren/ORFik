@@ -80,19 +80,32 @@ filterExtremePeakGenes <-
 #' @param reads a GAlignments or GRanges, must be 1 width reads like p-shifts,
 #' or other reads that is single positioned.
 #' @param top_tx numeric, default 0.50 (50\% top tx by reads).
-#' @param min_reads_per_tx numeric, default 10. Gene must have at least
-#'  10 reads
+#' @param min_reads_per_tx numeric, default 20. Gene must have at least
+#'  20 reads, applied before type filter.
+#' @param min_reads_per_peak numeric, default 10. Peak must have at
+#'  least 10 reads.
 #' @param type character, default "max". Get only max peak per gene.
 #' Alternatives: "all", all peaks passing the input filter will be returned.
-#' "median", only peaks that is higher than the median of all peaks
+#' "median", only peaks that is higher than the median of all peaks. "maxmedian":
+#' get first "max", then median of those.
 #' @return a data.table of gene_id, position, counts of the peak, zscore
 #' and standard deviation of the peak compared to rest of gene area.
 #' @export
-findPeaksPerGenes <- function(tx, reads, top_tx = 0.50,
-                              min_reads_per_tx = 10,
+#' @examples
+#' df <- ORFik.template.experiment()
+#' cds <- loadRegion(df, "cds")
+#' # Load ribo seq from ORFik
+#' rfp <- fimport(df[3,]$filepath)
+#' # All transcripts passing filter
+#' findPeaksPerGene(cds, rfp, top_tx = 0)
+#' # Top 50% of genes
+#' findPeaksPerGene(cds, rfp)
+findPeaksPerGene <- function(tx, reads, top_tx = 0.50,
+                              min_reads_per_tx = 20,
+                              min_reads_per_peak = 10,
                               type = "max") {
-  if (!(type %in% c("max", "median", "all")))
-    stop("type must be either max, median or all")
+  if (!(type %in% c("max", "median", "maxmedian", "all")))
+    stop("type must be either max, median, maxmedian or all")
   # coverage track
   coverage <- coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
   coverage[, sum_per_gene := sum(count), by = genes]
@@ -101,14 +114,16 @@ findPeaksPerGenes <- function(tx, reads, top_tx = 0.50,
   coverage[, mean_per_gene := mean(count), by = genes]
   coverage[, sd_per_gene := sd(count), by = genes]
   coverage[, zscore := (count - mean_per_gene) / sd_per_gene, by = genes]
-  summary(coverage$zscore)
   coverage[, gene_id := names(tx)[genes]]
 
-  if (type == "max") {
+  if (type == "max" | type == "maxmedian") {
     coverage <- coverage[coverage[, .I[zscore == max(zscore)], by = genes]$V1]
     coverage <- coverage[!duplicated(gene_id), ]
-  } else if (type == "median") {
+  }
+  if (type == "median" | type == "maxmedian") {
     coverage <- coverage[zscore > median(zscore), ]
   }
+  coverage <- coverage[count >= min_reads_per_peak, ]
+
   return(coverage)
 }

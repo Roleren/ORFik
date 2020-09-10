@@ -73,6 +73,12 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
   # Put into csv, the standard stats
   message("Making summary counts for lib:")
+  sCo <- function(region, lib) {
+    weight <- "score"
+    if (!(weight %in% colnames(mcols(lib))))
+      weight <- NULL
+    return(sum(countOverlapsW(region, lib, weight = weight)))
+  }
   for (s in libs) { # For each library
     message(s)
     lib <- get(s)
@@ -82,12 +88,6 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
     res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
 
     # mRNA region stats
-    sCo <- function(region, lib) {
-      weight <- "score"
-      if (!(weight %in% colnames(mcols(lib))))
-        weight <- NULL
-      return(sum(countOverlapsW(region, lib, weight = weight)))
-    }
     res_mrna <- data.table(mRNA = get("ct_mrna")[s],
                            LEADERS = get("ct_leaders")[s],
                            CDS = get("ct_cds")[s],
