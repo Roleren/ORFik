@@ -1,37 +1,3 @@
-#' Shift ribo-seq reads using cigar string
-#'
-#' Example if you want to change a read of length 20, by +12.
-#' You need to account for gaps etc, this is done using the
-#' cigar string of the read.
-#' @param cigar the cigar of the reads
-#' @param shift the shift as integer
-#' @param is_plus_strand logical
-#' @return the shifted read
-#'
-parseCigar <- function(cigar, shift, is_plus_strand) {
-  c_signs <- unlist(explodeCigarOps(cigar))
-  c_counts <- unlist(explodeCigarOpLengths(cigar))
-
-  i <- ifelse(is_plus_strand, 0L, length(c_signs) + 1L)
-  increment <- ifelse(is_plus_strand, 1L, -1L)
-  limit <- 0L
-  plusShift <- 0L
-  while (shift >= limit) {
-    i = i + increment
-    if (c_signs[i] == "M") {
-      limit = limit + c_counts[i]
-    } else if (c_signs[i] == "N" || c_signs[i] == "D") {
-      plusShift = plusShift + c_counts[i]
-    } else if (c_signs[i] == "I") {
-      plusShift = plusShift - c_counts[i]
-    } else {
-      warning(paste0("Not supported sign:", c_signs[i]))
-    }
-  }
-  shift = shift + plusShift
-  return(shift)
-}
-
 #' Find if there is a periodicity of 3 in the vector
 #'
 #' It uses Fourier transform for finding periodic vectors on the transcript
@@ -61,7 +27,8 @@ isPeriodic <- function(x) {
 #' Creates sliding windows of transcript normalized counts per position
 #' and check which window has most in upstream window vs downstream window.
 #' Pick the position with highest absolute value maximum of the window difference.
-#' Checks windows with split sites between positions -16 to +4, where 0 is TIS.
+#' Checks windows with split sites between positions -17 to -7, where 0 is TIS.
+#' Normally you expect the shift around -12.
 #'
 #' Transcript normalized means per CDS TIS region, count reads per position,
 #' divide that number per position by the total of that transcript, then sum
@@ -154,4 +121,24 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
     }
   }
   return(invisible(NULL))
+}
+
+#' Load the shifts from experiment
+#'
+#' Defaults to pshifts
+#' @inheritParams detectRibosomeShifts
+#' @param path path to .rds file containing the shifts as a list,
+#' one list element per shifted bam file.
+#' @return a list of the shifts, one list element per shifted bam file.
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' # subset on Ribo-seq
+#' df <- df[df$libtype == "RFP",]
+#' #shiftFootprintsByExperiment(df)
+#' #shifts.load(df)
+shifts.load <- function(df,
+                        path = pasteDir(dirname(df$filepath[1]),
+                                        "/pshifted/shifting_table.rds")) {
+  return(readRDS(file = path))
 }

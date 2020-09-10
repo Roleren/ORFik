@@ -101,7 +101,7 @@ df <- ORFik.template.experiment()
 df <- df[3,] #lets only p-shift RFP sample at index 3
 # If you want to check it in IGV do:
 shiftFootprintsByExperiment(df)
-# Then use the bed files that are created, which are readable in IGV.
+# Then use the .wig files that are created, which are readable in IGV.
 # If you only need in R, do: (then you get no .wig files)
 #shiftFootprintsByExperiment(df, output_format = "ofst")
 }

@@ -277,7 +277,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' df <- df[3,] #lets only p-shift RFP sample at index 3
 #' # If you want to check it in IGV do:
 #' shiftFootprintsByExperiment(df)
-#' # Then use the bed files that are created, which are readable in IGV.
+#' # Then use the .wig files that are created, which are readable in IGV.
 #' # If you only need in R, do: (then you get no .wig files)
 #' #shiftFootprintsByExperiment(df, output_format = "ofst")
 shiftFootprintsByExperiment <- function(df,
@@ -303,11 +303,14 @@ shiftFootprintsByExperiment <- function(df,
 
   txdb <- loadTxdb(df)
   rfpFiles <- filepath(df, "ofst") # If ofst file not present, uses bam file
-  bplapply(rfpFiles, FUN = function(file, path, df, start, stop,
-                                    top_tx, minFiveUTR, minCDS, minThreeUTR,
-                                    firstN, min_reads, accepted.lengths,
-                                    output_format, heatmap = heatmap,
-                                    must.be.periodic = must.be.periodic) {
+
+  shifts <- bplapply(rfpFiles,
+           FUN = function(file, path, df, start, stop,
+                          top_tx, minFiveUTR, minCDS, minThreeUTR,
+                          firstN, min_reads, accepted.lengths,
+                          output_format, heatmap = heatmap,
+                          must.be.periodic = must.be.periodic
+                          ) {
     message(file)
     rfp <- fimport(file)
     shifts <- detectRibosomeShifts(rfp, txdb = loadTxdb(df), start = start,
@@ -340,7 +343,7 @@ shiftFootprintsByExperiment <- function(df,
       export.wiggle(shifted, paste0(name, "_pshifted.wig"))
     }
 
-    return(invisible(NULL))
+    return(shifts)
   }, path = path, df = df, start = start, stop = stop,
       top_tx = top_tx, minFiveUTR = minFiveUTR,
       minCDS = minCDS, minThreeUTR = minThreeUTR,
@@ -354,6 +357,9 @@ shiftFootprintsByExperiment <- function(df,
     writeLines("All arguments not specificed below are default:", fileConn)
     writeLines(as.character(sys.call()), fileConn)
     close(fileConn)
+    # Save shifts
+    names(shifts) <- rfpFiles
+    saveRDS(shifts, file = paste0(path, "/shifting_table.rds"))
   }
   return(invisible(NULL))
 }
