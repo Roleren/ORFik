@@ -56,7 +56,7 @@ Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
 \examples{
-# In this argument specify the one you want
+## Manual way, specify all paths yourself.
 #arguments <- c(path.GTF, path.genome, path.phix, path.rrna, path.trna, path.ncrna)
 #names(arguments) <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
 #STAR.index(arguments, "output.dir")

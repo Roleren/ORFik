@@ -94,7 +94,7 @@ a character vector of path to genomes and gtf downloaded,
 }
 \description{
 Will create a R transcript database (TxDb object) from the annotation. \cr
-It will also index the genome \cr
+It will also index the genome for you\cr
 If you misspelled something or crashed, delete wrong files and
 run again.\cr
 Do remake = TRUE, to do it all over again.

@@ -33,7 +33,8 @@ per heatmap.}
 a ggplot2 grob object
 }
 \description{
-A good validation for you p-shifting
+A good validation for you p-shifting, to see shifts are corresponding
+and close to the CDS TIS.
 }
 \examples{
 df <- ORFik.template.experiment()

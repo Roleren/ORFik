@@ -52,12 +52,15 @@ The folder must then contain an even number of files
 and they must be named with the same prefix and sufix of either
  _1 and _2, 1 and 2, etc.}
 
-\item{steps}{a character, default: "tr-ge", trimming --> genome alignment\cr
+\item{steps}{a character, default: "tr-ge", trimming then genome alignment\cr
 steps of depletion and alignment wanted:
+The posible candidates you can use are:
+tr: trim reads, ph: phix depletion, rR: rrna depletion,
+nc: ncrna depletion, tR: trna depletion, ge: genome alignment,
+all: run all steps)\cr
 If not "all", a subset of these ("tr-ph-rR-nc-tR-ge")\cr
-In bash script it it reformated to this style:
+In bash script it is reformated to this style:
 (trimming and genome do: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)\cr
 the step where you align to the genome is usually always included, unless you
 are doing pure contaminant analysis.
 For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
@@ -108,6 +111,10 @@ STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 \details{
 Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
+If you are not on linux system, the trimmer program will not work.
+fastp is a very fast trimmer, but sadly only supported on linux. So in
+that case use the trimmer you want, and set input.dir to the location of
+the trimmed files.
 }
 \examples{
 # Use your own paths for annotation or the ORFik way

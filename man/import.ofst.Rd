@@ -16,8 +16,9 @@ dependent of if cigar/cigar1 is defined in .ofst file.
 \description{
 A much faster way to store, load and use bam files.\cr
 .ofst is ORFik fast serialized object,
-an optimized bed format for coverage reads with
-cigar and replicate number.\cr
+an optimized format for coverage reads with
+cigar and replicate number. A ribo seq file can compress the
+information in a bam file from 5GB down to a few MB.\cr
 .ofst is a text based format with minimum 4 columns:\cr
 1. chromosome\cr  2. start (left most position) \cr 3. strand (+, -, *)\cr
 4. width (not added if cigar exists)\cr

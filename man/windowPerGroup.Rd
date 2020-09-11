@@ -24,6 +24,9 @@ downstream from}
 a GRanges, or GRangesList object if any group had > 1 exon.
 }
 \description{
+Per GRanges input (gr), create a GRangesList window output of specified
+upstream, downstream region. This is an extension of the resize funciton,
+that works for spliced ranges.\cr
 If downstream is 20, it means the window will start 20 downstream of
 gr start site (-20 in relative transcript coordinates.)
 If upstream is 20, it means the window will start 20 upstream of

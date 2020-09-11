@@ -26,7 +26,7 @@
 #' @family STAR
 #' @export
 #' @examples
-#' # In this argument specify the one you want
+#' ## Manual way, specify all paths yourself.
 #' #arguments <- c(path.GTF, path.genome, path.phix, path.rrna, path.trna, path.ncrna)
 #' #names(arguments) <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
 #' #STAR.index(arguments, "output.dir")
@@ -92,6 +92,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
 #' minimum 30GB memory on genomes like human, rat, zebrafish etc.
+#' If you are not on linux system, the trimmer program will not work.
+#' fastp is a very fast trimmer, but sadly only supported on linux. So in
+#' that case use the trimmer you want, and set input.dir to the location of
+#' the trimmed files.
 #' @param input.dir path to fast files to align, can either be
 #' fasta files (.fastq, .fq, .fa etc) or compressed files with .gz.
 #' Also either paired end or single end reads.
@@ -106,12 +110,15 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  The folder must then contain an even number of files
 #'  and they must be named with the same prefix and sufix of either
 #'   _1 and _2, 1 and 2, etc.
-#' @param steps a character, default: "tr-ge", trimming --> genome alignment\cr
+#' @param steps a character, default: "tr-ge", trimming then genome alignment\cr
 #'  steps of depletion and alignment wanted:
+#'  The posible candidates you can use are:
+#'  tr: trim reads, ph: phix depletion, rR: rrna depletion,
+#'  nc: ncrna depletion, tR: trna depletion, ge: genome alignment,
+#'  all: run all steps)\cr
 #'  If not "all", a subset of these ("tr-ph-rR-nc-tR-ge")\cr
-#'  In bash script it it reformated to this style:
+#'  In bash script it is reformated to this style:
 #'  (trimming and genome do: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-#'  tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)\cr
 #'  the step where you align to the genome is usually always included, unless you
 #'  are doing pure contaminant analysis.
 #'  For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
@@ -193,6 +200,10 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
 #' minimum 30GB memory on genomes like human, rat, zebrafish etc.
+#' If you are not on linux system, the trimmer program will not work.
+#' fastp is a very fast trimmer, but sadly only supported on linux. So in
+#' that case use the trimmer you want, and set file1/file2 to the location of
+#' the trimmed files.
 #' @inheritParams STAR.align.folder
 #' @param file1 library file, if paired must be R1 file
 #' @param file2 default NULL, set if paired end to R2 file
@@ -255,7 +266,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' Download genome (fasta), annotation (GTF) and contaminants
 #'
 #' Will create a R transcript database (TxDb object) from the annotation. \cr
-#' It will also index the genome \cr
+#' It will also index the genome for you\cr
 #' If you misspelled something or crashed, delete wrong files and
 #' run again.\cr
 #' Do remake = TRUE, to do it all over again.

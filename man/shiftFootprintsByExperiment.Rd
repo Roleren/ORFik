@@ -88,11 +88,14 @@ NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",
 wig, bedo or .bedo)
 }
 \description{
-Saves files to a specified location as .ofst and .wig,
-.ofst will include a score column containing read width. \cr
 For more details, see: \code{\link{detectRibosomeShifts}}
 }
 \details{
+#' Saves files to a specified location as .ofst and .wig,
+The .ofst file will include a score column containing read width. \cr
+The .wig fiels, will be saved in pairs of +/- strand, and score column
+will be replicates of reads starting at that position,
+score = 5 means 5 reads.\cr
 Remember that different species might have different default Ribosome
 read lengths, for human, mouse etc, normally around 27:30.
 }

@@ -73,7 +73,7 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' Will tile a GRangesList into single bp resolution, each group of the list
 #' will be splited by positions of 1. Returned values are sorted as the same
 #' groups as the original GRangesList, except they are in bp resolutions.
-#' This is not supported originally by GenomicRanges.
+#' This is not supported originally by GenomicRanges for GRangesList.
 #' @param grl a \code{\link{GRangesList}} object with names
 #' @param sort.on.return logical (T), should the groups be
 #'  sorted before return.
@@ -501,6 +501,9 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 
 #' Get window region of GRanges object
 #'
+#' Per GRanges input (gr), create a GRangesList window output of specified
+#' upstream, downstream region. This is an extension of the resize funciton,
+#' that works for spliced ranges.\cr
 #' If downstream is 20, it means the window will start 20 downstream of
 #' gr start site (-20 in relative transcript coordinates.)
 #' If upstream is 20, it means the window will start 20 upstream of

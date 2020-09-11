@@ -31,7 +31,7 @@ fashion, treated as p site.
 This function takes account for junctions in cigars of the reads. Length of
 the footprint is saved in size' parameter of GRanges output. Footprints are
 also sorted according to their genomic position, ready to be saved as a
-bed or wig file.
+ofst, bed or wig file.
 }
 \details{
 The two columns in the shift data.frame/data.table argument are:\cr

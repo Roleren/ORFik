@@ -7,7 +7,7 @@
 #' This function takes account for junctions in cigars of the reads. Length of
 #' the footprint is saved in size' parameter of GRanges output. Footprints are
 #' also sorted according to their genomic position, ready to be saved as a
-#' bed or wig file.
+#' ofst, bed or wig file.
 #'
 #' The two columns in the shift data.frame/data.table argument are:\cr
 #' - fraction Numeric vector of lengths of footprints you select
@@ -245,10 +245,13 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 
 #' Shift footprints of each file in experiment
 #'
-#' Saves files to a specified location as .ofst and .wig,
-#' .ofst will include a score column containing read width. \cr
 #' For more details, see: \code{\link{detectRibosomeShifts}}
 #'
+#' #' Saves files to a specified location as .ofst and .wig,
+#' The .ofst file will include a score column containing read width. \cr
+#' The .wig fiels, will be saved in pairs of +/- strand, and score column
+#' will be replicates of reads starting at that position,
+#' score = 5 means 5 reads.\cr
 #' Remember that different species might have different default Ribosome
 #' read lengths, for human, mouse etc, normally around 27:30.
 #' @inheritParams detectRibosomeShifts
@@ -366,7 +369,8 @@ shiftFootprintsByExperiment <- function(df,
 
 #' Plot shifted heatmaps per library
 #'
-#' A good validation for you p-shifting
+#' A good validation for you p-shifting, to see shifts are corresponding
+#' and close to the CDS TIS.
 #' @inheritParams shiftFootprintsByExperiment
 #' @param output name to save file, full path. (Default NULL) No saving.
 #' @param scoring which scoring scheme to use for heatmap, default

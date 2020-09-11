@@ -429,10 +429,10 @@ groupings <- function(grl){
   return(rep.int(seq.int(length(l)), l))
 }
 
-#' Remake of coverageByTranscript
+#' coverageByTranscript with weights
 #'
-#'
-#' Allows weights, see \code{\link{coverageByTranscript}}
+#' Extends the function with weights,
+#' see \code{\link{coverageByTranscript}} for original function.
 #' @param x reads (\code{\link{GRanges}}, \code{\link{GAlignments}})
 #' @param transcripts \code{\link{GRangesList}}
 #' @param ignore.strand a logical (default: FALSE)
