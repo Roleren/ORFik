@@ -356,9 +356,11 @@ shiftFootprintsByExperiment <- function(df,
       BPPARAM = BPPARAM)
 
   if (log) {
-    fileConn<-file(paste0(path, "/pshifting_arguments.txt"))
-    writeLines("All arguments not specificed below are default:", fileConn)
-    writeLines(as.character(sys.call()), fileConn)
+    fileConn<-file(paste0(path, "/pshifting_arguments.txt"), "w")
+    cat(paste("From ORFik version:", packageVersion("ORFik"), "\n"),
+        file = fileConn)
+    cat("All arguments not specificed below are default:\n", file = fileConn)
+    cat(paste(as.character(sys.call()), "\n"), file = fileConn)
     close(fileConn)
     # Save shifts
     names(shifts) <- rfpFiles
