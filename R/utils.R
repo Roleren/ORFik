@@ -62,6 +62,10 @@ getGRanges <- function(df) {
 getGAlignments <- function(df) {
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
+  if (nrow(df) == 0) return(GenomicAlignments::GAlignments())
+  if (is.null(levels(df$seqnames)))
+    stop("df$seqnames must be factor!")
+
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
@@ -88,6 +92,8 @@ getGAlignments <- function(df) {
 #' Additional columns will be assigned as meta columns
 #' @return GAlignmentPairs object
 getGAlignmentsPairs <- function(df) {
+  if (nrow(df) == 0) return(GenomicAlignments::GAlignmentPairs())
+
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
