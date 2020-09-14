@@ -507,7 +507,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
 
   if (!is.null(RNA)) { # normalize by rna ratio
     rnaRatio <- (countOverlapsW(grl, RNA, weight.RNA) + 1) /
-      (countOverlaps(threeUTRs, RNA, weight.RNA) + 1)
+      (countOverlapsW(threeUTRs, RNA, weight.RNA) + 1)
     rrs[validNamesGRL] <- rrs[validNamesGRL] / rnaRatio
   }
   names(rrs) <- NULL
