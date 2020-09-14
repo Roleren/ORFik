@@ -125,8 +125,11 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 
 #' Load the shifts from experiment
 #'
-#' Defaults to pshifts
-#' @inheritParams detectRibosomeShifts
+#' When you p-shift using the function shiftFootprintsByExperiment,
+#' you will get a list of shifts per library. To automatically load them, you
+#' can use this function. Defaults to loading pshifts, if you made a-sites or
+#' e-sites, change the path argument to ashifted/eshifted folder instead.
+#' @inheritParams shiftFootprintsByExperiment
 #' @param path path to .rds file containing the shifts as a list,
 #' one list element per shifted bam file.
 #' @return a list of the shifts, one list element per shifted bam file.
