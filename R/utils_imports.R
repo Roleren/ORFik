@@ -178,7 +178,7 @@ import.bedo <- function(path) {
 import.bedoc <- function(path) {
   if (file_ext(path) != "bedoc")
     stop("import.bedoc can only load .bedoc files!")
-  return(makeGAlignmentsFromDataFrame(fread(input = path)))
+  return(getGAlignments(fread(input = path)))
 }
 
 #' #' Load GRanges / GAlignments object from .ofst
