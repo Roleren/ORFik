@@ -176,7 +176,15 @@ export.bedoc <- function(object, out) {
 #' @return NULL, object saved to disc
 #' @importFrom fst write_fst
 #' @export
-#'
+#' @examples
+#' ## GRanges
+#' gr <- GRanges("1:1-3:-")
+#' # export.ofst(gr, file = "path.ofst")
+#' ## GAlignment
+#' # Make input data.frame
+#' df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
+#' ga <- ORFik:::getGAlignments(df)
+#' # export.ofst(ga, file = "path.ofst")
 setGeneric("export.ofst", function(x,...) standardGeneric("export.ofst"))
 
 #' @inherit export.ofst

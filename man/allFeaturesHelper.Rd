@@ -47,7 +47,8 @@ extend 5' utrs, remember to input CAGE assigned version and not original!}
 \item{threeUTRs}{a GrangesList of transcript 3' utrs,
 normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 
-\item{faFile}{a FaFile or BSgenome from the fasta file, see ?FaFile}
+\item{faFile}{a path to fasta indexed genome, an open \code{\link{FaFile}},
+a BSgenome, or path to ORFik \code{\link{experiment}} with valid genome.}
 
 \item{riboStart}{usually 26, the start of the floss interval, see ?floss}
 

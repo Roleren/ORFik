@@ -22,7 +22,8 @@
 #' @param RNA RnaSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
 #'  or \code{\link{GRangesList}} object
 #' @param Gtf a TxDb object of a gtf file or path to gtf, gff .sqlite etc.
-#' @param faFile a FaFile or BSgenome from the fasta file, see ?FaFile
+#' @param faFile a path to fasta indexed genome, an open \code{\link{FaFile}},
+#' a BSgenome, or path to ORFik \code{\link{experiment}} with valid genome.
 #' @param riboStart usually 26, the start of the floss interval, see ?floss
 #' @param riboStop usually 34, the end of the floss interval
 #' @param sequenceFeatures a logical, default TRUE, include all sequence
@@ -240,7 +241,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
            (startRegionCoverage + 1)] # Relative score
 
   if (sequenceFeatures) { # sequence features
-    if (is(faFile, "FaFile") || is(faFile, "BSgenome")) {
+    if (!is.null(faFile)) {
+      faFile <- findFa(faFile)
       scores[, kozak := kozakSequenceScore(grl, tx, faFile)]
       scores[, gc := gcContent(grl, faFile)]
 

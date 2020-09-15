@@ -207,6 +207,17 @@ import.bedoc <- function(path) {
 #' dependent of if cigar/cigar1 is defined in .ofst file.
 #' @importFrom fst read_fst
 #' @export
+#' @examples
+#' ## GRanges
+#' gr <- GRanges("1:1-3:-")
+#' # export.ofst(gr, file = "path.ofst")
+#' # import.ofst("path.ofst")
+#' ## GAlignment
+#' # Make input data.frame
+#' df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
+#' ga <- ORFik:::getGAlignments(df)
+#' # export.ofst(ga, file = "path.ofst")
+#' # import.ofst("path.ofst")
 import.ofst <- function(file) {
   df <- read_fst(file)
   if ("cigar" %in% colnames(df)) {
@@ -322,6 +333,10 @@ fimport <- function(path, chrStyle = NULL) {
 #' @return a \code{\link{FaFile}} or BSgenome
 #' @family utils
 #' @export
+#' @examples
+#' # Some fasta genome with existing fasta index in same folder
+#' path <- system.file("extdata", "genome.fasta", package = "ORFik")
+#' findFa(path)
 #'
 findFa <- function(faFile) {
   if (is.character(faFile)) {

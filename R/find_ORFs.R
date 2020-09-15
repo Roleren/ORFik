@@ -284,10 +284,10 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
 #' @export
 #' @family findORFs
 #' @examples
-#' \dontrun{
-#'  # Load annotation
-#'  txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#' # Load annotation
+#' txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'                          package = "GenomicFeatures")
+#' \dontrun{
 #'  txdb <- loadTxdb(txdbFile)
 #'  fiveUTRs <- loadRegion(txdb, "leaders")
 #'  cds <- loadRegion(txdb, "cds")

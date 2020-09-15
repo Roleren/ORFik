@@ -272,6 +272,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",
 #' wig, bedo or .bedo)
 #' @importFrom rtracklayer export.bed
+#' @importFrom utils packageVersion
 #' @family pshifting
 #' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 #' @export

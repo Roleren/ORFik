@@ -29,6 +29,7 @@ bedToGR <- function(x, skip.name = TRUE) {
 #' seqnames, start, strand and width.\cr
 #' Additional columns will be assigned as meta columns
 #' @return GRanges object
+#' @importFrom S4Vectors new2
 getGRanges <- function(df) {
   if (!all(c("seqnames", "start", "width", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
@@ -59,6 +60,7 @@ getGRanges <- function(df) {
 #' seqnames, start ("pos" in final GA object), strand and width.\cr
 #' Additional columns will be assigned as meta columns
 #' @return GAlignments object
+#' @importFrom S4Vectors new2
 getGAlignments <- function(df) {
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
@@ -91,6 +93,7 @@ getGAlignments <- function(df) {
 #' seqnames, start1/start2 (integers), cigar1/cigar2 and strand\cr
 #' Additional columns will be assigned as meta columns
 #' @return GAlignmentPairs object
+#' @importFrom S4Vectors new2
 getGAlignmentsPairs <- function(df) {
   if (nrow(df) == 0) return(GenomicAlignments::GAlignmentPairs())
 

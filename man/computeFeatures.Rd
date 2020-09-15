@@ -31,7 +31,8 @@ or \code{\link{GRangesList}} object}
 
 \item{Gtf}{a TxDb object of a gtf file or path to gtf, gff .sqlite etc.}
 
-\item{faFile}{a FaFile or BSgenome from the fasta file, see ?FaFile}
+\item{faFile}{a path to fasta indexed genome, an open \code{\link{FaFile}},
+a BSgenome, or path to ORFik \code{\link{experiment}} with valid genome.}
 
 \item{riboStart}{usually 26, the start of the floss interval, see ?floss}
 

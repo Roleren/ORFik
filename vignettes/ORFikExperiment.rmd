@@ -125,7 +125,7 @@ With ORFik experiment this is easy:
 txNames <- filterTranscripts(txdb, minFiveUTR = 30,minCDS = 30, minThreeUTR = 30)
 loadRegions(txdb, parts = c("leaders", "cds", "trailers"), names.keep = txNames)
 ```
-The regions are now loaded into .GlobalEnv, only keeping transcript after the filter
+The regions are now loaded into .GlobalEnv, only keeping transcripts from txNames.
 
 ## Plotting with ORFik experiments
 Lets make a plot with coverage over mrna in just ribo-seq
@@ -170,21 +170,28 @@ contained in a bam file.
 Usually you convert to bed or wig files, but ORFik also support 2 formats
 for much faster loading and use of data.
 
+### ofst: ORFik serialized format
+From the bam file store these columns as a serialized file:
+seqname, start, cigar, strand, score (number of identical replicates for that read). 
+
+This is the fastest format to use, loading time of 10GB Ribo-seq bam file reduced from minutes to ~ 1 second and ~ 20MB size.
+
+
 ### bedo: bed ORFik file
 From the bam file store these columns as text file:
 seqname, start, end (if not all widths are 1), strand, score (number of identical replicates for that read), size (size of cigar Ms according to reference)
 
 The R object loaded from these files are GRanges, since cigar is not needed.
 
-It gives a ~400x speedup in loading and saving, and 50x speedup in coverage calculation.
+Loading time of 10GB Ribo-seq bam file reduced to ~ 10 seconds and ~ 100MB size.
 
 ### bedoc: bed ORFik file with cigar
 From the bam file store these columns as text file:
 seqname, cigar, start, strand, score (number of identical replicates for that read)
 
-The R object loaded from these files are GAlignments, since cigar is needed.
+The R object loaded from these files are GAlignments or GAlignmentPairs, since cigar is needed.
 
-It gives a ~400x speedup in loading and saving, and 50x speedup in coverage calculation.
+Loading time of 10GB Ribo-seq bam file reduced to ~ 15 seconds and ~ 200MB size.
 
 ## ORFik QC report
 ORFik also support a full QC report for post alignment statistics, correlation plots,

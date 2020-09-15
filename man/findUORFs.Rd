@@ -86,10 +86,10 @@ cds is included, since uORFs that stop on the stop codon on the CDS is not
 a uORF, but an alternative cds by definition, etc.
 }
 \examples{
-\dontrun{
- # Load annotation
- txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+# Load annotation
+txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                          package = "GenomicFeatures")
+\dontrun{
  txdb <- loadTxdb(txdbFile)
  fiveUTRs <- loadRegion(txdb, "leaders")
  cds <- loadRegion(txdb, "cds")

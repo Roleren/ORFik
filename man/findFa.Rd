@@ -18,6 +18,12 @@ a \code{\link{FaFile}} or BSgenome
 Get fasta file object, to find sequences in file.\cr
 Will load and import file if necessarry.
 }
+\examples{
+# Some fasta genome with existing fasta index in same folder
+path <- system.file("extdata", "genome.fasta", package = "ORFik")
+findFa(path)
+
+}
 \seealso{
 Other utils: 
 \code{\link{bedToGR}()},

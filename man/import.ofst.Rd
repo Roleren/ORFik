@@ -35,3 +35,15 @@ Other columns can be named whatever you want and added to meta columns.
 Positions are 1-based, not 0-based as .bed.
 Import with import.ofst
 }
+\examples{
+## GRanges
+gr <- GRanges("1:1-3:-")
+# export.ofst(gr, file = "path.ofst")
+# import.ofst("path.ofst")
+## GAlignment
+# Make input data.frame
+df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
+ga <- ORFik:::getGAlignments(df)
+# export.ofst(ga, file = "path.ofst")
+# import.ofst("path.ofst")
+}
