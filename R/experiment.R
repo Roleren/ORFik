@@ -661,11 +661,12 @@ convertLibs <- function(df,
                        type = "ofst") {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig")))
     stop("type must be either ofst, bedo or bedoc")
-  out.dir <- paste0(out.dir, "/", type, "/")
+
   validateExperiments(df)
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
     stop("must.overlap must be GRanges or GRangesList object!")
   if (!is.null(out.dir)) {
+    out.dir <- paste0(out.dir, "/", type, "/")
     dir.create(out.dir, showWarnings = FALSE, recursive = TRUE)
     if (!dir.exists(out.dir)) stop("could not create directory!")
     message(paste("Saving,", type, "files to:", out.dir))

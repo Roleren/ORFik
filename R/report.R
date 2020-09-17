@@ -78,7 +78,7 @@ ORFikQC <- QCreport
 #' log2(count + 1) correlation between samples.
 #'
 #' Is part of \code{\link{QCreport}}
-#' @param df an ORFik \code{\link{experiment}}
+#' @inheritParams QCreport
 #' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save, default:
