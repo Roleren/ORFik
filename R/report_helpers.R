@@ -9,9 +9,8 @@ QC_count_tables <- function(df, out.dir) {
   outputLibs(df, leaders, type = "ofst")
   libs <- bamVarName(df)
   # Update this to use correct
-  if (is(get(libs[1]), "GAlignments") | is(get(libs[1]), "GAlignmentPairs")) {
-    convertLibs(df, NULL) # Speedup by reducing unwanted information
-  }
+  convertLibs(df, NULL) # Speedup by reducing unwanted information
+
   # Make count tables
   dt_list <- countTable_regions(df, geneOrTxNames = "tx",
                                 longestPerGene = FALSE,
@@ -38,10 +37,10 @@ QC_count_tables <- function(df, out.dir) {
     res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
 
     # mRNA region stats
-    res_mrna <- data.table(mRNA = colSums(assay(dt_list["mrna"]))[s],
-                           LEADERS = colSums(assay(dt_list["leaders"]))[s],
-                           CDS = colSums(assay(dt_list["cds"]))[s],
-                           TRAILERs = colSums(assay(dt_list["trailers"]))[s])
+    res_mrna <- data.table(mRNA = colSums(assay(dt_list[["mrna"]]))[s],
+                           LEADERS = colSums(assay(dt_list[["leaders"]]))[s],
+                           CDS = colSums(assay(dt_list[["cds"]]))[s],
+                           TRAILERs = colSums(assay(dt_list[["trailers"]]))[s])
     res_mrna[,ratio_mrna_aligned := round(mRNA / res$Aligned_reads, 6)]
     res_mrna[,ratio_cds_mrna := round(CDS / mRNA, 6)]
     res_mrna[, ratio_cds_leader := round(CDS / LEADERS, 6)]
