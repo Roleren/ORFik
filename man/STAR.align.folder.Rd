@@ -68,7 +68,10 @@ so when you made the
 STAR index you need the rRNA step (usually just download a Silva rRNA database
 for SSU&LSU at: https://www.arb-silva.de/)}
 
-\item{adapter.sequence}{"auto"}
+\item{adapter.sequence}{character, default: "auto" (auto detect adapter, is not
+very reliable for Ribo-seq, so then you must include,
+else alignment will most likely fail!). Else manual assigned adapter like:
+"ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA".}
 
 \item{min.length}{15, minimum length of reads to pass filter.}
 

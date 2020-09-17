@@ -9,7 +9,7 @@ heatMapRegion(
   region = "TIS",
   outdir = "default",
   scores = c("transcriptNormalized", "sum"),
-  type = "bedo",
+  type = "ofst",
   cage = NULL,
   format = ".png",
   acceptedLengths = 21:75,
@@ -35,9 +35,9 @@ want custom location.}
 either of zscore, transcriptNormalized, sum, mean, median, ..
 see ?coverageScorings for info and more alternatives.}
 
-\item{type}{character, default: "bedo". Type of library:
+\item{type}{character, default: "ofst". Type of library:
 either "default", usually bam format (the one you gave to experiment),
-"pshifted" pshifted reads, "bed", "bedo" optimized bed, or "wig"}
+"pshifted" pshifted reads, "ofst", "bed", "bedo" optimized bed, or "wig"}
 
 \item{cage}{a character path to library file or a \code{\link{GRanges}},
 \code{\link{GAlignments}} preloaded file of CAGE data. Only used if

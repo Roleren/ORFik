@@ -125,7 +125,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  so when you made the
 #'  STAR index you need the rRNA step (usually just download a Silva rRNA database
 #'  for SSU&LSU at: https://www.arb-silva.de/)
-#' @param adapter.sequence "auto"
+#' @param adapter.sequence character, default: "auto" (auto detect adapter, is not
+#' very reliable for Ribo-seq, so then you must include,
+#' else alignment will most likely fail!). Else manual assigned adapter like:
+#' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA".
 #' @param min.length 15, minimum length of reads to pass filter.
 #' @param trim.front 0, default trim 0 bases 5'. For Ribo-seq set use 0.
 #' Ignored if tr (trim) is not one of the arguments in "steps"

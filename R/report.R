@@ -21,7 +21,8 @@
 #' To see some normal mrna coverage profiles of different RNA-seq protocols:
 #' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/
 #' @param df an ORFik \code{\link{experiment}}
-#' @param out.dir optional output directory, default: dirname(df$filepath[1])
+#' @param out.dir optional output directory, default: dirname(df$filepath[1]).
+#' Will make a folder called "QC_STATS" with all results in this directory.
 #' @return NULL (objects stored to disc)
 #' @family QC report
 #' @importFrom utils write.csv
@@ -45,119 +46,14 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
   validateExperiments(df)
-
-  exp_dir <- out.dir
-  stats_folder <- pasteDir(exp_dir, "/QC_STATS/")
   if (!dir.create(stats_folder, recursive = TRUE)) {
     if (!dir.exists(stats_folder)) stop("Could not create directory!")
   }
 
-  txdb <- loadTxdb(df)
-  loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
-  outputLibs(df, leaders, type = "ofst")
-  libs <- bamVarName(df)
-  if (is(get(libs[1]), "GAlignments") | is(get(libs[1]), "GAlignmentPairs")) {
-    simpleLibs(df, NULL) # Speedup by reducing unwanted information
-  }
-  # Make count tables
-  message("Making count tables for region:")
-  countDir <- paste0(stats_folder, "countTable_")
-  for (region in c("mrna", "leaders", "cds", "trailers")) {
-    message(region)
-    path <- paste0(countDir, region)
-    dt <- makeSummarizedExperimentFromBam(df, region = region,
-                                          geneOrTxNames = "tx",
-                                          longestPerGene = FALSE,
-                                          saveName = path)
-    assign(paste0("ct_", region), colSums(assay(dt)))
-  }
+  finals <- QC_count_tables(df, out.dir)
+  finals <- trim_detection(df, finals, out.dir)
 
-  # Special regions rRNA etc..
-  gff.df <- importGtfFromTxdb(txdb)
-  types <- unique(gff.df$transcript_biotype)
-  types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
-                             "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
-  # Put into csv, the standard stats
-  message("Making summary counts for lib:")
-  sCo <- function(region, lib) {
-    weight <- "score"
-    if (!(weight %in% colnames(mcols(lib))))
-      weight <- NULL
-    return(sum(countOverlapsW(region, lib, weight = weight)))
-  }
-  for (s in libs) { # For each library
-    message(s)
-    lib <- get(s)
-    # Raw stats
-    res <- data.frame(Sample = s, Raw_reads = NA,
-                      Aligned_reads = length(lib))
-    res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
-
-    # mRNA region stats
-    res_mrna <- data.table(mRNA = get("ct_mrna")[s],
-                           LEADERS = get("ct_leaders")[s],
-                           CDS = get("ct_cds")[s],
-                           TRAILERs = get("ct_trailers")[s])
-    res_mrna[,ratio_mrna_aligned := round(mRNA / res$Aligned_reads, 6)]
-    res_mrna[,ratio_cds_mrna := round(CDS / mRNA, 6)]
-    res_mrna[, ratio_cds_leader := round(CDS / LEADERS, 6)]
-
-    # Special region stats
-    numbers <- sCo(tx, lib)
-    for (t in types) {
-      valids <- gff.df[grep(x = gff.df$transcript_biotype, pattern = t)]
-      numbers <- c(numbers, sCo(tx[unique(valids$transcript_id)], lib))
-    }
-
-    res_extra <- data.frame(matrix(numbers, nrow = 1))
-    colnames(res_extra) <- c("All_tx_types", types)
-
-    # Lib width distribution, after soft.clip
-    widths <- round(summary(readWidths(lib)))
-    res_widths <- data.frame(matrix(widths, nrow = 1))
-    colnames(res_widths) <- names(widths)
-
-    final <- cbind(res, res_widths, res_mrna, res_extra)
-
-    if (s == libs[1]) finals <- final
-    else finals <- rbind(finals, final)
-  }
-
-  # Update raw reads to real number
-  # Needs a folder called trim
-  if (dir.exists(paste0(exp_dir, "/../trim/"))) {
-    message("Create raw read counts")
-    oldDir <- getwd()
-    setwd(paste0(exp_dir, "/../trim/"))
-    raw_library <- system('ls *.json', intern = TRUE)
-    lib_string <- 'grep -m 1 -h "total_reads" *.json | grep -Eo "[0-9]*"'
-    raw_reads <- as.numeric(system(lib_string, intern = TRUE))
-    raw_data <- data.table(raw_library, raw_reads)
-    raw_data$raw_library <- gsub("report_",
-                                 x = raw_data$raw_library, replacement = "")
-    raw_data$raw_library <- gsub(".json",
-                                 x = raw_data$raw_library, replacement = "")
-    order <- unlist(lapply(X = raw_data$raw_library,
-                           function(p) grep(pattern = p, x = df$filepath)))
-    notMatch <-
-      !all(seq(nrow(df)) %in% order) | length(seq(nrow(df))) != length(order)
-    if (length(order) != nrow(raw_data)) {
-      message(paste0("ORFik experiment has ", nrow(df), "libraries"))
-      message(paste0("Trim folder had", nrow(raw_data), "libraries"))
-      print(raw_data); stop()
-    } else if (notMatch) { # did not match all
-      message("Could not find raw read count of your data, setting to 20 M")
-    } else {
-      finals[order,]$Raw_reads <- raw_data$raw_reads
-      finals$ratio_aligned_raw = round(finals$Aligned_reads /
-                                         finals$Raw_reads, 4)
-    }
-    setwd(oldDir)
-  } else {
-    message("Could not find raw read counts of data, setting to NA")
-    message(paste0("No folder called:", paste0(exp_dir, "/../trim/")))
-  }
-
+  stats_folder <- pasteDir(out.dir, "/QC_STATS/")
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
 
   QCplots(df, "mrna", stats_folder)
@@ -223,27 +119,4 @@ QCplots <- function(df, region = "mrna",
   transcriptWindow1(df = df, outdir = stats_folder,
                     scores = c("sum", "zscore", "transcriptNormalized"))
   return(invisible(NULL))
-}
-
-#' Load QC Statistics report
-#'
-#' @inheritParams QCreport
-#' @param path path to QC statistics report, default:
-#' paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")
-#' @family QC report
-#' @return data.table of QC report or NULL if not exists
-#' @export
-#' @examples
-#' # df <- read.experiment("experiment/path")
-#'
-#' ## First make QC report
-#' # QCreport(df)
-#' # stats <- QCstats(df)
-QCstats <- function(df, path = paste0(dirname(df$filepath[1]),
-                                       "/QC_STATS/STATS.csv")) {
-  if (!file.exists(path)) {
-    message("No QC report made, run QCreport. Or wrong path given.")
-    return(invisible(NULL))
-  }
-  return(fread(path, header = TRUE))
 }

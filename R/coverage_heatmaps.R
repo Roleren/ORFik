@@ -128,7 +128,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' # heatMapRegion(df, "TIS")
 heatMapRegion <- function(df, region = "TIS", outdir = "default",
                           scores = c("transcriptNormalized", "sum"),
-                          type = "bedo", cage = NULL, format = ".png",
+                          type = "ofst", cage = NULL, format = ".png",
                           acceptedLengths = 21:75, upstream = c(50, 30),
                           downstream = c(29, 69),
                           shifting = c("5prime", "3prime")) {
@@ -182,9 +182,9 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #'
 #' @inheritParams heatMap_single
 #' @param df an ORFik \code{\link{experiment}}
-#' @param type character, default: "bedo". Type of library:
+#' @param type character, default: "ofst". Type of library:
 #' either "default", usually bam format (the one you gave to experiment),
-#' "pshifted" pshifted reads, "bed", "bedo" optimized bed, or "wig"
+#' "pshifted" pshifted reads, "ofst", "bed", "bedo" optimized bed, or "wig"
 #' @param outdir a character path to directory to save plot, will be named
 #' from ORFik experiment columns
 #' @param plot.together logical (default: FALSE), plot all in 1 plot (if TRUE)
@@ -202,7 +202,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' @return invisible(NULL), plots are saved
 #' @family heatmaps
 heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstream,
-                     zeroPosition = upstream, acceptedLengths = NULL, type = "bedo",
+                     zeroPosition = upstream, acceptedLengths = NULL, type = "ofst",
                      legendPos = "right", colors = "default", addFracPlot = TRUE,
                      location = "TIS", shifting = NULL, skip.last = FALSE, format = ".png",
                      plot.together = TRUE, title = TRUE) {
