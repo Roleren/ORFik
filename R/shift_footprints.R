@@ -177,7 +177,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
-                               minThreeUTR = minThreeUTR)ss
+                               minThreeUTR = minThreeUTR)
   cds <- loadRegion(txdb, part = "cds", names.keep = txNames)
   footprints <- fimport(footprints, cds)
 
