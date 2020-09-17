@@ -46,14 +46,15 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
   validateExperiments(df)
+  stats_folder <- pasteDir(out.dir, "/QC_STATS/")
   if (!dir.create(stats_folder, recursive = TRUE)) {
-    if (!dir.exists(stats_folder)) stop("Could not create directory!")
+    if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
 
   finals <- QC_count_tables(df, out.dir)
   finals <- trim_detection(df, finals, out.dir)
 
-  stats_folder <- pasteDir(out.dir, "/QC_STATS/")
+
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
 
   QCplots(df, "mrna", stats_folder)
