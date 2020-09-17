@@ -95,6 +95,9 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     rownames(res) <- names(tx)
   }
   if(!is.null(saveName)) {
+    if (!dir.exists(dirname(saveName))) {
+      dir.create(dirname(saveName), showWarnings = FALSE, recursive = TRUE)
+    }
     if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
     saveRDS(res, file = saveName)
   }

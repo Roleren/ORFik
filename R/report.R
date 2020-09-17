@@ -48,7 +48,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
 
   exp_dir <- out.dir
   stats_folder <- pasteDir(exp_dir, "/QC_STATS/")
-  if (!dir.create(stats_folder)) {
+  if (!dir.create(stats_folder, recursive = TRUE)) {
     if (!dir.exists(stats_folder)) stop("Could not create directory!")
   }
 
