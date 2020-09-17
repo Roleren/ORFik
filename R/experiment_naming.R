@@ -11,10 +11,10 @@ libNames <- function() {
                 "SSU", "ATAC", "tRNA", "SHAPE", "PRPF")
   allNames <-
     list(c("rna-seq", "Rna-seq", "RNA-seq"),
-         c("RFP", "RPF", "ribo-seq", "Ribo-seq"),
+         c("RFP", "RPF", "ribo-seq", "Ribo-seq", "ribo-Seq"),
          c("CAGE", "cage"),
-         c("LSU"),
-         c("SSU"),
+         c("80S","LSU"),
+         c("40S","SSU"),
          c("ATAC"),
          c("PRPF"),
          c("SHAPE"),
@@ -164,7 +164,8 @@ conditionNames <- function() {
   mainName <- c("WT", "MZ", "4Ei", "Silvesterol",
                 "Mutant", "cas9", "NMDA", "DHPG")
   allNames <-
-    list(c("WT", "wt", "control", "Control", "Basal"),
+    list(c("WT", "wt", "wild_type", "Wild_type",
+           "control", "Control", "Basal"),
          c("MZ", "dicer"),
          c("4Ei", "4ei"),
          c("silvesterol", "Silvesterol"),

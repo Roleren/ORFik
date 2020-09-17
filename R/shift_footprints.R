@@ -177,8 +177,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
   txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
-                               minThreeUTR = minThreeUTR)
-  cds <- cdsBy(txdb, by = "tx", use.names = TRUE)[txNames]
+                               minThreeUTR = minThreeUTR)ss
+  cds <- loadRegion(txdb, part = "cds", names.keep = txNames)
   footprints <- fimport(footprints, cds)
 
   # reduce data-set to only matching seqlevels
@@ -212,7 +212,10 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
                                        acceptedLengths = tab$size)
     validLengths <- periodicity[score == TRUE,]$fraction
   } else validLengths <- accepted.lengths
-
+  if (length(validLengths) == 0)
+    stop(paste("Library contained no periodic or accepted read-lengths,",
+         "check your library. Are you using the correct genome?",
+         "Is this Ribo-seq?"))
   # find shifts
   if (start) {
     rw <- windowPerReadLength(cds, tx, footprints, pShifted,
