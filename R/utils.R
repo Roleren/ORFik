@@ -38,6 +38,9 @@ getGRanges <- function(df) {
                  NAMES = df$NAMES,
                  elementMetadata = NULL,
                  check = FALSE)
+  if (is.null(levels(df$seqnames))) {
+    df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
+  }
   seqinfo <- Seqinfo(levels(df$seqnames))
   df$NAMES <- NULL
   if (ncol(df) == 4){
@@ -65,8 +68,9 @@ getGAlignments <- function(df) {
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
   if (nrow(df) == 0) return(GenomicAlignments::GAlignments())
-  if (is.null(levels(df$seqnames)))
-    stop("df$seqnames must be factor!")
+  if (is.null(levels(df$seqnames))) {
+    df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
+  }
 
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
@@ -96,7 +100,9 @@ getGAlignments <- function(df) {
 #' @importFrom S4Vectors new2
 getGAlignmentsPairs <- function(df) {
   if (nrow(df) == 0) return(GenomicAlignments::GAlignmentPairs())
-
+  if (is.null(levels(df$seqnames))) {
+    df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
+  }
   seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL

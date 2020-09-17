@@ -156,9 +156,13 @@ export.bedoc <- function(object, out) {
 #'
 #' A much faster way to store, load and use bam files.\cr
 #' .ofst is ORFik fast serialized object,
-#' an optimized bed format for coverage reads with
-#' cigar and replicate number.\cr
-#' .ofst is a text based format with minimum 4 columns:\cr
+#' an optimized format for coverage reads with
+#' cigar and replicate number. It uses the fst format as back-end:
+#' \code{\link{fst-package}}.\cr A .ofst ribo seq file can compress the
+#' information in a bam file from 5GB down to a few MB. This new files has
+#' super fast reading time, only a few seconds, instead of minutes. It also has
+#' random index access possibility of the file. \cr
+#' .ofst is represented as a data.frane format with minimum 4 columns:\cr
 #' 1. chromosome\cr  2. start (left most position) \cr 3. strand (+, -, *)\cr
 #' 4. width (not added if cigar exists)\cr
 #' 5. cigar (not needed if width exists):
@@ -207,7 +211,7 @@ setMethod("export.ofst", "GAlignments",
           function(x, file, ...) {
             df <- data.frame(seqnames = x@seqnames,
                              start = x@start,
-                             cigar = factor(x@cigar),
+                             cigar = factor(x@cigar, levels = unique(x@cigar)),
                              strand = x@strand)
             if (!is.null(x@NAMES)) df$NAMES <- x@ranges@NAMES
             if (ncol(x@elementMetadata) > 0)
@@ -224,8 +228,10 @@ setMethod("export.ofst", "GAlignmentPairs",
             df <- data.frame(seqnames = x@first@seqnames,
                              start1 = x@first@start,
                              start2 = x@last@start,
-                             cigar1 = factor(x@first@cigar),
-                             cigar2 = factor(x@last@cigar),
+                             cigar1 = factor(x@first@cigar,
+                                             levels = unique(x@first@cigar)),
+                             cigar2 = factor(x@last@cigar,
+                                             levels = unique(x@last@cigar)),
                              strand = x@first@strand)
             if (!is.null(x@NAMES)) df$NAMES <- x@NAMES # Check that this is correct
             if (ncol(x@elementMetadata) > 0)

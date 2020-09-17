@@ -1,6 +1,6 @@
 #' Load bed file as GRanges
 #'
-#' Wraps around \link[rtracklayer]{import} and
+#' Wraps around \code{\link{import}} and
 #' tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle
@@ -181,14 +181,17 @@ import.bedoc <- function(path) {
   return(getGAlignments(fread(input = path, stringsAsFactors = TRUE)))
 }
 
-#' #' Load GRanges / GAlignments object from .ofst
+#' Load GRanges / GAlignments object from .ofst
 #'
 #' A much faster way to store, load and use bam files.\cr
 #' .ofst is ORFik fast serialized object,
 #' an optimized format for coverage reads with
-#' cigar and replicate number. A ribo seq file can compress the
-#' information in a bam file from 5GB down to a few MB.\cr
-#' .ofst is a text based format with minimum 4 columns:\cr
+#' cigar and replicate number. It uses the fst format as back-end:
+#' \code{\link{fst-package}}.\cr A .ofst ribo seq file can compress the
+#' information in a bam file from 5GB down to a few MB. This new files has
+#' super fast reading time, only a few seconds, instead of minutes. It also has
+#' random index access possibility of the file. \cr
+#' .ofst is represented as a data.frane format with minimum 4 columns:\cr
 #' 1. chromosome\cr  2. start (left most position) \cr 3. strand (+, -, *)\cr
 #' 4. width (not added if cigar exists)\cr
 #' 5. cigar (not needed if width exists):
