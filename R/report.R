@@ -50,13 +50,13 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   if (!dir.create(stats_folder, recursive = TRUE)) {
     if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
-
+  # Get count tables
   finals <- QC_count_tables(df, out.dir)
+  # Do trimming detection
   finals <- trim_detection(df, finals, out.dir)
-
-
+  # Save file
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
-
+  # Get plots
   QCplots(df, "mrna", stats_folder)
 
   message(paste("Everything done, saved QC to:", stats_folder))

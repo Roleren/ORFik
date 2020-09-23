@@ -7,7 +7,7 @@
 create.experiment(
   dir,
   exper,
-  saveDir = NULL,
+  saveDir = "~/Bio_data/ORFik_experiments/",
   txdb = "",
   fa = "",
   organism = "",
@@ -21,11 +21,14 @@ create.experiment(
 
 \item{exper}{Short name of experiment, max 5 characters long}
 
-\item{saveDir}{Directory to save experiment csv file (NULL)}
+\item{saveDir}{Directory to save experiment csv file, default:
+"~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
+it to disc.}
 
 \item{txdb}{A path to gff/gtf file used for libraries}
 
-\item{fa}{A path to fasta genome/sequences used for libraries}
+\item{fa}{A path to fasta genome/sequences used for libraries, remember the
+file must have a fasta index too.}
 
 \item{organism}{character, default: "" (no organism set), scientific name
 of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.}
@@ -67,17 +70,32 @@ txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
 fa <- system.file("extdata", "genome.fasta", package = "ORFik")
 # 5. Set organism (optional)
 org <- "Homo sapiens"
+
+# Create temple not saved on disc yet:
 template <- create.experiment(dir = dir, exper, txdb = txdb,
+                              saveDir = NULL,
                               fa = fa, organism = org,
                               viewTemplate = FALSE)
-# Now fix non-unique rows: either is libre orfice, microsoft excel, or in R
+## Now fix non-unique rows: either is libre office, microsoft excel, or in R
 template$X5[6] <- "heart"
 # read experiment (if you set correctly)
 df <- read.experiment(template)
 # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+
+## Create and save experiment directly:
+## Default location: "~/Bio_data/ORFik_experiments/"
+#template <- create.experiment(dir = dir, exper, txdb = txdb,
+#                               fa = fa, organism = org,
+#                               viewTemplate = FALSE)
+## Custom location
+#template <- create.experiment(dir = dir, exper, txdb = txdb,
+#                               saveDir = "~/MY/CUSTOME/LOCATION",
+#                               fa = fa, organism = org,
+#                               viewTemplate = FALSE)
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{experiment-class}},
 \code{\link{filepath}()},

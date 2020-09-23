@@ -170,13 +170,16 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' NOTE: difference between tx and mrna is that tx are all transcripts, while
 #' mrna are all transcripts with a cds
 #' @param names.keep a character vector of subset of names to keep. Example:
-#' loadRegions(txdb, names = ENST1000005), will return only that transcript
+#' loadRegions(txdb, names = ENST1000005), will return only that transcript.
+#' Remember if you set by to "gene", then this list must be with gene names.
+#' @param by a character, default "tx" Either "tx" or "gene". What names to
+#' output region by, the transcript name "tx" or gene names "gene"
 #' @return a GrangesList of region
 #' @export
 #' @examples
 #' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' loadRegion(gtf, "intron")
-loadRegion <- function(txdb, part = "tx", names.keep = NULL) {
+loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
   if (is.grl(txdb)) return(txdb)
   if (length(part) != 1) stop("argument: (path) must be length 1")
   txdb <- loadTxdb(txdb)
@@ -211,12 +214,13 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL) {
 #' By default loads all parts to .GlobalEnv (global environemnt)
 #' Useful to not spend time on finding the functions to load regions.
 #' @inheritParams loadTxdb
-#' @param parts the transcript parts you want
+#' @inheritParams loadRegions
+#' @param parts the transcript parts you want, default:
+#' c("mrna", "leaders", "cds", "trailers").\cr See ?loadRegion for more info
+#' on this argument.
 #' @param extension What to add on the name after leader, like: B -> leadersB
-#' @param names.keep a character vector of subset of names to keep. Example:
-#' loadRegions(txdb, names = ENST1000005), will return only that transcript
-#' @param envir Which environment to save to, default (.GlobalEnv)
-#' @return invisible(NULL) (regions set by envir assignment)
+#' @param envir Which environment to save to, default: .GlobalEnv
+#' @return invisible(NULL) (regions saved in envir)
 #' @export
 #' @examples
 #' # Load all mrna regions to Global environment
@@ -224,10 +228,13 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL) {
 #' loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
 loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", names.keep = NULL,
+                        by = "tx",
                         envir = .GlobalEnv) {
+  # TODO, add possibility to load with gene names, also in loadRegion
   txdb <- loadTxdb(txdb)
   for (i in parts) {
-    assign(x = paste0(i, extension), value = loadRegion(txdb, i, names.keep),
+    assign(x = paste0(i, extension),
+           value = loadRegion(txdb, i,names.keep, by),
            envir = envir)
   }
   return(invisible(NULL))
@@ -310,7 +317,8 @@ importGtfFromTxdb <- function(txdb) {
 #'
 #' If your annotation does not have leaders or trailers, set them to NULL,
 #' since 0 does mean there must exist a column called utr3_len etc.
-#' @inheritParams loadTxdb
+#' Genes with gene_id = NA will be be removed.
+#' @inheritParams loadRegion
 #' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
 #' transcripts. Set to NULL if no 5' UTRs exists for annotation.
 #' @param minCDS (integer) minimum bp for CDS during filtering for the
@@ -332,7 +340,9 @@ importGtfFromTxdb <- function(txdb) {
 #'
 filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
                               minThreeUTR = 30L, longestPerGene = TRUE,
-                              stopOnEmpty = TRUE) {
+                              stopOnEmpty = TRUE,
+                              by = "tx") {
+  if (!(by %in% c("tx", "gene"))) stop("by must be either tx or gene!")
   txdb <- loadTxdb(txdb)
   five <- !is.null(minFiveUTR)
   three <- !is.null(minThreeUTR)
@@ -356,5 +366,6 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
     stop("No transcript has leaders and trailers of specified minFiveUTR",
          "minCDS, minThreeUTR")
 
+  if (by == "gene") return(tx$gene_id)
   return(tx$tx_name)
 }

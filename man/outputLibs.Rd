@@ -38,22 +38,20 @@ Variable names defined by df (ORFik experiment DataFrame)
 Uses multiple cores to load, defined by multicoreParam
 }
 \examples{
-# 1. Pick directory
-dir <- system.file("extdata", "", package = "ORFik")
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb,
-                              viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment
-df <- read.experiment(template)
-# Output to .GlobalEnv with:
-# outputLibs(df)
+## Load a template ORFik experiment
+df <- ORFik.template.experiment()
+## Default library type load, usually bam files
+# outputLibs(df, type = "default")
+## .ofst file load, if ofst files does not exists
+## it will load default
+# outputLibs(df, type = "ofst")
+## .wig file load, if wiggle files does not exists
+## it will load default
+# outputLibs(df, type = "wig")
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},

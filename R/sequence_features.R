@@ -366,3 +366,58 @@ fractionLength <- function(grl, tx_len) {
   names(tx_len) <- NULL
   return(grl_len / tx_len)
 }
+
+#' TOP Motif detection
+#'
+#' Per leader, detect if the leader has a TOP motif at TSS (5' end of leader)
+#' TOP motif defined as: (C, then 4 pyrimidines)
+#' @param seqs the sequences (character vector, DNAStringSet),
+#' of 5' UTRs (leaders) start region.
+#' seqs must be of minimum widths start - stop + 1 to be included.
+#' \cr See example below for input.
+#' @param start position in seqs to start at (first is 1), default 1.
+#' @param stop position in seqs to stop at (first is 1),
+#'  default max(nchar(seqs)), that is the longest sequence length
+#' @return default: return.sequence == FALSE, a character vector of either
+#' TOP, C or OTHER. C means leaders started on C,
+#' Other means not TOP and did not start on C. If return.sequence == TRUE,
+#' a data.table is returned with the base per position in the motif
+#' is included as additional columns (per position called seq1, seq2 etc) and
+#' a id column called X.gene_id (with names of seqs).
+#' @export
+#' @examples
+#'
+#' \dontrun{
+#' if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
+#'   txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                           package = "GenomicFeatures")
+#'   #Extract sequences of Coding sequences.
+#'   leaders <- loadRegion(txdbFile, "leaders")
+#'
+#'   # Should update by CAGE if not already done
+#'   cageData <- system.file("extdata", "cage-seq-heart.bed.bgz",
+#'                           package = "ORFik")
+#'   leadersCage <- reassignTSSbyCage(leaders, cageData)
+#'   # Get region to check
+#'   seqs <- startRegionString(leadersCage, NULL,
+#'         BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 0, 4)
+#'   topMotif(seqs)
+#'   }
+#'  }
+topMotif <- function(seqs, start = 1, stop = max(nchar(seqs)),
+                     return.sequence = TRUE) {
+  if (is.null(names(seqs))) names(seqs) <- as.character(seq(1, length(seqs)))
+
+  dt <- data.table(X.gene_id = names(seqs))
+  for (i in seq(start, stop)) {
+    dt[,paste0("seq", i)] <- substring(seqs, i, i)
+  }
+
+  dt$TOP <- "OTHER"
+  pyri <-  c("C", "T") # pyrimidines
+  dt[seq1 == "C",]$TOP <- "C"
+  dt[seq1 == "C" & (seq2 %in% pyri) & (seq3 %in% pyri) &
+       (seq4 %in% pyri) & (seq5 %in% pyri),]$TOP <- "TOP"
+  if (return.sequence) return(dt)
+  return(dt$TOP)
+}

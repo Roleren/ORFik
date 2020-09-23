@@ -4,7 +4,7 @@
 \alias{loadRegion}
 \title{Load transcript region}
 \usage{
-loadRegion(txdb, part = "tx", names.keep = NULL)
+loadRegion(txdb, part = "tx", names.keep = NULL, by = "tx")
 }
 \arguments{
 \item{txdb}{a TxDb file or a path to one of:
@@ -16,7 +16,11 @@ NOTE: difference between tx and mrna is that tx are all transcripts, while
 mrna are all transcripts with a cds}
 
 \item{names.keep}{a character vector of subset of names to keep. Example:
-loadRegions(txdb, names = ENST1000005), will return only that transcript}
+loadRegions(txdb, names = ENST1000005), will return only that transcript.
+Remember if you set by to "gene", then this list must be with gene names.}
+
+\item{by}{a character, default "tx" Either "tx" or "gene". What names to
+output region by, the transcript name "tx" or gene names "gene"}
 }
 \value{
 a GrangesList of region

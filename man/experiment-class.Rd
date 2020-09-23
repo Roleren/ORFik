@@ -45,9 +45,18 @@ If it finds more than one hit for one file, it will not guess.
 Always check that it guessed correctly.
 }
 \examples{
-# To see an internal ORFik example
+## To see an internal ORFik example
 df <- ORFik.template.experiment()
-# This is how to make it:
+## See libraries in experiment
+df
+## See organism of experiment
+organism.df(df)
+## See file paths in experiment
+filepath(df, "default")
+## Output objects in R, to .GlobalEnv
+#outputLibs(df)
+
+## This is how to make it:
 \dontrun{
 library(ORFik)
 
@@ -58,9 +67,10 @@ exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 exper_name = "Lee13"
 
 # 3. Create a template experiment (gtf and fasta genome)
-temp <- create.experiment(exp_dir, exper_name,
+temp <- create.experiment(exp_dir, exper_name, saveDir = NULL,
  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
- fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+ fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa",
+ organism = "Homo sapiens")
 
 # 4. Make sure each row(sample) is unique and correct
 # You will get a view open now, check the data.frame that it is correct:
@@ -85,6 +95,7 @@ df
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{filepath}()},

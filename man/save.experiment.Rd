@@ -18,21 +18,15 @@ NULL (experiment save only)
 Save \code{\link{experiment}} to disc
 }
 \examples{
-# 1. Pick directory
-dir <- system.file("extdata", "", package = "ORFik")
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb,
-                              viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment
-df <- read.experiment(template)
-# Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+df <- ORFik.template.experiment()
+## Save with:
+#save.experiment(df, file = "path/to/save/experiment.csv")
+## Identical (.csv not needed, can be added):
+#save.experiment(df, file = "path/to/save/experiment")
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},

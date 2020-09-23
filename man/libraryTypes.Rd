@@ -17,6 +17,7 @@ Which type of library type in \code{\link{experiment}}?
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},

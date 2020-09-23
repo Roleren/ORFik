@@ -38,9 +38,18 @@
 #' Always check that it guessed correctly.
 #' @importFrom methods new
 #' @examples
-#' # To see an internal ORFik example
+#' ## To see an internal ORFik example
 #' df <- ORFik.template.experiment()
-#' # This is how to make it:
+#' ## See libraries in experiment
+#' df
+#' ## See organism of experiment
+#' organism.df(df)
+#' ## See file paths in experiment
+#' filepath(df, "default")
+#' ## Output objects in R, to .GlobalEnv
+#' #outputLibs(df)
+#'
+#' ## This is how to make it:
 #' \dontrun{
 #' library(ORFik)
 #'
@@ -51,9 +60,10 @@
 #' exper_name = "Lee13"
 #'
 #' # 3. Create a template experiment (gtf and fasta genome)
-#' temp <- create.experiment(exp_dir, exper_name,
+#' temp <- create.experiment(exp_dir, exper_name, saveDir = NULL,
 #'  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
-#'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa")
+#'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa",
+#'  organism = "Homo sapiens")
 #'
 #' # 4. Make sure each row(sample) is unique and correct
 #' # You will get a view open now, check the data.frame that it is correct:
@@ -136,8 +146,14 @@ setMethod("nrow",
 #' To read an ORFik experiment, you must of course make one first.
 #' See \code{\link{create.experiment}}
 #' The file must be csv and be a valid ORFik experiment
-#' @param file a .csv file following ORFik experiment style ("," as seperator)
-#' , or a template data.frame from \code{\link{create.experiment}}
+#' @param file relative path to a ORFik experiment. That is a .csv file following
+#' ORFik experiment style ("," as seperator).
+#' , or a template data.frame from \code{\link{create.experiment}}. Can
+#' also be full path to file, then in.dir argument is ignored.
+#' @param in.dir Directory to load experiment csv file from, default:
+#' "~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
+#' it to disc. Does not apply if file is not a path, but a data.frame. Also
+#' does not apply if file was given as full path.
 #' @return an ORFik \code{\link{experiment}}
 #' @importFrom utils read.table read.csv2
 #' @export
@@ -145,27 +161,23 @@ setMethod("nrow",
 #' # From file
 #' \dontrun{
 #' # Read from file
-#' df <- read.experiment(filepath) # <- valid .csv file
+#' df <- read.experiment(filepath) # <- valid ORFik .csv file
 #' }
-#' # Read from (create.experiment() template)
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment from template
-#' df <- read.experiment(template)
+#' ## Read from (create.experiment() template)
+#' df <- ORFik.template.experiment()
 #'
-#' # To save it, do:
-#' # save.experiment(df, file = "path/to/save/experiment.csv")
+#' ## To save it, do:
+#' # save.experiment(df, file = "path/to/save/experiment")
+#' ## You can then do:
+#' # read.experiment("path/to/save/experiment")
+#' # or (identical):
+#' # read.experiment("experiment", in.dir = "path/to/save/")
 #' @family ORFik_experiment
-read.experiment <-  function(file) {
+read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
   if (is(file, "character")) {
     if (file_ext(file) == "") file <- paste0(file, ".csv")
+    if (!file.exists(file)) file <- pasteDir(in.dir, file)
+
     info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
     listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
                           stringsAsFactors = FALSE)
@@ -203,10 +215,13 @@ read.experiment <-  function(file) {
 #' like +/- strand wig files.
 #' @param dir Which directory / directories to create experiment from
 #' @param exper Short name of experiment, max 5 characters long
-#' @param saveDir Directory to save experiment csv file (NULL)
+#' @param saveDir Directory to save experiment csv file, default:
+#' "~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
+#' it to disc.
 #' @param types Default (bam, bed, wig), which types of libraries to allow
 #' @param txdb A path to gff/gtf file used for libraries
-#' @param fa A path to fasta genome/sequences used for libraries
+#' @param fa A path to fasta genome/sequences used for libraries, remember the
+#' file must have a fasta index too.
 #' @param viewTemplate run View() on template when finished, default (TRUE)
 #' @param organism character, default: "" (no organism set), scientific name
 #' of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.
@@ -229,16 +244,30 @@ read.experiment <-  function(file) {
 #' fa <- system.file("extdata", "genome.fasta", package = "ORFik")
 #' # 5. Set organism (optional)
 #' org <- "Homo sapiens"
+#'
+#' # Create temple not saved on disc yet:
 #' template <- create.experiment(dir = dir, exper, txdb = txdb,
+#'                               saveDir = NULL,
 #'                               fa = fa, organism = org,
 #'                               viewTemplate = FALSE)
-#' # Now fix non-unique rows: either is libre orfice, microsoft excel, or in R
+#' ## Now fix non-unique rows: either is libre office, microsoft excel, or in R
 #' template$X5[6] <- "heart"
 #' # read experiment (if you set correctly)
 #' df <- read.experiment(template)
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+#'
+#' ## Create and save experiment directly:
+#' ## Default location: "~/Bio_data/ORFik_experiments/"
+#' #template <- create.experiment(dir = dir, exper, txdb = txdb,
+#' #                               fa = fa, organism = org,
+#' #                               viewTemplate = FALSE)
+#' ## Custom location
+#' #template <- create.experiment(dir = dir, exper, txdb = txdb,
+#' #                               saveDir = "~/MY/CUSTOME/LOCATION",
+#' #                               fa = fa, organism = org,
+#' #                               viewTemplate = FALSE)
 #' @family ORFik_experiment
-create.experiment <- function(dir, exper, saveDir = NULL,
+create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiments/",
                               txdb = "", fa = "", organism = "",
                               pairedEndBam = FALSE,
                               viewTemplate = TRUE,
@@ -292,20 +321,17 @@ create.experiment <- function(dir, exper, saveDir = NULL,
 #' @importFrom utils write.table
 #' @return NULL (experiment save only)
 #' @examples
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
-#' df <- read.experiment(template)
-#' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
+#' df <- ORFik.template.experiment()
+#' ## Save with:
+#' #save.experiment(df, file = "path/to/save/experiment.csv")
+#' ## Identical (.csv not needed, can be added):
+#' #save.experiment(df, file = "path/to/save/experiment")
 #' @family ORFik_experiment
 save.experiment <- function(df, file) {
+  if (file_ext(file) == "") file <- paste0(file, ".csv")
+  if (!dir.exists(dirname(file)))
+    dir.create(dirname(file), showWarnings = FALSE, recursive = TRUE)
+
   write.table(x = df, file = file, sep = ",",
               row.names = FALSE, col.names = FALSE)
   return(invisible(NULL))
@@ -406,10 +432,10 @@ validateExperiments <- function(df) {
 #' df <- ORFik.template.experiment()
 #' bamVarName(df)
 #'
-#' # without libtype
-#' #bamVarName(df, skip.libtype = TRUE)
-#' # With experiment name
-#' #bamVarName(df, skip.experiment = FALSE)
+#' ## without libtype
+#' bamVarName(df, skip.libtype = TRUE)
+#' ## Without experiment name
+#' bamVarName(df, skip.experiment = TRUE)
 bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.condition = length(unique(df$condition)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
@@ -571,19 +597,16 @@ filepath <- function(df, type, basename = FALSE) {
 #' @importFrom BiocParallel bpparam
 #' @export
 #' @examples
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
-#' df <- read.experiment(template)
-#' # Output to .GlobalEnv with:
-#' # outputLibs(df)
+#' ## Load a template ORFik experiment
+#' df <- ORFik.template.experiment()
+#' ## Default library type load, usually bam files
+#' # outputLibs(df, type = "default")
+#' ## .ofst file load, if ofst files does not exists
+#' ## it will load default
+#' # outputLibs(df, type = "ofst")
+#' ## .wig file load, if wiggle files does not exists
+#' ## it will load default
+#' # outputLibs(df, type = "wig")
 #' @family ORFik_experiment
 outputLibs <- function(df, chrStyle = NULL, type = "default",
                        envir = .GlobalEnv, BPPARAM = bpparam()) {
@@ -651,9 +674,9 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()
-#' #simpleLibs(df)
+#' #convertLibs(df)
 #' # Keep only 5' ends of reads
-#' #simpleLibs(df, method = "5prime")
+#' #convertLibs(df, method = "5prime")
 convertLibs <- function(df,
                        out.dir = dirname(df$filepath[1]),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
@@ -838,23 +861,75 @@ organism.df <- function(df) {
   return(org)
 }
 
+#' List current experiment available
+#'
+#' Will only search .csv extension, also exclude any experiment
+#' with the word template.
+#' @param dir directory for ORFik experiments: default:
+#' "~/Bio_data/ORFik_experiments/"
+#' @param pattern allowed patterns in experiment file name:
+#' default ("*", all experiments)
+#' @param libtypeExclusive search for experiments with exclusivly this
+#' libtype, default (NULL, all)
+#' @export
+#' @examples
+#' ## Make your experiments
+#' df <- ORFik.template.experiment(TRUE)
+#' df2 <- df[1:6,] # Only first 2 libs
+#' ## Save them
+#' # save.experiment(df, "~/Bio_data/ORFik_experiments/exp1.csv")
+#' # save.experiment(df2, "~/Bio_data/ORFik_experiments/exp1_subset.csv")
+#' ## List all experiment you have:
+#' ## Path above is default path, so no dir argument needed
+#' #list.experiments()
+#' #list.experiments(pattern = "subset")
+#' ## For non default directory experiments
+#' #list.experiments(dir = "MY/CUSTOM/PATH)
+list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
+                             pattern = "*", libtypeExclusive = NULL) {
+  experiments <- list.files(path = dir, pattern = "\\.csv")
+  experiments <- grep(experiments, pattern = pattern, value = TRUE)
+  experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
+  es <- lapply(experiments, function(x, dir) {
+    read.experiment(x, dir)
+  }, dir = dir)
+  libtypes <- lapply(es, function(e) {
+    unique(e$libtype)
+  })
+  runs <- lapply(es, function(e) {
+    length(e$libtype)
+  })
+  dt <- data.table(name = gsub(".csv", "", experiments), libtypes, samples = runs)
+  if (!is.null(libtypeExclusive)) {
+    message(paste("subset on libtype:", libtypeExclusive))
+    dt <- dt[libtypes %in% libtypeExclusive,]
+  }
+  return(dt)
+}
+
 #' An ORFik experiment to see how it looks
 #'
 #' NOTE! This experiment should only be used for testing, since
 #' it is just sampled data internal in ORFik.
+#' @param as.temp logical, default FALSE, load as ORFik experiment.
+#' If TRUE, loads as data.frame template of the experiment.
 #' @return an ORFik \code{\link{experiment}}
 #' @export
+#' @family ORFik_experiment
 #' @examples
 #' ORFik.template.experiment()
-ORFik.template.experiment <- function() {
+ORFik.template.experiment <- function(as.temp = FALSE) {
   dir <- system.file("extdata", "", package = "ORFik")
   # 2. Pick an experiment name
   exper <- "ORFik"
   # 3. Pick .gff/.gtf location
   txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
   fa <- system.file("extdata", "genome.fasta", package = "ORFik")
-  template <- create.experiment(dir = dir, exper, txdb = txdb, fa = fa,
+  template <- create.experiment(dir = dir, saveDir = NULL,
+                                exper, txdb = txdb, fa = fa,
+                                organism = "Homo sapiens",
                                 viewTemplate = FALSE)
   # read experiment
+  if (as.temp) return(template)
   return(read.experiment(template))
 }

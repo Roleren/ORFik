@@ -16,8 +16,8 @@ TOP.Motif.ecdf(
 )
 }
 \arguments{
-\item{seqs}{the sequences (character vector, DNAStringSet).
-See example below for input.}
+\item{seqs}{the sequences (character vector, DNAStringSet),
+of 5' UTRs (leaders). See example below for input.}
 
 \item{rate}{a scoring vector (equal size to seqs)}
 
@@ -73,6 +73,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   seqs <- startRegionString(leadersCage, NULL,
         BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 0, 4)
   # Some toy ribo-seq fpkm scores on cds
+  set.seed(3)
   fpkm <- sample(1:115, length(leadersCage), replace = TRUE)
   # Standard arguments
   TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM",

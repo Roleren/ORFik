@@ -10,13 +10,14 @@ filterTranscripts(
   minCDS = 150L,
   minThreeUTR = 30L,
   longestPerGene = TRUE,
-  stopOnEmpty = TRUE
+  stopOnEmpty = TRUE,
+  by = "tx"
 )
 }
 \arguments{
-\item{txdb}{a TxDb file, a path to one of:
-(.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
-or an ORFik experiment}
+\item{txdb}{a TxDb file or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
+it will return it self.}
 
 \item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
 transcripts. Set to NULL if no 5' UTRs exists for annotation.}
@@ -31,6 +32,9 @@ transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 per gene.}
 
 \item{stopOnEmpty}{logical TRUE, stop if no valid transcripts are found ?}
+
+\item{by}{a character, default "tx" Either "tx" or "gene". What names to
+output region by, the transcript name "tx" or gene names "gene"}
 }
 \value{
 a character vector of valid transcript names
@@ -47,6 +51,7 @@ You can set the integer to 0, that will return all within that group.
 
 If your annotation does not have leaders or trailers, set them to NULL,
 since 0 does mean there must exist a column called utr3_len etc.
+Genes with gene_id = NA will be be removed.
 }
 \examples{
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")

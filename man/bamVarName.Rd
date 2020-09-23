@@ -42,13 +42,14 @@ What will each sample be called given the columns of the experiment?
 df <- ORFik.template.experiment()
 bamVarName(df)
 
-# without libtype
-#bamVarName(df, skip.libtype = TRUE)
-# With experiment name
-#bamVarName(df, skip.experiment = FALSE)
+## without libtype
+bamVarName(df, skip.libtype = TRUE)
+## Without experiment name
+bamVarName(df, skip.experiment = TRUE)
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
 \code{\link{filepath}()},

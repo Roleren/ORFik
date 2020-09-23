@@ -118,8 +118,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' @export
 #' @examples
 #'
-#' # df <- read.experiment("ribo-seq")
-#' # heatMapRegion(df, "TIS")
+#' df <- ORFik.template.experiment()[3,] # Only third library
+#' #heatMapRegion(df, "TIS", outdir = "PATH/TO/SAVE/)
 #' # Do also TSS, add cage for specific TSS
 #' # heatMapRegion(df, c("TSS", "TIS"), cage = "path/to/cage.bed")
 #'

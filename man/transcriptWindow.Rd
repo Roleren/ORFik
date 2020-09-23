@@ -71,19 +71,9 @@ Gives you binned meta coverage plots, either saved seperatly or
 all in one.
 }
 \examples{
-# Make ORFik experiment
-dir <- system.file("extdata", "", package = "ORFik")
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb,
-                              viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment
-df <- read.experiment(template)
+df <- ORFik.template.experiment()[3,] # Only third library
 loadRegions(df) # Load leader, cds and trailers as GRangesList
-#transcriptWindow(leaders, cds, trailers, df, outdir = "directory_to_save")
+#transcriptWindow(leaders, cds, trailers, df, outdir = "directory/to/save")
 }
 \seealso{
 Other experiment plots: 

@@ -45,8 +45,8 @@
 #' }
 #' }
 #'
-kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
-                         , center = ceiling((stop - start + 1)/2),
+kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
+                         center = ceiling((stop - start + 1)/2),
                          min.observations = ">q1", skip.startCodon = FALSE,
                          xlab = "TIS", type = "ribo-seq") {
   if (length(seqs) != length(rate)) stop("Length of rate and seq must be equal!")
@@ -142,8 +142,8 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #' The right plot groups:
 #' C nucleotide, TOP motif (C, then 4 pyrimidines) and
 #' OTHER (all other TSS variants).
-#' @param seqs the sequences (character vector, DNAStringSet).
-#' See example below for input.
+#' @param seqs the sequences (character vector, DNAStringSet),
+#' of 5' UTRs (leaders). See example below for input.
 #' @param rate a scoring vector (equal size to seqs)
 #' @param start position in seqs to start at (first is 1), default 1.
 #' @param stop position in seqs to stop at (first is 1),
@@ -180,6 +180,7 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs))
 #'   seqs <- startRegionString(leadersCage, NULL,
 #'         BSgenome.Hsapiens.UCSC.hg19::Hsapiens, 0, 4)
 #'   # Some toy ribo-seq fpkm scores on cds
+#'   set.seed(3)
 #'   fpkm <- sample(1:115, length(leadersCage), replace = TRUE)
 #'   # Standard arguments
 #'   TOP.Motif.ecdf(seqs, fpkm, type = "ribo-seq FPKM",
@@ -200,7 +201,6 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
   if (length(seqs) != length(rate)) stop("Length of rate and seq must be equal!")
   if (length(seqs) == 0 | length(rate) == 0) stop("Length of rate and seq must be > 0!")
   if (start > stop) stop("Stop must be bigger or equal to start")
-  if (is.null(names(seqs))) names(seqs) <- as.character(seq(1, length(seqs)))
 
   # Update to only full length seqs
   hits <- nchar(seqs) >= stop
@@ -210,21 +210,11 @@ TOP.Motif.ecdf <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     print(summary(hits))
   } else if (all(!hits)) stop("No seqs long enough for interval start, stop!")
 
-  dt <- data.table(X.gene_id = names(seqs))
-  vars <- c()
-  for (i in seq(start, stop)) {
-    dt[,paste0("seq", i)] <- substring(seqs, i, i)
-    vars <- c(vars, paste0("seq", i))
-  }
-  dt$rate <- rate
-  dt$TOP <- "OTHER"
-  pyri <-  c("C", "T") # pyrimidins
-  dt[seq1 == "C",]$TOP <- "C"
-  dt[seq1 == "C" & (seq2 %in% pyri) & (seq3 %in% pyri) &
-       (seq4 %in% pyri) & (seq5 %in% pyri),]$TOP <- "TOP"
+  dt <- topMotif(seqs, start, stop)
   message("Distribution of TOP motifs:")
   print(table(dt$TOP))
 
+  dt$rate <- rate
   # Define plot settings:
   new_pallet_1 <- c("#E495A5","#ABB065","#39BEB1","#ACA4E2")
   new_pallet_2 <- c("#39BEB1", "#ACA4E2", "#E495A5")

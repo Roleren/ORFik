@@ -56,7 +56,7 @@ for information on file formats
 }
 \examples{
 df <- ORFik.template.experiment()
-#simpleLibs(df)
+#convertLibs(df)
 # Keep only 5' ends of reads
-#simpleLibs(df, method = "5prime")
+#convertLibs(df, method = "5prime")
 }

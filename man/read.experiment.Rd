@@ -4,11 +4,18 @@
 \alias{read.experiment}
 \title{Read ORFik \code{\link{experiment}}}
 \usage{
-read.experiment(file)
+read.experiment(file, in.dir = "~/Bio_data/ORFik_experiments/")
 }
 \arguments{
-\item{file}{a .csv file following ORFik experiment style ("," as seperator)
-, or a template data.frame from \code{\link{create.experiment}}}
+\item{file}{relative path to a ORFik experiment. That is a .csv file following
+ORFik experiment style ("," as seperator).
+, or a template data.frame from \code{\link{create.experiment}}. Can
+also be full path to file, then in.dir argument is ignored.}
+
+\item{in.dir}{Directory to load experiment csv file from, default:
+"~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
+it to disc. Does not apply if file is not a path, but a data.frame. Also
+does not apply if file was given as full path.}
 }
 \value{
 an ORFik \code{\link{experiment}}
@@ -23,26 +30,21 @@ The file must be csv and be a valid ORFik experiment
 # From file
 \dontrun{
 # Read from file
-df <- read.experiment(filepath) # <- valid .csv file
+df <- read.experiment(filepath) # <- valid ORFik .csv file
 }
-# Read from (create.experiment() template)
-# 1. Pick directory
-dir <- system.file("extdata", "", package = "ORFik")
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb,
-                              viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment from template
-df <- read.experiment(template)
+## Read from (create.experiment() template)
+df <- ORFik.template.experiment()
 
-# To save it, do:
-# save.experiment(df, file = "path/to/save/experiment.csv")
+## To save it, do:
+# save.experiment(df, file = "path/to/save/experiment")
+## You can then do:
+# read.experiment("path/to/save/experiment")
+# or (identical):
+# read.experiment("experiment", in.dir = "path/to/save/")
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},

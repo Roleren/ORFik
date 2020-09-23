@@ -2,19 +2,18 @@ context("Report Integration")
 library(ORFik)
 
 # Make test data
-template <- create.experiment(dir = system.file("extdata", "", package = "ORFik"),
-                  exper = "ORFik", txdb = system.file("extdata",
-                                                      "annotations.gtf",
-                                                      package = "ORFik"),
-                  viewTemplate = FALSE)
-
-df <- read.experiment(template)
+df <- ORFik.template.experiment()
 
 test_that("Experiment class created as intended", {
   # test from example table in orfik
   expect_equal(ncol(df), 6)
 
 })
+
+test_that("output organism correctly", {
+  expect_equal(organism.df(df), "Homo sapiens")
+})
+
 
 test_that("Experiment class loaded as intended", {
   # load file

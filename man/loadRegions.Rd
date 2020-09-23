@@ -9,6 +9,7 @@ loadRegions(
   parts = c("mrna", "leaders", "cds", "trailers"),
   extension = "",
   names.keep = NULL,
+  by = "tx",
   envir = .GlobalEnv
 )
 }
@@ -17,17 +18,16 @@ loadRegions(
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
 or an ORFik experiment}
 
-\item{parts}{the transcript parts you want}
+\item{parts}{the transcript parts you want, default:
+c("mrna", "leaders", "cds", "trailers").\cr See ?loadRegion for more info
+on this argument.}
 
 \item{extension}{What to add on the name after leader, like: B -> leadersB}
 
-\item{names.keep}{a character vector of subset of names to keep. Example:
-loadRegions(txdb, names = ENST1000005), will return only that transcript}
-
-\item{envir}{Which environment to save to, default (.GlobalEnv)}
+\item{envir}{Which environment to save to, default: .GlobalEnv}
 }
 \value{
-invisible(NULL) (regions set by envir assignment)
+invisible(NULL) (regions saved in envir)
 }
 \description{
 By default loads all parts to .GlobalEnv (global environemnt)

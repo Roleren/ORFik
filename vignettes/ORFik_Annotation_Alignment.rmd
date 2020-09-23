@@ -53,37 +53,38 @@ To index the genome just give it the annotation output from previous step. This 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 index <- STAR.index(annotation, wait = FALSE)
 ```
-If you run this function again after you have run this function and indexed the genome once, it will not re-index, but just output the correct object.
+If you run this function again after index exists in current file location, it will not re-index, but just output the correct object. Do remake = TRUE if you want to re-index.
 
 ### Aligning the data
 First we need some data to align, I here just show what would work for the paired end RNA-seq experiment SRR453566.
 
 Here you will use your own data. If you want to follow the same example you can in terminal do for unix:
 ```{}
-mkdir ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
+mkdir -p ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
 cd ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
 # Install fastq-dump (https://ncbi.github.io/sra-tools/install_config.html)
 fastq-dump  --split-files --gzip --skip-technical --readids --read-filter pass --clip SRR453566 
 ```
 
-ORFik uses the fastp from trimming reads, this only works on linux. So for Mac users, do the trimming step first with your favorit trimmer if needed, then pass the trimmed files as input argument here. 
+ORFik uses the fastp for trimming reads, this only works on linux. So for Mac users, do the trimming step first with your favorite trimmer if needed, then pass the trimmed files as input argument here. 
 
 We need usually 9 arguments:
--input.dir.rna: directory with fastq files (or trimmed files on mac)
--output.dir.rna: output directory for bam files
--index: the STAR index from previous step
--paired.end: "yes" in this case, or "no" if single end.
--steps: steps of depletion and alignment wanted:
+
+- input.dir.rna: directory with fastq files (or trimmed files on mac)
+- output.dir.rna: output directory for bam files
+- index: the STAR index from previous step
+- paired.end: "yes" in this case, or "no" if single end.
+- steps: steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trimming, ph: phix depletion, rR: rrna depletion,
+			 tr: trimming (only for Linux), ph: phix depletion, rR: rrna depletion,
 			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write "tr-ge"
-		On mac you can not do tr, so trim first then pass the trimmed files as input      and uses steps = "ge"..
--adapter.sequence "auto", or if you know add it, usually more secure with manual. 
--max.cpus How many cpus maximum to use
--trim.front How many bases to trim front. Only if you believe there are low quality reads in front.
--min.length minimum length of reads that pass to the bam file. 
+		On mac you can not do tr, so trim first then pass the trimmed files as input and use steps = "..-ge"
+- adapter.sequence "auto", or if you know add it, usually more secure with manual. 
+- max.cpus How many cpus maximum to use
+- trim.front How many bases to trim front. Only if you believe there are low quality reads in front.
+- min.length minimum length of reads that pass to the bam file. 
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 input.dir.rna <- "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
@@ -96,7 +97,8 @@ alignment <-
                     max.cpus = 30, trim.front = 3, min.length = 20)
 ```
 If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC.
-## Create an ORFik experiment of the Yeast data
+
+# Create an ORFik experiment of the Yeast data
 To simplify coding and sharing of your work, you should make a ORFik experiment, check out the ORFik experiment vignette if you are unfamiliar with this class.
 You should first rename the bam files to more meaningful names, like RNA_WT_1 etc. Remember to keep a table of which SRA numbers correspond to which new file name. You do not need to do this, but this will make the ORFik experiment able to guess correctly what the data is. If there are replicates etc. 
 
@@ -105,9 +107,8 @@ We can now easily make an ORFik experiment from the data we have:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 txdb_file <- paste0(annotation["gtf"], ".db") # Get txdb file, not raw gtf
 fa <- annotation["genome"]
-create.experiment(exper = "Chew_13_RFP_Z11",
+create.experiment(exper = "yeast_exp_RNA",
                   dir = paste0(output.dir.rna, "/aligned/"),
-                  saveDir = "~/Bio_data/ORFik_experiments/",
                   txdb = txdb_file, fa = fa, 
                   organism = "Saccharomyces cerevisiae",
                   viewTemplate = FALSE, 
@@ -115,28 +116,33 @@ create.experiment(exper = "Chew_13_RFP_Z11",
                   )
 ```
 
+The files is now saved to default directory which is: saveDir = "~/Bio_data/ORFik_experiments/"
+
 Now verify that the object is correct, then you can try to read it:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-df <- read.experiment(
-  file = "~/Bio_data/ORFik_experiments/Chew_13_RFP_Z11"
+df <- read.experiment("yeast_exp_RNA")
   )
 ```
 If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in excel, libre office or another spreadsheet viewer. 
 
-### convert libraries to new formats
-If you want optimzed format identical to bam file, use .ofst.
+## convert libraries to new formats
+Now you have an experiment, but bam files are big and slow to load. Let's convert to some faster formats.
+
+If you want optimzed format identical to bam file, use .ofst. (Fastest, not readable in IGV)
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   remove.experiments(df)
   convertLibs(df, type = "ofst")
 ```
-If you want peaks only, use wig files
+If you want peaks only, use wig files (Fast, readable in IGV)
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   remove.experiments(df)
-  outputLibs(df, type = "wig")
+  convertLibs(df, type = "wig")
 ```
 
 As an example of how to load the data to R in the optimized format .ofst.
-### Outputting libraries to R
+
+## Outputting libraries to R
+
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 remove.experiments(df)
 outputLibs(df, type = "ofst")
@@ -147,13 +153,13 @@ If I rather want the wig format files:
   outputLibs(df, type = "wig")
 ```
 
-### Post alignment QC report
+## Post alignment QC report
 See ?QCreport for details of what you will get as output
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   QCreport(df)
 ```
 
-### FPKM values (normalized counts)
+## FPKM values (normalized counts)
 After you have run QCreport you will have count tables of peaks over the mrna's, 5' UTRs, CDS and 3' UTRs.
 
 Let's do an example to find the ratio between fpkm of between the CDS and mRNAs transcript regions.

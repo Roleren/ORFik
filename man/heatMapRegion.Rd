@@ -67,8 +67,8 @@ Input CAGE file if you use TSS and want improved 5' annotation.
 }
 \examples{
 
-# df <- read.experiment("ribo-seq")
-# heatMapRegion(df, "TIS")
+df <- ORFik.template.experiment()[3,] # Only third library
+#heatMapRegion(df, "TIS", outdir = "PATH/TO/SAVE/)
 # Do also TSS, add cage for specific TSS
 # heatMapRegion(df, c("TSS", "TIS"), cage = "path/to/cage.bed")
 
