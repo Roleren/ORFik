@@ -28,19 +28,9 @@
 #' @importFrom utils write.csv
 #' @export
 #' @examples
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
-#' df <- read.experiment(template)
-#' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
-#'
+#' # Load an experiment
+#' df <- ORFik.template.experiment()
+#' # Run QC
 #' # QCreport(df)
 QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   # When experiment is ready, everything down from here is automatic

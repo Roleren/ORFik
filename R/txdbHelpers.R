@@ -178,6 +178,7 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' @export
 #' @examples
 #' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' loadRegion(gtf, "cds")
 #' loadRegion(gtf, "intron")
 loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
   if (is.grl(txdb)) return(txdb)
@@ -200,6 +201,9 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
       loadRegion(txdb, "tx")[names(cdsBy(txdb, use.names = TRUE))]
     } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
 
+  if (by == "gene") {
+    names(region) <- txNamesToGeneNames(names(region), txdb)
+  }
   if (!is.null(names.keep)) { # If subset
     subset <- names(region) %in% names.keep
     if (length(subset) == 0)
@@ -214,7 +218,7 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
 #' By default loads all parts to .GlobalEnv (global environemnt)
 #' Useful to not spend time on finding the functions to load regions.
 #' @inheritParams loadTxdb
-#' @inheritParams loadRegions
+#' @inheritParams loadRegion
 #' @param parts the transcript parts you want, default:
 #' c("mrna", "leaders", "cds", "trailers").\cr See ?loadRegion for more info
 #' on this argument.
@@ -230,7 +234,6 @@ loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", names.keep = NULL,
                         by = "tx",
                         envir = .GlobalEnv) {
-  # TODO, add possibility to load with gene names, also in loadRegion
   txdb <- loadTxdb(txdb)
   for (i in parts) {
     assign(x = paste0(i, extension),
@@ -268,14 +271,25 @@ loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
 #' Convert transcript names to gene names
 #'
 #' Works for ensembl, UCSC and other standard annotations.
-#' @param txNames character vector, the transcript names to convert.
+#' @param txNames character vector, the transcript names to convert. Can also be
+#' a named object with tx names (like a GRangesList), will then extract names.
 #' @param txdb the transcript database to use or gtf/gff path to it.
 #' @return character vector of gene names
+#' @export
+#' @examples
+#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' txdb <- loadTxdb(gtf)
+#' loadRegions(txdb, "cds") # using tx names
+#' txNamesToGeneNames(cds, txdb)
+#' # Identical to:
+#' loadRegions(txdb, "cds", by = "gene")
 txNamesToGeneNames <- function(txNames, txdb) {
+  if (!is(txNames, "character")) txNames <- names(txNames)
+
   txdb <- loadTxdb(txdb)
   g <- mcols(transcripts(txdb, columns = c("tx_name", "gene_id")))
   match <- chmatch(txNames, g$tx_name)
-  if (anyNA(match)) stop("Not all txNames are exists in txdb, check for spelling errors!")
+  if (anyNA(match)) stop("Not all txNames exists in txdb, check for spelling errors!")
   return(as.character(g$gene_id)[match])
 }
 

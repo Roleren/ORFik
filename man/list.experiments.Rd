@@ -20,6 +20,9 @@ default ("*", all experiments)}
 \item{libtypeExclusive}{search for experiments with exclusivly this
 libtype, default (NULL, all)}
 }
+\value{
+a data.table, 1 row per experiment with columns experiment (name), libtypes
+}
 \description{
 Will only search .csv extension, also exclude any experiment
 with the word template.

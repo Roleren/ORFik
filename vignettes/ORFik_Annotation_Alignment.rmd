@@ -118,12 +118,11 @@ create.experiment(exper = "yeast_exp_RNA",
 
 The files is now saved to default directory which is: saveDir = "~/Bio_data/ORFik_experiments/"
 
-Now verify that the object is correct, then you can try to read it:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 df <- read.experiment("yeast_exp_RNA")
   )
 ```
-If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in excel, libre office or another spreadsheet viewer. 
+If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in Libre Office, Excel or another spreadsheet viewer. 
 
 ## convert libraries to new formats
 Now you have an experiment, but bam files are big and slow to load. Let's convert to some faster formats.
@@ -142,6 +141,7 @@ If you want peaks only, use wig files (Fast, readable in IGV)
 As an example of how to load the data to R in the optimized format .ofst.
 
 ## Outputting libraries to R
+This will output the libraries to the environment specified, default .GlobalEnv (the default R environment). The files are named from the experiment table RNA_1_WT, RNA_1_treated etc. 
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 remove.experiments(df)

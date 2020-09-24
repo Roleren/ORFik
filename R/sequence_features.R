@@ -378,6 +378,8 @@ fractionLength <- function(grl, tx_len) {
 #' @param start position in seqs to start at (first is 1), default 1.
 #' @param stop position in seqs to stop at (first is 1),
 #'  default max(nchar(seqs)), that is the longest sequence length
+#' @param return.sequence logical, default TRUE, return as data.table with sequence as columns in
+#' addition to TOP class. If FALSE, return character vector.
 #' @return default: return.sequence == FALSE, a character vector of either
 #' TOP, C or OTHER. C means leaders started on C,
 #' Other means not TOP and did not start on C. If return.sequence == TRUE,

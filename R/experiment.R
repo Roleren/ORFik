@@ -618,7 +618,8 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     varNames <- bamVarName(df)
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage
-      if (exists(x = varNames[i], envir = envir, inherits = FALSE)) {
+      if (exists(x = varNames[i], envir = envir, inherits = FALSE,
+                 mode = "S4")) {
         loaded <- append(loaded, TRUE)
       } else loaded <- append(loaded, FALSE)
     }
@@ -871,6 +872,7 @@ organism.df <- function(df) {
 #' default ("*", all experiments)
 #' @param libtypeExclusive search for experiments with exclusivly this
 #' libtype, default (NULL, all)
+#' @return a data.table, 1 row per experiment with columns experiment (name), libtypes
 #' @export
 #' @examples
 #' ## Make your experiments

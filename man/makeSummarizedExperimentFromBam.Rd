@@ -52,18 +52,8 @@ NOTE: If the file called saveName exists, it will then load file,
 not remake it!
 }
 \examples{
-# 1. Pick directory
-dir <- system.file("extdata", "", package = "ORFik")
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-template <- create.experiment(dir = dir, exper, txdb = txdb,
-                              viewTemplate = FALSE)
-template$X5[6] <- "heart" # <- fix non unique row
-# read experiment
-df <- read.experiment(template)
-
+##Make experiment
+df <- ORFik.template.experiment()
 # makeSummarizedExperimentFromBam(df)
 # Only cds (coding sequences):
 # makeSummarizedExperimentFromBam(df, region = "cds")

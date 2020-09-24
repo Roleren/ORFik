@@ -125,8 +125,7 @@ trim_detection <- function(df, finals, out.dir) {
 #' @return data.table of QC report or NULL if not exists
 #' @export
 #' @examples
-#' # df <- read.experiment("experiment/path")
-#'
+#' df <- ORFik.template.experiment()[3,]
 #' ## First make QC report
 #' # QCreport(df)
 #' # stats <- QCstats(df)

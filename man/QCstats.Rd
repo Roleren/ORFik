@@ -19,8 +19,7 @@ data.table of QC report or NULL if not exists
 Load QC Statistics report
 }
 \examples{
-# df <- read.experiment("experiment/path")
-
+df <- ORFik.template.experiment()[3,]
 ## First make QC report
 # QCreport(df)
 # stats <- QCstats(df)

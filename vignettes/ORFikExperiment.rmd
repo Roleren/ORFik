@@ -49,6 +49,8 @@ template <- create.experiment(dir = dir,   # dir is the NGS files
                               exper,       # Experiment name
                               txdb = txdb, # gtf / gff / gff.db annotation
                               fa = fasta,  # Fasta genome
+                              organism = "Homo sapiens", # Scientific naming
+                              saveDir = NULL, # If not NULL, saves experiment directly
                               viewTemplate = FALSE)
 data.frame(template)
 ```
@@ -108,6 +110,8 @@ To remove experiment name, do this:
 ```{r eval = TRUE, echo = TRUE}
 df@expInVarName <- FALSE
 bamVarName(df) #This will be the names:
+# OR this
+bamVarName(df, skip.experiment = TRUE)
 ```
 Since we want NGS data names without "ORFik", let's remove them and load again.
 

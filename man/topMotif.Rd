@@ -16,6 +16,9 @@ seqs must be of minimum widths start - stop + 1 to be included.
 
 \item{stop}{position in seqs to stop at (first is 1),
 default max(nchar(seqs)), that is the longest sequence length}
+
+\item{return.sequence}{logical, default TRUE, return as data.table with sequence as columns in
+addition to TOP class. If FALSE, return character vector.}
 }
 \value{
 default: return.sequence == FALSE, a character vector of either

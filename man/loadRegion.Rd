@@ -33,5 +33,6 @@ Load as GRangesList if input is not already GRangesList.
 }
 \examples{
 gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+loadRegion(gtf, "cds")
 loadRegion(gtf, "intron")
 }

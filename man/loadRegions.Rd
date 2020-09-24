@@ -24,6 +24,13 @@ on this argument.}
 
 \item{extension}{What to add on the name after leader, like: B -> leadersB}
 
+\item{names.keep}{a character vector of subset of names to keep. Example:
+loadRegions(txdb, names = ENST1000005), will return only that transcript.
+Remember if you set by to "gene", then this list must be with gene names.}
+
+\item{by}{a character, default "tx" Either "tx" or "gene". What names to
+output region by, the transcript name "tx" or gene names "gene"}
+
 \item{envir}{Which environment to save to, default: .GlobalEnv}
 }
 \value{

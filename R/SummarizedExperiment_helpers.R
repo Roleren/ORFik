@@ -27,18 +27,8 @@
 #' @return a \code{\link{SummarizedExperiment}} object or data.table if
 #' "type" is not "count, with rownames as transcript / gene names.
 #' @examples
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
-#' df <- read.experiment(template)
-#'
+#' ##Make experiment
+#' df <- ORFik.template.experiment()
 #' # makeSummarizedExperimentFromBam(df)
 #' # Only cds (coding sequences):
 #' # makeSummarizedExperimentFromBam(df, region = "cds")
@@ -195,17 +185,8 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' @importFrom stats as.formula
 #' @export
 #' @examples
-#' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
-#' # 2. Pick an experiment name
-#' exper <- "ORFik"
-#' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' template <- create.experiment(dir = dir, exper, txdb = txdb,
-#'                               viewTemplate = FALSE)
-#' template$X5[6] <- "heart" # <- fix non unique row
-#' # read experiment
-#' df <- read.experiment(template)
+#' # Make experiment
+#' ORFik.template.experiment()
 #' # Make QC report to get counts ++
 #' # ORFikQC(df)
 #'

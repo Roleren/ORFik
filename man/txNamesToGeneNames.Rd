@@ -7,7 +7,8 @@
 txNamesToGeneNames(txNames, txdb)
 }
 \arguments{
-\item{txNames}{character vector, the transcript names to convert.}
+\item{txNames}{character vector, the transcript names to convert. Can also be
+a named object with tx names (like a GRangesList), will then extract names.}
 
 \item{txdb}{the transcript database to use or gtf/gff path to it.}
 }
@@ -16,4 +17,12 @@ character vector of gene names
 }
 \description{
 Works for ensembl, UCSC and other standard annotations.
+}
+\examples{
+gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+txdb <- loadTxdb(gtf)
+loadRegions(txdb, "cds") # using tx names
+txNamesToGeneNames(cds, txdb)
+# Identical to:
+loadRegions(txdb, "cds", by = "gene")
 }
