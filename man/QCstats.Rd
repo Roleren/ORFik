@@ -2,7 +2,7 @@
 % Please edit documentation in R/report_helpers.R
 \name{QCstats}
 \alias{QCstats}
-\title{Load QC Statistics report}
+\title{Load ORFik QC Statistics report}
 \usage{
 QCstats(df, path = paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv"))
 }
@@ -16,7 +16,12 @@ paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")}
 data.table of QC report or NULL if not exists
 }
 \description{
-Load QC Statistics report
+Loads the pre / post alignment statistcs made in ORFik.
+}
+\details{
+The ORFik QC uses the aligned files (usually bam files),
+fastp and STAR log files
+combined with annotation to create relevant statistics.
 }
 \examples{
 df <- ORFik.template.experiment()[3,]

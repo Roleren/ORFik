@@ -1,5 +1,8 @@
 #' A post Alignment quality control of reads
 #'
+#' The ORFik QC uses the aligned files (usually bam files),
+#' fastp and STAR log files
+#' combined with annotation to create relevant statistics.\cr\cr
 #' This report consists of several steps:\cr
 #' 1. From this report you will get a summary csv table, with distribution of
 #' aligned reads and overlap counts over transcript regions like:
@@ -98,13 +101,20 @@ QCplots <- function(df, region = "mrna",
   # window coverage over mRNA regions
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)
-  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = FALSE)
+  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = FALSE,
+                               stopOnEmpty = FALSE)
+  if (length(txNames) == 0) { # No valid tx to plot
+    warning("No 5' UTRs or 3' of significant length defined, metacoverage plots",
+    " can not be made, check your annotation file")
+    return(invisible(NULL))
+  }
   if (!exists("cds", mode = "S4")) {
-    loadRegions(txdb, parts = c("leaders", "cds", "trailers"))
+    loadRegions(txdb, parts = c("leaders", "cds", "trailers"),
+                names.keep = txNames)
   }
 
-  transcriptWindow(leaders[txNames], get("cds", mode = "S4")[txNames],
-                   trailers[txNames], df = df, outdir = stats_folder,
+  transcriptWindow(leaders, get("cds", mode = "S4"),
+                   trailers, df = df, outdir = stats_folder,
                    allTogether = TRUE,
                    scores = c("sum", "zscore", "transcriptNormalized"))
   transcriptWindow1(df = df, outdir = stats_folder,

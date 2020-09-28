@@ -16,6 +16,9 @@ Will make a folder called "QC_STATS" with all results in this directory.}
 NULL (objects stored to disc)
 }
 \description{
+The ORFik QC uses the aligned files (usually bam files),
+fastp and STAR log files
+combined with annotation to create relevant statistics.\cr\cr
 This report consists of several steps:\cr
 1. From this report you will get a summary csv table, with distribution of
 aligned reads and overlap counts over transcript regions like:

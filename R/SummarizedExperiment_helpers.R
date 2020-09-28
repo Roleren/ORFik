@@ -129,7 +129,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
     assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
-  if (collapse == "all") {
+  if ((collapse == "all") | (ncol(collapsedAll) == 1)) {
     dds <- DESeqDataSet(collapsedAll, design = ~ 1)
   } else {
     dds <- DESeqDataSet(collapsedAll, design = ~ SAMPLE)

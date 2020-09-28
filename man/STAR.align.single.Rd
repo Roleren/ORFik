@@ -123,6 +123,7 @@ Other STAR:
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
+\code{\link{STAR.multiQC}()},
 \code{\link{STAR.remove.crashed.genome}()},
 \code{\link{getGenomeAndAnnotation}()},
 \code{\link{install.fastp}()}

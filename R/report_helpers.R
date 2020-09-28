@@ -116,8 +116,13 @@ trim_detection <- function(df, finals, out.dir) {
   return(finals)
 }
 
-#' Load QC Statistics report
+#' Load ORFik QC Statistics report
 #'
+#' Loads the pre / post alignment statistcs made in ORFik.
+#'
+#' The ORFik QC uses the aligned files (usually bam files),
+#' fastp and STAR log files
+#' combined with annotation to create relevant statistics.
 #' @inheritParams QCreport
 #' @param path path to QC statistics report, default:
 #' paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")
