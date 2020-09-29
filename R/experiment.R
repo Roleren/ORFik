@@ -895,16 +895,22 @@ list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
   es <- lapply(experiments, function(x, dir) {
     read.experiment(x, dir)
   }, dir = dir)
-  libtypes <- lapply(es, function(e) {
-    unique(e$libtype)
+  info <- lapply(es, function(e) {
+    list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism)
   })
-  runs <- lapply(es, function(e) {
-    length(e$libtype)
-  })
-  dt <- data.table(name = gsub(".csv", "", experiments), libtypes, samples = runs)
+  info <- unlist(info, recursive = FALSE)
+  libtypes <- info[grep("libtype", names(info))]
+  samples <- unlist(info[names(info) == "runs"])
+  organism <- unlist(info[names(info) == "organism"])
+
+  dt <- data.table(name = gsub(".csv", "", experiments), libtypes, samples, organism)
+  dt <- dt[order(organism, name),]
   if (!is.null(libtypeExclusive)) {
     message(paste("subset on libtype:", libtypeExclusive))
-    dt <- dt[libtypes %in% libtypeExclusive,]
+    match <- lapply(dt$libtypes, function(i) any(libtypeExclusive %in% i))
+    match <- unlist(match)
+
+    dt <- dt[match,]
   }
   return(dt)
 }
