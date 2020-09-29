@@ -32,7 +32,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
     message(s)
     lib <- get(s)
     # Raw stats
-    res <- data.frame(Sample = s, Raw_reads = NA,
+    res <- data.frame(Sample = s, Raw_reads = as.numeric(NA),
                       Aligned_reads = length(lib))
     res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
 

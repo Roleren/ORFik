@@ -68,8 +68,8 @@ ORFikQC <- QCreport
 #' Meta plots defaults to leader, cds, trailer.\cr
 #' Output will be stored in same folder as the
 #' libraries in df.\cr
-#' Correlation plots will be raw count correlation and
-#' log2(count + 1) correlation between samples.
+#' Correlation plots will be fpkm correlation and
+#' log2(fpkm + 1) correlation between samples.
 #'
 #' Is part of \code{\link{QCreport}}
 #' @inheritParams QCreport
@@ -90,13 +90,13 @@ QCplots <- function(df, region = "mrna",
 
   message("- Correlation plots")
   # Load fpkm values
-  saveName <- paste0(stats_folder, "countTable_", region)
   data_for_pairs <- countTable(df, region, type = "fpkm")
-
+  message("  - raw scaled")
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
          height=400, width=400, units = 'mm', dpi=300)
+  message("  - log2 scaled")
   paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot_log2.png"), paired_plot,
@@ -115,10 +115,12 @@ QCplots <- function(df, region = "mrna",
   loadRegions(txdb, parts = c("leaders", "cds", "trailers"),
               names.keep = txNames)
   # Plot seperated by leader, cds & trailer
+  message("  - seperated into 5' UTR, CDS and 3' UTR regions")
   transcriptWindow(leaders, get("cds", mode = "S4"),
                    trailers, df = df, outdir = stats_folder,
                    scores = c("sum", "zscore", "transcriptNormalized"))
   # Plot all transcripts as 1 region
+  message("  - whole transcripts")
   transcriptWindow1(df = df, outdir = stats_folder,
                     scores = c("sum", "zscore", "transcriptNormalized"))
   return(invisible(NULL))
