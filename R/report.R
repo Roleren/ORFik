@@ -26,7 +26,7 @@
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default: dirname(df$filepath[1]).
 #' Will make a folder called "QC_STATS" with all results in this directory.
-#' @return NULL (objects stored to disc)
+#' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
 #' @importFrom utils write.csv
 #' @export
@@ -53,6 +53,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
   QCplots(df, "mrna", stats_folder)
 
   message(paste("Everything done, saved QC to:", stats_folder))
+  return(invisible(NULL))
 }
 
 # Keep for legacy purpose for now

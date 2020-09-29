@@ -36,6 +36,8 @@ see ?coverageScorings for possible scores.}
 \item{returnCoverage}{return data.table with coverage (default: FALSE)}
 
 \item{windowSize}{size of binned windows, default: 100}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE

@@ -3,7 +3,7 @@
 #' The better the annotation / gtf used, the more results you get.
 #' @inheritParams QCreport
 #' @return a data.table of the count info
-QC_count_tables <- function(df, out.dir) {
+QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
   outputLibs(df, leaders, type = "ofst")
@@ -28,7 +28,7 @@ QC_count_tables <- function(df, out.dir) {
       weight <- NULL
     return(sum(countOverlapsW(region, lib, weight = weight)))
   }
-  finals <- bplapply(varNames, function(s, dt_list, sCo, tx, gff.df) {
+  finals <- bplapply(libs, function(s, dt_list, sCo, tx, gff.df) {
     message(s)
     lib <- get(s)
     # Raw stats
@@ -82,8 +82,10 @@ trim_detection <- function(df, finals, out.dir) {
     lib_string <- 'grep -m 1 -h "total_reads" *.json | grep -Eo "[0-9]*"'
     raw_reads <- as.numeric(system(lib_string, intern = TRUE))
     raw_data <- data.table(raw_library, raw_reads)
+    # Find report files for all libs
     raw_data$raw_library <- gsub("report_",
                                  x = raw_data$raw_library, replacement = "")
+    # Subset to only .json files of libs
     raw_data$raw_library <- gsub(".json",
                                  x = raw_data$raw_library, replacement = "")
     order <- unlist(lapply(X = raw_data$raw_library,
@@ -97,10 +99,12 @@ trim_detection <- function(df, finals, out.dir) {
       print(paste(c("Matches in the order:", order), collapse = " "))
       print(raw_data)
       print(df$filepath)
-      stop("unexpected behavior, report this bug on github page!")
+      stop("unexpected behavior, did you delete any files?",
+           "else report this bug on ORFik github page!")
     } else if (notMatch) { # did not match all
-      message("Could not find raw read count of your data, setting to 20 M")
+      message("Could not find raw read count of your data, setting to NA")
     } else {
+      class(finals$Raw_reads) <- "numeric"
       finals[order,]$Raw_reads <- raw_data$raw_reads
       finals$ratio_aligned_raw = round(finals$Aligned_reads /
                                          finals$Raw_reads, 4)

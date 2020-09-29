@@ -4,7 +4,7 @@
 \alias{QC_count_tables}
 \title{Create count table info for QC report}
 \usage{
-QC_count_tables(df, out.dir)
+QC_count_tables(df, out.dir, BPPARAM = bpparam())
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}

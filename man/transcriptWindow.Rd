@@ -63,6 +63,8 @@ targets / nontargets etc. (default: "")}
 or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 Will load default if bedoc is not found}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 NULL, or ggplot object if returnPlot is TRUE

@@ -13,7 +13,7 @@ QCreport(df, out.dir = dirname(df$filepath[1]))
 Will make a folder called "QC_STATS" with all results in this directory.}
 }
 \value{
-NULL (objects stored to disc)
+invisible(NULL) (objects are stored to disc)
 }
 \description{
 The ORFik QC uses the aligned files (usually bam files),
