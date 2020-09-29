@@ -136,6 +136,8 @@ trim_detection <- function(df, finals, out.dir) {
 QCstats.plot <- function(stats, output.dir = NULL) {
   if (is(stats, "experiment")) {
     stats <- QCstats(stats)
+    if (is.null(stats))
+      stop("No QC report made for experiment, run ORFik QCreport")
   } else {
     stats <- fread(stats)
   }
@@ -149,7 +151,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
     xlab("Samples") +
     facet_wrap(  ~ variable, scales = "free") +
     theme_minimal()
-  if (is.null(output.dir)) {
+  if (!is.null(output.dir)) {
     ggsave(paste0(output.dir, "/STATS_plot.png"), gg_STAT, width = 13, height = 8)
   }
   return(gg_STAT)

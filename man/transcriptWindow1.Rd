@@ -15,7 +15,7 @@ transcriptWindow1(
   dfr = NULL,
   idName = "",
   format = ".png",
-  type = "bedoc"
+  type = "ofst"
 )
 }
 \arguments{

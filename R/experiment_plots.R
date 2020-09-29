@@ -2,9 +2,7 @@
 #'
 #' Gives you binned meta coverage plots, either saved seperatly or
 #' all in one.
-#' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
-#' @param cds a \code{\link{GRangesList}} of coding sequences
-#' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
+#' @inheritParams splitIn3Tx
 #' @param df an ORFik \code{\link{experiment}}
 #' @param outdir directory to save to (default: NULL, no saving)
 #' @param scores scoring function (default: c("sum", "zscore")),
@@ -43,9 +41,9 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
                              dfr = NULL, idName = "", format = ".png",
-                             type = "bedoc") {
-  if (windowSize != 100) message(paste0("NOTE: windowSize is not 100!
-                                        It is ", windowSize))
+                             type = "ofst", BPPARAM = bpparam()) {
+  if (windowSize != 100)
+    message(paste0("NOTE: windowSize is not 100! It is: ", windowSize))
 
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
@@ -70,14 +68,16 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                             fractions, readsList)
       }
     } else { # all combined
-      coverage <- data.table()
-      for (i in varNames) { # For each stage
-        print(i)
-        coverage <- rbindlist(list(coverage,
-                                   splitIn3Tx(leaders, cds, trailers,
-                                              get(i), fraction = i,
-                                              windowSize = windowSize)))
-      }
+      coverage <- bplapply(varNames, function(x, leaders, cds, trailers,
+                                              fraction, windowSize) {
+        message(x)
+        splitIn3Tx(leaders, cds, trailers,
+                   get(x), fraction = x,
+                   windowSize = windowSize)
+      }, leaders = leaders, cds = cds, trailers = trailers,
+         windowSize = windowSize, BPPARAM = BPPARAM)
+
+      coverage <- rbindlist(coverage)
       if (!is.null(dfr)) {
         coverage <- rnaNormalize(coverage, df, dfr, cds)
         title <- paste0(title, " RNA-normalized")
@@ -104,7 +104,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
 #' Gives you binned meta coverage plots, either saved seperatly or
 #' all in one.
 #' @inheritParams transcriptWindow
-#' @param reads a GRanges / GAligment object of reads
+#' @param reads a GRanges / GAligment object of reads, can also be a list of those.
 #' @param returnCoverage return data.table with coverage (default: FALSE)
 #' @param windowSize size of binned windows, default: 100
 #' @family experiment plots
@@ -112,7 +112,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
 transcriptWindowPer <- function(leaders, cds, trailers, df,
                                 outdir = NULL, scores = c("sum", "zscore"),
                                 reads, returnCoverage = FALSE,
-                                windowSize = 100) {
+                                windowSize = 100, BPPARAM = bpparam()) {
   libTypes <- libraryTypes(df)
   if (is(reads, "list") | is(reads, "GAlignmentsList") |
       is(reads, "GRangesList")) {
@@ -121,15 +121,15 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
   } else if(!(is(reads, "GRanges") | is(reads, "GAlignments"))) {
     stop("reads must be GRanges or GAlignments")
   }
-  coverage <- data.table()
 
-  for(i in 1:length(reads)) {
-    coverage <- rbindlist(list(coverage,
-                               splitIn3Tx(leaders, cds, trailers,
-                                          unlist(reads[[i]]),
-                                          fraction = libTypes[i],
-                                          windowSize = windowSize)))
-  }
+  coverage <- bplapply(reads, function(x, leaders, cds, trailers,
+                                          fraction, windowSize) {
+    message(names(x)[1])
+    splitIn3Tx(leaders, cds, trailers, x, fraction = names(x)[1],
+               windowSize = windowSize)
+  }, leaders = leaders, cds = cds, trailers = trailers,
+     windowSize = windowSize, BPPARAM = BPPARAM)
+  coverage <- rbindlist(coverage)
 
   return(plotHelper(coverage, df, outdir, scores, returnCoverage))
 }
@@ -148,19 +148,20 @@ transcriptWindow1 <- function(df, outdir = NULL,
                        windowSize = 100,
                        returnPlot = is.null(outdir),
                        dfr = NULL, idName = "", format = ".png",
-                       type = "bedoc") {
+                       type = "ofst") {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
     varNames <- bamVarName(df)
     outputLibs(df, leaders, type = type)
-    coverage <- data.table()
-    for (f in varNames) { # For each stage
-      print(f)
-      temp <-  windowPerTranscript(df, reads = get(f),
-                                   splitIn3 = FALSE, fraction = f)
-      coverage <- rbindlist(list(coverage, temp))
-    }
+
+    coverage <- bplapply(varNames, function(x, df, windowSize) {
+      message(x)
+      windowPerTranscript(df, reads = get(x), splitIn3 = FALSE, fraction = x,
+                          windowSize = windowSize)
+    }, df = df, windowSize = windowSize, BPPARAM = BPPARAM)
+    coverage <- rbindlist(coverage)
+
     if (!is.null(dfr)) {
       tx <- loadRegion(df, "tx")
       tx <- tx[widthPerGroup(tx, FALSE) >= windowSize]

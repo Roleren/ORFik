@@ -20,7 +20,8 @@ transcriptWindow(
   dfr = NULL,
   idName = "",
   format = ".png",
-  type = "bedoc"
+  type = "ofst",
+  BPPARAM = bpparam()
 )
 }
 \arguments{
