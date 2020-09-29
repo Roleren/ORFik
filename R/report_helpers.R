@@ -21,14 +21,14 @@ QC_count_tables <- function(df, out.dir) {
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
   # Put into csv, the standard stats
-  message("Making summary counts for lib:")
+  message("Making alignment statistics for lib:")
   sCo <- function(region, lib) {
     weight <- "score"
     if (!(weight %in% colnames(mcols(lib))))
       weight <- NULL
     return(sum(countOverlapsW(region, lib, weight = weight)))
   }
-  for (s in libs) { # For each library
+  finals <- bplapply(varNames, function(s, dt_list, sCo, tx, gff.df) {
     message(s)
     lib <- get(s)
     # Raw stats
@@ -59,13 +59,10 @@ QC_count_tables <- function(df, out.dir) {
     widths <- round(summary(readWidths(lib)))
     res_widths <- data.frame(matrix(widths, nrow = 1))
     colnames(res_widths) <- paste(names(widths), "read length")
+    cbind(res, res_widths, res_mrna, res_extra)
+  }, dt_list = dt_list, sCo = sCo, tx = tx, gff.df = gff.df, BPPARAM = BPPARAM)
 
-    final <- cbind(res, res_widths, res_mrna, res_extra)
-
-    if (s == libs[1]) finals <- final
-    else finals <- rbind(finals, final)
-  }
-  return(finals)
+  return(rbindlist(finals))
 }
 
 #' Add trimming info to QC report

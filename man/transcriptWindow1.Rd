@@ -15,7 +15,8 @@ transcriptWindow1(
   dfr = NULL,
   idName = "",
   format = ".png",
-  type = "ofst"
+  type = "ofst",
+  BPPARAM = bpparam()
 )
 }
 \arguments{
