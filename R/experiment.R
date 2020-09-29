@@ -872,7 +872,10 @@ organism.df <- function(df) {
 #' default ("*", all experiments)
 #' @param libtypeExclusive search for experiments with exclusivly this
 #' libtype, default (NULL, all)
+#' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a data.table, 1 row per experiment with columns experiment (name), libtypes
+#' @importFrom BiocParallel bplapply
+#' @importFrom BiocParallel bpparam
 #' @export
 #' @examples
 #' ## Make your experiments
@@ -888,16 +891,16 @@ organism.df <- function(df) {
 #' ## For non default directory experiments
 #' #list.experiments(dir = "MY/CUSTOM/PATH)
 list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
-                             pattern = "*", libtypeExclusive = NULL) {
+                             pattern = "*", libtypeExclusive = NULL,
+                             BPPARAM = bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
   experiments <- grep(experiments, pattern = pattern, value = TRUE)
   experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
-  es <- lapply(experiments, function(x, dir) {
-    read.experiment(x, dir)
-  }, dir = dir)
-  info <- lapply(es, function(e) {
+  info <- bplapply(experiments, function(x, dir) { # Open each experiment in parallell
+    e <- read.experiment(x, dir)
     list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism)
-  })
+  }, dir = dir)
+
   info <- unlist(info, recursive = FALSE)
   libtypes <- info[grep("libtype", names(info))]
   samples <- unlist(info[names(info) == "runs"])

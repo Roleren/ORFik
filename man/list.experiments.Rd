@@ -7,7 +7,8 @@
 list.experiments(
   dir = "~/Bio_data/ORFik_experiments/",
   pattern = "*",
-  libtypeExclusive = NULL
+  libtypeExclusive = NULL,
+  BPPARAM = bpparam()
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ default ("*", all experiments)}
 
 \item{libtypeExclusive}{search for experiments with exclusivly this
 libtype, default (NULL, all)}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 a data.table, 1 row per experiment with columns experiment (name), libtypes
