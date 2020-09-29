@@ -143,6 +143,10 @@ QCstats.plot <- function(stats, output.dir = NULL) {
   }
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
 
+  stats$sample_id <-  factor(stats$Sample,
+                             labels = as.character(seq(length(stats$Sample))),
+                             levels = stats$Sample, ordered = TRUE)
+
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
   gg_STAT <- ggplot(dt_plot, aes(x=sample_id, y = value, group = Sample, fill = Sample)) +
     geom_bar(aes(color = Sample), stat="identity", position=position_dodge())+

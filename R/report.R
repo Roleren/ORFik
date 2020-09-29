@@ -111,15 +111,13 @@ QCplots <- function(df, region = "mrna",
     " can not be made, check your annotation file")
     return(invisible(NULL))
   }
-  if (!exists("cds", mode = "S4")) {
-    loadRegions(txdb, parts = c("leaders", "cds", "trailers"),
-                names.keep = txNames)
-  }
-
+  loadRegions(txdb, parts = c("leaders", "cds", "trailers"),
+              names.keep = txNames)
+  # Plot seperated by leader, cds & trailer
   transcriptWindow(leaders, get("cds", mode = "S4"),
                    trailers, df = df, outdir = stats_folder,
-                   allTogether = TRUE,
                    scores = c("sum", "zscore", "transcriptNormalized"))
+  # Plot all transcripts as 1 region
   transcriptWindow1(df = df, outdir = stats_folder,
                     scores = c("sum", "zscore", "transcriptNormalized"))
   return(invisible(NULL))

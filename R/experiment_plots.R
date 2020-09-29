@@ -69,7 +69,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
       }
     } else { # all combined
       coverage <- bplapply(varNames, function(x, leaders, cds, trailers,
-                                              fraction, windowSize) {
+                                              windowSize) {
         message(x)
         splitIn3Tx(leaders, cds, trailers,
                    get(x), fraction = x,
@@ -148,7 +148,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
                        windowSize = 100,
                        returnPlot = is.null(outdir),
                        dfr = NULL, idName = "", format = ".png",
-                       type = "ofst") {
+                       type = "ofst", BPPARAM = bpparam()) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
