@@ -92,19 +92,18 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
 #' minimum 30GB memory on genomes like human, rat, zebrafish etc.
-#' If you are not on linux system, the trimmer program will not work.
-#' fastp is a very fast trimmer, but sadly only supported on linux. So in
-#' that case use the trimmer you want, and set input.dir to the location of
-#' the trimmed files.
+#' The trimmer used is fastp (the fastest I could find), works on mac and linux.
+#' If you want to use your own trimmer set file1/file2 to the location of
+#' the trimmed files from your program.
 #' @param input.dir path to fast files to align, can either be
 #' fasta files (.fastq, .fq, .fa etc) or compressed files with .gz.
 #' Also either paired end or single end reads.
 #' @param index.dir path to STAR index folder. Path returned from ORFik function
 #' STAR.index, when you created the index folders.
 #' @param fastp path to fastp trimmer, default: install.fastp(), if you
-#' have it somewhere else already installed, give the path. If you are not on linux
-#' and you want to trim, use your favorite trimmer and give the output files from that
-#' trimmer as input.dir here.
+#' have it somewhere else already installed, give the path. Only works for
+#' unix (linux or Mac OS), if not on unix, use your favorite trimmer and
+#' give the output files from that trimmer as input.dir here.
 #' @param paired.end default "no", alternative "yes". Will auto detect
 #'  pairs by names. If yes running on a folder:
 #'  The folder must then contain an even number of files
@@ -202,11 +201,10 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
-#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
-#' If you are not on linux system, the trimmer program will not work.
-#' fastp is a very fast trimmer, but sadly only supported on linux. So in
-#' that case use the trimmer you want, and set file1/file2 to the location of
-#' the trimmed files.
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
+#' The trimmer used is fastp (the fastest I could find), works on mac and linux.
+#' If you want to use your own trimmer set file1/file2 to the location of
+#' the trimmed files from your program.
 #' @inheritParams STAR.align.folder
 #' @param file1 library file, if paired must be R1 file
 #' @param file2 default NULL, set if paired end to R2 file
@@ -514,11 +512,15 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
 
 #' Download and prepare fastp trimmer
 #'
-#' Will not run "make", only use precompiled fastp file.\cr
-#' Only works for Linux
-#' @param folder path to folder for download, fille will be named
-#' "fastp", this should be most recent version
+#' On Linux, will not run "make", only use precompiled fastp file.\cr
+#' On Mac OS it will use precompiled binaries.\cr
+#' Does not work yet for Windows!
+#' @param folder path to folder for download, file will be named
+#' "fastp", this should be most recent version. On mac it will search
+#' for a folder called fastp-master inside folder given. Since there
+#' is no precompiled version of fastp for Mac OS.
 #' @importFrom utils download.file
+#' @importFrom utils unzip
 #' @return path to runnable fastp
 #' @export
 #' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6129281/
@@ -528,15 +530,32 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
 install.fastp <- function(folder = "~/bin") {
   if (.Platform$OS.type != "unix")
     stop("fastp does not work on Windows, try RSubread")
-  url <- "http://opengene.org/fastp/fastp"
-  path <- paste0(folder, "/fastp")
+
+  is_linux <- Sys.info()[1] == "Linux" # else it is mac
+  url <- ifelse(is_linux, # else it is mac
+                "http://opengene.org/fastp/fastp",
+                "https://github.com/OpenGene/fastp/archive/master.zip")
+  path <- ifelse(is_linux, # else it is mac
+                 paste0(folder, "/fastp"),
+                 paste0(folder, "/fastp-master/fastp"))
+
   if (file.exists(path)) {
     message(paste("Using fastp at location:",
                   path))
     return(path)
   }
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
+
+  if (!is_linux) path <- paste0(folder, "/fastp.zip")
   utils::download.file(url, destfile = path)
+  if (!is_linux) { # For mac os
+    message("On mac OS, must build fastp, since no precompiled binaries exists")
+    message("This will only be done once")
+    utils::unzip(path, exdir = folder)
+    system(paste0("make -C ", folder, "/fastp-master/"))
+    path <- paste0(folder, "/fastp-master/fastp")
+  }
+  # Update access rights
   system(paste("chmod a+x", path))
   return(path)
 }

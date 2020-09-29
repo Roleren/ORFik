@@ -42,9 +42,9 @@ if you don't have STAR installed at default location, it will install it there,
 set path to a runnable star if you already have it.}
 
 \item{fastp}{path to fastp trimmer, default: install.fastp(), if you
-have it somewhere else already installed, give the path. If you are not on linux
-and you want to trim, use your favorite trimmer and give the output files from that
-trimmer as input.dir here.}
+have it somewhere else already installed, give the path. Only works for
+unix (linux or Mac OS), if not on unix, use your favorite trimmer and
+give the output files from that trimmer as input.dir here.}
 
 \item{paired.end}{default "no", alternative "yes". Will auto detect
 pairs by names. If yes running on a folder:
@@ -114,10 +114,9 @@ STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 \details{
 Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
-If you are not on linux system, the trimmer program will not work.
-fastp is a very fast trimmer, but sadly only supported on linux. So in
-that case use the trimmer you want, and set input.dir to the location of
-the trimmed files.
+The trimmer used is fastp (the fastest I could find), works on mac and linux.
+If you want to use your own trimmer set file1/file2 to the location of
+the trimmed files from your program.
 }
 \examples{
 # Use your own paths for annotation or the ORFik way

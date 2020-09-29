@@ -7,15 +7,18 @@
 install.fastp(folder = "~/bin")
 }
 \arguments{
-\item{folder}{path to folder for download, fille will be named
-"fastp", this should be most recent version}
+\item{folder}{path to folder for download, file will be named
+"fastp", this should be most recent version. On mac it will search
+for a folder called fastp-master inside folder given. Since there
+is no precompiled version of fastp for Mac OS.}
 }
 \value{
 path to runnable fastp
 }
 \description{
-Will not run "make", only use precompiled fastp file.\cr
-Only works for Linux
+On Linux, will not run "make", only use precompiled fastp file.\cr
+On Mac OS it will use precompiled binaries.\cr
+Does not work yet for Windows!
 }
 \examples{
 #install.fastp()

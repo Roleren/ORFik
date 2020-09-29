@@ -84,6 +84,9 @@ QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
                                           "/QC_STATS/")) {
   message("Making QC plots:")
+  message("- Annotation to NGS libraries plot:")
+  QCstats.plot(df, stats_folder)
+
   message("- Correlation plots")
   # Load fpkm values
   saveName <- paste0(stats_folder, "countTable_", region)

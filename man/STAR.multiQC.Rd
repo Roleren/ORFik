@@ -10,7 +10,8 @@ STAR.multiQC(folder)
 \item{folder}{path to LOGS folder of ORFik STAR runs. Can also be the path
 to the aligned/ (parent directory of LOGS), then it will move into LOG
 from there. Only if no files with pattern Log.final.out are found in
-parent directory.}
+parent directory. If no LOGS folder is found it can check for a folder
+/aligned/LOGS/ so to go 2 folders down.}
 }
 \value{
 invisible(NULL), plot and data saved to disc. Named:

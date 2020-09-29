@@ -5,7 +5,8 @@
 #' @param folder path to LOGS folder of ORFik STAR runs. Can also be the path
 #' to the aligned/ (parent directory of LOGS), then it will move into LOG
 #' from there. Only if no files with pattern Log.final.out are found in
-#' parent directory.
+#' parent directory. If no LOGS folder is found it can check for a folder
+#' /aligned/LOGS/ so to go 2 folders down.
 #' @return invisible(NULL), plot and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table melt
@@ -15,8 +16,12 @@ STAR.multiQC <- function(folder) {
   if (!dir.exists(folder)) stop("folder does not specify existing directory!")
   pattern <- "Log.final.out"
   log_files <- dir(folder, pattern, full.names = TRUE)
-  if (length(log_files) == 0) { # Go to subfolder directory called LOGS
-    STAR.multiQC(paste0(folder, "/LOGS/"))
+  if (length(log_files) == 0) {
+    # Go to subfolder directory called /LOGS/ or /aligned/LOGS/
+    new_path <- ifelse(dir.exists(paste0(folder, "/aligned/LOGS/")),
+                       paste0(folder, "/aligned/LOGS/"),
+                       paste0(folder, "/LOGS/"))
+    STAR.multiQC()
     return(invisible(NULL))
   }
   # Read log files 1 by 1 (only data column)

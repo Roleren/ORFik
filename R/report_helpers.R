@@ -58,7 +58,7 @@ QC_count_tables <- function(df, out.dir) {
     # Lib width distribution, after soft.clip
     widths <- round(summary(readWidths(lib)))
     res_widths <- data.frame(matrix(widths, nrow = 1))
-    colnames(res_widths) <- names(widths)
+    colnames(res_widths) <- paste(names(widths), "read length")
 
     final <- cbind(res, res_widths, res_mrna, res_extra)
 
@@ -114,6 +114,45 @@ trim_detection <- function(df, finals, out.dir) {
     message(paste0("No folder called:", paste0(out.dir, "/../trim/")))
   }
   return(finals)
+}
+
+#' Make plot of ORFik QCreport
+#'
+#' From post-alignment QC relative to annotation, make a plot for all samples.
+#' Will contain things like aligned_reads, read lengths, reads overlapping leaders,
+#' cds, trailers, rRNA, tRNA etc.
+#' @param stats path to ORFik QC stats .csv file, or the experiment object.
+#' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
+#' If defined saves plot to that directory with the name "/STATS_plot.png".
+#' @return ggplot object of the the statistics data
+#' @importFrom data.table melt
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[3,]
+#' ## First make QC report
+#' # QCreport(df)
+#' ## Now you can get plot
+#' # QCstats.plot(df)
+QCstats.plot <- function(stats, output.dir = NULL) {
+  if (is(stats, "experiment")) {
+    stats <- QCstats(stats)
+  } else {
+    stats <- fread(stats)
+  }
+  if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
+
+  dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
+  gg_STAT <- ggplot(dt_plot, aes(x=sample_id, y = value, group = Sample, fill = Sample)) +
+    geom_bar(aes(color = Sample), stat="identity", position=position_dodge())+
+    scale_fill_brewer(palette="Paired")+
+    ylab("Annotation & Alignment feature, value") +
+    xlab("Samples") +
+    facet_wrap(  ~ variable, scales = "free") +
+    theme_minimal()
+  if (is.null(output.dir)) {
+    ggsave(paste0(output.dir, "/STATS_plot.png"), gg_STAT, width = 13, height = 8)
+  }
+  return(gg_STAT)
 }
 
 #' Load ORFik QC Statistics report

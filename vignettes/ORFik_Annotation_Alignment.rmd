@@ -66,9 +66,10 @@ cd ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
 fastq-dump  --split-files --gzip --skip-technical --readids --read-filter pass --clip SRR453566 
 ```
 
-ORFik uses the fastp for trimming reads, this only works on linux. So for Mac users, do the trimming step first with your favorite trimmer if needed, then pass the trimmed files as input argument here. 
+ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS).
 
-We need usually 9 arguments:
+Now let's see what we need as inputs for the alignment pipeline:
+We need usually 9 arguments (more are possible if you need them):
 
 - input.dir.rna: directory with fastq files (or trimmed files on mac)
 - output.dir.rna: output directory for bam files
@@ -76,7 +77,7 @@ We need usually 9 arguments:
 - paired.end: "yes" in this case, or "no" if single end.
 - steps: steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trimming (only for Linux), ph: phix depletion, rR: rrna depletion,
+			 tr: trimming (only for unix), ph: phix depletion, rR: rrna depletion,
 			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write "tr-ge"
@@ -101,8 +102,7 @@ If you used the fastp (tr step), you will get a pre-alignment QC report. Just li
 ### STAR multiQC
 To get some plots and a statistics table of STAR runs, do:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-aligned_dir <- paste0(alignment, "/aligned/")
-STAR.multiQC(aligned_dir)
+STAR.multiQC(alignment)
 ```
 
 
