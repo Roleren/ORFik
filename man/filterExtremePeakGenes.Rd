@@ -49,7 +49,6 @@ How to scale the multiplier argument, from median or mean of gene coverage.}
 GRangesList (filtered)
 }
 \description{
-For removing extreme peaks in coverage plots, use high quantiles, like
-99. If you want to find general stall sites of Ribo-seq, you should use a
-pre_filter minimum and
+For removing very extreme peaks in coverage plots, use high quantiles, like
+99. Used to make your plots look better, by removing extreme peaks.
 }

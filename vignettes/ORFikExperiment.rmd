@@ -197,7 +197,7 @@ The R object loaded from these files are GAlignments or GAlignmentPairs, since c
 
 Loading time of 10GB Ribo-seq bam file reduced to ~ 15 seconds and ~ 200MB size.
 
-## ORFik QC report
+# ORFik QC report
 ORFik also support a full QC report for post alignment statistics, correlation plots,
 simplified libraries for plotting, meta coverage, ++.
 
@@ -209,14 +209,16 @@ To see the statistics, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 QCstats(df)
 ```
-## Using the ORFik system in your script
-Usually you want to do some operation on multiple data-sets. With ORFik experiment, 
-this operation is simple.
+
+# Using the ORFik system in your script
+Usually you want to do some operation on multiple data-sets. If ORFik does not include a premade function for what you want, you can make it yourself. If your data is in the format of an ORFik experiment, this operation is simple.
+
+## Looping over all libraries in experiment
 There are 3 ways to run loops for the data:
 
 1. if you know you have enough memory to load all data at once
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-outputLibs(df, type = "pshifted")
+outputLibs(df, type = "pshifted") # Output all libraries, fastest way
 libs <- bamVarName(df) # <- here are names of the libs that were outputed
 cds <- loadRegion(df, "cds")
 # parallel loop
@@ -246,4 +248,21 @@ lapply(files, FUN = function(file, cds) {
     return(entropy(cds, fimport(file)))
 }, cds = cds)
 
+```
+
+### Reformat output to data.table (merge column-wise)
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+library(data.table)
+
+outputLibs(df, type = "pshifted")
+libs <- bamVarName(df) # <- here are names of the libs that were outputed
+cds <- loadRegion(df, "cds")
+# parallel loop
+res <- bplapply(libs, FUN = function(lib, cds) { 
+        return(entropy(cds, get(lib)))
+    }, cds = cds)
+# Add some names and convert
+names(res) <- libs
+data.table::setDT(res) # Will give 1 column per library
+res # Now by columns
 ```

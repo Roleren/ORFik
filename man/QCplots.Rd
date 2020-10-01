@@ -27,8 +27,8 @@ Correlation plots default to mRNA covering reads.
 Meta plots defaults to leader, cds, trailer.\cr
 Output will be stored in same folder as the
 libraries in df.\cr
-Correlation plots will be raw count correlation and
-log2(count + 1) correlation between samples.
+Correlation plots will be fpkm correlation and
+log2(fpkm + 1) correlation between samples.
 }
 \details{
 Is part of \code{\link{QCreport}}

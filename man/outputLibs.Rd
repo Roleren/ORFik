@@ -28,7 +28,8 @@ These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
 
 \item{envir}{environment to save to, default (.GlobalEnv)}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
+\item{BPPARAM}{how many cores/threads to use? default: bpparam().
+To see number of threads used, do \code{bpparam()$workers}}
 }
 \value{
 NULL (libraries set by envir assignment)

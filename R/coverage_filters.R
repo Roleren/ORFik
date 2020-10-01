@@ -1,8 +1,7 @@
 #' Filter out transcript by a median filter
 #'
-#' For removing extreme peaks in coverage plots, use high quantiles, like
-#' 99. If you want to find general stall sites of Ribo-seq, you should use a
-#' pre_filter minimum and
+#' For removing very extreme peaks in coverage plots, use high quantiles, like
+#' 99. Used to make your plots look better, by removing extreme peaks.
 #' @param tx a GRangesList
 #' @param reads a GAlignments or GRanges
 #' @param upstream numeric or NULL, default NULL.
@@ -73,13 +72,17 @@ filterExtremePeakGenes <-
 
 #' Find peaks per gene
 #'
-#' For finding the peaks per gene, with some default filters.
+#' For finding the peaks (stall sites) per gene, with some default filters.
 #' A peak is basically a position of very high coverage compared to
-#' its surrounding area.
+#' its surrounding area, as measured using zscore.
+#'
+#' For more details see reference, which uses a slightly different method by zscore
+#' of a sliding window instead of over the whole tx.
 #' @param tx a GRangesList
 #' @param reads a GAlignments or GRanges, must be 1 width reads like p-shifts,
 #' or other reads that is single positioned.
-#' @param top_tx numeric, default 0.50 (50\% top tx by reads).
+#' @param top_tx numeric, default 0.50 (only use 50\% top transcripts by
+#' read counts).
 #' @param min_reads_per_tx numeric, default 20. Gene must have at least
 #'  20 reads, applied before type filter.
 #' @param min_reads_per_peak numeric, default 10. Peak must have at
@@ -90,6 +93,7 @@ filterExtremePeakGenes <-
 #' get first "max", then median of those.
 #' @return a data.table of gene_id, position, counts of the peak, zscore
 #' and standard deviation of the peak compared to rest of gene area.
+#' @references doi: 10.1261/rna.065235.117
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()

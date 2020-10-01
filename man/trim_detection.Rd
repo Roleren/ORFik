@@ -11,7 +11,8 @@ trim_detection(df, finals, out.dir)
 
 \item{finals}{a data.table with current output from QCreport}
 
-\item{out.dir}{optional output directory, default: dirname(df$filepath[1]).
+\item{out.dir}{optional output directory, default:
+\code{dirname(df$filepath[1])}.
 Will make a folder called "QC_STATS" with all results in this directory.}
 }
 \value{

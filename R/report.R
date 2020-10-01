@@ -23,8 +23,9 @@
 #' To make a ORFik experiment, see ?ORFik::experiment \cr
 #' To see some normal mrna coverage profiles of different RNA-seq protocols:
 #' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/
-#' @param df an ORFik \code{\link{experiment}}
-#' @param out.dir optional output directory, default: dirname(df$filepath[1]).
+#' @inheritParams outputLibs
+#' @param out.dir optional output directory, default:
+#' \code{dirname(df$filepath[1])}.
 #' Will make a folder called "QC_STATS" with all results in this directory.
 #' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
@@ -35,7 +36,8 @@
 #' df <- ORFik.template.experiment()
 #' # Run QC
 #' # QCreport(df)
-QCreport <- function(df, out.dir = dirname(df$filepath[1])) {
+QCreport <- function(df, out.dir = dirname(df$filepath[1]),
+                     BPPARAM = bpparam()) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
   validateExperiments(df)

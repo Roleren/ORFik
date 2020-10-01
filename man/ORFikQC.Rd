@@ -4,13 +4,17 @@
 \alias{ORFikQC}
 \title{A post Alignment quality control of reads}
 \usage{
-ORFikQC(df, out.dir = dirname(df$filepath[1]))
+ORFikQC(df, out.dir = dirname(df$filepath[1]), BPPARAM = bpparam())
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{out.dir}{optional output directory, default: dirname(df$filepath[1]).
+\item{out.dir}{optional output directory, default:
+\code{dirname(df$filepath[1])}.
 Will make a folder called "QC_STATS" with all results in this directory.}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam().
+To see number of threads used, do \code{bpparam()$workers}}
 }
 \value{
 invisible(NULL) (objects are stored to disc)

@@ -23,10 +23,10 @@ Here we will show a full example of aligning RNA-seq from yeast using the SacCer
 To download annotation we use the getGenomeAndAnnotation function.
 We need to decide 3 things:
 
--organism: Give scientific name of organism, with either " " or "_" between
+- organism: Give scientific name of organism, with either " " or "_" between
 genus(saccharomyces) and species (cerevisiae).
--output.dir: Where to output the annotation
--assembly_type: If using ensembl as db argument, you need to decide if you want primary_assembly or toplevel. The uncompressed toplevel file of human genome is > 70 GB, so for big genomes you should usually set to primary_assembly. But for small organisms like yeast, they don't have a primary assembly so use "toplevel".
+- output.dir: Where to output the annotation
+- assembly_type: If using ensembl as db argument, you need to decide if you want primary_assembly or toplevel. The uncompressed toplevel file of human genome is > 70 GB, so for big genomes you should usually set to primary_assembly. But for small organisms like yeast, they don't have a primary assembly so use "toplevel".
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   library(ORFik)                        # This package

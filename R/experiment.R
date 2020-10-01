@@ -591,7 +591,8 @@ filepath <- function(df, type, basename = FALSE) {
 #' or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
 #' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 #' @param envir environment to save to, default (.GlobalEnv)
-#' @param BPPARAM how many cores/threads to use? default: bpparam()
+#' @param BPPARAM how many cores/threads to use? default: bpparam().
+#' To see number of threads used, do \code{bpparam()$workers}
 #' @return NULL (libraries set by envir assignment)
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam

@@ -18,7 +18,8 @@ countTable_regions(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{out.dir}{optional output directory, default: dirname(df$filepath[1]).
+\item{out.dir}{optional output directory, default:
+\code{dirname(df$filepath[1])}.
 Will make a folder called "QC_STATS" with all results in this directory.}
 
 \item{longestPerGene}{a logical (default TRUE), if FALSE all transcript

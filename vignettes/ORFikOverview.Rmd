@@ -442,6 +442,7 @@ There are 2 main categories:
 * Read features (reads as: Ribo-seq, RNA-seq, TCP-seq, shape-seq etc)
 
 Some important read features are:
+
 - FLOSS `floss`   
 - coverage `coverage`  
 - ORFscore `orfScore`  

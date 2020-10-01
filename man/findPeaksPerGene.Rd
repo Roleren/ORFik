@@ -19,7 +19,8 @@ findPeaksPerGene(
 \item{reads}{a GAlignments or GRanges, must be 1 width reads like p-shifts,
 or other reads that is single positioned.}
 
-\item{top_tx}{numeric, default 0.50 (50\% top tx by reads).}
+\item{top_tx}{numeric, default 0.50 (only use 50\% top transcripts by
+read counts).}
 
 \item{min_reads_per_tx}{numeric, default 20. Gene must have at least
 20 reads, applied before type filter.}
@@ -37,9 +38,13 @@ a data.table of gene_id, position, counts of the peak, zscore
 and standard deviation of the peak compared to rest of gene area.
 }
 \description{
-For finding the peaks per gene, with some default filters.
+For finding the peaks (stall sites) per gene, with some default filters.
 A peak is basically a position of very high coverage compared to
-its surrounding area.
+its surrounding area, as measured using zscore.
+}
+\details{
+For more details see reference, which uses a slightly different method by zscore
+of a sliding window instead of over the whole tx.
 }
 \examples{
 df <- ORFik.template.experiment()
@@ -50,4 +55,7 @@ rfp <- fimport(df[3,]$filepath)
 findPeaksPerGene(cds, rfp, top_tx = 0)
 # Top 50\% of genes
 findPeaksPerGene(cds, rfp)
+}
+\references{
+doi: 10.1261/rna.065235.117
 }
