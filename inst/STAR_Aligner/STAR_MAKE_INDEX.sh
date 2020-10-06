@@ -177,7 +177,7 @@ function nCores()
 #################### 2. make all star indices given #############################
 
 # genome (--sjdbOverhang 72, 76-3(trim) - 1)
-if [[ ${genome} != "" ]; then
+if [[ ${genome} != "" ]]; then
 	echo ""; echo "Main genome index:"
 	eval $STAR \
 	--runMode genomeGenerate \
