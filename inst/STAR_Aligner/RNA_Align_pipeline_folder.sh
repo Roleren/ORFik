@@ -5,6 +5,7 @@
 #1 STAR INDICES (If not existing, must be done in seperate script for now)
 #2 make directories
 #3 Trim adaptor
+#4 (alternative:) Remove merged contaminants
 #4 Remove PhiX
 #5 Remove rRNA (from silva)
 #6 Remove organism specific ncRNA (from ensembl, zebrafish does not contain tRNA)
@@ -26,8 +27,9 @@ OPTIONS:
 	-l	minimum length of reads (default: 15)
 	-g	genome dir for all STAR indices
 	-s	steps of depletion and alignment wanted:
-		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trim, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
+		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge",
+		   or tr-co-ge, depending on if you merged contaminants or not.)
+			 tr: trim, co: contaminants, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write -s "tr-ge"
 	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
@@ -76,8 +78,8 @@ trim_front=3
 paired="no"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-align_single="/export/valenfs/projects/Pipelines/STAR_Aligner/RNA_Align_pipeline.sh"
-cleaning="/export/valenfs/projects/Pipelines/STAR_Aligner/cleanup_folders.sh"
+align_single=""
+cleaning=""
 while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
     case $opt in
     f)

@@ -41,7 +41,7 @@ maxCPU=60
 STAR=~/bin/STAR-2.7.0c/source/STAR
 tRNA=""
 ncRNA=""
-contamints=""
+contaminants=""
 species=""
 genomeGTF=""
 genome=""
@@ -73,8 +73,8 @@ while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
         echo "-f fasta genome $OPTARG"
 	;;
 	  c)
-        contamints=$OPTARG
-        echo "-c contamints fasta genome $OPTARG"
+        contaminants=$OPTARG
+        echo "-c contaminants fasta genome $OPTARG"
 	;;
     g)
         genomeGTF=$OPTARG
@@ -189,11 +189,11 @@ if [ ${genome} != "" ]; then
 	--limitGenomeGenerateRAM 30000000000
 fi
 # contaminants
-if [ $contamints != "" ]; then
+if [ contaminants != "" ]; then
 	echo ""; echo "contamints index:"
 	eval $STAR \
 	--runMode genomeGenerate \
-	--genomeFastaFiles ${$contamints} \
+	--genomeFastaFiles ${contaminants} \
 	--genomeDir ${out_dir}/contaminants_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM 300000000000 \

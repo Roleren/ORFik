@@ -24,10 +24,10 @@ OPTIONS:
 	-o	path to output dir
 	-l	minimum length of reads (default: 15)
 	-g	genome dir for all indices (Standard is zebrafish: danrerio10, change to human index if needed etc)
-	-s	steps of depletion and alignment wanted:
-		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trimming, ph: phix depletion, rR: rrna depletion,
-			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
+  -s	steps of depletion and alignment wanted:
+		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge",
+		   or tr-co-ge, depending on if you merged contaminants or not.)
+			 tr: trim, co: contaminants, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write -s "tr-ge"
 	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
@@ -198,32 +198,8 @@ if [ ! -d $out_dir ]; then
     mkdir -p $out_dir
 fi
 
-if [ ! -d ${out_dir}/trim ]; then
-        mkdir ${out_dir}/trim
-fi
-
-if [ ! -d ${out_dir}/phix_depletion ]; then
-        mkdir ${out_dir}/phix_depletion
-fi
-
-if [ ! -d ${out_dir}/rRNA_depletion ]; then
-        mkdir ${out_dir}/rRNA_depletion
-fi
-
-if [ ! -d ${out_dir}/ncRNA_depletion ]; then
-    	mkdir ${out_dir}/ncRNA_depletion
-fi
-
-if [ ! -d ${out_dir}/tRNA_depletion ]; then
-        mkdir ${out_dir}/tRNA_depletion
-fi
-
-if [ ! -d ${out_dir}/aligned ]; then
-        mkdir ${out_dir}/aligned
-fi
-
-
 # 3-7 filtering
+contaminants=$gen_dir/contaminants_genomeDir
 phix=$gen_dir/PhiX_genomeDir
 rRNA=$gen_dir/rRNA_genomeDir
 ncRNA=$gen_dir/ncRNA_genomeDir
@@ -261,6 +237,9 @@ function pathList()
 {
 	if [ -z ${4} ]; then # if single end
 		case $1 in
+		  "co")
+		    echo "${2}/contaminants_depletion/contaminants_${3}_Unmapped.out.mate1"
+		    ;;
 			"tR")
 				echo "${2}/tRNA_depletion/tRNA_${3}_Unmapped.out.mate1"
 				;;
@@ -279,6 +258,9 @@ function pathList()
 		esac
 	else # if paired end
 		case $1 in
+		  "co")
+				echo "${2}/contaminants_depletion/contaminants_${3}_Unmapped.out.mate1 ${2}/contaminants_depletion/contaminants_${3}_Unmapped.out.mate2"
+				;;
 			"tR")
 				echo "${2}/tRNA_depletion/tRNA_${3}_Unmapped.out.mate1 ${2}/tRNA_depletion/tRNA_${3}_Unmapped.out.mate2"
 				;;
@@ -395,6 +377,10 @@ fi
     #--adapter_sequence adapter sequence, normally set manually (normally needed)
     if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
 	echo trimming
+	if [ ! -d ${out_dir}/trim ]; then
+        mkdir ${out_dir}/trim
+  fi
+
 	if [ $adapter == "disable" ]; then
 		eval $fastp \
 		--in1=${in_file} \
@@ -438,6 +424,30 @@ fi
 	fi
     fi
 
+#------------------------------------------------------------------------------------------
+    #4 (alternative): Remove merged contaminants
+    #------------------------------------------------------------------------------------------
+# get output of everything that did not hit, as fastaq
+if [ $(doThisStep $resume 'co' $steps) == "yes" ]; then
+	echo "Contaminant depletion:"
+	if [ ! -d ${out_dir}/contaminants_depletion ]; then
+        mkdir ${out_dir}/contaminants_depletion
+  fi
+
+	eval $STAR \
+	--readFilesIn $(inputFile $resume $in_file "co" ${out_dir} ${ibn} ${in_file_two}) \
+	--genomeDir ${contaminants} \
+	--genomeLoad $(keepOrNot $keep)  \
+	--outFileNamePrefix ${out_dir}/contaminants_depletion/contaminants_${ibn}_ \
+	--outSAMtype None \
+	--outSAMmode None \
+	--outReadsUnmapped Fastx \
+	--outFilterMatchNmin $min_length \
+	--runThreadN $(nCores 90 $maxCPU) \
+	--readFilesCommand $(comp $(inputFile $resume $in_file 'rR' ${out_dir} ${ibn})) \
+	--limitIObufferSize 50000000
+fi
+
  #------------------------------------------------------------------------------------------
     #4 Remove PhiX
     #------------------------------------------------------------------------------------------
@@ -452,6 +462,10 @@ fi
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
 	echo "PhiX depletion:"
+	if [ ! -d ${out_dir}/phix_depletion ]; then
+        mkdir ${out_dir}/phix_depletion
+  fi
+
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "ph" ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${phix} \
@@ -473,6 +487,10 @@ fi
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
 	echo "rRNA depletion:"
+	if [ ! -d ${out_dir}/rRNA_depletion ]; then
+        mkdir ${out_dir}/rRNA_depletion
+  fi
+
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "rR" ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${rRNA} \
@@ -493,6 +511,10 @@ fi
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'nc' $steps) == "yes" ]; then
 	echo "ncRNA depletion:"
+	if [ ! -d ${out_dir}/ncRNA_depletion ]; then
+    	mkdir ${out_dir}/ncRNA_depletion
+  fi
+
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "nc" ${out_dir} ${ibn} ${in_file_two})\
 	--genomeDir ${ncRNA} \
@@ -513,6 +535,10 @@ fi
 # get output of everything that did not hit, as fastaq
 if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
 	echo "tRNA depletion"
+	if [ ! -d ${out_dir}/tRNA_depletion ]; then
+        mkdir ${out_dir}/tRNA_depletion
+  fi
+
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file "tR" ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${tRNA} \
@@ -534,6 +560,10 @@ fi
     # <(gunzip -c ${in_file})
 if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	echo "Final mapping to genome:"
+	if [ ! -d ${out_dir}/aligned ]; then
+        mkdir ${out_dir}/aligned
+  fi
+
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn} ${in_file_two}) \
 	--genomeDir ${usedGenome} \

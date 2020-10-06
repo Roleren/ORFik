@@ -56,18 +56,22 @@ and they must be named with the same prefix and sufix of either
 \item{steps}{a character, default: "tr-ge", trimming then genome alignment\cr
 steps of depletion and alignment wanted:
 The posible candidates you can use are:
-tr: trim reads, ph: phix depletion, rR: rrna depletion,
+tr: trim reads, co: contamination merged depletion, ph: phix depletion,
+rR: rrna depletion,
 nc: ncrna depletion, tR: trna depletion, ge: genome alignment,
-all: run all steps)\cr
-If not "all", a subset of these ("tr-ph-rR-nc-tR-ge")\cr
+all: run steps: tr-ph-rR-nc-tR-ge)\cr
+If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
+If co (merged contaminants) is used, non of the specific contaminants can be specified,
+since they should be a subset of co.\cr
 In bash script it is reformated to this style:
 (trimming and genome do: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
 the step where you align to the genome is usually always included, unless you
 are doing pure contaminant analysis.
 For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
 so when you made the
-STAR index you need the rRNA step (usually just download a Silva rRNA database
-for SSU&LSU at: https://www.arb-silva.de/)}
+STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
+(usually just download a Silva rRNA database
+for SSU&LSU at: https://www.arb-silva.de/) for your species.}
 
 \item{adapter.sequence}{character, default: "auto" (auto detect adapter, is not
 very reliable for Ribo-seq, so then you must include,
@@ -133,10 +137,19 @@ i.e. it auto-trims." So trimming can be skipped for longer reads.
 \examples{
 # Use your own paths for annotation or the ORFik way
 
-## use ORFik way:
+## No contaminant depletion:
 output.dir <- "/Bio_data/references/Human"
-# arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
-# index <- STAR.index(arguments, output.dir)
+# annotation <- getGenomeAndAnnotation("Homo sapiens", output.dir)
+# index <- STAR.index(annotation)
+# STAR.align.folder("data/raw_data/human_rna_seq", "data/processed/human_rna_seq",
+#                    index, paired.end = "no")
+## All contaminants merged:
+# annotation <- getGenomeAndAnnotation(
+#    organism = "Homo_sapiens",
+#    phix = TRUE, ncRNA = TRUE, tRNA = TRUE, rRNA = TRUE,
+#    output.dir = annotation
+#    )
+# index <- STAR.index(annotation)
 # STAR.align.folder("data/raw_data/human_rna_seq", "data/processed/human_rna_seq",
 #                    index, paired.end = "no")
 }
