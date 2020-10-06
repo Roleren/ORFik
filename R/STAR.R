@@ -406,13 +406,13 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     if (!file.exists(rRNA)) stop(paste("rRNA file is given and does not exist:",
                                        tRNA))
   }
-  phix <- get_phix_genome(phix, output.dir)
-  ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism)
+  phix <- get_phix_genome(phix, output.dir, gunzip)
+  ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
 
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism,
-                             assembly_type, db)
-  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type)
+                             assembly_type, db, gunzip)
+  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:
@@ -425,7 +425,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
         stop("gtf or genome not specified, so impossible to find gtf contaminants!")
       # Make fasta file of those contaminants
       total_seqs <- DNAStringSet()
-      gtf.imp <- ORFik:::importGtfFromTxdb(gtf)
+      gtf.imp <- importGtfFromTxdb(gtf)
       txdb <- loadTxdb(paste0(gtf, ".db"))
       tx <- loadRegion(txdb)
       # Loop through the gtf contaminants
@@ -436,7 +436,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
           next
         }
         valid_tx <- tx[unique(valids$transcript_id)]
-        seqs <- ORFik:::txSeqsFromFa(valid_tx, genome, TRUE, TRUE)
+        seqs <- txSeqsFromFa(valid_tx, genome, TRUE, TRUE)
         path.cont <- paste0(output.dir, "/", t, ".fasta")
         writeXStringSet(seqs, path.cont)
         total_seqs <- c(total_seqs, seqs)
