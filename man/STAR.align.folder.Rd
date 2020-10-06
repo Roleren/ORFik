@@ -123,7 +123,12 @@ Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
 The trimmer used is fastp (the fastest I could find), works on mac and linux.
 If you want to use your own trimmer set file1/file2 to the location of
-the trimmed files from your program.
+the trimmed files from your program.\cr
+A note on trimming from creator of STAR about trimming:
+"adapter trimming it definitely needed for short RNA sequencing.
+For long RNA-seq, I would agree with Devon that in most cases adapter trimming
+is not advantageous, since, by default, STAR performs local (not end-to-end) alignment,
+i.e. it auto-trims." So trimming can be skipped for longer reads.
 }
 \examples{
 # Use your own paths for annotation or the ORFik way

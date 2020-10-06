@@ -3,9 +3,7 @@
 # HT 12/02/19
 # Script to make genome index for species
 # 1 make directories
-# 2 STAR INDICES (TODO: ADD posibility to skip parts)
-# rRNA /export/valenfs/data/references/rrna/SILVA_119_bothSURef.fasta
-# phix /export/valenfs/data/references/phiX/phiX.fa
+# 2 STAR INDICES
 usage(){
 cat << EOF
 usage: $0 options
@@ -14,6 +12,8 @@ Script to make genome index for species
 
 OPTIONS:
 	-o	   output folder for all indices
+	-c     path to merged contaminants fasta/fasta.gz file. Use instead of individual
+	          rRNA, tRNA etc.
 	-s   	 species to use (zebrafish, soon human and yeast, only used on cbu UIB)
 	-p 	   path to phix fasta/fasta.gz file
 	-r	   path to rrna fasta/fasta.gz file
@@ -41,11 +41,12 @@ maxCPU=60
 STAR=~/bin/STAR-2.7.0c/source/STAR
 tRNA=""
 ncRNA=""
+contamints=""
 species=""
 genomeGTF=""
 genome=""
 species=""
-while getopts ":o:s:p:r:n:t:f:g:G:S:m:h" opt; do
+while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
     case $opt in
     s)
 	species=$OPTARG
@@ -70,6 +71,10 @@ while getopts ":o:s:p:r:n:t:f:g:G:S:m:h" opt; do
     f)
         genome=$OPTARG
         echo "-f fasta genome $OPTARG"
+	;;
+	  c)
+        contamints=$OPTARG
+        echo "-c contamints fasta genome $OPTARG"
 	;;
     g)
         genomeGTF=$OPTARG
@@ -104,41 +109,13 @@ while getopts ":o:s:p:r:n:t:f:g:G:S:m:h" opt; do
     esac
 done
 
-# Check species choice (Only used on University of Bergen, CBU, server)
-if [[ $species != "" ]]; then
-  rRNA = /export/valenfs/data/references/rrna/SILVA_119_bothSURef.fasta
-  phix = /export/valenfs/data/references/phiX/phiX.fa
-fi
-if [[ $species == "zebrafish" ]]; then
-	tRNA=/export/valenfs/data/references/Zv10_zebrafish/tRNAscan-SE-2.0/GRcZ10_tRNA_scan_output.fa
-	ncRNA=/export/valenfs/data/references/Zv10_zebrafish/ncrna_edited/Danio_rerio.GRCz10.ncrna
-	genome=/export/valenfs/data/references/Zv10_zebrafish/Danio_rerio.GRCz10.fa \
-	genomeGTF=/export/valenfs/data/references/Zv10_zebrafish/Danio_rerio.GRCz10.81.gtf
-elif [[ $species == "human" ]];then
-	tRNA=/export/valenfs/data/references/trna/hg38-tRNAs.fa
-	ncRNA=/export/valenfs/data/references/GRCh38_human/ncrna/Homo_sapiens.GRCh38.ncrna.fa
-	genome=/export/valenfs/projects/uORFome/Annotations/Homo_sapiens.GRCh38.dna.primary_assembly.chr.fa
-	genomeGTF=/export/valenfs/projects/uORFome/Annotations/Homo_sapiens.GRCh38.79.chr.NO_PATCH.gtf
-elif [[ $species == "yeast" ]];then
-	tRNA=/export/valenfs/data/references/R64_1_1_yeast/tRNAscan-SE-2.0/R64_tRNA_scan_output.fa
-	ncRNA=/export/valenfs/data/references/R64_1_1_yeast/ncrna_edited/Saccharomyces_cerevisiae.R64-1-1.ncrna.fa
-	genome=/export/valenfs/data/references/R64_1_1_yeast/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa
-	genomeGTF=/export/valenfs/data/references/R64_1_1_yeast/Saccharomyces_cerevisiae.R64-1-1.79_with_UTRs.gtf
-elif [[ $species == "rat" ]];then
-	tRNA=/export/valenfs/data/references/Rnor_6.0_rat/rn6-mature-tRNAs.fa
-	ncRNA=/export/valenfs/data/references/Rnor_6.0_rat/NONCODEv5_rat.fa
-	genome=/export/valenfs/data/references/Rnor_6.0_rat/Rnor_6.0.dna.toplevel.fa
-	genomeGTF=/export/valenfs/data/references/Rnor_6.0_rat/Rnor_6.0_genomic_ensembl.gtf
-else
-	echo "Specific species not given"
-	if [ $genome == "" ]; then
+if [ $genome == "" ]; then
 		echo "Genome fasta file not specified;"
 		#exit 1
-	fi
-	if [ $genomeGTF == "" ]; then
-		echo "Genome gtf/gff file not specified;"
-		#exit 1
-	fi
+fi
+if [ $genomeGTF == "" ]; then
+	echo "Genome gtf/gff file not specified;"
+	#exit 1
 fi
 
 
@@ -154,19 +131,33 @@ if [ ! -d $out_dir ]; then
 fi
 
 if [ ! -d ${out_dir}/PhiX_genomeDir ]; then
+  if [ $phix != "" ]; then
         mkdir ${out_dir}/PhiX_genomeDir
+  fi
 fi
 
 if [ ! -d ${out_dir}/rRNA_genomeDir ]; then
+  if [ $rRNA != "" ]; then
         mkdir ${out_dir}/rRNA_genomeDir
+  fi
 fi
 
 if [ ! -d ${out_dir}/ncRNA_genomeDir ]; then
+  if [ $ncRNA != "" ]; then
         mkdir ${out_dir}/ncRNA_genomeDir
+  fi
 fi
 
 if [ ! -d ${out_dir}/tRNA_genomeDir ]; then
-    	mkdir ${out_dir}/tRNA_genomeDir
+  if [ $tRNA != "" ]; then
+        mkdir ${out_dir}/tRNA_genomeDir
+  fi
+fi
+
+if [ ! -d ${out_dir}/contaminants_genomeDir ]; then
+  if [ $contamints != "" ]; then
+        mkdir ${out_dir}/contaminants_genomeDir
+  fi
 fi
 
 if [ ! -d ${out_dir}/genomeDir ]; then
@@ -197,6 +188,18 @@ if [ ${genome} != "" ]; then
 	--sjdbOverhang 72 \
 	--limitGenomeGenerateRAM 30000000000
 fi
+# contaminants
+if [ $contamints != "" ]; then
+	echo ""; echo "contamints index:"
+	eval $STAR \
+	--runMode genomeGenerate \
+	--genomeFastaFiles ${$contamints} \
+	--genomeDir ${out_dir}/contaminants_genomeDir \
+	--runThreadN $(nCores $maxCPU 40) \
+	--limitGenomeGenerateRAM 300000000000 \
+	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation
+fi
+
 # phix (--genomeSAindexNbases 5 for small genome)
 if [ $phix != "" ]; then
 	echo ""; echo "phix index:"

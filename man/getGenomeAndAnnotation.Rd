@@ -10,10 +10,11 @@ getGenomeAndAnnotation(
   db = "ensembl",
   GTF = TRUE,
   genome = TRUE,
+  merge_contaminants = TRUE,
   phix = FALSE,
-  ncRNA = "",
-  tRNA = "",
-  rRNA = "",
+  ncRNA = FALSE,
+  tRNA = FALSE,
+  rRNA = FALSE,
   gunzip = TRUE,
   remake = FALSE,
   assembly_type = "primary_assembly"
@@ -45,15 +46,25 @@ and assign: \cr annotation <- getGenomeAndAnnotation(genome = FALSE)\cr
 annotation["genome"] = "path/to/genome.fasta".\cr
 Will download the primary assembly for ensembl}
 
+\item{merge_contaminants}{logical, default TRUE. Will merge
+the contaminants specified into one fasta file, this considerably
+saves space and is much quicker to align with STAR than each contamint
+on it's own. If no contaminants are specified, this is ignored.}
+
 \item{phix}{logical, default FALSE, download phix sequence to filter
- out with.
+ out with. Phix is used as a contaminant genome.
 Only use if illumina sequencing. Phix is used in Illumina sequencers for
 sequencing quality control. Genome is: refseq, Escherichia virus phiX174}
 
-\item{ncRNA}{character, default "" (no download), a contaminant genome.
+\item{ncRNA}{logical or character, default FALSE (not used, no download),
+ncRNA is used as a contaminant genome.
+If TRUE, will try to find ncRNA sequences from the gtf file, usually represented as
+lncRNA (long noncoding RNA's). Will let you know if no ncRNA sequences were found in
+gtf.\cr If not found try character input:\cr
 Alternatives: "auto" or manual assign like "human".
-If "auto" will try to find ncRNA file from organism, Homo sapiens -> human
-etc. "auto" will not work for all, then you must specify the name used by
+If "auto" will try to find ncRNA file on NONCODE from organism,
+Homo sapiens -> human etc. "auto" will not work for all,
+then you must specify the name used by
 NONCODE, go to the link below and find it.
 If not "auto" / "" it must be a character vector
 of species common name (not scientific name) Homo sapiens is human,
@@ -61,13 +72,21 @@ Rattus norwegicus is rat etc, download ncRNA sequence to filter out with.
 From NONCODE online server, if you cant find
 common name see: http://www.noncode.org/download.php/}
 
-\item{tRNA}{chatacter, default "" (not used),
+\item{tRNA}{logical or character, default FALSE (not used, no download),
+tRNA is used as a contaminant genome.
+If TRUE, will try to find tRNA sequences from the gtf file, usually represented as
+Mt_tRNA (mature tRNA's). Will let you know if no tRNA sequences were found in
+gtf. If not found try character input:\cr
 if not "" it must be a character vector  to valid path of mature
 tRNAs fasta file to remove as contaminants on your disc. Find and download
 your wanted mtRNA at: http://gtrnadb.ucsc.edu/, or run trna-scan on
 you genome.}
 
-\item{rRNA}{chatacter, default "" (not used),
+\item{rRNA}{logical or character, default FALSE (not used, no download),
+rRNA is used as a contaminant genome.
+If TRUE, will try to find rRNA sequences from the gtf file, usually represented as
+rRNA (ribosomal RNA's). Will let you know if no rRNA sequences were found in
+gtf. If not found try character input:\cr
 if not "" it must be a character vector to valid path of mature
 rRNA fasta file to remove as contaminants on your disc. Find and download
 your wanted rRNA at: https://www.arb-silva.de/}
@@ -89,10 +108,13 @@ As an example the toplevel fasta genome in human is over 70 GB uncompressed.
 To get primary assembly with 1 chromosome variant per chromosome:}
 }
 \value{
-a character vector of path to genomes and gtf downloaded,
- and additional contaminants if used.
+a named character vector of path to genomes and gtf downloaded,
+ and additional contaminants if used. If merge_contaminants is TRUE, will not
+ give individual fasta files to contaminants, but only the merged one.
 }
 \description{
+This function automatically downloads (if files not already exists)
+genomes and contaminants specified for genome alignment.
 Will create a R transcript database (TxDb object) from the annotation. \cr
 It will also index the genome for you\cr
 If you misspelled something or crashed, delete wrong files and
@@ -109,6 +131,10 @@ annotation["gtf"] = "path/to/gtf.gtf"
 \examples{
 output.dir <- "/Bio_data/references/zebrafish"
 #getGenomeAndAnnotation("Danio rerio", output.dir)
+
+## Get Phix contamints to deplete during alignment
+#getGenomeAndAnnotation("Danio rerio", output.dir, phix = TRUE)
+
 }
 \seealso{
 Other STAR: 
