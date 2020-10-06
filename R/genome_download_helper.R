@@ -28,9 +28,20 @@ get_genome_fasta <- function(genome, output.dir, organism,
     genome <- grep(pattern = organism,
                    x = list.files(output.dir, full.names = TRUE),
                    value = TRUE)
+
     genome <- grep(pattern = "\\.fa", x = genome, value = TRUE)
     genome <- grep(pattern = "\\.fai", x = genome, value = TRUE, invert = TRUE)
-    if (length(genome) != 1) genome <- FALSE
+    if (length(genome) != 1) {
+      if (length(genome) > 1) {
+        genome <- grep(pattern = "\\.dna", x = genome, value = TRUE)
+      }
+      if (length(genome) > 1) {
+        warning("Found multiple candidates for pre downloaded genome,
+                setting to FALSE!")
+        genome <- FALSE
+      } else if (length(genome) == 0) genome <- FALSE
+
+    }
   }
   return(genome)
 }
@@ -60,7 +71,11 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip) {
                 value = TRUE)
     gtf <- grep(pattern = "\\.gtf", x = gtf, value = TRUE)
     gtf <- grep(pattern = "\\.db", x = gtf, value = TRUE, invert = TRUE)
-    if (length(gtf) != 1) gtf <- FALSE
+    if (length(gtf) != 1) {
+      warning("Found multiple candidates for pre downloaded gtf,
+              setting to FALSE!")
+      gtf <- FALSE
+    }
   }
   return(gtf)
 }
