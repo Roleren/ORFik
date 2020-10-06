@@ -109,11 +109,11 @@ while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
     esac
 done
 
-if [ $genome == "" ]; then
+if [ "$genome" == "" ]; then
 		echo "Genome fasta file not specified;"
 		#exit 1
 fi
-if [ $genomeGTF == "" ]; then
+if [ "$genomeGTF" == "" ]; then
 	echo "Genome gtf/gff file not specified;"
 	#exit 1
 fi
@@ -131,31 +131,31 @@ if [ ! -d $out_dir ]; then
 fi
 
 if [ ! -d ${out_dir}/PhiX_genomeDir ]; then
-  if [ $phix != "" ]; then
+  if [ "$phix" != "" ]; then
         mkdir ${out_dir}/PhiX_genomeDir
   fi
 fi
 
 if [ ! -d ${out_dir}/rRNA_genomeDir ]; then
-  if [ $rRNA != "" ]; then
+  if [ "$rRNA" != "" ]; then
         mkdir ${out_dir}/rRNA_genomeDir
   fi
 fi
 
 if [ ! -d ${out_dir}/ncRNA_genomeDir ]; then
-  if [ $ncRNA != "" ]; then
+  if [ "$ncRNA" != "" ]; then
         mkdir ${out_dir}/ncRNA_genomeDir
   fi
 fi
 
 if [ ! -d ${out_dir}/tRNA_genomeDir ]; then
-  if [ $tRNA != "" ]; then
+  if [ "$tRNA" != "" ]; then
         mkdir ${out_dir}/tRNA_genomeDir
   fi
 fi
 
 if [ ! -d ${out_dir}/contaminants_genomeDir ]; then
-  if [ $contamints != "" ]; then
+  if [ "$contamints" != "" ]; then
         mkdir ${out_dir}/contaminants_genomeDir
   fi
 fi
@@ -177,7 +177,7 @@ function nCores()
 #################### 2. make all star indices given #############################
 
 # genome (--sjdbOverhang 72, 76-3(trim) - 1)
-if [ ${genome} != "" ]; then
+if [[ ${genome} != "" ]; then
 	echo ""; echo "Main genome index:"
 	eval $STAR \
 	--runMode genomeGenerate \
@@ -189,7 +189,7 @@ if [ ${genome} != "" ]; then
 	--limitGenomeGenerateRAM 30000000000
 fi
 # contaminants
-if [ contaminants != "" ]; then
+if [[ $contaminants != "" ]]; then
 	echo ""; echo "contamints index:"
 	eval $STAR \
 	--runMode genomeGenerate \
@@ -201,7 +201,7 @@ if [ contaminants != "" ]; then
 fi
 
 # phix (--genomeSAindexNbases 5 for small genome)
-if [ $phix != "" ]; then
+if [[ $phix != "" ]]; then
 	echo ""; echo "phix index:"
 	eval $STAR \
 	--runMode genomeGenerate \
@@ -213,7 +213,7 @@ if [ $phix != "" ]; then
 fi
 
 # rrna (checked --genomeChrBinNbits log2(2462064000/1641376) for many sequences)
-if [ $rRNA != "" ]; then
+if [[ $rRNA != "" ]]; then
 	echo ""; echo "rRNA index:"
 	eval $STAR \
 	--runMode genomeGenerate \
@@ -224,7 +224,7 @@ if [ $rRNA != "" ]; then
 	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation
 fi
 # ncRNA (small genome 5)
-if [ $ncRNA != "" ]; then
+if [[ $ncRNA != "" ]]; then
 	echo ""; echo "ncRNA index:"
 	eval $STAR \
 	--runMode genomeGenerate \
@@ -236,7 +236,7 @@ if [ $ncRNA != "" ]; then
 fi
 # trna (mix of both, many sequences and small genome)
 # Check SA index size is valid
-if [ $tRNA != "" ]; then
+if [[ $tRNA != "" ]]; then
 	echo ""; echo "tRNA index:"
 	SA=6
 	size=($(wc -m $tRNA))
