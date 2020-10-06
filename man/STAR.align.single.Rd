@@ -84,8 +84,10 @@ number of threads to use. Default is minimum of 90 and maximum cores - 1}
     console in Windows (it will be dropped, instead).}
 
 \item{resume}{default: NULL, continue from step, lets say steps are "tr-ph-ge":
-(trim, phix depletion, genome alignment) and resume is "ph", you will use the trimmed
-data and continue from there starting at phix, usefull if something crashed.}
+(trim, phix depletion, genome alignment) and resume is "ph", you will then use
+the assumed already trimmed data and start / continue from there starting at phix,
+usefull if something crashed. Like if you specified wrong STAR version, but the trimming
+step was completed.}
 
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you

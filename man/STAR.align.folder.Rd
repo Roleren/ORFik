@@ -19,6 +19,7 @@ STAR.align.folder(
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
   include.subfolders = "n",
+  resume = NULL,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
@@ -92,6 +93,12 @@ number of threads to use. Default is minimum of 90 and maximum cores - 1}
     console in Windows (it will be dropped, instead).}
 
 \item{include.subfolders}{"n" (no), do recursive search downwards for fast files if "y".}
+
+\item{resume}{default: NULL, continue from step, lets say steps are "tr-ph-ge":
+(trim, phix depletion, genome alignment) and resume is "ph", you will then use
+the assumed already trimmed data and start / continue from there starting at phix,
+usefull if something crashed. Like if you specified wrong STAR version, but the trimming
+step was completed.}
 
 \item{script.folder}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you

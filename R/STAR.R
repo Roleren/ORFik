@@ -134,6 +134,11 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @param alignment.type default: "Local": standard local alignment with soft-clipping allowed,
 #' "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.
 #' @param include.subfolders "n" (no), do recursive search downwards for fast files if "y".
+#' @param resume default: NULL, continue from step, lets say steps are "tr-ph-ge":
+#'  (trim, phix depletion, genome alignment) and resume is "ph", you will then use
+#'  the assumed already trimmed data and start / continue from there starting at phix,
+#'  usefull if something crashed. Like if you specified wrong STAR version, but the trimming
+#'  step was completed.
 #' @param script.folder location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
@@ -160,7 +165,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               min.length = 15, trim.front = 0,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
                               wait = TRUE,
-                              include.subfolders = "n",
+                              include.subfolders = "n", resume = NULL,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -173,12 +178,13 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     stop("STAR single file alignment script not found, check path of script!")
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
+  resume <- ifelse(is.null(resume), "", paste("-r", resume))
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
 
   full <- paste(script.folder, "-f", input.dir, "-o", output.dir,
                 "-p", paired.end,
-                "-l", min.length, "-g", index.dir, "-s", steps,
+                "-l", min.length, "-g", index.dir, "-s", steps, resume,
                 "-a", adapter.sequence, "-t", trim.front,
                 "-A", alignment.type, "-m", max.cpus, "-i", include.subfolders,
                 star.path, fastp, "-I",script.single, "-C", cleaning)
@@ -208,9 +214,6 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' @inheritParams STAR.align.folder
 #' @param file1 library file, if paired must be R1 file
 #' @param file2 default NULL, set if paired end to R2 file
-#' @param resume default: NULL, continue from step, lets say steps are "tr-ph-ge":
-#'  (trim, phix depletion, genome alignment) and resume is "ph", you will use the trimmed
-#'  data and continue from there starting at phix, usefull if something crashed.
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
 #' @export
@@ -352,7 +355,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                             assembly_type = "primary_assembly") {
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
-    message("Loading premade files information,
+    message("Loading premade Genome files,
             do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
