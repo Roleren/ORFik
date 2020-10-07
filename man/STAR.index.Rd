@@ -53,7 +53,10 @@ Get genome and gtf by running getGenomeAndFasta()
 }
 \details{
 Can only run on unix systems (Linux and Mac), and requires
-minimum 30GB memory on genomes like human, rat, zebrafish etc.
+minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
+If for some reason the internal STAR index bash script will not work for you,
+like if you have a very small genome. You can copy the internal index script,
+edit it and give that as the Index script used for this function.
 }
 \examples{
 ## Manual way, specify all paths yourself.

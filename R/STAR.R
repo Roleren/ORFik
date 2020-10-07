@@ -4,7 +4,10 @@
 #' Get genome and gtf by running getGenomeAndFasta()
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
-#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
+#' If for some reason the internal STAR index bash script will not work for you,
+#' like if you have a very small genome. You can copy the internal index script,
+#' edit it and give that as the Index script used for this function.
 #' @param arguments a named character vector containing paths wanted to
 #' use for index creation. They must be named correctly:
 #' names must be a subset of:
@@ -91,7 +94,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 #'
 #' Can only run on unix systems (Linux and Mac), and requires
-#' minimum 30GB memory on genomes like human, rat, zebrafish etc.
+#' minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
+#' If for some reason the internal STAR alignment bash script will not work for you,
+#' like if you have a very small genome. You can copy the internal alignment script,
+#' edit it and give that as the Index script used for this function.\cr
 #' The trimmer used is fastp (the fastest I could find), works on mac and linux.
 #' If you want to use your own trimmer set file1/file2 to the location of
 #' the trimmed files from your program.\cr
@@ -109,11 +115,12 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' have it somewhere else already installed, give the path. Only works for
 #' unix (linux or Mac OS), if not on unix, use your favorite trimmer and
 #' give the output files from that trimmer as input.dir here.
-#' @param paired.end default "no", alternative "yes". Will auto detect
+#' @param paired.end default "no", alternative "yes". If yes, will auto detect
 #'  pairs by names. If yes running on a folder:
 #'  The folder must then contain an even number of files
 #'  and they must be named with the same prefix and sufix of either
-#'   _1 and _2, 1 and 2, etc.
+#'   _1 and _2, 1 and 2, etc. If SRR numbers are used, it will start on lowest and
+#'   match with second lowest etc.
 #' @param steps a character, default: "tr-ge", trimming then genome alignment\cr
 #'  steps of depletion and alignment wanted:
 #'  The posible candidates you can use are:
@@ -148,6 +155,9 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  the assumed already trimmed data and start / continue from there starting at phix,
 #'  usefull if something crashed. Like if you specified wrong STAR version, but the trimming
 #'  step was completed.
+#' @param max.multimap numeric, default 10. If a read maps to more locations than specified,
+#' will skip the read. Set to 1 to only get unique mapping reads. Only applies for
+#' genome alignment step. The depletions are allowing for multimapping.
 #' @param script.folder location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
@@ -184,6 +194,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
                               wait = TRUE,
                               include.subfolders = "n", resume = NULL,
+                              max.multimap = 10,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -203,7 +214,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   full <- paste(script.folder, "-f", input.dir, "-o", output.dir,
                 "-p", paired.end,
                 "-l", min.length, "-g", index.dir, "-s", steps, resume,
-                "-a", adapter.sequence, "-t", trim.front,
+                "-a", adapter.sequence, "-t", trim.front, "-M", max.multimap,
                 "-A", alignment.type, "-m", max.cpus, "-i", include.subfolders,
                 star.path, fastp, "-I",script.single, "-C", cleaning)
   if (.Platform$OS.type == "unix") {
@@ -219,16 +230,9 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 
 #' Align single or paired end pair with STAR
 #'
-#' If you want more than two files use: STAR.align.folder\cr
-#' If genome aligner halts at .... loading genome, it means the star
-#' index was aborted early, then you need to run:
-#' STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
-#'
-#' Can only run on unix systems (Linux and Mac), and requires
-#' minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
-#' The trimmer used is fastp (the fastest I could find), works on mac and linux.
-#' If you want to use your own trimmer set file1/file2 to the location of
-#' the trimmed files from your program.
+#' Given a single NGS fastq/fasta library, or a paired setup of 2 mated
+#' libraries. Run alignment and optionally remove contaminants.
+#' @inherit STAR.align.folder
 #' @inheritParams STAR.align.folder
 #' @param file1 library file, if paired must be R1 file
 #' @param file2 default NULL, set if paired end to R2 file
@@ -249,7 +253,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               steps = "tr-ge", adapter.sequence = "auto",
                               min.length = 15, trim.front = 0,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
-                              wait = TRUE, resume = NULL,
+                              wait = TRUE, resume = NULL, max.multimap = 10,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
                                                    package = "ORFik")
@@ -267,8 +271,8 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   full <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-g", index.dir, "-s", steps,
                 resume, "-a", adapter.sequence, "-t", trim.front,
-                "-A", alignment.type, "-m", max.cpus, star.path, fastp,
-                "-C", cleaning)
+                "-A", alignment.type, "-m", max.cpus, "-M", max.multimap,
+                star.path, fastp, "-C", cleaning)
   if (.Platform$OS.type == "unix") {
     print(full)
     message("Starting alignment at time:")

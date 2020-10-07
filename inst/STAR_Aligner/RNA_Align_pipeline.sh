@@ -45,6 +45,8 @@ OPTIONS:
 			             (if you want a continue from crash specify the step you want to start
 				      from, as defined in -s, start on genome, do -r "ge")
 	-m	max cpus allowed (defualt 90)
+	-M  Max multimapping (default 10) Set to 1 to get only unique reads. Only applies for genome
+      step, not the depletion step.
 	-k	a character, Keep loaded genomes STAR index (y) or not (n), default (n)
 	-h	this help message
 
@@ -72,11 +74,12 @@ resume="n"
 alignment="Local"
 adapter="auto"
 maxCPU=90
+multimap=10
 trim_front=3
 keep="n"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:P:h" opt; do
+while getopts ":f:F:o:l:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -121,6 +124,10 @@ while getopts ":f:F:o:l:g:s:a:t:A:r:m:k:p:S:P:h" opt; do
     m)
 	maxCPU=$OPTARG
 	echo "-m maxCPU: $OPTARG"
+        ;;
+    M)
+	multimap=$OPTARG
+	echo "-m max multimap: $OPTARG"
         ;;
     S)
 	STAR=$OPTARG
@@ -287,7 +294,7 @@ function inputFile()
 {
 
 	var=$(indexOf "$3" ${stepsArray[@]})
-	if [ ${var} == "0" ]; then
+	if [ $"var"== "0" ]; then
 		echo "${2} ${6}"
 	else
 		ind=$(expr $var - 1)
@@ -575,7 +582,8 @@ if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	--outFilterMatchNmin $min_length \
 	--limitBAMsortRAM 30000000000 \
 	--readFilesCommand $(comp $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn})) \
-	--alignEndsType $alignment
+	--alignEndsType $alignment \
+	--outFilterMultimapNmax $multimap
 fi
 
 #TODO

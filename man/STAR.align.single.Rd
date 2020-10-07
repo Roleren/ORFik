@@ -19,6 +19,7 @@ STAR.align.single(
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
   resume = NULL,
+  max.multimap = 10,
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
     "ORFik")
 )
@@ -93,6 +94,10 @@ the assumed already trimmed data and start / continue from there starting at phi
 usefull if something crashed. Like if you specified wrong STAR version, but the trimming
 step was completed.}
 
+\item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
+will skip the read. Set to 1 to only get unique mapping reads. Only applies for
+genome alignment step. The depletions are allowing for multimapping.}
+
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you
 need special alignments.}
@@ -101,17 +106,23 @@ need special alignments.}
 output.dir, can be used as as input in ORFik::create.experiment
 }
 \description{
-If you want more than two files use: STAR.align.folder\cr
-If genome aligner halts at .... loading genome, it means the star
-index was aborted early, then you need to run:
-STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
+Given a single NGS fastq/fasta library, or a paired setup of 2 mated
+libraries. Run alignment and optionally remove contaminants.
 }
 \details{
 Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
+If for some reason the internal STAR alignment bash script will not work for you,
+like if you have a very small genome. You can copy the internal alignment script,
+edit it and give that as the Index script used for this function.\cr
 The trimmer used is fastp (the fastest I could find), works on mac and linux.
 If you want to use your own trimmer set file1/file2 to the location of
-the trimmed files from your program.
+the trimmed files from your program.\cr
+A note on trimming from creator of STAR about trimming:
+"adapter trimming it definitely needed for short RNA sequencing.
+For long RNA-seq, I would agree with Devon that in most cases adapter trimming
+is not advantageous, since, by default, STAR performs local (not end-to-end) alignment,
+i.e. it auto-trims." So trimming can be skipped for longer reads.
 }
 \examples{
 # Use your own paths for annotation or the ORFik way

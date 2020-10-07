@@ -120,7 +120,7 @@ fi
 
 
 # 1. mkdir
-mainGenomeOut=${out_dir}/genomeDir
+mainGenomeOut=${out_dir}/genomeDir/
 if [ ! -z "$G" ]; then
       mainGenomeOut=${outGenome}
 fi
@@ -186,7 +186,8 @@ if [[ ${genome} != "" ]]; then
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \
 	--sjdbOverhang 72 \
-	--limitGenomeGenerateRAM 30000000000
+	--limitGenomeGenerateRAM 30000000000 \
+	--outFileNamePrefix ${mainGenomeOut}
 fi
 # contaminants
 if [[ $contaminants != "" ]]; then
@@ -210,7 +211,8 @@ if [[ $phix != "" ]]; then
 	--genomeDir ${out_dir}/PhiX_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM 80000000 \
-	--genomeSAindexNbases 2
+	--genomeSAindexNbases 2 \
+	--outFileNamePrefix ${out_dir}/PhiX_genomeDir/
 fi
 
 # rrna (checked --genomeChrBinNbits log2(2462064000/1641376) for many sequences)
@@ -233,7 +235,8 @@ if [[ $ncRNA != "" ]]; then
 	--genomeDir ${out_dir}/ncRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM 300000000000 \
-	--genomeSAindexNbases 5
+	--genomeSAindexNbases 5 \
+	--outFileNamePrefix ${out_dir}/ncRNA_genomeDir/
 fi
 # trna (mix of both, many sequences and small genome)
 # Check SA index size is valid
@@ -256,5 +259,6 @@ if [[ $tRNA != "" ]]; then
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM 10000000000 \
 	--genomeSAindexNbases $SA \
-	--genomeChrBinNbits 11
+	--genomeChrBinNbits 11 \
+	--outFileNamePrefix ${out_dir}/tRNA_genomeDir/
 fi

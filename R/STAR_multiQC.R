@@ -21,7 +21,7 @@ STAR.multiQC <- function(folder) {
     new_path <- ifelse(dir.exists(paste0(folder, "/aligned/LOGS/")),
                        paste0(folder, "/aligned/LOGS/"),
                        paste0(folder, "/LOGS/"))
-    STAR.multiQC()
+    STAR.multiQC(folder)
     return(invisible(NULL))
   }
   # Read log files 1 by 1 (only data column)

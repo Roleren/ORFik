@@ -37,7 +37,8 @@ OPTIONS:
 	-t	trim front (default 3) How many bases to pre trim reads 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
-
+  -M  Max multimapping (default 10) Set to 1 to get only unique reads. Only applies for genome
+      step, not the depletion step.
 	Path arguments:
 	-S   path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-P   path to fastp (trimmer) (default: ~/bin/fastp)
@@ -73,6 +74,7 @@ resume="n"
 alignment="Local"
 adapter="auto"
 maxCPU=90
+multimap=10
 subfolders="n"
 trim_front=3
 paired="no"
@@ -80,7 +82,7 @@ STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
 align_single=""
 cleaning=""
-while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
+while getopts ":f:o:p:l:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
@@ -125,6 +127,10 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:S:i:P:I:C:h:" opt; do
     m)
 	maxCPU=$OPTARG
 	echo "-m maxCPU: $OPTARG"
+        ;;
+    M)
+	multimap=$OPTARG
+	echo "-m max multimap: $OPTARG"
         ;;
     i)
 	subfolders=$OPTARG
@@ -230,7 +236,7 @@ function findPairsSub()
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
@@ -260,7 +266,7 @@ else
 		fi
     x=$in_dir/$x
 
-		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "----------------------------------------------"
 	done
 fi
