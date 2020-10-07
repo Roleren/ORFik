@@ -155,7 +155,7 @@ if [ ! -d ${out_dir}/tRNA_genomeDir ]; then
 fi
 
 if [ ! -d ${out_dir}/contaminants_genomeDir ]; then
-  if [ "$contamints" != "" ]; then
+  if [ "$contaminants" != "" ]; then
         mkdir ${out_dir}/contaminants_genomeDir
   fi
 fi
