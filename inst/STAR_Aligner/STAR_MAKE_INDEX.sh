@@ -197,7 +197,7 @@ if [[ $contaminants != "" ]]; then
 	--genomeDir ${out_dir}/contaminants_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM 300000000000 \
-	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation
+	--genomeChrBinNbits 11 \
 	--outFileNamePrefix ${out_dir}/contaminants_genomeDir/
 fi
 
