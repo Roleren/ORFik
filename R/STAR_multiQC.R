@@ -66,6 +66,6 @@ STAR.multiQC <- function(folder) {
     scale_y_log10() +
     theme_minimal()
 
-  ggsave(paste0(folder, "/00_STAR_LOG_plot.png"), gg_STAR, width = 16, height = 9)
+  ggsave(paste0(folder, "/00_STAR_LOG_plot.png"), gg_STAR, width = 18, height = 9)
   return(invisible(NULL))
 }
