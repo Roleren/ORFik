@@ -315,6 +315,9 @@ importGtfFromTxdb <- function(txdb) {
     }
     txdb <- metadata(txdb)[3,2]
   }
+  if (!file.exists(txdb)) {
+    message <- paste("Could not open gtf, did you rename folder of gtf?")
+  }
   return(import(txdb))
 }
 

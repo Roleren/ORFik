@@ -14,7 +14,7 @@ to guess grouping / types / pairs by the file names.
 Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather
 information about libraries, and annotation, so that more tasks are
-possible. Like coverage per position in some transcript etc.\cr
+possible. Like coverage per position in some transcript etc.\cr\cr
 ## Constructor:\cr
 Simplest way to make is to call:\cr
 create.experiment(dir)\cr
@@ -23,13 +23,21 @@ Some of the fields
 might be needed to fill in manually. Each resulting row must be unique
 (not including filepath, they are always unique), that means
 if it has replicates then that must be said explicit. And all
-filepaths must be unique and have files with size > 0.
-Syntax (columns):\cr
-libtype (library type): rna-seq, ribo-seq, CAGE etc.\cr
-rep (replicate): 1,2,3 etc\cr
-condition: WT (wild-type), control, target, mzdicer, starved etc.\cr
-fraction: 18, 19 (fractinations), or other ways to split library.\cr
-filepath: Full filepath to file
+filepaths must be unique and have files with size > 0.\cr\cr
+Here all the columns in the experiment will be described:
+name (column info): examples\cr
+\describe{
+     \item{libtype}{library type: rna-seq, ribo-seq, CAGE etc}
+     \item{stage}{stage or tissue: 64cell, Shield, HEK293}
+     \item{rep}{replicate: 1,2,3 etc}
+     \item{condition}{treatment or condition: :
+     WT (wild-type), control, target, mzdicer, starved}
+     \item{fraction}{fraction of total: 18, 19 (TCP / RCP fractinations),
+     or other ways to split library.\cr}
+     \item{filepath}{Full filepath to file}
+     \item{reverse}{optional: only used if paired files,
+     "paired-end" if bam file or filepath to 2nd file if wig files etc}
+}
 }
 \details{
 Special rules:\cr

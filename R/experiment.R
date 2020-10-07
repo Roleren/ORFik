@@ -8,7 +8,7 @@
 #' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 #' more ease to find not only counts, but rather
 #' information about libraries, and annotation, so that more tasks are
-#' possible. Like coverage per position in some transcript etc.\cr
+#' possible. Like coverage per position in some transcript etc.\cr\cr
 #' ## Constructor:\cr
 #' Simplest way to make is to call:\cr
 #' create.experiment(dir)\cr
@@ -17,13 +17,22 @@
 #' might be needed to fill in manually. Each resulting row must be unique
 #' (not including filepath, they are always unique), that means
 #' if it has replicates then that must be said explicit. And all
-#' filepaths must be unique and have files with size > 0.
-#' Syntax (columns):\cr
-#' libtype (library type): rna-seq, ribo-seq, CAGE etc.\cr
-#' rep (replicate): 1,2,3 etc\cr
-#' condition: WT (wild-type), control, target, mzdicer, starved etc.\cr
-#' fraction: 18, 19 (fractinations), or other ways to split library.\cr
-#' filepath: Full filepath to file
+#' filepaths must be unique and have files with size > 0.\cr\cr
+#' Here all the columns in the experiment will be described:
+#' name (column info): examples\cr
+#' \describe{
+#'      \item{libtype}{library type: rna-seq, ribo-seq, CAGE etc}
+#'      \item{stage}{stage or tissue: 64cell, Shield, HEK293}
+#'      \item{rep}{replicate: 1,2,3 etc}
+#'      \item{condition}{treatment or condition: :
+#'      WT (wild-type), control, target, mzdicer, starved}
+#'      \item{fraction}{fraction of total: 18, 19 (TCP / RCP fractinations),
+#'      or other ways to split library.\cr}
+#'      \item{filepath}{Full filepath to file}
+#'      \item{reverse}{optional: only used if paired files,
+#'      "paired-end" if bam file or filepath to 2nd file if wig files etc}
+#' }
+#'
 #' @details
 #' Special rules:\cr
 #' Supported:\cr
@@ -177,6 +186,12 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
   if (is(file, "character")) {
     if (file_ext(file) == "") file <- paste0(file, ".csv")
     if (!file.exists(file)) file <- pasteDir(in.dir, file)
+    if (!file.exists(file)) { # This will only trigger on CBU server @ UIB
+      cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
+      if (file.exists(pasteDir(cbu.path, basename(file))))
+        file <- pasteDir(cbu.path, basename(file))
+    }
+
 
     info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
     listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
