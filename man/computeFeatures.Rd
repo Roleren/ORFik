@@ -59,14 +59,17 @@ columns are the names of the scores, i.g [floss()]
 or [fpkm()]
 }
 \description{
-If you want to get all the features easily, you can use this function.
+If you want to get all the NGS and/or sequence features easily,
+you can use this function.
 Each feature have a link to an article describing its creation and idea
 behind it. Look at the functions in the feature family to see all of them.
-}
-\details{
+Example, if you want to know what the "te" column is, check out:
+?translationalEff.
+\cr\cr
 If you used CageSeq to reannotate your leaders, your txDB object must
 contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
-
+}
+\details{
 As a note the library is reduced to only reads overlapping 'tx', so the
 library size in fpkm calculation is done on this subset. This will help
 remove rRNA and other contaminants.\cr

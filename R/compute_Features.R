@@ -1,10 +1,13 @@
 
 #' Get all possible features in ORFik
 #'
-#' If you want to get all the features easily, you can use this function.
+#' If you want to get all the NGS and/or sequence features easily,
+#' you can use this function.
 #' Each feature have a link to an article describing its creation and idea
 #' behind it. Look at the functions in the feature family to see all of them.
-#'
+#' Example, if you want to know what the "te" column is, check out:
+#' ?translationalEff.
+#' \cr\cr
 #' If you used CageSeq to reannotate your leaders, your txDB object must
 #' contain the reassigned leaders. Use [reassignTxDbByCage()] to get the txdb.
 #'
@@ -181,9 +184,9 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
                            grl.is.sorted, weight.RFP, weight.RNA))
 }
 
-#' Calculate the features in computeFeatures
+#' Calculate the features in computeFeatures function
 #'
-#' Not used directly, calculates all features.
+#' Not used directly, calculates all features internally for computeFeatures.
 #' @inheritParams computeFeaturesCage
 #' @param st (NULL), if defined must be: st = startRegion(grl, tx, T, -3, 9)
 #' @return a data.table with features

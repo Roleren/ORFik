@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_Features.R
 \name{allFeaturesHelper}
 \alias{allFeaturesHelper}
-\title{Calculate the features in computeFeatures}
+\title{Calculate the features in computeFeatures function}
 \usage{
 allFeaturesHelper(
   grl,
@@ -75,5 +75,5 @@ that this alignment region was found 5 times.}
 a data.table with features
 }
 \description{
-Not used directly, calculates all features.
+Not used directly, calculates all features internally for computeFeatures.
 }

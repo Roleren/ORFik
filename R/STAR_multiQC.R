@@ -21,11 +21,12 @@ STAR.multiQC <- function(folder) {
     new_path <- ifelse(dir.exists(paste0(folder, "/aligned/LOGS/")),
                        paste0(folder, "/aligned/LOGS/"),
                        paste0(folder, "/LOGS/"))
-    STAR.multiQC(folder)
+    STAR.multiQC(new_path)
     return(invisible(NULL))
   }
   # Read log files 1 by 1 (only data column)
-  dt <- lapply(log_files, function(file) fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])
+  dt <- lapply(log_files, function(file)
+    fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])
   # Read log files 1 by 1 (only info column)
   dt_all <- fread(log_files[1], sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,1]
   for (i in dt) {
@@ -42,7 +43,7 @@ STAR.multiQC <- function(folder) {
 
   dt_temp <- dt_data[,-1]
   for (i in seq(ncol(dt_temp))) {
-    dt_temp[,i] <- as.numeric(gsub("%", "", unlist(dt_temp[, i, with = F])))
+    dt_temp[,i] <- as.numeric(gsub("%", "", unlist(dt_temp[, i, with = FALSE])))
   }
 
   dt_f <- dt_temp

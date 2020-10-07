@@ -382,6 +382,9 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' @importFrom R.utils gunzip
 #' @importFrom utils download.file
 #' @importFrom AnnotationDbi saveDb
+#' @importFrom Biostrings DNAStringSet
+#' @importFrom Biostrings writeXStringSet
+#' @importFrom Biostrings readDNAStringSet
 #' @return a named character vector of path to genomes and gtf downloaded,
 #'  and additional contaminants if used. If merge_contaminants is TRUE, will not
 #'  give individual fasta files to contaminants, but only the merged one.
