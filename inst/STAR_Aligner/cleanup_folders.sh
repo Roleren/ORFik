@@ -46,6 +46,6 @@ cleanup_all ${out_dir}/ncRNA_depletion
 cleanup_all ${out_dir}/phix_depletion
 cleanup_all ${out_dir}/rRNA_depletion
 cleanup_all ${out_dir}/tRNA_depletion
-
+cleanup_all ${out_dir}/contaminants_depletion
 
 
