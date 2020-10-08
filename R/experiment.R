@@ -910,8 +910,21 @@ list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
                              pattern = "*", libtypeExclusive = NULL,
                              BPPARAM = bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
+  if (length(experiments) == 0) { # This will only trigger on CBU server @ UIB
+    cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
+    if (dir.exists(cbu.path)) { # If on UIB SERVER
+      dir <- cbu.path
+      experiments <- list.files(path = dir, pattern = "\\.csv")
+    }
+  }
+
   experiments <- grep(experiments, pattern = pattern, value = TRUE)
   experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
+  if (length(experiments == 0)) {
+    message(paste("Searching for experiments in dir:", dir))
+    stop("No experiments found, have you made any ?")
+  }
+
   info <- bplapply(experiments, function(x, dir) { # Open each experiment in parallell
     e <- read.experiment(x, dir)
     list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism)
