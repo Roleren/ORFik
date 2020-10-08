@@ -641,7 +641,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     }
     # Par apply
     if (!all(loaded)) {
-      message(paste0("Ouputing libraries from: ", df@experiment))
+      message(paste0("Outputting libraries from: ", df@experiment))
       paths <- filepath(df, type)
       libs <- bplapply(seq_along(paths),
                        function(i, paths, df, chrStyle) {
