@@ -920,7 +920,7 @@ list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
 
   experiments <- grep(experiments, pattern = pattern, value = TRUE)
   experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
-  if (length(experiments == 0)) {
+  if (length(experiments) == 0) {
     message(paste("Searching for experiments in dir:", dir))
     stop("No experiments found, have you made any ?")
   }
