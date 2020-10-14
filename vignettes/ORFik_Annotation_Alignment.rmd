@@ -55,18 +55,25 @@ index <- STAR.index(annotation, wait = FALSE)
 ```
 If you run this function again after index exists in current file location, it will not re-index, but just output the correct object. Do remake = TRUE if you want to re-index.
 
-### Aligning the data
-First we need some data to align, I here just show what would work for the paired end RNA-seq experiment SRR453566.
+### Download libraries
+First we need some data to align, if you have in-lab data, you don't need this step, since you already have access to the files.
 
-Here you will use your own data. If you want to follow the same example you can in terminal do for unix:
-```{}
-mkdir -p ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
-cd ~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/
-# Install fastq-dump (https://ncbi.github.io/sra-tools/install_config.html)
-fastq-dump  --split-files --gzip --skip-technical --readids --read-filter pass --clip SRR453566 
+
+On the other hand, if you want to use published data, you need to download it. I here just show what would work for the paired end RNA-seq experiment run SRR453566.
+
+
+ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called SRR. We will also only subset to download the 50000 first reads of the library. So you can replicate this faster.
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+outdir.fastq <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
+
+download.SRA("SRR453566", outdir.fastq, subset = 50000)
 ```
+We now have the RNA-seq run, separated into 2 files, since this is paired end data.
 
-ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS).
+### Aligning the data
+
+ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS). If you are on windows, or you want to trim the reads yourself, just run the trimming and give the folder with the trimmed reads as input in next step. Also if you are unsure of what the 3' adapter was, run first FASTQC to which adapters are detected. 
 
 Now let's see what we need as inputs for the alignment pipeline:
 We need usually 9 arguments (more are possible if you need them):
@@ -88,7 +95,7 @@ We need usually 9 arguments (more are possible if you need them):
 - min.length minimum length of reads that pass to the bam file. 
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-input.dir.rna <- "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
+input.dir.rna <- outdir.fastq
 output.dir.rna <- "~/Bio_data/processed_data/RNAseq/Yeast_SRR453566/aligned_sacCer3/"
 alignment <- 
   STAR.align.folder(input.dir.rna, output.dir.rna, index,
