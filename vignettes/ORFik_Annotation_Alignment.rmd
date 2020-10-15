@@ -135,7 +135,6 @@ The files is now saved to default directory which is: saveDir = "~/Bio_data/ORFi
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 df <- read.experiment("yeast_exp_RNA")
-  )
 ```
 If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in Libre Office, Excel or another spreadsheet viewer. 
 

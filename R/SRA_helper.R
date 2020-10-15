@@ -5,6 +5,11 @@
 #' @importFrom utils untar
 #' @references https://ncbi.github.io/sra-tools/fastq-dump.html
 #' @export
+#' @examples
+#' # install.sratoolkit()
+#' ## Custom version
+#' # install.sratoolkit(version = "2.10.7")
+#'
 install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
   if (.Platform$OS.type != "unix")
     stop("fastp does not work on Windows, try RSubread")
@@ -21,6 +26,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
                   path.final))
     return(path.final)
   }
+  message("Downloading and configuring SRA-toolkit for you,
+          this is done only once!")
+
   url <- paste0("https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/", version, "/")
   url <- ifelse(is_linux,
                 paste0(url, "sratoolkit.", version, "-centos_linux64.tar.gz"),
@@ -65,17 +73,17 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' \dontrun{
 #' ## Simple single SRR run of YEAST
 #' SRR <- c("SRR453566") # Can be more than one
-#' outdir <- "/export/valenfs/data/raw_data/TCP-seq/testtest1/"
+#' outdir <- tempdir() # Specify output directory
 #' # Download, get 5 first reads
 #' download.SRA(SRR, outdir, subset = 5)
 #'
 #' ## With additional info for renaming, info download manually from SRA
 #' library(data.table)
 #' # The SRR numbers as a list in file downloaded manually
-#' path <- "/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/SRR.ids"
+#' SRR.ids <- "/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/SRR.ids"
 #' # The sra results as a file downloaded manually
 #' info <- fread("/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/sra_result.csv")
-#' SRR <- unlist(read.table(path,
+#' SRR <- unlist(read.table(SRR.ids,
 #'                          stringsAsFactors = F), use.names = FALSE)
 #' info <- cbind(info, SRR)
 #' info <- info[1,]
