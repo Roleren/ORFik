@@ -118,7 +118,7 @@ saveRDS(fiveUTR_ORFs[1:2], "save/path/uorfs.rds")
 Save as bed12 format, that is a bed format with 1 row per ORF, that contains
 splicing information and even possible color coding for visualizing groups of ORFs:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-export.bed12(fiveUTR_ORFs[1:2], "save/path/uorfs.rds")
+export.bed12(fiveUTR_ORFs[1:2], "save/path/uorfs.bed12")
 ```
 
 ## Getting fasta sequences of ORFs
@@ -136,10 +136,11 @@ writeXStringSet(orf_seqs, filepath = "uorfs.fasta")
 ```
 
 We will now look on ORFik functions to get startcodons and stopcodon etc.
+
 # New GRanges and GRangesList utilities for ORFs
 `ORFik` contains functions that can be utilized to speed up your coding.
-Check documentation for these functions: `sortPerGroup`, `unlistGrl`, 
-`strandBool`, `tile1`.
+Check documentation for these functions: `pmapFromTranscriptF`, `pmapToTranscriptF`
+, `sortPerGroup`, `unlistGrl`, `strandBool`, `tile1`.
 
 ## Grouping ORFs
 
@@ -232,7 +233,7 @@ txSeqsFromFa(stops, BSgenome.Hsapiens.UCSC.hg19::Hsapiens, is.sorted = TRUE)
 ```
 Many more operations are also supported for manipulation of ORFs
 
-# When to use which ORFfinding function
+# When to use which ORF-finding function
 
 ORFik supports multiple ORF finding functions. Here we describe their specific
 use cases:
@@ -319,8 +320,7 @@ You will now see that most of the transcription start sites have changed.
 Depending on the species, regular annotations might be incomplete or not 
 specific enough for your purposes. 
 
-NOTE: IF you want to edit the whole txdb / gtf file, use reassignTxDbByCage.
-And save this to get the new gtf with reannotated leaders by CAGE.
+- NOTE: IF you want to edit the whole txdb / gtf file, use reassignTxDbByCage. And save this to get the new gtf with reannotated leaders by CAGE.
 
   
 # RiboSeq footprints automatic shift detection and shifting
