@@ -15,7 +15,9 @@ download.SRA(
 )
 }
 \arguments{
-\item{info}{a data.frame with information and SRR numbers or character vector of only SRR numbers.
+\item{info}{character vector of only SRR numbers or
+a data.frame with SRA metadata information including the SRR numbers in a column called
+"Run" or "SRR".
 If only SRR numbers can not rename, since no additional information is given.}
 
 \item{outdir}{a string, default: cbu server}
@@ -49,17 +51,10 @@ outdir <- tempdir() # Specify output directory
 # Download, get 5 first reads
 download.SRA(SRR, outdir, subset = 5)
 
-## With additional info for renaming, info download manually from SRA
-library(data.table)
-# The SRR numbers as a list in file downloaded manually
-SRR.ids <- "/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/SRR.ids"
-# The sra results as a file downloaded manually
-info <- fread("/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/sra_result.csv")
-SRR <- unlist(read.table(SRR.ids,
-                         stringsAsFactors = F), use.names = FALSE)
-info <- cbind(info, SRR)
-info <- info[1,]
-# Download, 5 first reads
+## Using metadata column to get SRR numbers and to be able to rename samples
+info <- download.SRA.metadata("SRP226389") # By study id
+outdir <- tempdir() # Specify output directory
+# Download, 5 first reads of each library and rename
 download.SRA(info, outdir, subset = 5)
 }
 }

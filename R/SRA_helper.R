@@ -53,7 +53,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' Download SRR libraries from SRA
 #'
 #' Multicore version download, see documentation for SRA toolkit for more information.
-#' @param info a data.frame with information and SRR numbers or character vector of only SRR numbers.
+#' @param info character vector of only SRR numbers or
+#' a data.frame with SRA metadata information including the SRR numbers in a column called
+#' "Run" or "SRR".
 #' If only SRR numbers can not rename, since no additional information is given.
 #' @param outdir a string, default: cbu server
 #' @param rename logical, default TRUE. Rename files according to info, only if info has a column called
@@ -77,17 +79,10 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' # Download, get 5 first reads
 #' download.SRA(SRR, outdir, subset = 5)
 #'
-#' ## With additional info for renaming, info download manually from SRA
-#' library(data.table)
-#' # The SRR numbers as a list in file downloaded manually
-#' SRR.ids <- "/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/SRR.ids"
-#' # The sra results as a file downloaded manually
-#' info <- fread("/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/sra_result.csv")
-#' SRR <- unlist(read.table(SRR.ids,
-#'                          stringsAsFactors = F), use.names = FALSE)
-#' info <- cbind(info, SRR)
-#' info <- info[1,]
-#' # Download, 5 first reads
+#' ## Using metadata column to get SRR numbers and to be able to rename samples
+#' info <- download.SRA.metadata("SRP226389") # By study id
+#' outdir <- tempdir() # Specify output directory
+#' # Download, 5 first reads of each library and rename
 #' download.SRA(info, outdir, subset = 5)
 #' }
 download.SRA <- function(info, outdir, rename = TRUE,
@@ -95,8 +90,20 @@ download.SRA <- function(info, outdir, rename = TRUE,
                          settings =  paste("--gzip", "--skip-technical", "--split-files"),
                          subset = NULL,
                          BPPARAM = bpparam()) {
-  SRR <- ifelse(is.character(info), info, info$SRR)
-  rename <- ifelse(!is.character(info) & rename, TRUE, FALSE)
+  # If character presume SRR, if not check for column Run or SRR
+  SRR <- if (is.character(info)) { # if character
+    info
+  } else { # else metadata
+    if (is.null(info$Run)) { # If not called Run
+      info$SRR
+    } else  { # If called Run
+      info$Run
+    }
+  }
+
+  if (is.null(SRR)) stop("Could not find SRR numbers in 'info'")
+
+
 
   if (is.null(SRR)) stop("No SRR column found in info!")
 
@@ -118,20 +125,94 @@ download.SRA <- function(info, outdir, rename = TRUE,
     dir(outdir, paste0(S, ".*", "\\.fastq\\.gz"), full.names = TRUE))
   )
 
+  rename <- ifelse(!is.character(info) & rename, TRUE, FALSE)
   if (rename) {
-    if (is.null(info$`Experiment Title`)) {
-      warning("Did not find the column Experiment Title in info, returning without renaming!")
-      return(files)
+    files <- rename.SRA.files(files, info)
+  }
+  return(files)
+}
+
+#' Downloads metadata from SRA
+#'
+#' @param SRP a string, a study ID as either the SRP, ERP or PRJ of the study,
+#' examples would be "SRP226389" or "ERP116106".
+#' @param outdir directory to save file,
+#' The file will be called "SraRunInfo_SRP.csv", where SRP is
+#' the SRP argument.
+#' The directory will be created if not existing.
+#' @return a data.table of the opened file
+#' @importFrom utils download.file
+#' @importFrom data.table fread
+#' @export
+#' @examples
+#' ## Originally on SRA
+#' # outdir <- tempdir() # Specify output directory
+#' # download.SRA.metadata("SRP226389", outdir)
+#' ## ORiginally on ENA
+#' # download.SRA.metadata("ERP116106", outdir)
+download.SRA.metadata <- function(SRP, outdir) {
+  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+
+  destfile <- paste0(outdir, "/SraRunInfo_", SRP, ".csv")
+  if (file.exists(destfile)) {
+    message(paste("Existing metadata file found in dir:", outdir, "will not download"))
+  } else {
+    url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="
+    url <- paste0(url, SRP)
+    download.file(url, destfile = destfile)
+  }
+  file <- fread(destfile)
+  if (nrow(file) == 0) {
+    warning(paste("No runs found from experiment:", SRP))
+  } else {
+    file <- file[, -c("ReleaseDate", "LoadDate", "download_path", "RunHash", "ReadHash")]
+  }
+  return(file)
+}
+
+#' Rename SRA files from metadata
+#'
+#' @param files a character vector, all the files
+#' @param new_names a character vector of new names or
+#' a data.table with metadata to use to rename
+#' @return a character vector of new file names
+rename.SRA.files <- function(files, new_names) {
+  if (is.character(new_names)) {
+    # Do nothing
+  } else { # Find from meta data
+    info <- new_names
+    if (!is.null(info$`Experiment Title`)) {
+      message("Renaming files:")
+      new_names <- info$`Experiment Title`
+      new_names <- gsub(".*: ", "", new_names)
+      new_names <- gsub(";.*", "", new_names)
+      new_names <- paste0(dirname(files), "/",new_names, ".fastq.gz")
+    } else if (!is.null(info$LibraryName)) {
+      if (!any(is.na(info$LibraryName))) {
+        new_names <- info$LibraryName
+        message("Renaming files:")
+      } else new_names <- NULL
+    } else { # No valid naming, set to NULL
+      new_names <- NULL
     }
-    message("Renaming files:")
-    new_names <- info$`Experiment Title`
-    new_names <- gsub(".*: ", "", new_names); new_names <- gsub(";.*", "", new_names)
-    new_names <- gsub(" ", "_", new_names)
-    new_names <- paste0(dirname(files), "/",new_names, ".fastq.gz")
+  }
+
+  if (any(duplicated(new_names))) {
+    new_names <- make.unique(new_names, sep = "_rep")
+  }
+
+  if (!is.null(new_names)) {
+    if (length(new_names) != length(files))
+      stop("Length of files and new_names to rename by is not equal!")
+
+    new_names <- gsub(" |\\(|\\)", "_", new_names)
+    new_names <- gsub("__", "_", new_names)
     for (i in seq(length(files))) {
       file.rename(files[i], new_names[i])
     }
-    files <- new_names
+  } else {
+    warning("Did not find a way for valid renaming, returning without renaming!")
+    return(files)
   }
-  return(files)
+  return(new_names)
 }
