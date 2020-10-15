@@ -45,17 +45,17 @@ Multicore version download, see documentation for SRA toolkit for more informati
 \dontrun{
 ## Simple single SRR run of YEAST
 SRR <- c("SRR453566") # Can be more than one
-outdir <- "/export/valenfs/data/raw_data/TCP-seq/testtest1/"
+outdir <- tempdir() # Specify output directory
 # Download, get 5 first reads
 download.SRA(SRR, outdir, subset = 5)
 
 ## With additional info for renaming, info download manually from SRA
 library(data.table)
 # The SRR numbers as a list in file downloaded manually
-path <- "/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/SRR.ids"
+SRR.ids <- "/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/SRR.ids"
 # The sra results as a file downloaded manually
 info <- fread("/export/valenfs/data/raw_data/TCP-seq/sel-TCPSeq_Wagner/sra_result.csv")
-SRR <- unlist(read.table(path,
+SRR <- unlist(read.table(SRR.ids,
                          stringsAsFactors = F), use.names = FALSE)
 info <- cbind(info, SRR)
 info <- info[1,]

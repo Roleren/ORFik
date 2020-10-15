@@ -17,6 +17,12 @@ path to fastq-dump in sratoolkit
 \description{
 Download sra toolkit
 }
+\examples{
+# install.sratoolkit()
+## Custom version
+# install.sratoolkit(version = "2.10.7")
+
+}
 \references{
 https://ncbi.github.io/sra-tools/fastq-dump.html
 }
