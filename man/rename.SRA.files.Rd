@@ -10,7 +10,13 @@ rename.SRA.files(files, new_names)
 \item{files}{a character vector, all the files}
 
 \item{new_names}{a character vector of new names or
-a data.table with metadata to use to rename}
+a data.table with metadata to use to rename. Priority of renaming from
+the metadata is to check for unique names in the LibraryName column,
+then the sample_title column if no valid names in LibraryName.
+If found and still duplicates, will
+add "_rep1", "_rep2" to make them unique. If no valid names, will not
+rename, that is keep the SRR numbers, you then can manually rename files
+to something more meaningful.}
 }
 \value{
 a character vector of new file names

@@ -22,8 +22,13 @@ If only SRR numbers can not rename, since no additional information is given.}
 
 \item{outdir}{a string, default: cbu server}
 
-\item{rename}{logical, default TRUE. Rename files according to info, only if info has a column called
-`Experiment Title`}
+\item{rename}{logical, default TRUE. Priority of renaming from
+the metadata is to check for unique names in the LibraryName column,
+then the sample_title column if no valid names in LibraryName.
+If new names found and still duplicates, will
+add "_rep1", "_rep2" to make them unique. If no valid names, will not
+rename, that is keep the SRR numbers, you then can manually rename files
+to something more meaningful.}
 
 \item{fastq.dump.path}{path to fastq-dump binary, default: path returned
 from install.sratoolkit()}
@@ -52,8 +57,8 @@ outdir <- tempdir() # Specify output directory
 download.SRA(SRR, outdir, subset = 5)
 
 ## Using metadata column to get SRR numbers and to be able to rename samples
-info <- download.SRA.metadata("SRP226389") # By study id
 outdir <- tempdir() # Specify output directory
+info <- download.SRA.metadata("SRP226389", outdir) # By study id
 # Download, 5 first reads of each library and rename
 download.SRA(info, outdir, subset = 5)
 }

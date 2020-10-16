@@ -144,8 +144,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
       fpkmTranscriptNormalized <- fpkmCollapsed / normalization
       assay(dds) <- fpkmTranscriptNormalized
       return(dds)
-    }
-    if (score == "fpkm") {
+    } else if (score == "fpkm") {
       return(fpkmCollapsed)
     } else if (score == "log2fpkm") {
       return(log2(fpkmCollapsed))

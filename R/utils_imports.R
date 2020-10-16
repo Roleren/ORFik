@@ -41,7 +41,8 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 
 #' Custom bam reader
 #'
-#' Safer version that handles the most important error done.
+#' Read in Bam file from either single end or paired end.
+#' Safer version that takes care of some common errors.
 #' In the future will use a faster .bam loader for big .bam files in R.
 #' @param path a character path to .bam file. If paired end bam files,
 #' input must be a data.table with two columns (forward and reverse)

@@ -4,7 +4,7 @@
 \alias{download.SRA.metadata}
 \title{Downloads metadata from SRA}
 \usage{
-download.SRA.metadata(SRP, outdir)
+download.SRA.metadata(SRP, outdir, remove.invalid = TRUE)
 }
 \arguments{
 \item{SRP}{a string, a study ID as either the SRP, ERP or PRJ of the study,
@@ -14,6 +14,8 @@ examples would be "SRP226389" or "ERP116106".}
 The file will be called "SraRunInfo_SRP.csv", where SRP is
 the SRP argument.
 The directory will be created if not existing.}
+
+\item{remove.invalid}{logical, default TRUE. Remove Runs with 0 reads (spots)}
 }
 \value{
 a data.table of the opened file

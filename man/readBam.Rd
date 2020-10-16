@@ -31,7 +31,8 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 a \code{\link{GAlignments}} object of bam file
 }
 \description{
-Safer version that handles the most important error done.
+Read in Bam file from either single end or paired end.
+Safer version that takes care of some common errors.
 In the future will use a faster .bam loader for big .bam files in R.
 }
 \examples{
