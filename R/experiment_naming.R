@@ -8,9 +8,10 @@
 #' of the main name in second column as a list.
 libNames <- function() {
   mainName <- c("RNA", "RFP", "CAGE", "LSU",
-                "SSU", "ATAC", "tRNA", "SHAPE", "PRPF")
+                "SSU", "ATAC", "tRNA", "SHAPE",
+                "ChIP", "PRPF")
   allNames <-
-    list(c("rna-seq", "Rna-seq", "RNA-seq"),
+    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq"),
          c("RFP", "RPF", "ribo-seq", "Ribo-seq", "ribo-Seq"),
          c("CAGE", "cage"),
          c("80S","LSU"),
@@ -18,6 +19,7 @@ libNames <- function() {
          c("ATAC"),
          c("PRPF"),
          c("SHAPE"),
+         c("ChIP"),
          c("tRNA")
     )
   dt <- data.table(mainName, allNames)
@@ -77,15 +79,18 @@ stageNames <- function() {
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
 tissueNames <- function() {
-  mainName <- c("adipose", "brain", "bladder", "blood", "breast", "colon",
-    "cortex", "eye", "fibroblast", "frontal_lobe", "heart",
-    "kidney", "liver", "lung", "muscle","ovary", "prostate",
-    "rectum", "testis","urunary", "vagina", "skin", "tongue")
+  mainName <- c("adipose", "amygdala","brain", "bladder", "blood", "bone","breast",
+    "colon", "cortex", "eye", "fibroblast", "frontal_lobe", "heart",
+    "kidney", "liver", "lung", "melanocyte", "mesenchymal", "monocyte", "muscle",
+    "myeloid","ovary", "prostate",
+    "rectum", "retina","testis","urunary", "vagina", "skin", "tongue")
   allNames <-
-    list(c("adipose", "Adipose"),
+    list(c("adipose", "Adipose", "Adipocyte", "adipocyte"),
+         c("amygdala", "Amygdala"),
          c("brain", "Brain"),
          c("bladder", "Bladder"),
          c("blood", "Blood"),
+         c("bone", "Bone", "osteosarcoma", "osteogenic"),
          c("breast", "Breast"),
          c("colon", "Colon"),
          c("cortex", "Cortex"),
@@ -93,13 +98,18 @@ tissueNames <- function() {
          c("fibroblast", "Fibroblast"),
          c("frontal_lobe", "frontal lobe", "Frontal_lobe"),
          c("heart", "Heart"),
-         c("kidney", "Kidney"),
+         c("kidney", "Kidney", "Renal", "renal"),
          c("liver", "Liver"),
          c("lung", "Lung"),
-         c("muscle", "Muscle"),
+         c("Melanocyte", "melanocyte"),
+         c("mesenchym", "Mesenchym"),
+         c("Monocyte", "monocyte"),
+         c("muscle", "Muscle", "myotubes", "Myotubes"),
+         c("myeloid", "Myeloid"),
          c("ovary", "Ovary"),
          c("prostate", "Prostate"),
          c("rectum", "Rectum", "anus", "Anus"),
+         c("Retina", "retina"),
          c("testis", "Testis", "testicles", "Testicles"),
          c("urunary", "Urunary"),
          c("vagina", "Vagina"),

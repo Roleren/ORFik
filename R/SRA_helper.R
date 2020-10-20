@@ -55,7 +55,7 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' Multicore version download, see documentation for SRA toolkit for more information.
 #' @param info character vector of only SRR numbers or
 #' a data.frame with SRA metadata information including the SRR numbers in a column called
-#' "Run" or "SRR".
+#' "Run" or "SRR". Can be SRR, ERR or DRR numbers.
 #' If only SRR numbers can not rename, since no additional information is given.
 #' @param outdir a string, default: cbu server
 #' @param rename logical, default TRUE. Priority of renaming from
@@ -71,6 +71,7 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' default: paste("--gzip", "--skip-technical", "--split-files")
 #' @param subset a numeric or NULL, default NULL (no subset). If defined as
 #' a numeric will download only the first n reads specified by subset.
+#' @param compress logical, default TRUE. Download compressed files ".gz".
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
 #' @return a character vector of download files filepaths
@@ -92,8 +93,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' }
 download.SRA <- function(info, outdir, rename = TRUE,
                          fastq.dump.path = install.sratoolkit(),
-                         settings =  paste("--gzip", "--skip-technical", "--split-files"),
+                         settings =  paste("--skip-technical", "--split-files"),
                          subset = NULL,
+                         compress = TRUE,
                          BPPARAM = bpparam()) {
   # If character presume SRR, if not check for column Run or SRR
   SRR <- if (is.character(info)) { # if character
@@ -108,15 +110,14 @@ download.SRA <- function(info, outdir, rename = TRUE,
 
   if (is.null(SRR)) stop("Could not find SRR numbers in 'info'")
 
-
-
-  if (is.null(SRR)) stop("No SRR column found in info!")
-
   fastq.dump <- fastq.dump.path
   settings <- paste("--outdir", outdir, settings)
   if (!is.null(subset)) {
     if(!is.numeric(subset)) stop("subset must be numeric if not NULL")
     settings <- paste(settings, "-X", subset)
+  }
+  if (compress) {
+    settings <- paste(settings, "--gzip")
   }
   message("Starting download of SRA runs:")
   BiocParallel::bplapply(SRR, function(i, fastq.dump, settings) {
@@ -125,9 +126,9 @@ download.SRA <- function(info, outdir, rename = TRUE,
            wait = TRUE)
   }, fastq.dump = fastq.dump, settings = settings, BPPARAM = BPPARAM)
 
-
+  search_it <- ifelse(compress, "\\.fastq\\.gz$", "\\.fastq$")
   files <- unlist(lapply(SRR, function(S)
-    dir(outdir, paste0(S, ".*", "\\.fastq\\.gz"), full.names = TRUE))
+    dir(outdir, paste0(S, ".*", search_it), full.names = TRUE))
   )
 
   rename <- ifelse(!is.character(info) & rename, TRUE, FALSE)
@@ -139,7 +140,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
 
 #' Downloads metadata from SRA
 #'
-#' @param SRP a string, a study ID as either the SRP, ERP or PRJ of the study,
+#' @param SRP a string, a study ID as either the SRP, ERP, DRP or PRJ of the study,
 #' examples would be "SRP226389" or "ERP116106".
 #' @param outdir directory to save file,
 #' The file will be called "SraRunInfo_SRP.csv", where SRP is
@@ -200,10 +201,11 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
 
     dt <- data.table()
     for(i in seq_along(a$EXPERIMENT_PACKAGE_SET)) {
-      dt <- rbind(dt,
-                  cbind(unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$SAMPLE$TITLE),
-                        unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET$RUN$IDENTIFIERS$PRIMARY_ID))
-      )
+      xml.TITLE <- unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$SAMPLE$TITLE)
+      xml.RUN <- unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET$RUN$IDENTIFIERS$PRIMARY_ID)
+      xml.TITLE <- ifelse(is.null(xml.TITLE), "", xml.TITLE)
+      xml.RUN <- ifelse(is.null(xml.RUN), "", xml.RUN)
+      dt <- rbind(dt, cbind(xml.TITLE, xml.RUN))
     }
     colnames(dt) <- c("sample_title", "Run")
     dt <- dt[Run %in% file$Run]
@@ -219,32 +221,54 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
 
 #' Rename SRA files from metadata
 #'
-#' @param files a character vector, all the files
+#' @param files a character vector, with full path to all the files, something like
+#'
 #' @param new_names a character vector of new names or
-#' a data.table with metadata to use to rename. Priority of renaming from
+#' a data.table with metadata to use to rename (usually from SRA metadata).
+#' Priority of renaming from
 #' the metadata is to check for unique names in the LibraryName column,
 #' then the sample_title column if no valid names in LibraryName.
 #' If found and still duplicates, will
-#' add "_rep1", "_rep2" to make them unique. If no valid names, will not
+#' add "_rep1", "_rep2" to make them unique. Paired end data will get a extension
+#' of _p1 and _p2. If no valid names, will not
 #' rename, that is keep the SRR numbers, you then can manually rename files
 #' to something more meaningful.
 #' @return a character vector of new file names
 rename.SRA.files <- function(files, new_names) {
+  info <- NULL # Set to default
   if (is.character(new_names)) {
     # Do nothing
   } else { # Find from meta data
     info <- new_names
-    if (!is.null(info$LibraryName) & !any(is.na(info$LibraryName))) {
+    new_names <- NULL
+
+    valid_libraryName_column <- !is.null(info$LibraryName) &
+      !any(is.na(info$LibraryName)) & !any("" %in% info$LibraryName)
+    if (valid_libraryName_column) {
         new_names <- info$LibraryName
         message("Renaming files:")
-    } else if (!is.null(info$sample_title) & !any(is.na(info$sample_title))) {
-       new_names <- info$sample_title
-       new_names <- gsub(".*: ", "", new_names)
-       new_names <- gsub(";.*", "", new_names)
-       message("Renaming files:")
-     } else { # No valid naming, set to NULL
-      new_names <- NULL
     }
+    not_defined_yet <- is.null(new_names)
+    valid_sample_column <- !is.null(info$sample_title) &
+      !any(is.na(info$sample_title)) & !any("" %in% new_names)
+    if (not_defined_yet & valid_sample_column) {
+      new_names <- info$sample_title
+      new_names <- gsub(".*: ", "", new_names)
+      new_names <- gsub(";.*", "", new_names)
+    }
+    libStrat <- info$LibraryStrategy
+    libSelect <- info$LibrarySelection
+    libStrat_usable <- !is.null(libStrat) &
+      !any(is.na(libStrat)) & !all(c("") %in% libStrat) &
+      !all(c("OTHER") %in% libStrat) & !all(c("other") %in% libStrat) &
+      !all(c("unspecified") %in% libSelect)
+
+    libSelect_usable <- !is.null(libSelect) &
+      !any(is.na(libSelect)) & !all(c("") %in% libSelect) &
+      !all(c("OTHER") %in% libSelect) & !all(c("other") %in% libSelect) &
+      !all(c("unspecified") %in% libSelect)
+
+
   }
 
   if (any(duplicated(new_names))) {
@@ -252,11 +276,22 @@ rename.SRA.files <- function(files, new_names) {
   }
 
   if (!is.null(new_names)) {
+    message("Renaming files:")
+
+    if (any("PAIRED" %in% info$LibraryLayout)) {
+      new_names <- lapply(seq_along(info$LibraryLayout),
+                        function(x) if(info$LibraryLayout[x] == "PAIRED") {
+                          c(paste0(new_names[x], "_p1"),
+                            paste0(new_names[x],"_p2"))
+                        } else new_names[x])
+      new_names <- unlist(new_names)
+    }
     if (length(new_names) != length(files))
       stop("Length of files and new_names to rename by is not equal!")
 
     new_names <- gsub(" |\\(|\\)", "_", new_names)
     new_names <- gsub("__", "_", new_names)
+    new_names <- gsub("/", "", new_names)
     is_gzipped <- grep("\\.fastq\\.gz", files)
 
     new_names <- paste0(dirname(files), "/", basename(new_names), ".fastq")

@@ -9,15 +9,16 @@ download.SRA(
   outdir,
   rename = TRUE,
   fastq.dump.path = install.sratoolkit(),
-  settings = paste("--gzip", "--skip-technical", "--split-files"),
+  settings = paste("--skip-technical", "--split-files"),
   subset = NULL,
+  compress = TRUE,
   BPPARAM = bpparam()
 )
 }
 \arguments{
 \item{info}{character vector of only SRR numbers or
 a data.frame with SRA metadata information including the SRR numbers in a column called
-"Run" or "SRR".
+"Run" or "SRR". Can be SRR, ERR or DRR numbers.
 If only SRR numbers can not rename, since no additional information is given.}
 
 \item{outdir}{a string, default: cbu server}
@@ -38,6 +39,8 @@ default: paste("--gzip", "--skip-technical", "--split-files")}
 
 \item{subset}{a numeric or NULL, default NULL (no subset). If defined as
 a numeric will download only the first n reads specified by subset.}
+
+\item{compress}{logical, default TRUE. Download compressed files ".gz".}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}

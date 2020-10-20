@@ -7,7 +7,7 @@
 download.SRA.metadata(SRP, outdir, remove.invalid = TRUE)
 }
 \arguments{
-\item{SRP}{a string, a study ID as either the SRP, ERP or PRJ of the study,
+\item{SRP}{a string, a study ID as either the SRP, ERP, DRP or PRJ of the study,
 examples would be "SRP226389" or "ERP116106".}
 
 \item{outdir}{directory to save file,
