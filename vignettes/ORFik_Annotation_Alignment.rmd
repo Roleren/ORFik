@@ -40,8 +40,7 @@ The function will also create a gtf.db object so speed up loading of annotation,
 
 If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object, this makes it easy to rerun the script, when you have some steps already finished.
 
-If you you want to remove contaminants: phix, non coding RNAs, ribosomalRNAs, or tRNAs, also specify these in the function. The function can only download phix and
-noncoding RNAs for you, so rRNAs you must manually download and add from Silva database, and tRNAs from tRNA scan or similar databases. 
+If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. Note that some species does not have well annotated rRNAs, tRNAs etc, so you can then manually download and add the sequences from the Silva database, tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
 
 ## RNA-seq alignment
 ORFik uses the STAR aligner, which is splice aware and fast. This will only work on unix systems (Linux or Mac) for now.
@@ -62,13 +61,24 @@ First we need some data to align, if you have in-lab data, you don't need this s
 On the other hand, if you want to use published data, you need to download it. I here just show what would work for the paired end RNA-seq experiment run SRR453566.
 
 
-ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called SRR. We will also only subset to download the 50000 first reads of the library. So you can replicate this faster.
+ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called 'Run' We will also only subset to download the 50000 first reads of the library. So you can replicate this faster. We will now show 2 ways of getting data from SRA.
 
+1. Download using metadata table:
+the good thing here is that you can specify a project, and it will find all SRR numbers for you, but here we tell it only to return 
+the run called SRR453566. 
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+outdir.fastq <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
+
+info <- download.SRA.metadata("SRR453566", outdir.fastq)
+download.SRA(info, outdir.fastq, subset = 50000)
+```
+2. Download using direct SRR numbers
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 outdir.fastq <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
 
 download.SRA("SRR453566", outdir.fastq, subset = 50000)
 ```
+
 We now have the RNA-seq run, separated into 2 files, since this is paired end data.
 
 ### Aligning the data
@@ -104,7 +114,8 @@ alignment <-
                     adapter.sequence = "auto",
                     max.cpus = 30, trim.front = 3, min.length = 20)
 ```
-If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC.
+
+If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format.
 
 ### STAR multiQC
 To get some plots and a statistics table of STAR runs, do:
