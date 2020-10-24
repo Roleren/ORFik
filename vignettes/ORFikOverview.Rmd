@@ -120,9 +120,12 @@ splicing information and even possible color coding for visualizing groups of OR
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 export.bed12(fiveUTR_ORFs[1:2], "save/path/uorfs.bed12")
 ```
-
-## Getting fasta sequences of ORFs
+## Getting sequences from ORFs
 Now lets see how easy it is to get fasta sequences from the ranges.
+
+### Getting DNA fasta sequences of ORFs
+Lets start with the case of getting the DNA sequences.
+
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 orf_seqs <- extractTranscriptSeqs(BSgenome.Hsapiens.UCSC.hg19::Hsapiens,
                                   fiveUTR_ORFs[1:3])
@@ -135,12 +138,25 @@ To save as .fasta do
 writeXStringSet(orf_seqs, filepath = "uorfs.fasta")
 ```
 
+### Amino acid sequences of ORFs
+Now lets do the case of getting the amino acid sequences. We start with the DNA sequences already done from previous step.
+
+To translate to amino acids, following the standard genetic code, do:
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+orf_aa_seq <- Biostrings::translate(orf_seqs)
+orf_aa_seq
+```
+save amino acid sequences as .fasta do
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+writeXStringSet(orf_aa_seq, filepath = "uorfs.fasta")
+```
+
 We will now look on ORFik functions to get startcodons and stopcodon etc.
 
+
 # New GRanges and GRangesList utilities for ORFs
-`ORFik` contains functions that can be utilized to speed up your coding.
-Check documentation for these functions: `pmapFromTranscriptF`, `pmapToTranscriptF`
-, `sortPerGroup`, `unlistGrl`, `strandBool`, `tile1`.
+
+We will now go through utilities to group, subset and filter on interesting regions of ORFs in transcripts.
 
 ## Grouping ORFs
 
@@ -302,10 +318,9 @@ See individual functions for more examples.
 
 # CageSeq data for 5' UTR re-annotation
 
-In the previous example we used the reference annotation of the 5' UTRs
-from Hg19. 
+In the previous example we used the reference annotation of the 5' UTRs from Hg19. 
 
-Here we will use CageSeq data to set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve tissue specific transcripts. Since most eukaryotes usually have variance in TSS definitions. 
+Here we will use CAGE-seq data to set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve tissue specific transcripts. Since most eukaryotes usually have variance in TSS definitions. 
 
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 # path to example CageSeq data from hg19 heart sample
@@ -331,7 +346,8 @@ codons. `ORFik` has multiple functions for processing of RiboSeq data. We will
 go through an example processing of RiboSeq data below.
 
 Example raw RiboSeq footprints (unshifted):
-```{r eval = TRUE, echo = TRUE} 
+```{r eval = TRUE, echo = TRUE}
+# Find path to a bam file
 bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 footprints <- readBam(bam_file)
 ```
@@ -675,7 +691,7 @@ if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   windowCoveragePlot(dtl, scoring = "median", title = "Ribo-seq metaplots") 
 }
 ```
-You see that the fraction column is what seperates the rows. You can have unlimited datasets joined in this way.
+You see that the fraction column is what seperates the rows. You can have unlimited datasets joined in this way. For more useful examples of multilibrary plotting continue with the vignette called ORFikExperiment (Data management).
 
 # Conclusion
 Our hope is that by using ORFik, we can simplify your analysis when 
