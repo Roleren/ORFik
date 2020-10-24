@@ -23,17 +23,21 @@ This vignette will walk you through our detailed package usage with examples.
 
 1. Finding Open Reading Frames (very fast) in the genome of interest or on the 
 set of transcripts/sequences.  
-2. Automatic estimations of RiboSeq footprint shift.  
-3. Utilities for metaplots of RiboSeq coverage over gene START and STOP codons 
+2. Hundreds of functions helping your analysis of either: sequence data, RNA-seq data, CAGE data, Ribo-seq data, TCP-seq data or RCP-seq data.
+3. Automatic estimations of RiboSeq footprint shift.  
+4. Utilities for metaplots of RiboSeq coverage over gene START and STOP codons 
 allowing to spot the shift.  
-4. Shifting functions for the RiboSeq data.  
-5. Finding new Transcription Start Sites with the use of CageSeq data.  
-6. Various measurements of gene identity e.g. FLOSS, coverage, ORFscore, 
-entropy that are recreated based on many scientific publications.  
-7. Utility functions to extend GenomicRanges for faster grouping, splitting, 
-tiling etc. 
-8. Several standardized plots for coverage and metacoverage of NGS data, 
-including smart grouping functions for easier prototyping.
+5. Shifting functions for the RiboSeq data.  
+6. Finding new Transcription Start Sites with the use of CAGE data.  
+7. Various measurements of gene identity, more than 30 functions. e.g. FLOSS, coverage, ORFscore, 
+entropy that are recreated based on scientific publications.  
+8. Utility functions to extend GenomicRanges for faster grouping, splitting, filtering etc.
+9. Several standardized plots for coverage and metacoverage of NGS data, including smart grouping functions for easier prototyping.
+10. Automatic download of genome annotation from any species.
+11. Automatic download and renaming of files from SRA, ERA and DRA. 
+12. Simplifying working with massive amounts of datasets using the ORFik experiment class. 
+
+The first 9 points on this list is described here, for more advanced use (point 10-12) check out the other vignettes. 
 
 # Finding Open Reading Frames 
 
@@ -282,6 +286,7 @@ you can do (for strands in both direction):
   neg <- findORFs(reverseComplement(seqs),
                   startCodon = "ATG", minimumLength = 0)
 ```
+
 Merge into a GRanges object, since we want strand information
 ```{r eval = TRUE, echo = TRUE}
   pos <- GRanges(pos, strand = "+")
@@ -293,8 +298,7 @@ Merge into a GRanges object, since we want strand information
   res[1:2]
 ```  
 
-Remember that these results are in transcript coordinates, sometimes you need
-to convert them to Genomic coordinates.
+Remember that these results are in transcript coordinates, sometimes you need to convert them to Genomic coordinates.
 
 ## Finding ORFs in spliced transcripts
 If you have a genome and a spliced transcriptome annotation, you must use findMapORFs(). 
@@ -320,7 +324,7 @@ See individual functions for more examples.
 
 In the previous example we used the reference annotation of the 5' UTRs from Hg19. 
 
-Here we will use CAGE-seq data to set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve tissue specific transcripts. Since most eukaryotes usually have variance in TSS definitions. 
+Here we will use CAGE data to set new Transcription Start Sites (TSS) and re-annotate 5' UTRs. This is useful to improve tissue specific transcripts. Since most eukaryotes usually have variance in TSS definitions. 
 
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 # path to example CageSeq data from hg19 heart sample
