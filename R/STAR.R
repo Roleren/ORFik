@@ -432,7 +432,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
-  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip)
+  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip,
+                        genome)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:

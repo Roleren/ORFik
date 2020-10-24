@@ -246,7 +246,6 @@ rename.SRA.files <- function(files, new_names) {
       !any(is.na(info$LibraryName)) & !any("" %in% info$LibraryName)
     if (valid_libraryName_column) {
         new_names <- info$LibraryName
-        message("Renaming files:")
     }
     not_defined_yet <- is.null(new_names)
     valid_sample_column <- !is.null(info$sample_title) &

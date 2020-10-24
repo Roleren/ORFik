@@ -9,11 +9,13 @@ get_genome_fasta <- function(genome, output.dir, organism,
                                           release = NULL,
                                           id.type = assembly_type,
                                           path = output.dir)[1]
-      if (genome == FALSE) {
-        message("Remember some small genome organisms like yeast,",
-                " does not have primary assemblies, ",
-                "then change assembly_type to toplevel or use",
-                "db = refseq.")
+      if (is.logical(genome)) {
+        if (genome == FALSE) {
+          message("Remember some small genome organisms like yeast,",
+                  " does not have primary assemblies, ",
+                  "then change assembly_type to toplevel and/or use",
+                  "db = refseq.")
+        }
       }
       if (gunzip) # unzip gtf file
         genome <- R.utils::gunzip(genome, overwrite = TRUE)
@@ -37,17 +39,23 @@ get_genome_fasta <- function(genome, output.dir, organism,
       }
       if (length(genome) > 1) {
         warning("Found multiple candidates for pre downloaded genome,
-                setting to FALSE!")
+                 setting to FALSE!
+                 You can update path manually in the returned object")
         genome <- FALSE
       } else if (length(genome) == 0) genome <- FALSE
-
     }
   }
   return(genome)
 }
 
 #' @inherit getGenomeAndAnnotation
-get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip) {
+#' @param genome a character path, default NULL.
+#' if set, must be path to genome fasta file, must be indexed.
+#' If you want to make sure chromosome naming of the GTF matches the genome.
+#' Not necessary if you downloaded from same source. If value is NULL or FALSE,
+#' will be ignored.
+get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip,
+                           genome) {
   if (GTF) { # gtf of organism
     gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
                                      type = "dna",
@@ -61,7 +69,7 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip) {
                               substr(organism, 2, nchar(organism)))
     organismCapital <- gsub("_", " ", organismCapital)
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
-    if (genome != FALSE)
+    if (!is.logical(genome) & !is.null(genome))
       seqlevelsStyle(txdb) <- seqlevelsStyle(FaFile(genome))[1]
     txdb_file <- paste0(gtf, ".db")
     AnnotationDbi::saveDb(txdb, txdb_file)

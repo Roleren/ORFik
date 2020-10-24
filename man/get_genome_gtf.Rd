@@ -4,7 +4,7 @@
 \alias{get_genome_gtf}
 \title{Download genome (fasta), annotation (GTF) and contaminants}
 \usage{
-get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip)
+get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip, genome)
 }
 \arguments{
 \item{GTF}{logical, default: TRUE, download gtf of organism specified
@@ -33,6 +33,12 @@ To get primary assembly with 1 chromosome variant per chromosome:}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}
+
+\item{genome}{a character path, default NULL.
+if set, must be path to genome fasta file, must be indexed.
+If you want to make sure chromosome naming of the GTF matches the genome.
+Not necessary if you downloaded from same source. If value is NULL or FALSE,
+will be ignored.}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,
