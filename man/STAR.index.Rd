@@ -29,7 +29,8 @@ if you don't have STAR installed at default location, it will install it there,
 set path to a runnable star if you already have it.}
 
 \item{max.cpus}{integer, default: min(90, detectCores() - 1),
-number of threads to use. Default is minimum of 90 and maximum cores - 1}
+number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
+have 8 cores it will use 7.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it

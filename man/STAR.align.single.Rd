@@ -25,9 +25,13 @@ STAR.align.single(
 )
 }
 \arguments{
-\item{file1}{library file, if paired must be R1 file}
+\item{file1}{library file, if paired must be R1 file. Allowed formats are:
+(.fasta, .fastq, .fq, or.fa) with or without compression of .gz. This filename usually
+ contains a suffix of .1}
 
-\item{file2}{default NULL, set if paired end to R2 file}
+\item{file2}{default NULL, set if paired end to R2 file. Allowed formats are:
+(.fasta, .fastq, .fq, or.fa) with or without compression of .gz. This filename usually
+ contains a suffix of .2}
 
 \item{output.dir}{directory to save indices, default:
 paste0(dirname(arguments[1]), "/STAR_index/"), where arguments is the
@@ -65,11 +69,18 @@ STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
 (usually just download a Silva rRNA database
 for SSU&LSU at: https://www.arb-silva.de/) for your species.}
 
-\item{adapter.sequence}{character, default: "auto" (auto detect adapter, is not
-very reliable for Ribo-seq, so then you must include,
-else alignment will most likely fail!). Else manual assigned adapter like:
-"ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". If already trimmed or not wanted do:
-adapter.sequence = "disable"}
+\item{adapter.sequence}{character, default: "auto". Auto detect adapter using fastp
+adapter auto detection, checking first 1.5M reads. (auto detect adapter, is not
+very reliable for Ribo-seq, so then you must include a manually specified,
+else alignment will most likely fail!). You can manually assign adapter like:
+"ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
+presets:\cr
+\itemize{
+ \item{illumina (standard for 100 bp sequencing):}{AGATCGGAAGAGC}
+ \item{small_RNA (standard for ~50 bp sequencing):}{TGGAATTCTCGG}
+ \item{nextera:}{CTGTCTCTTATA.}
+}
+\cr If already trimmed or not wanted do: adapter.sequence = "disable"}
 
 \item{min.length}{15, minimum length of reads to pass filter.}
 
@@ -80,7 +91,8 @@ Ignored if tr (trim) is not one of the arguments in "steps"}
 "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.}
 
 \item{max.cpus}{integer, default: min(90, detectCores() - 1),
-number of threads to use. Default is minimum of 90 and maximum cores - 1}
+number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
+have 8 cores it will use 7.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it

@@ -127,7 +127,7 @@ while getopts ":f:F:o:l:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
         ;;
     M)
 	multimap=$OPTARG
-	echo "-m max multimap: $OPTARG"
+	echo "-M max multimap: $OPTARG"
         ;;
     S)
 	STAR=$OPTARG
@@ -366,24 +366,16 @@ function trimPaired()
 
 if [ $adapter == "standard" ]; then
 	adapter="AAAAAAAAAA"
-fi
-
-if [ $adapter == "illumina" ]; then
+elif [ $adapter == "illumina" ]; then
   echo "Using Illumina preset adapter"
 	adapter="AGATCGGAAGAGC"
-fi
-
-if [ $adapter == "small_RNA" ]; then
+elif [ $adapter == "small_RNA" ]; then
   echo "Using Small RNA preset adapter"
 	adapter="TGGAATTCTCGG"
-fi
-
-if [ $adapter == "nextera" ]; then
+elif [ $adapter == "nextera" ]; then
   echo "Using Nextera preset adapter"
 	adapter="CTGTCTCTTATA"
-fi
-
-if [ $adapter == "" ]; then
+elif [ $adapter == "" ]; then
 	adapter="auto"
 fi
 

@@ -90,7 +90,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'
 #' Does either all files as paired end or single end,
 #' so if you have mix, split them in two different folders.\cr
-#' #' If STAR halts at .... loading genome, it means the STAR
+#' If STAR halts at .... loading genome, it means the STAR
 #' index was aborted early, then you need to run:
 #' STAR.remove.crashed.genome(), with the genome that crashed, and rerun.
 #'
@@ -107,9 +107,11 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' For long RNA-seq, I would agree with Devon that in most cases adapter trimming
 #' is not advantageous, since, by default, STAR performs local (not end-to-end) alignment,
 #' i.e. it auto-trims." So trimming can be skipped for longer reads.
-#' @param input.dir path to fast files to align, can either be
-#' fasta files (.fastq, .fq, .fa etc) or compressed files with .gz.
-#' Also either paired end or single end reads.
+#' @param input.dir path to fast files to align, the valid input files will be search for from formats:
+#' fast files (.fasta, .fastq, .fq, or.fa) with or without compression of .gz.
+#' Also either paired end or single end reads. Pairs will automatically be detected from
+#' similarity of naming, usualy with a .1 and .2 in the end. If files are renamed, where pairs
+#' are not similarily named, this process will fail to find correct pairs.
 #' @param index.dir path to STAR index folder. Path returned from ORFik function
 #' STAR.index, when you created the index folders.
 #' @param fastp path to fastp trimmer, default: install.fastp(), if you
@@ -143,11 +145,16 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  for SSU&LSU at: https://www.arb-silva.de/) for your species.
 #' @param adapter.sequence character, default: "auto". Auto detect adapter using fastp
 #' adapter auto detection, checking first 1.5M reads. (auto detect adapter, is not
-#' very reliable for Ribo-seq, so then you must include,
+#' very reliable for Ribo-seq, so then you must include a manually specified,
 #' else alignment will most likely fail!). You can manually assign adapter like:
 #' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
-#' presets: illumina:   AGATCGGAAGAGC, small_RNA:  TGGAATTCTCGG, nextera:    CTGTCTCTTATA.
-#' If already trimmed or not wanted do: adapter.sequence = "disable"
+#' presets:\cr
+##' \itemize{
+##'  \item{illumina (standard for 100 bp sequencing): }{AGATCGGAAGAGC}
+##'  \item{small_RNA (standard for ~50 bp sequencing): }{TGGAATTCTCGG}
+##'  \item{nextera: }{CTGTCTCTTATA}
+##' }
+#' \cr If already trimmed or not wanted do: adapter.sequence = "disable"
 #' @param min.length 15, minimum length of reads to pass filter.
 #' @param trim.front 0, default trim 0 bases 5'. For Ribo-seq set use 0.
 #' Ignored if tr (trim) is not one of the arguments in "steps"
@@ -238,8 +245,12 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' libraries. Run alignment and optionally remove contaminants.
 #' @inherit STAR.align.folder
 #' @inheritParams STAR.align.folder
-#' @param file1 library file, if paired must be R1 file
-#' @param file2 default NULL, set if paired end to R2 file
+#' @param file1 library file, if paired must be R1 file. Allowed formats are:
+#' (.fasta, .fastq, .fq, or.fa) with or without compression of .gz. This filename usually
+#'  contains a suffix of .1
+#' @param file2 default NULL, set if paired end to R2 file. Allowed formats are:
+#' (.fasta, .fastq, .fq, or.fa) with or without compression of .gz. This filename usually
+#'  contains a suffix of .2
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
 #' @export

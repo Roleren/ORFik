@@ -259,8 +259,9 @@ else
 	for x in $listOfFiles
 	do
 		echo "running single end for file: $x"
-		echo "file  $i / $numOfFiles"
 		i=$((i + 1))
+		echo "file  $i / $numOfFiles"
+
 		if [[ $i == $numOfFiles ]];then
 			keep="n"
 		fi
