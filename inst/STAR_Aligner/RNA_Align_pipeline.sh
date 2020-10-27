@@ -369,14 +369,17 @@ if [ $adapter == "standard" ]; then
 fi
 
 if [ $adapter == "illumina" ]; then
+  echo "Using Illumina preset adapter"
 	adapter="AGATCGGAAGAGC"
 fi
 
 if [ $adapter == "small_RNA" ]; then
+  echo "Using Small RNA preset adapter"
 	adapter="TGGAATTCTCGG"
 fi
 
 if [ $adapter == "nextera" ]; then
+  echo "Using Nextera preset adapter"
 	adapter="CTGTCTCTTATA"
 fi
 
