@@ -45,8 +45,8 @@ Supported:\cr
 Single/paired end bam, bed, wig, ofst + compressions of these\cr
 Paired forward / reverse wig files, must have same name except
  _forward / _reverse in name\cr
-Paired end bam, set pairedEndBam = c(T, T, T, F). For 3 paired end
-libraries, then one single end.\cr
+Paired end bam, when creating experiment, set pairedEndBam = c(T, T, T, F).
+For 3 paired end libraries, then one single end.\cr
 Naming:
 Will try to guess naming for tissues / stages, replicates etc.
 If it finds more than one hit for one file, it will not guess.

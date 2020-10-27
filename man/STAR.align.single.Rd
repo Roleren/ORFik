@@ -50,24 +50,31 @@ unix (linux or Mac OS), if not on unix, use your favorite trimmer and
 give the output files from that trimmer as input.dir here.}
 
 \item{steps}{a character, default: "tr-ge", trimming then genome alignment\cr
-steps of depletion and alignment wanted:
-The posible candidates you can use are:
-tr: trim reads, co: contamination merged depletion, ph: phix depletion,
-rR: rrna depletion,
-nc: ncrna depletion, tR: trna depletion, ge: genome alignment,
-all: run steps: tr-ph-rR-nc-tR-ge)\cr
-If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
-If co (merged contaminants) is used, non of the specific contaminants can be specified,
-since they should be a subset of co.\cr
-In bash script it is reformated to this style:
-(trimming and genome do: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-the step where you align to the genome is usually always included, unless you
-are doing pure contaminant analysis.
-For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
-so when you made the
-STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
-(usually just download a Silva rRNA database
-for SSU&LSU at: https://www.arb-silva.de/) for your species.}
+ steps of depletion and alignment wanted:
+ The posible candidates you can use are:\cr
+\itemize{
+ \item{tr : }{trim reads}
+ \item{co : }{contamination merged depletion}
+ \item{ph : }{phix depletion}
+ \item{rR : }{rrna depletion}
+ \item{nc : }{ncrna depletion}
+ \item{tR : }{trna depletion}
+ \item{ge : }{genome alignment}
+ \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
+ have merged contaminants}
+}
+ \cr
+ If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
+ If co (merged contaminants) is used, non of the specific contaminants can be specified,
+ since they should be a subset of co.\cr
+
+ The step where you align to the genome is usually always included, unless you
+ are doing pure contaminant analysis.
+ For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
+ so when you made the
+ STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
+ (usually just download a Silva rRNA database
+ for SSU&LSU at: https://www.arb-silva.de/) for your species.}
 
 \item{adapter.sequence}{character, default: "auto". Auto detect adapter using fastp
 adapter auto detection, checking first 1.5M reads. (auto detect adapter, is not
@@ -76,11 +83,11 @@ else alignment will most likely fail!). You can manually assign adapter like:
 "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
 presets:\cr
 \itemize{
- \item{illumina (standard for 100 bp sequencing):}{AGATCGGAAGAGC}
- \item{small_RNA (standard for ~50 bp sequencing):}{TGGAATTCTCGG}
- \item{nextera:}{CTGTCTCTTATA.}
+ \item{illumina (standard for 100 bp sequencing): }{AGATCGGAAGAGC}
+ \item{small_RNA (standard for ~50 bp sequencing): }{TGGAATTCTCGG}
+ \item{nextera: }{CTGTCTCTTATA}
 }
-\cr If already trimmed or not wanted do: adapter.sequence = "disable"}
+\cr If already trimmed or trimming not wanted: adapter.sequence = "disable"}
 
 \item{min.length}{15, minimum length of reads to pass filter.}
 

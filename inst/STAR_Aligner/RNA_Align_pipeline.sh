@@ -294,7 +294,7 @@ function inputFile()
 {
 
 	var=$(indexOf "$3" ${stepsArray[@]})
-	if [ $"var"== "0" ]; then
+	if [[ "$var" == "0" ]]; then
 		echo "${2} ${6}"
 	else
 		ind=$(expr $var - 1)

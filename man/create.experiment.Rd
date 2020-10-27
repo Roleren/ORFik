@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{create.experiment}
 \alias{create.experiment}
-\title{Create a template for new ORFik \code{\link{experiment}}}
+\title{Create a ORFik \code{\link{experiment}}}
 \usage{
 create.experiment(
   dir,
@@ -31,12 +31,17 @@ it to disc.}
 file must have a fasta index too.}
 
 \item{organism}{character, default: "" (no organism set), scientific name
-of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.}
+of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.
+If you have a SRA metadata csv file, you can set this argument to
+study$ScientificName[1], where study is the SRA metadata for all files
+that was aligned.}
 
 \item{pairedEndBam}{logical FALSE, else TRUE, or a logical list of
 TRUE/FALSE per library you see will be included (run first without and check
 what order the files will come in) 1 paired end file, then two single will
-be c(T, F, F)}
+be c(T, F, F). If you have a SRA metadata csv file, you can set this argument to
+study$LibraryLayout == "PAIRED", where study is the SRA metadata for all files
+that was aligned.}
 
 \item{viewTemplate}{run View() on template when finished, default (TRUE)}
 
@@ -52,7 +57,7 @@ By using files in a folder / folders. It will try to make an experiment table
 with information per sample. There will be several columns you can fill in,
 most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
 Wild type or mutant etc.
-You will have to fill in the details that were not autodetected.
+You will have to fill in the details that were not auto detected.
 Easiest way to fill in the blanks are in a csv editor like libre Office
 or excel. Remember that each row (sample) must have a unique combination
 of values.

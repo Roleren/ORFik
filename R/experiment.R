@@ -39,8 +39,8 @@
 #' Single/paired end bam, bed, wig, ofst + compressions of these\cr
 #' Paired forward / reverse wig files, must have same name except
 #'  _forward / _reverse in name\cr
-#' Paired end bam, set pairedEndBam = c(T, T, T, F). For 3 paired end
-#' libraries, then one single end.\cr
+#' Paired end bam, when creating experiment, set pairedEndBam = c(T, T, T, F).
+#' For 3 paired end libraries, then one single end.\cr
 #' Naming:
 #' Will try to guess naming for tissues / stages, replicates etc.
 #' If it finds more than one hit for one file, it will not guess.
@@ -215,14 +215,14 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
   return(df)
 }
 
-#' Create a template for new ORFik \code{\link{experiment}}
+#' Create a ORFik \code{\link{experiment}}
 #'
 #' Create information on runs / samples from an experiment as a single R object.
 #' By using files in a folder / folders. It will try to make an experiment table
 #' with information per sample. There will be several columns you can fill in,
 #' most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
 #' Wild type or mutant etc.
-#' You will have to fill in the details that were not autodetected.
+#' You will have to fill in the details that were not auto detected.
 #' Easiest way to fill in the blanks are in a csv editor like libre Office
 #' or excel. Remember that each row (sample) must have a unique combination
 #' of values.
@@ -240,10 +240,15 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' @param viewTemplate run View() on template when finished, default (TRUE)
 #' @param organism character, default: "" (no organism set), scientific name
 #' of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.
+#' If you have a SRA metadata csv file, you can set this argument to
+#' study$ScientificName[1], where study is the SRA metadata for all files
+#' that was aligned.
 #' @param pairedEndBam logical FALSE, else TRUE, or a logical list of
 #' TRUE/FALSE per library you see will be included (run first without and check
 #' what order the files will come in) 1 paired end file, then two single will
-#' be c(T, F, F)
+#' be c(T, F, F). If you have a SRA metadata csv file, you can set this argument to
+#' study$LibraryLayout == "PAIRED", where study is the SRA metadata for all files
+#' that was aligned.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View
@@ -288,7 +293,7 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
                               viewTemplate = TRUE,
                               types = c("bam", "bed", "wig")) {
   notDir <- !all(dir.exists(dir))
-  if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a valid directory!"))
+  if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a existing directory!"))
   file_dt <- findLibrariesInFolder(dir, types, pairedEndBam)
 
   if (is(file_dt, "data.table")) { # If paired data
@@ -322,8 +327,16 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
   df[3, seq(2)] <- c("fasta", fa)
   if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
   df[is.na(df)] <- ""
-  if (!is.null(saveDir))
+  if (!is.null(saveDir)) {
+    cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
+    if (dir.exists(cbu.path)) { # This will only trigger on CBU server @ UIB
+      message("This is on internal CBU server, saving to preset directory:")
+      message(cbu.path)
+      saveDir <- cbu.path
+    }
     save.experiment(df, pasteDir(saveDir, exper,".csv"))
+  }
+
   if (viewTemplate) View(df)
   return(df)
 }
