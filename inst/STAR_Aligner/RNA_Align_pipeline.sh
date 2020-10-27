@@ -368,6 +368,22 @@ if [ $adapter == "standard" ]; then
 	adapter="AAAAAAAAAA"
 fi
 
+if [ $adapter == "illumina" ]; then
+	adapter="AGATCGGAAGAGC"
+fi
+
+if [ $adapter == "small_RNA" ]; then
+	adapter="TGGAATTCTCGG"
+fi
+
+if [ $adapter == "nextera" ]; then
+	adapter="CTGTCTCTTATA"
+fi
+
+if [ $adapter == "" ]; then
+	adapter="auto"
+fi
+
 #echo "trimming is: $(trimPaired ${out_dir} ${ibn} ${in_file_two})"
 
 #echo "ph: $(inputFile $resume $in_file "ph" ${out_dir} ${ibn} ${in_file_two})"
@@ -430,7 +446,7 @@ fi
 		--adapter_sequence=$adapter \
 		--thread $(nCores 16 $maxCPU)
 	fi
-    fi
+fi
 
 #------------------------------------------------------------------------------------------
     #4 (alternative): Remove merged contaminants

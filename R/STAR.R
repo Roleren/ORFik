@@ -19,7 +19,8 @@
 #' if you don't have STAR installed at default location, it will install it there,
 #' set path to a runnable star if you already have it.
 #' @param max.cpus integer, default: min(90, detectCores() - 1),
-#'  number of threads to use. Default is minimum of 90 and maximum cores - 1
+#'  number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
+#'  have 8 cores it will use 7.
 #' @param script location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
@@ -140,11 +141,13 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
 #'  (usually just download a Silva rRNA database
 #'  for SSU&LSU at: https://www.arb-silva.de/) for your species.
-#' @param adapter.sequence character, default: "auto" (auto detect adapter, is not
+#' @param adapter.sequence character, default: "auto". Auto detect adapter using fastp
+#' adapter auto detection, checking first 1.5M reads. (auto detect adapter, is not
 #' very reliable for Ribo-seq, so then you must include,
-#' else alignment will most likely fail!). Else manual assigned adapter like:
-#' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". If already trimmed or not wanted do:
-#' adapter.sequence = "disable"
+#' else alignment will most likely fail!). You can manually assign adapter like:
+#' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
+#' presets: illumina:   AGATCGGAAGAGC, small_RNA:  TGGAATTCTCGG, nextera:    CTGTCTCTTATA.
+#' If already trimmed or not wanted do: adapter.sequence = "disable"
 #' @param min.length 15, minimum length of reads to pass filter.
 #' @param trim.front 0, default trim 0 bases 5'. For Ribo-seq set use 0.
 #' Ignored if tr (trim) is not one of the arguments in "steps"
