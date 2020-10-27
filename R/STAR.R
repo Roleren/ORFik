@@ -143,7 +143,8 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @param adapter.sequence character, default: "auto" (auto detect adapter, is not
 #' very reliable for Ribo-seq, so then you must include,
 #' else alignment will most likely fail!). Else manual assigned adapter like:
-#' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA".
+#' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". If already trimmed or not wanted do:
+#' adapter.sequence = "disable"
 #' @param min.length 15, minimum length of reads to pass filter.
 #' @param trim.front 0, default trim 0 bases 5'. For Ribo-seq set use 0.
 #' Ignored if tr (trim) is not one of the arguments in "steps"
@@ -260,8 +261,9 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 ) {
   if (!file.exists(script.single))
     stop("STAR single file alignment script not found, check path of script!")
-  cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
-                          package = "ORFik", mustWork = TRUE)
+  # TODO, decide to add this in or not.
+  # cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
+  #                         package = "ORFik", mustWork = TRUE)
 
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
@@ -272,7 +274,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                 "-l", min.length, "-g", index.dir, "-s", steps,
                 resume, "-a", adapter.sequence, "-t", trim.front,
                 "-A", alignment.type, "-m", max.cpus, "-M", max.multimap,
-                star.path, fastp, "-C", cleaning)
+                star.path, fastp) # "-C", cleaning
   if (.Platform$OS.type == "unix") {
     print(full)
     message("Starting alignment at time:")

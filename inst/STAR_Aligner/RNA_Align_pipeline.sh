@@ -400,6 +400,7 @@ fi
 		--trim_front2=${trim_front} \
 		--length_required=$min_length \
 		--disable_quality_filtering \
+		--disable_adapter_trimming \
 		--thread $(nCores 16 $maxCPU)
 	elif [ $adapter == "auto" ]; then
 		eval $fastp \

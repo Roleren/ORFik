@@ -78,7 +78,8 @@ for SSU&LSU at: https://www.arb-silva.de/) for your species.}
 \item{adapter.sequence}{character, default: "auto" (auto detect adapter, is not
 very reliable for Ribo-seq, so then you must include,
 else alignment will most likely fail!). Else manual assigned adapter like:
-"ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA".}
+"ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". If already trimmed or not wanted do:
+adapter.sequence = "disable"}
 
 \item{min.length}{15, minimum length of reads to pass filter.}
 
