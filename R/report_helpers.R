@@ -74,22 +74,26 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
 trim_detection <- function(df, finals, out.dir) {
   # Update raw reads to real number
   # Needs a folder called trim
-  if (dir.exists(paste0(out.dir, "/../trim/"))) {
+  trim_folder <- paste0(out.dir, "/../trim/")
+  if (dir.exists(trim_folder)) {
     message("Create raw read counts")
-    oldDir <- getwd()
-    setwd(paste0(out.dir, "/../trim/"))
-    raw_library <- system('ls *.json', intern = TRUE)
-    lib_string <- 'grep -m 1 -h "total_reads" *.json | grep -Eo "[0-9]*"'
-    raw_reads <- as.numeric(system(lib_string, intern = TRUE))
-    raw_data <- data.table(raw_library, raw_reads)
-    # Find report files for all libs
-    raw_data$raw_library <- gsub("report_",
+
+    raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)
+
+    raw_reads <- data.table()
+    for (lib in raw_library) { # Read json files
+      a <- data.table::fread(lib, nrows = 7, skip = 2, sep = ":", col.names = c("id", "value"))
+      a$value <- as.numeric(gsub(",", "", a$value))
+      a$id <- gsub("\\\t", "", a$id)
+      raw_reads <- rbind(raw_reads, a$value[1])
+    }
+    raw_data <- cbind(raw_library = basename(raw_library), raw_reads)
+
+    raw_data$raw_library <- gsub("report_|\\.json$",
                                  x = raw_data$raw_library, replacement = "")
-    # Subset to only .json files of libs
-    raw_data$raw_library <- gsub(".json",
-                                 x = raw_data$raw_library, replacement = "")
+    # Verify rows have equal order as experiment
     order <- unlist(lapply(X = raw_data$raw_library,
-                           function(p) grep(pattern = p, x = df$filepath)))
+                           function(p) grep(pattern = p, x = df$filepath, fixed = TRUE)))
     order <- unique(order)
     notMatch <-
       !all(seq(nrow(df)) %in% order) | length(seq(nrow(df))) != length(order)
@@ -98,9 +102,12 @@ trim_detection <- function(df, finals, out.dir) {
       message(paste("Trim folder had", nrow(raw_data), "libraries"))
       print(paste(c("Matches in the order:", order), collapse = " "))
       print(raw_data)
+      print("Input file paths:")
       print(df$filepath)
-      stop("unexpected behavior, did you delete any files?",
+      message("unexpected behavior, did you delete or merge any files?",
            "else report this bug on ORFik github page!")
+      message("Could not find raw read counts of data, setting to NA")
+
     } else if (notMatch) { # did not match all
       message("Could not find raw read count of your data, setting to NA")
     } else {
@@ -109,10 +116,9 @@ trim_detection <- function(df, finals, out.dir) {
       finals$ratio_aligned_raw = round(finals$Aligned_reads /
                                          finals$Raw_reads, 4)
     }
-    setwd(oldDir)
   } else {
     message("Could not find raw read counts of data, setting to NA")
-    message(paste0("No folder called:", paste0(out.dir, "/../trim/")))
+    message(paste0("No folder called:", trim_folder))
   }
   return(finals)
 }
