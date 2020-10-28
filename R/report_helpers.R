@@ -87,7 +87,7 @@ trim_detection <- function(df, finals, out.dir) {
       a$id <- gsub("\\\t", "", a$id)
       raw_reads <- rbind(raw_reads, a$value[1])
     }
-    raw_data <- cbind(raw_library = basename(raw_library), raw_reads)
+    raw_data <- cbind(raw_library = basename(raw_library), raw_reads = raw_reads)
 
     raw_data$raw_library <- gsub("report_|\\.json$",
                                  x = raw_data$raw_library, replacement = "")
