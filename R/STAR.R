@@ -212,7 +212,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' # index <- STAR.index(annotation)
 #' # STAR.align.folder(fastq.input.dir, bam.output.dir,
 #' #                   index, paired.end = "no",
-#'                     steps = "tr-ge")
+#' #                   steps = "tr-ge")
 STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
                               paired.end = "no",

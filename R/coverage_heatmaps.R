@@ -248,7 +248,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
     if (plot.together) {
       ncols <- max(1, length(shifting))
       final <- gridExtra::grid.arrange(grobs = heatmapList, ncol = ncols)
-      ggsave(p(outdir, df@experiment, "_hm_combined_", location, format),
+      ggsave(paste0(outdir, df@experiment, "_hm_combined_", location, format),
              plot = final, width = 5*ncols, height = ceiling(5.5*(length(heatmapList) / ncols)),
              limitsize = FALSE)
     }

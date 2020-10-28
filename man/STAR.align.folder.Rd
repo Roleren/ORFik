@@ -187,7 +187,7 @@ bam.output.dir <- "~/Bio_data/processed_data/Ribo_seq_subtelny_2014/"
 # index <- STAR.index(annotation)
 # STAR.align.folder(fastq.input.dir, bam.output.dir,
 #                   index, paired.end = "no",
-                    steps = "tr-ge")
+#                   steps = "tr-ge")
 }
 \seealso{
 Other STAR: 
