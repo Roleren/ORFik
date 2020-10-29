@@ -1,9 +1,11 @@
 #' Create a heatmap of coverage
 #'
-#' Rows: Position in region
-#' Columns: Read length
-#' Index intensity: (color) coverage scoring per index.
-#'
+#' Creates a ggplot representing a heatmap of coverage:\cr
+#' \itemize{
+#'  \item{Rows            : }{Position in region}
+#'  \item{Columns         : }{Read length}
+#'  \item{Index intensity : }{(color) coverage scoring per index.}
+#' }\cr
 #' Coverage rows in heat map is fraction, usually fractions is divided into
 #' unique read lengths (standard Illumina is 76 unique widths, with some
 #' minimum cutoff like 15.)
@@ -13,11 +15,13 @@
 #' Colors:
 #' Remember if you want to change anything like colors, just return the
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
-#' Standard colors are:
-#' 0 reads in whole readlength: gray
-#' few reads in position: white
-#' medium reads in position: yellow
-#' many reads in position: dark blue
+#' Standard colors are:\cr
+#' \itemize{
+#'  \item{0 reads in whole readlength :}{gray}
+#'  \item{few reads in position       :}{white}
+#'  \item{medium reads in position    :}{yellow}
+#'  \item{many reads in position      :}{dark blue}
+#' }\cr
 #'
 #' @inheritParams windowCoveragePlot
 #' @param legendPos a character, Default "right". Where should the fill legend
@@ -95,7 +99,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
   return(savePlot(plot, output))
 }
 
-#' Create heatmap around specified position
+#' Create coverage heatmaps of specified region
 #'
 #' Simplified input space for easier abstraction of coverage heatmaps\cr
 #' Pick your region and plot \cr
@@ -163,7 +167,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     }
     mrna <- extendLeaders(mrna, 51)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
-             addFracPlot = TRUE, location = "TSS", shifting = c("5prime", "3prime"),
+             addFracPlot = TRUE, location = "TSS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   if ("TTS" %in% region) {
@@ -172,7 +176,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     center <- loadRegion(txdb, "trailers")[txNames]
     mrna <- loadRegion(txdb, "mrna")[txNames]
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
-             addFracPlot = TRUE, location = "TTS", shifting = c("5prime", "3prime"),
+             addFracPlot = TRUE, location = "TTS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   return(invisible(NULL))
@@ -191,10 +195,12 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' @param shifting a character, default c("5prime", "3prime"), can also be
 #' either or NULL (no shifting of reads)
 #' @param format a character, default ".png", alternative ".pdf"
-#' @param upstream 2 integers, default c(50, 30), how long upstream from 0
-#' should window extend (first index is 5' end extension, second is 3' end extension)
-#' @param downstream 2 integers, default c(29, 69), how long upstream from 0
-#' should window extend (first index is 5' end extension, second is 3' end extension)
+#' @param upstream 1 or 2 integers, default c(50, 30), how long upstream from 0
+#' should window extend (first index is 5' end extension, second is 3' end extension).
+#' If only 1 shifting, only 1 value should be given, if two are given will use first.
+#' @param downstream 1 or 2 integers, default c(29, 69), how long upstream from 0
+#' should window extend (first index is 5' end extension, second is 3' end extension).
+#' If only 1 shifting, only 1 value should be given, if two are given will use first.
 #' @param scores character vector, default c("transcriptNormalized", "sum"),
 #' either of zscore, transcriptNormalized, sum, mean, median, ..
 #' see ?coverageScorings for info and more alternatives.
@@ -206,6 +212,8 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                      legendPos = "right", colors = "default", addFracPlot = TRUE,
                      location = "TIS", shifting = NULL, skip.last = FALSE, format = ".png",
                      plot.together = TRUE, title = TRUE) {
+
+
   up <- upstream; down <- downstream
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
@@ -216,8 +224,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
     outputLibs(df, region, type = type)
     for (i in varNames) { # For each stage
       for (score in scores) {
-        for (s in 1:length(shifting)) {
-          if (s == 0) next
+        for (s in seq_along(shifting)) {
           shift <- shifting[s]
           if (length(upstream) > 1) {
             up <- upstream[s]

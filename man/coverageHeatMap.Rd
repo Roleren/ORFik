@@ -49,25 +49,29 @@ a ggplot object of the coverage plot, NULL if output is set,
 then the plot will only be saved to location.
 }
 \description{
-Rows: Position in region
-Columns: Read length
-Index intensity: (color) coverage scoring per index.
-}
-\details{
+Creates a ggplot representing a heatmap of coverage:\cr
+\itemize{
+ \item{Rows            : }{Position in region}
+ \item{Columns         : }{Read length}
+ \item{Index intensity : }{(color) coverage scoring per index.}
+}\cr
 Coverage rows in heat map is fraction, usually fractions is divided into
 unique read lengths (standard Illumina is 76 unique widths, with some
 minimum cutoff like 15.)
 Coverage column in heat map is score, default zscore of counts. These are
 the relative positions you are plotting to. Like +/- relative to TIS or TSS.
-
+}
+\details{
 Colors:
 Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
-Standard colors are:
-0 reads in whole readlength: gray
-few reads in position: white
-medium reads in position: yellow
-many reads in position: dark blue
+Standard colors are:\cr
+\itemize{
+ \item{0 reads in whole readlength :}{gray}
+ \item{few reads in position       :}{white}
+ \item{medium reads in position    :}{yellow}
+ \item{many reads in position      :}{dark blue}
+}\cr
 }
 \examples{
 # An ORF

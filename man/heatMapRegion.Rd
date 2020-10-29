@@ -2,7 +2,7 @@
 % Please edit documentation in R/coverage_heatmaps.R
 \name{heatMapRegion}
 \alias{heatMapRegion}
-\title{Create heatmap around specified position}
+\title{Create coverage heatmaps of specified region}
 \usage{
 heatMapRegion(
   df,
@@ -48,11 +48,13 @@ either "default", usually bam format (the one you gave to experiment),
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}
 
-\item{upstream}{2 integers, default c(50, 30), how long upstream from 0
-should window extend (first index is 5' end extension, second is 3' end extension)}
+\item{upstream}{1 or 2 integers, default c(50, 30), how long upstream from 0
+should window extend (first index is 5' end extension, second is 3' end extension).
+If only 1 shifting, only 1 value should be given, if two are given will use first.}
 
-\item{downstream}{2 integers, default c(29, 69), how long upstream from 0
-should window extend (first index is 5' end extension, second is 3' end extension)}
+\item{downstream}{1 or 2 integers, default c(29, 69), how long upstream from 0
+should window extend (first index is 5' end extension, second is 3' end extension).
+If only 1 shifting, only 1 value should be given, if two are given will use first.}
 
 \item{shifting}{a character, default c("5prime", "3prime"), can also be
 either or NULL (no shifting of reads)}

@@ -44,11 +44,13 @@ from ORFik experiment columns}
 either of zscore, transcriptNormalized, sum, mean, median, ..
 see ?coverageScorings for info and more alternatives.}
 
-\item{upstream}{2 integers, default c(50, 30), how long upstream from 0
-should window extend (first index is 5' end extension, second is 3' end extension)}
+\item{upstream}{1 or 2 integers, default c(50, 30), how long upstream from 0
+should window extend (first index is 5' end extension, second is 3' end extension).
+If only 1 shifting, only 1 value should be given, if two are given will use first.}
 
-\item{downstream}{2 integers, default c(29, 69), how long upstream from 0
-should window extend (first index is 5' end extension, second is 3' end extension)}
+\item{downstream}{1 or 2 integers, default c(29, 69), how long upstream from 0
+should window extend (first index is 5' end extension, second is 3' end extension).
+If only 1 shifting, only 1 value should be given, if two are given will use first.}
 
 \item{zeroPosition}{an integer DEFAULT (upstream), what is the center point?
 Like leaders and cds combination, then 0 is the TIS and -1 is last base in leader.
