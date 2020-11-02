@@ -7,7 +7,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
   outputLibs(df, leaders, type = "ofst")
-  libs <- bamVarName(df, skip.experiment = TRUE)
+  libs <- bamVarName(df)
   # Update this to use correct
   convertLibs(df, NULL) # Speedup by reducing unwanted information
 
@@ -28,7 +28,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
       weight <- NULL
     return(sum(countOverlapsW(region, lib, weight = weight)))
   }
-  finals <- bplapply(libs, function(s, dt_list, sCo, tx, gff.df) {
+  finals <- bplapply(libs, function(s, dt_list, sCo, tx, gff.df, libs) {
     message(s)
     lib <- get(s)
     # Raw stats
@@ -37,10 +37,11 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
     res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
 
     # mRNA region stats
-    res_mrna <- data.table(mRNA = colSums(assay(dt_list[["mrna"]]))[s],
-                           LEADERS = colSums(assay(dt_list[["leaders"]]))[s],
-                           CDS = colSums(assay(dt_list[["cds"]]))[s],
-                           TRAILERs = colSums(assay(dt_list[["trailers"]]))[s])
+    index <- which(s == libs)
+    res_mrna <- data.table(mRNA = colSums(assay(dt_list[["mrna"]]))[index],
+                           LEADERS = colSums(assay(dt_list[["leaders"]]))[index],
+                           CDS = colSums(assay(dt_list[["cds"]]))[index],
+                           TRAILERs = colSums(assay(dt_list[["trailers"]]))[index])
     res_mrna[,ratio_mrna_aligned := round(mRNA / res$Aligned_reads, 6)]
     res_mrna[,ratio_cds_mrna := round(CDS / mRNA, 6)]
     res_mrna[, ratio_cds_leader := round(CDS / LEADERS, 6)]
@@ -60,7 +61,8 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
     res_widths <- data.frame(matrix(widths, nrow = 1))
     colnames(res_widths) <- paste(names(widths), "read length")
     cbind(res, res_widths, res_mrna, res_extra)
-  }, dt_list = dt_list, sCo = sCo, tx = tx, gff.df = gff.df, BPPARAM = BPPARAM)
+  }, dt_list = dt_list, sCo = sCo, tx = tx, gff.df = gff.df,
+     libs = libs, BPPARAM = BPPARAM)
 
   return(rbindlist(finals))
 }

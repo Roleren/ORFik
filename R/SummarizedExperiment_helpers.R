@@ -55,7 +55,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     names(tx) <- txNamesToGeneNames(names(tx), txdb)
   }
 
-  varNames <- bamVarName(df, skip.experiment = TRUE)
+  varNames <- bamVarName(df)
   outputLibs(df, tx)
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
