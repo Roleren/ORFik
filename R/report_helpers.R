@@ -7,7 +7,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
   outputLibs(df, leaders, type = "ofst")
-  libs <- bamVarName(df)
+  libs <- bamVarName(df, skip.experiment = TRUE)
   # Update this to use correct
   convertLibs(df, NULL) # Speedup by reducing unwanted information
 
