@@ -13,9 +13,8 @@ vignette: >
 # Introduction
 
 Welcome to the `ORFik` package. 
-`ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data,
-RiboSeq, RNASeq, TCPseq and CAGE, focusing on 5' UTRs (leaders), it is generalized in the 
-sense that any transcript region can be analysed. 
+`ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data and NGS data like Ribo-Seq, RNA-Seq, TCP-Seq and CAGE. It is generalized in the sense that any transcript region can be analysed,
+as the name hints to, it was made with investigation of ribosomal patterns over Open Reading Frames (ORFs) as it's primary use case.  
 This vignette will walk you through our detailed package usage with examples.
 
 
@@ -33,7 +32,7 @@ allowing to spot the shift.
 entropy that are recreated based on scientific publications.  
 8. Utility functions to extend GenomicRanges for faster grouping, splitting, filtering etc.
 9. Several standardized plots for coverage and metacoverage of NGS data, including smart grouping functions for easier prototyping.
-10. Automatic download of genome annotation from any species.
+10. Automatic download of genome annotation from any species supported by ensembl.
 11. Automatic download and renaming of files from SRA, ERA and DRA. 
 12. Simplifying working with massive amounts of datasets using the ORFik experiment class. 
 
