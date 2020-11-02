@@ -13,6 +13,7 @@
 #' @family STAR
 #' @export
 STAR.multiQC <- function(folder) {
+
   if (!dir.exists(folder)) stop("folder does not specify existing directory!")
   pattern <- "Log.final.out"
   log_files <- dir(folder, pattern, full.names = TRUE)
@@ -24,6 +25,7 @@ STAR.multiQC <- function(folder) {
     STAR.multiQC(new_path)
     return(invisible(NULL))
   }
+  message("Runing alignment MultiQC")
   # Read log files 1 by 1 (only data column)
   dt <- lapply(log_files, function(file)
     fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])

@@ -10,7 +10,7 @@ STAR.align.folder(
   index.dir,
   star.path = STAR.install(),
   fastp = install.fastp(),
-  paired.end = "no",
+  paired.end = FALSE,
   steps = "tr-ge",
   adapter.sequence = "auto",
   min.length = 15,
@@ -21,6 +21,7 @@ STAR.align.folder(
   include.subfolders = "n",
   resume = NULL,
   max.multimap = 10,
+  multiQC = TRUE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
@@ -50,7 +51,7 @@ have it somewhere else already installed, give the path. Only works for
 unix (linux or Mac OS), if not on unix, use your favorite trimmer and
 give the output files from that trimmer as input.dir here.}
 
-\item{paired.end}{default "no", alternative "yes". If yes, will auto detect
+\item{paired.end}{a logical: default FALSE, alternative TRUE. If TRUE, will auto detect
 pairs by names. If yes running on a folder:
 The folder must then contain an even number of files
 and they must be named with the same prefix and sufix of either
@@ -128,6 +129,10 @@ step was completed.}
 will skip the read. Set to 1 to only get unique mapping reads. Only applies for
 genome alignment step. The depletions are allowing for multimapping.}
 
+\item{multiQC}{logical, default TRUE. Do mutliQC comparison of STAR
+alignment between all the samples. Outputted in aligned/LOGS folder.
+See ?STAR.multiQC}
+
 \item{script.folder}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you
 need special alignments.}
@@ -176,7 +181,7 @@ bam.output.dir <- "~/Bio_data/processed_data/Ribo_seq_subtelny_2014/"
 # annotation <- getGenomeAndAnnotation("Homo sapiens", annotation.dir)
 # index <- STAR.index(annotation)
 # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#                   index, paired.end = "no")
+#                   index, paired.end = FALSE)
 
 ## All contaminants merged:
 # annotation <- getGenomeAndAnnotation(
@@ -186,7 +191,7 @@ bam.output.dir <- "~/Bio_data/processed_data/Ribo_seq_subtelny_2014/"
 #    )
 # index <- STAR.index(annotation)
 # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#                   index, paired.end = "no",
+#                   index, paired.end = FALSE,
 #                   steps = "tr-ge")
 }
 \seealso{

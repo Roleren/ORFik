@@ -118,7 +118,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' have it somewhere else already installed, give the path. Only works for
 #' unix (linux or Mac OS), if not on unix, use your favorite trimmer and
 #' give the output files from that trimmer as input.dir here.
-#' @param paired.end default "no", alternative "yes". If yes, will auto detect
+#' @param paired.end a logical: default FALSE, alternative TRUE. If TRUE, will auto detect
 #'  pairs by names. If yes running on a folder:
 #'  The folder must then contain an even number of files
 #'  and they must be named with the same prefix and sufix of either
@@ -182,6 +182,9 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @param script.single location of STAR single file alignment script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
+#' @param multiQC logical, default TRUE. Do mutliQC comparison of STAR
+#' alignment between all the samples. Outputted in aligned/LOGS folder.
+#' See ?STAR.multiQC
 #' @inheritParams STAR.index
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
@@ -201,7 +204,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' # annotation <- getGenomeAndAnnotation("Homo sapiens", annotation.dir)
 #' # index <- STAR.index(annotation)
 #' # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#' #                   index, paired.end = "no")
+#' #                   index, paired.end = FALSE)
 #'
 #' ## All contaminants merged:
 #' # annotation <- getGenomeAndAnnotation(
@@ -211,17 +214,17 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' #    )
 #' # index <- STAR.index(annotation)
 #' # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#' #                   index, paired.end = "no",
+#' #                   index, paired.end = FALSE,
 #' #                   steps = "tr-ge")
 STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
-                              paired.end = "no",
+                              paired.end = FALSE,
                               steps = "tr-ge", adapter.sequence = "auto",
                               min.length = 15, trim.front = 0,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
                               wait = TRUE,
                               include.subfolders = "n", resume = NULL,
-                              max.multimap = 10,
+                              max.multimap = 10, multiQC = TRUE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -232,6 +235,12 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     stop("STAR folder alignment script not found, check path of script!")
   if (!file.exists(script.single))
     stop("STAR single file alignment script not found, check path of script!")
+  if (is.logical(paired.end)) {
+    paired.end <- ifelse(paired.end, "yes", "no")
+  } else if(is.character(paired.end)) {
+    if (!(paired.end %in% c("yes", "no"))) stop("Argument 'paired.end' must be yes/no")
+  } else stop("Argument 'paired.end' must be logical or character yes/no")
+
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
@@ -251,6 +260,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     out <- system(command = full, wait = wait)
     out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
     message(out)
+    if (multiQC & wait & (out == "Alignment done")) STAR.multiQC(output.dir)
   } else stop("STAR is not supported on windows!")
   return(output.dir)
 }
@@ -271,13 +281,13 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' @family STAR
 #' @export
 #' @examples
-#' # Use your own paths for annotation or the ORFik way
 #'
-#' ## use ORFik way:
+#' ## Specify output libraries:
 #' output.dir <- "/Bio_data/references/Human"
+#' bam.dir <- "data/processed/human_rna_seq"
 #' # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
 #' # index <- STAR.index(arguments, output.dir)
-#' # STAR.align.single("data/raw_data/human_rna_seq/file1.bam", "data/processed/human_rna_seq",
+#' # STAR.align.single("data/raw_data/human_rna_seq/file1.bam", bam.dir,
 #' #                    index)
 STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),

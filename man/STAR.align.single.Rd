@@ -145,13 +145,13 @@ is not advantageous, since, by default, STAR performs local (not end-to-end) ali
 i.e. it auto-trims." So trimming can be skipped for longer reads.
 }
 \examples{
-# Use your own paths for annotation or the ORFik way
 
-## use ORFik way:
+## Specify output libraries:
 output.dir <- "/Bio_data/references/Human"
+bam.dir <- "data/processed/human_rna_seq"
 # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
 # index <- STAR.index(arguments, output.dir)
-# STAR.align.single("data/raw_data/human_rna_seq/file1.bam", "data/processed/human_rna_seq",
+# STAR.align.single("data/raw_data/human_rna_seq/file1.bam", bam.dir,
 #                    index)
 }
 \seealso{

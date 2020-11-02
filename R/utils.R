@@ -117,8 +117,9 @@ getGAlignmentsPairs <- function(df) {
   }
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
   # reverse strand for last
+  levels = c("+", "-", "*")
   strand2 <- strandTemp <- df$strand <-
-    factor(df$strand, levels = c("+", "-", "*"))
+    factor(df$strand, levels = levels)
   strandTemp[strand2 == "+"] <- "-"
   strandTemp[strand2 == "-"] <- "+"
   strand2 <- strandTemp

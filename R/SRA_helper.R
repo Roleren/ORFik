@@ -107,9 +107,9 @@ download.SRA <- function(info, outdir, rename = TRUE,
       info$Run
     }
   }
-
   if (is.null(SRR)) stop("Could not find SRR numbers in 'info'")
 
+  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   fastq.dump <- fastq.dump.path
   settings <- paste("--outdir", outdir, settings)
   if (!is.null(subset)) {
@@ -221,8 +221,7 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
 
 #' Rename SRA files from metadata
 #'
-#' @param files a character vector, with full path to all the files, something like
-#'
+#' @param files a character vector, with full path to all the files
 #' @param new_names a character vector of new names or
 #' a data.table with metadata to use to rename (usually from SRA metadata).
 #' Priority of renaming from
@@ -260,14 +259,17 @@ rename.SRA.files <- function(files, new_names) {
     libStrat_usable <- !is.null(libStrat) &
       !any(is.na(libStrat)) & !all(c("") %in% libStrat) &
       !all(c("OTHER") %in% libStrat) & !all(c("other") %in% libStrat) &
-      !all(c("unspecified") %in% libSelect)
+      !all(c("unspecified") %in% libStrat)
 
     libSelect_usable <- !is.null(libSelect) &
       !any(is.na(libSelect)) & !all(c("") %in% libSelect) &
       !all(c("OTHER") %in% libSelect) & !all(c("other") %in% libSelect) &
       !all(c("unspecified") %in% libSelect)
 
-
+    if (!is.null(new_names)) {
+      new_names <- paste0(toupper(substr(new_names, 1, 1)),
+                           substr(new_names, 2, nchar(new_names)))
+    }
   }
 
   if (any(duplicated(new_names))) {

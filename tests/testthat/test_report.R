@@ -56,8 +56,7 @@ test_that("count tables created as intended", {
   # Summairzed Experiment load
   expect_warning(SE <- makeSummarizedExperimentFromBam(df, region = "mrna"))
   expect_equal(assay(SE)[1,3], 8670)
-  expect_warning(collapsed <- scoreSummarizedExperiment(SE, score = "count",
-                                                        collapse = TRUE))
+  collapsed <- scoreSummarizedExperiment(SE, score = "count", collapse = TRUE)
   expect_equal(assay(collapsed)[1,2], 8670)
   expect_warning(collapsed <- scoreSummarizedExperiment(SE, score = "count",
                                                         collapse = "all"))
@@ -66,7 +65,7 @@ test_that("count tables created as intended", {
 
 test_that("count tables loaded as intended", {
   # Summairzed Experiment load
-  expect_warning(table <- countTable(df, "mrna"))
+  table <- countTable(df, "mrna")
   expect_equal(table[1,3], data.table("ORFik_RFP" = 8670))
 })
 
@@ -74,12 +73,6 @@ test_that("filepath work as intended", {
   # Summairzed Experiment load
   res <- filepath(df, "default")
   expect_equal(length(res), 4)
-
-  # dff <- ORFik:::experiment(listData = list(libtype = c("RFP", "RFP"), rep = c(1,2),
-  #                                           filepath = c("file1",
-  #                                                        "file2"),
-  #                                           reverse = c("", "paired-end")))
-
 })
 
 test_that("transcriptWindow plots correctly", {

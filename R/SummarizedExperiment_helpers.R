@@ -120,7 +120,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
       nlibs <- t(matrix(as.double(table(colData(final)$SAMPLE)),
                         ncol = nrow(assay(collapsedAll)) ,
                         nrow = length(unique(colData(final)$SAMPLE))))
-    } else {
+    } else { # all
       collapsedAll <- collapseReplicates(final, rep("merged_all",
                                                     ncol(final)))
       nlibs <- ncol(final)
@@ -129,7 +129,10 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
     assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
-  if ((collapse == "all") | (ncol(collapsedAll) == 1)) {
+
+  only.one.group <- length(unique(collapsedAll$SAMPLE) == 1) |
+    (ncol(collapsedAll) == 1)
+  if ((collapse == "all") | only.one.group) {
     dds <- DESeqDataSet(collapsedAll, design = ~ 1)
   } else {
     dds <- DESeqDataSet(collapsedAll, design = ~ SAMPLE)

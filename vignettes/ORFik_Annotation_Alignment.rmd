@@ -19,6 +19,51 @@ This vignette will walk you through how to how to download annotation and align 
 # Download and align: Yeast
 Here we will show a full example of aligning RNA-seq from yeast using the SacCer3 genome.
 
+## Specify output folders
+
+First specify where you want to save the different data types:
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  library(ORFik)                        # This package
+  # Output folders:
+  # 1. where do you want the annotation ?
+  annotation.dir <- "~/Bio_data/annotations/Yeast_SacCer3/"
+  # 2. where do you want the fastq files ?
+  fastq.dir <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRP012047/"
+  # 3. where do you want the aligned bam files ?
+  bam.dir <- "~/Bio_data/processed_data/RNA-seq/Yeast_SRR453566/"
+  
+```
+
+## Download RNA-seq NGS data
+
+We need some data to align, if you have in-lab data, you don't need this step, since you already have access to the files.
+
+
+On the other hand, if you want to use published data, you need to download it. I here just show what would work for the paired end RNA-seq experiment run SRR453566.
+
+
+ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called 'Run'. We will now show how to get data from SRA.
+
+1. Download using metadata table:
+the good thing here is that you can specify a project, and it will find all SRR numbers for you, but here we tell it only to download the 2 runs called SRR453566 and SRR453571. We will also only subset to download the 50000 first reads of the libraries, so you can replicate this faster.
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+
+info <- download.SRA.metadata("SRP012047", fastq.dir)
+# Let's take 2 first runs in this experiment:
+info <- info[1:2,]
+
+download.SRA(info, fastq.dir, subset = 50000)
+```
+
+We now have the RNA-seq run, separated into 2 files, since this is paired end data. We could for ease also just have specified the SRR number in download.SRA, but then we get no meta-data csv file, which is handy for auto-detection of paired end data, the organism name etc. This is shown below:
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+organism <- info$ScientificName[1]
+is_paired_end <- all(info$LibraryLayout == "PAIRED")
+```
+
 ## Download genome and gtf files
 To download annotation we use the getGenomeAndAnnotation function.
 We need to decide 3 things:
@@ -29,10 +74,9 @@ genus(saccharomyces) and species (cerevisiae).
 - assembly_type: If using ensembl as db argument, you need to decide if you want primary_assembly or toplevel. The uncompressed toplevel file of human genome is > 70 GB, so for big genomes you should usually set to primary_assembly. But for small organisms like yeast, they don't have a primary assembly so use "toplevel".
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-  library(ORFik)                        # This package
   annotation <- getGenomeAndAnnotation(
-                      organism = "saccharomyces_cerevisiae", 
-                      output.dir = "~/Bio_data/annotations/Yeast_SacCer3/",
+                      organism = organism, 
+                      output.dir = annotation.dir,
                       assembly_type = "toplevel"
                       )
 ```
@@ -50,40 +94,13 @@ alignment to the genome step.
 ### Indexing
 To index the genome just give it the annotation output from previous step. This will also make an index for each of the depletion steps like phix, if you specified them in the earlier step.
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-index <- STAR.index(annotation, wait = FALSE)
+index <- STAR.index(annotation)
 ```
 If you run this function again after index exists in current file location, it will not re-index, but just output the correct object. Do remake = TRUE if you want to re-index.
 
-### Download libraries
-First we need some data to align, if you have in-lab data, you don't need this step, since you already have access to the files.
-
-
-On the other hand, if you want to use published data, you need to download it. I here just show what would work for the paired end RNA-seq experiment run SRR453566.
-
-
-ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called 'Run' We will also only subset to download the 50000 first reads of the library. So you can replicate this faster. We will now show 2 ways of getting data from SRA.
-
-1. Download using metadata table:
-the good thing here is that you can specify a project, and it will find all SRR numbers for you, but here we tell it only to return 
-the run called SRR453566. 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
-outdir.fastq <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
-
-info <- download.SRA.metadata("SRR453566", outdir.fastq)
-download.SRA(info, outdir.fastq, subset = 50000)
-```
-2. Download using direct SRR numbers
-```{r eval = FALSE, echo = TRUE, message = FALSE}
-outdir.fastq <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRR453566/"
-
-download.SRA("SRR453566", outdir.fastq, subset = 50000)
-```
-
-We now have the RNA-seq run, separated into 2 files, since this is paired end data.
-
 ### Aligning the data
 
-ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS). If you are on windows, or you want to trim the reads yourself, just run the trimming and give the folder with the trimmed reads as input in next step. Also if you are unsure of what the 3' adapter was, run first FASTQC to which adapters are detected. 
+ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS). If you are on windows, or you want to trim the reads yourself, just run the trimming and give the folder with the trimmed reads as input in next step. Also if you are unsure of what the 3' adapter was, run first FASTQC to which adapters are detected. The great thing with fastp is that it has auto detection and removal of adapters, if you check out the resulting files you will see fastp has auto removed the Illumina adapters.
 
 Now let's see what we need as inputs for the alignment pipeline:
 We need usually 9 arguments (more are possible if you need them):
@@ -93,35 +110,26 @@ We need usually 9 arguments (more are possible if you need them):
 - index: the STAR index from previous step
 - paired.end: "yes" in this case, or "no" if single end.
 - steps: steps of depletion and alignment wanted:
-		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trimming (only for unix), ph: phix depletion, rR: rrna depletion,
+		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-co-ge")
+			 tr: trimming (only for unix), co: deplete contaminants included, ph: phix depletion, rR: rrna depletion,
 			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write "tr-ge"
-		On mac you can not do tr, so trim first then pass the trimmed files as input and use steps = "..-ge"
-- adapter.sequence "auto", or if you know add it, usually more secure with manual. 
+- adapter.sequence "auto", or if you know add it, usually more secure with manual. Presets are "illumina", "small_RNA" and "nextera".
 - max.cpus How many cpus maximum to use
 - trim.front How many bases to trim front. Only if you believe there are low quality reads in front.
 - min.length minimum length of reads that pass to the bam file. 
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-input.dir.rna <- outdir.fastq
-output.dir.rna <- "~/Bio_data/processed_data/RNAseq/Yeast_SRR453566/aligned_sacCer3/"
 alignment <- 
-  STAR.align.folder(input.dir.rna, output.dir.rna, index,
-                    paired.end = "yes",
+  STAR.align.folder(fastq.dir, bam.dir, index,
+                    paired.end = is_paired_end,
                     steps = "tr-ge", # (trim needed: adapters found, then genome)
                     adapter.sequence = "auto",
                     max.cpus = 30, trim.front = 3, min.length = 20)
 ```
 
-If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format.
-
-### STAR multiQC
-To get some plots and a statistics table of STAR runs, do:
-```{r eval = FALSE, echo = TRUE, message = FALSE}
-STAR.multiQC(alignment)
-```
+If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format. You will also get a MultiQC report from STAR runs made by ORFik for you.
 
 
 # Create an ORFik experiment of the Yeast data
@@ -134,11 +142,11 @@ We can now easily make an ORFik experiment from the data we have:
 txdb_file <- paste0(annotation["gtf"], ".db") # Get txdb file, not raw gtf
 fa <- annotation["genome"]
 create.experiment(exper = "yeast_exp_RNA",
-                  dir = paste0(output.dir.rna, "/aligned/"),
+                  dir = paste0(bam.dir, "/aligned/"),
                   txdb = txdb_file, fa = fa, 
-                  organism = "Saccharomyces cerevisiae",
+                  organism = organism,
                   viewTemplate = FALSE, 
-                  pairedEndBam = c(T) # True/False per bam file
+                  pairedEndBam = is_paired_end # True/False per bam file
                   )
 ```
 

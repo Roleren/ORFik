@@ -7,7 +7,7 @@
 rename.SRA.files(files, new_names)
 }
 \arguments{
-\item{files}{a character vector, with full path to all the files, something like}
+\item{files}{a character vector, with full path to all the files}
 
 \item{new_names}{a character vector of new names or
 a data.table with metadata to use to rename (usually from SRA metadata).
