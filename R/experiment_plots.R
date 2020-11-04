@@ -297,8 +297,9 @@ experiment.colors <- function(df, color_list = "default",
                               skip.libtype = FALSE, skip.stage = TRUE,
                               skip.replicate = TRUE,
                               skip.fraction = TRUE, skip.condition = TRUE) {
-  unique_lib_types <- bamVarName(df, skip.replicate, skip.condition,
-                                 skip.stage, skip.fraction, skip.libtype)
+  lib_types <- bamVarName(df, skip.replicate, skip.condition,
+                          skip.stage, skip.fraction, skip.libtype)
+  unique_lib_types <- sort(unique(lib_types))
   n_colors <- length(unique_lib_types)
 
   color_list <- c("skyblue4", 'orange', "green", "red", "gray",
@@ -307,5 +308,5 @@ experiment.colors <- function(df, color_list = "default",
     color_list <- rep(color_list, 2)
   }
 
-  return(color_list[match(df$libtype, unique_lib_types)])
+  return(color_list[match(lib_types, unique_lib_types)])
 }
