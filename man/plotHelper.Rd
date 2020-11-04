@@ -31,7 +31,9 @@ or NULL (FALSE).}
 
 \item{title}{Title to give plot}
 
-\item{colors}{Which colors to use, default (skyblue4)}
+\item{colors}{Which colors to use, default auto color from function
+\code{\link{experiment.colors}}, new color per library type.
+Else assign colors yourself.}
 
 \item{plotFunction}{Which plot function, default: windowCoveragePlot}
 }

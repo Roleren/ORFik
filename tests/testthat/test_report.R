@@ -18,23 +18,23 @@ test_that("output organism correctly", {
 test_that("Experiment class loaded as intended", {
   # load file
   outputLibs(df)
-  expect_equal(exists("ORFik_CAGE_heart"), TRUE)
+  expect_equal(exists("CAGE_heart"), TRUE)
 })
 
 test_that("Experiment class correct naming", {
   # load file
   names <- bamVarName(df)
-  expect_equal(names, c("ORFik_CAGE_heart", "ORFik_RFP_heart",
-                        "ORFik_RFP","ORFik_RNA_heart"))
-  names <- bamVarName(df, skip.experiment = TRUE)
   expect_equal(names, c("CAGE_heart", "RFP_heart",
                         "RFP","RNA_heart"))
+  names <- bamVarName(df, skip.experiment = FALSE)
+  expect_equal(names, c("ORFik_CAGE_heart", "ORFik_RFP_heart",
+                        "ORFik_RFP","ORFik_RNA_heart"))
 
-  names <- bamVarName(df, skip.experiment = TRUE, skip.fraction = TRUE)
+  names <- bamVarName(df, skip.fraction = TRUE)
   expect_equal(names, c("CAGE_heart", "RFP_heart",
                         "RFP", "RNA_heart"))
 
-  names <- bamVarName(df, skip.experiment = TRUE, skip.stage = TRUE)
+  names <- bamVarName(df, skip.stage = TRUE)
   expect_equal(names, c("CAGE", "RFP",
                         "RFP","RNA"))
 })

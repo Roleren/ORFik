@@ -63,11 +63,9 @@ give the output files from that trimmer as input.dir here.}
  \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
  have merged contaminants}
 }
- \cr
  If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
  If co (merged contaminants) is used, non of the specific contaminants can be specified,
  since they should be a subset of co.\cr
-
  The step where you align to the genome is usually always included, unless you
  are doing pure contaminant analysis.
  For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
@@ -79,15 +77,15 @@ give the output files from that trimmer as input.dir here.}
 \item{adapter.sequence}{character, default: "auto". Auto detect adapter using fastp
 adapter auto detection, checking first 1.5M reads. (auto detect adapter, is not
 very reliable for Ribo-seq, so then you must include a manually specified,
-else alignment will most likely fail!). You can manually assign adapter like:
+else alignment will most likely fail!). If already trimmed or trimming not wanted:
+adapter.sequence = "disable" .You can manually assign adapter like:
 "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
 presets:\cr
 \itemize{
  \item{illumina (standard for 100 bp sequencing): }{AGATCGGAAGAGC}
  \item{small_RNA (standard for ~50 bp sequencing): }{TGGAATTCTCGG}
  \item{nextera: }{CTGTCTCTTATA}
-}
-\cr If already trimmed or trimming not wanted: adapter.sequence = "disable"}
+}}
 
 \item{min.length}{15, minimum length of reads to pass filter.}
 

@@ -12,7 +12,7 @@ transcriptWindow(
   outdir = NULL,
   scores = c("sum", "zscore"),
   allTogether = TRUE,
-  colors = rep("skyblue4", nrow(df)),
+  colors = experiment.colors(df),
   title = "Coverage metaplot",
   windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
     FALSE)), min(widthPerGroup(trailers, FALSE))),
@@ -40,7 +40,9 @@ see ?coverageScorings for possible scores.}
 
 \item{allTogether}{plot all coverage plots in 1 output? (defualt: TRUE)}
 
-\item{colors}{Which colors to use, default (skyblue4)}
+\item{colors}{Which colors to use, default auto color from function
+\code{\link{experiment.colors}}, new color per library type.
+Else assign colors yourself.}
 
 \item{title}{title of ggplot}
 

@@ -54,7 +54,7 @@ Creates a ggplot representing a heatmap of coverage:\cr
  \item{Rows            : }{Position in region}
  \item{Columns         : }{Read length}
  \item{Index intensity : }{(color) coverage scoring per index.}
-}\cr
+}
 Coverage rows in heat map is fraction, usually fractions is divided into
 unique read lengths (standard Illumina is 76 unique widths, with some
 minimum cutoff like 15.)
@@ -71,7 +71,7 @@ Standard colors are:\cr
  \item{few reads in position       :}{white}
  \item{medium reads in position    :}{yellow}
  \item{many reads in position      :}{dark blue}
-}\cr
+}
 }
 \examples{
 # An ORF

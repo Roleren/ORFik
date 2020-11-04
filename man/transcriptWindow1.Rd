@@ -8,7 +8,7 @@ transcriptWindow1(
   df,
   outdir = NULL,
   scores = c("sum", "zscore"),
-  colors = rep("skyblue4", nrow(df)),
+  colors = experiment.colors(df),
   title = "Coverage metaplot",
   windowSize = 100,
   returnPlot = is.null(outdir),
@@ -27,7 +27,9 @@ transcriptWindow1(
 \item{scores}{scoring function (default: c("sum", "zscore")),
 see ?coverageScorings for possible scores.}
 
-\item{colors}{Which colors to use, default (skyblue4)}
+\item{colors}{Which colors to use, default auto color from function
+\code{\link{experiment.colors}}, new color per library type.
+Else assign colors yourself.}
 
 \item{title}{title of ggplot}
 

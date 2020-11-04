@@ -26,17 +26,19 @@
 #'      \item{rep}{replicate: 1,2,3 etc}
 #'      \item{condition}{treatment or condition: :
 #'      WT (wild-type), control, target, mzdicer, starved}
-#'      \item{fraction}{fraction of total: 18, 19 (TCP / RCP fractinations),
+#'      \item{fraction}{fraction of total: 18, 19 (TCP / RCP fractions),
 #'      or other ways to split library.\cr}
 #'      \item{filepath}{Full filepath to file}
-#'      \item{reverse}{optional: only used if paired files,
-#'      "paired-end" if bam file or filepath to 2nd file if wig files etc}
+#'      \item{reverse}{optional: 2nd filepath or info, only used if paired files}
 #' }
 #'
 #' @details
 #' Special rules:\cr
 #' Supported:\cr
 #' Single/paired end bam, bed, wig, ofst + compressions of these\cr
+#' The reverse column of the experiments says "paired-end" if bam file.
+#' If a pair of wig files, forward and reverse strand, reverse is filepath
+#' to '-' strand wig file.
 #' Paired forward / reverse wig files, must have same name except
 #'  _forward / _reverse in name\cr
 #' Paired end bam, when creating experiment, set pairedEndBam = c(T, T, T, F).
@@ -211,6 +213,7 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
                    organism = org, listData = listData,
                    expInVarName = TRUE)
 
+  df@expInVarName <- FALSE
   validateExperiments(df)
   return(df)
 }

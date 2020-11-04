@@ -8,7 +8,9 @@
 #' @param scores scoring function (default: c("sum", "zscore")),
 #' see ?coverageScorings for possible scores.
 #' @param allTogether plot all coverage plots in 1 output? (defualt: TRUE)
-#' @param colors Which colors to use, default (skyblue4)
+#' @param colors Which colors to use, default auto color from function
+#' \code{\link{experiment.colors}}, new color per library type.
+#' Else assign colors yourself.
 #' @param title title of ggplot
 #' @param windowSize size of binned windows, default: 100
 #' @param returnPlot return plot from function, default is.null(outdir),
@@ -34,7 +36,7 @@
 #' #transcriptWindow(leaders, cds, trailers, df, outdir = "directory/to/save")
 transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                              scores = c("sum", "zscore"), allTogether = TRUE,
-                             colors = rep("skyblue4", nrow(df)),
+                             colors = experiment.colors(df),
                              title = "Coverage metaplot",
                              windowSize = min(100,
                                            min(widthPerGroup(leaders, FALSE)),
@@ -144,7 +146,7 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
 #'
 transcriptWindow1 <- function(df, outdir = NULL,
                        scores = c("sum", "zscore"),
-                       colors = rep("skyblue4", nrow(df)),
+                       colors = experiment.colors(df),
                        title = "Coverage metaplot",
                        windowSize = 100,
                        returnPlot = is.null(outdir),
@@ -278,4 +280,32 @@ plotHelper <- function(coverage, df, outdir, scores, returnCoverage = FALSE,
   }
   if (returnCoverage) return(coverage)
   return(NULL)
+}
+
+#' Decide color for libraries by grouping
+#'
+#' Pick the grouping wanted for colors, by default only group by libtype.
+#' Like RNA-seq(skyblue4) and Ribo-seq(orange).
+#' @inheritParams bamVarName
+#' @param color_list a character vector of colors, default "default".
+#' That is the vector c("skyblue4", 'orange', "green", "red", "gray",
+#'  "yellow", "blue", "red2", "orange3"). Picks number of colors needed to
+#'  make groupings have unique color
+#' @return a character vector of colors
+#' @export
+experiment.colors <- function(df, color_list = "default",
+                              skip.libtype = FALSE, skip.stage = TRUE,
+                              skip.replicate = TRUE,
+                              skip.fraction = TRUE, skip.condition = TRUE) {
+  unique_lib_types <- bamVarName(df, skip.replicate, skip.condition,
+                                 skip.stage, skip.fraction, skip.libtype)
+  n_colors <- length(unique_lib_types)
+
+  color_list <- c("skyblue4", 'orange', "green", "red", "gray",
+                  "yellow", "blue", "red2", "orange3")
+  while (n_colors > length(color_list)) {
+    color_list <- rep(color_list, 2)
+  }
+
+  return(color_list[match(df$libtype, unique_lib_types)])
 }

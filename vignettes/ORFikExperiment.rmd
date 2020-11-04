@@ -102,23 +102,21 @@ columns in experiment, to see what the names will be, do:
 bamVarName(df) #This will be the names:
 ```
 
+If you have multiple experiments, it might be a chance of non-unique naming, 2 experiments might have a library called cage.
+To be sure names are unique, add the experiment in the variable name:
+```{r eval = TRUE, echo = TRUE}
+df@expInVarName <- TRUE
+bamVarName(df) #This will be the names:
+```
 You see here that the experiment name, "ORFik" is in the variable name
 If you are only working on one experiment, you do not need to include the name, since
 there is no possibility of duplicate naming (the experiment class validates all names are unique). 
 
-To remove experiment name, do this:
-```{r eval = TRUE, echo = TRUE}
-df@expInVarName <- FALSE
-bamVarName(df) #This will be the names:
-# OR this
-bamVarName(df, skip.experiment = TRUE)
-```
-Since we want NGS data names without "ORFik", let's remove them and load again.
+Since we want NGS data names without "ORFik", let's remove the loaded libraries and load them again.
 
 ```{r eval = TRUE, echo = TRUE}
-df@expInVarName <- TRUE
-remove.experiments(df)
 df@expInVarName <- FALSE
+remove.experiments(df)
 outputLibs(df, chrStyle = seqlevelsStyle(txdb)) 
 ```
 
