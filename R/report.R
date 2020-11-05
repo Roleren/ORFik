@@ -93,12 +93,12 @@ QCplots <- function(df, region = "mrna",
   message("- Correlation plots")
   # Load fpkm values
   data_for_pairs <- countTable(df, region, type = "fpkm")
-  message("  - raw scaled")
+  message("  - raw scaled fpkm")
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot.png"), paired_plot,
          height=400, width=400, units = 'mm', dpi=300)
-  message("  - log2 scaled")
+  message("  - log2 scaled fpkm")
   paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(stats_folder, "cor_plot_log2.png"), paired_plot,

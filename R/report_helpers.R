@@ -135,6 +135,7 @@ trim_detection <- function(df, finals, out.dir) {
 #' If defined saves plot to that directory with the name "/STATS_plot.png".
 #' @return ggplot object of the the statistics data
 #' @importFrom data.table melt
+#' @importFrom gridExtra grid.arrange
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()[3,]
@@ -157,15 +158,52 @@ QCstats.plot <- function(stats, output.dir = NULL) {
                              levels = stats$Sample, ordered = TRUE)
 
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
-  gg_STAT <- ggplot(dt_plot, aes(x=sample_id, y = value, group = Sample, fill = Sample)) +
+
+  stat_regions <- colnames(stats)[c(3:5, 12, grep("ratio_mrna_aligned|rRNA", colnames(stats)))]
+  dt_STAT <- dt_plot[(variable %in% stat_regions),]
+  gg_STAT <- ggplot(dt_STAT, aes(x=sample_id, y = value, group = Sample, fill = Sample)) +
     geom_bar(aes(color = Sample), stat="identity", position=position_dodge())+
     scale_fill_brewer(palette="Paired")+
     ylab("Annotation & Alignment feature, value") +
     xlab("Samples") +
     facet_wrap(  ~ variable, scales = "free") +
     theme_minimal()
+  # Read lengths
+  read_length_rows <- colnames(stats)[c(6:8, 10:11)]
+  dt_read_lengths <- dt_plot[(variable %in% read_length_rows),]
+  gg_read_lengths <- ggplot(dt_read_lengths, aes(y = value, x = sample_id)) +
+    geom_boxplot() +
+    ggtitle("Read lengths boxplot:") +
+    ylab("Read length") +
+    scale_y_log10() +
+    theme_minimal()
+  # mRNA regions
+  mRNA_regions <- colnames(stats)[c(13:15)]
+  dt_mRNA_regions <- dt_plot[(variable %in% mRNA_regions),]
+
+  gg_mRNA_regions <- ggplot(dt_mRNA_regions, aes(y = value, x = sample_id)) +
+    geom_bar(aes(fill = variable), stat="identity", position = "fill")+
+    ggtitle("mRNA region ratios:") +
+    ylab("ratio") +
+    theme_minimal()
+
+  # Non-mRNA regions
+  non_mRNA_regions <- colnames(stats)[c(20:length(colnames(stats)))]
+  dt_non_mRNA_regions <- dt_plot[(variable %in% non_mRNA_regions),]
+
+  gg_non_mRNA_regions <-
+    ggplot(dt_non_mRNA_regions, aes(y = value, x = sample_id)) +
+    geom_bar(aes(fill = variable), stat="identity", position = "stack")+
+    ggtitle("non-mRNA transcripts:") +
+    ylab("counts") +
+    theme_minimal()
+
+  ncols <- 2
+  plot_list <- list(gg_STAT, gg_read_lengths, gg_mRNA_regions, gg_non_mRNA_regions)
+  final <- gridExtra::grid.arrange(grobs = plot_list, ncol = ncols)
+
   if (!is.null(output.dir)) {
-    ggsave(paste0(output.dir, "/STATS_plot.png"), gg_STAT, width = 13, height = 8)
+    ggsave(paste0(output.dir, "/STATS_plot.png"), final, width = 13, height = 8)
   }
   return(gg_STAT)
 }
