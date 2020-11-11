@@ -22,7 +22,8 @@ OPTIONS:
 	-f	path to input fasta file. Also define -F if paired end! Must be file type of: fasta, fa, fastq, fq or gz
 	-F 	path to input fastq file 2 (paired end reads 2) Must be file type of: fasta, fa, fastq, fq or gz
 	-o	path to output dir
-	-l	minimum length of reads (default: 15)
+	-l	minimum length of reads (default: 20)
+	-T	max mismatches of reads (default: 3)
 	-g	genome dir for all indices (Standard is zebrafish: danrerio10, change to human index if needed etc)
   -s	steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge",
@@ -66,7 +67,8 @@ EOF
 }
 
 # Default arguments:
-min_length=15
+min_length=20
+mismatches=3
 gen_dir=""
 allSteps="tr-ge"
 steps=$allSteps
@@ -79,7 +81,7 @@ trim_front=3
 keep="n"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -96,6 +98,10 @@ while getopts ":f:F:o:l:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
     l)
         min_length=$OPTARG
         echo "-l minimum length of reads $OPTARG"
+        ;;
+    T)
+        mismatches=$OPTARG
+        echo "-T max mismatches of reads $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
@@ -595,7 +601,8 @@ if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	--limitBAMsortRAM 30000000000 \
 	--readFilesCommand $(comp $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn})) \
 	--alignEndsType $alignment \
-	--outFilterMultimapNmax $multimap
+	--outFilterMultimapNmax $multimap \
+	--outFilterMismatchNmax $mismatches
 fi
 
 #TODO

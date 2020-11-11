@@ -24,7 +24,8 @@ OPTIONS:
 		Must be file types of: fasta, fa, fastq, fq or gz (single or paired end reads)
 	-o	path to output dir
 	-p	paired end? (yes, defualt: no)
-	-l	minimum length of reads (default: 15)
+	-l	minimum length of reads (default: 20)
+	-T	max mismatches of reads (default: 3)
 	-g	genome dir for all STAR indices
 	-s	steps of depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge",
@@ -66,7 +67,8 @@ EOF
 # Default arguments:
 echo "##############################################"
 echo $'\nArguments for folder run are the following:'
-min_length=15
+min_length=20
+mismatches=3
 gen_dir=""
 allSteps="tr-ge"
 steps=$allSteps
@@ -82,7 +84,7 @@ STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
 align_single=""
 cleaning=""
-while getopts ":f:o:p:l:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
+while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
@@ -93,12 +95,16 @@ while getopts ":f:o:p:l:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
         echo "-o output folder $OPTARG"
         ;;
     p)
-	paired=$OPTARG
+	      paired=$OPTARG
         echo "-p paired end $OPTARG"
         ;;
     l)
         min_length=$OPTARG
         echo "-l minimum length of reads $OPTARG"
+        ;;
+    T)
+        mismatches=$OPTARG
+        echo "-T max mismatches of reads $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
@@ -214,7 +220,7 @@ function findPairs()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
     echo "-------------------------------------------"
 	done
 }
@@ -236,7 +242,7 @@ function findPairsSub()
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
@@ -267,7 +273,7 @@ else
 		fi
     x=$in_dir/$x
 
-		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "----------------------------------------------"
 	done
 fi
