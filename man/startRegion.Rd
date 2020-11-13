@@ -32,7 +32,8 @@ usually the reads from the start site.
 }
 \details{
 If tx is null, then upstream will be forced to 0 and downstream to
-a maximum of grl width. Since there is no reference for splicing.
+a maximum of grl width (3' UTR end for mRNAs).
+Since there is no reference for splicing.
 }
 \seealso{
 Other features: 
@@ -57,6 +58,7 @@ Other features:
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{ribosomeStallingScore}()},
 \code{\link{startRegionCoverage}()},
+\code{\link{stopRegion}()},
 \code{\link{subsetCoverage}()},
 \code{\link{translationalEff}()}
 }

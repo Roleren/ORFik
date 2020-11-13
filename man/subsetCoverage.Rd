@@ -42,6 +42,7 @@ Other features:
 \code{\link{ribosomeStallingScore}()},
 \code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{stopRegion}()},
 \code{\link{translationalEff}()}
 }
 \concept{features}

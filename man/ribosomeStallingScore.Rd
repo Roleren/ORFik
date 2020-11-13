@@ -69,6 +69,7 @@ Other features:
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{stopRegion}()},
 \code{\link{subsetCoverage}()},
 \code{\link{translationalEff}()}
 }

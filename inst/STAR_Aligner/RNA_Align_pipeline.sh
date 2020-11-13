@@ -219,8 +219,12 @@ ncRNA=$gen_dir/ncRNA_genomeDir
 tRNA=$gen_dir/tRNA_genomeDir
 usedGenome=$gen_dir/genomeDir
 if [ ! -d $usedGenome ]; then
-	    echo "Error: the given STAR index dir does not exist!"
-	    exit 1
+      if [ $steps == "tr" ]; then
+        echo "Running trim only mode"
+      else
+		    echo "Error: the given STAR index dir does not exist!"
+	      exit 1
+	    fi
 fi
 
 ibn=$(basename ${in_file}) # <- name to use

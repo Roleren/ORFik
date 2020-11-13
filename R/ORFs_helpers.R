@@ -349,7 +349,8 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #' usually the reads from the start site.
 #'
 #' If tx is null, then upstream will be forced to 0 and downstream to
-#' a maximum of grl width. Since there is no reference for splicing.
+#' a maximum of grl width (3' UTR end for mRNAs).
+#' Since there is no reference for splicing.
 #' @param grl a \code{\link{GRangesList}} object
 #'  with usually either leaders, cds', 3' utrs or ORFs
 #' @param tx default NULL, a GRangesList of transcripts or (container region),
@@ -372,6 +373,43 @@ startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
     tx <- grl
   }
   region <- windowPerGroup(startSites(grl, TRUE, TRUE, is.sorted), tx,
+                           upstream, downstream)
+  return(region)
+}
+
+#' Stop region as GRangesList
+#'
+#' Get the stop region of each ORF / region. If you want the stop codon only,
+#' set upstream = 0 or just use \code{\link{stopCodons}}.
+#' Standard is 2 upstream and 2 downstream, a width 5 window centered at
+#' stop site.
+#'
+#' If tx is null, then downstream will be forced to 0 and
+#' upstream to a minimum of -grl width (to the TSS).
+#' .
+#' Since there is no reference for splicing.
+#' @param grl a \code{\link{GRangesList}} object
+#'  with usually either leaders, cds', 3' utrs or ORFs
+#' @param tx default NULL, a GRangesList of transcripts or (container region),
+#' names of tx must contain all grl names. The names of grl can also be the
+#' ORFik orf names. that is "txName_id"
+#' @param is.sorted logical (TRUE), is grl sorted.
+#' @param upstream an integer (2), relative region to get upstream from.
+#' @param downstream an integer (2), relative region to get downstream from
+#' @family features
+#' @return a GRanges, or GRangesList object if any group had > 1 exon.
+#' @export
+#'
+stopRegion <- function(grl, tx = NULL, is.sorted = TRUE,
+                        upstream = 2L, downstream = 2L) {
+  if (!is.sorted) {
+    grl <- sortPerGroup(grl)
+    is.sorted <- TRUE
+  }
+  if (is.null(tx)) {
+    tx <- grl
+  }
+  region <- windowPerGroup(stopSites(grl, TRUE, TRUE, is.sorted), tx,
                            upstream, downstream)
   return(region)
 }

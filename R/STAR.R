@@ -73,6 +73,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   message("STAR indexing:\n")
   print(full); print("\n")
   if (.Platform$OS.type == "unix") {
+    #memory_GB <- as.integer(gsub(" |MemTotal:|kB", replacement = "", a)) / 1e6
 
     message("Starting indexing at time:")
     print(Sys.time())
@@ -81,8 +82,9 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
     if (!wait)
       out <- "Wait for index to be complete before you run Alignment!"
     message(out)
+    saveRDS(object = output.dir, finished.file)
   } else stop("STAR is not supported on windows!")
-  saveRDS(object = output.dir, finished.file)
+
   return(output.dir)
 }
 
@@ -264,7 +266,11 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     out <- system(command = full, wait = wait)
     out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
     message(out)
-    if (multiQC & wait & (out == "Alignment done")) STAR.multiQC(output.dir)
+    if (multiQC & wait & (out == "Alignment done") &
+          dir.exists(paste0(output.dir,"/aligned/"))) {
+      STAR.multiQC(output.dir)
+    }
+
   } else stop("STAR is not supported on windows!")
   return(output.dir)
 }
