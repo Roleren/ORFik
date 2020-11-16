@@ -2,6 +2,34 @@
 #'
 #' Takes a folder with multiple Log.final.out files
 #' from STAR, and create a multiQC report
+#' @param folder path to main output folder of STAR run. The folder that contains
+#' /aligned/, "/trim/, "contaminants_depletion" etc.
+#' @param steps a
+#' @return data.table of main statistics, plots and data saved to disc. Named:
+#' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
+#' @importFrom data.table merge.data.table
+#' @family STAR
+#' @export
+STAR.allsteps.multiQC <- function(folder, steps = "auto") {
+
+  if (grep("ge", steps)) # If genome alignment done
+    aligned <- STAR.multiQC(output.dir)
+  if (grep("co", steps)) # If contamination depletion was done
+    co <- STAR.multiQC(output.dir, "contaminants_depletion")
+  if (grep("tr", steps))
+    tr <- trimming.table(file.path(output.dir, "trim/"))
+
+  res <- data.table::merge.data.table(aligned, co, by = "sample")
+  res <- NULL
+  message("Final statistics:")
+  print(res)
+
+}
+
+#' Create STAR multiQC plot and table
+#'
+#' Takes a folder with multiple Log.final.out files
+#' from STAR, and create a multiQC report
 #' @param folder path to LOGS folder of ORFik STAR runs. Can also be the path
 #' to the aligned/ (parent directory of LOGS), then it will move into LOG
 #' from there. Only if no files with pattern Log.final.out are found in
@@ -10,7 +38,8 @@
 #' @param type a character path, default "aligned".
 #' Which subfolder to check for. If you want log files for contamination
 #' do type = "contaminants_depletion"
-#' @return invisible(NULL), plot and data saved to disc. Named:
+#' @return a data.table with all information from STAR runs,
+#'  plot and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table melt
 #' @family STAR
@@ -75,7 +104,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
 
   ggsave(file.path(folder, "00_STAR_LOG_plot.png"), gg_STAR,
          width = 18, height = 9)
-  return(invisible(NULL))
+  return(dt_f)
 }
 
 #' Create trimming table

@@ -62,7 +62,7 @@ give the output files from that trimmer as input.dir here.}
  \item{tR : }{trna depletion}
  \item{ge : }{genome alignment}
  \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
- have merged contaminants}
+ have merged contaminants or not}
 }
  If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
  If co (merged contaminants) is used, non of the specific contaminants can be specified,
@@ -161,6 +161,7 @@ bam.dir <- "data/processed/human_rna_seq"
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.folder}()},
+\code{\link{STAR.allsteps.multiQC}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.multiQC}()},

@@ -30,6 +30,7 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6129281/
 Other STAR: 
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.align.single}()},
+\code{\link{STAR.allsteps.multiQC}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.multiQC}()},

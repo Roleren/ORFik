@@ -138,7 +138,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  \item{tR : }{trna depletion}
 #'  \item{ge : }{genome alignment}
 #'  \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
-#'  have merged contaminants}
+#'  have merged contaminants or not}
 #' }
 #'  If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
 #'  If co (merged contaminants) is used, non of the specific contaminants can be specified,
@@ -268,10 +268,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     message(out)
     if (multiQC & wait & (out == "Alignment done") &
           dir.exists(paste0(output.dir,"/aligned/"))) {
-      if (grep("ge", steps)) # If genome alignment done
-        STAR.multiQC(output.dir)
-      if (grep("co", steps)) # If contamination depletion was done
-        STAR.multiQC(output.dir, "contaminants_depletion")
+      STAR.allsteps.multiQC(output.dir, steps = steps)
     }
 
   } else stop("STAR is not supported on windows!")

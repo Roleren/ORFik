@@ -71,7 +71,7 @@ and they must be named with the same prefix and sufix of either
  \item{tR : }{trna depletion}
  \item{ge : }{genome alignment}
  \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
- have merged contaminants}
+ have merged contaminants or not}
 }
  If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
  If co (merged contaminants) is used, non of the specific contaminants can be specified,
@@ -201,6 +201,7 @@ bam.output.dir <- "~/Bio_data/processed_data/Ribo_seq_subtelny_2014/"
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.single}()},
+\code{\link{STAR.allsteps.multiQC}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.multiQC}()},

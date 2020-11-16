@@ -50,6 +50,7 @@ output.dir <- "/Bio_data/references/zebrafish"
 Other STAR: 
 \code{\link{STAR.align.folder}()},
 \code{\link{STAR.align.single}()},
+\code{\link{STAR.allsteps.multiQC}()},
 \code{\link{STAR.index}()},
 \code{\link{STAR.install}()},
 \code{\link{STAR.multiQC}()},
