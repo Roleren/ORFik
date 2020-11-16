@@ -146,21 +146,26 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 
   stats$sample_id <-  factor(stats$Sample,
                              labels = as.character(seq(length(stats$Sample))),
-                             levels = stats$Sample, ordered = TRUE)
-
+                             levels = stats$Sample)
+  stats$Sample <-  factor(stats$Sample, levels = stats$Sample)
+  colnames(stats) <- gsub("percentage", "%", colnames(stats))
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
 
-  stat_regions <- colnames(stats)[c(3:5, 12, grep("ratio_mrna_aligned|rRNA", colnames(stats)))]
+  step_counts <- c("Raw_reads", "Trimmed_reads", "Aligned_reads", "mRNA",
+                   "%_aligned_raw", "%_mrna_aligned",
+                   "rRNA")
+  stat_regions <- colnames(stats)[c(which(colnames(stats) %in% step_counts))]
   dt_STAT <- dt_plot[(variable %in% stat_regions),]
-  gg_STAT <- ggplot(dt_STAT, aes(x=sample_id, y = value, group = Sample, fill = Sample)) +
-    geom_bar(aes(color = Sample), stat="identity", position=position_dodge())+
+  gg_STAT <- ggplot(dt_STAT, aes(x=sample_id, y = value)) +
+    geom_bar(aes(group = Sample, color = Sample, fill = Sample),
+             stat="identity", position=position_dodge())+
     scale_fill_brewer(palette="Paired")+
     ylab("Annotation & Alignment feature, value") +
     xlab("Samples") +
     facet_wrap(  ~ variable, scales = "free") +
     theme_minimal()
   # Read lengths
-  read_length_rows <- colnames(stats)[c(6:8, 10:11)]
+  read_length_rows <- colnames(stats)[grep("read length", colnames(stats))][-4]
   dt_read_lengths <- dt_plot[(variable %in% read_length_rows),]
   gg_read_lengths <- ggplot(dt_read_lengths, aes(y = value, x = sample_id)) +
     geom_boxplot() +
@@ -169,7 +174,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
     scale_y_log10() +
     theme_minimal()
   # mRNA regions
-  mRNA_regions <- colnames(stats)[c(13:15)]
+  mRNA_regions <- colnames(stats)[colnames(stats) %in% c("LEADERS", "CDS", "TRAILERs")]
   dt_mRNA_regions <- dt_plot[(variable %in% mRNA_regions),]
 
   gg_mRNA_regions <- ggplot(dt_mRNA_regions, aes(y = value, x = sample_id)) +
@@ -179,7 +184,8 @@ QCstats.plot <- function(stats, output.dir = NULL) {
     theme_minimal()
 
   # Non-mRNA regions
-  non_mRNA_regions <- colnames(stats)[c(20:length(colnames(stats)))]
+  all_tx_types <- which(colnames(stats) == "All_tx_types") + 1
+  non_mRNA_regions <- colnames(stats)[c(all_tx_types:length(colnames(stats)))]
   dt_non_mRNA_regions <- dt_plot[(variable %in% non_mRNA_regions),]
 
   gg_non_mRNA_regions <-
@@ -194,7 +200,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
   final <- gridExtra::grid.arrange(grobs = plot_list, ncol = ncols)
 
   if (!is.null(output.dir)) {
-    ggsave(paste0(output.dir, "/STATS_plot.png"), final, width = 13, height = 8)
+    ggsave(file.path(output.dir, "STATS_plot.png"), final, width = 13, height = 8)
   }
   return(gg_STAT)
 }

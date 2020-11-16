@@ -46,7 +46,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
     if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
   # Get count tables
-  finals <- QC_count_tables(df, out.dir)
+  finals <- QC_count_tables(df, out.dir, BPPARAM)
   # Do trimming detection
   finals <- trim_detection(df, finals, out.dir)
   # Save file
