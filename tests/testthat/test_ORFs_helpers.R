@@ -512,10 +512,10 @@ test_that("stopRegion works as intended", {
                                      rep("tx1", length(transcriptRanges)))
 
   test_ranges <- stopRegion(grl, transcriptRanges)
-  expect_equal(as.integer(unlist(start(test_ranges))), c(1, 4, 10, 14, 20))
-  expect_equal(as.integer(unlist(end(test_ranges))), c(3, 5, 12, 15, 22))
-  test_ranges <- startRegion(grl)
-  expect_equal(as.integer(unlist(end(test_ranges))), c(3, 12, 22))
+  expect_equal(as.integer(unlist(start(test_ranges))), c(23, 30, 33, 40, 43))
+  expect_equal(as.integer(unlist(end(test_ranges))), c(25, 31, 35, 41, 45))
+  test_ranges <- stopRegion(grl)
+  expect_equal(as.integer(unlist(end(test_ranges))), c(25, 35, 45))
 })
 
 test_that("uniqueGroups works as intended", {

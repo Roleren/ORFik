@@ -268,7 +268,10 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     message(out)
     if (multiQC & wait & (out == "Alignment done") &
           dir.exists(paste0(output.dir,"/aligned/"))) {
-      STAR.multiQC(output.dir)
+      if (grep("ge", steps)) # If genome alignment done
+        STAR.multiQC(output.dir)
+      if (grep("co", steps)) # If contamination depletion was done
+        STAR.multiQC(output.dir, "contaminants_depletion")
     }
 
   } else stop("STAR is not supported on windows!")

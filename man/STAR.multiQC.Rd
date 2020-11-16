@@ -4,7 +4,7 @@
 \alias{STAR.multiQC}
 \title{Create STAR multiQC plot and table}
 \usage{
-STAR.multiQC(folder)
+STAR.multiQC(folder, type = "aligned")
 }
 \arguments{
 \item{folder}{path to LOGS folder of ORFik STAR runs. Can also be the path
@@ -12,6 +12,10 @@ to the aligned/ (parent directory of LOGS), then it will move into LOG
 from there. Only if no files with pattern Log.final.out are found in
 parent directory. If no LOGS folder is found it can check for a folder
 /aligned/LOGS/ so to go 2 folders down.}
+
+\item{type}{a character path, default "aligned".
+Which subfolder to check for. If you want log files for contamination
+do type = "contaminants_depletion"}
 }
 \value{
 invisible(NULL), plot and data saved to disc. Named:

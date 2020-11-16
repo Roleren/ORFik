@@ -33,8 +33,9 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
     lib <- get(s)
     # Raw stats
     res <- data.frame(Sample = s, Raw_reads = as.numeric(NA),
+                      Trimmed_reads = as.numeric(NA),
                       Aligned_reads = length(lib))
-    res$ratio_aligned_raw = res$Aligned_reads / res$Raw_reads
+    res$percentage_aligned_raw = 100 * (res$Aligned_reads / res$Raw_reads)
 
     # mRNA region stats
     index <- which(s == libs)
@@ -42,7 +43,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
                            LEADERS = colSums(assay(dt_list[["leaders"]]))[index],
                            CDS = colSums(assay(dt_list[["cds"]]))[index],
                            TRAILERs = colSums(assay(dt_list[["trailers"]]))[index])
-    res_mrna[,ratio_mrna_aligned := round(mRNA / res$Aligned_reads, 6)]
+    res_mrna[,percentage_mrna_aligned := round(100* (mRNA / res$Aligned_reads), 6)]
     res_mrna[,ratio_cds_mrna := round(CDS / mRNA, 6)]
     res_mrna[, ratio_cds_leader := round(CDS / LEADERS, 6)]
 
@@ -76,23 +77,11 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
 trim_detection <- function(df, finals, out.dir) {
   # Update raw reads to real number
   # Needs a folder called trim
-  trim_folder <- paste0(out.dir, "/../trim/")
+  trim_folder <- file.path(out.dir, "..", "trim/")
   if (dir.exists(trim_folder)) {
     message("Create raw read counts")
 
-    raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)
-
-    raw_reads <- data.table()
-    for (lib in raw_library) { # Read json files
-      a <- data.table::fread(lib, nrows = 7, skip = 2, sep = ":", col.names = c("id", "value"))
-      a$value <- as.numeric(gsub(",", "", a$value))
-      a$id <- gsub("\\\t", "", a$id)
-      raw_reads <- rbind(raw_reads, a$value[1])
-    }
-    raw_data <- cbind(raw_library = basename(raw_library), raw_reads = raw_reads)
-
-    raw_data$raw_library <- gsub("report_|\\.json$",
-                                 x = raw_data$raw_library, replacement = "")
+    raw_data <- trimming.table(trim_folder)
     # Verify rows have equal order as experiment
     order <- unlist(lapply(X = raw_data$raw_library,
                            function(p) grep(pattern = p, x = df$filepath, fixed = TRUE)))
@@ -114,9 +103,11 @@ trim_detection <- function(df, finals, out.dir) {
       message("Could not find raw read count of your data, setting to NA")
     } else {
       class(finals$Raw_reads) <- "numeric"
+      class(finals$Trimmed_reads) <- "numeric"
       finals[order,]$Raw_reads <- raw_data$raw_reads
-      finals$ratio_aligned_raw = round(finals$Aligned_reads /
-                                         finals$Raw_reads, 4)
+      finals[order,]$Trimmed_reads <- raw_data$trim_reads
+      finals$percentage_aligned_raw = round(100* (finals$Aligned_reads /
+                                         finals$Raw_reads), 4)
     }
   } else {
     message("Could not find raw read counts of data, setting to NA")
