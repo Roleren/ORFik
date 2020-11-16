@@ -124,6 +124,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
   colnames(dt_all) <- c("Info", sample_names)
   dt_all$Info <- gsub(" \\|", "", dt_all$Info)
   dt_all$Info <- gsub("Number", "#", dt_all$Info, ignore.case = TRUE)
+  dt_all$Info <- gsub("mapped to multiple loci", "multimapped", dt_all$Info)
   dt_all$Info <- gsub("too many mismatches", "mismatches", dt_all$Info)
   dt_dates <- dt_all[1:3, ]
 
