@@ -3,27 +3,81 @@
 #' Takes a folder with multiple Log.final.out files
 #' from STAR, and create a multiQC report
 #' @param folder path to main output folder of STAR run. The folder that contains
-#' /aligned/, "/trim/, "contaminants_depletion" etc.
-#' @param steps a
+#' /aligned/, "/trim/, "contaminants_depletion" etc. To find the LOGS folders in, to
+#' use for summarized statistics.
+#' @param steps a character, default "auto". Find which steps you did.
+#' If manual, a combination of "tr-co-ge". See STAR alignment functions for description.
 #' @return data.table of main statistics, plots and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table merge.data.table
 #' @family STAR
 #' @export
 STAR.allsteps.multiQC <- function(folder, steps = "auto") {
+  if (steps == "auto") {
+    steps <- paste(ifelse(dir.exists(file.path(folder, "aligned/")), "ge", ""),
+                   ifelse(dir.exists(file.path(folder, "contaminants_depletion/")), "co", ""),
+                   ifelse(dir.exists(file.path(folder, "trim/")), "tr", ""), sep = "-")
 
-  if (grep("ge", steps)) # If genome alignment done
-    aligned <- STAR.multiQC(output.dir)
-  if (grep("co", steps)) # If contamination depletion was done
-    co <- STAR.multiQC(output.dir, "contaminants_depletion")
-  if (grep("tr", steps))
-    tr <- trimming.table(file.path(output.dir, "trim/"))
+    if (steps == "--") stop("'folder' is not correct ORFik alignment folder")
+  }
 
-  res <- data.table::merge.data.table(aligned, co, by = "sample")
+
+  output.file <- file.path(folder, "full_process.csv")
   res <- NULL
-  message("Final statistics:")
-  print(res)
+  if (grep("ge", steps)){
+    # If genome alignment done
+    aligned <- STAR.multiQC(output.dir)
+    aligned <- aligned[, c("sample", "sample_id",
+                           "total mapped reads %", "total mapped reads #",
+                           "Uniquely mapped reads %","Uniquely mapped reads #",
+                           "% of reads multimapped",
+                           "# of reads multimapped")]
+    res <- aligned
+  }
+  if (grep("co", steps)) {
+    # If contamination depletion was done
+    co <- STAR.multiQC(output.dir, "contaminants_depletion")
+    co <- co[, c("sample",
+                 "total mapped reads %", "total mapped reads #",
+                 "Uniquely mapped reads %","Uniquely mapped reads #",
+                 "% of reads multimapped",
+                 "# of reads multimapped")]
+    co$sample <- gsub("contaminants_", "", co$sample)
+    if (!is.null(res)) {
+      res <- data.table::merge.data.table(aligned, co, by = "sample", suffixes = c("-genome", "-contamination"))
+    } else res <- co
 
+  }
+
+  if (grep("tr", steps)) {
+    tr <- ORFik:::trimming.table(file.path(output.dir, "trim/"))
+    if (!is.null(res)) {
+      res <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
+    } else res <- tr
+
+  }
+  colnames(res) <- gsub("\\.x", "", colnames(res))
+  message("Final statistics:")
+
+
+  if (grep("tr", steps)) {
+    if (any(res$`% trimmed` > 40)) {
+      warning("A sample lost > 40% of reads during trimming")
+    }
+    if (grep("ge", steps)) {
+      res$`total mapped reads %-genome vs raw` <- round((res$`total mapped reads #-genome` / res$raw_reads) * 100, 4)
+      res$`total mapped reads %-genome vs trim` <- round((res$`total mapped reads #-genome` / res$trim_reads) * 100, 4)
+    }
+
+    if (any(res$`total mapped reads %-genome vs trim` < 3)) {
+      warning("A sample aligned with < 3%, are you using the correct genome?")
+    }
+  }
+
+  fwrite(res, output.file)
+  res[]
+  print(res)
+  return(res)
 }
 
 #' Create STAR multiQC plot and table
@@ -55,8 +109,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
     new_path <- ifelse(dir.exists(file.path(folder, type, "LOGS/")),
                        file.path(folder, type, "LOGS/"),
                        file.path(folder, "LOGS/"))
-    STAR.multiQC(new_path)
-    return(invisible(NULL))
+    return(STAR.multiQC(new_path, type = type))
   }
   message("Runing alignment MultiQC")
   # Read log files 1 by 1 (only data column)
@@ -70,7 +123,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
   sample_names <- gsub("_Log.final.out", "",dir(folder, pattern))
   colnames(dt_all) <- c("Info", sample_names)
   dt_all$Info <- gsub(" \\|", "", dt_all$Info)
-  dt_all$Info <- gsub("Number", "#", dt_all$Info)
+  dt_all$Info <- gsub("Number", "#", dt_all$Info, ignore.case = TRUE)
   dt_all$Info <- gsub("too many mismatches", "mismatches", dt_all$Info)
   dt_dates <- dt_all[1:3, ]
 
@@ -84,6 +137,9 @@ STAR.multiQC <- function(folder, type = "aligned") {
   dt_f <- dt_temp
   dt_f <- data.table(t(dt_f))
   colnames(dt_f) <- unlist(dt_data[,1])
+  dt_f <- cbind(`total mapped reads %` = dt_f$`Uniquely mapped reads %` + dt_f$`% of reads multimapped`,
+                `total mapped reads #` = dt_f$`Uniquely mapped reads #` + dt_f$`# of reads multimapped`,
+                dt_f)
   dt_f <- cbind(sample = factor(sample_names, labels = sample_names,
                                 levels = sample_names, ordered = TRUE),
                 sample_id = factor(sample_names, labels = as.character(seq(length(sample_names))),
@@ -111,9 +167,10 @@ STAR.multiQC <- function(folder, type = "aligned") {
 #'
 #' From fastp runs in ORFik alignment process
 #' @param trim_folder folder of trimmed files
-#' @return a data.table with 3 columns, raw_library (names of library),
+#' @return a data.table with 4 columns, raw_library (names of library),
 #'  raw_reads (numeric, number of raw reads),
-#'  trim_reads (numeric, number of trimmed reads)
+#'  trim_reads (numeric, number of trimmed reads),
+#'  % trimmed (numeric, percentage of trimmed reads)
 trimming.table <- function(trim_folder) {
 
   raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)
@@ -132,7 +189,8 @@ trimming.table <- function(trim_folder) {
     trim_reads <- rbind(trim_reads, b$value[1])
   }
   raw_data <- cbind(raw_library = basename(raw_library), raw_reads = raw_reads,
-                    trim_reads = trim_reads)
+                    trim_reads = trim_reads,
+                    `% trimmed` = round((1 - (trim_reads / raw_reads)) * 100, 3))
 
   raw_data$raw_library <- gsub("report_|\\.json$",
                                x = raw_data$raw_library, replacement = "")

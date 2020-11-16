@@ -8,9 +8,11 @@ STAR.allsteps.multiQC(folder, steps = "auto")
 }
 \arguments{
 \item{folder}{path to main output folder of STAR run. The folder that contains
-/aligned/, "/trim/, "contaminants_depletion" etc.}
+/aligned/, "/trim/, "contaminants_depletion" etc. To find the LOGS folders in, to
+use for summarized statistics.}
 
-\item{steps}{a}
+\item{steps}{a character, default "auto". Find which steps you did.
+If manual, a combination of "tr-co-ge". See STAR alignment functions for description.}
 }
 \value{
 data.table of main statistics, plots and data saved to disc. Named:
