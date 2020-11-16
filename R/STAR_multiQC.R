@@ -26,7 +26,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
   res <- NULL
   if (grep("ge", steps)){
     # If genome alignment done
-    aligned <- STAR.multiQC(output.dir)
+    aligned <- STAR.multiQC(folder)
     aligned <- aligned[, c("sample", "sample_id",
                            "total mapped reads %", "total mapped reads #",
                            "Uniquely mapped reads %","Uniquely mapped reads #",
@@ -36,7 +36,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
   }
   if (grep("co", steps)) {
     # If contamination depletion was done
-    co <- STAR.multiQC(output.dir, "contaminants_depletion")
+    co <- STAR.multiQC(folder, "contaminants_depletion")
     co <- co[, c("sample",
                  "total mapped reads %", "total mapped reads #",
                  "Uniquely mapped reads %","Uniquely mapped reads #",
@@ -50,7 +50,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
   }
 
   if (grep("tr", steps)) {
-    tr <- ORFik:::trimming.table(file.path(output.dir, "trim/"))
+    tr <- ORFik:::trimming.table(file.path(folder, "trim/"))
     if (!is.null(res)) {
       res <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
     } else res <- tr
