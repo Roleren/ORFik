@@ -42,7 +42,12 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' Custom bam reader
 #'
 #' Read in Bam file from either single end or paired end.
-#' Safer version that takes care of some common errors.
+#' Safer combined version of \code{\link{readGAlignments}} and
+#' readGAlignmentPairs that takes care of some common errors.\cr
+#' If QNAMES of the aligned reads are from collapsed fasta files, the
+#' bam file will contain a meta column called collapsed with the counts
+#' of duplicates per read.\cr
+#'
 #' In the future will use a faster .bam loader for big .bam files in R.
 #' @param path a character path to .bam file. If paired end bam files,
 #' input must be a data.table with two columns (forward and reverse)
@@ -57,47 +62,70 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' you don't need to load data as paired end, the reverse column
 #' can be skipped.
 #' @inheritParams matchSeqStyle
-#' @return a \code{\link{GAlignments}} object of bam file
+#' @inheritParams GenomicAlignments::readGAlignments
+#' @return a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
 #' @export
 #' @family utils
 #' @examples
 #' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 #' readBam(bam_file, "UCSC")
-readBam <- function(path, chrStyle = NULL) {
+readBam <- function(path, chrStyle = NULL, param = NULL) {
   if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
   if (is(path, "factor")) path <- as.character(path)
   # If data.table path
   if (is(path, "data.table")) {
     if (path$reverse == "paired-end") {
       message("ORFik reads this paired end bam as readGAlignmentPairs")
-      bam <- matchSeqStyle(readGAlignmentPairs(path$forward), chrStyle)
+      bam <- matchSeqStyle(readGAlignmentPairs(path$forward, param = param), chrStyle)
       if (length(bam) == 0)
         stop(paste("File", path$forward,
                    "was read as one paired-end file, but had 0 paired reads!"))
       return(bam)
     } else {
       message("ORFik reads these split paired end bams as readGAlignments combination")
-      return(matchSeqStyle(c(readGAlignments(path$forward),
-                             readGAlignments(path$reverse)), chrStyle))
+      return(matchSeqStyle(c(readGAlignments(path$forward, param = param),
+                             readGAlignments(path$reverse, param = param)), chrStyle))
     }
   }
   # If character path
   if (is(path, "character") & length(path) == 2) {
     if (path[2] == "paired-end"){
       message("ORFik reads paired end bam in as readGAlignmentPairs")
-      bam <- matchSeqStyle(readGAlignmentPairs(path[1]), chrStyle)
+      bam <- matchSeqStyle(readGAlignmentPairs(path[1], param = param), chrStyle)
       if (length(bam) == 0)
         stop(paste("File", path[1],
                    "was read as paired-end file, but had 0 paired reads!"))
       return(bam)
     } else {
       message("ORFik reads these split paired end bams as readGAlignments combination")
-      return(matchSeqStyle(c(readGAlignments(path[1]),
-                             readGAlignments(path[2])), chrStyle))
+      return(matchSeqStyle(c(readGAlignments(path[1], param = param),
+                             readGAlignments(path[2], param = param)), chrStyle))
     }
   }
   # else single end bam file
-  return(matchSeqStyle(readGAlignments(path), chrStyle))
+
+  # Check if it is a collapsed reads format bam file
+  # Get qnames with the data (check first 2 rows)
+  headers <- unlist(scanBam(BamFile(path, yieldSize=2),
+                            param = ScanBamParam(what = "qname")),
+                    use.names = FALSE)
+  bam.is.collapsed <- all(seq_along(headers) %in%grep("^(>|>seq)\\d+(-|_x)\\d+$", headers))
+  if (bam.is.collapsed) {
+
+    headers <- unlist(scanBam(path, param = ScanBamParam(what = "qname")),
+                      use.names = FALSE)
+    format.header <- ifelse(all(seq_along(headers) %in% grep("^>seq\\d+_x\\d+$", headers)),
+                            "ribotoolkit",
+                            "fastx")
+    if (format == "ribotoolkit") {
+      scores <- as.integer(gsub(".*_x", "", headers))
+    } else {
+      scores <- as.integer(gsub(".*-", "", headers))
+    }
+    bam <- matchSeqStyle(readGAlignments(path, param = param), chrStyle)
+    mcols(bam) <- DataFrame(collapsed = scores)
+    return(bam)
+  } else return(matchSeqStyle(readGAlignments(path, param = param), chrStyle))
 }
 
 #' Custom wig reader

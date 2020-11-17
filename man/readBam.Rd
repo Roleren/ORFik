@@ -4,7 +4,7 @@
 \alias{readBam}
 \title{Custom bam reader}
 \usage{
-readBam(path, chrStyle = NULL)
+readBam(path, chrStyle = NULL, param = NULL)
 }
 \arguments{
 \item{path}{a character path to .bam file. If paired end bam files,
@@ -26,13 +26,41 @@ or a \code{\link{seqlevelsStyle}}
 called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
+
+\item{param}{\code{NULL} or a \link[Rsamtools]{ScanBamParam} object.
+    Like for \code{\link[Rsamtools]{scanBam}}, this influences what fields
+    and which records are imported. However, note that the fields specified
+    thru this \link[Rsamtools]{ScanBamParam} object will be loaded
+    \emph{in addition} to any field required for generating the returned
+    object (\link[GenomicAlignments]{GAlignments}, \link[GenomicAlignments]{GAlignmentPairs},
+    or \link[GenomicAlignments]{GappedReads} object),
+    but only the fields requested by the user will actually be kept as
+    metadata columns of the object.
+
+    By default (i.e. \code{param=NULL} or \code{param=ScanBamParam()}), no 
+    additional field is loaded. The flag used is 
+    \code{scanBamFlag(isUnmappedQuery=FALSE)} for
+    \code{readGAlignments}, \code{readGAlignmentsList}, and
+    \code{readGappedReads}.
+    (i.e. only records corresponding to mapped reads are loaded),
+    and \code{scanBamFlag(isUnmappedQuery=FALSE, isPaired=TRUE,
+    hasUnmappedMate=FALSE)} for \code{readGAlignmentPairs}
+    (i.e. only records corresponding to paired-end reads with both ends
+    mapped are loaded).
+  }
 }
 \value{
-a \code{\link{GAlignments}} object of bam file
+a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
 }
 \description{
 Read in Bam file from either single end or paired end.
-Safer version that takes care of some common errors.
+Safer combined version of \code{\link{readGAlignments}} and
+readGAlignmentPairs that takes care of some common errors.\cr
+If QNAMES of the aligned reads are from collapsed fasta files, the
+bam file will contain a meta column called collapsed with the counts
+of duplicates per read.\cr
+}
+\details{
 In the future will use a faster .bam loader for big .bam files in R.
 }
 \examples{

@@ -1,0 +1,84 @@
+#' Merge groups of Fastq /Fasta files
+#'
+#' Will use multithreading to speed up process.
+#' Only works for Unix OS (Linux and Mac)
+#' @export
+#' @param in_files \code{character} specify the full path to the individual fastq.gz files.
+#' Seperated by space per file in group: For 2 output files from 4 input files:
+#' in_files <- c("file1.fastq file2.fastq". "file3.fastq file4.fastq")
+#' @param out_files \code{character} specify the path to the FASTQ directory
+#' For 2 output files: out_files <- c("/merged/file1&2.fastq", "/merged/file3&4.fastq")
+#' @inheritParams download.SRA
+#' @return invisible(NULL).
+#' @export
+#' @examples
+#' \dontrun{
+#' fastq.folder <- tempdir() # <- Your fastq files
+#' merged.fastq.folder <- file.path(fastq.folder, "merged/")
+#' infiles <- dir(folder, "*.fastq", full.names = TRUE)
+#'
+#' # Seperate files into groups (here it is 4 output files from 12 input files)
+#' in_files <- c(paste0(grep(infiles, pattern = paste0("ribopool-", seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
+#'               paste0(grep(infiles, pattern = paste0("ribopool-", seq(18, 19), collapse = "|"), value = TRUE), collapse = " "),
+#'               paste0(grep(infiles, pattern = paste0("C11-", seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
+#'               paste0(grep(infiles, pattern = paste0("C11-", seq(18, 19), collapse = "|"), value = TRUE), collapse = " "))
+#'
+#' out_files <- paste0(c("SSU_ribopool", "LSU_ribopool", "SSU_WT", "LSU_WT"), ".fastq.gz")
+#' out_files <- file.path(merged.fastq.folder, out_files)
+#'
+#' mergeFastq(in_files, out_files)
+#' }
+mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
+  if (.Platform$OS.type != "unix") stop("Merge does not work on windows OS")
+  if (length(in_files) != length(out_files)) stop("Not equal length of in_files and out_files!")
+
+  bplapply(seq_along(in_files), function(x, in_files, out_files) {
+    system(paste("cat", in_files[x], ">", out_files[x]))
+  }, in_files = in_files, out_files = out_files, BPPARAM = BPPARAM)
+
+  message("Merge Done")
+  return(invisible(NULL))
+}
+
+#' Very fast fastq/fasta collapser
+#'
+#' For each unique read in the file, collapse into 1 and state in the fasta header
+#' how many reads existed of that type. This is done after trimming usually, works
+#' best for reads < 50 read length. Not so effective for 150 bp length mRNA-seq etc.
+#' @param files paths to fasta / fastq files to collapse.
+#' @param outdir outdir to save files, default file.path(dirname(file), "collapsed").
+#' Inside same folder as input files, then create subfolder "collapsed", and add a prefix
+#' of "collapsed_" to the output names in that folder.
+#' @param header.out.format character, default "ribotoolkit", else must be "fastx".
+#' How the read header of the output fasta should be formated: ribotoolkit: "<seq1_x55",
+#' sequence 1 has 55 duplicated reads collapsed.
+#' fastx: "<1-55", sequence 1 has 55 duplicated reads collapsed
+#' @param compress logical, default FALSE
+collapse.fastq <- function(files, outdir = file.path(dirname(file), "collapsed"),
+                           header.out.format = "ribotoolkit", compress = FALSE) {
+  if (!dir.exists(outdir)) {
+    dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+  }
+
+  format <- rep("fasta", length(files))
+  format[grep("\\.fastq|\\.fq", files)] <- "fastq"
+
+  for (file in files) {
+    message(file)
+    seqs <- readDNAStringSet(file, format = format,
+                             use.names = FALSE)
+    replicates <- table(seqs)
+    replicates <- sort(replicates, decreasing = TRUE)
+    if (header.out.format == "fastx") {
+      headers <- paste0(">", seq.int(length(replicates)), "-", replicates)
+    } else if (header.out.format == "ribotoolkit") {
+      headers <- paste0(">seq", seq.int(length(replicates)), "_x", replicates)
+    } else stop("format must be 'fastx' or 'ribotoolkit'")
+    new_seqs <- names(replicates)
+    names(new_seqs) <- headers
+    new_seqs <- DNAStringSet(new_seqs, use.names = TRUE)
+    new_file_name <- paste0("collapsed_", basename(file))
+    writeXStringSet(new_seqs, file.path(outdir, new_file_name),
+                    compress = compress, format = "fasta")
+  }
+}
