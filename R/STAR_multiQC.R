@@ -1,7 +1,8 @@
 #' Create STAR multiQC plot and table
 #'
 #' Takes a folder with multiple Log.final.out files
-#' from STAR, and create a multiQC report
+#' from STAR, and create a multiQC report. This is automatically run with
+#' STAR.align.folder function.
 #' @param folder path to main output folder of STAR run. The folder that contains
 #' /aligned/, "/trim/, "contaminants_depletion" etc. To find the LOGS folders in, to
 #' use for summarized statistics.
@@ -24,7 +25,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
 
   output.file <- file.path(folder, "full_process.csv")
   res <- NULL
-  if (grep("ge", steps)){
+  if (1 %in% grep("ge", steps)){
     # If genome alignment done
     aligned <- STAR.multiQC(folder)
     aligned <- aligned[, c("sample", "sample_id",
@@ -34,7 +35,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
                            "# of reads multimapped")]
     res <- aligned
   }
-  if (grep("co", steps)) {
+  if (1 %in% grep("co", steps)) {
     # If contamination depletion was done
     co <- STAR.multiQC(folder, "contaminants_depletion")
     co <- co[, c("sample",
@@ -49,7 +50,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
 
   }
 
-  if (grep("tr", steps)) {
+  if (1 %in% grep("tr", steps)) {
     tr <- ORFik:::trimming.table(file.path(folder, "trim/"))
     if (!is.null(res)) {
       res <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
@@ -60,11 +61,11 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
   message("Final statistics:")
 
 
-  if (grep("tr", steps)) {
+  if (1 %in% grep("tr", steps)) {
     if (any(res$`% trimmed` > 40)) {
       warning("A sample lost > 40% of reads during trimming")
     }
-    if (grep("ge", steps)) {
+    if (1 %in% grep("ge", steps)) {
       res$`total mapped reads %-genome vs raw` <- round((res$`total mapped reads #-genome` / res$raw_reads) * 100, 4)
       res$`total mapped reads %-genome vs trim` <- round((res$`total mapped reads #-genome` / res$trim_reads) * 100, 4)
     }
