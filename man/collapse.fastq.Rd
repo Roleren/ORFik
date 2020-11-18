@@ -6,7 +6,7 @@
 \usage{
 collapse.fastq(
   files,
-  outdir = file.path(dirname(file), "collapsed"),
+  outdir = file.path(dirname(files[1]), "collapsed"),
   header.out.format = "ribotoolkit",
   compress = FALSE
 )
@@ -14,7 +14,8 @@ collapse.fastq(
 \arguments{
 \item{files}{paths to fasta / fastq files to collapse.}
 
-\item{outdir}{outdir to save files, default file.path(dirname(file), "collapsed").
+\item{outdir}{outdir to save files, default:
+\code{file.path(dirname(files[1]), "collapsed")}.
 Inside same folder as input files, then create subfolder "collapsed", and add a prefix
 of "collapsed_" to the output names in that folder.}
 
@@ -25,8 +26,19 @@ fastx: "<1-55", sequence 1 has 55 duplicated reads collapsed}
 
 \item{compress}{logical, default FALSE}
 }
+\value{
+invisible(NULL)
+}
 \description{
 For each unique read in the file, collapse into 1 and state in the fasta header
 how many reads existed of that type. This is done after trimming usually, works
 best for reads < 50 read length. Not so effective for 150 bp length mRNA-seq etc.
+}
+\examples{
+
+# fastq.folder <- tempdir() # <- Your fastq files
+
+# infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
+# collapse.fastq(infiles)
+
 }

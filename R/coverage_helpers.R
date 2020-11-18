@@ -424,7 +424,6 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' This is defined as:
 #' Fraction of reads  per read length, per position in whole window (defined
 #' by upstream and downstream)
-#'
 #' If tx is not NULL, it gives a metaWindow, centered around startSite of
 #' grl from upstream and downstream. If tx is NULL, it will use only downstream
 #' , since it has no reference on how to find upstream region.
@@ -443,10 +442,11 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @param zeroPosition an integer DEFAULT (upstream), what is the center point?
 #' Like leaders and cds combination, then 0 is the TIS and -1 is last base in leader.
 #' NOTE!: if windows have different widths, this will be ignored.
-#' @param scoring a character (transcriptNormalized), one of
-#' (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
+#' @param scoring a character (transcriptNormalized), which meta coverage scoring ?
+#' one of (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
 #' see ?coverageScorings for more info. Use to decide a scoring of hits
-#' per position for metacoverage etc.
+#' per position for metacoverage etc. Set to NULL if you do not want meta coverage,
+#' but instead want per gene counts.
 #' @return a data.table with lengths by coverage / vector of proportions
 #' @family coverage
 #' @importFrom data.table rbindlist

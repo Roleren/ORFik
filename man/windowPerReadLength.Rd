@@ -44,10 +44,11 @@ Default NULL, means all lengths accepted.}
 Like leaders and cds combination, then 0 is the TIS and -1 is last base in leader.
 NOTE!: if windows have different widths, this will be ignored.}
 
-\item{scoring}{a character (transcriptNormalized), one of
-(zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
+\item{scoring}{a character (transcriptNormalized), which meta coverage scoring ?
+one of (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
 see ?coverageScorings for more info. Use to decide a scoring of hits
-per position for metacoverage etc.}
+per position for metacoverage etc. Set to NULL if you do not want meta coverage,
+but instead want per gene counts.}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
@@ -63,8 +64,6 @@ a data.table with lengths by coverage / vector of proportions
 This is defined as:
 Fraction of reads  per read length, per position in whole window (defined
 by upstream and downstream)
-}
-\details{
 If tx is not NULL, it gives a metaWindow, centered around startSite of
 grl from upstream and downstream. If tx is NULL, it will use only downstream
 , since it has no reference on how to find upstream region.

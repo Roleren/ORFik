@@ -28,7 +28,7 @@ Only works for Unix OS (Linux and Mac)
 \dontrun{
 fastq.folder <- tempdir() # <- Your fastq files
 merged.fastq.folder <- file.path(fastq.folder, "merged/")
-infiles <- dir(folder, "*.fastq", full.names = TRUE)
+infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
 
 # Seperate files into groups (here it is 4 output files from 12 input files)
 in_files <- c(paste0(grep(infiles, pattern = paste0("ribopool-", seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),

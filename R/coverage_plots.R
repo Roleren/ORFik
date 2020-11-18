@@ -93,7 +93,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
 #' @param output character string (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
 #' @param scoring character vector, default "zscore", either of zscore,
-#' transcriptNormalized, sum, mean, median, NULL. Set NULL if already scored.
+#' transcriptNormalized, sum, mean, median, .. or  NULL. Set NULL if already scored.
 #' see ?coverageScorings for info and more alternatives.
 #' @param colors character vector colors to use in plot, will fix automaticly,
 #' using binary splits with colors c('skyblue4', 'orange').

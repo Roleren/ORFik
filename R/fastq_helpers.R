@@ -15,7 +15,7 @@
 #' \dontrun{
 #' fastq.folder <- tempdir() # <- Your fastq files
 #' merged.fastq.folder <- file.path(fastq.folder, "merged/")
-#' infiles <- dir(folder, "*.fastq", full.names = TRUE)
+#' infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
 #'
 #' # Seperate files into groups (here it is 4 output files from 12 input files)
 #' in_files <- c(paste0(grep(infiles, pattern = paste0("ribopool-", seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
@@ -46,7 +46,8 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
 #' how many reads existed of that type. This is done after trimming usually, works
 #' best for reads < 50 read length. Not so effective for 150 bp length mRNA-seq etc.
 #' @param files paths to fasta / fastq files to collapse.
-#' @param outdir outdir to save files, default file.path(dirname(file), "collapsed").
+#' @param outdir outdir to save files, default:
+#' \code{file.path(dirname(files[1]), "collapsed")}.
 #' Inside same folder as input files, then create subfolder "collapsed", and add a prefix
 #' of "collapsed_" to the output names in that folder.
 #' @param header.out.format character, default "ribotoolkit", else must be "fastx".
@@ -54,7 +55,16 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
 #' sequence 1 has 55 duplicated reads collapsed.
 #' fastx: "<1-55", sequence 1 has 55 duplicated reads collapsed
 #' @param compress logical, default FALSE
-collapse.fastq <- function(files, outdir = file.path(dirname(file), "collapsed"),
+#' @return invisible(NULL)
+#' @export
+#' @examples
+#'
+#' # fastq.folder <- tempdir() # <- Your fastq files
+#'
+#' # infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
+#' # collapse.fastq(infiles)
+#'
+collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collapsed"),
                            header.out.format = "ribotoolkit", compress = FALSE) {
   if (!dir.exists(outdir)) {
     dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
@@ -63,9 +73,10 @@ collapse.fastq <- function(files, outdir = file.path(dirname(file), "collapsed")
   format <- rep("fasta", length(files))
   format[grep("\\.fastq|\\.fq", files)] <- "fastq"
 
-  for (file in files) {
+  for (f in seq_along(files)) {
+    file <- files[f]
     message(file)
-    seqs <- readDNAStringSet(file, format = format,
+    seqs <- readDNAStringSet(file, format = format[f],
                              use.names = FALSE)
     replicates <- table(seqs)
     replicates <- sort(replicates, decreasing = TRUE)
@@ -81,4 +92,5 @@ collapse.fastq <- function(files, outdir = file.path(dirname(file), "collapsed")
     writeXStringSet(new_seqs, file.path(outdir, new_file_name),
                     compress = compress, format = "fasta")
   }
+  return(invisible(NULL))
 }
