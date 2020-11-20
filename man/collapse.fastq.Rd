@@ -36,9 +36,8 @@ best for reads < 50 read length. Not so effective for 150 bp length mRNA-seq etc
 }
 \examples{
 
-# fastq.folder <- tempdir() # <- Your fastq files
-
-# infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
+fastq.folder <- tempdir() # <- Your fastq files
+infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
 # collapse.fastq(infiles)
 
 }

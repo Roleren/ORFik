@@ -64,6 +64,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @inheritParams matchSeqStyle
 #' @inheritParams GenomicAlignments::readGAlignments
 #' @return a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
+#' @importFrom Rsamtools scanBam BamFile ScanBamParam
 #' @export
 #' @family utils
 #' @examples

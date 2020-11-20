@@ -78,9 +78,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' @references https://ncbi.github.io/sra-tools/fastq-dump.html
 #' @export
 #' @examples
-#' \dontrun{
-#' ## Simple single SRR run of YEAST
 #' SRR <- c("SRR453566") # Can be more than one
+#' \donttest{
+#' ## Simple single SRR run of YEAST
 #' outdir <- tempdir() # Specify output directory
 #' # Download, get 5 first reads
 #' download.SRA(SRR, outdir, subset = 5)
@@ -156,7 +156,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' @export
 #' @examples
 #' ## Originally on SRA
-#' # outdir <- tempdir() # Specify output directory
+#' outdir <- tempdir() # Specify output directory
 #' # download.SRA.metadata("SRP226389", outdir)
 #' ## ORiginally on ENA
 #' # download.SRA.metadata("ERP116106", outdir)

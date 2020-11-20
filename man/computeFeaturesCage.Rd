@@ -93,7 +93,7 @@ try ?floss
  # a small example without cage-seq data:
  # we will find ORFs in the 5' utrs
  # and then calculate features on them
- \dontrun{
+ \donttest{
  if (requireNamespace("BSgenome.Hsapiens.UCSC.hg19")) {
   library(GenomicFeatures)
   # Get the gtf txdb file

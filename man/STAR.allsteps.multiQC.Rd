@@ -20,7 +20,8 @@ data.table of main statistics, plots and data saved to disc. Named:
 }
 \description{
 Takes a folder with multiple Log.final.out files
-from STAR, and create a multiQC report
+from STAR, and create a multiQC report. This is automatically run with
+STAR.align.folder function.
 }
 \seealso{
 Other STAR: 

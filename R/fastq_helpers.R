@@ -12,11 +12,9 @@
 #' @return invisible(NULL).
 #' @export
 #' @examples
-#' \dontrun{
 #' fastq.folder <- tempdir() # <- Your fastq files
-#' merged.fastq.folder <- file.path(fastq.folder, "merged/")
 #' infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
-#'
+#' \dontrun{
 #' # Seperate files into groups (here it is 4 output files from 12 input files)
 #' in_files <- c(paste0(grep(infiles, pattern = paste0("ribopool-", seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
 #'               paste0(grep(infiles, pattern = paste0("ribopool-", seq(18, 19), collapse = "|"), value = TRUE), collapse = " "),
@@ -24,6 +22,7 @@
 #'               paste0(grep(infiles, pattern = paste0("C11-", seq(18, 19), collapse = "|"), value = TRUE), collapse = " "))
 #'
 #' out_files <- paste0(c("SSU_ribopool", "LSU_ribopool", "SSU_WT", "LSU_WT"), ".fastq.gz")
+#' merged.fastq.folder <- file.path(fastq.folder, "merged/")
 #' out_files <- file.path(merged.fastq.folder, out_files)
 #'
 #' mergeFastq(in_files, out_files)
@@ -59,9 +58,8 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
 #' @export
 #' @examples
 #'
-#' # fastq.folder <- tempdir() # <- Your fastq files
-#'
-#' # infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
+#' fastq.folder <- tempdir() # <- Your fastq files
+#' infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
 #' # collapse.fastq(infiles)
 #'
 collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collapsed"),
