@@ -4,10 +4,13 @@
 \alias{yAxisScaler}
 \title{Scale y axis correctly}
 \usage{
-yAxisScaler(covPos)
+yAxisScaler(covPos, increments.y = "auto")
 }
 \arguments{
 \item{covPos}{a levels object from a factor of y axis}
+
+\item{increments.y}{increments of y axis, default "auto".
+Or a numeric value < max position & > min position.}
 }
 \value{
 a character vector from the seq() function, aligned to 0.

@@ -103,8 +103,8 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
 
   plot_matrix2_log <- ggplot(data=codon.table.filtered,
                              aes(x=variable, y=value, fill=log2(median_score))) +
-    theme(panel.background=element_rect(fill="lightgrey", colour="lightgrey")) +
-    theme(panel.grid.major = element_blank(),
+    theme(panel.background=element_rect(fill="lightgrey", colour="lightgrey"),
+          panel.grid.major = element_blank(),
           panel.grid.minor = element_blank()) +
     geom_tile(color = "lightgrey") +
     scale_fill_gradientn(colors = c("blue", "white", "red"), na.value = 'lightgrey',

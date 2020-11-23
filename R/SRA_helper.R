@@ -154,6 +154,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' @importFrom xml2 read_xml
 #' @importFrom xml2 as_list
 #' @export
+#' @references doi: 10.1093/nar/gkq1019
 #' @examples
 #' ## Originally on SRA
 #' outdir <- tempdir() # Specify output directory

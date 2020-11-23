@@ -30,3 +30,6 @@ outdir <- tempdir() # Specify output directory
 ## ORiginally on ENA
 # download.SRA.metadata("ERP116106", outdir)
 }
+\references{
+doi: 10.1093/nar/gkq1019
+}

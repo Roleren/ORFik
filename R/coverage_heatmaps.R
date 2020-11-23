@@ -39,6 +39,7 @@
 #' see ?coverageScorings for info and more alternatives.
 #' @param title a character, default NULL (no title),
 #' what is the top title of plot?
+#' @inheritParams yAxisScaler
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @import ggplot2
@@ -66,7 +67,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
                             legendPos = "right", addFracPlot = FALSE,
                             xlab = "Position relative to start site",
                             ylab = "Protected fragment length",
-                            colors = "default", title = NULL) {
+                            colors = "default", title = NULL,
+                            increments.y = "auto") {
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))

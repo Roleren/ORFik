@@ -13,7 +13,8 @@ coverageHeatMap(
   xlab = "Position relative to start site",
   ylab = "Protected fragment length",
   colors = "default",
-  title = NULL
+  title = NULL,
+  increments.y = "auto"
 )
 }
 \arguments{
@@ -43,6 +44,9 @@ do "high" for more high contrasts, or specify your own colors.}
 
 \item{title}{a character, default NULL (no title),
 what is the top title of plot?}
+
+\item{increments.y}{increments of y axis, default "auto".
+Or a numeric value < max position & > min position.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

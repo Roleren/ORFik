@@ -228,15 +228,22 @@ xAxisScaler <- function(covPos) {
 #' Works for all coverage plots.
 #'
 #' @param covPos a levels object from a factor of y axis
+#' @param increments.y increments of y axis, default "auto".
+#' Or a numeric value < max position & > min position.
 #' @return a character vector from the seq() function, aligned to 0.
-yAxisScaler <- function(covPos) {
+yAxisScaler <- function(covPos, increments.y = "auto") {
   covPos <- as.integer(covPos)
   pos <- length(covPos)
   min <- min(covPos)
   max <- max(covPos)
-
-  by <- ifelse(pos > 50, ifelse(pos > 70, ifelse(pos > 120,
-               ifelse(pos > 300, 100, 50), 20), 10), 1)
+  if (increments.y == "auto") {
+    by <- ifelse(pos > 25, ifelse(pos > 50, ifelse(pos > 70, ifelse(pos > 120,
+                                                   ifelse(pos > 300, 100, 50), 20), 10), 2), 1)
+  } else if (is.numeric(increments.y)) {
+    by <- increments.y
+    if ((by < min) | (by > max))
+      stop("increments.y must be > min pos and < max pos of y-axis")
+  } else stop("increments.y must be auto or a numeric value")
 
   return(as.character(seq.int(min, max, by)))
 }
