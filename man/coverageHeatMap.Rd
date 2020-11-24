@@ -14,7 +14,8 @@ coverageHeatMap(
   ylab = "Protected fragment length",
   colors = "default",
   title = NULL,
-  increments.y = "auto"
+  increments.y = "auto",
+  gradient.max = max(coverage$score)
 )
 }
 \arguments{
@@ -47,6 +48,11 @@ what is the top title of plot?}
 
 \item{increments.y}{increments of y axis, default "auto".
 Or a numeric value < max position & > min position.}
+
+\item{gradient.max}{numeric, defualt: max(coverage$score). What data value
+should the top color be ? Good to use if you want to compare 2 samples, with the
+same color intensity, in that case set this value to the max score of the
+2 coverage tables.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

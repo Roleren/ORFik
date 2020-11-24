@@ -201,8 +201,10 @@ In this example we will filter out all ORFs as following:
 3. number of exons < 2
 4. strand is negative
 
+Lets use the fiveUTR_ORFs from previous example:
+
 1. Group by ORFs, if ORFs are grouped by transcripts it would make no sense.
-lets use the fiveUTR_ORFs
+
 ```{r eval = TRUE, echo = TRUE}
   unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
   ORFs <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
