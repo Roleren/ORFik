@@ -473,7 +473,7 @@ if [ $(doThisStep $resume 'co' $steps) == "yes" ]; then
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 90 $maxCPU) \
-	--readFilesCommand $(comp $(inputFile $resume $in_file 'rR' ${out_dir} ${ibn})) \
+	--readFilesCommand $(comp $(inputFile $resume $in_file 'co' ${out_dir} ${ibn})) \
 	--limitIObufferSize 50000000
 fi
 
