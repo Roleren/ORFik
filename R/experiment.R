@@ -703,6 +703,9 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param type a character of format, default "ofst".
 #' Alternatives: "ofst", "wig","bedo" or "bedoc". Which format you want.
 #' Will make a folder within out.dir with this name containing the files.
+#' @param reassign.when.saving logical, default FALSE. If TRUE, will reassign
+#' library to converted form after saving. Ignored when out.dir = NULL.
+#' @param envir which environment to save to, default .GlobalEnv
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
 #' @examples
@@ -714,7 +717,9 @@ convertLibs <- function(df,
                        out.dir = dirname(df$filepath[1]),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
                        must.overlap = NULL, method = "None",
-                       type = "ofst") {
+                       type = "ofst",
+                       reassign.when.saving = FALSE,
+                       envir = .GlobalEnv) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig")))
     stop("type must be either ofst, bedo or bedoc")
 
@@ -760,9 +765,11 @@ convertLibs <- function(df,
         export.wiggle(gr, file = output)
       } else # Must be bedoc, check done
         export.bedoc(gr, output)
+    if (reassign.when.saving)
+      assign(x = f, value = gr, envir = envir)
 
     } else {
-      assign(x = f, value = gr, envir = .GlobalEnv)
+      assign(x = f, value = gr, envir = envir)
     }
     i <- i + 1
   }

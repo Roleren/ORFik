@@ -268,7 +268,7 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
   libs <- bplapply(
     regions,
     function(region, countDir, df, geneOrTxNames, longestPerGene) {
-     message("Making count tables for region:")
+     message("- Creating read count tables for region:")
      message(region)
      path <- paste0(countDir, region)
      makeSummarizedExperimentFromBam(df, region = region,

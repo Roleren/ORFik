@@ -212,7 +212,7 @@ function findPairs()
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
     		echo "running paired end for files: $f/${myArray[x]} and $f/${myArray[x+1]}"
-    		echo "files  $x and $((x + 1)) / $numOfFiles"
+    		echo "files  $((x + 1)) and $((x + 2)) / $numOfFiles"
 		a="$f/${myArray[x]}"
 		b="$f/${myArray[x+1]}"
 		i=$((x + 2))

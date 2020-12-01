@@ -45,6 +45,10 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   if (!dir.create(stats_folder, recursive = TRUE)) {
     if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
+  message("- Converting input files to .ofst")
+  convertLibs(df, reassign.when.saving = TRUE)
+  message("- Creating read length tables:")
+  dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)
   # Get count tables
   finals <- QC_count_tables(df, out.dir, BPPARAM)
   # Do trimming detection

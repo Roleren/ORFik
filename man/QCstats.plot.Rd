@@ -17,8 +17,8 @@ ggplot object of the the statistics data
 }
 \description{
 From post-alignment QC relative to annotation, make a plot for all samples.
-Will contain things like aligned_reads, read lengths, reads overlapping leaders,
-cds, trailers, rRNA, tRNA etc.
+Will contain among others read lengths, reads overlapping leaders,
+cds, trailers, mRNA / rRNA etc.
 }
 \examples{
 df <- ORFik.template.experiment()[3,]

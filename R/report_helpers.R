@@ -6,7 +6,7 @@
 QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
-  outputLibs(df, leaders, type = "ofst")
+  outputLibs(df, leaders, type = "ofst", BPPARAM = BPPARAM)
   libs <- bamVarName(df)
   # Update this to use correct
   convertLibs(df, NULL) # Speedup by reducing unwanted information
@@ -14,7 +14,8 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
   # Make count tables
   dt_list <- countTable_regions(df, geneOrTxNames = "tx",
                                 longestPerGene = FALSE,
-                                out.dir = out.dir)
+                                out.dir = out.dir,
+                                BPPARAM = BPPARAM)
   # Special regions rRNA etc..
   gff.df <- importGtfFromTxdb(txdb)
   types <- unique(gff.df$transcript_biotype)
@@ -119,8 +120,8 @@ trim_detection <- function(df, finals, out.dir) {
 #' Make plot of ORFik QCreport
 #'
 #' From post-alignment QC relative to annotation, make a plot for all samples.
-#' Will contain things like aligned_reads, read lengths, reads overlapping leaders,
-#' cds, trailers, rRNA, tRNA etc.
+#' Will contain among others read lengths, reads overlapping leaders,
+#' cds, trailers, mRNA / rRNA etc.
 #' @param stats path to ORFik QC stats .csv file, or the experiment object.
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.png".
@@ -144,6 +145,11 @@ QCstats.plot <- function(stats, output.dir = NULL) {
   }
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
 
+  temp_theme <-  theme(legend.text=element_text(size=8),
+                       legend.key.size = unit(0.3, "cm"),
+                       plot.title = element_text(size=11),
+                       strip.text.x = element_blank())
+
   stats$sample_id <-  factor(stats$Sample,
                              labels = as.character(seq(length(stats$Sample))),
                              levels = stats$Sample)
@@ -151,56 +157,55 @@ QCstats.plot <- function(stats, output.dir = NULL) {
   colnames(stats) <- gsub("percentage", "%", colnames(stats))
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
 
-  step_counts <- c("Raw_reads", "Trimmed_reads", "Aligned_reads", "mRNA",
-                   "%_aligned_raw", "%_mrna_aligned",
-                   "rRNA")
+  step_counts <- c("mRNA", "rRNA")
   stat_regions <- colnames(stats)[c(which(colnames(stats) %in% step_counts))]
   dt_STAT <- dt_plot[(variable %in% stat_regions),]
-  gg_STAT <- ggplot(dt_STAT, aes(x=sample_id, y = value)) +
-    geom_bar(aes(group = Sample, color = Sample, fill = Sample),
-             stat="identity", position=position_dodge())+
-    scale_fill_brewer(palette="Paired")+
-    ylab("Annotation & Alignment feature, value") +
-    xlab("Samples") +
-    facet_wrap(  ~ variable, scales = "free") +
-    theme_minimal()
+  dt_STAT_normalized <- copy(dt_STAT)
+  dt_STAT_normalized[, sample_total := sum(value), by = .(sample_id)]
+  dt_STAT_normalized[, percentage := (value / sample_total)*100]
+
+  gg_STAT <- ggplot(data = dt_STAT_normalized, aes(x = sample_id, y = percentage)) +
+    geom_bar(aes(fill = variable), stat="identity", position = "stack")+
+    theme_minimal() +
+    ylab("% content") +
+    scale_y_continuous(breaks = c(50, 100)) +
+    temp_theme
+
   # Read lengths
-  read_length_rows <- colnames(stats)[grep("read length", colnames(stats))][-4]
-  dt_read_lengths <- dt_plot[(variable %in% read_length_rows),]
-  gg_read_lengths <- ggplot(dt_read_lengths, aes(y = value, x = sample_id)) +
-    geom_boxplot() +
-    ggtitle("Read lengths boxplot:") +
-    ylab("Read length") +
-    scale_y_log10() +
-    theme_minimal()
+  dt_read_lengths <- readLengthTable(df = NULL, output.dir = paste0(dirname(df$filepath[1]),
+                                                                    "/QC_STATS/"))
+  dt_read_lengths <- dt_read_lengths[perc_of_counts_per_sample > 1, ]
+  dt_read_lengths[, sample_id := as.factor(sample_id)]
+  gg_read_lengths <- ggplot(dt_read_lengths, aes(y = perc_of_counts_per_sample, x = `read length`, fill = sample_id)) +
+    geom_bar(stat="identity", position = "dodge")+
+    ylab("% counts") +
+    facet_wrap(  ~ sample_id, nrow = length(levels(dt_read_lengths$sample_id))) +
+    scale_y_continuous(breaks = c(15, 30)) +
+    theme_minimal() +
+    temp_theme
+
   # mRNA regions
   mRNA_regions <- colnames(stats)[colnames(stats) %in% c("LEADERS", "CDS", "TRAILERs")]
   dt_mRNA_regions <- dt_plot[(variable %in% mRNA_regions),]
 
   gg_mRNA_regions <- ggplot(dt_mRNA_regions, aes(y = value, x = sample_id)) +
     geom_bar(aes(fill = variable), stat="identity", position = "fill")+
-    ggtitle("mRNA region ratios:") +
     ylab("ratio") +
-    theme_minimal()
+    scale_y_continuous(breaks = c(0.5, 1.0)) +
+    theme_minimal() +
+    temp_theme
 
-  # Non-mRNA regions
-  all_tx_types <- which(colnames(stats) == "All_tx_types") + 1
-  non_mRNA_regions <- colnames(stats)[c(all_tx_types:length(colnames(stats)))]
-  dt_non_mRNA_regions <- dt_plot[(variable %in% non_mRNA_regions),]
-
-  gg_non_mRNA_regions <-
-    ggplot(dt_non_mRNA_regions, aes(y = value, x = sample_id)) +
-    geom_bar(aes(fill = variable), stat="identity", position = "stack")+
-    ggtitle("non-mRNA transcripts:") +
-    ylab("counts") +
-    theme_minimal()
-
-  ncols <- 2
-  plot_list <- list(gg_STAT, gg_read_lengths, gg_mRNA_regions, gg_non_mRNA_regions)
-  final <- gridExtra::grid.arrange(grobs = plot_list, ncol = ncols)
+  lay <- rbind(c(2),
+               c(2),
+               c(2),
+               c(1,3),
+               c(1,3))
+  plot_list <- list(gg_STAT, gg_read_lengths, gg_mRNA_regions)
+  final <- gridExtra::grid.arrange(grobs = plot_list, layout_matrix = lay)
 
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, "STATS_plot.png"), final, width = 13, height = 8)
+    ggsave(file.path(output.dir, "STATS_plot.png"), final, width = 13,
+           height = 8, dpi = 300)
   }
   return(gg_STAT)
 }
@@ -230,4 +235,38 @@ QCstats <- function(df, path = paste0(dirname(df$filepath[1]),
     return(invisible(NULL))
   }
   return(fread(path, header = TRUE))
+}
+
+#' Make table of readlengths
+#'
+#' Summarizing all libraries in experiment,
+#' make a table of proportion of read lengths.
+#' @param stats path to ORFik QC stats .csv file, or the experiment object.
+#' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
+#' If defined saves plot to that directory with the name "./readLengths.csv".
+#' @return a data.table object of the the read length data with columns:
+#' \code{c("sample", "sample_id", "read length", "counts",
+#'  "counts_per_sample", "perc_of_counts_per_sample")}
+readLengthTable <- function(df, output.dir = NULL, type = "ofst",
+                            BPPARAM = bpparam()) {
+  file.name <- file.path(output.dir, "readLengths.csv")
+  if (file.exists(file.name)) return(fread(file.name, header = TRUE))
+
+  outputLibs(df, type = type, BPPARAM = BPPARAM)
+  dt_read_lengths <- data.table(); sample_id <- 1
+  for(lib in bamVarName(df)) {
+    dt_read_lengths <- rbind(dt_read_lengths, data.table(sample = lib, sample_id, table(readWidths(get(lib)))))
+    sample_id <- sample_id + 1
+  }
+
+  colnames(dt_read_lengths) <- c("sample", "sample_id", "read length", "counts")
+  dt_read_lengths[, counts_per_sample := sum(counts), by = sample_id]
+  dt_read_lengths[, perc_of_counts_per_sample :=
+                    (counts / counts_per_sample)*100,
+                  by = sample_id]
+
+  if (!is.null(output.dir)) {
+    fwrite(dt_read_lengths, file.name)
+  }
+  return(dt_read_lengths)
 }

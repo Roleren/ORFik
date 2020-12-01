@@ -11,7 +11,9 @@ convertLibs(
   addSizeColumn = TRUE,
   must.overlap = NULL,
   method = "None",
-  type = "ofst"
+  type = "ofst",
+  reassign.when.saving = FALSE,
+  envir = .GlobalEnv
 )
 }
 \arguments{
@@ -38,6 +40,11 @@ for more info see \code{\link{convertToOneBasedRanges}}}
 \item{type}{a character of format, default "ofst".
 Alternatives: "ofst", "wig","bedo" or "bedoc". Which format you want.
 Will make a folder within out.dir with this name containing the files.}
+
+\item{reassign.when.saving}{logical, default FALSE. If TRUE, will reassign
+library to converted form after saving. Ignored when out.dir = NULL.}
+
+\item{envir}{which environment to save to, default .GlobalEnv}
 }
 \value{
 NULL (saves files to disc or R .GlobalEnv)
