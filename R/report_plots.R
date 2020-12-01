@@ -18,7 +18,7 @@
 #' # QCstats.plot(df)
 QCstats.plot <- function(stats, output.dir = NULL) {
   if (is(stats, "experiment")) {
-    path <- dirname(stats$filepath[1])
+    path <- file.path(dirname(stats$filepath[1]), "QC_STATS/")
     stats <- QCstats(stats)
     if (is.null(stats))
       stop("No QC report made for experiment, run ORFik QCreport")
