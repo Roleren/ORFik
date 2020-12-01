@@ -126,7 +126,7 @@ trim_detection <- function(df, finals, out.dir) {
 #' combined with annotation to create relevant statistics.
 #' @inheritParams QCreport
 #' @param path path to QC statistics report, default:
-#' paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")
+#' file.path(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")
 #' @family QC report
 #' @return data.table of QC report or NULL if not exists
 #' @export
@@ -135,8 +135,8 @@ trim_detection <- function(df, finals, out.dir) {
 #' ## First make QC report
 #' # QCreport(df)
 #' # stats <- QCstats(df)
-QCstats <- function(df, path = paste0(dirname(df$filepath[1]),
-                                      "/QC_STATS/STATS.csv")) {
+QCstats <- function(df, path = file.path(dirname(df$filepath[1]),
+                                         "/QC_STATS/STATS.csv")) {
   if (!file.exists(path)) {
     message("No QC report made, run QCreport. Or wrong path given.")
     return(invisible(NULL))

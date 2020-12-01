@@ -4,13 +4,13 @@
 \alias{QCstats}
 \title{Load ORFik QC Statistics report}
 \usage{
-QCstats(df, path = paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv"))
+QCstats(df, path = file.path(dirname(df$filepath[1]), "/QC_STATS/STATS.csv"))
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{path}{path to QC statistics report, default:
-paste0(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")}
+file.path(dirname(df$filepath[1]), "/QC_STATS/STATS.csv")}
 }
 \value{
 data.table of QC report or NULL if not exists

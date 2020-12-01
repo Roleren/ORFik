@@ -18,10 +18,12 @@
 #' # QCstats.plot(df)
 QCstats.plot <- function(stats, output.dir = NULL) {
   if (is(stats, "experiment")) {
+    path <- dirname(stats$filepath[1])
     stats <- QCstats(stats)
     if (is.null(stats))
       stop("No QC report made for experiment, run ORFik QCreport")
   } else {
+    path <- stats
     stats <- fread(stats)
   }
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
@@ -53,7 +55,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
     temp_theme
 
   # Read lengths
-  dt_read_lengths <- readLengthTable(df = NULL, output.dir = dirname(stats))
+  dt_read_lengths <- readLengthTable(NULL, output.dir = path)
   dt_read_lengths <- dt_read_lengths[perc_of_counts_per_sample > 1, ]
   dt_read_lengths[, sample_id := as.factor(sample_id)]
   gg_read_lengths <- ggplot(dt_read_lengths, aes(y = perc_of_counts_per_sample, x = `read length`, fill = sample_id)) +
