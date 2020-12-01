@@ -94,7 +94,7 @@ QCplots <- function(df, region = "mrna",
   message("- Annotation to NGS libraries plot:")
   QCstats.plot(df, stats_folder)
 
-  correlation.plots(df, stats_folder, region, type)
+  correlation.plots(df, stats_folder, region)
   # window coverage over mRNA regions
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)

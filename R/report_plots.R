@@ -96,7 +96,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 #' @inheritParams QCplots
 #' @param output.dir directory to save to, 2 files named: cor_plot.png and
 #' cor_plot_log2.png
-#' @param type "fpkm", alternative "counts".
+#' @param type which value to use, "fpkm", alternative "counts".
 #' @return invisible(NULL)
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm") {
