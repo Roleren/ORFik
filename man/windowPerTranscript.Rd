@@ -10,7 +10,8 @@ windowPerTranscript(
   splitIn3 = TRUE,
   windowSize = 100,
   fraction = "1",
-  weight = "score"
+  weight = "score",
+  BPPARAM = bpparam()
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ would mean score column tells that this alignment region was found 5 times.
 ORFik .bedo files, contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 a data.table with columns position, score

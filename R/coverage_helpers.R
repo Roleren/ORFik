@@ -13,10 +13,12 @@
 #' @param fraction a character (1), info on reads (which read length,
 #' or which type (RNA seq)) (row names)
 #' @inheritParams coveragePerTiling
+#' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a data.table with columns position, score
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                 windowSize = 100, fraction = "1",
-                                weight = "score") {
+                                weight = "score",
+                                BPPARAM = bpparam()) {
   # Load data
   txdb <- loadTxdb(txdb)
 
@@ -29,7 +31,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
     trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction,
-                        weight)
+                        weight, BPPARAM = BPPARAM)
 
   } else {
     tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -56,18 +58,18 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' @inheritParams windowPerTranscript
 #' @return a data.table with columns position, score
 splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
-                       fraction = "1", weight = "score") {
-  leaderCov <- scaledWindowPositions(leaders, reads, windowSize,
-                                     weight = weight)
-  leaderCov[, `:=` (feature = "leaders")]
-  cdsCov <- scaledWindowPositions(cds, reads, windowSize,
-                                  weight = weight)
-  cdsCov[, `:=` (feature = "cds")]
-  trailerCov <- scaledWindowPositions(trailers, reads, windowSize,
-                                      weight = weight)
-  trailerCov[, `:=` (feature = "trailers")]
+                       fraction = "1", weight = "score",
+                       BPPARAM = bpparam()) {
+  features <- c("leaders", "cds", "trailers")
+  txCov <- bplapply(features, FUN = function(feature, reads, leaders, cds,
+                                    trailers, windowSize, weight) {
+    cov <- scaledWindowPositions(get(feature, mode = "S4"), reads, windowSize,
+                                 weight = weight)
+    cov[, `:=` (feature = feature)]
+  },  reads = reads, leaders = leaders, cds = cds,trailers = trailers,
+  windowSize = windowSize, weight = weight, BPPARAM = BPPARAM)
 
-  txCov <- rbindlist(list(leaderCov, cdsCov, trailerCov))
+  txCov <- rbindlist(txCov)
   txCov[, `:=` (fraction = fraction)]
   return(txCov)
 }
