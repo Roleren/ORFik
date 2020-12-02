@@ -99,9 +99,10 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
     theme(legend.position = legendPos)
 
   if (addFracPlot) {
+    if (legendPos != "none") legendPos <- "bottom"
     plot2 <- pSitePlot(coverage, forHeatmap = TRUE) + ggtitle(title)
     plot <- plot_grid(plot2,
-                      plot + theme(legend.position = "bottom",
+                      plot + theme(legend.position = legendPos,
                                    plot.margin = unit(c(0,0.3,0,0.8), "cm")),
                       ncol = 1, rel_heights = c(1,4), align = "v")
   } else plot <- plot + ggtitle(title)
