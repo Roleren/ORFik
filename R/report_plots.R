@@ -31,7 +31,8 @@ QCstats.plot <- function(stats, output.dir = NULL) {
   temp_theme <-  theme(legend.text=element_text(size=8),
                        legend.key.size = unit(0.3, "cm"),
                        plot.title = element_text(size=11),
-                       strip.text.x = element_blank())
+                       strip.text.x = element_blank(),
+                       panel.grid.minor = element_blank())
 
   stats$sample_id <-  factor(stats$Sample,
                              labels = as.character(seq(length(stats$Sample))),

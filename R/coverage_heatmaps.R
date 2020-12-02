@@ -94,7 +94,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
     scale_x_continuous(breaks = xAxisScaler(coverage$position)) +
     theme_bw() + theme(panel.grid.major = element_blank(),
                        panel.grid.minor = element_blank()) +
-    scale_y_discrete(breaks = yAxisScaler(levels(coverage$fraction))) +
+    scale_y_discrete(breaks = yAxisScaler(levels(coverage$fraction),
+                                          increments.y)) +
     theme(legend.position = legendPos)
 
   if (addFracPlot) {

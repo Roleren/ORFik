@@ -238,7 +238,7 @@ yAxisScaler <- function(covPos, increments.y = "auto") {
   max <- max(covPos)
   if (increments.y == "auto") {
     by <- ifelse(pos > 25, ifelse(pos > 50, ifelse(pos > 70, ifelse(pos > 120,
-                                                   ifelse(pos > 300, 100, 50), 20), 10), 2), 1)
+                                                   ifelse(pos > 300, 100, 50), 20), 10), 4), 1)
   } else if (is.numeric(increments.y)) {
     by <- increments.y
     if ((by < min) | (by > max))

@@ -69,8 +69,8 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
 #' from install.sratoolkit()
 #' @param settings a string of arguments for fastq-dump,
 #' default: paste("--gzip", "--skip-technical", "--split-files")
-#' @param subset a numeric or NULL, default NULL (no subset). If defined as
-#' a numeric will download only the first n reads specified by subset.
+#' @param subset an integer or NULL, default NULL (no subset). If defined as
+#' a integer will download only the first n reads specified by subset.
 #' @param compress logical, default TRUE. Download compressed files ".gz".
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
@@ -97,6 +97,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
                          subset = NULL,
                          compress = TRUE,
                          BPPARAM = bpparam()) {
+
   # If character presume SRR, if not check for column Run or SRR
   SRR <- if (is.character(info)) { # if character
     info
@@ -114,6 +115,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
   settings <- paste("--outdir", outdir, settings)
   if (!is.null(subset)) {
     if(!is.numeric(subset)) stop("subset must be numeric if not NULL")
+    subset <- as.integer(subset)
     settings <- paste(settings, "-X", subset)
   }
   if (compress) {

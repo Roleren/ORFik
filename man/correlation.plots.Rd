@@ -15,7 +15,7 @@ cor_plot_log2.png}
 \item{region}{a character (default: mrna), make raw count matrices of
 whole mrnas or one of (leaders, cds, trailers)}
 
-\item{type}{"fpkm", alternative "counts".}
+\item{type}{which value to use, "fpkm", alternative "counts".}
 }
 \value{
 invisible(NULL)
