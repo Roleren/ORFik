@@ -109,7 +109,7 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
     geom_tile(color = "lightgrey") +
     scale_fill_gradientn(colors = c("blue", "white", "red"), na.value = 'lightgrey',
                          name = paste0("log2(median ", type,")")) +
-    xlab(paste0("Position realitive to ", xlab)) +
+    xlab(paste0("Position relative to ", xlab)) +
     ylab("Nucleotide")
 
   rows <- seq(from = length(unique(codon.table.filtered$value)) - 0.5, to = 0.5)

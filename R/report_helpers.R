@@ -148,9 +148,10 @@ QCstats <- function(df, path = file.path(dirname(df$filepath[1]),
 #'
 #' Summarizing all libraries in experiment,
 #' make a table of proportion of read lengths.
-#' @param stats path to ORFik QC stats .csv file, or the experiment object.
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "./readLengths.csv".
+#' @inheritParams heatMapRegion
+#' @inheritParams QC_count_tables
 #' @return a data.table object of the the read length data with columns:
 #' \code{c("sample", "sample_id", "read length", "counts",
 #'  "counts_per_sample", "perc_of_counts_per_sample")}

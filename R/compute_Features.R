@@ -138,7 +138,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 #'   # set RNA seq to duplicate transcripts
 #'   RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 #'
-#'   computeFeaturesCage(grl = fiveUTR_ORFs, RFP = RFP,
+#'   ORFik:::computeFeaturesCage(grl = fiveUTR_ORFs, RFP = RFP,
 #'    RNA = RNA, Gtf = txdb, faFile = faFile)
 #'
 #' }
