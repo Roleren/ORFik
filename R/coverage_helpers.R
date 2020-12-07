@@ -421,6 +421,48 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   return(coverage)
 }
 
+#' Find proportion of reads per position per read length in region
+#'
+#' This is defined as:
+#' Given some transcript region (like CDS), get coverage per position.
+#'
+#'
+#' @inheritParams windowPerReadLength
+#' @param withFrames logical TRUE, add ORF frame (frame 0, 1, 2), starting
+#' on first position of every grl.
+#' @param BPPARAM how many cores/threads to use? default: bpparam()
+#' @return a data.table with lengths by coverage.
+#' @family coverage
+#' @importFrom data.table rbindlist
+#' @export
+#' @examples
+#' cds <- GRangesList(tx1 = GRanges("1", 100:129, "+"))
+#' reads <- GRanges("1", seq(79,129, 3), "+")
+#' dt <- regionPerReadLength(cds, reads, withFrames = TRUE)
+#' dt
+#' ## Sum up reads in each frame per read length
+#' dt[,.(sumCount = sum(count)),by = .(length, frame)]
+regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
+                                withFrames = TRUE, weight = "score",
+                                BPPARAM = bpparam()) {
+  rWidth <- readWidths(reads)
+  all_lengths <- sort(unique(rWidth))
+  if (!is.null(acceptedLengths))
+    all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
+  hasHits <- ORFik:::hasHits(grl, reads)
+  grl <- grl[hasHits]
+
+  dt <- bplapply(all_lengths, function(x, grl, reads, weight, rWidth) {
+    d <- coveragePerTiling(grl, reads[rWidth == x], as.data.table = TRUE, withFrames = TRUE,
+                           weight = weight)
+    d[, length := x]
+  }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
+     BPPARAM = BPPARAM)
+
+  dt <- rbindlist(dt)
+  return(dt)
+}
+
 #' Find proportion of reads per position per read length in window
 #'
 #' This is defined as:
@@ -453,7 +495,12 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @family coverage
 #' @importFrom data.table rbindlist
 #' @export
-#'
+#' @examples
+#' cds <- GRangesList(tx1 = GRanges("1", 100:129, "+"))
+#' tx <- GRangesList(tx1 = GRanges("1", 80:129, "+"))
+#' reads <- GRanges("1", seq(79,129, 3), "+")
+#' windowPerReadLength(cds, tx, reads, scoring = "sum")
+#' windowPerReadLength(cds, tx, reads, scoring = "transcriptNormalized")
 windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 upstream = if (pShifted) 5 else 20,
                                 downstream = if (pShifted) 20 else 5,

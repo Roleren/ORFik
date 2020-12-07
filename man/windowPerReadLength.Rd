@@ -70,10 +70,18 @@ grl from upstream and downstream. If tx is NULL, it will use only downstream
 The exception is when upstream is negative, that is,
 going into downstream region of the object.
 }
+\examples{
+cds <- GRangesList(tx1 = GRanges("1", 100:129, "+"))
+tx <- GRangesList(tx1 = GRanges("1", 80:129, "+"))
+reads <- GRanges("1", seq(79,129, 3), "+")
+windowPerReadLength(cds, tx, reads, scoring = "sum")
+windowPerReadLength(cds, tx, reads, scoring = "transcriptNormalized")
+}
 \seealso{
 Other coverage: 
 \code{\link{coverageScorings}()},
 \code{\link{metaWindow}()},
+\code{\link{regionPerReadLength}()},
 \code{\link{scaledWindowPositions}()}
 }
 \concept{coverage}

@@ -70,6 +70,7 @@ coverageScorings(dt, scoring = "zscore")
 \seealso{
 Other coverage: 
 \code{\link{metaWindow}()},
+\code{\link{regionPerReadLength}()},
 \code{\link{scaledWindowPositions}()},
 \code{\link{windowPerReadLength}()}
 }

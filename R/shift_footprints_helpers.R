@@ -1,7 +1,8 @@
 #' Find if there is a periodicity of 3 in the vector
 #'
-#' It uses Fourier transform for finding periodic vectors on the transcript
-#' normalized counts over all CDS TIS regions from -30 to 29, where TIS is
+#' It uses Fourier transform + periodogram for finding periodic
+#' vectors on the transcript
+#' normalized counts over all CDS regions from 0 to 149, where TIS is
 #' 0.\cr
 #' Checks if there is a periodicity and if the periodicity is 3,
 #' more precisely between 2.9 and 3.1.

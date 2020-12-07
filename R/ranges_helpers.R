@@ -344,6 +344,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
       strand(result)[unmapped] <- "*"
     }
     seqlengths(result) <- if (is.grl(transcripts)) {
+      #TODO: fix bug for duplicated names
       widthPerGroup(transcripts)
     } else as.integer(width(transcripts))
   }

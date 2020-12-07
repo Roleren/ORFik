@@ -79,6 +79,7 @@ metaWindow(x, windows, withFrames = FALSE)
 \seealso{
 Other coverage: 
 \code{\link{coverageScorings}()},
+\code{\link{regionPerReadLength}()},
 \code{\link{scaledWindowPositions}()},
 \code{\link{windowPerReadLength}()}
 }
