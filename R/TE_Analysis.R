@@ -19,6 +19,7 @@
 #' @param type which plots to make, default: c("default", "between"). Both plots.
 #' @param filter.rfp numeric, default 1. minimum fpkm value to be included in plots
 #' @param filter.rna numeric, default 1. minimum fpkm value to be included in plots
+#' @param plot.title title for plots, usually name of experiment etc
 #' @inheritParams countTable
 #' @return a data.table with TE values, fpkm and log fpkm values, library
 #' samples melted into rows with split variable called "variable".
@@ -36,7 +37,8 @@ te.plot <- function(df.rfp, df.rna,
                                         "/QC_STATS/"),
                     type = c("default", "between"),
                     filter.rfp = 1, filter.rna = 1,
-                    collapse = FALSE) {
+                    collapse = FALSE,
+                    plot.title = "") {
   RNA_MRNA_FPKM <- countTable(df.rna, "mrna", type = "fpkm", collapse = collapse)
   RNA_MRNA_FPKM <- data.table(id = rownames(RNA_MRNA_FPKM), RNA_MRNA_FPKM)
 
@@ -45,8 +47,9 @@ te.plot <- function(df.rfp, df.rna,
 
   if (!identical(nrow(RNA_MRNA_FPKM), nrow(RFP_CDS_FPKM)))
     stop("Not equal rows in count tables, did you match rfp and rna from different genome builds?")
-  if (!identical(length(bamVarName(df.rfp, skip.libtype = TRUE)),
-                 length(bamVarName(df.rna, skip.libtype = TRUE))))
+  single.rna <- length(bamVarName(df.rna, skip.libtype = TRUE)) == 1
+  if (!single.rna & !identical(length(bamVarName(df.rfp, skip.libtype = TRUE)),
+                               length(bamVarName(df.rna, skip.libtype = TRUE))))
     stop("Not equal samples in rfp and rna, did you subset or reorder one of the experiments?")
   if ((filter.rfp < 0) | (filter.rna < 0))
     stop("filter value is < 0, not allowed!")
@@ -61,15 +64,19 @@ te.plot <- function(df.rfp, df.rna,
   dt.melt.rna <- melt(dt.log[, colnames(dt.log) %in% colnames(RNA_MRNA_FPKM)[-1], with = FALSE])
   dt.melt.rna.10 <- melt(dt.log10[, colnames(dt.log10) %in% colnames(RNA_MRNA_FPKM)[-1], with = FALSE])
   dt.melt.rfp <- melt(dt.log[, colnames(dt.log) %in% colnames(RFP_CDS_FPKM)[-1], with = FALSE])
-  dt.final <- cbind(dt.melt.rna, dt.melt.rfp$value, dt.melt.rna.10$value)
-  dt.final[, variable := gsub("RNA_", "", variable)]
-  colnames(dt.final) <- c("variable", "rna_log2", "rfp_log2", "rna_log10")
+  dt.final <- cbind(dt.melt.rfp, dt.melt.rna$value, dt.melt.rna.10$value)
+  filter.names <- paste("RFP", "LSU", paste0(df.rfp@experiment, "_"), sep = "|")
+  dt.final[, variable := gsub(filter.names, "", variable)]
+  dt.final[, variable := gsub("^_|_$", "", variable)]
+  colnames(dt.final) <- c("variable", "rfp_log2","rna_log2", "rna_log10")
   dt.final[, LFC_TE := rfp_log2 - rna_log2]
 
-  message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of data"))
+  message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of transcripts"))
 
 
   subtitle <- paste("Filter: RFP >", filter.rfp, " & mRNA >", filter.rna, "(FPKM)")
+  if (nrow(df.rfp) > 1 & nrow(df.rna) == 1)
+    subtitle <- paste(subtitle, "(Single mRNA sample)")
   if ("default" %in% type) {
     plot <- ggplot(data = dt.final) +
       geom_point(aes(x = rna_log10, y = LFC_TE), alpha = 0.2) +
@@ -77,17 +84,17 @@ te.plot <- function(df.rfp, df.rna,
       geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +
       xlab("mRNA FPKM (log10)") +
       ylab("TE (log2 fold change)") +
-      ggtitle(label = "", subtitle = subtitle) +
+      ggtitle(label = plot.title, subtitle = subtitle) +
       xlim(c(filter.rna, filter.rna + 2.5)) +
       facet_wrap(~ variable, ncol = 1)
 
     plot(plot)
     ggsave(file.path(output.dir, "TE_within.png"), plot,
-           width = 7, height = 3+(ncol(RNA_MRNA_FPKM)-2), dpi = 300)
+           width = 7, height = 3+(ncol(RFP_CDS_FPKM)-2), dpi = 300)
   }
   if ("between" %in% type) {
     pairs <- list() # creating compairisons :list of pairs
-    my_comparison <- combn(unique(dt.final$variable),1)
+    my_comparison <- combn(unique(dt.final$variable), 2)
     pairs <- list()
     for (i in 1:ncol(my_comparison)) {
       pairs[[i]] <- c(my_comparison[1,i], my_comparison[2,i])
@@ -106,12 +113,12 @@ te.plot <- function(df.rfp, df.rna,
       geom_vline(aes(xintercept =  0), alpha = 0.2, color = "red") +
       xlab("mRNA (log2 fold change)") +
       ylab("RFP (log2 fold change)") +
-      ggtitle(label = "Comparison: 48h vs 24h", subtitle) +
+      ggtitle(label = plot.title, subtitle) +
       facet_wrap(~ variable, ncol = 2) +
       xlim(c(-5, 5))
     plot(plot)
     ggsave(file.path(output.dir, "TE_between.png"), plot,
-           width = 4, height = 3 + (ncol(RNA_MRNA_FPKM)-2), dpi = 300)
+           width = 6, height = 3 + (ncol(RFP_CDS_FPKM)-2), dpi = 300)
   }
   return(dt)
 }
