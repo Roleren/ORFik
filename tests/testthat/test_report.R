@@ -67,8 +67,8 @@ test_that("count tables loaded as intended", {
   # Summairzed Experiment load
   table <- countTable(df, "mrna")
   expect_equal(table[1,3], data.table("ORFik_RFP" = 8670))
-  table <- countTable(df[1:2,], "mrna")
-  expect_equal(colnames(table), c("ORFik_CAGE_heart", "ORFik_RFP"))
+  table <- countTable(df[2:3,], "mrna")
+  expect_equal(colnames(table), c("ORFik_RFP_heart", "ORFik_RFP"))
 })
 
 test_that("filepath work as intended", {

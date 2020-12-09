@@ -11,7 +11,8 @@ te.plot(
   type = c("default", "between"),
   filter.rfp = 1,
   filter.rna = 1,
-  collapse = FALSE
+  collapse = FALSE,
+  plot.title = ""
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ te.plot(
 within the group SAMPLE will be collapsed to one. If "all", all
 groups will be merged into 1 column called merged_all. Collapse is defined
 as rowSum(elements_per_group) / ncol(elements_per_group)}
+
+\item{plot.title}{title for plots, usually name of experiment etc}
 }
 \value{
 a data.table with TE values, fpkm and log fpkm values, library
