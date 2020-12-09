@@ -169,7 +169,9 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' Loads the the file in that directory with the regex region.rds,
 #' where region is what is defined by argument.
 #' @param df an ORFik \code{\link{experiment}} or path to folder with
-#' countTable, use path if not same folder as experiment libraries.
+#' countTable, use path if not same folder as experiment libraries. Will subset to
+#' the count tables specified in experiment. If experiment has 4 rows and you subset it
+#' to only 2, then only those 2 count tables will be outputted.
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #'  of whole mrnas or one of (leaders, cds, trailers).
 #' @param type default: "count" (raw counts matrix),
@@ -209,6 +211,7 @@ countTable <- function(df, region = "mrna", type = "count",
                        collapse = FALSE) {
   # TODO fix bug if deseq!
   if (is(df, "experiment")) {
+    if (nrow(df) == 0) stop("df experiment has 0 rows (samples)!")
     dir = dirname(df$filepath[1])
     df <- paste0(dir, "/QC_STATS")
   }
@@ -219,6 +222,14 @@ countTable <- function(df, region = "mrna", type = "count",
     }
     if (length(df) == 1) {
       res <- readRDS(df)
+      # Subset to samples wanted
+      subset <- if (sum(colnames(res) %in% bamVarName(df.rfp)) > 0) {
+        colnames(res) %in% bamVarName(df.rfp)
+      } else if (sum(colnames(res) %in% bamVarName(df.rfp, skip.experiment = F)) > 0) {
+        colnames(res) %in% bamVarName(df.rfp, skip.experiment = F)
+      } else stop("No valid names for count tables found from experiment")
+      res <- res[, subset]
+      # Decide output format
       if (type == "summarized") return(res)
       if (type == "deseq") {
         # remove replicate from formula

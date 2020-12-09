@@ -15,7 +15,7 @@ te.plot(
 )
 }
 \arguments{
-\item{df.rfp}{a \code{\link{experiment}} of Ribo-seq}
+\item{df.rfp}{a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.}
 
 \item{df.rna}{a \code{\link{experiment}} of RNA-seq}
 
@@ -44,7 +44,9 @@ Create 2 TE plots of:\cr
 (x-axis: rna1fpkm - rna2fpkm, y-axis rfp1fpkm - rfp2fpkm)
 }
 \details{
-Ribo-seq and RNA-seq must have equal nrows, with matching samples.
+Ribo-seq and RNA-seq must have equal nrows, with matching samples. Only
+exception is if RNA-seq is 1 single sample. Then it will use that for
+each of the Ribo-seq samples.
 Same stages, conditions etc, with a unique pairing 1 to 1. If not you can
 run collapse = "all". It will then merge all and do combined of all
 RNA-seq vs all Ribo-seq

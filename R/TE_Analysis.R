@@ -6,11 +6,13 @@
 #' - Between all combinations of samples
 #' (x-axis: rna1fpkm - rna2fpkm, y-axis rfp1fpkm - rfp2fpkm)
 #'
-#' Ribo-seq and RNA-seq must have equal nrows, with matching samples.
+#' Ribo-seq and RNA-seq must have equal nrows, with matching samples. Only
+#' exception is if RNA-seq is 1 single sample. Then it will use that for
+#' each of the Ribo-seq samples.
 #' Same stages, conditions etc, with a unique pairing 1 to 1. If not you can
 #' run collapse = "all". It will then merge all and do combined of all
 #' RNA-seq vs all Ribo-seq
-#' @param df.rfp a \code{\link{experiment}} of Ribo-seq
+#' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
 #' @param output.dir directory to save plots, plots will be named
 #' "TE_between.png" and "TE_within.png"
@@ -43,8 +45,8 @@ te.plot <- function(df.rfp, df.rna,
 
   if (!identical(nrow(RNA_MRNA_FPKM), nrow(RFP_CDS_FPKM)))
     stop("Not equal rows in count tables, did you match rfp and rna from different genome builds?")
-  if (!identical(nrow(bamVarName(df.rfp, skip.libtype = TRUE)),
-                 nrow(bamVarName(df.rna, skip.libtype = TRUE))))
+  if (!identical(length(bamVarName(df.rfp, skip.libtype = TRUE)),
+                 length(bamVarName(df.rna, skip.libtype = TRUE))))
     stop("Not equal samples in rfp and rna, did you subset or reorder one of the experiments?")
   if ((filter.rfp < 0) | (filter.rna < 0))
     stop("filter value is < 0, not allowed!")

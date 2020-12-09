@@ -8,7 +8,9 @@ countTable(df, region = "mrna", type = "count", collapse = FALSE)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}} or path to folder with
-countTable, use path if not same folder as experiment libraries.}
+countTable, use path if not same folder as experiment libraries. Will subset to
+the count tables specified in experiment. If experiment has 4 rows and you subset it
+to only 2, then only those 2 count tables will be outputted.}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers).}
