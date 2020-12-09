@@ -223,10 +223,10 @@ countTable <- function(df, region = "mrna", type = "count",
     if (length(df) == 1) {
       res <- readRDS(df)
       # Subset to samples wanted
-      subset <- if (sum(colnames(res) %in% bamVarName(df.rfp)) > 0) {
-        colnames(res) %in% bamVarName(df.rfp)
-      } else if (sum(colnames(res) %in% bamVarName(df.rfp, skip.experiment = F)) > 0) {
-        colnames(res) %in% bamVarName(df.rfp, skip.experiment = F)
+      subset <- if (sum(colnames(res) %in% bamVarName(df)) > 0) {
+        colnames(res) %in% bamVarName(df)
+      } else if (sum(colnames(res) %in% bamVarName(df, skip.experiment = F)) > 0) {
+        colnames(res) %in% bamVarName(df, skip.experiment = F)
       } else stop("No valid names for count tables found from experiment")
       res <- res[, subset]
       # Decide output format
