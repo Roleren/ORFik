@@ -132,6 +132,11 @@ download.SRA <- function(info, outdir, rename = TRUE,
   files <- unlist(lapply(SRR, function(S)
     dir(outdir, paste0(S, ".*", search_it), full.names = TRUE))
   )
+  if (length(SRR) != length(files)) {
+    warning("Some of the files specified was not downloaded,",
+            " are you behind a strict firewall?")
+    message("If only few files remaining, subset to those SRR numbers and run again")
+  }
 
   rename <- ifelse(!is.character(info) & rename, TRUE, FALSE)
   if (rename) {

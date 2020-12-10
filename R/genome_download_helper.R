@@ -132,3 +132,31 @@ get_phix_genome <- function(phix, output.dir, gunzip) {
   }
   return(phix)
 }
+
+#' Download Silva SSU & LSU sequences
+#'
+#' Version downloaded is 138.1. NR99_tax (non redundant)
+#'
+#' If it fails from timeout, set higher timeout: options(timeout = 200)
+#' @inheritParams get_phix_genome
+#' @return filepath to downloaded file
+#' @export
+#' @examples
+#' output.dir <- tempdir()
+#' # get_silva_rRNA(output.dir)
+get_silva_rRNA <- function(output.dir) {
+  silva <- paste0(output.dir, "/rRNA_SSU&LSU_silva_138.1.fasta.gz")
+  if (file.exists(silva)) {
+    message("Silva rRNA file already found, will not download")
+    return(silva)
+  }
+  message("Downloading silva rRNA SSU & LSU (version 138.1)")
+
+  silva.ssu.url <- "https://www.arb-silva.de/fileadmin/silva_databases/release_138_1/Exports/SILVA_138.1_SSURef_NR99_tax_silva.fasta.gz"
+  download.file(silva.ssu.url, destfile = silva)
+
+  silva.lsu.url <- "https://www.arb-silva.de/fileadmin/silva_databases/release_138_1/Exports/SILVA_138.1_LSURef_NR99_tax_silva.fasta.gz"
+  download.file(silva.lsu.url, destfile = silva, mode = "a")
+
+  return(silva)
+}

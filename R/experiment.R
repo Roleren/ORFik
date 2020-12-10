@@ -518,14 +518,14 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     current <- lib
   if(!skip.condition)
     current <- spaste(current, cond)
-  if (!skip.stage)
+  if (!(skip.stage | is.na(stage)))
     current <- spaste(current, stage)
   if (!(skip.fraction | is.null(frac) | is.na(frac))) {
     if (frac != "")
       current <- spaste(current, paste0("f", frac))
   }
 
-  if (!(skip.replicate | is.null(rep)))
+  if (!(skip.replicate | is.null(rep) | is.na(rep)))
     current <- spaste(current, paste0("r", rep))
   if (! (skip.experiment | is.null(df@experiment)))
     current <- spaste(df@experiment, current, TRUE)

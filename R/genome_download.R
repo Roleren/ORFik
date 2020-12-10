@@ -69,10 +69,11 @@
 #' rRNA is used as a contaminant genome.
 #' If TRUE, will try to find rRNA sequences from the gtf file, usually represented as
 #' rRNA (ribosomal RNA's). Will let you know if no rRNA sequences were found in
-#' gtf. If not found try character input:\cr
-#' if not "" it must be a character vector to valid path of mature
-#' rRNA fasta file to remove as contaminants on your disc. Find and download
-#' your wanted rRNA at: https://www.arb-silva.de/
+#' gtf. If not found you can try character input:\cr If "silva" will download silva SSU & LSU
+#' sequences for all species (250MB file) and use that. If you want a smaller file go to
+#' https://www.arb-silva.de/ \cr
+#' If not "" or "silva" it must be a character vector to valid path of mature
+#' rRNA fasta file to remove as contaminants on your disc.
 #' @param gunzip logical, default TRUE, uncompress downloaded files
 #' that are zipped when downloaded, should be TRUE!
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
@@ -131,10 +132,12 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     if (!file.exists(tRNA)) stop(paste("tRNA file is given and does not exist:",
                                        tRNA))
   }
-  if (!(rRNA %in% c("", FALSE, TRUE))) {
+  if (!(rRNA %in% c("", FALSE, TRUE, "silva"))) {
+
     if (!file.exists(rRNA)) stop(paste("rRNA file is given and does not exist:",
                                        tRNA))
-  }
+  } else if (rRNA == "silva") rRNA <- get_silva_rRNA()
+
   phix <- get_phix_genome(phix, output.dir, gunzip)
   ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
 
