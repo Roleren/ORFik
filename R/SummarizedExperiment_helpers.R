@@ -227,16 +227,19 @@ countTable <- function(df, region = "mrna", type = "count",
       # Subset to samples wanted
       if (!is.null(df.temp)) {
         if ((ncol(res) != nrow(df.temp))) {
-          subset <- if (sum(colnames(res) %in% bamVarName(df.temp, FALSE)) > 0) {
+          subset <- if (sum(colnames(res) %in% bamVarName(df.temp, FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE)
           } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, skip.experiment = FALSE)) > 0) {
+                         bamVarName(df.temp, FALSE, skip.experiment = FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
           } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, FALSE)) > 0) {
+                         bamVarName(df.temp)) == nrow(df.temp)) {
+            colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
+          } else if (sum(colnames(res) %in%
+                         bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)
           } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, FALSE, FALSE)) > 0) {
+                         bamVarName(df.temp, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE)
           } else stop("No valid names for count tables found from experiment")
           res <- res[, subset]
