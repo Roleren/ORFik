@@ -525,7 +525,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
       current <- spaste(current, paste0("f", frac))
   }
 
-  if (!(skip.replicate | is.null(rep) | is.na(rep)))
+  if (!(skip.replicate | is.null(rep) | is.na(rep) | (rep == "")))
     current <- spaste(current, paste0("r", rep))
   if (! (skip.experiment | is.null(df@experiment)))
     current <- spaste(df@experiment, current, TRUE)
