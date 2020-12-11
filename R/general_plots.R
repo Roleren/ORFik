@@ -131,6 +131,71 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
   return(plot_matrix2_log)
 }
 
+#' Rank kozak initiation sequences
+#'
+#' Defined as region (-4, -1) relative to TIS
+#' @param cds_k cds ranges (GRangesList)
+#' @param mrna mrna ranges (GRangesList)
+#' @param dt.ir data.table with a column called IR, initiation rate
+#' @param group.min numeric, default 10. Minimum transcripts per initation
+#' group to be included
+#' @inheritParams kozakSequenceScore
+#' @return a ggplot grid object
+#' @export
+kozak_IR_ranking <- function(cds_k, mrna, dt.ir, group.min = 10,
+                             species = "human") {
+  seqs <- startRegionString(cds_k, tx = mrna, faFile = df, upstream = 4, downstream = -1)
+  dt.ir$seqs <- seqs
+
+  kozak_scores <- kozakSequenceScore(cds_k, mrna, df, species = "zebrafish")
+  dt.ir$upstream_kozak_strength <- kozak_scores
+
+  merged_rates <- dt.ir[, .(mean_IR = mean(IR),
+                            upstream_kozak_strength = mean(upstream_kozak_strength),
+                            count = .N)
+                        , by = seqs]
+  print("Distribution of observations group")
+  print(summary(merged_rates$count))
+  message(paste("Originally", nrow(merged_rates), "groups of sequences"))
+  merged_rates <- merged_rates[ count > group.min,]
+  message(paste("Filter down to", nrow(merged_rates), "groups of sequences"))
+
+  merged_rates$seqs <- factor(merged_rates$seqs, levels = merged_rates[order(mean_IR),]$seqs)
+  scales_kozak <- c(ceiling(min(merged_rates$upstream_kozak_strength * 10)) / 10)
+  scales_kozak <- c(scales_kozak, scales_kozak + 0.1)
+
+  mean_IR_20 <- ggplot(data=merged_rates, aes(x=seqs, y=1, fill=log2(mean_IR))) +
+    geom_tile() +
+    scale_fill_gradientn(colors = c("blue", "white", "red1", "red2", "red3")) +
+    theme_light() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    labs(fill = "IR") +
+    xlab("Initiation sequence") +
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank()) +
+    theme(legend.key.size = unit(0.4, "cm"))
+  mean_IR_20
+  tile_KS_20 <- ggplot(data=merged_rates, aes(x=seqs, y=1, fill=upstream_kozak_strength)) +
+    geom_tile() +
+    # scale_fill_gradientn(colors = c("#146DA8", "white", "#A87225")) +
+    scale_fill_gradientn(colors = c("blue", "white", "red"), breaks = scales_kozak) +
+    theme_light() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    labs(fill = "Kozak") +
+    xlab("Initiation sequence") +
+    theme(axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank()) +
+    theme(legend.key.size = unit(0.4, "cm"))
+  tile_KS_20
+  ranking <- gridExtra::grid.arrange(mean_IR_20, tile_KS_20, ncol = 1)
+  return(ranking)
+}
+
 #' TOP Motif ecdf plot
 #'
 #' Given sequences, DNA or RNA.

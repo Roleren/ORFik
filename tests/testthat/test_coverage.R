@@ -57,6 +57,7 @@ test_that("windowPerReadLength works as intended", {
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 26)
   expect_equal(round(grltest$score[6], 3) , 0.268)
+
   # - strand
   strand(grl) <- "-"
   strand(tx) <- "-"
@@ -78,3 +79,10 @@ test_that("windowPerReadLength works as intended strange cases", {
   expect_equal(nrow(grltest), 0)
 })
 
+test_that("regionPerReadLength works as intended", {
+  # Per frame
+  grltest <- regionPerReadLength(grl, footprintsGood, scoring = "frameSumPerLG")
+  expect_is(grltest, "data.table")
+  expect_equal(nrow(grltest), 6)
+  expect_equal(round(grltest$score[6], 3) , 0.268)
+})

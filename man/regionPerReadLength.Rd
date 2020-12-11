@@ -9,6 +9,7 @@ regionPerReadLength(
   reads,
   acceptedLengths = NULL,
   withFrames = TRUE,
+  scoring = "transcriptNormalized",
   weight = "score",
   BPPARAM = bpparam()
 )
@@ -27,6 +28,12 @@ Default NULL, means all lengths accepted.}
 \item{withFrames}{logical TRUE, add ORF frame (frame 0, 1, 2), starting
 on first position of every grl.}
 
+\item{scoring}{a character (transcriptNormalized), which meta coverage scoring ?
+one of (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
+see ?coverageScorings for more info. Use to decide a scoring of hits
+per position for metacoverage etc. Set to NULL if you do not want meta coverage,
+but instead want per gene per position raw counts.}
+
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
@@ -44,12 +51,13 @@ This is defined as:
 Given some transcript region (like CDS), get coverage per position.
 }
 \examples{
+# Raw counts per gene per position
 cds <- GRangesList(tx1 = GRanges("1", 100:129, "+"))
 reads <- GRanges("1", seq(79,129, 3), "+")
-dt <- regionPerReadLength(cds, reads, withFrames = TRUE)
-dt
-## Sum up reads in each frame per read length
-dt[,.(sumCount = sum(count)),by = .(length, frame)]
+reads$size <- 28 # <- Set read length of reads
+regionPerReadLength(cds, reads, scoring = NULL)
+## Sum up reads in each frame per read length per gene
+regionPerReadLength(cds, reads, scoring = "frameSumPerLG")
 }
 \seealso{
 Other coverage: 

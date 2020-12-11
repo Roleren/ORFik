@@ -219,7 +219,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #'
 #' Different scorings and groupings of a coverage representation.
 #'
-#' Usually output of metaWindow or scaledWindowCoverage is input in this
+#' Usually output of metaWindow or scaledWindowPositions is input in this
 #' function.
 #'
 #' Content of coverage data.table:
@@ -238,27 +238,32 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #' transcripts, and feature column can be c(leader, cds, trailer) etc.
 #'
 #' Given a data.table coverage of counts, add a scoring scheme.
-#' per: the grouping given, if genes is defined, group by per gene in scoring.
-#' Scorings:
-#' 1.  zscore (count-windowMean)/windowSD per)
-#' 2.  transcriptNormalized (sum(count / sum of counts per))
-#' 3.  mean (mean(count per))
-#' 4.  median (median(count per))
-#' 5.  sum (count per)
-#' 6.  log2sum (count per)
-#' 7.  log10sum (count per)
-#' 8.  sumLength (count per) / number of windows
-#' 9.  meanPos (mean per position per gene) used in scaledWindowPositions
-#' 10. sumPos (sum per position per gene) used in scaledWindowPositions
-#' 11. frameSum (sum per frame per gene) used in ORFScore
-#' 12. fracPos (fraction of counts per position per gene)
-#' 13. periodic (Fourier transform periodicity of meta coverage per fraction)
-#' 14. NULL (return input directly)
+#' per: the grouping given, if genes is defined,
+#' group by per gene in default scoring.\cr
+#' Scorings:\cr
+#'
+#' *  zscore (count-windowMean)/windowSD per)
+#' *  transcriptNormalized (sum(count / sum of counts per))
+#' *  mean (mean(count per))
+#' *  median (median(count per))
+#' *  sum (count per)
+#' *  log2sum (count per)
+#' *  log10sum (count per)
+#' *  sumLength (count per) / number of windows
+#' *  meanPos (mean per position per gene) used in scaledWindowPositions
+#' *  sumPos (sum per position per gene) used in scaledWindowPositions
+#' *  frameSum (sum per frame per gene) used in ORFScore
+#' *  frameSumPerL (sum per frame per read length)
+#' *  frameSumPerLG (sum per frame per read length per gene)
+#' *  fracPos (fraction of counts per position per gene)
+#' *  periodic (Fourier transform periodicity of meta coverage per fraction)
+#' *  NULL (no grouping, return input directly)
+#' @md
 #' @param coverage a data.table containing at least columns (count, position),
 #' it is possible to have additionals: (genes, fraction, feature)
 #' @param scoring a character, one of (zscore, transcriptNormalized,
 #' mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
-#' periodic, NULL). More info in docs.
+#' periodic, NULL). More info in details
 #' @return a data.table with new scores (size dependent on score used)
 #' @family coverage
 #' @export
@@ -290,6 +295,16 @@ coverageScorings <- function(coverage, scoring = "zscore") {
     if (is.null(coverage$frame))
       stop("Can not use frameSum scoring when no frames are given!")
     groupFPF <- quote(list(genes, frame))
+    scoring <- "sum"
+  } else if (scoring == "frameSumPerL") {
+    if (is.null(coverage$frame))
+      stop("Can not use frameSum scoring when no frames are given!")
+    groupFPF <- quote(list(fraction, frame))
+    scoring <- "sum"
+  } else if (scoring == "frameSumPerLG") {
+    if (is.null(coverage$frame))
+      stop("Can not use frameSum scoring when no frames are given!")
+    groupFPF <- quote(list(fraction, genes, frame))
     scoring <- "sum"
   } else if (scoring == "periodic") {
     groupFPF <- ifelse(!is.null(cov$fraction),
@@ -436,15 +451,17 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @importFrom data.table rbindlist
 #' @export
 #' @examples
+#' # Raw counts per gene per position
 #' cds <- GRangesList(tx1 = GRanges("1", 100:129, "+"))
 #' reads <- GRanges("1", seq(79,129, 3), "+")
-#' dt <- regionPerReadLength(cds, reads, withFrames = TRUE)
-#' dt
-#' ## Sum up reads in each frame per read length
-#' dt[,.(sumCount = sum(count)),by = .(length, frame)]
+#' reads$size <- 28 # <- Set read length of reads
+#' regionPerReadLength(cds, reads, scoring = NULL)
+#' ## Sum up reads in each frame per read length per gene
+#' regionPerReadLength(cds, reads, scoring = "frameSumPerLG")
 regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
-                                withFrames = TRUE, weight = "score",
-                                BPPARAM = bpparam()) {
+                                withFrames = TRUE,
+                                scoring = "transcriptNormalized",
+                                weight = "score", BPPARAM = bpparam()) {
   rWidth <- readWidths(reads)
   all_lengths <- sort(unique(rWidth))
   if (!is.null(acceptedLengths))
@@ -452,12 +469,13 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
   hasHits <- ORFik:::hasHits(grl, reads)
   grl <- grl[hasHits]
 
-  dt <- bplapply(all_lengths, function(x, grl, reads, weight, rWidth) {
-    d <- coveragePerTiling(grl, reads[rWidth == x], as.data.table = TRUE, withFrames = TRUE,
-                           weight = weight)
-    d[, length := x]
+  dt <- bplapply(all_lengths, function(l, grl, reads, weight, rWidth, scoring) {
+    d <- coveragePerTiling(grl, reads[rWidth == l], as.data.table = TRUE, withFrames = TRUE,
+                           weight = weight, is.sorted = TRUE)
+    d[, fraction := l]
+    return(coverageScorings(d, scoring))
   }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
-     BPPARAM = BPPARAM)
+     scoring = scoring, BPPARAM = BPPARAM)
 
   dt <- rbindlist(dt)
   return(dt)
@@ -490,7 +508,7 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' one of (zscore, transcriptNormalized, mean, median, sum, sumLength, fracPos),
 #' see ?coverageScorings for more info. Use to decide a scoring of hits
 #' per position for metacoverage etc. Set to NULL if you do not want meta coverage,
-#' but instead want per gene counts.
+#' but instead want per gene per position raw counts.
 #' @return a data.table with lengths by coverage / vector of proportions
 #' @family coverage
 #' @importFrom data.table rbindlist

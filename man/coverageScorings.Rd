@@ -12,7 +12,7 @@ it is possible to have additionals: (genes, fraction, feature)}
 
 \item{scoring}{a character, one of (zscore, transcriptNormalized,
 mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
-periodic, NULL). More info in docs.}
+periodic, NULL). More info in details}
 }
 \value{
 a data.table with new scores (size dependent on score used)
@@ -21,7 +21,7 @@ a data.table with new scores (size dependent on score used)
 Different scorings and groupings of a coverage representation.
 }
 \details{
-Usually output of metaWindow or scaledWindowCoverage is input in this
+Usually output of metaWindow or scaledWindowPositions is input in this
 function.
 
 Content of coverage data.table:
@@ -40,22 +40,27 @@ feature column: If gene group is subdivided into parts, like gene is
 transcripts, and feature column can be c(leader, cds, trailer) etc.
 
 Given a data.table coverage of counts, add a scoring scheme.
-per: the grouping given, if genes is defined, group by per gene in scoring.
-Scorings:
-1.  zscore (count-windowMean)/windowSD per)
-2.  transcriptNormalized (sum(count / sum of counts per))
-3.  mean (mean(count per))
-4.  median (median(count per))
-5.  sum (count per)
-6.  log2sum (count per)
-7.  log10sum (count per)
-8.  sumLength (count per) / number of windows
-9.  meanPos (mean per position per gene) used in scaledWindowPositions
-10. sumPos (sum per position per gene) used in scaledWindowPositions
-11. frameSum (sum per frame per gene) used in ORFScore
-12. fracPos (fraction of counts per position per gene)
-13. periodic (Fourier transform periodicity of meta coverage per fraction)
-14. NULL (return input directly)
+per: the grouping given, if genes is defined,
+group by per gene in default scoring.\cr
+Scorings:\cr
+\itemize{
+\item zscore (count-windowMean)/windowSD per)
+\item transcriptNormalized (sum(count / sum of counts per))
+\item mean (mean(count per))
+\item median (median(count per))
+\item sum (count per)
+\item log2sum (count per)
+\item log10sum (count per)
+\item sumLength (count per) / number of windows
+\item meanPos (mean per position per gene) used in scaledWindowPositions
+\item sumPos (sum per position per gene) used in scaledWindowPositions
+\item frameSum (sum per frame per gene) used in ORFScore
+\item frameSumPerL (sum per frame per read length)
+\item frameSumPerLG (sum per frame per read length per gene)
+\item fracPos (fraction of counts per position per gene)
+\item periodic (Fourier transform periodicity of meta coverage per fraction)
+\item NULL (no grouping, return input directly)
+}
 }
 \examples{
 dt <- data.table::data.table(count = c(4, 1, 1, 4, 2, 3),
