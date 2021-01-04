@@ -12,7 +12,9 @@ te.plot(
   filter.rfp = 1,
   filter.rna = 1,
   collapse = FALSE,
-  plot.title = ""
+  plot.title = "",
+  width = 6,
+  height = "auto"
 )
 }
 \arguments{
@@ -35,6 +37,12 @@ groups will be merged into 1 column called merged_all. Collapse is defined
 as rowSum(elements_per_group) / ncol(elements_per_group)}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
+
+\item{width}{numeric, default 6 (in inches)}
+
+\item{height}{numeric or character, default "auto", which is:
+3 + (ncol(RFP_CDS_FPKM)-2).
+Else a numeric value of height (in inches)}
 }
 \value{
 a data.table with TE values, fpkm and log fpkm values, library

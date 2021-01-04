@@ -21,6 +21,10 @@
 #' @param filter.rna numeric, default 1. minimum fpkm value to be included in plots
 #' @param plot.title title for plots, usually name of experiment etc
 #' @inheritParams countTable
+#' @param width numeric, default 6 (in inches)
+#' @param height numeric or character, default "auto", which is:
+#' 3 + (ncol(RFP_CDS_FPKM)-2).
+#' Else a numeric value of height (in inches)
 #' @return a data.table with TE values, fpkm and log fpkm values, library
 #' samples melted into rows with split variable called "variable".
 #' @importFrom utils combn
@@ -38,12 +42,16 @@ te.plot <- function(df.rfp, df.rna,
                     type = c("default", "between"),
                     filter.rfp = 1, filter.rna = 1,
                     collapse = FALSE,
-                    plot.title = "") {
+                    plot.title = "",
+                    width = 6,
+                    height = "auto") {
   RNA_MRNA_FPKM <- countTable(df.rna, "mrna", type = "fpkm", collapse = collapse)
   RNA_MRNA_FPKM <- data.table(id = rownames(RNA_MRNA_FPKM), RNA_MRNA_FPKM)
 
   RFP_CDS_FPKM <- countTable(df.rfp, "cds", type = "fpkm", collapse = collapse)
   RFP_CDS_FPKM <- data.table(id = rownames(RFP_CDS_FPKM), RFP_CDS_FPKM)
+
+
 
   if (!identical(nrow(RNA_MRNA_FPKM), nrow(RFP_CDS_FPKM)))
     stop("Not equal rows in count tables, did you match rfp and rna from different genome builds?")
@@ -73,7 +81,7 @@ te.plot <- function(df.rfp, df.rna,
 
   message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of transcripts"))
 
-
+  if (height == "auto") height <- 3+(ncol(RFP_CDS_FPKM)-2)
   subtitle <- paste("Filter: RFP >", filter.rfp, " & mRNA >", filter.rna, "(FPKM)")
   if (nrow(df.rfp) > 1 & nrow(df.rna) == 1)
     subtitle <- paste(subtitle, "(Single mRNA sample)")
@@ -90,7 +98,7 @@ te.plot <- function(df.rfp, df.rna,
 
     plot(plot)
     ggsave(file.path(output.dir, "TE_within.png"), plot,
-           width = 7, height = 3+(ncol(RFP_CDS_FPKM)-2), dpi = 300)
+           width = width, height = height, dpi = 300)
   }
   if ("between" %in% type) {
     pairs <- list() # creating compairisons :list of pairs
@@ -118,7 +126,7 @@ te.plot <- function(df.rfp, df.rna,
       xlim(c(-5, 5))
     plot(plot)
     ggsave(file.path(output.dir, "TE_between.png"), plot,
-           width = 6, height = 3 + (ncol(RFP_CDS_FPKM)-2), dpi = 300)
+           width = width, height = height, dpi = 300)
   }
   return(dt)
 }

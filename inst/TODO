@@ -1,7 +1,6 @@
 TODO
 -----------------------
-
-    o remove naming of ORFs with "_" (will keep this for now)
+    o Make check for spaces in findORFsFasta
     o remove unnecesary type checking ("started doing this now")
     o split files into smaller files, tests too
     o remove whole utils file?

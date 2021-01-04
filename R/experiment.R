@@ -516,7 +516,7 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
   }
   if (!skip.libtype)
     current <- lib
-  if(!skip.condition)
+  if(!(skip.condition | is.na(cond)))
     current <- spaste(current, cond)
   if (!(skip.stage | is.na(stage)))
     current <- spaste(current, stage)
@@ -524,14 +524,14 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
     if (frac != "")
       current <- spaste(current, paste0("f", frac))
   }
-
+  # TODO: FIX _NA for replicates
   if (!(skip.replicate | is.null(rep) | is.na(rep) | (rep == "")))
     current <- spaste(current, paste0("r", rep))
   if (! (skip.experiment | is.null(df@experiment)))
     current <- spaste(df@experiment, current, TRUE)
 
   current <- gsub(pattern = "__", "_", current)
-  # TODO: FIX _NA for replicates
+
   return(gsub("_$", "", current))
 }
 

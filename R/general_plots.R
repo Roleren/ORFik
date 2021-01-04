@@ -142,12 +142,13 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
 #' @inheritParams kozakSequenceScore
 #' @return a ggplot grid object
 #' @export
-kozak_IR_ranking <- function(cds_k, mrna, dt.ir, group.min = 10,
+kozak_IR_ranking <- function(cds_k, mrna, dt.ir, faFile, group.min = 10,
                              species = "human") {
-  seqs <- startRegionString(cds_k, tx = mrna, faFile = df, upstream = 4, downstream = -1)
+  faFile <- ORFik:::findFa(faFile)
+  seqs <- startRegionString(cds_k, tx = mrna, faFile = faFile, upstream = 4, downstream = -1)
   dt.ir$seqs <- seqs
 
-  kozak_scores <- kozakSequenceScore(cds_k, mrna, df, species = "zebrafish")
+  kozak_scores <- kozakSequenceScore(cds_k, mrna, faFile, species = species)
   dt.ir$upstream_kozak_strength <- kozak_scores
 
   merged_rates <- dt.ir[, .(mean_IR = mean(IR),

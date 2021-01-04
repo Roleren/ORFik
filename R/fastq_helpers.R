@@ -32,6 +32,7 @@
 #' mergeFastq(in_files, out_files)
 #' }
 mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
+  # TODO: Make work on windows
   if (.Platform$OS.type != "unix") stop("Merge does not work on windows OS")
   if (length(in_files) != length(out_files)) stop("Not equal length of in_files and out_files!")
 

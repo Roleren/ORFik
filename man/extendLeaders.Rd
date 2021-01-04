@@ -27,7 +27,7 @@ an extended GRangeslist
 }
 \description{
 Will extend the leaders or transcripts upstream (5' end) by extension.
-Remember the extension is general not relative, that means splicing
+The extension is general not relative, that means splicing
 will not be taken into account.
 Requires the \code{grl} to be sorted beforehand,
 use \code{\link{sortPerGroup}} to get sorted grl.

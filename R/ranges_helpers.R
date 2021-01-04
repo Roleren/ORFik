@@ -502,9 +502,9 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 
 #' Get window region of GRanges object
 #'
-#' Per GRanges input (gr), create a GRangesList window output of specified
-#' upstream, downstream region. This is an extension of the resize funciton,
-#' that works for spliced ranges.\cr
+#' Per GRanges input (gr) of single position inputs,
+#' create a GRangesList window output of specified
+#' upstream, downstream region. \cr
 #' If downstream is 20, it means the window will start 20 downstream of
 #' gr start site (-20 in relative transcript coordinates.)
 #' If upstream is 20, it means the window will start 20 upstream of
@@ -518,8 +518,8 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #' (the TSS of the transcript in this case).
 #' If region has no hit in bound, a width 0 GRanges object is returned.
 #' This is usefull for things like countOverlaps, since 0 hits will then always
-#' be returned for the correct object. If you don't want the 0 width windows,
-#' use \code{reduce()} to remove 0-width windows.
+#' be returned for the correct object index. If you don't want the 0 width
+#' windows, use \code{reduce()} to remove 0-width windows.
 #' @param gr a GRanges/IRanges object (startSites or others,
 #'  must be single point per in genomic coordinates)
 #' @param tx a \code{\link{GRangesList}} of transcripts or (container region),
@@ -569,7 +569,7 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' Extend the leaders transcription start sites.
 #'
 #' Will extend the leaders or transcripts upstream (5' end) by extension.
-#' Remember the extension is general not relative, that means splicing
+#' The extension is general not relative, that means splicing
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
