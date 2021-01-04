@@ -234,7 +234,7 @@ countTable <- function(df, region = "mrna", type = "count",
             colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
           } else if (sum(colnames(res) %in%
                          bamVarName(df.temp)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
+            colnames(res) %in% bamVarName(df.temp)
           } else if (sum(colnames(res) %in%
                          bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)

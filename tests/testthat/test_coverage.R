@@ -84,5 +84,6 @@ test_that("regionPerReadLength works as intended", {
   grltest <- regionPerReadLength(grl, footprintsGood, scoring = "frameSumPerLG")
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 6)
-  expect_equal(round(grltest$score[6], 3) , 0.268)
+  expect_equal(grltest$score[1], 10)
+  expect_equal(grltest$score[4], 7)
 })
