@@ -239,6 +239,9 @@ countTable <- function(df, region = "mrna", type = "count",
                          bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)
           } else if (sum(colnames(res) %in%
+                         bamVarName(df.temp, TRUE, FALSE, FALSE)) == nrow(df.temp)) {
+            colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, FALSE)
+          } else if (sum(colnames(res) %in%
                          bamVarName(df.temp, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
             colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE)
           } else stop("No valid names for count tables found from experiment")
