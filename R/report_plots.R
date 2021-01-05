@@ -171,7 +171,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
     total <- regionPerReadLength(cds, get(lib, mode = "S4"),
                                  withFrames = TRUE, scoring = "frameSumPerL")
     total[, length := fraction]
-    dt[, `:=` (fraction = lib)]
+    total[, fraction := rep(lib, nrow(total))]
   }, cds = cds, weight = weight, BPPARAM = BPPARAM)
   frame_sum_per <- rbindlist(frame_sum_per1)
 
