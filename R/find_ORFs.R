@@ -227,6 +227,8 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then.
 #' Seqnames are created from header by format: >name info, so name must be
 #' first after "biggern than" and space between name and info.
+#' Also make sure your fasta file is valid (no hidden spaces etc),
+#'  as this might break the coordinate system!
 #' @param filePath (character) Path to the fasta file. Can be both uppercase or
 #' lowercase.
 #' @inheritParams findORFs

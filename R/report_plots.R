@@ -168,15 +168,16 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
 
   # Frame distribution over all
   frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
-    total <- regionPerReadLength(cds, get(lib, mode = "S4"), withFrames = TRUE)
-    dt <- total[,.(sumCount = sum(count)),by = .(length, frame)]
+    total <- regionPerReadLength(cds, get(lib, mode = "S4"),
+                                 withFrames = TRUE, scoring = "frameSumPerL")
+    total[, length := fraction]
     dt[, `:=` (fraction = lib)]
   }, cds = cds, weight = weight, BPPARAM = BPPARAM)
   frame_sum_per <- rbindlist(frame_sum_per1)
 
   frame_sum_per$frame <- as.factor(frame_sum_per$frame)
   frame_sum_per$fraction <- as.factor(frame_sum_per$fraction)
-  frame_sum_per[, percent := (sumCount / sum(sumCount))*100, by = fraction]
+  frame_sum_per[, percent := (score / sum(score))*100, by = fraction]
   frame_sum_per[, fraction := factor(fraction, levels = libs,
                                      labels = bamVarName(df, skip.libtype = TRUE), ordered = TRUE)]
 

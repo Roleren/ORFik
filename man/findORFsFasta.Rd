@@ -57,6 +57,8 @@ delete all negative stranded ORFs afterwards by:
 orfs <- orfs[strandBool(orfs)] # negative strand orfs make no sense then.
 Seqnames are created from header by format: >name info, so name must be
 first after "biggern than" and space between name and info.
+Also make sure your fasta file is valid (no hidden spaces etc),
+ as this might break the coordinate system!
 }
 \examples{
 # location of the example fasta file
