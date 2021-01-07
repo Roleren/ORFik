@@ -282,3 +282,20 @@ pseudo.transform <- function(x, scale = log2, by.reference = FALSE) {
   return(x)
 }
 
+#' Create all unique combinations pairs possible
+#'
+#' Given a character vector, get all unique combinations of 2.
+#' @param x a character vector, will unique elements for you.
+#' @return a list of character vector pairs
+#' @importFrom utils combn
+combn.pairs <- function(x) {
+  pairs <- list() # creating compairisons :list of pairs
+  comparisons.design <- unique(x)
+  my_comparison <- combn(unique(comparisons.design), 2)
+  pairs <- list()
+  for (i in 1:ncol(my_comparison)) {
+    pairs[[i]] <- c(my_comparison[1, i], my_comparison[2, i])
+  }
+  return(pairs)
+}
+

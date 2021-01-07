@@ -1,57 +1,160 @@
-
-#' Translational efficiency plots
+#' Run differential TE analysis
 #'
-#' Create 2 TE plots of:\cr
-#' - Within sample (TE log2 vs mRNA fpkm) ("default")\cr
-#' - Between all combinations of samples
-#' (x-axis: rna1fpkm - rna2fpkm, y-axis rfp1fpkm - rfp2fpkm)
+#' Using an equal reimplementation of the deltaTE algorithm (see reference).
+#' You need at least 2 groups and 2 replicates per group. The Ribo-seq will
+#' be over CDS and RNA-seq over mRNAs, per transcript, subset to genes if you
+#' do not need isoform variants.
 #'
-#' Ribo-seq and RNA-seq must have equal nrows, with matching samples. Only
-#' exception is if RNA-seq is 1 single sample. Then it will use that for
-#' each of the Ribo-seq samples.
-#' Same stages, conditions etc, with a unique pairing 1 to 1. If not you can
-#' run collapse = "all". It will then merge all and do combined of all
-#' RNA-seq vs all Ribo-seq
+#' What the deltaTE plot calls intensified is here called mRNA abundance and
+#' forwarded is called Buffering.
+#' @inheritParams plot.DTEG
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
-#' @param output.dir directory to save plots, plots will be named
-#' "TE_between.png" and "TE_within.png"
-#' @param type which plots to make, default: c("default", "between"). Both plots.
-#' @param filter.rfp numeric, default 1. minimum fpkm value to be included in plots
-#' @param filter.rna numeric, default 1. minimum fpkm value to be included in plots
-#' @param plot.title title for plots, usually name of experiment etc
-#' @inheritParams countTable
-#' @param width numeric, default 6 (in inches)
-#' @param height numeric or character, default "auto", which is:
-#' 3 + (ncol(RFP_CDS_FPKM)-2).
-#' Else a numeric value of height (in inches)
-#' @return a data.table with TE values, fpkm and log fpkm values, library
-#' samples melted into rows with split variable called "variable".
-#' @importFrom utils combn
+#' @param design a character vector, default "stage". The columns in the
+#' experiment that creates the comparison contrasts.
+#' @param output.dir output.dir directory to save plots,
+#' plot will be named "TE_between.png". If NULL, will not save.
+#' @references doi: 10.1002/cpmb.108
+#' @return a data.table with 8 columns.
 #' @export
+#' @import DESeq2
+#' @importFrom data.table rbindlist
 #' @examples
-#' ##
-#' # df.rfp <- read.experiment("zf_baz14_RFP")
-#' # df.rna <- read.experiment("zf_baz14_RNA")
-#' # te.plot(df.rfp, df.rna)
-#' ## Collapse replicates:
-#' # te.plot(df.rfp, df.rna, collapse = TRUE)
-te.plot <- function(df.rfp, df.rna,
-                    output.dir = paste0(dirname(df.rfp$filepath[1]),
-                                        "/QC_STATS/"),
-                    type = c("default", "between"),
-                    filter.rfp = 1, filter.rna = 1,
-                    collapse = FALSE,
-                    plot.title = "",
-                    width = 6,
-                    height = "auto") {
+#' #df.rfp <- read.experiment("Riboseq")
+#' #df.rna <- read.experiment("RNAseq")
+#' #DTEG.analysis(df.rfp, df.rna)
+DTEG.analysis <- function(df.rfp, df.rna,
+                          output.dir = paste0(dirname(df.rfp$filepath[1]),
+                                              "/QC_STATS/"),
+                          design = "stage", p.value = 0.05,
+                          plot.title = "", width = 6,
+                          height = 6, dot.size = 0.4) {
+  if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
+    stop("df.rfp and df.rna must be ORFik experiments!")
+  if (length(unique(unlist(df.rfp[, design]))) == 1)
+    stop("Design column needs at least 2 unique values!")
+  if (nrow(df.rfp) < 4)
+    stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
+  if (p.value > 1 | p.value <= 0)
+    stop("p.value must be in interval (0,1)")
+
+  RFP_DESEQ <- countTable(df.rfp, "cds", type = "summarized", collapse = FALSE)
+  colData(RFP_DESEQ)$stage <- df.rfp$stage
+  colData(RFP_DESEQ)$libtype <- df.rfp$libtype
+  colData(RFP_DESEQ)$condition <- df.rfp$condition
+  colData(RFP_DESEQ)$fraction <- df.rfp$fraction
+
+  RNA_DESEQ <- countTable(df.rna, "mrna", type = "summarized", collapse = FALSE)
+  colData(RNA_DESEQ)$stage <- df.rna$stage
+  colData(RNA_DESEQ)$libtype <- df.rna$libtype
+  colData(RNA_DESEQ)$condition <- df.rna$condition
+  colData(RNA_DESEQ)$fraction <- df.rna$fraction
+
+  # Designs
+  te.design <- as.formula(paste0("~ libtype + ", design, "+ libtype:", design))
+  main.design <- as.formula(paste0("~ ", design))
+  # TE
+  se <- cbind(assay(RFP_DESEQ), assay(RNA_DESEQ))
+  colData <- rbind(colData(RFP_DESEQ), colData(RNA_DESEQ))
+  combined_se <- SummarizedExperiment(se,
+                                      rowRanges = rowRanges(RFP_DESEQ),
+                                      colData = colData)
+  #combined_se <- combined_se[rowMeans(assay(combined_se)) > 1,]
+  combined_DESEQ <- DESeqDataSet(combined_se, design = te.design)
+  dds.te <- DESeq2::DESeq(combined_DESEQ)
+  resultsNames(dds.te)
+
+  # Ribo
+  ddsMat_ribo <- DESeqDataSet(se = RFP_DESEQ, design = main.design)
+  ddsMat_ribo <- DESeq(ddsMat_ribo)
+
+  # RNA
+  ddsMat_rna <- DESeqDataSet(se = RNA_DESEQ, design = main.design)
+  ddsMat_rna <- DESeq(ddsMat_rna)
+
+  # Create contrasts
+  pairs <- combn.pairs(unlist(df.rfp[, design]))
+
+  # Per contrast
+  dt.between <- data.table()
+  #dt.between <- bplapply(pairs[1:2], FUN = function(i, dds.te, ddsMat_ribo, ddsMat_rna, design) {
+  for(i in pairs) {
+    name <- paste("Comparison:", i[1], "vs", i[2])
+    message(name)
+    # Results
+    current.contrast <- c(design, i[1], i[2])
+    res_te <- results(dds.te, contrast = current.contrast)
+
+    res_ribo <- results(ddsMat_ribo, contrast=current.contrast)
+    suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast, res=res_ribo))
+
+    res_rna <- results(ddsMat_rna, contrast = current.contrast)
+    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast, res = res_rna))
+
+    # The differential groupings
+    both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
+    ## The 4 classes of genes
+    forwarded <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj < p.value & res_rna$padj < p.value)]
+
+    exclusive <- rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj > p.value)]
+
+    intensified <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] > 0)]]
+
+    buffered <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] < 0)]]
+    buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)],
+                  buffered)
+
+    n <- rownames(res_te)
+    Status <- rep("No change", nrow(res_te))
+    Status[n %in% forwarded] <- "Buffering"
+    Status[n %in% exclusive] <- "Translation"
+    Status[n %in% intensified] <- "mRNA abundance"
+    Status[n %in% buffered] <- "Buffering"
+    table(Status)
+
+    dt.between <-
+      rbindlist(list(dt.between,
+                     data.table(variable = name,
+                                Status = Status,
+                                rna = res_rna$log2FoldChange,
+                                rfp = res_ribo$log2FoldChange,
+                                te = res_te$log2FoldChange,
+                                rna.padj = res_rna$padj,
+                                rfp.padj = res_ribo$padj,
+                                te.padj = res_te$padj
+                     )))
+  }#, dds.te = dds.te, ddsMat_ribo = ddsMat_ribo, ddsMat_rna = ddsMat_rna, design = design)
+  #dt.between <- rbindlist(dt.between)
+  # Plot
+
+  dt.between[, Status := factor(Status,
+                                levels = c("No change", "Translation", "Buffering", "mRNA abundance"),
+                                ordered = TRUE)]
+  plot <- plot.DTEG(dt.between, output.dir, p.value, plot.title, width, height, dot.size)
+  return(dt.between)
+}
+
+#' Create a TE table
+#'
+#' Creates a data.table with 5 columns, column names are:\cr
+#' variable, rfp_log2, rna_log2, rna_log10, LFC_TE
+#' @inheritParams DTEG.analysis
+#' @inheritParams countTable
+#' @param filter.rfp numeric, default 1. What is the minimum fpkm value?
+#' @param filter.rna numeric, default 1. What is the minimum fpkm value?
+#' @return a data.table with 5 columns
+te.table <- function(df.rfp, df.rna,
+                     filter.rfp = 1, filter.rna = 1,
+                     collapse = FALSE) {
+  if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
+    stop("df.rfp and df.rna must be ORFik experiments!")
+
   RNA_MRNA_FPKM <- countTable(df.rna, "mrna", type = "fpkm", collapse = collapse)
   RNA_MRNA_FPKM <- data.table(id = rownames(RNA_MRNA_FPKM), RNA_MRNA_FPKM)
 
+
   RFP_CDS_FPKM <- countTable(df.rfp, "cds", type = "fpkm", collapse = collapse)
   RFP_CDS_FPKM <- data.table(id = rownames(RFP_CDS_FPKM), RFP_CDS_FPKM)
-
-
 
   if (!identical(nrow(RNA_MRNA_FPKM), nrow(RFP_CDS_FPKM)))
     stop("Not equal rows in count tables, did you match rfp and rna from different genome builds?")
@@ -63,10 +166,11 @@ te.plot <- function(df.rfp, df.rna,
     stop("filter value is < 0, not allowed!")
 
   dt <- data.table::merge.data.table(RNA_MRNA_FPKM, RFP_CDS_FPKM, by = "id")
+  filtered <- rowMin(as.matrix(dt[,-1])) > max(filter.rna, filter.rfp)
   txNames <- dt$id; dt$id <- NULL
 
   #dt <- dt[RNA_MRNA_FPKM > filter.rfp & RFP_CDS_FPKM > filter.rna, ]
-  dt <- dt[rowMin(as.matrix(dt)) > max(filter.rna, filter.rfp), ]
+  dt <- dt[filtered, ]
   dt.log <- pseudo.transform(dt)
   dt.log10 <- pseudo.transform(dt, log10)
   dt.melt.rna <- melt(dt.log[, colnames(dt.log) %in% colnames(RNA_MRNA_FPKM)[-1], with = FALSE])
@@ -80,53 +184,5 @@ te.plot <- function(df.rfp, df.rna,
   dt.final[, LFC_TE := rfp_log2 - rna_log2]
 
   message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of transcripts"))
-
-  if (height == "auto") height <- 3+(ncol(RFP_CDS_FPKM)-2)
-  subtitle <- paste("Filter: RFP >", filter.rfp, " & mRNA >", filter.rna, "(FPKM)")
-  if (nrow(df.rfp) > 1 & nrow(df.rna) == 1)
-    subtitle <- paste(subtitle, "(Single mRNA sample)")
-  if ("default" %in% type) {
-    plot <- ggplot(data = dt.final) +
-      geom_point(aes(x = rna_log10, y = LFC_TE), alpha = 0.2) +
-      theme_minimal() +
-      geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +
-      xlab("mRNA FPKM (log10)") +
-      ylab("TE (log2 fold change)") +
-      ggtitle(label = plot.title, subtitle = subtitle) +
-      xlim(c(filter.rna, filter.rna + 2.5)) +
-      facet_wrap(~ variable, ncol = 1)
-
-    plot(plot)
-    ggsave(file.path(output.dir, "TE_within.png"), plot,
-           width = width, height = height, dpi = 300)
-  }
-  if ("between" %in% type) {
-    pairs <- list() # creating compairisons :list of pairs
-    my_comparison <- combn(unique(dt.final$variable), 2)
-    pairs <- list()
-    for (i in 1:ncol(my_comparison)) {
-      pairs[[i]] <- c(my_comparison[1,i], my_comparison[2,i])
-    }
-    dt.between <- data.table()
-    for (i in pairs) {
-      name <- paste("Comparison:", i[1], "vs", i[2])
-      rna <- dt.final[variable == i[1], rna_log2] - dt.final[variable == i[2], rna_log2]
-      rfp <- dt.final[variable == i[1], rfp_log2] - dt.final[variable == i[2], rfp_log2]
-      dt.between <- rbindlist(list(dt.between, data.table(variable = name, rna, rfp)))
-    }
-    plot <- ggplot(data = dt.between) +
-      geom_point(aes(x = rna, y = rfp), alpha = 0.2) +
-      theme_minimal() +
-      geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +
-      geom_vline(aes(xintercept =  0), alpha = 0.2, color = "red") +
-      xlab("mRNA (log2 fold change)") +
-      ylab("RFP (log2 fold change)") +
-      ggtitle(label = plot.title, subtitle) +
-      facet_wrap(~ variable, ncol = 2) +
-      xlim(c(-5, 5))
-    plot(plot)
-    ggsave(file.path(output.dir, "TE_between.png"), plot,
-           width = width, height = height, dpi = 300)
-  }
-  return(dt)
+  return(dt.final)
 }
