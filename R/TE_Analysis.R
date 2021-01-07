@@ -143,6 +143,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
 #' @param filter.rfp numeric, default 1. What is the minimum fpkm value?
 #' @param filter.rna numeric, default 1. What is the minimum fpkm value?
 #' @return a data.table with 5 columns
+#' @export
 te.table <- function(df.rfp, df.rna,
                      filter.rfp = 1, filter.rna = 1,
                      collapse = FALSE) {

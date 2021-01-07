@@ -11,6 +11,7 @@
 #' @param xlim numeric vector, default c(-5, 5)
 #' @param ylim numeric vector, default c(-10, 10)
 #' @return a ggplot object
+#' @rdname plot.DTEG
 #' @export
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")
@@ -58,6 +59,7 @@ plot.DTEG <- function(dt, output.dir = NULL,
 #' to save to a file will be called "TE_within.png"
 #' @param height a numeric, width of plot in inches. Default "auto".
 #' @return a ggplot object
+#' @rdname plot.te_rna
 #' @export
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")
