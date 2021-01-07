@@ -27,3 +27,10 @@ a data.table with 5 columns
 Creates a data.table with 5 columns, column names are:\cr
 variable, rfp_log2, rna_log2, rna_log10, LFC_TE
 }
+\seealso{
+Other TE: 
+\code{\link{DTEG.analysis}()},
+\code{\link{DTEG.plot}()},
+\code{\link{te_rna.plot}()}
+}
+\concept{TE}

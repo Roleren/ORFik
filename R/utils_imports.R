@@ -1,6 +1,6 @@
 #' Load bed file as GRanges
 #'
-#' Wraps around \code{\link{import}} and
+#' Wraps around \code{\link{import.bed}} and
 #' tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle

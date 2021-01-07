@@ -11,14 +11,14 @@
 #' @param xlim numeric vector, default c(-5, 5)
 #' @param ylim numeric vector, default c(-10, 10)
 #' @return a ggplot object
-#' @rdname plot.DTEG
+#' @family TE
 #' @export
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
-#' #plot.DTEG(dt)
-plot.DTEG <- function(dt, output.dir = NULL,
+#' #DTEG.plot(dt)
+DTEG.plot <- function(dt, output.dir = NULL,
                       p.value = 0.05,
                       plot.title = "", width = 6,
                       height = 6, dot.size = 0.4,
@@ -50,23 +50,23 @@ plot.DTEG <- function(dt, output.dir = NULL,
 #' Translational efficiency plots
 #'
 #' Create TE plot of:\cr
-#' - Within sample (TE log2 vs mRNA fpkm) ("default")\cr
+#' - Within sample (TE log2 vs mRNA fpkm)\cr
 #'
-#' @inheritParams plot.DTEG
+#' @inheritParams DTEG.plot
 #' @inheritParams te.table
 #' @param dt a data.table with the results from \code{\link{te.table}}
 #' @param output.dir a character path, default NULL(no save), or a directory
 #' to save to a file will be called "TE_within.png"
 #' @param height a numeric, width of plot in inches. Default "auto".
 #' @return a ggplot object
-#' @rdname plot.te_rna
+#' @family TE
 #' @export
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
 #' #dt <- te.table(df.rfp, df.rna)
-#' #plot.te_rna(dt)
-plot.te_rna <- function(dt, output.dir = NULL,
+#' #te_rna.plot(dt)
+te_rna.plot <- function(dt, output.dir = NULL,
                         filter.rfp = 1, filter.rna = 1,
                         plot.title = "",
                         width = 6, height = "auto",

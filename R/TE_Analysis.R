@@ -7,7 +7,7 @@
 #'
 #' What the deltaTE plot calls intensified is here called mRNA abundance and
 #' forwarded is called Buffering.
-#' @inheritParams plot.DTEG
+#' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
 #' @param design a character vector, default "stage". The columns in the
@@ -16,6 +16,7 @@
 #' plot will be named "TE_between.png". If NULL, will not save.
 #' @references doi: 10.1002/cpmb.108
 #' @return a data.table with 8 columns.
+#' @family TE
 #' @export
 #' @import DESeq2
 #' @importFrom data.table rbindlist
@@ -130,7 +131,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
   dt.between[, Status := factor(Status,
                                 levels = c("No change", "Translation", "Buffering", "mRNA abundance"),
                                 ordered = TRUE)]
-  plot <- plot.DTEG(dt.between, output.dir, p.value, plot.title, width, height, dot.size)
+  plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height, dot.size)
   return(dt.between)
 }
 
@@ -143,6 +144,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
 #' @param filter.rfp numeric, default 1. What is the minimum fpkm value?
 #' @param filter.rna numeric, default 1. What is the minimum fpkm value?
 #' @return a data.table with 5 columns
+#' @family TE
 #' @export
 te.table <- function(df.rfp, df.rna,
                      filter.rfp = 1, filter.rna = 1,

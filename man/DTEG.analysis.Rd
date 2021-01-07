@@ -59,3 +59,10 @@ forwarded is called Buffering.
 \references{
 doi: 10.1002/cpmb.108
 }
+\seealso{
+Other TE: 
+\code{\link{DTEG.plot}()},
+\code{\link{te.table}()},
+\code{\link{te_rna.plot}()}
+}
+\concept{TE}
