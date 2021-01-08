@@ -27,8 +27,9 @@ plot will be named "TE_between.png". If NULL, will not save.}
 \item{design}{a character vector, default "stage". The columns in the
 experiment that creates the comparison contrasts.}
 
-\item{p.value}{a numeric, default 0.05 in interval (0,1).
-What p-value used for the analysis?}
+\item{p.value}{a numeric, default 0.05 in interval (0,1)
+or "" to not show.
+What p-value used for the analysis? Will be shown as a caption.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
@@ -44,11 +45,17 @@ a data.table with 8 columns.
 \description{
 Using an equal reimplementation of the deltaTE algorithm (see reference).
 You need at least 2 groups and 2 replicates per group. The Ribo-seq will
-be over CDS and RNA-seq over mRNAs, per transcript, subset to genes if you
-do not need isoform variants.
+be over CDS and RNA-seq over mRNAs, per transcript, subset to genes the returned object,
+if you do not need isoform variants.
 }
 \details{
-What the deltaTE plot calls intensified is here called mRNA abundance and
+Creates a total of 3 DESeq models (given x is design argument input
+and libraryType is RNA-seq and Ribo-seq):\cr
+1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)
+2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)
+3. TE model: design = ~ library type + x + libraryType + libraryType:x
+(differences between the x and libraryType groups and the interaction between them)\cr
+\cr What the deltaTE plot calls intensified is here called mRNA abundance and
 forwarded is called Buffering.
 }
 \examples{

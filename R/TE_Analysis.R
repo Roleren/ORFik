@@ -2,10 +2,16 @@
 #'
 #' Using an equal reimplementation of the deltaTE algorithm (see reference).
 #' You need at least 2 groups and 2 replicates per group. The Ribo-seq will
-#' be over CDS and RNA-seq over mRNAs, per transcript, subset to genes if you
-#' do not need isoform variants.
+#' be over CDS and RNA-seq over mRNAs, per transcript, subset to genes the returned object,
+#' if you do not need isoform variants.
 #'
-#' What the deltaTE plot calls intensified is here called mRNA abundance and
+#' Creates a total of 3 DESeq models (given x is design argument input
+#' and libraryType is RNA-seq and Ribo-seq):\cr
+#' 1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)
+#' 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)
+#' 3. TE model: design = ~ library type + x + libraryType + libraryType:x
+#' (differences between the x and libraryType groups and the interaction between them)\cr
+#' \cr What the deltaTE plot calls intensified is here called mRNA abundance and
 #' forwarded is called Buffering.
 #' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
@@ -61,15 +67,21 @@ DTEG.analysis <- function(df.rfp, df.rna,
                                       rowRanges = rowRanges(RFP_DESEQ),
                                       colData = colData)
   #combined_se <- combined_se[rowMeans(assay(combined_se)) > 1,]
+  message("----------------------"); message("Model 1/3: TE")
+  message("----------------------")
   combined_DESEQ <- DESeqDataSet(combined_se, design = te.design)
   dds.te <- DESeq2::DESeq(combined_DESEQ)
   resultsNames(dds.te)
 
   # Ribo
+  message("----------------------"); message("Model 2/3: Ribo-seq")
+  message("----------------------")
   ddsMat_ribo <- DESeqDataSet(se = RFP_DESEQ, design = main.design)
   ddsMat_ribo <- DESeq(ddsMat_ribo)
 
   # RNA
+  message("----------------------"); message("Model 3/3: RNA-seq")
+  message("----------------------")
   ddsMat_rna <- DESeqDataSet(se = RNA_DESEQ, design = main.design)
   ddsMat_rna <- DESeq(ddsMat_rna)
 

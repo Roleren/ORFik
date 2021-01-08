@@ -22,8 +22,9 @@ DTEG.plot(
 \item{output.dir}{a character path, default NULL(no save), or a directory
 to save to a file will be called "DTEG_plot.png"}
 
-\item{p.value}{a numeric, default 0.05 in interval (0,1).
-What p-value used for the analysis?}
+\item{p.value}{a numeric, default 0.05 in interval (0,1)
+or "" to not show.
+What p-value used for the analysis? Will be shown as a caption.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
