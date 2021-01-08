@@ -94,13 +94,19 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 }
 
 #' Correlation plots between all samples
+#'
+#' Get 2 correlation plots of raw counts and log2(count + 1) over
+#' selected region in: c("mrna", "leaders", "cds", "trailers")
 #' @inheritParams QCplots
 #' @param output.dir directory to save to, 2 files named: cor_plot.png and
 #' cor_plot_log2.png
 #' @param type which value to use, "fpkm", alternative "counts".
+#' @param height numeric, default 400 (in mm)
+#' @param width numeric, default 400 (in mm)
 #' @return invisible(NULL)
 correlation.plots <- function(df, output.dir,
-                              region = "mrna", type = "fpkm") {
+                              region = "mrna", type = "fpkm",
+                              height = 400, width = 400) {
   message("- Correlation plots")
   # Load fpkm values
   data_for_pairs <- countTable(df, region, type = type)
@@ -108,12 +114,12 @@ correlation.plots <- function(df, output.dir,
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(output.dir, "cor_plot.png"), paired_plot,
-         height=400, width=400, units = 'mm', dpi=300)
+         height = height, width = width, units = 'mm', dpi = 300)
   message("  - log2 scaled fpkm")
   paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
                          columns = 1:ncol(data_for_pairs))
   ggsave(pasteDir(output.dir, "cor_plot_log2.png"), paired_plot,
-         height=400, width=400, units = 'mm', dpi=300)
+         height = height, width = width, units = 'mm', dpi = 300)
   return(invisible(NULL))
 }
 

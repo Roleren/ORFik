@@ -4,7 +4,14 @@
 \alias{correlation.plots}
 \title{Correlation plots between all samples}
 \usage{
-correlation.plots(df, output.dir, region = "mrna", type = "fpkm")
+correlation.plots(
+  df,
+  output.dir,
+  region = "mrna",
+  type = "fpkm",
+  height = 400,
+  width = 400
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -16,10 +23,15 @@ cor_plot_log2.png}
 whole mrnas or one of (leaders, cds, trailers)}
 
 \item{type}{which value to use, "fpkm", alternative "counts".}
+
+\item{height}{numeric, default 400 (in mm)}
+
+\item{width}{numeric, default 400 (in mm)}
 }
 \value{
 invisible(NULL)
 }
 \description{
-Correlation plots between all samples
+Get 2 correlation plots of raw counts and log2(count + 1) over
+selected region in: c("mrna", "leaders", "cds", "trailers")
 }
