@@ -84,7 +84,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
   message("----------------------")
   ddsMat_rna <- DESeqDataSet(se = RNA_DESEQ, design = main.design)
   ddsMat_rna <- DESeq(ddsMat_rna)
-
+  message("----------------------")
   # Create contrasts
   pairs <- combn.pairs(unlist(df.rfp[, design]))
 

@@ -343,7 +343,9 @@ importGtfFromTxdb <- function(txdb) {
 #' @param minThreeUTR (integer) minimum bp for 3' UTR during filtering for the
 #' transcripts. Set to NULL if no 3' UTRs exists for annotation.
 #' @param longestPerGene logical (TRUE), return only longest valid transcript
-#' per gene.
+#' per gene. NOTE: This is by priority longest cds isoform, if equal then pick
+#' longest total transcript. So if transcript is shorter but cds is longer,
+#'  it will still be the one returned.
 #' @param stopOnEmpty logical TRUE, stop if no valid transcripts are found ?
 #' @return a character vector of valid transcript names
 #' @export
@@ -374,7 +376,8 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
              ifelse(three, utr3_len >= minThreeUTR, TRUE), ]
 
   gene_id <- cds_len <- NULL
-  data.table::setorder(tx, gene_id, -cds_len)
+  # If longest per gene, pick longest cds, then longest tx if equal.
+  data.table::setorder(tx, gene_id, -cds_len, -tx_len)
   if (longestPerGene) {
     tx <- tx[!duplicated(tx$gene_id), ]
   }

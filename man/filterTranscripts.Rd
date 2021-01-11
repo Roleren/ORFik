@@ -29,7 +29,9 @@ transcripts}
 transcripts. Set to NULL if no 3' UTRs exists for annotation.}
 
 \item{longestPerGene}{logical (TRUE), return only longest valid transcript
-per gene.}
+per gene. NOTE: This is by priority longest cds isoform, if equal then pick
+longest total transcript. So if transcript is shorter but cds is longer,
+ it will still be the one returned.}
 
 \item{stopOnEmpty}{logical TRUE, stop if no valid transcripts are found ?}
 
