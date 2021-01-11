@@ -157,7 +157,7 @@ df <- read.experiment("yeast_exp_RNA")
 ```
 If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in Libre Office, Excel or another spreadsheet viewer. 
 
-## convert libraries to new formats
+## Convert libraries to new formats
 Now you have an experiment, but bam files are big and slow to load. Let's convert to some faster formats.
 
 If you want optimzed format identical to bam file, use .ofst. (Fastest, not readable in IGV)

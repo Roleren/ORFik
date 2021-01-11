@@ -34,9 +34,10 @@ entropy that are recreated based on scientific publications.
 9. Several standardized plots for coverage and metacoverage of NGS data, including smart grouping functions for easier prototyping.
 10. Automatic download of genome annotation from any species supported by ensembl.
 11. Automatic download and renaming of files from SRA, ERA and DRA. 
-12. Simplifying working with massive amounts of datasets using the ORFik experiment class. 
+12. Trimming data using fastp and alignment using STAR.
+13. Simplifying working with massive amounts of datasets using the ORFik experiment class. 
 
-The first 9 points on this list is described here, for more advanced use (point 10-12) check out the other vignettes. 
+The first 9 points on this list is described here, for more advanced use (point 10-13) check out the other vignettes. 
 
 # Finding Open Reading Frames 
 
@@ -703,4 +704,4 @@ Our hope is that by using ORFik, we can simplify your analysis when
 you focus on ORFs / transcript features and especially in combination with
 sequence libraries like RNA-seq and Ribo-seq.  
 
-Happy coding!
+If needed, you can move to the more advanced features of ORFik in the next vignettes, Happy coding!
