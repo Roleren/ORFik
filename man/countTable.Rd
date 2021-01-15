@@ -15,11 +15,12 @@ to only 2, then only those 2 count tables will be outputted.}
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers).}
 
-\item{type}{default: "count" (raw counts matrix),
+\item{type}{character, default: "count" (raw counts matrix).
+Which object type and normalization do you want ?
 "summarized" (SummarizedExperiment object),
 "deseq" (Deseq2 experiment, design will be all valid non-unique
 columns except replicates, change by using DESeq2::design,
-normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm"}
+normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm".}
 
 \item{collapse}{a logical/character (default FALSE), if TRUE all samples
 within the group SAMPLE will be collapsed to one. If "all", all
@@ -27,7 +28,8 @@ groups will be merged into 1 column called merged_all. Collapse is defined
 as rowSum(elements_per_group) / ncol(elements_per_group)}
 }
 \value{
-a data.table of columns as counts per library, column name
+a data.table/SummarizedExperiment/DESeq object
+of columns as counts / normalized counts per library, column name
 is name of library. Rownames must be unique for now. Might change.
 }
 \description{
@@ -61,3 +63,8 @@ ORFik.template.experiment()
 # for differential expression analysis
 # countTable(df, "mrna", type = "deseq")
 }
+\seealso{
+Other countTable: 
+\code{\link{countTable_regions}()}
+}
+\concept{countTable}

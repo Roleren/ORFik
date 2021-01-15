@@ -48,3 +48,8 @@ will be the names the list elements.
 \description{
 Make a list of count matrices from experiment
 }
+\seealso{
+Other countTable: 
+\code{\link{countTable}()}
+}
+\concept{countTable}

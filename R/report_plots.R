@@ -103,21 +103,27 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 #' @param type which value to use, "fpkm", alternative "counts".
 #' @param height numeric, default 400 (in mm)
 #' @param width numeric, default 400 (in mm)
+#' @param size numeric, size of dots, default 0.15.
 #' @return invisible(NULL)
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
-                              height = 400, width = 400) {
+                              height = 400, width = 400, size = 0.15) {
   message("- Correlation plots")
   # Load fpkm values
   data_for_pairs <- countTable(df, region, type = type)
+  # Settings for points
+  point_settings <- list(continuous = wrap("points", alpha = 0.3, size = size),
+                         combo = wrap("dot", alpha = 0.4, size=0.2))
   message("  - raw scaled fpkm")
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
-                         columns = 1:ncol(data_for_pairs))
+                         columns = 1:ncol(data_for_pairs),
+                         lower = point_settings)
   ggsave(pasteDir(output.dir, "cor_plot.png"), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
   message("  - log2 scaled fpkm")
   paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
-                         columns = 1:ncol(data_for_pairs))
+                         columns = 1:ncol(data_for_pairs),
+                         lower = point_settings)
   ggsave(pasteDir(output.dir, "cor_plot_log2.png"), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
   return(invisible(NULL))

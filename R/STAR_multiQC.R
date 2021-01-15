@@ -45,7 +45,8 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
                  "# of reads multimapped")]
     co$sample <- gsub("contaminants_", "", co$sample)
     if (!is.null(res)) {
-      res <- data.table::merge.data.table(aligned, co, by = "sample", suffixes = c("-genome", "-contamination"))
+      res <- data.table::merge.data.table(aligned, co, by = "sample",
+                                          suffixes = c("-genome", "-contamination"))
     } else res <- co
 
   }
@@ -66,8 +67,10 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
       warning("A sample lost > 40% of reads during trimming")
     }
     if (1 %in% grep("ge", steps)) {
-      res$`total mapped reads %-genome vs raw` <- round((res$`total mapped reads #-genome` / res$raw_reads) * 100, 4)
-      res$`total mapped reads %-genome vs trim` <- round((res$`total mapped reads #-genome` / res$trim_reads) * 100, 4)
+      res$`total mapped reads %-genome vs raw` <-
+        round((res$`total mapped reads #-genome` / res$raw_reads) * 100, 4)
+      res$`total mapped reads %-genome vs trim` <-
+        round((res$`total mapped reads #-genome` / res$trim_reads) * 100, 4)
     }
 
     if (any(res$`total mapped reads %-genome vs trim` < 3)) {
@@ -116,7 +119,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
   # Read log files 1 by 1 (only data column)
   dt <- lapply(log_files, function(file)
     fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])
-  # Read log files 1 by 1 (only info column)
+  # Read log files, only 1 (only info column)
   dt_all <- fread(log_files[1], sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,1]
   for (i in dt) {
     dt_all <- cbind(dt_all, as.data.table(i))
@@ -151,10 +154,14 @@ STAR.multiQC <- function(folder, type = "aligned") {
   fwrite(dt_f, file.path(folder, "00_STAR_LOG_table.csv"))
   # create plot
   dt_plot <- melt(dt_f, id.vars = c("sample", "sample_id"))
-  gg_STAR <- ggplot(dt_plot, aes(x=sample_id, y = value, group = sample, fill = sample)) +
-    geom_bar(aes(color = sample), stat="identity", position=position_dodge())+
+  sample.col <- if (nrow(dt_f) > 12) {
+    dt_plot$sample } else NULL
+
+  gg_STAR <- ggplot(dt_plot,
+                    aes(x=sample_id, y = value, group = sample, fill = sample)) +
+    geom_bar(aes(color = sample.col), stat="identity", position=position_dodge()) +
     scale_fill_brewer(palette="Paired")+
-    ylab("STAR alignment statistics value, log10 scaled") +
+    ylab("Value (log10)") +
     xlab("Samples") +
     facet_wrap(  ~ variable, scales = "free") +
     scale_y_log10() +

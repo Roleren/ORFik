@@ -199,6 +199,9 @@ Loading time of 10GB Ribo-seq bam file reduced to ~ 15 seconds and ~ 200MB size.
 ORFik also support a full QC report for post alignment statistics, correlation plots,
 simplified libraries for plotting, meta coverage, ++.
 
+
+## General report
+The default QC report:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 QCreport(df)
 ```
@@ -206,6 +209,13 @@ The plots and statistics are saved to disc.
 To see the statistics, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 QCstats(df)
+```
+
+## Ribo-seq specific QC
+
+In addition there is a QC report for Ribo-seq, with some addition analysis of read lengths and frames. This should only be run on when you have pshifted the reads.
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+RiboQC.plot(df)
 ```
 
 # Using the ORFik system in your script

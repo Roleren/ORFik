@@ -10,7 +10,8 @@ correlation.plots(
   region = "mrna",
   type = "fpkm",
   height = 400,
-  width = 400
+  width = 400,
+  size = 0.15
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ whole mrnas or one of (leaders, cds, trailers)}
 \item{height}{numeric, default 400 (in mm)}
 
 \item{width}{numeric, default 400 (in mm)}
+
+\item{size}{numeric, size of dots, default 0.15.}
 }
 \value{
 invisible(NULL)
