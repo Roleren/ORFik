@@ -131,6 +131,17 @@ alignment <-
 
 If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format. You will also get a MultiQC report from STAR runs made by ORFik for you.
 
+### RAM usage warnings
+STAR is very memory hungry, therefor if want to index and align large genomes like human (3 GB usually), you might need to adjust 2 parameters.
+If you have less than 40 GB free memory (32 GB might work), adjust this during indexing:
+
+- 20 GB max ram usage during genome generation
+- 2 SA sparse (suffix array should be sparse, this will give slower mapping)
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+index <- STAR.index(annotation, max.ram = 20, SAsparse = 2)
+```
+
 
 # Create an ORFik experiment of the Yeast data
 To simplify coding and sharing of your work, you should make a ORFik experiment, check out the ORFik experiment vignette if you are unfamiliar with this class.

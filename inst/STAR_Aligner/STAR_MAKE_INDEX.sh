@@ -24,6 +24,7 @@ OPTIONS:
 	-G         path to use as output for species genome, if other than rest
 	-S         path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-m	   max cpus allowed (defualt 40)
+	-r	   genomeSAsparseD argument, default 1.
 	-h	   this help message
 example usage (easy): STAR_MAKE_INDEX.sh -o <out.dir> -s <in.species>
 
@@ -38,6 +39,8 @@ EOF
 phix=""
 rRNA=""
 maxCPU=60
+maxRAM=300000000000
+SAsparse=1
 STAR=~/bin/STAR-2.7.0c/source/STAR
 tRNA=""
 ncRNA=""
@@ -46,7 +49,7 @@ species=""
 genomeGTF=""
 genome=""
 species=""
-while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
+while getopts ":o:s:p:r:R:a:c:n:t:f:g:G:S:m:h" opt; do
     case $opt in
     s)
 	species=$OPTARG
@@ -59,6 +62,14 @@ while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
     r)
         rRNA=$OPTARG
         echo "-r path $OPTARG"
+	;;
+	  R)
+        maxRAM=$OPTARG
+        echo "-R maxRAM $OPTARG"
+  ;;
+	  a)
+        SAsparse=$OPTARG
+        echo "-R SAsparse $OPTARG"
 	;;
     n)
         ncRNA=$OPTARG
@@ -78,11 +89,11 @@ while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
 	;;
     g)
         genomeGTF=$OPTARG
-        echo "-f gtf/gff genome $OPTARG"
+        echo "-g gtf/gff genome $OPTARG"
 	;;
     G)
         outGenome=$OPTARG
-        echo "-outGenome folder $OPTARG"
+        echo "-G outGenome folder $OPTARG"
 	;;
 
     o)
@@ -94,8 +105,8 @@ while getopts ":o:s:p:r:c:n:t:f:g:G:S:m:h" opt; do
         echo "-S STAR path $OPTARG"
         ;;
     m)
-	maxCPU=$OPTARG
-	echo "-m maxCPU: $OPTARG"
+	      maxCPU=$OPTARG
+	      echo "-m maxCPU: $OPTARG"
         ;;
     h)
         usage
@@ -164,7 +175,7 @@ if [ ! -d ${out_dir}/genomeDir ]; then
         mkdir ${out_dir}/genomeDir
 fi
 
-# 1: currently used cores, 2: max cores
+# 1: max cores, 2: currently used cores
 function nCores()
 {
 	if (( $1 > $2 )); then
@@ -186,7 +197,8 @@ if [[ ${genome} != "" ]]; then
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \
 	--sjdbOverhang 72 \
-	--limitGenomeGenerateRAM 30000000000 \
+	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
+	--genomeSAsparseD $SAsparse \
 	--outFileNamePrefix ${mainGenomeOut}
 fi
 # contaminants
@@ -197,7 +209,7 @@ if [[ $contaminants != "" ]]; then
 	--genomeFastaFiles ${contaminants} \
 	--genomeDir ${out_dir}/contaminants_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 300000000000 \
+	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
 	--genomeChrBinNbits 11 \
 	--outFileNamePrefix ${out_dir}/contaminants_genomeDir/
 fi
@@ -210,7 +222,7 @@ if [[ $phix != "" ]]; then
 	--genomeFastaFiles ${phix} \
 	--genomeDir ${out_dir}/PhiX_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 80000000 \
+	--limitGenomeGenerateRAM $(nCores $maxRAM 80000000) \
 	--genomeSAindexNbases 2 \
 	--outFileNamePrefix ${out_dir}/PhiX_genomeDir/
 fi
@@ -223,7 +235,7 @@ if [[ $rRNA != "" ]]; then
 	--genomeFastaFiles ${rRNA} \
 	--genomeDir ${out_dir}/rRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 300000000000 \
+	--limitGenomeGenerateRAM $(nCores $maxRAM 300000000000) \
 	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation
 fi
 # ncRNA (small genome 5)
@@ -234,7 +246,7 @@ if [[ $ncRNA != "" ]]; then
 	--genomeFastaFiles ${ncRNA} \
 	--genomeDir ${out_dir}/ncRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 300000000000 \
+	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
 	--genomeSAindexNbases 5 \
 	--outFileNamePrefix ${out_dir}/ncRNA_genomeDir/
 fi
@@ -257,7 +269,7 @@ if [[ $tRNA != "" ]]; then
 	--genomeFastaFiles $tRNA \
 	--genomeDir ${out_dir}/tRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
-	--limitGenomeGenerateRAM 10000000000 \
+	--limitGenomeGenerateRAM $(nCores $maxRAM 10000000000) \
 	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11 \
 	--outFileNamePrefix ${out_dir}/tRNA_genomeDir/

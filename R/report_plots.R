@@ -105,6 +105,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 #' @param width numeric, default 400 (in mm)
 #' @param size numeric, size of dots, default 0.15.
 #' @return invisible(NULL)
+#' @importFrom GGally wrap
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
                               height = 400, width = 400, size = 0.15) {

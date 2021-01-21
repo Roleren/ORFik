@@ -9,6 +9,8 @@ STAR.index(
   output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
   star.path = STAR.install(),
   max.cpus = min(90, detectCores() - 1),
+  max.ram = 30,
+  SAsparse = 1,
   wait = TRUE,
   remake = FALSE,
   script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik")
@@ -31,6 +33,17 @@ set path to a runnable star if you already have it.}
 \item{max.cpus}{integer, default: min(90, detectCores() - 1),
 number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
 have 8 cores it will use 7.}
+
+\item{max.ram}{integer, default 30, in Giga Bytes (GB).
+Maximum amount of RAM allowed for STAR limitGenomeGenerateRAM argument. RULE:
+idealy 10x genome size, but do not set too close to machine limit. Default fits
+well for human genome size (3 GB * 10 = 30 GB)}
+
+\item{SAsparse}{int > 0,  default 1. If you do not have at least 64GB RAM,
+you might need to set this to 2.
+suffux array sparsity, i.e.  distance between indices:
+use bigger numbers to decrease needed RAM at the cost of mapping
+speed reduction. Only applies to genome, not conaminants.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it

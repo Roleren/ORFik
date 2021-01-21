@@ -48,7 +48,9 @@ OPTIONS:
 	-m	max cpus allowed (defualt 90)
 	-M  Max multimapping (default 10) Set to 1 to get only unique reads. Only applies for genome
       step, not the depletion step.
-	-k	a character, Keep loaded genomes STAR index (y) or not (n), default (n)
+	-k	a character, Keep loaded genomes STAR index:
+	    yes (y), no: Remove loaded (n), no shared genome (noShared),
+	    default (n)
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -342,7 +344,8 @@ function comp()
 		echo "-"
 	fi
 }
-# 1: currently used cores, 2: max cores
+
+# 1: max cores, 2: currently used cores
 function nCores()
 {
 	if (( $1 > $2 )); then
@@ -359,6 +362,8 @@ function keepOrNot()
 		echo LoadAndKeep
 	elif (( $1 == "n" )); then
 		echo LoadAndRemove
+	elif (( $1 == "noShared" )); then
+	  echo NoSharedMemory
 	else
 		exit 1
 	fi

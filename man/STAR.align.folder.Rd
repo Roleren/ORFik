@@ -16,12 +16,12 @@ STAR.align.folder(
   min.length = 20,
   mismatches = 3,
   trim.front = 0,
+  max.multimap = 10,
   alignment.type = "Local",
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
   include.subfolders = "n",
   resume = NULL,
-  max.multimap = 10,
   multiQC = TRUE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
@@ -107,6 +107,10 @@ Only applies for genome alignment step.}
 \item{trim.front}{0, default trim 0 bases 5'. For Ribo-seq set use 0.
 Ignored if tr (trim) is not one of the arguments in "steps"}
 
+\item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
+will skip the read. Set to 1 to only get unique mapping reads. Only applies for
+genome alignment step. The depletions are allowing for multimapping.}
+
 \item{alignment.type}{default: "Local": standard local alignment with soft-clipping allowed,
 "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.}
 
@@ -128,10 +132,6 @@ have 8 cores it will use 7.}
 the assumed already trimmed data and start / continue from there starting at phix,
 usefull if something crashed. Like if you specified wrong STAR version, but the trimming
 step was completed.}
-
-\item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
-will skip the read. Set to 1 to only get unique mapping reads. Only applies for
-genome alignment step. The depletions are allowing for multimapping.}
 
 \item{multiQC}{logical, default TRUE. Do mutliQC comparison of STAR
 alignment between all the samples. Outputted in aligned/LOGS folder.

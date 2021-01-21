@@ -1,0 +1,132 @@
+---
+title: "ORFik_Ribo-seq_pipeline"
+author: "Haakon Tjeldnes & Kornel Labun"
+date: "`r BiocStyle::doc_date()`"
+package: "`r pkg_ver('ORFik')`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{ORFik_Ribo-seq_pipeline}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+Welcome to the `ORFik` package. 
+`ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data and NGS data.
+This vignette will preview a simple Ribo-seq pipeline using ORFik. It is important you read all the other vignettes before this one, since functions will not be explained here in detail. 
+
+# Pipeline
+This pipeline will shows steps needed to analyse Ribo-seq from Alexaki et al, 2020
+The following steps are done:
+
+1. Define directory paths
+2. Download Ribo-seq data from SRA (subset to 2 million reads)
+3. Download annotation and contaminants
+4. Align data
+5. Make ORFik experiment
+6. QC
+7. Heatmaps
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Ribo-seq HEK293 (2020) Investigative analysis of quality of new Ribo-seq data
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Article: https://f1000research.com/articles/9-174/v2#ref-5
+library(ORFik)
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Settings (This is the only Custom part per user, rest you can just run)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# This is where you want your annotation and STAR index
+annotation <- "/media/roler/S/data/Bio_data/references/Homo_sapiens_GRCh38_101/"
+# Where to download fastq files
+fastq.dir <- "/media/roler/S/data/Bio_data/raw_data/Ribo-seq/Alexaki_Human/"
+# Where you want mapped bam files
+bam.dir <- "/media/roler/S/data/Bio_data/processed_data/Ribo-seq/Alexaki_Human/"
+
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Download fastq files for experiment and rename (Skip if you have the files already)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# SRA Meta data download (work for ERA and DRA too)
+study <- download.SRA.metadata("PRJNA591214", fastq.dir)
+# Remove RNA-seq and CO libraries, we don't want those
+study <- study[grep("mRNA-Seq|CO", sample_title, invert = TRUE),]
+# Download fastq files (uses SRR numbers (Run column) from study)
+download.SRA(study, fastq.dir, rename = FALSE, subset = 2000000)
+
+# Which organism is this, scientific name, like "Homo sapiens" or "Danio rerio"
+organism <- study$ScientificName[1] # Usually you find organism here, else set it yourself
+paired.end <- study$LibraryLayout == "PAIRED"
+paired.end.all <- all(paired.end)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Annotation
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+
+annotation <- getGenomeAndAnnotation(
+  organism = organism,
+  genome = TRUE, GTF = TRUE,
+  phix = TRUE, ncRNA = TRUE, tRNA = TRUE, rRNA = TRUE,
+  output.dir = annotation,
+  assembly_type = "primary_assembly"
+)
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# STAR index
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Remove max.ram = 20 and SAsparse = 2, if you have more than 64GB ram
+index <- STAR.index(annotation, wait = TRUE, max.ram = 20, SAsparse = 2)
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Alignment (with depletion of phix, rRNA, ncRNA and tRNAs) & (with MultiQC of final STAR alignment)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+alignment <-
+  STAR.align.folder(fastq.dir, bam.dir, index,
+                    paired.end = paired.end.all,
+                    steps = "tr-co-ge", # (trim needed: adapters found, then genome)
+                    adapter.sequence = "auto", # Adapters are auto detected
+                    trim.front = 0, min.length = 20)
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Create experiment (Starting point if alignment is finished)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+library(ORFik)
+create.experiment(paste0(alignment, "/aligned/"), exper = "Alexaki_RFP",
+                  fa = annotation["genome"],
+                  txdb = paste0(annotation["gtf"], ".db"),
+                  organism = organism,
+                  pairedEndBam = paired.end,
+                  viewTemplate = FALSE)
+# Now fix experiment table in libre office
+df <- read.experiment("Alexaki_RFP")
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Convert files and run Annotation vs alignment QC
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+ORFikQC(df)
+#remove.experiments(df)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# P-shifting of Ribo-seq reads:
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# From ORFikQC it looks like 20, 21, 27 and 28 are candidates for Ribosomal footprints
+shiftFootprintsByExperiment(df, accepted.lengths = c(20:21, 27:28))
+
+
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Create heatmaps
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Remove RNA-seq
+# Pre-pshifting
+heatMapRegion(df, region = c("TIS", "TTS"), shifting = "5prime", type = "ofst",
+              outdir = paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/pre-pshift/"))
+remove.experiments(df)
+# After pshifting
+heatMapRegion(df, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
+              outdir = paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
+```

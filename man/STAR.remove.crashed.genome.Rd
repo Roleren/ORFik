@@ -14,7 +14,7 @@ if you don't have STAR installed at default location, it will install it there,
 set path to a runnable star if you already have it.}
 }
 \value{
-return value from system, 0 if all good.
+return value from system call, 0 if all good.
 }
 \description{
 This happens if you abort STAR run early, and it halts at: ..... loading genome

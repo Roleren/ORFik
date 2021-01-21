@@ -21,6 +21,15 @@
 #' @param max.cpus integer, default: min(90, detectCores() - 1),
 #'  number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
 #'  have 8 cores it will use 7.
+#' @param max.ram integer, default 30, in Giga Bytes (GB).
+#' Maximum amount of RAM allowed for STAR limitGenomeGenerateRAM argument. RULE:
+#' idealy 10x genome size, but do not set too close to machine limit. Default fits
+#' well for human genome size (3 GB * 10 = 30 GB)
+#' @param SAsparse int > 0,  default 1. If you do not have at least 64GB RAM,
+#' you might need to set this to 2.
+#' suffux array sparsity, i.e.  distance between indices:
+#' use bigger numbers to decrease needed RAM at the cost of mapping
+#' speed reduction. Only applies to genome, not conaminants.
 #' @param script location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
@@ -41,6 +50,7 @@
 #' # STAR.index(arguments, output.dir)
 STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
                        star.path = STAR.install(), max.cpus = min(90, detectCores() - 1),
+                       max.ram = 30, SAsparse = 1,
                        wait = TRUE, remake = FALSE,
                        script = system.file("STAR_Aligner",
                                             "STAR_MAKE_INDEX.sh",
@@ -68,13 +78,18 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
   out <- paste("-o", output.dir)
   max.cpus <- paste("-m", max.cpus)
-  full <- paste(script, out, star.path, max.cpus,
+  max.ram <- paste("-R", format(max.ram*1e9, scientific = FALSE))
+  SAsparse <- paste("-a", SAsparse)
+  # TODO: ADD check for file size vs available RAM.
+  # file.size(annotation["genome"]) / 1e9
+  # system("cat /proc/meminfo")
+  #memory_GB <- as.integer(gsub(" |MemTotal:|kB", replacement = "", a[1])) / 1e6
+
+  full <- paste(script, out, star.path, max.cpus, max.ram, SAsparse,
                 paste(hits, collapse = " "))
   message("STAR indexing:\n")
   print(full); print("\n")
   if (.Platform$OS.type == "unix") {
-    #memory_GB <- as.integer(gsub(" |MemTotal:|kB", replacement = "", a)) / 1e6
-
     message("Starting indexing at time:")
     print(Sys.time())
     out <- system(command = full, wait = wait)
@@ -225,11 +240,10 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               paired.end = FALSE,
                               steps = "tr-ge", adapter.sequence = "auto",
                               min.length = 20, mismatches = 3,
-                              trim.front = 0,
+                              trim.front = 0, max.multimap = 10,
                               alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
-                              wait = TRUE,
-                              include.subfolders = "n", resume = NULL,
-                              max.multimap = 10, multiQC = TRUE,
+                              wait = TRUE, include.subfolders = "n", resume = NULL,
+                              multiQC = TRUE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -303,8 +317,9 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
                               steps = "tr-ge", adapter.sequence = "auto",
                               min.length = 20, mismatches = 3, trim.front = 0,
-                              alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
-                              wait = TRUE, resume = NULL, max.multimap = 10,
+                              max.multimap = 10, alignment.type = "Local",
+                              max.cpus = min(90, detectCores() - 1),
+                              wait = TRUE, resume = NULL,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
                                                    package = "ORFik")
@@ -435,7 +450,7 @@ install.fastp <- function(folder = "~/bin") {
 #' This happens if you abort STAR run early, and it halts at: ..... loading genome
 #' @param index.path path to index folder of genome
 #' @inheritParams STAR.index
-#' @return return value from system, 0 if all good.
+#' @return return value from system call, 0 if all good.
 #' @export
 #' @family STAR
 #' @examples
@@ -443,5 +458,10 @@ install.fastp <- function(folder = "~/bin") {
 STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
   message("Trying to remove loaded genome:")
   out <- paste(star.path, "--genomeDir", index.path, "--genomeLoad Remove")
-  system(out)
+  status <- system(out)
+  if (status == 0) {
+    message("Genome removed, if still not working",
+            " wait 5 minutes or restart system")
+  }
+  return(status)
 }

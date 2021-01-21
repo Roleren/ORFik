@@ -241,8 +241,12 @@ function findPairsSub()
     echo "running paired end with subfolders for files:\n ${myArray[x]} and\n ${myArray[x+1]}"
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
+		i=$((x + 2))
+		if [[ $i == $numOfFiles ]];then
+			keep="n"
+		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k "y" -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
