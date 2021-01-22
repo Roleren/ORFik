@@ -38,3 +38,9 @@ ggplot object as a grid
 \description{
 Quality control for pshifted Ribo-seq data
 }
+\examples{
+df <- ORFik.template.experiment()
+df <- df[3,] #lets only p-shift RFP sample at index 3
+#shiftFootprintsByExperiment(df)
+#RiboQC.plot(df)
+}

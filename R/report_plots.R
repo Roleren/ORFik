@@ -142,6 +142,11 @@ correlation.plots <- function(df, output.dir,
 #' @return ggplot object as a grid
 #' @importFrom ggplot2 theme
 #' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' df <- df[3,] #lets only p-shift RFP sample at index 3
+#' #shiftFootprintsByExperiment(df)
+#' #RiboQC.plot(df)
 RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
                         width = 6.6, height = 4.5,
                         type = "pshifted", weight = "score",  BPPARAM = bpparam()) {

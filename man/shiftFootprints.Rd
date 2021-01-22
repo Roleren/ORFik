@@ -46,17 +46,14 @@ NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 33, but will remove 3S so final read width is 30 in ORFik.
 }
 \examples{
-# Basic run
-#shiftFootprints(footprints, shifts)
-# Full example
-\dontrun{
-# input path to gtf, or load it as TxDb.
+## Basic run
+# Transcriptome annotation ->
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-# load reads
+# Ribo seq data ->
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
-footprints <- GenomicAlignments::readGAlignments(
-  riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
-    isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
+\dontrun{
+footprints <- readBam(riboSeq_file)
+
 # detect the shifts automagically
 shifts <- detectRibosomeShifts(footprints, gtf_file)
 # shift the RiboSeq footprints

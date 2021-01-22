@@ -262,12 +262,12 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #' @export
 #' @family ORFHelpers
 #' @examples
-#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#' gr_plus <- GRanges(seqnames = "chr1",
 #'                    ranges = IRanges(c(7, 14), width = 3),
-#'                    strand = c("+", "+"))
-#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                    strand = "+")
+#' gr_minus <- GRanges(seqnames = "chr2",
 #'                     ranges = IRanges(c(4, 1), c(9, 3)),
-#'                     strand = c("-", "-"))
+#'                     strand = "-")
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' startCodons(grl, is.sorted = FALSE)
 #'
@@ -362,7 +362,14 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #' @family features
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
-#'
+#' @examples
+#' ## ORF start region
+#' orf <- GRangesList(tx1 = GRanges("1", 200:300, "+"))
+#' tx <- GRangesList(tx1 = GRanges("1",
+#'                    IRanges(c(100, 200), c(195, 400)), "+"))
+#' startRegion(orf, tx, upstream = 6, downstream = 6)
+#' ## 2nd codon of ORF
+#' startRegion(orf, tx, upstream = -3, downstream = 6)
 startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
                         upstream = 2L, downstream = 2L) {
   if (!is.sorted) {
@@ -399,7 +406,14 @@ startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
 #' @family features
 #' @return a GRanges, or GRangesList object if any group had > 1 exon.
 #' @export
-#'
+#' @examples
+#' ## ORF stop region
+#' orf <- GRangesList(tx1 = GRanges("1", 200:300, "+"))
+#' tx <- GRangesList(tx1 = GRanges("1",
+#'                    IRanges(c(100, 305), c(300, 400)), "+"))
+#' stopRegion(orf, tx, upstream = 6, downstream = 6)
+#' ## 2nd last codon of ORF
+#' stopRegion(orf, tx, upstream = 6, downstream = -3)
 stopRegion <- function(grl, tx = NULL, is.sorted = TRUE,
                         upstream = 2L, downstream = 2L) {
   if (!is.sorted) {

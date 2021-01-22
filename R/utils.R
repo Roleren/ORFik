@@ -293,7 +293,7 @@ combn.pairs <- function(x) {
   comparisons.design <- unique(x)
   my_comparison <- combn(unique(comparisons.design), 2)
   pairs <- list()
-  for (i in 1:ncol(my_comparison)) {
+  for (i in seq(ncol(my_comparison))) {
     pairs[[i]] <- c(my_comparison[1, i], my_comparison[2, i])
   }
   return(pairs)

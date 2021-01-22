@@ -152,7 +152,7 @@ orf_aa_seq
 ```
 save amino acid sequences as .fasta do
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-writeXStringSet(orf_aa_seq, filepath = "uorfs.fasta")
+writeXStringSet(orf_aa_seq, filepath = "uorfs_AA.fasta")
 ```
 
 We will now look on ORFik functions to get startcodons and stopcodon etc.

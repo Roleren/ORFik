@@ -27,6 +27,11 @@ a data.table with 5 columns
 Creates a data.table with 5 columns, column names are:\cr
 variable, rfp_log2, rna_log2, rna_log10, LFC_TE
 }
+\examples{
+#df.rfp <- read.experiment("Riboseq")
+#df.rna <- read.experiment("RNAseq")
+#te.table(df.rfp, df.rna)
+}
 \seealso{
 Other TE: 
 \code{\link{DTEG.analysis}()},

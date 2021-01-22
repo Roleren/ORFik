@@ -35,6 +35,15 @@ If tx is null, then upstream will be forced to 0 and downstream to
 a maximum of grl width (3' UTR end for mRNAs).
 Since there is no reference for splicing.
 }
+\examples{
+## ORF start region
+orf <- GRangesList(tx1 = GRanges("1", 200:300, "+"))
+tx <- GRangesList(tx1 = GRanges("1",
+                   IRanges(c(100, 200), c(195, 400)), "+"))
+startRegion(orf, tx, upstream = 6, downstream = 6)
+## 2nd codon of ORF
+startRegion(orf, tx, upstream = -3, downstream = 6)
+}
 \seealso{
 Other features: 
 \code{\link{computeFeaturesCage}()},

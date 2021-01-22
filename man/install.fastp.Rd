@@ -21,7 +21,12 @@ On Mac OS it will use precompiled binaries.\cr
 Does not work yet for Windows!
 }
 \examples{
+## With default folder:
 #install.fastp()
+
+## Or set manual folder:
+folder <- "~/I/WANT/IT/HERE/"
+#install.fastp(folder)
 }
 \references{
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6129281/

@@ -35,6 +35,15 @@ upstream to a minimum of -grl width (to the TSS).
 .
 Since there is no reference for splicing.
 }
+\examples{
+## ORF stop region
+orf <- GRangesList(tx1 = GRanges("1", 200:300, "+"))
+tx <- GRangesList(tx1 = GRanges("1",
+                   IRanges(c(100, 305), c(300, 400)), "+"))
+stopRegion(orf, tx, upstream = 6, downstream = 6)
+## 2nd last codon of ORF
+stopRegion(orf, tx, upstream = 6, downstream = -3)
+}
 \seealso{
 Other features: 
 \code{\link{computeFeaturesCage}()},

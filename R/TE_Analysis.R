@@ -1,9 +1,10 @@
 #' Run differential TE analysis
 #'
 #' Using an equal reimplementation of the deltaTE algorithm (see reference).
-#' You need at least 2 groups and 2 replicates per group. The Ribo-seq will
-#' be over CDS and RNA-seq over mRNAs, per transcript, subset to genes the returned object,
-#' if you do not need isoform variants.
+#' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
+#' be over CDS and RNA-seq over mRNAs, per transcript. \cr
+#' If you do not need isoform variants, subset to longest isoform in
+#' the returned object.
 #'
 #' Creates a total of 3 DESeq models (given x is design argument input
 #' and libraryType is RNA-seq and Ribo-seq):\cr
@@ -158,6 +159,10 @@ DTEG.analysis <- function(df.rfp, df.rna,
 #' @return a data.table with 5 columns
 #' @family TE
 #' @export
+#' @examples
+#' #df.rfp <- read.experiment("Riboseq")
+#' #df.rna <- read.experiment("RNAseq")
+#' #te.table(df.rfp, df.rna)
 te.table <- function(df.rfp, df.rna,
                      filter.rfp = 1, filter.rna = 1,
                      collapse = FALSE) {

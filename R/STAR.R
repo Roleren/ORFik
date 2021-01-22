@@ -362,6 +362,10 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' Will not run "make", only use precompiled STAR file.\cr
 #' Can only run on unix systems (Linux and Mac), and requires
 #' minimum 30GB memory on genomes like human, rat, zebrafish etc.
+#'
+#' ORFik for now only uses precompiled STAR binaries, so if you already have
+#' a STAR version it is adviced to redownload the same version, since
+#' STAR genome indices usually does not work between STAR versions.
 #' @param folder path to folder for download, fille will be named
 #' "STAR-version", where version is version wanted.
 #' @param version default "2.7.4a"
@@ -371,7 +375,12 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #' @references https://www.ncbi.nlm.nih.gov/pubmed/23104886
 #' @family STAR
 #' @examples
-#' #STAR.install("~/bin", version = "2.7.4a")
+#' ## Default folder install:
+#' #STAR.install()
+#' ## Manual set folder:
+#' folder <- "/I/WANT/IT/HERE"
+#' #STAR.install(folder, version = "2.7.4a")
+#'
 STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
   if (.Platform$OS.type != "unix")
     stop("STAR does not work on Windows, try RSubread")
@@ -411,7 +420,12 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
 #' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6129281/
 #' @family STAR
 #' @examples
+#' ## With default folder:
 #' #install.fastp()
+#'
+#' ## Or set manual folder:
+#' folder <- "~/I/WANT/IT/HERE/"
+#' #install.fastp(folder)
 install.fastp <- function(folder = "~/bin") {
   if (.Platform$OS.type != "unix")
     stop("fastp does not work on Windows, try RSubread")
@@ -454,7 +468,11 @@ install.fastp <- function(folder = "~/bin") {
 #' @export
 #' @family STAR
 #' @examples
-#' # STAR.remove.crashed.genome(index.path = "/home/data/human_index/phix/)
+#' index.path = "/home/data/human_index/phix/"
+#' # STAR.remove.crashed.genome(index.path = index.path)
+#' ## If you have the index argument from STAR.index function:
+#' # index.path <- STAR.index()
+#' # STAR.remove.crashed.genome(file.path(index.path, "genomeDir"))
 STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
   message("Trying to remove loaded genome:")
   out <- paste(star.path, "--genomeDir", index.path, "--genomeLoad Remove")

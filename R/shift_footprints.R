@@ -34,17 +34,14 @@
 #' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 #' @export
 #' @examples
-#' # Basic run
-#' #shiftFootprints(footprints, shifts)
-#' # Full example
-#' \dontrun{
-#' # input path to gtf, or load it as TxDb.
+#' ## Basic run
+#' # Transcriptome annotation ->
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' # load reads
+#' # Ribo seq data ->
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
-#' footprints <- GenomicAlignments::readGAlignments(
-#'   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
-#'     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
+#' \dontrun{
+#' footprints <- readBam(riboSeq_file)
+#'
 #' # detect the shifts automagically
 #' shifts <- detectRibosomeShifts(footprints, gtf_file)
 #' # shift the RiboSeq footprints
@@ -142,21 +139,23 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' @importFrom IRanges quantile
 #' @export
 #' @examples
-#' # Basic run
-#' #detectRibosomeShifts(footprints, txdb)
-#' # Full example
-#' \dontrun{
+#' ## Basic run
 #' # Transcriptome annotation ->
 #' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
-#' # The ribo seq file, usually .bam file ->
+#' # Ribo seq data ->
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
-#' footprints <- GenomicAlignments::readGAlignments(
-#'   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(
-#'     isDuplicate = FALSE, isSecondaryAlignment = FALSE)))
+#' \dontrun{
+#' footprints <- readBam(riboSeq_file)
 #'
 #' detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
+#' ## Subset bam file
+#' param = ScanBamParam(flag = scanBamFlag(
+#'                        isDuplicate = FALSE,
+#'                        isSecondaryAlignment = FALSE))
+#' footprints <- readBam(riboSeq_file, param = param)
+#' detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
 #'
-#' # Without 5' Annotation
+#' ## Without 5' Annotation
 #' library(GenomicFeatures)
 #'
 #' txdb <- loadTxdb(gtf_file)

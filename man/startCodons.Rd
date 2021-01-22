@@ -19,12 +19,12 @@ In ATGTTTTGA, get the positions ATG.
 It takes care of exons boundaries, with exons < 3 length.
 }
 \examples{
-gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+gr_plus <- GRanges(seqnames = "chr1",
                    ranges = IRanges(c(7, 14), width = 3),
-                   strand = c("+", "+"))
-gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+                   strand = "+")
+gr_minus <- GRanges(seqnames = "chr2",
                     ranges = IRanges(c(4, 1), c(9, 3)),
-                    strand = c("-", "-"))
+                    strand = "-")
 grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 startCodons(grl, is.sorted = FALSE)
 

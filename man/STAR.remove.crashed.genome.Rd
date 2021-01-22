@@ -20,7 +20,11 @@ return value from system call, 0 if all good.
 This happens if you abort STAR run early, and it halts at: ..... loading genome
 }
 \examples{
-# STAR.remove.crashed.genome(index.path = "/home/data/human_index/phix/)
+index.path = "/home/data/human_index/phix/"
+# STAR.remove.crashed.genome(index.path = index.path)
+## If you have the index argument from STAR.index function:
+# index.path <- STAR.index()
+# STAR.remove.crashed.genome(file.path(index.path, "genomeDir"))
 }
 \seealso{
 Other STAR: 

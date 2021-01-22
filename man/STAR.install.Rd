@@ -20,8 +20,18 @@ Will not run "make", only use precompiled STAR file.\cr
 Can only run on unix systems (Linux and Mac), and requires
 minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
+\details{
+ORFik for now only uses precompiled STAR binaries, so if you already have
+a STAR version it is adviced to redownload the same version, since
+STAR genome indices usually does not work between STAR versions.
+}
 \examples{
-#STAR.install("~/bin", version = "2.7.4a")
+## Default folder install:
+#STAR.install()
+## Manual set folder:
+folder <- "/I/WANT/IT/HERE"
+#STAR.install(folder, version = "2.7.4a")
+
 }
 \references{
 https://www.ncbi.nlm.nih.gov/pubmed/23104886
