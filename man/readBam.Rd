@@ -7,18 +7,18 @@
 readBam(path, chrStyle = NULL, param = NULL)
 }
 \arguments{
-\item{path}{a character path to .bam file. If paired end bam files,
-input must be a data.table with two columns (forward and reverse)
-and one row:\cr
-if paired end reads in single bam file:\cr
-forward contains paired end bam file path, reverse must be
-either "paired-end" or "" (single end).\cr
-if paired end reads split in two files:\cr
-forward contains paired end bam file path (R1), reverse must be
-paired end bam file path (R2 file), this is a rare case\cr
-If all are single-end or
-you don't need to load data as paired end, the reverse column
-can be skipped.}
+\item{path}{a character / data.table with path to .bam file. There
+are 3 input file possibilities.
+\itemize{
+ \item{single end : }{a character path (length 1)}
+ \item{paired end (1 file) : }{Either a character path (length of 2), where
+ path[2] is "paired-end", or a data.table
+  with 2 columns, forward = path & reverse = "paired-end"}
+ \item{paired end (2 files) : }{Either a character path (length of 2), where
+ path[2] is path to R2, or a data.table
+  with 2 columns, forward = path to R1 & reverse = path to R2.
+  (This one is not used often)}
+}}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
 or a \code{\link{seqlevelsStyle}}
@@ -56,7 +56,9 @@ a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
 Read in Bam file from either single end or paired end.
 Safer combined version of \code{\link{readGAlignments}} and
 readGAlignmentPairs that takes care of some common errors.\cr
-If QNAMES of the aligned reads are from collapsed fasta files, the
+If QNAMES of the aligned reads are from collapsed fasta files
+(if the names are formated from collapsing in either
+(ORFik, ribotoolkit or fastx)), the
 bam file will contain a meta column called collapsed with the counts
 of duplicates per read.\cr
 }
