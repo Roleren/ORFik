@@ -1,21 +1,26 @@
 #' Download sra toolkit
+#'
+#' Currently supported for Linux (64 bit centos and ubunutu is tested to work)
+#' and Mac-OS(64 bit)
 #' @param folder default folder, "~/bin"
-#' @param version a string, default "2.10.8"
+#' @param version a string, default "2.10.9"
 #' @return path to fastq-dump in sratoolkit
 #' @importFrom utils untar
 #' @references https://ncbi.github.io/sra-tools/fastq-dump.html
 #' @export
 #' @examples
 #' # install.sratoolkit()
-#' ## Custom version
-#' # install.sratoolkit(version = "2.10.7")
+#' ## Custom folder and version
+#' folder <- "/I/WANT/IT/HERE/"
+#' # install.sratoolkit(folder, version = "2.10.7")
 #'
-install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
+install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
   if (.Platform$OS.type != "unix")
-    stop("fastp does not work on Windows, try RSubread")
+    stop("sratoolkit is not currently supported for windows by ORFik, download manually")
   folder <- path.expand(folder)
   is_linux <- Sys.info()[1] == "Linux" # else it is mac
-
+  # TODO; Check if ubuntu compliation is needed for safer download ->
+  #length(grep("Ubuntu", system("cat /etc/*release", intern = TRUE)[1])) == 1
 
   path.final <- ifelse(is_linux,
                        paste0(folder, "/sratoolkit.", version, "-centos_linux64"),
@@ -30,9 +35,10 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.8") {
           this is done only once!")
 
   url <- paste0("https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/", version, "/")
+  url <- paste0(url, "sratoolkit.", version)
   url <- ifelse(is_linux,
-                paste0(url, "sratoolkit.", version, "-centos_linux64.tar.gz"),
-                paste0(url, "sratoolkit.", version, "-mac64.tar.gz"))
+                paste0(url, "-centos_linux64.tar.gz"),
+                paste0(url, "-mac64.tar.gz"))
   path <- paste0(folder, "/sratoolkit.tar.gz")
 
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)

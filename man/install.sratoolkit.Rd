@@ -4,23 +4,25 @@
 \alias{install.sratoolkit}
 \title{Download sra toolkit}
 \usage{
-install.sratoolkit(folder = "~/bin", version = "2.10.8")
+install.sratoolkit(folder = "~/bin", version = "2.10.9")
 }
 \arguments{
 \item{folder}{default folder, "~/bin"}
 
-\item{version}{a string, default "2.10.8"}
+\item{version}{a string, default "2.10.9"}
 }
 \value{
 path to fastq-dump in sratoolkit
 }
 \description{
-Download sra toolkit
+Currently supported for Linux (64 bit centos and ubunutu is tested to work)
+and Mac-OS(64 bit)
 }
 \examples{
 # install.sratoolkit()
-## Custom version
-# install.sratoolkit(version = "2.10.7")
+## Custom folder and version
+folder <- "/I/WANT/IT/HERE/"
+# install.sratoolkit(folder, version = "2.10.7")
 
 }
 \references{
