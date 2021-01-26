@@ -47,13 +47,13 @@ library(ORFik)
 # Settings (This is the only Custom part per user, rest you can just run)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # This is where you want your annotation and STAR index
-annotation <- "/media/roler/S/data/Bio_data/references/Homo_sapiens_GRCh38_101/"
+annotation <- "~/Bio_data/references/Homo_sapiens_GRCh38_101/"
 # Where to download fastq files
-fastq.dir.rfp <- "/media/roler/S/data/Bio_data/raw_data/Ribo-seq/Alexaki_Human/"
-fastq.dir.rna <- "/media/roler/S/data/Bio_data/raw_data/RNA-seq/Alexaki_Human/"
+fastq.dir.rfp <- "~/Bio_data/raw_data/Ribo-seq/Alexaki_Human/"
+fastq.dir.rna <- "~/Bio_data/raw_data/RNA-seq/Alexaki_Human/"
 # Where you want mapped bam files
-bam.dir.rfp <- "/media/roler/S/data/Bio_data/processed_data/Ribo-seq/Alexaki_Human/"
-bam.dir.rna <- "/media/roler/S/data/Bio_data/processed_data/RNA-seq/Alexaki_Human/"
+bam.dir.rfp <- "~/Bio_data/processed_data/Ribo-seq/Alexaki_Human/"
+bam.dir.rna <- "~/Bio_data/processed_data/RNA-seq/Alexaki_Human/"
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Download fastq files for experiment and rename (Skip if you have the files already)
