@@ -31,7 +31,9 @@
 #' @param riboStop usually 34, the end of the floss interval
 #' @param sequenceFeatures a logical, default TRUE, include all sequence
 #' features, that is: Kozak, fractionLengths, distORFCDS, isInFrame,
-#' isOverlapping and rankInTx
+#' isOverlapping and rankInTx. uorfFeatures = FALSE will remove the 4 last.
+#' @param uorfFeatures a logical, default TRUE, include all uORF sequence
+#' features, that is: distORFCDS, isInFrame, isOverlapping and rankInTx
 #' @param grl.is.sorted logical (F), a speed up if you know argument grl
 #'  is sorted, set this to TRUE.
 #' @inheritParams translationalEff
@@ -58,7 +60,8 @@
 #'
 computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
                             riboStart = 26, riboStop = 34,
-                            sequenceFeatures = TRUE, grl.is.sorted = FALSE,
+                            sequenceFeatures = TRUE, uorfFeatures = TRUE,
+                            grl.is.sorted = FALSE,
                             weight.RFP = 1L, weight.RNA = 1L) {
   #### Check input and load data ####
   validGRL(class(grl), "grl")
@@ -73,7 +76,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
   tx <- loadRegion(Gtf)
 
   return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
-                           riboStart, riboStop, sequenceFeatures,
+                           riboStart, riboStop, sequenceFeatures, uorfFeatures,
                            grl.is.sorted, weight.RFP, weight.RNA))
 }
 
@@ -148,7 +151,8 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
                                 fiveUTRs = NULL, cds = NULL, threeUTRs = NULL,
                                 faFile = NULL, riboStart = 26, riboStop = 34,
-                                sequenceFeatures = TRUE, grl.is.sorted = FALSE,
+                                sequenceFeatures = TRUE, uorfFeatures = TRUE,
+                                grl.is.sorted = FALSE,
                                 weight.RFP = 1L, weight.RNA = 1L) {
   #### Check input and load data ####
   validGRL(class(grl))
@@ -181,6 +185,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
     }
   return(allFeaturesHelper(grl, RFP, RNA, tx, fiveUTRs, cds, threeUTRs, faFile,
                            riboStart, riboStop, sequenceFeatures,
+                           uorfFeatures,
                            grl.is.sorted, weight.RFP, weight.RNA))
 }
 
@@ -192,7 +197,8 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
 #' @return a data.table with features
 allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                               faFile, riboStart, riboStop,
-                              sequenceFeatures, grl.is.sorted,
+                              sequenceFeatures, uorfFeatures,
+                              grl.is.sorted,
                               weight.RFP = 1L, weight.RNA = 1L,
                               st = NULL) {
   # Clean and optimize
@@ -260,10 +266,12 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
     }
     # switch five with tx, is it possible to use ?
     scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
-    scores[, distORFCDS := distToCds(grl, fiveUTRs, cds)]
-    scores[, inFrameCDS := isInFrame(distORFCDS)]
-    scores[, isOverlappingCds := isOverlapping(distORFCDS)]
-    scores[, rankInTx := rankOrder(grl)]
+    if (uorfFeatures) {
+      scores[, distORFCDS := distToCds(grl, fiveUTRs, cds)]
+      scores[, inFrameCDS := isInFrame(distORFCDS)]
+      scores[, isOverlappingCds := isOverlapping(distORFCDS)]
+      scores[, rankInTx := rankOrder(grl)]
+    }
   } else {
     message("Notification: sequenceFeatures set to False,",
     "dropping all sequenceFeatures features.")

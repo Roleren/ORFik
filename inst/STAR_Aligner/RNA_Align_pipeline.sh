@@ -147,7 +147,7 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
         ;;
     k)
 	keep=$OPTARG
-	echo "-k Keep Star Index: $OPTARG"
+	echo "-k Keep Star Index loaded: $OPTARG"
         ;;
     h)
         usage
@@ -358,16 +358,17 @@ function nCores()
 # Keep loaded genomes (y) or not (n), default (n)
 function keepOrNot()
 {
-	if (( $1 == "y" )); then
+	if [[ "$1" == "y" ]]; then
 		echo LoadAndKeep
-	elif (( $1 == "n" )); then
+	elif [[ "$1" == "n" ]]; then
 		echo LoadAndRemove
-	elif (( $1 == "noShared" )); then
+	elif [[ "$1" == "noShared" ]]; then
 	  echo NoSharedMemory
 	else
 		exit 1
 	fi
 }
+
 
 #  ${out_dir} ${ibn} ${in_file_two}
 function trimPaired()

@@ -25,18 +25,22 @@ This pipeline will shows steps needed to analyse Ribo-seq from Alexaki et al, 20
 The following steps are done:
 
 1. Define directory paths
-2. Download Ribo-seq data from SRA (subset to 2 million reads)
+2. Download Ribo-seq & RNA-seq data from SRA (subset to 2 million reads per library)
 3. Download annotation and contaminants
 4. Align data
 5. Make ORFik experiment
 6. QC
 7. Heatmaps
+8. Deferentially translated genes
+9. Peak analysis
+10. Feature table
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Ribo-seq HEK293 (2020) Investigative analysis of quality of new Ribo-seq data
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Article: https://f1000research.com/articles/9-174/v2#ref-5
+# Design: Wild type (WT) vs codon optimized (CO) (gene F9)
 library(ORFik)
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -45,25 +49,29 @@ library(ORFik)
 # This is where you want your annotation and STAR index
 annotation <- "/media/roler/S/data/Bio_data/references/Homo_sapiens_GRCh38_101/"
 # Where to download fastq files
-fastq.dir <- "/media/roler/S/data/Bio_data/raw_data/Ribo-seq/Alexaki_Human/"
+fastq.dir.rfp <- "/media/roler/S/data/Bio_data/raw_data/Ribo-seq/Alexaki_Human/"
+fastq.dir.rna <- "/media/roler/S/data/Bio_data/raw_data/RNA-seq/Alexaki_Human/"
 # Where you want mapped bam files
-bam.dir <- "/media/roler/S/data/Bio_data/processed_data/Ribo-seq/Alexaki_Human/"
-
+bam.dir.rfp <- "/media/roler/S/data/Bio_data/processed_data/Ribo-seq/Alexaki_Human/"
+bam.dir.rna <- "/media/roler/S/data/Bio_data/processed_data/RNA-seq/Alexaki_Human/"
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Download fastq files for experiment and rename (Skip if you have the files already)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # SRA Meta data download (work for ERA and DRA too)
-study <- download.SRA.metadata("PRJNA591214", fastq.dir)
-# Remove RNA-seq and CO libraries, we don't want those
-study <- study[grep("mRNA-Seq|CO", sample_title, invert = TRUE),]
+study <- download.SRA.metadata("PRJNA591214", fastq.dir.rfp)
+# Remove RNA-seq
+study.rfp <- study[grep("mRNA-Seq", sample_title, invert = TRUE),]
+study.rna <- study[grep("Ribo-Seq", sample_title, invert = TRUE),]
 # Download fastq files (uses SRR numbers (Run column) from study)
-download.SRA(study, fastq.dir, rename = FALSE, subset = 2000000)
+download.SRA(study.rfp, fastq.dir.rfp, rename = FALSE, subset = 2000000)
+download.SRA(study.rna, fastq.dir.rna, rename = FALSE, subset = 2000000)
+# Rename files (find good meta column for names from SRA metadata)
 
 # Which organism is this, scientific name, like "Homo sapiens" or "Danio rerio"
 organism <- study$ScientificName[1] # Usually you find organism here, else set it yourself
-paired.end <- study$LibraryLayout == "PAIRED"
-paired.end.all <- all(paired.end)
+paired.end.rfp <- study.rfp$LibraryLayout == "PAIRED"
+paired.end.rna <- study.rna$LibraryLayout == "PAIRED"
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Annotation
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -85,48 +93,122 @@ index <- STAR.index(annotation, wait = TRUE, max.ram = 20, SAsparse = 2)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Alignment (with depletion of phix, rRNA, ncRNA and tRNAs) & (with MultiQC of final STAR alignment)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-alignment <-
-  STAR.align.folder(fastq.dir, bam.dir, index,
-                    paired.end = paired.end.all,
-                    steps = "tr-co-ge", # (trim needed: adapters found, then genome)
-                    adapter.sequence = "auto", # Adapters are auto detected
-                    trim.front = 0, min.length = 20)
+
+STAR.align.folder(fastq.dir.rfp, bam.dir.rfp, index,
+                  paired.end = paired.end.rfp,
+                  steps = "tr-co", # (trim needed: adapters found, then genome)
+                  adapter.sequence = "auto", # Adapters are auto detected
+                  trim.front = 0, min.length = 20)
+
+STAR.align.folder(fastq.dir.rfp, bam.dir.rfp, index,
+                  paired.end = paired.end.rfp,
+                  steps = "tr-co-ge", # (trim needed: adapters found, then genome)
+                  adapter.sequence = "auto", # Adapters are auto detected
+                  trim.front = 0, min.length = 20, resume = "ge")
+
+
+STAR.align.folder(fastq.dir.rna, bam.dir.rna, index,
+                  paired.end = paired.end.rna,
+                  steps = "tr-co", # (trim needed: adapters found, then genome)
+                  adapter.sequence = "auto", # Adapters are auto detected
+                  trim.front = 0, min.length = 20)
+
+STAR.align.folder(fastq.dir.rna, bam.dir.rna, index,
+                  paired.end = paired.end.rna,
+                  steps = "tr-co-ge", # (trim needed: adapters found, then genome)
+                  adapter.sequence = "auto", # Adapters are auto detected
+                  trim.front = 0, min.length = 20, resume = "ge")
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Create experiment (Starting point if alignment is finished)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 library(ORFik)
-create.experiment(paste0(alignment, "/aligned/"), exper = "Alexaki_RFP",
+create.experiment(paste0(bam.dir.rfp, "/aligned/"), exper = "Alexaki_RFP",
                   fa = annotation["genome"],
                   txdb = paste0(annotation["gtf"], ".db"),
                   organism = organism,
-                  pairedEndBam = paired.end,
+                  pairedEndBam = paired.end.rfp,
                   viewTemplate = FALSE)
-# Now fix experiment table in libre office
-df <- read.experiment("Alexaki_RFP")
-
+create.experiment(paste0(bam.dir.rna, "/aligned/"), exper = "Alexaki_RNA",
+                  fa = annotation["genome"],
+                  txdb = paste0(annotation["gtf"], ".db"),
+                  organism = organism,
+                  pairedEndBam = paired.end.rna,
+                  viewTemplate = FALSE)
+# Now fix experiment table in excel, libre office or directly in R.
+library(ORFik)
+df.rfp <- read.experiment("Alexaki_RFP")
+df.rna <- read.experiment("Alexaki_RNA")
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Convert files and run Annotation vs alignment QC
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-ORFikQC(df)
-#remove.experiments(df)
+# General QC
+ORFikQC(df.rfp)
+ORFikQC(df.rna)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # P-shifting of Ribo-seq reads:
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # From ORFikQC it looks like 20, 21, 27 and 28 are candidates for Ribosomal footprints
-shiftFootprintsByExperiment(df, accepted.lengths = c(20:21, 27:28))
-
-
-
+shiftFootprintsByExperiment(df.rfp, accepted.lengths = c(20:21, 27:28))
+# Ribo-seq specific QC
+remove.experiments(df.rfp) # Remove loaded data (it is not pshifted)
+ORFik:::RiboQC.plot(df.rfp, BPPARAM = SerialParam(progressbar = T))
+remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# Create heatmaps
+# Create heatmaps (Ribo-seq)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# Remove RNA-seq
 # Pre-pshifting
-heatMapRegion(df, region = c("TIS", "TTS"), shifting = "5prime", type = "ofst",
-              outdir = paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/pre-pshift/"))
-remove.experiments(df)
+heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "ofst",
+              outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pre-pshift/"))
+remove.experiments(df.rfp)
 # After pshifting
-heatMapRegion(df, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
-              outdir = paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
+heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
+              outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Differential translation analysis (condition: WT vs CO)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# We here get 11 unique DTEG genes
+# Now let's check if the CO group overexpress the F9 Gene (ENSG00000101981):
+res <- DTEG.analysis(df.rfp, df.rna, design = "condition")
+significant_genes <- res[Status != "No change",]
+gene_names <- txNamesToGeneNames(significant_genes$id, df.rfp)
+"ENSG00000101981" %in% unique(gene_names) # TRUE
+# It does, good good.
+# How is it regulated ?
+significant_genes[which(gene_names == "ENSG00000101981"),] # By mRNA abundance
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Peak detection (strong peaks in CDS)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+
+peaks <- findPeaksPerGene(loadRegion(df.rfp, "cds"), reads = RFP_WT_r1, type = "max")
+ORFik::windowCoveragePlot(peaks, type = "cds", scoring = "transcriptNormalized")
+# The gene does not have a strong max peak in WT rep1
+"ENSG00000101981" %in% peaks$gene_id # FALSE
+
+peaks_CO <- findPeaksPerGene(loadRegion(df.rfp, "cds"), reads = RFP_CO_r1, type = "max")
+# The gene does not have a strong max peak in CO rep1 either
+"ENSG00000101981" %in% peaks_CO$gene_id # FALSE
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Feature table (From WT rep 1)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+cds <- loadRegion(df.rfp, "cds")
+cds <- ORFik:::removeMetaCols(cds) # Dont need them
+cds <- cds[filterTranscripts(df.rfp)] # Filter to sane transcripts (annotation is not perfect)
+dt <- computeFeatures(cds,
+                RFP = fimport(filepath(df.rfp[6,], "pshifted")),
+                RNA = fimport(filepath(df.rna[6,], "ofst")), Gtf = df.rfp,
+                grl.is.sorted = TRUE, faFile = df.rfp,
+                weight.RFP = "score", weight.RNA = "score",
+                riboStart = 21, uorfFeatures = FALSE)
+# The 8 remaining significant DTEGs.
+dt[names(cds) %in%  significant_genes$id,]
+# All genes with strong 3nt periodicity of Ribo-seq
+dt[ORFScores > 5,]
+# Not all genes start with ATG, possible errors in annotation
+table(dt$StartCodons)
+# All genes with strong start codon peak
+dt[startCodonCoverage > 5,]
 ```

@@ -8,11 +8,12 @@
 #'
 #' Creates a total of 3 DESeq models (given x is design argument input
 #' and libraryType is RNA-seq and Ribo-seq):\cr
-#' 1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)
-#' 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)
+#' 1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)\cr
+#' 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
 #' 3. TE model: design = ~ library type + x + libraryType + libraryType:x
 #' (differences between the x and libraryType groups and the interaction between them)\cr
-#' \cr What the deltaTE plot calls intensified is here called mRNA abundance and
+#' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
+#' What the deltaTE plot calls intensified is here called mRNA abundance and
 #' forwarded is called Buffering.
 #' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
@@ -22,7 +23,7 @@
 #' @param output.dir output.dir directory to save plots,
 #' plot will be named "TE_between.png". If NULL, will not save.
 #' @references doi: 10.1002/cpmb.108
-#' @return a data.table with 8 columns.
+#' @return a data.table with 9 columns.
 #' @family TE
 #' @export
 #' @import DESeq2
@@ -100,10 +101,12 @@ DTEG.analysis <- function(df.rfp, df.rna,
     res_te <- results(dds.te, contrast = current.contrast)
 
     res_ribo <- results(ddsMat_ribo, contrast=current.contrast)
-    suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast, res=res_ribo))
+    suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast,
+                                           res=res_ribo, type = "normal"))
 
     res_rna <- results(ddsMat_rna, contrast = current.contrast)
-    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast, res = res_rna))
+    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
+                                          res = res_rna, type = "normal"))
 
     # The differential groupings
     both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
@@ -124,12 +127,14 @@ DTEG.analysis <- function(df.rfp, df.rna,
     Status[n %in% exclusive] <- "Translation"
     Status[n %in% intensified] <- "mRNA abundance"
     Status[n %in% buffered] <- "Buffering"
-    table(Status)
+    print(table(Status))
+
 
     dt.between <-
       rbindlist(list(dt.between,
                      data.table(variable = name,
                                 Status = Status,
+                                id = rownames(ddsMat_rna),
                                 rna = res_rna$log2FoldChange,
                                 rfp = res_ribo$log2FoldChange,
                                 te = res_te$log2FoldChange,

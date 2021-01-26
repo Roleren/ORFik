@@ -40,7 +40,7 @@ What p-value used for the analysis? Will be shown as a caption.}
 \item{dot.size}{numeric, default 0.4, size of point dots in plot.}
 }
 \value{
-a data.table with 8 columns.
+a data.table with 9 columns.
 }
 \description{
 Using an equal reimplementation of the deltaTE algorithm (see reference).
@@ -52,11 +52,12 @@ the returned object.
 \details{
 Creates a total of 3 DESeq models (given x is design argument input
 and libraryType is RNA-seq and Ribo-seq):\cr
-1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)
-2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)
+1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)\cr
+2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
 3. TE model: design = ~ library type + x + libraryType + libraryType:x
 (differences between the x and libraryType groups and the interaction between them)\cr
-\cr What the deltaTE plot calls intensified is here called mRNA abundance and
+\cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
+What the deltaTE plot calls intensified is here called mRNA abundance and
 forwarded is called Buffering.
 }
 \examples{

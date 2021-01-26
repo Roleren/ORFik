@@ -273,6 +273,7 @@ else
 		echo "file  $i / $numOfFiles"
 
 		if [[ $i == $numOfFiles ]];then
+		  echo "last file:"
 			keep="n"
 		fi
     x=$in_dir/$x

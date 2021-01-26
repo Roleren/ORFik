@@ -84,7 +84,7 @@ The function will also create a gtf.db object so speed up loading of annotation,
 
 If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object, this makes it easy to rerun the script, when you have some steps already finished.
 
-If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. Note that some species does not have well annotated rRNAs, tRNAs etc, so you can then manually download and add the sequences from the Silva database, tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
+If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. Note that some species does not have well annotated rRNAs, tRNAs etc, so you can either set rRNA = "silva" to download the Silva database or manually download and add the sequences from tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
 
 ## RNA-seq alignment
 ORFik uses the STAR aligner, which is splice aware and fast. This will only work on unix systems (Linux or Mac) for now.
@@ -132,7 +132,7 @@ alignment <-
 If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format. You will also get a MultiQC report from STAR runs made by ORFik for you.
 
 ### RAM usage warnings
-STAR is very memory hungry, therefor if want to index and align large genomes like human (3 GB usually), you might need to adjust 2 parameters.
+STAR is very memory hungry, therefor if you want to index and align large genomes like human (3 GB usually), you might need to adjust 2 parameters.
 If you have less than 40 GB free memory (32 GB might work), adjust this during indexing:
 
 - 20 GB max ram usage during genome generation
@@ -141,7 +141,6 @@ If you have less than 40 GB free memory (32 GB might work), adjust this during i
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 index <- STAR.index(annotation, max.ram = 20, SAsparse = 2)
 ```
-
 
 # Create an ORFik experiment of the Yeast data
 To simplify coding and sharing of your work, you should make a ORFik experiment, check out the ORFik experiment vignette if you are unfamiliar with this class.
@@ -214,3 +213,5 @@ Let's do an example to find the ratio between fpkm of between the CDS and mRNAs 
   ratio <- cds / mrna
 ```
 We now have a ratio of fpkm values between CDS and mrna.
+
+You can now continue to the Ribo-seq pipeline to see a more advanced example.

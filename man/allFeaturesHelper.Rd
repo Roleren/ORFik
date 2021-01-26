@@ -16,6 +16,7 @@ allFeaturesHelper(
   riboStart,
   riboStop,
   sequenceFeatures,
+  uorfFeatures,
   grl.is.sorted,
   weight.RFP = 1L,
   weight.RNA = 1L,
@@ -56,7 +57,10 @@ a BSgenome, or path to ORFik \code{\link{experiment}} with valid genome.}
 
 \item{sequenceFeatures}{a logical, default TRUE, include all sequence
 features, that is: Kozak, fractionLengths, distORFCDS, isInFrame,
-isOverlapping and rankInTx}
+isOverlapping and rankInTx. uorfFeatures = FALSE will remove the 4 last.}
+
+\item{uorfFeatures}{a logical, default TRUE, include all uORF sequence
+features, that is: distORFCDS, isInFrame, isOverlapping and rankInTx}
 
 \item{grl.is.sorted}{logical (F), a speed up if you know argument grl
 is sorted, set this to TRUE.}
