@@ -31,9 +31,10 @@ The following steps are done:
 5. Make ORFik experiment
 6. QC
 7. Heatmaps
-8. Deferentially translated genes
+8. Differentially translated genes
 9. Peak analysis
 10. Feature table
+11. uORF analysis
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -60,10 +61,10 @@ bam.dir.rna <- "~/Bio_data/processed_data/RNA-seq/Alexaki_Human/"
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # SRA Meta data download (work for ERA and DRA too)
 study <- download.SRA.metadata("PRJNA591214", fastq.dir.rfp)
-# Remove RNA-seq
+# Subset
 study.rfp <- study[grep("mRNA-Seq", sample_title, invert = TRUE),]
 study.rna <- study[grep("Ribo-Seq", sample_title, invert = TRUE),]
-# Download fastq files (uses SRR numbers (Run column) from study)
+# Download fastq files (uses SRR numbers (Run column) from study))
 download.SRA(study.rfp, fastq.dir.rfp, rename = FALSE, subset = 2000000)
 download.SRA(study.rna, fastq.dir.rna, rename = FALSE, subset = 2000000)
 # Rename files (find good meta column for names from SRA metadata)
@@ -211,4 +212,12 @@ dt[ORFScores > 5,]
 table(dt$StartCodons)
 # All genes with strong start codon peak
 dt[startCodonCoverage > 5,]
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# uORF analysis (advanced) (using the extension package to ORFik: uORFomePipe)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+devtools::install_github("Roleren/uORFomePipe", dependencies = TRUE)
+library(uORFomePipe)
+find_uORFome("/media/roler/S/data/Bio_data/projects/Alexaki_uORFome/",
+             df.rfp = df.rfp, df.rna = df.rna, df.cage = NULL, biomart = NULL,
+             startCodons = "ATG|CTG|TTG|GTG", BPPARAM = BiocParallel::MulticoreParam(2))
 ```
