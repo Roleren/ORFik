@@ -4,12 +4,18 @@
 \alias{getGAlignmentsPairs}
 \title{Internal GAlignmentPairs loader from fst data.frame}
 \usage{
-getGAlignmentsPairs(df)
+getGAlignmentsPairs(df, strandMode = 0)
 }
 \arguments{
 \item{df}{a data.frame with columns minimum 6 columns:
 seqnames, start1/start2 (integers), cigar1/cigar2 and strand\cr
 Additional columns will be assigned as meta columns}
+
+\item{strandMode}{numeric, default 0. Only used for paired end bam files.
+One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
+See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
+This is to guarantee hits, but will also make mismatches of overlapping
+transcripts in opposite directions.}
 }
 \value{
 GAlignmentPairs object

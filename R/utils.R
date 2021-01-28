@@ -96,10 +96,15 @@ getGAlignments <- function(df) {
 #' @param df a data.frame with columns minimum 6 columns:
 #' seqnames, start1/start2 (integers), cigar1/cigar2 and strand\cr
 #' Additional columns will be assigned as meta columns
+#' @inheritParams readBam
 #' @return GAlignmentPairs object
 #' @importFrom S4Vectors new2
-getGAlignmentsPairs <- function(df) {
-  if (nrow(df) == 0) return(GenomicAlignments::GAlignmentPairs())
+getGAlignmentsPairs <- function(df, strandMode = 0) {
+  if (nrow(df) == 0) {
+    return(GenomicAlignments::GAlignmentPairs(first = GAlignments(),
+                                              last = GAlignments(),
+                                              strandMode = strandMode))
+  }
   if (is.null(levels(df$seqnames))) {
     df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
   }
@@ -132,7 +137,7 @@ getGAlignmentsPairs <- function(df) {
              cigar = as.character(df$cigar2), strand = Rle(factor(strand2, levels)),
              seqinfo = seqinfo, check = FALSE,
              elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
-       isProperPair = rep(TRUE, nrow(df)),
+       isProperPair = rep(TRUE, nrow(df)), strandMode = as.integer(strandMode),
        elementMetadata = mcols, check = FALSE)
 }
 

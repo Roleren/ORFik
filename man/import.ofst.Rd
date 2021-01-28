@@ -4,10 +4,16 @@
 \alias{import.ofst}
 \title{Load GRanges / GAlignments object from .ofst}
 \usage{
-import.ofst(file)
+import.ofst(file, strandMode = 0)
 }
 \arguments{
 \item{file}{a path to a .ofst file}
+
+\item{strandMode}{numeric, default 0. Only used for paired end bam files.
+One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
+See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
+This is to guarantee hits, but will also make mismatches of overlapping
+transcripts in opposite directions.}
 }
 \value{
 a GAlignment, GAlignmentPairs or GRanges object,

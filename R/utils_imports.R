@@ -247,6 +247,7 @@ import.bedoc <- function(path) {
 #' Positions are 1-based, not 0-based as .bed.
 #' Import with import.ofst
 #' @param file a path to a .ofst file
+#' @inheritParams readBam
 #' @return a GAlignment, GAlignmentPairs or GRanges object,
 #' dependent of if cigar/cigar1 is defined in .ofst file.
 #' @importFrom fst read_fst
@@ -254,20 +255,21 @@ import.bedoc <- function(path) {
 #' @examples
 #' ## GRanges
 #' gr <- GRanges("1:1-3:-")
-#' # export.ofst(gr, file = "path.ofst")
-#' # import.ofst("path.ofst")
+#' tmp <- file.path(tempdir(), "path.ofst")
+#' # export.ofst(gr, file = tmp)
+#' # import.ofst(tmp)
 #' ## GAlignment
 #' # Make input data.frame
 #' df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
 #' ga <- ORFik:::getGAlignments(df)
-#' # export.ofst(ga, file = "path.ofst")
-#' # import.ofst("path.ofst")
-import.ofst <- function(file) {
+#' # export.ofst(ga, file = tmp)
+#' # import.ofst(tmp)
+import.ofst <- function(file, strandMode = 0) {
   df <- read_fst(file)
   if ("cigar" %in% colnames(df)) {
     getGAlignments(df)
   } else if ("cigar1" %in% colnames(df)) {
-    getGAlignmentsPairs(df)
+    getGAlignmentsPairs(df, strandMode)
   } else getGRanges(df)
 }
 
@@ -355,7 +357,7 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
         } else if (fext == "bedoc") {
           return(matchSeqStyle(import.bedoc(path), chrStyle))
         } else if (fext == "ofst") {
-          return(matchSeqStyle(import.ofst(path), chrStyle))
+          return(matchSeqStyle(import.ofst(path, strandMode), chrStyle))
         }else return(matchSeqStyle(import(path), chrStyle))
       } else stop("fimport takes either 1 or 2 files!")
     } else stop(paste(path, "does not exist as File/Files!"))
