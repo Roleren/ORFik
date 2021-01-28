@@ -617,7 +617,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' Variable names defined by df (ORFik experiment DataFrame)
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
-#' @inheritParams matchSeqStyle
+#' @inheritParams fimport
 #' @param type a character(default: "default"), load files in experiment
 #' or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
 #' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
@@ -641,6 +641,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' # outputLibs(df, type = "wig")
 #' @family ORFik_experiment
 outputLibs <- function(df, chrStyle = NULL, type = "default",
+                       param = NULL, strandMode = 0,
                        envir = .GlobalEnv, BPPARAM = bpparam()) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
@@ -660,11 +661,12 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
       message(paste0("Outputting libraries from: ", df@experiment))
       paths <- filepath(df, type)
       libs <- bplapply(seq_along(paths),
-                       function(i, paths, df, chrStyle) {
+                       function(i, paths, df, chrStyle, param, strandMode) {
         varNames <- bamVarName(df)
         message(paste(i, ": ", varNames[i]))
-        fimport(paths[i], chrStyle)
-      }, BPPARAM = BPPARAM, paths = paths, chrStyle = chrStyle, df = df)
+        fimport(paths[i], chrStyle, param, strandMode)
+      }, BPPARAM = BPPARAM, paths = paths, chrStyle = chrStyle, df = df,
+      param = param, strandMode = strandMode)
 
       # assign to environment
       for (i in 1:nrow(df)) { # For each stage

@@ -68,6 +68,9 @@ bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 fimport(bam_file)
 # Certain chromosome naming
 fimport(bam_file, "NCBI")
+# Paired end bam strandMode 1:
+fimport(bam_file, strandMode = 1)
+# (will have no effect in this case, since it is not paired end)
 
 }
 \seealso{
