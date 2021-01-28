@@ -4,7 +4,7 @@
 \alias{readBam}
 \title{Custom bam reader}
 \usage{
-readBam(path, chrStyle = NULL, param = NULL)
+readBam(path, chrStyle = NULL, param = NULL, strandMode = 0)
 }
 \arguments{
 \item{path}{a character / data.table with path to .bam file. There
@@ -48,6 +48,12 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
     (i.e. only records corresponding to paired-end reads with both ends
     mapped are loaded).
   }
+
+\item{strandMode}{numeric, default 0. Only used for paired end bam files.
+One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
+See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
+This is to guarantee hits, but will also make mismatches of overlapping
+transcripts in opposite directions.}
 }
 \value{
 a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file

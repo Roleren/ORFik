@@ -4,7 +4,7 @@
 \alias{fimport}
 \title{Load any type of sequencing reads}
 \usage{
-fimport(path, chrStyle = NULL)
+fimport(path, chrStyle = NULL, param = NULL, strandMode = 0)
 }
 \arguments{
 \item{path}{a character path to file (1 or 2 files),
@@ -20,6 +20,34 @@ or a \code{\link{seqlevelsStyle}}
 called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
+
+\item{param}{\code{NULL} or a \link[Rsamtools]{ScanBamParam} object.
+    Like for \code{\link[Rsamtools]{scanBam}}, this influences what fields
+    and which records are imported. However, note that the fields specified
+    thru this \link[Rsamtools]{ScanBamParam} object will be loaded
+    \emph{in addition} to any field required for generating the returned
+    object (\link[GenomicAlignments]{GAlignments}, \link[GenomicAlignments]{GAlignmentPairs},
+    or \link[GenomicAlignments]{GappedReads} object),
+    but only the fields requested by the user will actually be kept as
+    metadata columns of the object.
+
+    By default (i.e. \code{param=NULL} or \code{param=ScanBamParam()}), no 
+    additional field is loaded. The flag used is 
+    \code{scanBamFlag(isUnmappedQuery=FALSE)} for
+    \code{readGAlignments}, \code{readGAlignmentsList}, and
+    \code{readGappedReads}.
+    (i.e. only records corresponding to mapped reads are loaded),
+    and \code{scanBamFlag(isUnmappedQuery=FALSE, isPaired=TRUE,
+    hasUnmappedMate=FALSE)} for \code{readGAlignmentPairs}
+    (i.e. only records corresponding to paired-end reads with both ends
+    mapped are loaded).
+  }
+
+\item{strandMode}{numeric, default 0. Only used for paired end bam files.
+One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
+See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
+This is to guarantee hits, but will also make mismatches of overlapping
+transcripts in opposite directions.}
 }
 \value{
 a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
