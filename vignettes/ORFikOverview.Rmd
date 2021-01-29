@@ -337,7 +337,7 @@ newFiveUTRs <- reassignTSSbyCage(fiveUTRs, cageData)
 newFiveUTRs
 ```
 
-You will now see that most of the transcription start sites have changed. 
+You will now normally see a portion of the transcription start sites have changed. 
 Depending on the species, regular annotations might be incomplete or not 
 specific enough for your purposes. 
 

@@ -73,7 +73,7 @@ library(ORFik)
 # 1. Update path to experiment data  directory (bam, bed, wig files etc)
 exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 
-# 2. Set a 5 character name for experiment, (Lee et al 2013 -> Lee13, etc)
+# 2. Set a short character name for experiment, (Lee et al 2013 -> Lee13, etc)
 exper_name = "Lee13"
 
 # 3. Create a template experiment (gtf and fasta genome)

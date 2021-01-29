@@ -21,11 +21,11 @@ groups will be merged into 1 column called merged_all. Collapse is defined
 as rowSum(elements_per_group) / ncol(elements_per_group)}
 }
 \value{
-a data.table with 5 columns
+a data.table with 6 columns
 }
 \description{
-Creates a data.table with 5 columns, column names are:\cr
-variable, rfp_log2, rna_log2, rna_log10, LFC_TE
+Creates a data.table with 6 columns, column names are:\cr
+variable, rfp_log2, rna_log2, rna_log10, TE_log2, id
 }
 \examples{
 #df.rfp <- read.experiment("Riboseq")

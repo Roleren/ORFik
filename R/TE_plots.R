@@ -18,7 +18,7 @@
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
-#' #DTEG.plot(dt)
+#' #DTEG.plot(dt, xlim = c(-2, 2), ylim = c(-2, 2))
 DTEG.plot <- function(dt, output.dir = NULL,
                       p.value = 0.05,
                       plot.title = "", width = 6,
@@ -31,8 +31,6 @@ DTEG.plot <- function(dt, output.dir = NULL,
   p.title <- if (plot.title != "") {
     ggtitle(label = plot.title)
   } else NULL
-  dt[, Regulation := Status]
-  dt$Status <- NULL
 
   dot.size <- rep(dot.size, nrow(dt))
   dot.size[dt$Regulation != "No change"] <- dot.size[1]*2

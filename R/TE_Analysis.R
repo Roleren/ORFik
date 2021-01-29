@@ -24,6 +24,7 @@
 #' plot will be named "TE_between.png". If NULL, will not save.
 #' @references doi: 10.1002/cpmb.108
 #' @return a data.table with 9 columns.
+#' (log fold changes, p.ajust values, group, regulation status and gene id)
 #' @family TE
 #' @export
 #' @import DESeq2
@@ -31,7 +32,13 @@
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
-#' #DTEG.analysis(df.rfp, df.rna)
+#' #dt <- DTEG.analysis(df.rfp, df.rna)
+#' ## Only longest isoform per gene:
+#' #tx_longest <- filterTranscripts(df.rfp, 0, 1, 0)
+#' #dt <- dt[id %in% tx_longest,]
+#' ## Convert to gene id
+#' #dt[, id := txNamesToGeneNames(id, df.rfp)]
+#' ## To get by gene symbol, use biomaRt conversion
 DTEG.analysis <- function(df.rfp, df.rna,
                           output.dir = paste0(dirname(df.rfp$filepath[1]),
                                               "/QC_STATS/"),
@@ -108,7 +115,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
     suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
                                           res = res_rna, type = "normal"))
 
-    # The differential groupings
+    # The differential regulation groupings
     both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
     ## The 4 classes of genes
     forwarded <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj < p.value & res_rna$padj < p.value)]
@@ -122,18 +129,18 @@ DTEG.analysis <- function(df.rfp, df.rna,
                   buffered)
 
     n <- rownames(res_te)
-    Status <- rep("No change", nrow(res_te))
-    Status[n %in% forwarded] <- "Buffering"
-    Status[n %in% exclusive] <- "Translation"
-    Status[n %in% intensified] <- "mRNA abundance"
-    Status[n %in% buffered] <- "Buffering"
-    print(table(Status))
+    Regulation <- rep("No change", nrow(res_te))
+    Regulation[n %in% forwarded] <- "Buffering"
+    Regulation[n %in% exclusive] <- "Translation"
+    Regulation[n %in% intensified] <- "mRNA abundance"
+    Regulation[n %in% buffered] <- "Buffering"
+    print(table(Regulation))
 
 
     dt.between <-
       rbindlist(list(dt.between,
                      data.table(variable = name,
-                                Status = Status,
+                                Regulation = Regulation,
                                 id = rownames(ddsMat_rna),
                                 rna = res_rna$log2FoldChange,
                                 rfp = res_ribo$log2FoldChange,
@@ -146,22 +153,23 @@ DTEG.analysis <- function(df.rfp, df.rna,
   #dt.between <- rbindlist(dt.between)
   # Plot
 
-  dt.between[, Status := factor(Status,
-                                levels = c("No change", "Translation", "Buffering", "mRNA abundance"),
-                                ordered = TRUE)]
+  dt.between[, Regulation :=
+               factor(Regulation,
+                      levels = c("No change", "Translation", "Buffering", "mRNA abundance"),
+                      ordered = TRUE)]
   plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height, dot.size)
   return(dt.between)
 }
 
 #' Create a TE table
 #'
-#' Creates a data.table with 5 columns, column names are:\cr
-#' variable, rfp_log2, rna_log2, rna_log10, LFC_TE
+#' Creates a data.table with 6 columns, column names are:\cr
+#' variable, rfp_log2, rna_log2, rna_log10, TE_log2, id
 #' @inheritParams DTEG.analysis
 #' @inheritParams countTable
 #' @param filter.rfp numeric, default 1. What is the minimum fpkm value?
 #' @param filter.rna numeric, default 1. What is the minimum fpkm value?
-#' @return a data.table with 5 columns
+#' @return a data.table with 6 columns
 #' @family TE
 #' @export
 #' @examples
@@ -206,7 +214,8 @@ te.table <- function(df.rfp, df.rna,
   dt.final[, variable := gsub(filter.names, "", variable)]
   dt.final[, variable := gsub("^_|_$", "", variable)]
   colnames(dt.final) <- c("variable", "rfp_log2","rna_log2", "rna_log10")
-  dt.final[, LFC_TE := rfp_log2 - rna_log2]
+  dt.final[, TE_log2 := rfp_log2 - rna_log2]
+  dt.final$id <- rep(txNames[filtered], length(unique(dt.final$variable)))
 
   message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of transcripts"))
   return(dt.final)

@@ -47,12 +47,13 @@ Import with import.ofst
 \examples{
 ## GRanges
 gr <- GRanges("1:1-3:-")
-# export.ofst(gr, file = "path.ofst")
-# import.ofst("path.ofst")
+tmp <- file.path(tempdir(), "path.ofst")
+# export.ofst(gr, file = tmp)
+# import.ofst(tmp)
 ## GAlignment
 # Make input data.frame
 df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
 ga <- ORFik:::getGAlignments(df)
-# export.ofst(ga, file = "path.ofst")
-# import.ofst("path.ofst")
+# export.ofst(ga, file = tmp)
+# import.ofst(tmp)
 }

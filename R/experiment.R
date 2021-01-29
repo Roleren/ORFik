@@ -67,7 +67,7 @@
 #' # 1. Update path to experiment data  directory (bam, bed, wig files etc)
 #' exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
 #'
-#' # 2. Set a 5 character name for experiment, (Lee et al 2013 -> Lee13, etc)
+#' # 2. Set a short character name for experiment, (Lee et al 2013 -> Lee13, etc)
 #' exper_name = "Lee13"
 #'
 #' # 3. Create a template experiment (gtf and fasta genome)
@@ -317,7 +317,7 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
   df[5:(5+length(files)-1), 6] <- files
   # Set library type (RNA-seq etc)
   df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames())
-  # set stage (sphere, shield etc)
+  # set stage (sphere, shield etc) (input cell line or tissue here if wanted)
   stages <- rbind(stageNames(), tissueNames(), cellLineNames())
   df[5:(5+length(files)-1), 2] <- findFromPath(files, stages)
   # set rep (1, 2, 3 etc)
@@ -438,7 +438,8 @@ validateExperiments <- function(df) {
     stop("Empty files in list, see above for which")
   }
   if (length(bamVarName(df)) != length(unique(bamVarName(df))))
-    stop("experiment table has non-unique rows!")
+    stop("experiment table has non-unique rows!",
+         "update replicate, stage, condition, to get non unique rows!")
   if (length(files) != length(unique(files)))
     stop("Duplicated filepaths in experiment!")
 }

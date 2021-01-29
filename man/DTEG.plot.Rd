@@ -48,7 +48,7 @@ Plot DTEG result
 #df.rfp <- read.experiment("Riboseq")
 #df.rna <- read.experiment("RNAseq")
 #dt <- DTEG.analysis(df.rfp, df.rna)
-#DTEG.plot(dt)
+#DTEG.plot(dt, xlim = c(-2, 2), ylim = c(-2, 2))
 }
 \seealso{
 Other TE: 

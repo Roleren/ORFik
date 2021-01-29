@@ -41,6 +41,7 @@ What p-value used for the analysis? Will be shown as a caption.}
 }
 \value{
 a data.table with 9 columns.
+(log fold changes, p.ajust values, group, regulation status and gene id)
 }
 \description{
 Using an equal reimplementation of the deltaTE algorithm (see reference).
@@ -63,7 +64,13 @@ forwarded is called Buffering.
 \examples{
 #df.rfp <- read.experiment("Riboseq")
 #df.rna <- read.experiment("RNAseq")
-#DTEG.analysis(df.rfp, df.rna)
+#dt <- DTEG.analysis(df.rfp, df.rna)
+## Only longest isoform per gene:
+#tx_longest <- filterTranscripts(df.rfp, 0, 1, 0)
+#dt <- dt[id \%in\% tx_longest,]
+## Convert to gene id
+#dt[, id := txNamesToGeneNames(id, df.rfp)]
+## To get by gene symbol, use biomaRt conversion
 }
 \references{
 doi: 10.1002/cpmb.108
