@@ -23,7 +23,9 @@ If only SRR numbers can not rename, since no additional information is given.}
 
 \item{outdir}{a string, default: cbu server}
 
-\item{rename}{logical, default TRUE. Priority of renaming from
+\item{rename}{logical or character, default TRUE (Auto guess new names). False: Skip
+renaming. A character vector of equal size as files wanted can also be given.
+Priority of renaming from
 the metadata is to check for unique names in the LibraryName column,
 then the sample_title column if no valid names in LibraryName.
 If new names found and still duplicates, will

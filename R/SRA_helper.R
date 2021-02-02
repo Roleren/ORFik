@@ -64,7 +64,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' "Run" or "SRR". Can be SRR, ERR or DRR numbers.
 #' If only SRR numbers can not rename, since no additional information is given.
 #' @param outdir a string, default: cbu server
-#' @param rename logical, default TRUE. Priority of renaming from
+#' @param rename logical or character, default TRUE (Auto guess new names). False: Skip
+#' renaming. A character vector of equal size as files wanted can also be given.
+#' Priority of renaming from
 #' the metadata is to check for unique names in the LibraryName column,
 #' then the sample_title column if no valid names in LibraryName.
 #' If new names found and still duplicates, will
@@ -144,9 +146,15 @@ download.SRA <- function(info, outdir, rename = TRUE,
     message("If only few files remaining, subset to those SRR numbers and run again")
   }
 
-  rename <- ifelse(!is.character(info) & rename, TRUE, FALSE)
-  if (rename) {
-    files <- rename.SRA.files(files, info)
+
+  if (is.logical(rename)) {
+    # Set to false if not metadata
+    if (!is.character(info) & rename) {
+      rename <- FALSE
+      warning("rename = TRUE, but no metadata given. Can not rename!")
+    } else files <- rename.SRA.files(files, info)
+  } else { # else manual assign names
+    files <- rename.SRA.files(files, rename)
   }
   return(files)
 }
@@ -249,9 +257,8 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
 #' @return a character vector of new file names
 rename.SRA.files <- function(files, new_names) {
   info <- NULL # Set to default
-  if (is.character(new_names)) {
-    # Do nothing
-  } else { # Find from meta data
+  if (!is.character(new_names)) { # Then auto-guess from meta data
+    message("Auto-guessing new names from metadata, check that they are valid")
     info <- new_names
     new_names <- NULL
 
@@ -292,15 +299,17 @@ rename.SRA.files <- function(files, new_names) {
 
   if (!is.null(new_names)) {
     message("Renaming files:")
-
-    if (any("PAIRED" %in% info$LibraryLayout)) {
-      new_names <- lapply(seq_along(info$LibraryLayout),
-                        function(x) if(info$LibraryLayout[x] == "PAIRED") {
-                          c(paste0(new_names[x], "_p1"),
-                            paste0(new_names[x],"_p2"))
-                        } else new_names[x])
-      new_names <- unlist(new_names)
+    if (!is.null(info)) { # If metadata given, update if paired end
+      if (any("PAIRED" %in% info$LibraryLayout)) {
+        new_names <- lapply(seq_along(info$LibraryLayout),
+                            function(x) if(info$LibraryLayout[x] == "PAIRED") {
+                              c(paste0(new_names[x], "_p1"),
+                                paste0(new_names[x],"_p2"))
+                            } else new_names[x])
+        new_names <- unlist(new_names)
+      }
     }
+
     if (length(new_names) != length(files))
       stop("Length of files and new_names to rename by is not equal!")
 

@@ -26,7 +26,8 @@ common name see: http://www.noncode.org/download.php/}
 \item{output.dir}{directory to save downloaded data}
 
 \item{organism}{scientific name of organism, Homo sapiens,
-Danio rerio, Mus musculus, etc.}
+Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
+for full list of supported organisms.}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}

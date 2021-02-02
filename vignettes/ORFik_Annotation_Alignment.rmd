@@ -141,6 +141,13 @@ If you have less than 40 GB free memory (32 GB might work), adjust this during i
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 index <- STAR.index(annotation, max.ram = 20, SAsparse = 2)
 ```
+### Systems with small max open files
+STAR can use a lot of threads, which makes more small files open. Some systems have a restriction on how many files you can have open. This is found by doing "ulimit -Hn" in the terminal.
+If STAR crashes from this error, you need either increase amount of open files allowed (requires root access) or decrease the amount of cores used by STAR (does not require root access):
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+STAR.align.folder(fastq.dir, bam.dir, index,
+                    max.cpus = 12) # Reduce cores to 12 usually works for all systems
+```
 
 # Create an ORFik experiment of the Yeast data
 To simplify coding and sharing of your work, you should make a ORFik experiment, check out the ORFik experiment vignette if you are unfamiliar with this class.

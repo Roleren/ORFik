@@ -439,7 +439,7 @@ validateExperiments <- function(df) {
   }
   if (length(bamVarName(df)) != length(unique(bamVarName(df))))
     stop("experiment table has non-unique rows!",
-         "update replicate, stage, condition, to get non unique rows!")
+         " update replicate, stage, condition, to get non unique rows!")
   if (length(files) != length(unique(files)))
     stop("Duplicated filepaths in experiment!")
 }

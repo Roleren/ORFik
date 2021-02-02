@@ -254,6 +254,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     stop("STAR folder alignment script not found, check path of script!")
   if (!file.exists(script.single))
     stop("STAR single file alignment script not found, check path of script!")
+  if (!dir.exists(index.dir))
+    stop("STAR index path must be a valid directory called /STAR_index")
   if (is.logical(paired.end)) {
     paired.end <- ifelse(paired.end, "yes", "no")
   } else if(is.character(paired.end)) {
@@ -326,6 +328,8 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 ) {
   if (!file.exists(script.single))
     stop("STAR single file alignment script not found, check path of script!")
+  if (!dir.exists(index.dir))
+    stop("STAR index path must be a valid directory called /STAR_index")
   # TODO, decide to add this in or not.
   # cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
   #                         package = "ORFik", mustWork = TRUE)
@@ -468,11 +472,12 @@ install.fastp <- function(folder = "~/bin") {
 #' @export
 #' @family STAR
 #' @examples
-#' index.path = "/home/data/human_index/phix/"
+#' index.path = "/home/data/human_GRCh38/STAR_INDEX/genomeDir/"
 #' # STAR.remove.crashed.genome(index.path = index.path)
 #' ## If you have the index argument from STAR.index function:
 #' # index.path <- STAR.index()
 #' # STAR.remove.crashed.genome(file.path(index.path, "genomeDir"))
+#' # STAR.remove.crashed.genome(file.path(index.path, "contaminants_genomeDir"))
 STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
   message("Trying to remove loaded genome:")
   out <- paste(star.path, "--genomeDir", index.path, "--genomeLoad Remove")

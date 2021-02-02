@@ -18,7 +18,8 @@ Will download the primary assembly for ensembl}
 \item{output.dir}{directory to save downloaded data}
 
 \item{organism}{scientific name of organism, Homo sapiens,
-Danio rerio, Mus musculus, etc.}
+Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
+for full list of supported organisms.}
 
 \item{assembly_type}{a character string specifying from which assembly type
 the genome shall be retrieved from (ensembl only, else this argument is ignored):

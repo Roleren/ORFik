@@ -14,7 +14,8 @@
 #' annotation["genome"] = "path/to/genome.fasta"\cr
 #' annotation["gtf"] = "path/to/gtf.gtf"
 #' @param organism scientific name of organism, Homo sapiens,
-#' Danio rerio, Mus musculus, etc.
+#' Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
+#' for full list of supported organisms.
 #' @param output.dir directory to save downloaded data
 #' @param db database to use for genome and GTF,
 #' default adviced: "ensembl" (will contain haplotypes, large file!).
@@ -129,12 +130,12 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   organism <- gsub(" ", "_", organism)
   ## Go through all contaminants:
   if (!(tRNA %in% c("", FALSE, TRUE))) {
-    if (!file.exists(tRNA)) stop(paste("tRNA file is given and does not exist:",
+    if (!file.exists(tRNA)) stop(paste("local tRNA file is given and does not exist:",
                                        tRNA))
   }
   if (!(rRNA %in% c("", FALSE, TRUE, "silva"))) {
 
-    if (!file.exists(rRNA)) stop(paste("rRNA file is given and does not exist:",
+    if (!file.exists(rRNA)) stop(paste("local rRNA file is given and does not exist:",
                                        tRNA))
   } else if (rRNA == "silva") rRNA <- get_silva_rRNA()
 
