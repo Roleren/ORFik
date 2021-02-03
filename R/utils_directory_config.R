@@ -66,16 +66,16 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
 #' @inheritParams config
 #' @param fastq.dir directory where ORFik puts fastq file directories,
 #'  default: config()["fastq"]
-#' @param bam.dirs directory where ORFik puts bam file directories,
+#' @param bam.dir directory where ORFik puts bam file directories,
 #'  default: config()["bam"]
-#' @param reference.dirs directory where ORFik puts reference file directories,
+#' @param reference.dir directory where ORFik puts reference file directories,
 #'  default: config()["ref"]
 #' @return invisible(NULL), file saved to disc
 #' @export
 config.save <- function(file = "~/Bio_data/ORFik_config.csv",
-                        fastq.dirs, bam.dirs, reference.dirs) {
+                        fastq.dir, bam.dir, reference.dir) {
   conf <- data.frame(type = c("fastq", "bam", "ref"),
-                     directory = c(fastq.dirs, bam.dirs, reference.dirs))
+                     directory = c(fastq.dir, bam.dir, reference.dir))
   data.table::fwrite(conf, file, col.names = TRUE)
   return(invisible(NULL))
 }

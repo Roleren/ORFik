@@ -6,22 +6,22 @@
 \usage{
 config.save(
   file = "~/Bio_data/ORFik_config.csv",
-  fastq.dirs,
-  bam.dirs,
-  reference.dirs
+  fastq.dir,
+  bam.dir,
+  reference.dir
 )
 }
 \arguments{
 \item{file}{file of config for ORFik, default: "~/Bio_data/ORFik_config.csv"}
 
-\item{bam.dirs}{directory where ORFik puts bam file directories,
-default: config()["bam"]}
-
-\item{reference.dirs}{directory where ORFik puts reference file directories,
-default: config()["ref"]}
-
 \item{fastq.dir}{directory where ORFik puts fastq file directories,
 default: config()["fastq"]}
+
+\item{bam.dir}{directory where ORFik puts bam file directories,
+default: config()["bam"]}
+
+\item{reference.dir}{directory where ORFik puts reference file directories,
+default: config()["ref"]}
 }
 \value{
 invisible(NULL), file saved to disc
