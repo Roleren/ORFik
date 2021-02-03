@@ -151,12 +151,12 @@ cellLineNames <- function() {
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
-    list(c("rep1", "Rep1", "run1", "_r1_"),
-         c("rep2", "Rep2", "run2", "_r2_"),
-         c("rep3", "Rep3", "run3", "_r3_"),
-         c("rep4", "Rep4", "run4", "_r4_"),
-         c("rep5", "Rep5", "run5", "_r5_"),
-         c("rep6", "Rep6", "run6", "_r6_")
+    list(c("rep1", "Rep1", "run1", "_r1_", "WT1"),
+         c("rep2", "Rep2", "run2", "_r2_", "WT2"),
+         c("rep3", "Rep3", "run3", "_r3_", "WT3"),
+         c("rep4", "Rep4", "run4", "_r4_", "WT4"),
+         c("rep5", "Rep5", "run5", "_r5_", "WT5"),
+         c("rep6", "Rep6", "run6", "_r6_", "WT6")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

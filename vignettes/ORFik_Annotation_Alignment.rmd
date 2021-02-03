@@ -22,39 +22,39 @@ Here we will show a full example of aligning RNA-seq from yeast using the SacCer
 ## Specify output folders
 
 First specify where you want to save the different data types:
+1. fastq files (raw_data)
+2. bam files (processed_data)
+3. annotation reference files (references)
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   library(ORFik)                        # This package
-  # Output folders:
-  # 1. where do you want the annotation ?
-  annotation.dir <- "~/Bio_data/annotations/Yeast_SacCer3/"
-  # 2. where do you want the fastq files ?
-  fastq.dir <-  "~/Bio_data/raw_data/RNA-seq/Yeast_SRP012047/"
-  # 3. where do you want the aligned bam files ?
-  bam.dir <- "~/Bio_data/processed_data/RNA-seq/Yeast_SRR453566/"
-  
+  conf <- config.exper(experiment = "CHALMERS_Yeast", # Name
+                     assembly = "Yeast_SacCer3", # Reference folder
+                     type = c("RNA-seq")) # fastq and bam type
 ```
 
 ## Download RNA-seq NGS data
 
-We need some data to align, if you have in-lab data, you don't need this step, since you already have access to the files.
+We need some data to align, if you have in-lab data, you don't need this step, since you already have access to the fastq files.
 
 
-On the other hand, if you want to use published data, you need to download it. I here just show what would work for the paired end RNA-seq experiment run SRR453566.
+On the other hand, if you want to use published data, you need to download it. I here show what would work for the paired end RNA-seq experiment SRP012047.
 
 
-ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called 'Run'. We will now show how to get data from SRA.
+ORFik comes with a SRA run downloader, just specificy the SRR numbers, or a SRA experiment information csv file containing a column called 'Run'. We will now show how to get data from SRA. You can also get data from ERA or DRA.
 
 1. Download using metadata table:
-the good thing here is that you can specify a project, and it will find all SRR numbers for you, but here we tell it only to download the 2 runs called SRR453566 and SRR453571. We will also only subset to download the 50000 first reads of the libraries, so you can replicate this faster.
+the good thing here is that you can specify a project, and it will find all SRR numbers for you, but here we tell it only to download the 2 runs called SRR453566 and SRR453571. We will also only subset to download the 50000 first reads of the libraries, so you can replicate this faster. If you want to try full data it will take ~ 100 seconds to download on stable connection.
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 
-info <- download.SRA.metadata("SRP012047", fastq.dir)
+info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
 # Let's take 2 first runs in this experiment:
 info <- info[1:2,]
-
-download.SRA(info, fastq.dir, subset = 50000)
+# 18 MB, ~ 40 sec download time ->
+download.SRA(info, conf["fastq RNA-seq"], subset = 50000) 
+# 1.6 GB, ~ 100 sec download time (faster download) ->
+# download.SRA(info, conf["fastq RNA-seq"]) 
 ```
 
 We now have the RNA-seq run, separated into 2 files, since this is paired end data. We could for ease also just have specified the SRR number in download.SRA, but then we get no meta-data csv file, which is handy for auto-detection of paired end data, the organism name etc. This is shown below:
@@ -76,15 +76,15 @@ genus(saccharomyces) and species (cerevisiae).
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   annotation <- getGenomeAndAnnotation(
                       organism = organism, 
-                      output.dir = annotation.dir,
+                      output.dir = conf["ref"],
                       assembly_type = "toplevel"
                       )
 ```
-The function will also create a gtf.db object so speed up loading of annotation, and index your genome to a .fai file. 
+The function will also create a txdb object to speed up loading of gtf annotation, and index your genome to a .fai file. 
 
-If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object, this makes it easy to rerun the script, when you have some steps already finished.
+If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object paths, this makes it easy to rerun the script, when you have some steps already finished.
 
-If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. Note that some species does not have well annotated rRNAs, tRNAs etc, so you can either set rRNA = "silva" to download the Silva database or manually download and add the sequences from tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
+If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. Note that some species does not have well annotated rRNAs, tRNAs etc, so you can either set rRNA = "silva" to download the Silva database (~ 2GB file) or manually download and add the sequences from tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
 
 ## RNA-seq alignment
 ORFik uses the STAR aligner, which is splice aware and fast. This will only work on unix systems (Linux or Mac) for now.
@@ -96,7 +96,7 @@ To index the genome just give it the annotation output from previous step. This 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 index <- STAR.index(annotation)
 ```
-If you run this function again after index exists in current file location, it will not re-index, but just output the correct object. Do remake = TRUE if you want to re-index.
+If you run this function again after index exists in current file location, it will not re-index, but just output the correct object paths. Do remake = TRUE if you want to re-index.
 
 ### Aligning the data
 
@@ -122,7 +122,7 @@ We need usually 9 arguments (more are possible if you need them):
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 alignment <- 
-  STAR.align.folder(fastq.dir, bam.dir, index,
+  STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
                     paired.end = is_paired_end,
                     steps = "tr-ge", # (trim needed: adapters found, then genome)
                     adapter.sequence = "auto",
@@ -142,11 +142,11 @@ If you have less than 40 GB free memory (32 GB might work), adjust this during i
 index <- STAR.index(annotation, max.ram = 20, SAsparse = 2)
 ```
 ### Systems with small max open files
-STAR can use a lot of threads, which makes more small files open. Some systems have a restriction on how many files you can have open. This is found by doing "ulimit -Hn" in the terminal.
+STAR can use a lot of threads, which makes many small files open. Some systems have a restriction on how many files you can have open. This is found by doing "ulimit -Hn" in the terminal.
 If STAR crashes from this error, you need either increase amount of open files allowed (requires root access) or decrease the amount of cores used by STAR (does not require root access):
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-STAR.align.folder(fastq.dir, bam.dir, index,
-                    max.cpus = 12) # Reduce cores to 12 usually works for all systems
+STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
+                    max.cpus = 12) # Reduce cores to 12 usually works for most systems
 ```
 
 # Create an ORFik experiment of the Yeast data
@@ -159,7 +159,7 @@ We can now easily make an ORFik experiment from the data we have:
 txdb_file <- paste0(annotation["gtf"], ".db") # Get txdb file, not raw gtf
 fa <- annotation["genome"]
 create.experiment(exper = "yeast_exp_RNA",
-                  dir = paste0(bam.dir, "/aligned/"),
+                  dir = paste0(conf["bam RNA-seq"], "/aligned/"),
                   txdb = txdb_file, fa = fa, 
                   organism = organism,
                   viewTemplate = FALSE, 
@@ -172,14 +172,20 @@ The files is now saved to default directory which is: saveDir = "~/Bio_data/ORFi
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 df <- read.experiment("yeast_exp_RNA")
 ```
-If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in Libre Office, Excel or another spreadsheet viewer. 
+If you are not happy with the libtype, stage, replicates and so on for the file, you can edit the ORFik experiment in R (recreate experiment, wanted slots) or edit in Libre Office, Excel or another spreadsheet viewer. 
+
+## Post alignment QC report
+See ?QCreport for details of what you will get as output
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  QCreport(df)
+```
 
 ## Convert libraries to new formats
 Now you have an experiment, but bam files are big and slow to load. Let's convert to some faster formats.
 
-If you want optimzed format identical to bam file, use .ofst. (Fastest, not readable in IGV)
+If you want optimzed format identical to bam file (contains cigar information), use .ofst. (Fastest, not readable in IGV) (ofst files are made when running ORFikQC)
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-  remove.experiments(df)
+  remove.experiments(df) # Remove loaded libraries
   convertLibs(df, type = "ofst")
 ```
 If you want peaks only, use wig files (Fast, readable in IGV)
@@ -194,19 +200,8 @@ As an example of how to load the data to R in the optimized format .ofst.
 This will output the libraries to the environment specified, default .GlobalEnv (the default R environment). The files are named from the experiment table RNA_1_WT, RNA_1_treated etc. 
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
-remove.experiments(df)
-outputLibs(df, type = "ofst")
-```
-If I rather want the wig format files:
-```{r eval = FALSE, echo = TRUE, message = FALSE}
   remove.experiments(df)
-  outputLibs(df, type = "wig")
-```
-
-## Post alignment QC report
-See ?QCreport for details of what you will get as output
-```{r eval = FALSE, echo = TRUE, message = FALSE}
-  QCreport(df)
+  outputLibs(df, type = "ofst")
 ```
 
 ## FPKM values (normalized counts)

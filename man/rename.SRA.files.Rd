@@ -26,3 +26,11 @@ a character vector of new file names
 \description{
 Rename SRA files from metadata
 }
+\seealso{
+Other sra: 
+\code{\link{download.SRA.metadata}()},
+\code{\link{download.SRA}()},
+\code{\link{download.ebi}()},
+\code{\link{install.sratoolkit}()}
+}
+\concept{sra}

@@ -7,6 +7,7 @@
 #' @return path to fastq-dump in sratoolkit
 #' @importFrom utils untar
 #' @references https://ncbi.github.io/sra-tools/fastq-dump.html
+#' @family sra
 #' @export
 #' @examples
 #' # install.sratoolkit()
@@ -56,7 +57,7 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
   return(path.final)
 }
 
-#' Download SRR libraries from SRA
+#' Download read libraries from SRA
 #'
 #' Multicore version download, see documentation for SRA toolkit for more information.
 #' @param info character vector of only SRR numbers or
@@ -78,12 +79,14 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' @param settings a string of arguments for fastq-dump,
 #' default: paste("--gzip", "--skip-technical", "--split-files")
 #' @param subset an integer or NULL, default NULL (no subset). If defined as
-#' a integer will download only the first n reads specified by subset.
+#' a integer will download only the first n reads specified by subset. If subset is
+#' defined, will force to use fastq-dump which is slower than ebi download.
 #' @param compress logical, default TRUE. Download compressed files ".gz".
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
 #' @return a character vector of download files filepaths
 #' @references https://ncbi.github.io/sra-tools/fastq-dump.html
+#' @family sra
 #' @export
 #' @examples
 #' SRR <- c("SRR453566") # Can be more than one
@@ -116,7 +119,8 @@ download.SRA <- function(info, outdir, rename = TRUE,
       info$Run
     }
   }
-  if (is.null(SRR)) stop("Could not find SRR numbers in 'info'")
+  if (is.null(SRR) | (length(SRR) == 0))
+    stop("Could not find SRR numbers in 'info'")
 
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   fastq.dump <- fastq.dump.path
@@ -125,6 +129,10 @@ download.SRA <- function(info, outdir, rename = TRUE,
     if(!is.numeric(subset)) stop("subset must be numeric if not NULL")
     subset <- as.integer(subset)
     settings <- paste(settings, "-X", subset)
+  } else {
+    files <- download.ebi(info, outdir, rename, BPPARAM)
+    if (length(files) > 0) return(files)
+    message("Checking for fastq files using fastq-dump")
   }
   if (compress) {
     settings <- paste(settings, "--gzip")
@@ -140,19 +148,24 @@ download.SRA <- function(info, outdir, rename = TRUE,
   files <- unlist(lapply(SRR, function(S)
     dir(outdir, paste0(S, ".*", search_it), full.names = TRUE))
   )
-  if (length(SRR) != length(files)) {
+
+  valid <- TRUE
+  if (length(files) == 0) valid <- FALSE
+  paired <- length(grep("_[1-2]\\.fastq\\.gz", files))
+  if (length(SRR) != (paired/2 + length(files) - paired))
+    valid <- FALSE
+  if (!valid) {
     warning("Some of the files specified was not downloaded,",
             " are you behind a strict firewall?")
     message("If only few files remaining, subset to those SRR numbers and run again")
   }
 
-
-  if (is.logical(rename)) {
-    # Set to false if not metadata
-    if (!is.character(info) & rename) {
+  if (is.logical(rename)) { # Renaming
+    # Set to false if no metadata
+    if (is.character(info) & rename) {
       rename <- FALSE
       warning("rename = TRUE, but no metadata given. Can not rename!")
-    } else files <- rename.SRA.files(files, info)
+    } else if (rename) files <- rename.SRA.files(files, info)
   } else { # else manual assign names
     files <- rename.SRA.files(files, rename)
   }
@@ -174,8 +187,9 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' @importFrom data.table fwrite
 #' @importFrom xml2 read_xml
 #' @importFrom xml2 as_list
-#' @export
 #' @references doi: 10.1093/nar/gkq1019
+#' @family sra
+#' @export
 #' @examples
 #' ## Originally on SRA
 #' outdir <- tempdir() # Specify output directory
@@ -255,6 +269,7 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
 #' rename, that is keep the SRR numbers, you then can manually rename files
 #' to something more meaningful.
 #' @return a character vector of new file names
+#' @family sra
 rename.SRA.files <- function(files, new_names) {
   info <- NULL # Set to default
   if (!is.character(new_names)) { # Then auto-guess from meta data
@@ -311,7 +326,8 @@ rename.SRA.files <- function(files, new_names) {
     }
 
     if (length(new_names) != length(files))
-      stop("Length of files and new_names to rename by is not equal!")
+      stop("Length of files and new_names to rename by is not equal!",
+           " If manual assign of paired end name, repeat each element twice!")
 
     new_names <- gsub(" |\\(|\\)", "_", new_names)
     new_names <- gsub("__", "_", new_names)
@@ -329,4 +345,102 @@ rename.SRA.files <- function(files, new_names) {
     return(files)
   }
   return(new_names)
+}
+
+#' Faster download of fastq files
+#'
+#' Uses ftp download from vol1 drive on EBI ftp server,
+#'  for faster download of ERR, SRR or DRR files.
+#' But does not support subsetting or custom settings of files!
+#' @inheritParams download.SRA
+#' @return character, full filepath of downloaded  files
+#' @family sra
+download.ebi <- function(info, outdir, rename = TRUE,
+                         BPPARAM = bpparam()) {
+  # If character presume SRR, if not check for column Run or SRR
+  SRR <- if (is.character(info)) { # if character
+    info
+  } else { # else metadata
+    if (is.null(info$Run)) { # If not called Run
+      info$SRR
+    } else  { # If called Run
+      info$Run
+    }
+  }
+  if (is.null(SRR) | (length(SRR) == 0))
+    stop("Could not find SRR numbers in 'info'")
+  dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+
+  files <- ORFik:::find_url_ebi(SRR)
+  if (length(files) == 0) {
+    message("Fastq files not found on ebi")
+    return(files)
+  }
+
+  message("Starting download of SRA runs:")
+  method <- ifelse(Sys.info()[1] == "Linux", "wget", "auto")
+  BiocParallel::bplapply(files, function(i, outdir, method) {
+    message(i)
+    download.file(i, destfile = file.path(outdir, basename(i)),
+                  method = method, quiet = TRUE)
+  }, outdir = outdir, method = method, BPPARAM = BPPARAM)
+
+  if (is.logical(rename)) {
+    # Set to false if not metadata
+    if (is.character(info) & rename) {
+      rename <- FALSE
+      warning("rename = TRUE, but no metadata given. Can not rename!")
+    } else if (rename) files <- rename.SRA.files(files, info)
+  } else { # else manual assign names
+    files <- rename.SRA.files(files, rename)
+  }
+  return(files)
+}
+
+#' Locates and check if fastq files exists in ebi
+#'
+#' Look for files in ebi following url: ftp://ftp.sra.ebi.ac.uk/vol1/fastq
+#' Paired end and single end fastq files
+#' @param SRR character, SRR, ERR or DRR numbers.
+#' @param stop.on.error logical FALSE, if true will stop
+#'  if all files are not found.
+#' @return full url to fastq files, same length as input
+#' (2 urls for paired end data). Returns empty character() if all
+#' files not found.
+find_url_ebi <- function(SRR, stop.on.error = FALSE) {
+  SRR_first_3 <- substring(SRR, 1, 6)
+  SRR_last_3 <- paste0("0", reverse(substring(reverse(SRR), 1, 2)))
+  SRR_default <- file.path("ftp://ftp.sra.ebi.ac.uk/vol1/fastq", SRR_first_3)
+  SRR_fastq <- paste0(SRR, ".fastq.gz")
+  SRR_fastq_paired <- c(paste0(SRR, c("_1"), ".fastq.gz"),
+                        paste0(SRR, c("_2"), ".fastq.gz"))
+  SRR_paths <- file.path(SRR_default, SRR_last_3, SRR, SRR_fastq)
+  SRR_paths_paired <- file.path(SRR_default, SRR_last_3, SRR, SRR_fastq_paired)
+  # Special location
+  SRR_paths_spec <- file.path(SRR_default, SRR, SRR_fastq)
+  SRR_paths_spec_paired <- file.path(SRR_default, SRR, SRR_fastq_paired)
+  # Check what format the files are found in (4 types)
+  url.exists <-  sapply(SRR_paths, function(x)
+    biomartr:::exists.ftp.file(x, x))
+  url.exists <- c(url.exists,
+                  sapply(SRR_paths_paired, function(x)
+                    biomartr:::exists.ftp.file(x, x)))
+  url.exists <- c(url.exists,
+                  sapply(SRR_paths_spec, function(x)
+                    biomartr:::exists.ftp.file.new(x, x)))
+  url.exists <- c(url.exists,
+                  sapply(SRR_paths_spec_paired, function(x)
+                    biomartr:::exists.ftp.file.new(x, x)))
+  final.path <- names(url.exists[url.exists])
+
+  valid <- TRUE
+  if (length(final.path) == 0) valid <- FALSE
+  paired <- length(grep("_[1-2]\\.fastq\\.gz",final.path))
+  if (length(SRR) != (paired/2 + length(final.path) - paired))
+    valid <- FALSE
+  if (!valid & stop.on.error) stop("Did not find fastq files on ENA",
+                                   "check with download.SRA instead")
+  if (!valid) final.path <- character()
+
+  return(final.path)
 }

@@ -67,14 +67,18 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
       warning("A sample lost > 40% of reads during trimming")
     }
     if (1 %in% grep("ge", steps)) {
-      res$`total mapped reads %-genome vs raw` <-
-        round((res$`total mapped reads #-genome` / res$raw_reads) * 100, 4)
-      res$`total mapped reads %-genome vs trim` <-
-        round((res$`total mapped reads #-genome` / res$trim_reads) * 100, 4)
-    }
+      genome_reads <- if (is.null(res$`total mapped reads #-genome`)) {
+        res$`total mapped reads #`
+      } else res$`total mapped reads #-genome`
 
-    if (any(res$`total mapped reads %-genome vs trim` < 3)) {
-      warning("A sample aligned with < 3%, are you using the correct genome?")
+      res$`total mapped reads %-genome vs raw` <-
+        round((genome_reads/ res$raw_reads) * 100, 4)
+      res$`total mapped reads %-genome vs trim` <-
+        round((genome_reads / res$trim_reads) * 100, 4)
+
+      if (any(res$`total mapped reads %-genome vs trim` < 3)) {
+        warning("A sample aligned with < 3%, are you using the correct genome?")
+      }
     }
   }
 
@@ -120,7 +124,8 @@ STAR.multiQC <- function(folder, type = "aligned") {
   dt <- lapply(log_files, function(file)
     fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])
   # Read log files, only 1 (only info column)
-  dt_all <- fread(log_files[1], sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,1]
+  dt_all <- fread(log_files[1], sep = c("\t"),
+                  blank.lines.skip = TRUE, fill = TRUE)[,1]
   for (i in dt) {
     dt_all <- cbind(dt_all, as.data.table(i))
   }
@@ -183,7 +188,8 @@ STAR.multiQC <- function(folder, type = "aligned") {
 trimming.table <- function(trim_folder) {
 
   raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)
-
+  if (length(raw_library) == 0) stop("fastp .json files not found!,",
+                                     " did you change wd delete them?")
   raw_reads <- data.table()
   trim_reads <- data.table()
   lib <- raw_library[1]
@@ -191,7 +197,14 @@ trimming.table <- function(trim_folder) {
     a <- data.table::fread(lib, nrows = 7, skip = 2, sep = ":", col.names = c("id", "value"))
     a$value <- as.numeric(gsub(",", "", a$value))
     a$id <- gsub("\\\t", "", a$id)
-    b <- data.table::fread(lib, nrows = 7, skip = 12, sep = ":", col.names = c("id", "value"))
+    # Paired end reads
+    b <- data.table::fread(lib, nrows = 7, skip = 13, sep = ":",
+                           col.names = c("id", "value"))
+    if (length(grep("_reads", b$id[1])) == 0) { # Single end reads
+      b <- data.table::fread(lib, nrows = 7, skip = 12, sep = ":",
+                             col.names = c("id", "value"))
+    }
+
     b$value <- as.numeric(gsub(",", "", b$value))
     b$id <- gsub("\\\t", "", b$id)
     raw_reads <- rbind(raw_reads, a$value[1])

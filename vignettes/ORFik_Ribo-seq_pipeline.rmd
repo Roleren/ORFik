@@ -45,29 +45,27 @@ The following steps are done:
 library(ORFik)
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# Settings (This is the only Custom part per user, rest you can just run)
+# Config
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# This is where you want your annotation and STAR index
-annotation <- "~/Bio_data/references/Homo_sapiens_GRCh38_101/"
-# Where to download fastq files
-fastq.dir.rfp <- "~/Bio_data/raw_data/Ribo-seq/Alexaki_Human/"
-fastq.dir.rna <- "~/Bio_data/raw_data/RNA-seq/Alexaki_Human/"
-# Where you want mapped bam files
-bam.dir.rfp <- "~/Bio_data/processed_data/Ribo-seq/Alexaki_Human/"
-bam.dir.rna <- "~/Bio_data/processed_data/RNA-seq/Alexaki_Human/"
+# Specify paths wanted for NGS data, genome, annotation and STAR index
+# If you use local files, make a conf variable with existing directories
+conf <- config.exper(experiment = "Alexaki_Human",
+                     assembly = "Homo_sapiens_GRCh38_101",
+                     type = c("Ribo-seq", "RNA-seq"))
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Download fastq files for experiment and rename (Skip if you have the files already)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # SRA Meta data download (work for ERA and DRA too)
-study <- download.SRA.metadata("PRJNA591214", fastq.dir.rfp)
+study <- download.SRA.metadata("PRJNA591214", outdir = conf["fastq Ribo-seq"])
 # Subset
 study.rfp <- study[grep("mRNA-Seq", sample_title, invert = TRUE),]
 study.rna <- study[grep("Ribo-Seq", sample_title, invert = TRUE),]
-# Download fastq files (uses SRR numbers (Run column) from study))
-download.SRA(study.rfp, fastq.dir.rfp, rename = FALSE, subset = 2000000)
-download.SRA(study.rna, fastq.dir.rna, rename = FALSE, subset = 2000000)
-# Rename files (find good meta column for names from SRA metadata)
+# Download fastq files (uses SRR numbers (RUN column) from study))
+download.SRA(study.rfp, conf["fastq Ribo-seq"],
+             rename = study.rfp$sample_title, subset = 2000000)
+download.SRA(study.rna, conf["fastq RNA-seq"],
+             rename = study.rna$sample_title, subset = 2000000)
 
 # Which organism is this, scientific name, like "Homo sapiens" or "Danio rerio"
 organism <- study$ScientificName[1] # Usually you find organism here, else set it yourself
@@ -81,7 +79,7 @@ annotation <- getGenomeAndAnnotation(
   organism = organism,
   genome = TRUE, GTF = TRUE,
   phix = TRUE, ncRNA = TRUE, tRNA = TRUE, rRNA = TRUE,
-  output.dir = annotation,
+  output.dir = conf["ref"],
   assembly_type = "primary_assembly"
 )
 
@@ -95,51 +93,44 @@ index <- STAR.index(annotation, wait = TRUE, max.ram = 20, SAsparse = 2)
 # Alignment (with depletion of phix, rRNA, ncRNA and tRNAs) & (with MultiQC of final STAR alignment)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 
-STAR.align.folder(fastq.dir.rfp, bam.dir.rfp, index,
-                  paired.end = paired.end.rfp,
-                  steps = "tr-co", # (trim needed: adapters found, then genome)
-                  adapter.sequence = "auto", # Adapters are auto detected
-                  trim.front = 0, min.length = 20)
-
-STAR.align.folder(fastq.dir.rfp, bam.dir.rfp, index,
+STAR.align.folder(conf["fastq Ribo-seq"], conf["bam Ribo-seq"], index,
                   paired.end = paired.end.rfp,
                   steps = "tr-co-ge", # (trim needed: adapters found, then genome)
                   adapter.sequence = "auto", # Adapters are auto detected
-                  trim.front = 0, min.length = 20, resume = "ge")
-
-
-STAR.align.folder(fastq.dir.rna, bam.dir.rna, index,
-                  paired.end = paired.end.rna,
-                  steps = "tr-co", # (trim needed: adapters found, then genome)
-                  adapter.sequence = "auto", # Adapters are auto detected
                   trim.front = 0, min.length = 20)
 
-STAR.align.folder(fastq.dir.rna, bam.dir.rna, index,
+STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
                   paired.end = paired.end.rna,
                   steps = "tr-co-ge", # (trim needed: adapters found, then genome)
                   adapter.sequence = "auto", # Adapters are auto detected
-                  trim.front = 0, min.length = 20, resume = "ge")
+                  trim.front = 0, min.length = 20)
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Create experiment (Starting point if alignment is finished)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 library(ORFik)
-create.experiment(paste0(bam.dir.rfp, "/aligned/"), exper = "Alexaki_RFP",
+create.experiment(paste0(conf["bam Ribo-seq"], "/aligned/"),
+                  exper = conf["exp Ribo-seq"],
                   fa = annotation["genome"],
                   txdb = paste0(annotation["gtf"], ".db"),
                   organism = organism,
                   pairedEndBam = paired.end.rfp,
+                  rep = c(1,2,3,1,2,3),
+                  condition = c(rep("CO", 3), rep("WT", 3)),
                   viewTemplate = FALSE)
-create.experiment(paste0(bam.dir.rna, "/aligned/"), exper = "Alexaki_RNA",
+create.experiment(paste0(conf["bam RNA-seq"], "/aligned/"),
+                  exper = conf["exp RNA-seq"],
                   fa = annotation["genome"],
                   txdb = paste0(annotation["gtf"], ".db"),
                   organism = organism,
                   pairedEndBam = paired.end.rna,
+                  rep = c(1,2,3,1,2,3),
+                  condition = c(rep("CO", 3), rep("WT", 3)),
                   viewTemplate = FALSE)
-# Now fix experiment table in excel, libre office or directly in R.
+
 library(ORFik)
-df.rfp <- read.experiment("Alexaki_RFP")
-df.rna <- read.experiment("Alexaki_RNA")
+df.rfp <- read.experiment("Alexaki_Human_Ribo-seq")
+df.rna <- read.experiment("Alexaki_Human_RNA-seq")
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Convert files and run Annotation vs alignment QC
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -153,7 +144,7 @@ ORFikQC(df.rna)
 shiftFootprintsByExperiment(df.rfp, accepted.lengths = c(20:21, 27:28))
 # Ribo-seq specific QC
 remove.experiments(df.rfp) # Remove loaded data (it is not pshifted)
-ORFik:::RiboQC.plot(df.rfp, BPPARAM = SerialParam(progressbar = T))
+ORFik:::RiboQC.plot(df.rfp, BPPARAM = BiocParallel::SerialParam(progressbar = T))
 remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Create heatmaps (Ribo-seq)
@@ -214,10 +205,17 @@ table(dt$StartCodons)
 dt[startCodonCoverage > 5,]
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # uORF analysis (advanced) (using the extension package to ORFik: uORFomePipe)
+# Will create a mysql database + files with results
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 devtools::install_github("Roleren/uORFomePipe", dependencies = TRUE)
 library(uORFomePipe)
 find_uORFome("/media/roler/S/data/Bio_data/projects/Alexaki_uORFome/",
              df.rfp = df.rfp, df.rna = df.rna, df.cage = NULL, biomart = NULL,
              startCodons = "ATG|CTG|TTG|GTG", BPPARAM = BiocParallel::MulticoreParam(2))
+
+grl <- getUorfsInDb()
+pred <- readTable("finalPredWithProb")$prediction
+cov <- readTable("startCodonCoverage")
+grl[pred == 1 & rowSums(cov) > 5]
+
 ```

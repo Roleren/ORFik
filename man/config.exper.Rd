@@ -24,7 +24,7 @@ named character vector of paths for experiment
 Defines a folder for:
 1. fastq files (raw_data)\cr
 2. bam files (processed data)\cr
-3. references (organism annotation and STAR index)
+3. references (organism annotation and STAR index)\cr
 4. Experiment (name of experiment)
 }
 \examples{

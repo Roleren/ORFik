@@ -252,6 +252,21 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' be c(T, F, F). If you have a SRA metadata csv file, you can set this argument to
 #' study$LibraryLayout == "PAIRED", where study is the SRA metadata for all files
 #' that was aligned.
+#' @param libtype character, default "auto". Library types,
+#' must be length 1 or equal length of number of libraries.
+#' "auto" means ORFik will try to guess from file name.
+#' @param stage character, default "auto". Developmental stage, tissue or
+#' cell line, must be length 1 or equal length of number of libraries.
+#' "auto" means ORFik will try to guess from file name.
+#' @param rep character, default "auto". Replicate numbering,
+#' must be length 1 or equal length of number of libraries.
+#' "auto" means ORFik will try to guess from file name.
+#' @param condition character, default "auto". Library conditions,
+#' must be length 1 or equal length of number of libraries.
+#' "auto" means ORFik will try to guess from file name.
+#' @param fraction character, default "auto". Fractionation of library,
+#' must be length 1 or equal length of number of libraries.
+#' "auto" means ORFik will try to guess from file name.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View
@@ -294,7 +309,9 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
                               txdb = "", fa = "", organism = "",
                               pairedEndBam = FALSE,
                               viewTemplate = TRUE,
-                              types = c("bam", "bed", "wig")) {
+                              types = c("bam", "bed", "wig"),
+                              libtype = "auto", stage = "auto", rep = "auto",
+                              condition = "auto", fraction = "auto") {
   notDir <- !all(dir.exists(dir))
   if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a existing directory!"))
   file_dt <- findLibrariesInFolder(dir, types, pairedEndBam)
@@ -316,14 +333,14 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
   # set file paths
   df[5:(5+length(files)-1), 6] <- files
   # Set library type (RNA-seq etc)
-  df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames())
+  df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames(), libtype)
   # set stage (sphere, shield etc) (input cell line or tissue here if wanted)
   stages <- rbind(stageNames(), tissueNames(), cellLineNames())
-  df[5:(5+length(files)-1), 2] <- findFromPath(files, stages)
+  df[5:(5+length(files)-1), 2] <- findFromPath(files, stages, stage)
   # set rep (1, 2, 3 etc)
-  df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames())
+  df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames(), rep)
   # Set condition (WT, control, mutant etc)
-  df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames())
+  df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames(), condition)
 
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
@@ -374,8 +391,15 @@ save.experiment <- function(df, file) {
 #' @param filepaths path to all files
 #' @param candidates a data.table with 2 columns,
 #' Possible names to search for, see experiment_naming family for candidates.
+#' @param slot character, default "auto". If auto, use auto guessing of slot,
+#' else must be a character vector of length 1 or equal length as filepaths.
 #' @return a candidate library types (character vector)
-findFromPath <- function(filepaths, candidates) {
+findFromPath <- function(filepaths, candidates, slot = "auto") {
+  if (all(slot != "auto")) { # If not auto guess
+    if(length(slot) != 1 & length(slot) != length(filepaths)) {
+      stop("When experiment slot is not auto, length must be 1 or length(files)!")
+    } else return(slot)
+  }
   dt <- candidates
   candidates <- unlist(dt$allNames)
   types <- c()
@@ -621,7 +645,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' @inheritParams fimport
 #' @param type a character(default: "default"), load files in experiment
 #' or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
-#' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
+#' These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
@@ -744,7 +768,7 @@ convertLibs <- function(df,
   message("Converting to new format:")
   for (f in varNames) {
     message(f)
-    if (type == "bedo") { # bedo
+    if (type %in% c("bedo", "wig")) { # bedo, wig
     gr <- convertToOneBasedRanges(gr = get(f),
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,

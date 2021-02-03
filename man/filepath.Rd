@@ -11,7 +11,7 @@ filepath(df, type, basename = FALSE)
 
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
-These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
+These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().}
 
 \item{basename}{logical, default (FALSE).
 Get relative paths instead of full. Only use for inspection!}

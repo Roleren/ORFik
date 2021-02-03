@@ -2,7 +2,7 @@
 % Please edit documentation in R/SRA_helper.R
 \name{download.SRA}
 \alias{download.SRA}
-\title{Download SRR libraries from SRA}
+\title{Download read libraries from SRA}
 \usage{
 download.SRA(
   info,
@@ -40,7 +40,8 @@ from install.sratoolkit()}
 default: paste("--gzip", "--skip-technical", "--split-files")}
 
 \item{subset}{an integer or NULL, default NULL (no subset). If defined as
-a integer will download only the first n reads specified by subset.}
+a integer will download only the first n reads specified by subset. If subset is
+defined, will force to use fastq-dump which is slower than ebi download.}
 
 \item{compress}{logical, default TRUE. Download compressed files ".gz".}
 
@@ -71,3 +72,11 @@ download.SRA(info, outdir, subset = 5)
 \references{
 https://ncbi.github.io/sra-tools/fastq-dump.html
 }
+\seealso{
+Other sra: 
+\code{\link{download.SRA.metadata}()},
+\code{\link{download.ebi}()},
+\code{\link{install.sratoolkit}()},
+\code{\link{rename.SRA.files}()}
+}
+\concept{sra}

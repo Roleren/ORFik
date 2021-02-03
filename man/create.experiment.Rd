@@ -13,7 +13,12 @@ create.experiment(
   organism = "",
   pairedEndBam = FALSE,
   viewTemplate = TRUE,
-  types = c("bam", "bed", "wig")
+  types = c("bam", "bed", "wig"),
+  libtype = "auto",
+  stage = "auto",
+  rep = "auto",
+  condition = "auto",
+  fraction = "auto"
 )
 }
 \arguments{
@@ -46,6 +51,26 @@ that was aligned.}
 \item{viewTemplate}{run View() on template when finished, default (TRUE)}
 
 \item{types}{Default (bam, bed, wig), which types of libraries to allow}
+
+\item{libtype}{character, default "auto". Library types,
+must be length 1 or equal length of number of libraries.
+"auto" means ORFik will try to guess from file name.}
+
+\item{stage}{character, default "auto". Developmental stage, tissue or
+cell line, must be length 1 or equal length of number of libraries.
+"auto" means ORFik will try to guess from file name.}
+
+\item{rep}{character, default "auto". Replicate numbering,
+must be length 1 or equal length of number of libraries.
+"auto" means ORFik will try to guess from file name.}
+
+\item{condition}{character, default "auto". Library conditions,
+must be length 1 or equal length of number of libraries.
+"auto" means ORFik will try to guess from file name.}
+
+\item{fraction}{character, default "auto". Fractionation of library,
+must be length 1 or equal length of number of libraries.
+"auto" means ORFik will try to guess from file name.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,

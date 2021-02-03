@@ -450,6 +450,7 @@ install.fastp <- function(folder = "~/bin") {
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
 
   if (!is_linux) path <- paste0(folder, "/fastp.zip")
+  message("Downloading fastp, this will be done only once!")
   utils::download.file(url, destfile = path)
   if (!is_linux) { # For mac os
     message("On mac OS, must build fastp, since no precompiled binaries exists")
@@ -480,7 +481,10 @@ install.fastp <- function(folder = "~/bin") {
 #' # STAR.remove.crashed.genome(file.path(index.path, "contaminants_genomeDir"))
 STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
   message("Trying to remove loaded genome:")
-  out <- paste(star.path, "--genomeDir", index.path, "--genomeLoad Remove")
+  tempdir.used <- file.path(tempdir(), "remove_")
+  message(paste("Log files for removal placed in:", tempdir()))
+  out <- paste(star.path, "--genomeDir", index.path, "--genomeLoad Remove",
+               "--outFileNamePrefix", tempdir.used)
   status <- system(out)
   if (status == 0) {
     message("Genome removed, if still not working",

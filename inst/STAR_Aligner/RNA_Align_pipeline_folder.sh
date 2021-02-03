@@ -127,36 +127,36 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
         echo "-A alignment type $OPTARG"
         ;;
     r)
-	resume=$OPTARG
-	echo "-r resume (new: n, or step as ge): $OPTARG"
+      	resume=$OPTARG
+      	echo "-r resume (new: n, or step as ge): $OPTARG"
         ;;
     m)
-	maxCPU=$OPTARG
-	echo "-m maxCPU: $OPTARG"
+      	maxCPU=$OPTARG
+      	echo "-m maxCPU: $OPTARG"
         ;;
     M)
-	multimap=$OPTARG
-	echo "-m max multimap: $OPTARG"
+      	multimap=$OPTARG
+      	echo "-m max multimap: $OPTARG"
         ;;
     i)
-	subfolders=$OPTARG
-	echo "-i subfolders: $OPTARG"
+      	subfolders=$OPTARG
+      	echo "-i subfolders: $OPTARG"
         ;;
     S)
-	STAR=$OPTARG
-	echo "-S STAR location: $OPTARG"
+      	STAR=$OPTARG
+      	echo "-S STAR location: $OPTARG"
         ;;
     P)
-	fastp=$OPTARG
-	echo "-P fastp location: $OPTARG"
+      	fastp=$OPTARG
+      	echo "-P fastp location: $OPTARG"
         ;;
     C)
-	cleaning=$OPTARG
-	echo "-C cleaning location: $OPTARG"
+      	cleaning=$OPTARG
+      	echo "-C cleaning location: $OPTARG"
         ;;
     I)
-	align_single=$OPTARG
-	echo "-I align_single location: $OPTARG"
+      	align_single=$OPTARG
+      	echo "-I align_single location: $OPTARG"
         ;;
     h)
         usage
@@ -220,7 +220,7 @@ function findPairs()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
     echo "-------------------------------------------"
 	done
 }
@@ -246,7 +246,7 @@ function findPairsSub()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
@@ -256,33 +256,50 @@ listOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq')
 numOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq' | wc -l)
 echo "The total number of files are:"
 echo $numOfFiles
-i=0
-keep="y"
-if [ $paired == "yes" ]; then
-	if [ $subfolders == "n" ]; then
-		findPairs $in_dir $listOfFiles
-	else
-		findPairsSub $(find ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq\|\.gz' | sort)
-	fi
-
-else
-	for x in $listOfFiles
-	do
-		echo "running single end for file: $x"
-		i=$((i + 1))
-		echo "file  $i / $numOfFiles"
-
-		if [[ $i == $numOfFiles ]];then
-		  echo "last file:"
-			keep="n"
-		fi
-    x=$in_dir/$x
-
-		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$resume" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
-		echo "----------------------------------------------"
-	done
+# Check if resume, if true, jump to given step
+declare -i X
+X=1
+if [ "$resume" != "n" ]; then
+   echo "resume"
+   X=$(echo "$stage" | grep -b -o $resume | cut -d: -f1)
+   X=$(expr 1 + $X)
 fi
+length=${#steps}
+# For each type in tr-co-ge (do one step at a time)
+while [ $X -lt $length ]
+do
+  current=$(expr substr "$steps" $X 2)
+  echo "Current step:"
+  echo $current
+  X=$((X + 3))
+  i=0
+  keep="y"
+  if [ $paired == "yes" ]; then
+  	if [ $subfolders == "n" ]; then
+  		findPairs $in_dir $listOfFiles
+  	else
+  		findPairsSub $(find ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq\|\.gz' | sort)
+  	fi
 
+  else
+  	for x in $listOfFiles
+  	do
+  		echo "running single end for file: $x"
+  		i=$((i + 1))
+  		echo "file  $i / $numOfFiles"
+
+  		if [[ $i == $numOfFiles ]];then
+  		  echo "last file:"
+  			keep="n"
+  		fi
+      x=$in_dir/$x
+
+  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+  		echo "----------------------------------------------"
+  	done
+  fi
+done
+echo "done"
 ### Cleanup
 # Folder cleanup
 eval $cleaning $out_dir

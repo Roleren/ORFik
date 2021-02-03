@@ -4,13 +4,16 @@
 \alias{findFromPath}
 \title{Find all candidate library types filenames}
 \usage{
-findFromPath(filepaths, candidates)
+findFromPath(filepaths, candidates, slot = "auto")
 }
 \arguments{
 \item{filepaths}{path to all files}
 
 \item{candidates}{a data.table with 2 columns,
 Possible names to search for, see experiment_naming family for candidates.}
+
+\item{slot}{character, default "auto". If auto, use auto guessing of slot,
+else must be a character vector of length 1 or equal length as filepaths.}
 }
 \value{
 a candidate library types (character vector)

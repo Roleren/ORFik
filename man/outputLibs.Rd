@@ -26,7 +26,7 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
-These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..}
+These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().}
 
 \item{param}{\code{NULL} or a \link[Rsamtools]{ScanBamParam} object.
     Like for \code{\link[Rsamtools]{scanBam}}, this influences what fields
