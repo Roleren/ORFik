@@ -37,6 +37,7 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
   if (length(in_files) != length(out_files)) stop("Not equal length of in_files and out_files!")
 
   bplapply(seq_along(in_files), function(x, in_files, out_files) {
+    dir.create(dirname(out_files[x]), showWarnings = FALSE, recursive = TRUE)
     system(paste("cat", in_files[x], ">", out_files[x]))
   }, in_files = in_files, out_files = out_files, BPPARAM = BPPARAM)
 
