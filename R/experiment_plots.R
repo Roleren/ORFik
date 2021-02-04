@@ -44,7 +44,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
                              dfr = NULL, idName = "", format = ".png",
-                             type = "ofst", BPPARAM = bpparam()) {
+                             type = "ofst", is.sorted = FALSE,
+                             BPPARAM = bpparam()) {
   if (windowSize != 100)
     message(paste0("NOTE: windowSize is not 100! It is: ", windowSize))
 
@@ -72,13 +73,13 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
       }
     } else { # all combined
       coverage <- bplapply(varNames, function(x, leaders, cds, trailers,
-                                              windowSize) {
+                                              windowSize, is.sorted) {
         message(x)
         splitIn3Tx(leaders, cds, trailers,
                    get(x), fraction = x,
-                   windowSize = windowSize)
+                   windowSize = windowSize, is.sorted = is.sorted)
       }, leaders = leaders, cds = cds, trailers = trailers,
-         windowSize = windowSize, BPPARAM = BPPARAM)
+         is.sorted = is.sorted, windowSize = windowSize, BPPARAM = BPPARAM)
 
       coverage <- rbindlist(coverage)
       if (!is.null(dfr)) {

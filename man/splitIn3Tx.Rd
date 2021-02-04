@@ -12,7 +12,8 @@ splitIn3Tx(
   windowSize = 100,
   fraction = "1",
   weight = "score",
-  BPPARAM = bpparam()
+  is.sorted = FALSE,
+  BPPARAM = BiocParallel::SerialParam()
 )
 }
 \arguments{
@@ -35,6 +36,9 @@ would mean score column tells that this alignment region was found 5 times.
 ORFik .bedo files, contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
+
+\item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
+increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

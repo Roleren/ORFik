@@ -7,7 +7,8 @@
 QCplots(
   df,
   region = "mrna",
-  stats_folder = paste0(dirname(df$filepath[1]), "/QC_STATS/")
+  stats_folder = paste0(dirname(df$filepath[1]), "/QC_STATS/"),
+  BPPARAM
 )
 }
 \arguments{
@@ -18,6 +19,9 @@ whole mrnas or one of (leaders, cds, trailers)}
 
 \item{stats_folder}{directory to save, default:
 paste0(dirname(df$filepath[1]), "/QC_STATS/")}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam().
+To see number of threads used, do \code{bpparam()$workers}}
 }
 \value{
 invisible(NULL) (objects stored to disc)

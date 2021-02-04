@@ -149,7 +149,8 @@ correlation.plots <- function(df, output.dir,
 #' #RiboQC.plot(df)
 RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
                         width = 6.6, height = 4.5,
-                        type = "pshifted", weight = "score",  BPPARAM = bpparam()) {
+                        type = "pshifted", weight = "score",
+                        BPPARAM = BiocParallel::SerialParam(progressbar = T)) {
   stats <- QCstats(df)
 
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"

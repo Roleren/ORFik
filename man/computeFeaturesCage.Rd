@@ -108,9 +108,7 @@ try ?floss
   # Extract sequences of fiveUTRs.
   fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)[1:10]
   faFile <- BSgenome.Hsapiens.UCSC.hg19::Hsapiens
-  # need to suppress warning because of bug in GenomicFeatures, will
-  # be fixed soon.
-  tx_seqs <- suppressWarnings(extractTranscriptSeqs(faFile, fiveUTRs))
+  tx_seqs <- extractTranscriptSeqs(faFile, fiveUTRs)
 
   # Find all ORFs on those transcripts and get their genomic coordinates
   fiveUTR_ORFs <- findMapORFs(fiveUTRs, tx_seqs)
@@ -126,8 +124,8 @@ try ?floss
   # set RNA seq to duplicate transcripts
   RNA <- unlistGrl(exonsBy(txdb, by = "tx", use.names = TRUE))
 
-  ORFik:::computeFeaturesCage(grl = fiveUTR_ORFs, RFP = RFP,
-   RNA = RNA, Gtf = txdb, faFile = faFile)
+  #ORFik:::computeFeaturesCage(grl = fiveUTR_ORFs, RFP = RFP,
+  #  RNA = RNA, Gtf = txdb, faFile = faFile)
 
 }
 # See vignettes for more examples

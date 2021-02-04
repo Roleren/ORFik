@@ -56,7 +56,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   # Save file
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
   # Get plots
-  QCplots(df, "mrna", stats_folder)
+  QCplots(df, "mrna", stats_folder, BPPARAM = BPPARAM)
 
   message(paste("Everything done, saved QC to:", stats_folder))
   return(invisible(NULL))
@@ -89,7 +89,9 @@ ORFikQC <- QCreport
 #' @importFrom AnnotationDbi metadata
 QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
-                                          "/QC_STATS/")) {
+                                          "/QC_STATS/"),
+
+                    BPPARAM) {
   message("Making QC plots:")
   message("- Annotation to NGS libraries plot:")
   QCstats.plot(df, stats_folder)
@@ -98,7 +100,7 @@ QCplots <- function(df, region = "mrna",
   # window coverage over mRNA regions
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)
-  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = FALSE,
+  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = TRUE,
                                stopOnEmpty = FALSE)
   if (length(txNames) == 0) { # No valid tx to plot
     warning("No 5' UTRs or 3' of significant length defined, metacoverage plots",
@@ -111,10 +113,13 @@ QCplots <- function(df, region = "mrna",
   message("  - seperated into 5' UTR, CDS and 3' UTR regions")
   transcriptWindow(leaders, get("cds", mode = "S4"),
                    trailers, df = df, outdir = stats_folder,
-                   scores = c("sum", "zscore", "transcriptNormalized"))
+                   scores = c("sum", "zscore", "transcriptNormalized"),
+                   is.sorted = TRUE, BPPARAM = BPPARAM)
   # Plot all transcripts as 1 region
-  message("  - whole transcripts")
-  transcriptWindow1(df = df, outdir = stats_folder,
-                    scores = c("sum", "zscore", "transcriptNormalized"))
+  # TODO: Make this safe enough to include for 32GB computers
+  # message("  - whole transcripts")
+  # transcriptWindow1(df = df, outdir = stats_folder,
+  #                   scores = c("sum", "zscore", "transcriptNormalized"),
+  #                   BPPARAM = BPPARAM)
   return(invisible(NULL))
 }

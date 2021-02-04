@@ -4,7 +4,7 @@
 \alias{coverageScorings}
 \title{Add a coverage scoring scheme}
 \usage{
-coverageScorings(coverage, scoring = "zscore")
+coverageScorings(coverage, scoring = "zscore", copy.dt = TRUE)
 }
 \arguments{
 \item{coverage}{a data.table containing at least columns (count, position),
@@ -13,6 +13,9 @@ it is possible to have additionals: (genes, fraction, feature)}
 \item{scoring}{a character, one of (zscore, transcriptNormalized,
 mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
 periodic, NULL). More info in details}
+
+\item{copy.dt}{logical TRUE, copy object, to avoid overwriting original object.
+Set to false to speed up, if original object is not needed.}
 }
 \value{
 a data.table with new scores (size dependent on score used)

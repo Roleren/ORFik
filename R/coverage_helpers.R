@@ -31,7 +31,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
     trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction,
-                        weight, BPPARAM = BPPARAM)
+                        weight, is.sorted = TRUE, BPPARAM = BPPARAM)
 
   } else {
     tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -39,7 +39,8 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     if (!any(txNames)) stop(paste0("no valid transcripts with length",
                                    windowSize))
     tx <- tx[txNames]
-    txCov <- scaledWindowPositions(tx, reads, windowSize, weight = weight)
+    txCov <- scaledWindowPositions(tx, reads, windowSize, weight = weight,
+                                   is.sorted = TRUE)
     txCov[, `:=` (fraction = fraction, feature = "transcript")]
   }
   txCov[] # for print
@@ -55,16 +56,19 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
 #' @param cds a \code{\link{GRangesList}} of coding sequences
 #' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
+#' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
+#' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @inheritParams windowPerTranscript
 #' @return a data.table with columns position, score
 splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
                        fraction = "1", weight = "score",
-                       BPPARAM = bpparam()) {
+                       is.sorted = FALSE,
+                       BPPARAM = BiocParallel::SerialParam()) {
   features <- c("leaders", "cds", "trailers")
   txCov <- bplapply(features, FUN = function(feature, reads, leaders, cds,
                                     trailers, windowSize, weight) {
     cov <- scaledWindowPositions(get(feature, mode = "S4"), reads, windowSize,
-                                 weight = weight)
+                                 weight = weight, is.sorted = is.sorted)
     cov[, `:=` (feature = feature)]
   },  reads = reads, leaders = leaders, cds = cds,trailers = trailers,
   windowSize = windowSize, weight = weight, BPPARAM = BPPARAM)
@@ -202,7 +206,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
   count[, position := ceiling(scalingFactor * position)]
 
   if (length(scaleTo) == 1) {
-    count[position > scaleTo]$position <- scaleTo
+    count[position > scaleTo, position := scaleTo]
   } else {
     if (any(count[, .(max = max(position)), by = genes]$max > scaleTo)) {
       index <- count[, .(ind = which.max(position)), by = genes]$ind
@@ -211,8 +215,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
   }
 
   # mean counts per position per group
-  count <- coverageScorings(count, scoring)
-  return(count)
+  return(coverageScorings(count, scoring, copy.dt = FALSE))
 }
 
 #' Add a coverage scoring scheme
@@ -264,6 +267,8 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #' @param scoring a character, one of (zscore, transcriptNormalized,
 #' mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
 #' periodic, NULL). More info in details
+#' @param copy.dt logical TRUE, copy object, to avoid overwriting original object.
+#' Set to false to speed up, if original object is not needed.
 #' @return a data.table with new scores (size dependent on score used)
 #' @family coverage
 #' @export
@@ -276,9 +281,13 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #' dt$genes <- c(rep("tx1", 3), rep("tx2", 3))
 #' coverageScorings(dt, scoring = "zscore")
 #'
-coverageScorings <- function(coverage, scoring = "zscore") {
+coverageScorings <- function(coverage, scoring = "zscore",
+                             copy.dt = TRUE) {
   if (is.null(scoring)) return(coverage)
-  cov <- setDT(copy(coverage))
+  cov <- if (copy.dt) {
+    setDT(copy(coverage))
+  } else coverage
+
   # find groupings
   groupGF <- coverageGroupings(c(is.null(cov$fraction),
                                is.null(cov$genes)))
@@ -422,7 +431,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
     if (length(window_size) != 1) { # different size windows
       count[, ones := rep.int(1L, length(genes))]
       count[, position := cumsum(ones), by = genes]
-      count$ones <- NULL
+      count[, ones := NULL]
     } else { # all same size
       count[, position := rep.int(seq.int(window_size), length(coverage))]
     }

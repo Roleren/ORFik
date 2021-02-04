@@ -60,13 +60,13 @@ SRR <- c("SRR453566") # Can be more than one
 ## Simple single SRR run of YEAST
 outdir <- tempdir() # Specify output directory
 # Download, get 5 first reads
-download.SRA(SRR, outdir, subset = 5)
+#download.SRA(SRR, outdir, subset = 5)
 
 ## Using metadata column to get SRR numbers and to be able to rename samples
 outdir <- tempdir() # Specify output directory
 info <- download.SRA.metadata("SRP226389", outdir) # By study id
 # Download, 5 first reads of each library and rename
-download.SRA(info, outdir, subset = 5)
+#download.SRA(info, outdir, subset = 5)
 }
 }
 \references{

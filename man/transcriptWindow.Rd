@@ -21,6 +21,7 @@ transcriptWindow(
   idName = "",
   format = ".png",
   type = "ofst",
+  is.sorted = FALSE,
   BPPARAM = bpparam()
 )
 }
@@ -65,6 +66,9 @@ targets / nontargets etc. (default: "")}
 or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 Will load default if bedoc is not found}
+
+\item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
+increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
