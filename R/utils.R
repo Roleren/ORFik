@@ -313,7 +313,7 @@ combn.pairs <- function(x) {
 #' @return logical, TRUE if file exists
 #' @importFrom RCurl url.exists
 exists.ftp.file.fast <- function(url, file.path) {
-  if (!RCurl::url.exists(ORFik:::pasteDir(dirname(url), "")))
+  if (!RCurl::url.exists(paste0(dirname(url), "/")))
     return(FALSE)
 
   con <- RCurl::getURL(url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
