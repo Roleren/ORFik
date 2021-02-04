@@ -304,3 +304,23 @@ combn.pairs <- function(x) {
   return(pairs)
 }
 
+#' A copy of biomartr ftp check
+#'
+#' Will be removed when biomartr::exists.ftp.file.new
+#'  is pushed to CRAN stable
+#' @param url character, full path directory of url
+#' @param file.path character, full path url to file
+#' @return logical, TRUE if file exists
+#' @importFrom RCurl url.exists
+exists.ftp.file.fast <- function(url, file.path) {
+  if (!RCurl::url.exists(ORFik:::pasteDir(dirname(url), "")))
+    return(FALSE)
+
+  con <- RCurl::getURL(url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+
+  ftp.content <-
+    suppressMessages(data.table::fread(con, sep = "\n", header = FALSE))
+
+  return(is.element(as.character(basename(file.path)),
+                    as.character(ftp.content$V1)))
+}

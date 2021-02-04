@@ -422,16 +422,16 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   SRR_paths_spec_paired <- file.path(SRR_default, SRR, SRR_fastq_paired)
   # Check what format the files are found in (4 types)
   url.exists <-  sapply(SRR_paths, function(x)
-    biomartr:::exists.ftp.file(x, x))
+    exists.ftp.file.fast(x, x))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_paired, function(x)
-                    biomartr:::exists.ftp.file(x, x)))
+                    exists.ftp.file.fast(x, x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec, function(x)
-                    biomartr:::exists.ftp.file.new(x, x)))
+                    exists.ftp.file.fast(x, x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec_paired, function(x)
-                    biomartr:::exists.ftp.file.new(x, x)))
+                    exists.ftp.file.fast(x, x)))
   final.path <- names(url.exists[url.exists])
 
   valid <- TRUE

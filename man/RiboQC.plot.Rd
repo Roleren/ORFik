@@ -11,7 +11,7 @@ RiboQC.plot(
   height = 4.5,
   type = "pshifted",
   weight = "score",
-  BPPARAM = BiocParallel::SerialParam(progressbar = T)
+  BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)
 )
 }
 \arguments{
