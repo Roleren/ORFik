@@ -459,8 +459,11 @@ validateExperiments <- function(df) {
     emptyFiles <- c(emptyFiles, as.numeric(sapply(as.character(i),
                                                   file.size)) == 0)
   }
-  if (any(is.na(emptyFiles)))
+  if (any(is.na(emptyFiles))) {
+    message("Error in experiment:", df@experiment)
     stop(paste("File is not existing:\n", files[is.na(emptyFiles)]))
+  }
+
   if (any(emptyFiles)) {
     print(files[emptyFiles])
     stop("Empty files in list, see above for which")
