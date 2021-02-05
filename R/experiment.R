@@ -406,8 +406,12 @@ findFromPath <- function(filepaths, candidates, slot = "auto") {
   for (path in filepaths) {
     hit <- unlist(sapply(candidates, grep, x = path))
     hitRel <- unlist(sapply(candidates, grep, x = gsub(".*/", "", path)))
-    type <- if(length(hit) == 1 & length(hitRel) == 0) names(hit)
-    over <- hit[names(hit) %in% names(hitRel)]
+    # Assign the one (if existing) with 1 match
+    type <- if(length(hit) == 1 & length(hitRel) == 0) {
+      names(hit)
+    } else if(length(hit) == 0 & length(hitRel) == 1) names(hitRel)
+    over <- hit[names(hit) %in% names(hitRel)] #overlaps
+    # If exactly one overlap, set to that one
     type <- ifelse(length(over) == 1, names(over),
                    ifelse(is.null(type), "", type))
     types <- c(types, type)

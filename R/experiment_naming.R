@@ -47,23 +47,23 @@ stageNames <- function() {
          c("2to4Cell", "2to4cell", "2to4_cell", "2-4cell", "2-4Cell", "2-4_cell"),
          c("4cell", "4Cell", "4_cell"),
          c("8cell", "8Cell", "8_cell"),
-         c("64cell", "64Cell", "64_cell", "64_Cell", "_2h", "_02h", "2hpf"),
+         c("64cell", "64Cell", "64_cell", "64_Cell", "_2h", "_02h", "2hpf", "^2h_"),
          c("256cell", "256Cell", "256_cell", "256_Cell"),
          c("512cell", "512Cell", "512_cell"),
-         c("1Kcell", "1KCell", "1K_cell", "_3h", "_03h", "3hpf"),
+         c("1Kcell", "1KCell", "1K_cell", "_3h", "_03h", "3hpf", "^3h_"),
          c("High", "high"),
          c("Oblong", "oblong"),
-         c("Sphere", "sphere", "_4h", "_04h","4hpf"),
+         c("Sphere", "sphere", "_4h", "_04h","4hpf", "^4h_"),
          c("Dome", "dome"),
-         c("Shield", "shield", "_6h", "_06h", "6hpf"),
-         c("Bud", "bud", "_10h", "10hpf"),
-         c("Somite", "somite", "_12h", "12hpf"),
-         c("24hpf", "_24h", "1dfp"),
-         c("prim6", "prim_6", "25hpf", "_25h"),
-         c("prim10", "prim_10", "27hpf", "_27h"),
-         c("prim12", "prim_12", "28hpf", "_28h"),
-         c("prim20", "prim_20", "33hpf", "_33h"),
-         c("2dpf", "_48h", "_48hpf"),
+         c("Shield", "shield", "_6h", "_06h", "6hpf", "^6h_"),
+         c("Bud", "bud", "_10h", "10hpf", "^10h_"),
+         c("Somite", "somite", "_12h", "12hpf", "^12h_"),
+         c("24hpf", "_24h", "1dfp", "^24h_"),
+         c("prim6", "prim_6", "25hpf", "_25h", "^25h_"),
+         c("prim10", "prim_10", "27hpf", "_27h", "^27h_"),
+         c("prim12", "prim_12", "28hpf", "_28h", "^28h_"),
+         c("prim20", "prim_20", "33hpf", "_33h", "^33h_"),
+         c("2dpf", "_48h", "_48hpf", "^48h_"),
          "3dpf", "4dpf", "5dpf", "6dpf", "10dpf", "21dpf", "24dpf"
          )
   dt <- data.table(mainName, allNames)
@@ -151,12 +151,12 @@ cellLineNames <- function() {
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
-    list(c("rep1", "Rep1", "run1", "_r1_", "WT1"),
-         c("rep2", "Rep2", "run2", "_r2_", "WT2"),
-         c("rep3", "Rep3", "run3", "_r3_", "WT3"),
-         c("rep4", "Rep4", "run4", "_r4_", "WT4"),
-         c("rep5", "Rep5", "run5", "_r5_", "WT5"),
-         c("rep6", "Rep6", "run6", "_r6_", "WT6")
+    list(c("rep1", "Rep1", "run1", "run_1_", "_r1_", "WT1"),
+         c("rep2", "Rep2", "run2", "run_2_", "_r2_", "WT2"),
+         c("rep3", "Rep3", "run3", "run_3_", "_r3_", "WT3"),
+         c("rep4", "Rep4", "run4", "run_4_", "_r4_", "WT4"),
+         c("rep5", "Rep5", "run5", "run_5_", "_r5_", "WT5"),
+         c("rep6", "Rep6", "run6", "run_6_", "_r6_", "WT6")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
