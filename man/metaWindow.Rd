@@ -14,6 +14,7 @@ metaWindow(
   fraction = NULL,
   feature = NULL,
   forceUniqueEven = !is.null(scoring),
+  forceRescale = TRUE,
   weight = "score"
 )
 }
@@ -49,6 +50,11 @@ gene name, transcript part like cds, leader, or CpG motifs etc.}
 
 \item{forceUniqueEven, }{a logical (TRUE), if TRUE; require that all windows
 are of same width and even. To avoid bugs. FALSE if score is NULL.}
+
+\item{forceRescale}{logical, default TRUE. If TRUE, if
+\code{unique(widthPerGroup(windows))} has length > 1, it will force all
+windows to width of the \code{scaleTo} argument, making a binned meta
+coverage.}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),

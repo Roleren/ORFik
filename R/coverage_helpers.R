@@ -104,6 +104,10 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' gene name, transcript part like cds, leader, or CpG motifs etc.
 #' @param forceUniqueEven, a logical (TRUE), if TRUE; require that all windows
 #' are of same width and even. To avoid bugs. FALSE if score is NULL.
+#' @param forceRescale logical, default TRUE. If TRUE, if
+#' \code{unique(widthPerGroup(windows))} has length > 1, it will force all
+#' windows to width of the \code{scaleTo} argument, making a binned meta
+#' coverage.
 #' @inheritParams coveragePerTiling
 #' @return A data.table with scored counts (score) of
 #' reads mapped to positions (position) specified in windows along with
@@ -125,6 +129,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                        zeroPosition = NULL, scaleTo = 100,
                        fraction = NULL, feature = NULL,
                        forceUniqueEven = !is.null(scoring),
+                       forceRescale = TRUE,
                        weight = "score") {
   window_size <- unique(widthPerGroup(windows))
   if (!is.null(zeroPosition) & !is.numeric(zeroPosition))
@@ -137,7 +142,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
           is TRUE")
 
 
-  if (length(window_size) != 1) {
+  if ((length(window_size) != 1) & forceRescale) {
     hitMap <- scaledWindowPositions(windows, x, scaleTo, weight = weight)
   } else {
     hitMap <- coveragePerTiling(windows, x, is.sorted = TRUE,
