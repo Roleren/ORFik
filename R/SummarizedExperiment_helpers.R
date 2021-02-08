@@ -258,10 +258,10 @@ countTable <- function(df, region = "mrna", type = "count",
       }
       # Add all sample columns if not existing and it is possible
       if (is.null(colData(res)$stage)) {
-        colData(res)$stage <- df$stage
-        colData(res)$libtype <- df$libtype
-        colData(res)$condition <- df$condition
-        colData(res)$fraction <- df$fraction
+        colData(res)$stage <- df.temp$stage
+        colData(res)$libtype <- df.temp$libtype
+        colData(res)$condition <- df.temp$condition
+        colData(res)$fraction <- df.temp$fraction
       }
 
       # Decide output format
