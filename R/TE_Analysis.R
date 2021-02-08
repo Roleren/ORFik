@@ -22,6 +22,14 @@
 #' experiment that creates the comparison contrasts.
 #' @param output.dir output.dir directory to save plots,
 #' plot will be named "TE_between.png". If NULL, will not save.
+#' @param RFP_counts a SummarizedExperiment, default:
+#' countTable(df.rfp, "cds", type = "summarized"). Assign a subset if you don't
+#' want to analyze all genes. It is recommended to not subset, to give DESeq2
+#' more data for variance analysis.
+#' @param RNA_counts a SummarizedExperiment, default:
+#' countTable(df.rna, "mrna", type = "summarized"). Assign a subset if you don't
+#' want to analyze all genes. It is recommended to not subset, to give DESeq2
+#' more data for variance analysis.
 #' @references doi: 10.1002/cpmb.108
 #' @return a data.table with 9 columns.
 #' (log fold changes, p.ajust values, group, regulation status and gene id)
@@ -43,6 +51,8 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           output.dir = paste0(dirname(df.rfp$filepath[1]),
                                               "/QC_STATS/"),
                           design = "stage", p.value = 0.05,
+                          RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
+                          RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
                           plot.title = "", width = 6,
                           height = 6, dot.size = 0.4) {
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
@@ -52,28 +62,19 @@ DTEG.analysis <- function(df.rfp, df.rna,
   if (nrow(df.rfp) < 4)
     stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
   if (p.value > 1 | p.value <= 0)
-    stop("p.value must be in interval (0,1)")
-
-  RFP_DESEQ <- countTable(df.rfp, "cds", type = "summarized", collapse = FALSE)
-  colData(RFP_DESEQ)$stage <- df.rfp$stage
-  colData(RFP_DESEQ)$libtype <- df.rfp$libtype
-  colData(RFP_DESEQ)$condition <- df.rfp$condition
-  colData(RFP_DESEQ)$fraction <- df.rfp$fraction
-
-  RNA_DESEQ <- countTable(df.rna, "mrna", type = "summarized", collapse = FALSE)
-  colData(RNA_DESEQ)$stage <- df.rna$stage
-  colData(RNA_DESEQ)$libtype <- df.rna$libtype
-  colData(RNA_DESEQ)$condition <- df.rna$condition
-  colData(RNA_DESEQ)$fraction <- df.rna$fraction
+    stop("p.value must be in interval (0,1]")
+  if (!is(RFP_counts, "SummarizedExperiment") |
+      !is(RNA_counts, "SummarizedExperiment")) stop("counts must be of type SummarizedExperiment")
+  if (nrow(RFP_counts) != nrow(RNA_counts)) stop("counts must have equall number of rows!")
 
   # Designs
   te.design <- as.formula(paste0("~ libtype + ", design, "+ libtype:", design))
   main.design <- as.formula(paste0("~ ", design))
   # TE
-  se <- cbind(assay(RFP_DESEQ), assay(RNA_DESEQ))
-  colData <- rbind(colData(RFP_DESEQ), colData(RNA_DESEQ))
+  se <- cbind(assay(RFP_counts), assay(RNA_counts))
+  colData <- rbind(colData(RFP_counts), colData(RNA_counts))
   combined_se <- SummarizedExperiment(se,
-                                      rowRanges = rowRanges(RFP_DESEQ),
+                                      rowRanges = rowRanges(RFP_counts),
                                       colData = colData)
   #combined_se <- combined_se[rowMeans(assay(combined_se)) > 1,]
   message("----------------------"); message("Model 1/3: TE")
@@ -85,13 +86,13 @@ DTEG.analysis <- function(df.rfp, df.rna,
   # Ribo
   message("----------------------"); message("Model 2/3: Ribo-seq")
   message("----------------------")
-  ddsMat_ribo <- DESeqDataSet(se = RFP_DESEQ, design = main.design)
+  ddsMat_ribo <- DESeqDataSet(se = RFP_counts, design = main.design)
   ddsMat_ribo <- DESeq(ddsMat_ribo)
 
   # RNA
   message("----------------------"); message("Model 3/3: RNA-seq")
   message("----------------------")
-  ddsMat_rna <- DESeqDataSet(se = RNA_DESEQ, design = main.design)
+  ddsMat_rna <- DESeqDataSet(se = RNA_counts, design = main.design)
   ddsMat_rna <- DESeq(ddsMat_rna)
   message("----------------------")
   # Create contrasts

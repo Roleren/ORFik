@@ -10,6 +10,8 @@ DTEG.analysis(
   output.dir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/"),
   design = "stage",
   p.value = 0.05,
+  RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
+  RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
   plot.title = "",
   width = 6,
   height = 6,
@@ -30,6 +32,16 @@ experiment that creates the comparison contrasts.}
 \item{p.value}{a numeric, default 0.05 in interval (0,1)
 or "" to not show.
 What p-value used for the analysis? Will be shown as a caption.}
+
+\item{RFP_counts}{a SummarizedExperiment, default:
+countTable(df.rfp, "cds", type = "summarized"). Assign a subset if you don't
+want to analyze all genes. It is recommended to not subset, to give DESeq2
+more data for variance analysis.}
+
+\item{RNA_counts}{a SummarizedExperiment, default:
+countTable(df.rna, "mrna", type = "summarized"). Assign a subset if you don't
+want to analyze all genes. It is recommended to not subset, to give DESeq2
+more data for variance analysis.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 

@@ -92,7 +92,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
     ggtitle(label = plot.title)
   } else NULL
 
-  plot <- ggplot(data = dt, aes(x = rna_log10, y = LFC_TE)) +
+  plot <- ggplot(data = dt, aes(x = rna_log10, y = TE_log2)) +
     geom_point(alpha = 0.3, size = dot.size) +
     theme_minimal() +
     geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +

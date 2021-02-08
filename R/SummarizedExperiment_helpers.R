@@ -74,7 +74,12 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 
   colData <- DataFrame(SAMPLE = bamVarName(df, TRUE),
                        row.names=varNames)
+  # Add sample columns
   if (!is.null(df$rep)) colData$replicate <- df$rep
+  if (!is.null(df$stage)) colData$stage <- df$stage
+  if (!is.null(df$libtype)) colData$libtype <- df$libtype
+  if (!is.null(df$condition)) colData$condition <- df$condition
+  if (!is.null(df$fraction)) colData$fraction <- df$fraction
 
   res <- SummarizedExperiment(assays=list(counts=mat), rowRanges=tx,
                               colData=colData)
@@ -251,6 +256,14 @@ countTable <- function(df, region = "mrna", type = "count",
           res <- res[, subset]
         }
       }
+      # Add all sample columns if not existing and it is possible
+      if (is.null(colData(res)$stage)) {
+        colData(res)$stage <- df$stage
+        colData(res)$libtype <- df$libtype
+        colData(res)$condition <- df$condition
+        colData(res)$fraction <- df$fraction
+      }
+
       # Decide output format
       if (type == "summarized") return(res)
       if (type == "deseq") {
