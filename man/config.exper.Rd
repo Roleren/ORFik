@@ -28,5 +28,6 @@ Defines a folder for:
 4. Experiment (name of experiment)
 }
 \examples{
-config.exper("Alexaki_Human", "Homo_sapiens_GRCh38_101", c("Ribo-seq", "RNA-seq"))
+## Save to default config location
+#config.exper("Alexaki_Human", "Homo_sapiens_GRCh38_101", c("Ribo-seq", "RNA-seq"))
 }
