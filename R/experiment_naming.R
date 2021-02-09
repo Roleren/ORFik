@@ -12,7 +12,7 @@ libNames <- function() {
                 "ChIP", "PRPF")
   allNames <-
     list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq"),
-         c("RFP", "RPF", "ribo-seq", "Ribo-seq", "ribo-Seq"),
+         c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq"),
          c("CAGE", "cage"),
          c("80S","LSU"),
          c("40S","SSU"),
