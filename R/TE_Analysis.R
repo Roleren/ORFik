@@ -23,13 +23,13 @@
 #' @param output.dir output.dir directory to save plots,
 #' plot will be named "TE_between.png". If NULL, will not save.
 #' @param RFP_counts a SummarizedExperiment, default:
-#' countTable(df.rfp, "cds", type = "summarized"). Assign a subset if you don't
-#' want to analyze all genes. It is recommended to not subset, to give DESeq2
-#' more data for variance analysis.
+#' countTable(df.rfp, "cds", type = "summarized"), all transcripts.
+#' Assign a subset if you don't want to analyze all genes.
+#' It is recommended to not subset, to give DESeq2 data for variance analysis.
 #' @param RNA_counts a SummarizedExperiment, default:
-#' countTable(df.rna, "mrna", type = "summarized"). Assign a subset if you don't
-#' want to analyze all genes. It is recommended to not subset, to give DESeq2
-#' more data for variance analysis.
+#' countTable(df.rna, "mrna", type = "summarized"), all transcripts.
+#' Assign a subset if you don't want to analyze all genes.
+#' It is recommended to not subset, to give DESeq2 data for variance analysis.
 #' @references doi: 10.1002/cpmb.108
 #' @return a data.table with 9 columns.
 #' (log fold changes, p.ajust values, group, regulation status and gene id)

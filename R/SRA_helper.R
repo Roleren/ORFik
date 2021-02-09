@@ -372,15 +372,16 @@ download.ebi <- function(info, outdir, rename = TRUE,
     stop("Could not find SRR numbers in 'info'")
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-  files <- ORFik:::find_url_ebi(SRR)
-  if (length(files) == 0) {
+  urls <- ORFik:::find_url_ebi(SRR)
+  if (length(urls) == 0) {
     message("Fastq files not found on ebi")
     return(files)
   }
 
+  files <- file.path(outdir, basename(urls))
   message("Starting download of SRA runs:")
   method <- ifelse(Sys.info()[1] == "Linux", "wget", "auto")
-  BiocParallel::bplapply(files, function(i, outdir, method) {
+  BiocParallel::bplapply(urls, function(i, outdir, method) {
     message(i)
     download.file(i, destfile = file.path(outdir, basename(i)),
                   method = method, quiet = TRUE)

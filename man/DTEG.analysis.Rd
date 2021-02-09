@@ -34,14 +34,14 @@ or "" to not show.
 What p-value used for the analysis? Will be shown as a caption.}
 
 \item{RFP_counts}{a SummarizedExperiment, default:
-countTable(df.rfp, "cds", type = "summarized"). Assign a subset if you don't
-want to analyze all genes. It is recommended to not subset, to give DESeq2
-more data for variance analysis.}
+countTable(df.rfp, "cds", type = "summarized"), all transcripts.
+Assign a subset if you don't want to analyze all genes.
+It is recommended to not subset, to give DESeq2 data for variance analysis.}
 
 \item{RNA_counts}{a SummarizedExperiment, default:
-countTable(df.rna, "mrna", type = "summarized"). Assign a subset if you don't
-want to analyze all genes. It is recommended to not subset, to give DESeq2
-more data for variance analysis.}
+countTable(df.rna, "mrna", type = "summarized"), all transcripts.
+Assign a subset if you don't want to analyze all genes.
+It is recommended to not subset, to give DESeq2 data for variance analysis.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
