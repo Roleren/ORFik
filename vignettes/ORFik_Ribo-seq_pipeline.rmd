@@ -163,7 +163,7 @@ heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "psh
 # We here get 11 unique DTEG genes
 # Now let's check if the CO group overexpress the F9 Gene (ENSG00000101981):
 res <- DTEG.analysis(df.rfp, df.rna, design = "condition")
-significant_genes <- res[Status != "No change",]
+significant_genes <- res[Regulation != "No change",]
 gene_names <- txNamesToGeneNames(significant_genes$id, df.rfp)
 "ENSG00000101981" %in% unique(gene_names) # TRUE
 # It does, good good.
