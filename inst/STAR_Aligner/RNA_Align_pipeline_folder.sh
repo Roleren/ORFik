@@ -261,7 +261,7 @@ declare -i X
 X=1
 if [ "$resume" != "n" ]; then
    echo "resume"
-   X=$(echo "$stage" | grep -b -o $resume | cut -d: -f1)
+   X=$(echo "$steps" | grep -b -o $resume | cut -d: -f1)
    X=$(expr 1 + $X)
 fi
 length=${#steps}

@@ -117,10 +117,10 @@ have 8 cores it will use 7.}
     console in Windows (it will be dropped, instead).}
 
 \item{resume}{default: NULL, continue from step, lets say steps are "tr-ph-ge":
-(trim, phix depletion, genome alignment) and resume is "ph", you will then use
-the assumed already trimmed data and start / continue from there starting at phix,
-usefull if something crashed. Like if you specified wrong STAR version, but the trimming
-step was completed.}
+(trim, phix depletion, genome alignment) and resume is "ge", you will then use
+the assumed already trimmed and phix depleted data and start at genome alignment,
+useful if something crashed. Like if you specified wrong STAR version, but the trimming
+step was completed. Resume mode can only run 1 step at the time.}
 
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you

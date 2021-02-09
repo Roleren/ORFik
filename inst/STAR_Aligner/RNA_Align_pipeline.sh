@@ -315,24 +315,25 @@ function inputFile()
 
 }
 
-# Parameters $resume (y, n), current:'ge', $steps tr-gr
+# Decide to do this step or not, given input
+# Parameters $1 resume (y, n), $2 current:'ge', $3 $steps tr-gr
 # TODO: fix for $1 == "c", the 1st order else statement
 function doThisStep()
 {
 
-    if [ $1 == "n" ]; then
-	if grep -q $2 <<< $3; then
-		echo "yes"
-	else
-		echo "no"
-	fi
-    else
-	if [ $2 == $1 ]; then
-		echo "yes"
-	else
-		echo "no"
-	fi
-    fi
+  if [ $1 == "n" ]; then
+  	if grep -q $2 <<< $3; then
+  		echo "yes"
+  	else
+  		echo "no"
+  	fi
+  else
+  	if [ $2 == $1 ]; then
+  		echo "yes"
+  	else
+  		echo "no"
+  	fi
+  fi
 }
 
 # Should STAR use zcat or no decompression ?
