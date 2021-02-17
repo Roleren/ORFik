@@ -4,7 +4,11 @@
 \alias{downstreamFromPerGroup}
 \title{Get rest of objects downstream (inclusive)}
 \usage{
-downstreamFromPerGroup(tx, downstreamFrom)
+downstreamFromPerGroup(
+  tx,
+  downstreamFrom,
+  is.circular = all(isCircular(tx) \%in\% TRUE)
+)
 }
 \arguments{
 \item{tx}{a \code{\link{GRangesList}},
@@ -12,6 +16,10 @@ usually of Transcripts to be changed}
 
 \item{downstreamFrom}{a vector of integers, for each group in tx, where
 is the new start point of first valid exon.}
+
+\item{is.circular}{logical, default FALSE if not any is: all(isCircular(grl) %in% TRUE).
+Where grl is the ranges checked. If TRUE, allow ranges to extend
+below position 1 on chromosome. Since circular genomes can have negative coordinates.}
 }
 \value{
 a GRangesList of downstream part

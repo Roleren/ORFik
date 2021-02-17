@@ -171,6 +171,12 @@ test_that("extendLeaders works as intended", {
   reassigned <- extendLeaders(fiveUTRs, 5, cds)
   expect_is(reassigned, "GRangesList")
   expect_equal(length(reassigned), 2)
+  expect_equal(firstStartPerGroup(reassigned, FALSE), as.integer(c(1, 145)))
+  expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(115, 215)))
+
+  circular_fives <- fiveUTRs
+  isCircular(circular_fives) <- rep(TRUE, length(isCircular(circular_fives)))
+  reassigned <- extendLeaders(circular_fives, 5, cds)
   expect_equal(firstStartPerGroup(reassigned, FALSE), as.integer(c(-4, 145)))
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(115, 215)))
 

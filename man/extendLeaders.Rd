@@ -4,7 +4,12 @@
 \alias{extendLeaders}
 \title{Extend the leaders transcription start sites.}
 \usage{
-extendLeaders(grl, extension = 1000L, cds = NULL)
+extendLeaders(
+  grl,
+  extension = 1000L,
+  cds = NULL,
+  is.circular = all(isCircular(grl) \%in\% TRUE)
+)
 }
 \arguments{
 \item{grl}{usually a \code{\link{GRangesList}} of 5' utrs or transcripts.
@@ -21,6 +26,10 @@ If you want to extend 5' leaders downstream, to catch
 upstream ORFs going into cds, include it. It will add first
 cds exon to grl matched by names.
 Do not add for transcripts, as they are already included.}
+
+\item{is.circular}{logical, default FALSE if not any is: all(isCircular(grl) %in% TRUE).
+Where grl is the ranges checked. If TRUE, allow ranges to extend
+below position 1 on chromosome. Since circular genomes can have negative coordinates.}
 }
 \value{
 an extended GRangeslist
@@ -37,15 +46,21 @@ library(GenomicFeatures)
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                           package = "GenomicFeatures")
 txdb <- loadDb(samplefile)
-fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
 tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 cds <- cdsBy(txdb,"tx",use.names = TRUE)
-## now try(extend upstream 1000, downstream 1st cds exons):
+## extend leaders upstream 1000
+extendLeaders(fiveUTRs, extension = 1000)
+## now try(extend upstream 1000, add all cds exons):
 extendLeaders(fiveUTRs, extension = 1000, cds)
 
 ## when extending transcripts, don't include cds' of course,
 ## since they are already there
 extendLeaders(tx, extension = 1000)
+## Circular genome (allow negative coordinates)
+circular_fives <- fiveUTRs
+isCircular(circular_fives) <- rep(TRUE, length(isCircular(circular_fives)))
+extendLeaders(circular_fives, extension = 32672841L)
 
 }
 \seealso{

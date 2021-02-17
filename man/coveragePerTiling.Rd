@@ -41,8 +41,9 @@ As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 }
 \value{
-a RleList, one integer-Rle per group with # of hits per position.
-Or data.table if as.data.table is TRUE.
+a numeric RleList, one numeric-Rle per group with # of hits per position.
+Or data.table if as.data.table is TRUE,
+with column names c("count" [numeric or integer], "genes" [integer], "position" [integer])
 }
 \description{
 It tiles each GRangesList group to width 1, and finds hits per position.
@@ -69,6 +70,16 @@ coveragePerTiling(grl, RFP, is.sorted = TRUE)
 # now as data.table with frames
 coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE,
                   withFrames = TRUE)
+# With score column (usually replicated reads on that position)
+RFP <- GRanges("1", IRanges(25, 25), "+", score = 5)
+dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
+                        as.data.table = TRUE, withFrames = TRUE)
+class(dt$count) # numeric
+# With integer score column (faster and less space usage)
+RFP <- GRanges("1", IRanges(25, 25), "+", score = 5L)
+dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
+                        as.data.table = TRUE, withFrames = TRUE)
+class(dt$count) # integer
 
 }
 \seealso{

@@ -585,6 +585,9 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' upstream ORFs going into cds, include it. It will add first
 #' cds exon to grl matched by names.
 #' Do not add for transcripts, as they are already included.
+#' @param is.circular logical, default FALSE if not any is: all(isCircular(grl) %in% TRUE).
+#' Where grl is the ranges checked. If TRUE, allow ranges to extend
+#' below position 1 on chromosome. Since circular genomes can have negative coordinates.
 #' @return an extended GRangeslist
 #' @export
 #' @family ExtendGenomicRanges
@@ -593,17 +596,24 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'                           package = "GenomicFeatures")
 #' txdb <- loadDb(samplefile)
-#' fiveUTRs <- fiveUTRsByTranscript(txdb) # <- extract only 5' leaders
+#' fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE) # <- extract only 5' leaders
 #' tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 #' cds <- cdsBy(txdb,"tx",use.names = TRUE)
-#' ## now try(extend upstream 1000, downstream 1st cds exons):
+#' ## extend leaders upstream 1000
+#' extendLeaders(fiveUTRs, extension = 1000)
+#' ## now try(extend upstream 1000, add all cds exons):
 #' extendLeaders(fiveUTRs, extension = 1000, cds)
 #'
 #' ## when extending transcripts, don't include cds' of course,
 #' ## since they are already there
 #' extendLeaders(tx, extension = 1000)
+#' ## Circular genome (allow negative coordinates)
+#' circular_fives <- fiveUTRs
+#' isCircular(circular_fives) <- rep(TRUE, length(isCircular(circular_fives)))
+#' extendLeaders(circular_fives, extension = 32672841L)
 #'
-extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
+extendLeaders <- function(grl, extension = 1000L, cds = NULL,
+                          is.circular = all(isCircular(grl) %in% TRUE)) {
   if (is(extension, "numeric") && length(extension) %in% c(1L, length(grl))) {
     posIndices <- strandBool(grl)
     promo <- promoters(unlist(firstExonPerGroup(grl), use.names = FALSE),
@@ -613,13 +623,13 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL) {
     newStarts[!posIndices] <- as.integer(end(promo[!posIndices]))
   } else if (is.grl(class(grl))) {
     starts <- startSites(extension)
-    changedGRL <- downstreamFromPerGroup(grl[names(extension)], starts)
+    changedGRL <- downstreamFromPerGroup(grl[names(extension)], starts, is.circular)
     return(changedGRL)
   } else {
     stop("extension must either be an integer, or a GRangesList")
   }
 
-  extendedLeaders <- assignFirstExonsStartSite(grl, newStarts)
+  extendedLeaders <- assignFirstExonsStartSite(grl, newStarts, is.circular)
   if(is.null(cds)) return (extendedLeaders)
   return(addCdsOnLeaderEnds(extendedLeaders, cds))
 }
@@ -661,7 +671,7 @@ extendTrailers <- function(grl, extension = 1000L) {
     newEnds <- rep(NA, length(grl))
     newEnds[posIndices] <- as.integer(end(promo[posIndices]))
     newEnds[!posIndices] <- as.integer(start(promo[!posIndices]))
-  } else if (is.grl(class(grl))) {
+  } else if (is.grl(class(extension))) {
     starts <- startSites(extension)
     changedGRL <-upstreamOfPerGroup(grl[names(extension)], starts,
                                     allowOutside = TRUE)

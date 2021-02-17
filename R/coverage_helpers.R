@@ -402,8 +402,9 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' ORFik .bedo files, contains a score column like this.
 #' As do CAGEr CAGE files and many other package formats.
 #' You can also assign a score column manually.
-#' @return a RleList, one integer-Rle per group with # of hits per position.
-#' Or data.table if as.data.table is TRUE.
+#' @return a numeric RleList, one numeric-Rle per group with # of hits per position.
+#' Or data.table if as.data.table is TRUE,
+#' with column names c("count" [numeric or integer], "genes" [integer], "position" [integer])
 #' @export
 #' @family ExtendGenomicRanges
 #' @examples
@@ -417,12 +418,23 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' # now as data.table with frames
 #' coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE,
 #'                   withFrames = TRUE)
+#' # With score column (usually replicated reads on that position)
+#' RFP <- GRanges("1", IRanges(25, 25), "+", score = 5)
+#' dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
+#'                         as.data.table = TRUE, withFrames = TRUE)
+#' class(dt$count) # numeric
+#' # With integer score column (faster and less space usage)
+#' RFP <- GRanges("1", IRanges(25, 25), "+", score = 5L)
+#' dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
+#'                         as.data.table = TRUE, withFrames = TRUE)
+#' class(dt$count) # integer
 #'
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE, as.data.table = FALSE,
                               withFrames = FALSE, weight = "score") {
   if (!is.sorted) grl <- sortPerGroup(grl)
-  if (is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))) {
+  score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
+  if (score.defined) {
     coverage <- coverageByTranscriptW(reads, grl, weight = weight)
   } else coverage <- coverageByTranscript(reads, grl)
 
@@ -430,8 +442,15 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 
   if (as.data.table) {
     window_size <- unique(widthPerGroup(grl, FALSE))
-    count <- data.table(count = unlist(IntegerList(coverage),
+    count.is.integer <- if(is.character(weight)) { # Save space if integer
+      is.integer(mcols(reads)[,colnames(mcols(reads)) %in% weight])
+    } else is.integer(weight)
+
+    count <- if (count.is.integer) {
+      data.table(count = unlist(IntegerList(coverage), use.names = FALSE))
+      } else data.table(count = unlist(NumericList(coverage),
                                        use.names = FALSE))
+
     count[, genes := groupings(coverage)]
     if (length(window_size) != 1) { # different size windows
       count[, ones := rep.int(1L, length(genes))]

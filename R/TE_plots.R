@@ -163,8 +163,6 @@ te.plot <- function(df.rfp, df.rna,
   RFP_CDS_FPKM <- countTable(df.rfp, "cds", type = "fpkm", collapse = collapse)
   RFP_CDS_FPKM <- data.table(id = rownames(RFP_CDS_FPKM), RFP_CDS_FPKM)
 
-
-
   if (!identical(nrow(RNA_MRNA_FPKM), nrow(RFP_CDS_FPKM)))
     stop("Not equal rows in count tables, did you match rfp and rna from different genome builds?")
   single.rna <- length(bamVarName(df.rna, skip.libtype = TRUE)) == 1
