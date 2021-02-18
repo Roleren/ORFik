@@ -648,6 +648,7 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL,
 #' which will give 1 update value per grl object.
 #' Or a GRangesList where start / stops sites by strand are the positions
 #' to use as new starts.
+#' @inheritParams extendLeaders
 #' @return an extended GRangeslist
 #' @export
 #' @family ExtendGenomicRanges
@@ -662,8 +663,13 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL,
 #' extendTrailers(threeUTRs, extension = 1000)
 #' ## Or on transcripts
 #' extendTrailers(tx, extension = 1000)
+#' ## Circular genome (allow negative coordinates)
+#' circular_three <- threeUTRs
+#' isCircular(circular_three) <- rep(TRUE, length(isCircular(circular_three)))
+#' extendTrailers(circular_three, extension = 126200008L)[41] # <- negative stop coordinate
 #'
-extendTrailers <- function(grl, extension = 1000L) {
+extendTrailers <- function(grl, extension = 1000L, is.circular =
+                             all(isCircular(grl) %in% TRUE)) {
   if (is(extension, "numeric") && length(extension) %in% c(1L, length(grl))) {
     posIndices <- strandBool(grl)
     promo <- flank(unlist(lastExonPerGroup(grl), use.names = FALSE),
@@ -674,12 +680,12 @@ extendTrailers <- function(grl, extension = 1000L) {
   } else if (is.grl(class(extension))) {
     starts <- startSites(extension)
     changedGRL <-upstreamOfPerGroup(grl[names(extension)], starts,
-                                    allowOutside = TRUE)
+                                    allowOutside = TRUE, is.circular)
     return(changedGRL)
   } else {
     stop("extension must either be an integer, or a GRangesList")
   }
-  return(assignLastExonsStopSite(grl, newEnds))
+  return(assignLastExonsStopSite(grl, newEnds, is.circular = is.circular))
 }
 
 #' Subset GRanges to get desired frame.

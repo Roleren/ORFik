@@ -4,13 +4,21 @@
 \alias{assignLastExonsStopSite}
 \title{Reassign the stop positions of the last exons per group}
 \usage{
-assignLastExonsStopSite(grl, newStops)
+assignLastExonsStopSite(
+  grl,
+  newStops,
+  is.circular = all(isCircular(grl) \%in\% TRUE)
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object}
 
 \item{newStops}{an integer vector of same length as grl,
 with new start values (absolute coordinates, not relative)}
+
+\item{is.circular}{logical, default FALSE if not any is: all(isCircular(grl) %in% TRUE).
+Where grl is the ranges checked. If TRUE, allow ranges to extend
+below position 1 on chromosome. Since circular genomes can have negative coordinates.}
 }
 \value{
 the same GRangesList with new stop sites

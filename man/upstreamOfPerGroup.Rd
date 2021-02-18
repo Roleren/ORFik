@@ -4,7 +4,12 @@
 \alias{upstreamOfPerGroup}
 \title{Get rest of objects upstream (exclusive)}
 \usage{
-upstreamOfPerGroup(tx, upstreamOf, allowOutside = TRUE)
+upstreamOfPerGroup(
+  tx,
+  upstreamOf,
+  allowOutside = TRUE,
+  is.circular = all(isCircular(tx) \%in\% TRUE)
+)
 }
 \arguments{
 \item{tx}{a \code{\link{GRangesList}},

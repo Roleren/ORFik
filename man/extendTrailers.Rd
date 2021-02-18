@@ -4,7 +4,11 @@
 \alias{extendTrailers}
 \title{Extend the Trailers transcription stop sites}
 \usage{
-extendTrailers(grl, extension = 1000L)
+extendTrailers(
+  grl,
+  extension = 1000L,
+  is.circular = all(isCircular(grl) \%in\% TRUE)
+)
 }
 \arguments{
 \item{grl}{usually a \code{\link{GRangesList}} of 3' utrs or transcripts.
@@ -15,6 +19,10 @@ Eiter single value that will apply for all, or same as length of grl
 which will give 1 update value per grl object.
 Or a GRangesList where start / stops sites by strand are the positions
 to use as new starts.}
+
+\item{is.circular}{logical, default FALSE if not any is: all(isCircular(grl) %in% TRUE).
+Where grl is the ranges checked. If TRUE, allow ranges to extend
+below position 1 on chromosome. Since circular genomes can have negative coordinates.}
 }
 \value{
 an extended GRangeslist
@@ -37,6 +45,10 @@ tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 extendTrailers(threeUTRs, extension = 1000)
 ## Or on transcripts
 extendTrailers(tx, extension = 1000)
+## Circular genome (allow negative coordinates)
+circular_three <- threeUTRs
+isCircular(circular_three) <- rep(TRUE, length(isCircular(circular_three)))
+extendTrailers(circular_three, extension = 126200008L)[41] # <- negative stop coordinate
 
 }
 \seealso{
