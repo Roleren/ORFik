@@ -1,20 +1,22 @@
 #' Run differential TE analysis
 #'
-#' Using an equal reimplementation of the deltaTE algorithm (see reference).
-#' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
-#' be over CDS and RNA-seq over mRNAs, per transcript. \cr
-#' If you do not need isoform variants, subset to longest isoform in
-#' the returned object.
-#'
 #' Creates a total of 3 DESeq models (given x is design argument input
 #' and libraryType is RNA-seq and Ribo-seq):\cr
 #' 1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)\cr
 #' 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
 #' 3. TE model: design = ~ library type + x + libraryType + libraryType:x
 #' (differences between the x and libraryType groups and the interaction between them)\cr
+#' Using an equal reimplementation of the deltaTE algorithm (see reference).
+#' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
+#' be over CDS and RNA-seq over mRNAs, per transcript. \cr
+#'
+#' #' If you do not need isoform variants, subset to longest isoform in
+#' the returned object. If you do not have RNA-seq controls,
+#' run normal DESeq instead.
 #' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
 #' What the deltaTE plot calls intensified is here called mRNA abundance and
-#' forwarded is called Buffering.
+#' forwarded is called Buffering.\cr Remember that DESeq by default can not
+#' do global change analysis, it can only find subsets with change in LFC.
 #' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq

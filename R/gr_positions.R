@@ -174,6 +174,7 @@ downstreamFromPerGroup <- function(tx, downstreamFrom, is.circular =
 #'  is the the base after the new stop point of last valid exon.
 #' @param allowOutside a logical (T), can upstreamOf extend outside
 #'  range of tx, can set boundary as a false hit, so beware.
+#' @inheritParams extendLeaders
 #' @return a GRangesList of upstream part
 #' @family GRanges
 #'
