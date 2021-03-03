@@ -262,7 +262,7 @@ countTable <- function(df, region = "mrna", type = "count",
           colData(res)$stage <- df.temp$stage
           colData(res)$stage[is.na(colData(res)$stage)] <- ""
         }
-        if (length(unique(df.temp$libtype)) > 1) {
+        if (length(unique(df.temp$libtype)) > 0) {
           colData(res)$libtype <- df.temp$libtype
           colData(res)$libtype[is.na(colData(res)$libtype)] <- ""
         }
