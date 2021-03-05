@@ -64,11 +64,17 @@ relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
 findORFs("ATGTAA")
 findORFs("ATGTTAA") # not in frame anymore
 
-findORFs("ATGATGTAA") # two ORFs
-findORFs("ATGATGTAA", longestORF = TRUE) # only longest of two above
+findORFs("ATGATGTAA") # only longest of two above
+findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 
 findORFs(c("ATGTAA", "ATGATGTAA"))
+# Get DNA sequences from ORFs
+seq <- DNAStringSet(c("ATGTAA", "ATGATGTAA"))
+names(seq) <- c("tx1", "tx2")
+orfs <- findORFs(seq, longestORF = F)
+substr(seq[rep.int(lengths(orfs), lengths(orfs))], start(orfs@unlistData), end(orfs@unlistData))
 
+# Do not use findORFs for complex data, then use \code{\link{findMapORFs}}
 }
 \seealso{
 Other findORFs: 

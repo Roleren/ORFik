@@ -259,21 +259,22 @@ countTable <- function(df, region = "mrna", type = "count",
       # Add all sample columns if not existing and it is possible
       if (is.null(colData(res)$stage)) {
         if (length(unique(df.temp$stage)) > 1) {
-          colData(res)$stage <- df.temp$stage
+          colData(res)$stage <- as.factor(df.temp$stage)
           colData(res)$stage[is.na(colData(res)$stage)] <- ""
         }
-        if (length(unique(df.temp$libtype)) > 0) {
-          colData(res)$libtype <- df.temp$libtype
+        if ((length(unique(df.temp$libtype)) > 0) & (type != "deseq")) {
+          colData(res)$libtype <- as.factor(df.temp$libtype)
           colData(res)$libtype[is.na(colData(res)$libtype)] <- ""
         }
         if (length(unique(df.temp$condition)) > 1) {
-          colData(res)$condition <- df.temp$condition
+          colData(res)$condition <- as.factor(df.temp$condition)
           colData(res)$condition[is.na(colData(res)$condition)] <- ""
         }
         if (length(unique(df.temp$fraction)) > 1) {
-          colData(res)$fraction <- df.temp$fraction
+          colData(res)$fraction <- as.factor(df.temp$fraction)
           colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
         }
+        colData(res)$replicate <- as.factor(df.temp$replicate)
       }
 
       # Decide output format
