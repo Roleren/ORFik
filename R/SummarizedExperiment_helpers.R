@@ -274,7 +274,7 @@ countTable <- function(df, region = "mrna", type = "count",
           colData(res)$fraction <- as.factor(df.temp$fraction)
           colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
         }
-        colData(res)$replicate <- as.factor(df.temp$replicate)
+        colData(res)$replicate <- as.factor(df.temp$rep)
       }
 
       # Decide output format
