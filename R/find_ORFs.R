@@ -135,7 +135,7 @@ stopDefinition <- function(transl_table) {
 #' # Get DNA sequences from ORFs
 #' seq <- DNAStringSet(c("ATGTAA", "ATGATGTAA"))
 #' names(seq) <- c("tx1", "tx2")
-#' orfs <- findORFs(seq, longestORF = F)
+#' orfs <- findORFs(seq, longestORF = FALSE)
 #' substr(seq[rep.int(lengths(orfs), lengths(orfs))], start(orfs@unlistData), end(orfs@unlistData))
 #'
 #' # Do not use findORFs for complex data, then use \code{\link{findMapORFs}}
