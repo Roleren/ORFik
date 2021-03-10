@@ -1,11 +1,11 @@
 ---
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 ORFik: R package for discovery of novel genes.
 ==============================================================================
-![Image Title](inst/images/ORFik_map.pdf)
+![](inst/images/ORFik_map.png)
 
 
 This package is still under development, although this version is stable and can be used.
