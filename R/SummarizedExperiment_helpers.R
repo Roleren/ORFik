@@ -19,6 +19,10 @@
 #' Can also be a \code{\link{GRangesList}}, then it uses this region directly.
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
+#' @param lib.type a character(default: "default"), load files in experiment
+#' or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+#' These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+#' Can also be custom user made folders inside the experiments bam folder.
 #' @param weight numeric or character, a column to score overlaps by. Default "score",
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
@@ -38,6 +42,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             longestPerGene = TRUE,
                                             geneOrTxNames = "tx",
                                             region = "mrna", type = "count",
+                                            lib.type = "ofst",
                                             weight = "score") {
   if(!is.null(saveName)) {
     if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
@@ -56,7 +61,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   }
 
   varNames <- bamVarName(df)
-  outputLibs(df, tx)
+  outputLibs(df, chrStyle = tx, type = lib.type)
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
                                  nrow = length(tx)))
@@ -72,14 +77,14 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   }
   mat <- as.matrix(rawCounts);colnames(mat) <- NULL
 
-  colData <- DataFrame(SAMPLE = bamVarName(df, TRUE),
+  colData <- DataFrame(SAMPLE = as.factor(bamVarName(df, TRUE)),
                        row.names=varNames)
   # Add sample columns
-  if (!is.null(df$rep)) colData$replicate <- df$rep
-  if (!is.null(df$stage)) colData$stage <- df$stage
-  if (!is.null(df$libtype)) colData$libtype <- df$libtype
-  if (!is.null(df$condition)) colData$condition <- df$condition
-  if (!is.null(df$fraction)) colData$fraction <- df$fraction
+  if (!is.null(df$rep)) colData$replicate <- as.factor(df$rep)
+  if (!is.null(df$stage)) colData$stage <- as.factor(df$stage)
+  if (!is.null(df$libtype)) colData$libtype <- as.factor(df$libtype)
+  if (!is.null(df$condition)) colData$condition <- as.factor(df$condition)
+  if (!is.null(df$fraction)) colData$fraction <- as.factor(df$fraction)
 
   res <- SummarizedExperiment(assays=list(counts=mat), rowRanges=tx,
                               colData=colData)
@@ -172,7 +177,8 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #'
 #' If df is path to folder:
 #' Loads the the file in that directory with the regex region.rds,
-#' where region is what is defined by argument.
+#' where region is what is defined by argument. If loaded as SummarizedExperiment
+#' or deseq, the colData will be made from ORFik.experiment information.
 #' @param df an ORFik \code{\link{experiment}} or path to folder with
 #' countTable, use path if not same folder as experiment libraries. Will subset to
 #' the count tables specified if df is experiment. If experiment has 4 rows and you subset it
@@ -260,19 +266,23 @@ countTable <- function(df, region = "mrna", type = "count",
       if (is.null(colData(res)$stage)) {
         if (length(unique(df.temp$stage)) > 1) {
           colData(res)$stage <- as.factor(df.temp$stage)
-          colData(res)$stage[is.na(colData(res)$stage)] <- ""
+          if (anyNA(colData(res)$stage))
+            colData(res)$stage[is.na(colData(res)$stage)] <- ""
         }
         if ((length(unique(df.temp$libtype)) > 0) & (type != "deseq")) {
           colData(res)$libtype <- as.factor(df.temp$libtype)
-          colData(res)$libtype[is.na(colData(res)$libtype)] <- ""
+          if (anyNA(colData(res)$libtype))
+            colData(res)$libtype[is.na(colData(res)$libtype)] <- ""
         }
         if (length(unique(df.temp$condition)) > 1) {
           colData(res)$condition <- as.factor(df.temp$condition)
-          colData(res)$condition[is.na(colData(res)$condition)] <- ""
+          if (anyNA(colData(res)$condition))
+            colData(res)$condition[is.na(colData(res)$condition)] <- ""
         }
         if (length(unique(df.temp$fraction)) > 1) {
           colData(res)$fraction <- as.factor(df.temp$fraction)
-          colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
+          if (anyNA(colData(res)$fraction))
+            colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
         }
         colData(res)$replicate <- as.factor(df.temp$rep)
       }
@@ -319,7 +329,7 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
                                geneOrTxNames = "tx",
                                regions = c("mrna", "leaders", "cds",
                                            "trailers"),
-                               type = "count",
+                               type = "count", lib.type = "ofst",
                                weight = "score",
                                BPPARAM = bpparam()) {
 
@@ -334,7 +344,7 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
      makeSummarizedExperimentFromBam(df, region = region,
                                      geneOrTxNames = "tx",
                                      longestPerGene = FALSE,
-                                     saveName = path)
+                                     saveName = path, lib.type = lib.type)
     },
     countDir = countDir, df = df,
     geneOrTxNames = geneOrTxNames,

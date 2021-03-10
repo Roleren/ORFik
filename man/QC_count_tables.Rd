@@ -4,7 +4,7 @@
 \alias{QC_count_tables}
 \title{Create count table info for QC report}
 \usage{
-QC_count_tables(df, out.dir, BPPARAM = bpparam())
+QC_count_tables(df, out.dir, type = "ofst", BPPARAM = bpparam())
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -12,6 +12,11 @@ QC_count_tables(df, out.dir, BPPARAM = bpparam())
 \item{out.dir}{optional output directory, default:
 \code{dirname(df$filepath[1])}.
 Will make a folder called "QC_STATS" with all results in this directory.}
+
+\item{type}{a character(default: "default"), load files in experiment
+or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+Can also be custom user made folders inside the experiments bam folder.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}

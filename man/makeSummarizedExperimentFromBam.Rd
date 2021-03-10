@@ -11,6 +11,7 @@ makeSummarizedExperimentFromBam(
   geneOrTxNames = "tx",
   region = "mrna",
   type = "count",
+  lib.type = "ofst",
   weight = "score"
 )
 }
@@ -34,6 +35,11 @@ Can also be a \code{\link{GRangesList}}, then it uses this region directly.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
+
+\item{lib.type}{a character(default: "default"), load files in experiment
+or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+Can also be custom user made folders inside the experiments bam folder.}
 
 \item{weight}{numeric or character, a column to score overlaps by. Default "score",
 will check for a metacolumn called "score" in libraries. If not found,

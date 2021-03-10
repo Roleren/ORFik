@@ -651,8 +651,9 @@ filepath <- function(df, type, basename = FALSE) {
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams fimport
 #' @param type a character(default: "default"), load files in experiment
-#' or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
+#' or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
 #' These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+#' Can also be custom user made folders inside the experiments bam folder.
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}

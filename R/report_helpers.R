@@ -1,12 +1,14 @@
 #' Create count table info for QC report
 #'
 #' The better the annotation / gtf used, the more results you get.
+#' @inheritParams outputLibs
 #' @inheritParams QCreport
 #' @return a data.table of the count info
-QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
+QC_count_tables <- function(df, out.dir, type = "ofst",
+                            BPPARAM = bpparam()) {
   txdb <- loadTxdb(df)
   loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
-  outputLibs(df, leaders, type = "ofst", BPPARAM = BPPARAM)
+  outputLibs(df, leaders, type = type, BPPARAM = BPPARAM)
   libs <- bamVarName(df)
   # Update this to use correct
   convertLibs(df, NULL) # Speedup by reducing unwanted information
@@ -14,7 +16,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
   # Make count tables
   dt_list <- countTable_regions(df, geneOrTxNames = "tx",
                                 longestPerGene = FALSE,
-                                out.dir = out.dir,
+                                out.dir = out.dir, lib.type = type,
                                 BPPARAM = BPPARAM)
   # Special regions rRNA etc..
   gff.df <- importGtfFromTxdb(txdb)
@@ -23,6 +25,7 @@ QC_count_tables <- function(df, out.dir, BPPARAM = bpparam()) {
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
   # Put into csv, the standard stats
   message("Making alignment statistics for lib:")
+  # Helper function, sum countOverlaps with weight
   sCo <- function(region, lib) {
     weight <- "score"
     if (!(weight %in% colnames(mcols(lib))))

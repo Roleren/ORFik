@@ -41,7 +41,8 @@ Requires \code{\link{ORFikQC}} to have been run on experiment!
 \details{
 If df is path to folder:
 Loads the the file in that directory with the regex region.rds,
-where region is what is defined by argument.
+where region is what is defined by argument. If loaded as SummarizedExperiment
+or deseq, the colData will be made from ORFik.experiment information.
 }
 \examples{
 # Make experiment

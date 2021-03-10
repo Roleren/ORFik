@@ -25,8 +25,9 @@ Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "bedo", "bedoc", "ofst or "pshifted".
-These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().}
+or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+Can also be custom user made folders inside the experiments bam folder.}
 
 \item{param}{\code{NULL} or a \link[Rsamtools]{ScanBamParam} object.
     Like for \code{\link[Rsamtools]{scanBam}}, this influences what fields
