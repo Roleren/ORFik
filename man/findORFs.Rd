@@ -26,7 +26,8 @@ Check \code{\link{startDefinition}} for helper function.}
 Check \code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
-unique (seqname, strand, stopcodon) combination, you can also use function
+unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest
+per transcript! You can also use function
 \code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Which is START + STOP = 6 bp.
@@ -36,14 +37,16 @@ START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.}
 }
 \value{
 (IRangesList) of ORFs locations by START and STOP sites
-grouped by input seqeunces. In a list of sequences, only the indices of
+grouped by input sequences. In a list of sequences, only the indices of
 the sequences that had ORFs will be returned, e.g. 3 sequences where only
 1 and 3 has ORFs, will return size 2 IRangesList with names c("1", "3").
 If there are a total of 0 ORFs, an empty IRangesList will be returned.
 }
 \description{
-Find all Open Reading Frames (ORFs) on the input sequences
+Find all Open Reading Frames (ORFs) on the simple input sequences
 in ONLY 5'- 3' direction (+), but within all three possible reading frames.
+Do not use findORFs for mapping to full chromosomes,
+then use \code{\link{findMapORFs}}!
 For each sequence of the input vector \code{\link{IRanges}} with START and
 STOP positions (inclusive) will be returned as
 \code{\link{IRangesList}}. Returned coordinates are relative to the
@@ -69,12 +72,14 @@ findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 
 findORFs(c("ATGTAA", "ATGATGTAA"))
 # Get DNA sequences from ORFs
-seq <- DNAStringSet(c("ATGTAA", "ATGATGTAA"))
-names(seq) <- c("tx1", "tx2")
-orfs <- findORFs(seq, longestORF = F)
-substr(seq[rep.int(lengths(orfs), lengths(orfs))], start(orfs@unlistData), end(orfs@unlistData))
-
-# Do not use findORFs for complex data, then use \code{\link{findMapORFs}}
+seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
+names(seq) <- c("tx1", "tx2", "tx3")
+orfs <- findORFs(seq, longestORF = FALSE)
+# With default names you can get sequences like this:
+orf_seqs <- substr(seq[rep.int(as.integer(names(orfs)), lengths(orfs))],
+                  start(orfs@unlistData), end(orfs@unlistData))
+# Convert to DNA DNAStringSet and Save as .fasta
+# writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
 }
 \seealso{
 Other findORFs: 

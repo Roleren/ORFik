@@ -33,7 +33,8 @@ Check \code{\link{startDefinition}} for helper function.}
 Check \code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
-unique (seqname, strand, stopcodon) combination, you can also use function
+unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest
+per transcript! You can also use function
 \code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Which is START + STOP = 6 bp.

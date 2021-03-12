@@ -11,7 +11,7 @@ findMapORFs(
   stopCodon = stopDefinition(1),
   longestORF = TRUE,
   minimumLength = 0,
-  groupByTx = TRUE
+  groupByTx = FALSE
 )
 }
 \arguments{
@@ -31,7 +31,8 @@ Check \code{\link{startDefinition}} for helper function.}
 Check \code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
-unique (seqname, strand, stopcodon) combination, you can also use function
+unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest
+per transcript! You can also use function
 \code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Which is START + STOP = 6 bp.
@@ -39,8 +40,8 @@ Minimum length of ORF, without counting 3bps for START and STOP codons.
 For example minimumLength = 8 will result in size of ORFs to be at least
 START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.}
 
-\item{groupByTx}{logical (default: TRUE), should output GRangesList be
-grouped by orfs per transcript (TRUE) or by exons per ORF (FALSE)?}
+\item{groupByTx}{logical (default: FALSE), should output GRangesList be
+grouped by exons per ORF (TRUE) or by orfs per transcript (FALSE)?}
 }
 \value{
 A GRangesList of ORFs.
@@ -59,10 +60,13 @@ and that their orders match. 1st seq is 1st grl object, etc.
 See vignette for real life example.
 }
 \examples{
+# First show simple example using findORFs
 # This sequence has ORFs at 1-9 and 4-9
-seqs <- c("ATGATGTAA") # the dna sequence
+seqs <- DNAStringSet("ATGATGTAA") # the dna transcript sequence
 findORFs(seqs)
 # lets assume that this sequence comes from two exons as follows
+# Then we need to use findMapORFs instead of findORFs,
+#  for splicing information
 gr <- GRanges(seqnames = rep("1", 2), # chromosome 1
               ranges = IRanges(start = c(21, 10), end = c(23, 15)),
               strand = rep("-", 2), names = rep("tx1", 2))
@@ -72,6 +76,7 @@ findMapORFs(grl, seqs) # ORFs are properly mapped to its genomic coordinates
 grl <- c(grl, grl)
 names(grl) <- c("tx1", "tx2")
 findMapORFs(grl, c(seqs, seqs))
+# More advanced example and how to save sequences found in vignette
 
 }
 \seealso{

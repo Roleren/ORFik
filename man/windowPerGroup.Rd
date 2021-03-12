@@ -26,7 +26,7 @@ a GRanges, or GRangesList object if any group had > 1 exon.
 \description{
 Per GRanges input (gr) of single position inputs,
 create a GRangesList window output of specified
-upstream, downstream region. \cr
+upstream, downstream region relative to some transcript "tx". \cr
 If downstream is 20, it means the window will start 20 downstream of
 gr start site (-20 in relative transcript coordinates.)
 If upstream is 20, it means the window will start 20 upstream of
@@ -40,7 +40,7 @@ around the CDS start site, goes longer than the 5' leader start site,
 it will set start to the edge boundary
 (the TSS of the transcript in this case).
 If region has no hit in bound, a width 0 GRanges object is returned.
-This is usefull for things like countOverlaps, since 0 hits will then always
+This is useful for things like countOverlaps, since 0 hits will then always
 be returned for the correct object index. If you don't want the 0 width
 windows, use \code{reduce()} to remove 0-width windows.
 }

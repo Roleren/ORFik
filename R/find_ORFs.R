@@ -83,8 +83,10 @@ stopDefinition <- function(transl_table) {
 
 #' Find Open Reading Frames.
 #'
-#' Find all Open Reading Frames (ORFs) on the input sequences
+#' Find all Open Reading Frames (ORFs) on the simple input sequences
 #' in ONLY 5'- 3' direction (+), but within all three possible reading frames.
+#' Do not use findORFs for mapping to full chromosomes,
+#' then use \code{\link{findMapORFs}}!
 #' For each sequence of the input vector \code{\link{IRanges}} with START and
 #' STOP positions (inclusive) will be returned as
 #' \code{\link{IRangesList}}. Returned coordinates are relative to the
@@ -111,14 +113,15 @@ stopDefinition <- function(transl_table) {
 #' @param stopCodon (character vector) Possible STOP codons to search for.
 #' Check \code{\link{stopDefinition}} for helper function.
 #' @param longestORF (logical) Default TRUE. Keep only the longest ORF per
-#' unique (seqname, strand, stopcodon) combination, you can also use function
+#' unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest
+#' per transcript! You can also use function
 #' \code{\link{longestORFs}} after creation of ORFs for same result.
 #' @param minimumLength (integer) Default is 0. Which is START + STOP = 6 bp.
 #' Minimum length of ORF, without counting 3bps for START and STOP codons.
 #' For example minimumLength = 8 will result in size of ORFs to be at least
 #' START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.
 #' @return (IRangesList) of ORFs locations by START and STOP sites
-#' grouped by input seqeunces. In a list of sequences, only the indices of
+#' grouped by input sequences. In a list of sequences, only the indices of
 #' the sequences that had ORFs will be returned, e.g. 3 sequences where only
 #' 1 and 3 has ORFs, will return size 2 IRangesList with names c("1", "3").
 #' If there are a total of 0 ORFs, an empty IRangesList will be returned.
@@ -133,15 +136,17 @@ stopDefinition <- function(transl_table) {
 #'
 #' findORFs(c("ATGTAA", "ATGATGTAA"))
 #' # Get DNA sequences from ORFs
-#' seq <- DNAStringSet(c("ATGTAA", "ATGATGTAA"))
-#' names(seq) <- c("tx1", "tx2")
+#' seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
+#' names(seq) <- c("tx1", "tx2", "tx3")
 #' orfs <- findORFs(seq, longestORF = FALSE)
-#' substr(seq[rep.int(lengths(orfs), lengths(orfs))], start(orfs@unlistData), end(orfs@unlistData))
-#'
-#' # Do not use findORFs for complex data, then use \code{\link{findMapORFs}}
+#' # With default names you can get sequences like this:
+#' orf_seqs <- substr(seq[rep.int(as.integer(names(orfs)), lengths(orfs))],
+#'                   start(orfs@unlistData), end(orfs@unlistData))
+#' # Convert to DNA DNAStringSet and Save as .fasta
+#' # writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
 findORFs <- function(seqs, startCodon =  startDefinition(1),
                      stopCodon = stopDefinition(1), longestORF = TRUE,
-                     minimumLength = 0){
+                     minimumLength = 0) {
 
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -177,16 +182,19 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' @param grl (\code{\link{GRangesList}}) of sequences
 #'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
-#' @param groupByTx logical (default: TRUE), should output GRangesList be
-#' grouped by orfs per transcript (TRUE) or by exons per ORF (FALSE)?
+#' @param groupByTx logical (default: FALSE), should output GRangesList be
+#' grouped by exons per ORF (TRUE) or by orfs per transcript (FALSE)?
 #' @return A GRangesList of ORFs.
 #' @export
 #' @family findORFs
 #' @examples
+#' # First show simple example using findORFs
 #' # This sequence has ORFs at 1-9 and 4-9
-#' seqs <- c("ATGATGTAA") # the dna sequence
+#' seqs <- DNAStringSet("ATGATGTAA") # the dna transcript sequence
 #' findORFs(seqs)
 #' # lets assume that this sequence comes from two exons as follows
+#' # Then we need to use findMapORFs instead of findORFs,
+#' #  for splicing information
 #' gr <- GRanges(seqnames = rep("1", 2), # chromosome 1
 #'               ranges = IRanges(start = c(21, 10), end = c(23, 15)),
 #'               strand = rep("-", 2), names = rep("tx1", 2))
@@ -196,10 +204,11 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' grl <- c(grl, grl)
 #' names(grl) <- c("tx1", "tx2")
 #' findMapORFs(grl, c(seqs, seqs))
+#' # More advanced example and how to save sequences found in vignette
 #'
 findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
                         stopCodon = stopDefinition(1), longestORF = TRUE,
-                        minimumLength = 0, groupByTx = TRUE){
+                        minimumLength = 0, groupByTx = FALSE){
   validGRL(class(grl))
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -249,8 +258,15 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' @examples
 #' # location of the example fasta file
 #' example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")
-#' findORFsFasta(example_genome)
-#'
+#' orfs <- findORFsFasta(example_genome)
+#' # To store ORF sequences (you need indexed genome .fai file):
+#' fa <- FaFile(example_genome)
+#' names(orfs) <- paste0("ORF_", seq.int(length(orfs)), "_", seqnames(orfs))
+#' orfs <- groupGRangesBy(orfs) # Make GRangesList, required for output
+#' orf_seqs <- txSeqsFromFa(orfs, fa)
+#' # writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
+#' # To extract sequences from negative coordinates, split the 0 position
+#' # overlapping orfs into 2 exons in the GRangesList (one for - to 0 and 1 to +)
 findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
                           stopCodon = stopDefinition(1), longestORF = TRUE,
                           minimumLength = 0, is.circular = FALSE) {

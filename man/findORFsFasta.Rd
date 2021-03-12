@@ -24,7 +24,8 @@ Check \code{\link{startDefinition}} for helper function.}
 Check \code{\link{stopDefinition}} for helper function.}
 
 \item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
-unique (seqname, strand, stopcodon) combination, you can also use function
+unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest
+per transcript! You can also use function
 \code{\link{longestORFs}} after creation of ORFs for same result.}
 
 \item{minimumLength}{(integer) Default is 0. Which is START + STOP = 6 bp.
@@ -63,8 +64,15 @@ Also make sure your fasta file is valid (no hidden spaces etc),
 \examples{
 # location of the example fasta file
 example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")
-findORFsFasta(example_genome)
-
+orfs <- findORFsFasta(example_genome)
+# To store ORF sequences (you need indexed genome .fai file):
+fa <- FaFile(example_genome)
+names(orfs) <- paste0("ORF_", seq.int(length(orfs)), "_", seqnames(orfs))
+orfs <- groupGRangesBy(orfs) # Make GRangesList, required for output
+orf_seqs <- txSeqsFromFa(orfs, fa)
+# writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
+# To extract sequences from negative coordinates, split the 0 position
+# overlapping orfs into 2 exons in the GRangesList (one for - to 0 and 1 to +)
 }
 \seealso{
 Other findORFs: 

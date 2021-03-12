@@ -473,7 +473,8 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #'
 #' For each GRanges object, find the sequence of it from faFile or BSgenome.
 #'
-#' A small safety wrapper around \code{\link{extractTranscriptSeqs}}
+#' A wrapper around \code{\link{extractTranscriptSeqs}} that works for
+#' ORFik \code{\link{experiment}} input.
 #' For debug of errors do:
 #' which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
 #' This happens usually when the grl contains chromsomes that the fasta
@@ -504,7 +505,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #'
 #' Per GRanges input (gr) of single position inputs,
 #' create a GRangesList window output of specified
-#' upstream, downstream region. \cr
+#' upstream, downstream region relative to some transcript "tx". \cr
 #' If downstream is 20, it means the window will start 20 downstream of
 #' gr start site (-20 in relative transcript coordinates.)
 #' If upstream is 20, it means the window will start 20 upstream of
@@ -517,7 +518,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #' it will set start to the edge boundary
 #' (the TSS of the transcript in this case).
 #' If region has no hit in bound, a width 0 GRanges object is returned.
-#' This is usefull for things like countOverlaps, since 0 hits will then always
+#' This is useful for things like countOverlaps, since 0 hits will then always
 #' be returned for the correct object index. If you don't want the 0 width
 #' windows, use \code{reduce()} to remove 0-width windows.
 #' @param gr a GRanges/IRanges object (startSites or others,
@@ -637,7 +638,7 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL,
 #' Extend the Trailers transcription stop sites
 #'
 #' Will extend the trailers or transcripts downstream (3' end) by extension.
-#' Remember the extension is general not relative, that means splicing
+#' The extension is general not relative, that means splicing
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.

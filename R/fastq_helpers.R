@@ -92,7 +92,8 @@ collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collaps
     new_seqs <- names(replicates)
     names(new_seqs) <- headers
     new_seqs <- DNAStringSet(new_seqs, use.names = TRUE)
-    new_file_name <- paste0("collapsed_", basename(file))
+    new_file_name <- paste0("collapsed_", basename(file),
+                            ifelse(compress, ".gz", ""))
     writeXStringSet(new_seqs, file.path(outdir, new_file_name),
                     compress = compress, format = "fasta")
   }
