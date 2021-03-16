@@ -34,17 +34,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // findORFs_fasta
-S4 findORFs_fasta(std::string file, std::string startCodon, std::string stopCodon, int minimumLength, bool isCircular);
-RcppExport SEXP _ORFik_findORFs_fasta(SEXP fileSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP minimumLengthSEXP, SEXP isCircularSEXP) {
+S4 findORFs_fasta(CharacterVector& fastaSeqs, std::string startCodon, std::string stopCodon, int minimumLength, bool isCircular);
+RcppExport SEXP _ORFik_findORFs_fasta(SEXP fastaSeqsSEXP, SEXP startCodonSEXP, SEXP stopCodonSEXP, SEXP minimumLengthSEXP, SEXP isCircularSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type file(fileSEXP);
+    Rcpp::traits::input_parameter< CharacterVector& >::type fastaSeqs(fastaSeqsSEXP);
     Rcpp::traits::input_parameter< std::string >::type startCodon(startCodonSEXP);
     Rcpp::traits::input_parameter< std::string >::type stopCodon(stopCodonSEXP);
     Rcpp::traits::input_parameter< int >::type minimumLength(minimumLengthSEXP);
     Rcpp::traits::input_parameter< bool >::type isCircular(isCircularSEXP);
-    rcpp_result_gen = Rcpp::wrap(findORFs_fasta(file, startCodon, stopCodon, minimumLength, isCircular));
+    rcpp_result_gen = Rcpp::wrap(findORFs_fasta(fastaSeqs, startCodon, stopCodon, minimumLength, isCircular));
     return rcpp_result_gen;
 END_RCPP
 }

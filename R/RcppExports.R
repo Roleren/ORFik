@@ -9,8 +9,8 @@ orfs_as_List <- function(fastaSeqs, startCodon, stopCodon, minimumLength) {
     .Call('_ORFik_orfs_as_List', PACKAGE = 'ORFik', fastaSeqs, startCodon, stopCodon, minimumLength)
 }
 
-findORFs_fasta <- function(file, startCodon, stopCodon, minimumLength, isCircular) {
-    .Call('_ORFik_findORFs_fasta', PACKAGE = 'ORFik', file, startCodon, stopCodon, minimumLength, isCircular)
+findORFs_fasta <- function(fastaSeqs, startCodon, stopCodon, minimumLength, isCircular) {
+    .Call('_ORFik_findORFs_fasta', PACKAGE = 'ORFik', fastaSeqs, startCodon, stopCodon, minimumLength, isCircular)
 }
 
 pmapFromTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty) {

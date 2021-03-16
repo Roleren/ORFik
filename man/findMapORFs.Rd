@@ -47,7 +47,8 @@ grouped by exons per ORF (TRUE) or by orfs per transcript (FALSE)?}
 A GRangesList of ORFs.
 }
 \description{
-Finds ORFs on the sequences of interest, but returns relative positions to
+This function can map spliced ORFs.
+It finds ORFs on the sequences of interest, but returns relative positions to
 the positions of `grl` argument. For example, `grl` can be exons
 of known transcripts (with genomic coordinates), and `seq` sequences of
 those transcripts, in that case, this function will return

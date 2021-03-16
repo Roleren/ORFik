@@ -37,10 +37,9 @@ Imports:
   data.table (>= 1.11.8),
   Biostrings (>= 2.51.1),
   biomartr,
-  Rsamtools (>= 1.35.0),
   BiocGenerics (>= 0.29.1),
   BiocParallel (>= 1.19.0),
-  SummarizedExperiment (>= 1.14.0),
+  BSgenome,
   DESeq2 (>= 1.24.0),
   ggplot2 (>= 2.2.1),
   gridExtra (>= 2.3),
@@ -49,8 +48,10 @@ Imports:
   methods (>= 3.6.0),
   R.utils,
   RCurl,
+  Rsamtools (>= 1.35.0),
   utils,
   stats,
+  SummarizedExperiment (>= 1.14.0),
   fst (>= 0.9.2),
   xml2 (>= 1.2.0),
   tools
@@ -60,7 +61,6 @@ Suggests:
   rmarkdown,
   knitr,
   BiocStyle,
-  BSgenome,
   BSgenome.Hsapiens.UCSC.hg19
 LinkingTo: Rcpp
 VignetteBuilder: knitr

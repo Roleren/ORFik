@@ -15,6 +15,7 @@ using namespace Rcpp;
 
 Function GRangesC("GRanges", Environment::namespace_env("GenomicRanges"));
 Function IRangesC("IRanges", Environment::namespace_env("IRanges"));
+Function namesC("names", Environment::namespace_env("base"));
 
 // Rule for undefined behavior is to return (space)
 char complement(char n)
@@ -51,29 +52,27 @@ char complement(char n)
 //  if genome is circular, we add lengths of chromosomes
 // We could also add name of genome from name of fasta file
 // [[Rcpp::export]]
-S4 findORFs_fasta(std::string file,
-                       std::string startCodon,
-                       std::string stopCodon,
-                       int minimumLength,
-                       bool isCircular)
+S4 findORFs_fasta(CharacterVector &fastaSeqs,
+                  std::string startCodon,
+                  std::string stopCodon,
+                  int minimumLength,
+                  bool isCircular)
 {
   vi all_orfs;
   std::vector<std::string> Seqnames;
   std::vector<int> strands;
-  std::ifstream in(file.c_str());
-  in.get(); // remove first '>'
-  std::string rec;
   int n = 0;
   int chromoLength;
-  while (getline(in, rec, '>')) { // For each chromosome
-    int newLineLoc = rec.find('\n');
-    std::string header = rec.substr(0, newLineLoc);
+  CharacterVector headers = namesC(fastaSeqs);
+
+  for (int i = 0; i < fastaSeqs.size(); i++) {
+    std::string fastaSeq = static_cast<std::string>(fastaSeqs[i]);
+    std::string header = static_cast<std::string>(headers[i]);
     header = header.substr(0, header.find(' '));
-    std::string fastaSeq = rec.substr(newLineLoc + 1,
-                                      rec.length() - newLineLoc - 2);
+
     chromoLength = fastaSeq.length() + 1;
     // Check if sequences is lowercase
-    if (n == 0) {
+    if (n == 0) { // TODO, make this more failsafe!
       std::locale loc;
       if (std::islower(fastaSeq.at(0), loc)) {
         std::transform(startCodon.begin(), startCodon.end(),
@@ -86,11 +85,12 @@ S4 findORFs_fasta(std::string file,
     // get all orfs for start to stop
     vi ORFdef = orfs_as_vector(fastaSeq, startCodon,
                                              stopCodon, minimumLength);
+
     all_orfs.insert(all_orfs.end(), ORFdef.begin(), ORFdef.end());
     Seqnames.insert(Seqnames.end(), ORFdef.size() / 2, header);
     strands.insert(strands.end(), ORFdef.size() / 2, 1);
 
-    //Definitions if isCircular is TRUE
+    //Definitions if isCircular is TRUE (maximum 4000 bases or half the circle)
     int length = static_cast<int>(fastaSeq.length());
     const int rescaleStart = std::max(length - 4000, length / 2);
     const int rescaleStop = std::min(4000, rescaleStart - 1);
@@ -181,5 +181,5 @@ S4 findORFs_fasta(std::string file,
   return (GRangesC(Seqnames,
                    IRangesC(wrap(result_value[0]),
                             wrap(result_value[1])),
-                            strands));
+                   strands));
 }

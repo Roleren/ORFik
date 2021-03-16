@@ -169,7 +169,8 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 
 #' Find ORFs and immediately map them to their genomic positions.
 #'
-#' Finds ORFs on the sequences of interest, but returns relative positions to
+#' This function can map spliced ORFs.
+#' It finds ORFs on the sequences of interest, but returns relative positions to
 #' the positions of `grl` argument. For example, `grl` can be exons
 #' of known transcripts (with genomic coordinates), and `seq` sequences of
 #' those transcripts, in that case, this function will return
@@ -229,12 +230,13 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' Finds Open Reading Frames in fasta files.
 #'
 #' Should be used for procaryote genomes or transcript sequences as fasta.
-#' Makes no sence for eukaryote whole genomes, since it contains splicing.
+#' Makes no sence for eukaryote whole genomes, since those contains splicing
+#' (use findMapORFs for spliced ranges).
 #' Searches through each fasta header and reports all ORFs found for BOTH
 #' sense (+) and antisense strand (-) in all frames. Name of the header will
 #' be used as seqnames of reported ORFs.
 #' Each fasta header is treated separately, and name of the sequence will
-#' be used as seqname in returned GRanges object. This supports circluar
+#' be used as seqname in returned GRanges object. This supports circular
 #' genomes.
 #'
 #' Remember if you have a fasta file of transcripts (transcript coordinates),
@@ -245,7 +247,8 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' Also make sure your fasta file is valid (no hidden spaces etc),
 #'  as this might break the coordinate system!
 #' @param filePath (character) Path to the fasta file. Can be both uppercase or
-#' lowercase.
+#' lowercase. Or a already loaded R object of either types:
+#' "BSgenome" or "DNAStringSet" with named sequences
 #' @inheritParams findORFs
 #' @param is.circular (logical) Whether the genome in filePath is circular.
 #' Prokaryotic genomes are usually circular. Be carefull if you want to
@@ -254,6 +257,7 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' @return (GRanges) object of ORFs mapped from fasta file. Positions are
 #' relative to the fasta file.
 #' @export
+#' @importFrom BSgenome getSeq
 #' @family findORFs
 #' @examples
 #' # location of the example fasta file
@@ -271,12 +275,28 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
                           stopCodon = stopDefinition(1), longestORF = TRUE,
                           minimumLength = 0, is.circular = FALSE) {
 
-  if (!is(filePath, "character"))
-    stop("'filepath' must be of type character.")
-  filePath <- path.expand(filePath)
-  if (!file.exists(filePath)) stop("'file' does not exist, check working dir!")
-  gr <- findORFs_fasta(filePath, startCodon, stopCodon, minimumLength,
-                       is.circular)
+  if (is(filePath, "character")) {
+    filePath <- path.expand(filePath)
+    if (!file.exists(filePath)) stop("'file' does not exist, check working dir!",
+                                     "If you wanted to pass character sequences",
+                                     "from R, convert to DNAStringSet!")
+    gr <- findORFs_fasta(as.character(readDNAStringSet(filePath), use.names = TRUE),
+                         startCodon, stopCodon, minimumLength,
+                         is.circular)
+  } else if (class(filePath) %in% c("DNAStringSet")) {
+    if (length(filePath) == 0) return(GRanges())
+    if (is.null(names(filePath))) stop("Sequences does not have names, name them first!")
+
+    gr <- findORFs_fasta(as.character(filePath, use.names = TRUE),
+                         startCodon, stopCodon, minimumLength,
+                         is.circular)
+  } else if (class(filePath) %in% c("BSgenome")) {
+    message("Finding ORFs for all chromosomes in BSgenome")
+    gr <- findORFs_fasta(as.character(BSgenome::getSeq(filePath), use.names = TRUE),
+                         startCodon, stopCodon, minimumLength,
+                         is.circular)
+  }else stop("filePath must either be file path or DNAString/DNAStringSet!")
+
   if (longestORF) {
     gr <- longestORFs(gr)
   }

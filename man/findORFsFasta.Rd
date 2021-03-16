@@ -15,7 +15,8 @@ findORFsFasta(
 }
 \arguments{
 \item{filePath}{(character) Path to the fasta file. Can be both uppercase or
-lowercase.}
+lowercase. Or a already loaded R object of either types:
+"BSgenome" or "DNAStringSet" with named sequences}
 
 \item{startCodon}{(character vector) Possible START codons to search for.
 Check \code{\link{startDefinition}} for helper function.}
@@ -44,12 +45,13 @@ relative to the fasta file.
 }
 \description{
 Should be used for procaryote genomes or transcript sequences as fasta.
-Makes no sence for eukaryote whole genomes, since it contains splicing.
+Makes no sence for eukaryote whole genomes, since those contains splicing
+(use findMapORFs for spliced ranges).
 Searches through each fasta header and reports all ORFs found for BOTH
 sense (+) and antisense strand (-) in all frames. Name of the header will
 be used as seqnames of reported ORFs.
 Each fasta header is treated separately, and name of the sequence will
-be used as seqname in returned GRanges object. This supports circluar
+be used as seqname in returned GRanges object. This supports circular
 genomes.
 }
 \details{
