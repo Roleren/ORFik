@@ -21,7 +21,8 @@
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
 #' @param design a character vector, default "stage". The columns in the
-#' experiment that creates the comparison contrasts.
+#' ORFik experiment that represent the comparison contrasts. Usually found
+#' in "stage", "condition" or "fraction" column.
 #' @param output.dir output.dir directory to save plots,
 #' plot will be named "TE_between.png". If NULL, will not save.
 #' @param RFP_counts a SummarizedExperiment, default:
@@ -32,6 +33,11 @@
 #' countTable(df.rna, "mrna", type = "summarized"), all transcripts.
 #' Assign a subset if you don't want to analyze all genes.
 #' It is recommended to not subset, to give DESeq2 data for variance analysis.
+#' @param batch.effect, logical, default FALSE. If you believe you might have batch effects,
+#' set to TRUE, will use replicate column to represent batch effects.
+#' Batch effect usually means that you have a strong variance between
+#' biological replicates. Check PCA plot on count tables to verify if
+#' you need to set it to TRUE.
 #' @references doi: 10.1002/cpmb.108
 #' @return a data.table with 9 columns.
 #' (log fold changes, p.ajust values, group, regulation status and gene id)
@@ -55,6 +61,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           design = "stage", p.value = 0.05,
                           RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
                           RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
+                          batch.effect = FALSE,
                           plot.title = "", width = 6,
                           height = 6, dot.size = 0.4) {
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
@@ -70,8 +77,9 @@ DTEG.analysis <- function(df.rfp, df.rna,
   if (nrow(RFP_counts) != nrow(RNA_counts)) stop("counts must have equall number of rows!")
 
   # Designs
-  te.design <- as.formula(paste0("~ libtype + ", design, "+ libtype:", design))
-  main.design <- as.formula(paste0("~ ", design))
+  be <- ifelse(batch.effect, "replicate + ", "")
+  te.design <- as.formula(paste0("~ libtype + ", be, design, "+ libtype:", design))
+  main.design <- as.formula(paste0("~ ", be, design))
   # TE
   se <- cbind(assay(RFP_counts), assay(RNA_counts))
   colData <- rbind(colData(RFP_counts), colData(RNA_counts))

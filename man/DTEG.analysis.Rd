@@ -12,6 +12,7 @@ DTEG.analysis(
   p.value = 0.05,
   RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
   RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
+  batch.effect = FALSE,
   plot.title = "",
   width = 6,
   height = 6,
@@ -27,7 +28,8 @@ DTEG.analysis(
 plot will be named "TE_between.png". If NULL, will not save.}
 
 \item{design}{a character vector, default "stage". The columns in the
-experiment that creates the comparison contrasts.}
+ORFik experiment that represent the comparison contrasts. Usually found
+in "stage", "condition" or "fraction" column.}
 
 \item{p.value}{a numeric, default 0.05 in interval (0,1)
 or "" to not show.
@@ -42,6 +44,12 @@ It is recommended to not subset, to give DESeq2 data for variance analysis.}
 countTable(df.rna, "mrna", type = "summarized"), all transcripts.
 Assign a subset if you don't want to analyze all genes.
 It is recommended to not subset, to give DESeq2 data for variance analysis.}
+
+\item{batch.effect, }{logical, default FALSE. If you believe you might have batch effects,
+set to TRUE, will use replicate column to represent batch effects.
+Batch effect usually means that you have a strong variance between
+biological replicates. Check PCA plot on count tables to verify if
+you need to set it to TRUE.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
