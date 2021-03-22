@@ -64,6 +64,7 @@ relist(c(GRanges(pos, strand = "+"), GRanges(neg, strand = "-")),
 }
 }
 \examples{
+## Simple examples
 findORFs("ATGTAA")
 findORFs("ATGTTAA") # not in frame anymore
 
@@ -71,7 +72,7 @@ findORFs("ATGATGTAA") # only longest of two above
 findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 
 findORFs(c("ATGTAA", "ATGATGTAA"))
-# Get DNA sequences from ORFs
+## Get DNA sequences from ORFs
 seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
 names(seq) <- c("tx1", "tx2", "tx3")
 orfs <- findORFs(seq, longestORF = FALSE)
@@ -80,6 +81,8 @@ orf_seqs <- substr(seq[rep.int(as.integer(names(orfs)), lengths(orfs))],
                   start(orfs@unlistData), end(orfs@unlistData))
 # Convert to DNA DNAStringSet and Save as .fasta
 # writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
+## Reading from file and find ORFs
+
 }
 \seealso{
 Other findORFs: 

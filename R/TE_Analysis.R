@@ -46,9 +46,13 @@
 #' @import DESeq2
 #' @importFrom data.table rbindlist
 #' @examples
+#' ## Simple example
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
+#' ## subset to abs(LFC) < 1.5 for both rfp and rna
+#' #dt[abs(rfp) < 1.5 & abs(rna) < 1.5, Regulation := "No change"]
+#'
 #' ## Only longest isoform per gene:
 #' #tx_longest <- filterTranscripts(df.rfp, 0, 1, 0)
 #' #dt <- dt[id %in% tx_longest,]
@@ -63,7 +67,8 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
                           batch.effect = FALSE,
                           plot.title = "", width = 6,
-                          height = 6, dot.size = 0.4) {
+                          height = 6, dot.size = 0.4,
+                          relative.name = "DTEG_plot.png") {
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
     stop("df.rfp and df.rna must be ORFik experiments!")
   if (length(unique(unlist(df.rfp[, design]))) == 1)
@@ -168,7 +173,8 @@ DTEG.analysis <- function(df.rfp, df.rna,
                factor(Regulation,
                       levels = c("No change", "Translation", "Buffering", "mRNA abundance"),
                       ordered = TRUE)]
-  plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height, dot.size)
+  plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height,
+                    dot.size, relative.name = relative.name)
   return(dt.between)
 }
 

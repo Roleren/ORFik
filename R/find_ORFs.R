@@ -128,6 +128,7 @@ stopDefinition <- function(transl_table) {
 #' @export
 #' @family findORFs
 #' @examples
+#' ## Simple examples
 #' findORFs("ATGTAA")
 #' findORFs("ATGTTAA") # not in frame anymore
 #'
@@ -135,7 +136,7 @@ stopDefinition <- function(transl_table) {
 #' findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 #'
 #' findORFs(c("ATGTAA", "ATGATGTAA"))
-#' # Get DNA sequences from ORFs
+#' ## Get DNA sequences from ORFs
 #' seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
 #' names(seq) <- c("tx1", "tx2", "tx3")
 #' orfs <- findORFs(seq, longestORF = FALSE)
@@ -144,6 +145,8 @@ stopDefinition <- function(transl_table) {
 #'                   start(orfs@unlistData), end(orfs@unlistData))
 #' # Convert to DNA DNAStringSet and Save as .fasta
 #' # writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
+#' ## Reading from file and find ORFs
+#'
 findORFs <- function(seqs, startCodon =  startDefinition(1),
                      stopCodon = stopDefinition(1), longestORF = TRUE,
                      minimumLength = 0) {

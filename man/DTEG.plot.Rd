@@ -13,7 +13,8 @@ DTEG.plot(
   height = 6,
   dot.size = 0.4,
   xlim = c(-5, 5),
-  ylim = c(-10, 10)
+  ylim = c(-10, 10),
+  relative.name = "DTEG_plot.png"
 )
 }
 \arguments{
@@ -37,6 +38,10 @@ What p-value used for the analysis? Will be shown as a caption.}
 \item{xlim}{numeric vector, default c(-5, 5)}
 
 \item{ylim}{numeric vector, default c(-10, 10)}
+
+\item{relative.name}{character, Default: "DTEG_plot.png".
+Relative name of file to be saved in folder specified in output.dir.
+Change to .pdf if you want pdf file instead of png.}
 }
 \value{
 a ggplot object

@@ -11,6 +11,9 @@
 #' @param dot.size numeric, default 0.4, size of point dots in plot.
 #' @param xlim numeric vector, default c(-5, 5)
 #' @param ylim numeric vector, default c(-10, 10)
+#' @param relative.name character, Default: "DTEG_plot.png".
+#' Relative name of file to be saved in folder specified in output.dir.
+#' Change to .pdf if you want pdf file instead of png.
 #' @return a ggplot object
 #' @family TE
 #' @export
@@ -23,7 +26,8 @@ DTEG.plot <- function(dt, output.dir = NULL,
                       p.value = 0.05,
                       plot.title = "", width = 6,
                       height = 6, dot.size = 0.4,
-                      xlim = c(-5, 5), ylim = c(-10, 10)) {
+                      xlim = c(-5, 5), ylim = c(-10, 10),
+                      relative.name = "DTEG_plot.png") {
   color.values <- c("black", "orange4", "purple", "darkgreen")
   p.caption <- if (p.value != "") {
     labs(caption = paste("P-value <", p.value))
@@ -50,7 +54,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
     guides(color = guide_legend(override.aes = list(alpha = 0.8, size = 1.3)))
   plot(plot.between)
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, "DTEG_plot.png"), plot.between,
+    ggsave(file.path(output.dir, relative.name), plot.between,
            width = width, height = height, dpi = 300)
   }
   return(plot.between)

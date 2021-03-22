@@ -16,7 +16,8 @@ DTEG.analysis(
   plot.title = "",
   width = 6,
   height = 6,
-  dot.size = 0.4
+  dot.size = 0.4,
+  relative.name = "DTEG_plot.png"
 )
 }
 \arguments{
@@ -58,6 +59,10 @@ you need to set it to TRUE.}
 \item{height}{numeric, default 6 (in inches)}
 
 \item{dot.size}{numeric, default 0.4, size of point dots in plot.}
+
+\item{relative.name}{character, Default: "DTEG_plot.png".
+Relative name of file to be saved in folder specified in output.dir.
+Change to .pdf if you want pdf file instead of png.}
 }
 \value{
 a data.table with 9 columns.
@@ -84,9 +89,13 @@ forwarded is called Buffering.\cr Remember that DESeq by default can not
 do global change analysis, it can only find subsets with change in LFC.
 }
 \examples{
+## Simple example
 #df.rfp <- read.experiment("Riboseq")
 #df.rna <- read.experiment("RNAseq")
 #dt <- DTEG.analysis(df.rfp, df.rna)
+## subset to abs(LFC) < 1.5 for both rfp and rna
+#dt[abs(rfp) < 1.5 & abs(rna) < 1.5, Regulation := "No change"]
+
 ## Only longest isoform per gene:
 #tx_longest <- filterTranscripts(df.rfp, 0, 1, 0)
 #dt <- dt[id \%in\% tx_longest,]
