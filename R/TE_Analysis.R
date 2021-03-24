@@ -1,18 +1,18 @@
 #' Run differential TE analysis
 #'
 #' Creates a total of 3 DESeq models (given x is design argument input
-#' and libraryType is RNA-seq and Ribo-seq):\cr
+#'  (usually stage or condition) and libraryType is RNA-seq and Ribo-seq):\cr
 #' 1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)\cr
 #' 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
-#' 3. TE model: design = ~ library type + x + libraryType + libraryType:x
+#' 3. TE model: design = ~ x + libraryType + libraryType:x
 #' (differences between the x and libraryType groups and the interaction between them)\cr
 #' Using an equal reimplementation of the deltaTE algorithm (see reference).
 #' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
 #' be over CDS and RNA-seq over mRNAs, per transcript. \cr
 #'
 #' #' If you do not need isoform variants, subset to longest isoform in
-#' the returned object. If you do not have RNA-seq controls,
-#' run normal DESeq instead.
+#' the returned object (See examples). If you do not have RNA-seq controls,
+#' you can still use DESeq on Ribo-seq alone.
 #' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
 #' What the deltaTE plot calls intensified is here called mRNA abundance and
 #' forwarded is called Buffering.\cr Remember that DESeq by default can not
@@ -50,6 +50,7 @@
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
+#' ## Restrict DTEGs by log fold change (LFC):
 #' ## subset to abs(LFC) < 1.5 for both rfp and rna
 #' #dt[abs(rfp) < 1.5 & abs(rna) < 1.5, Regulation := "No change"]
 #'
@@ -131,7 +132,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
     suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
                                           res = res_rna, type = "normal"))
 
-    # The differential regulation groupings
+    # The differential regulation groupings (padj is padjusted)
     both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
     ## The 4 classes of genes
     forwarded <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj < p.value & res_rna$padj < p.value)]

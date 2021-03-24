@@ -19,6 +19,6 @@ an integer vector
 \description{
 Length of object / 3.
 Choose either only whole codons, or with stubs.
-For orfs stubs are not relevant, since there are no correctly defined
+ORF stubs are not relevant, since there are no correctly defined
 ORFs that are 17 bases long etc.
 }

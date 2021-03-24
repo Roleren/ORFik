@@ -68,15 +68,16 @@ Pick your region and plot \cr
 Input CAGE file if you use TSS and want improved 5' annotation.
 }
 \examples{
-
+# Toy example, will not give logical output, but shows how it works
 df <- ORFik.template.experiment()[3,] # Only third library
-#heatMapRegion(df, "TIS", outdir = "PATH/TO/SAVE/)
+#heatMapRegion(df, "TIS", outdir = "default")
+#
 # Do also TSS, add cage for specific TSS
 # heatMapRegion(df, c("TSS", "TIS"), cage = "path/to/cage.bed")
 
 # Do on pshifted reads instead of original files
-# outputLibs(df, type = "pshifted")
-# heatMapRegion(df, "TIS")
+remove.experiments(df) # Remove loaded experiment first
+# heatMapRegion(df, "TIS", type = "pshifted")
 }
 \seealso{
 Other heatmaps: 

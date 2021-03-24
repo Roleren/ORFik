@@ -581,7 +581,7 @@ longestORFs <- function(grl) {
 #'
 #' Length of object / 3.
 #' Choose either only whole codons, or with stubs.
-#' For orfs stubs are not relevant, since there are no correctly defined
+#' ORF stubs are not relevant, since there are no correctly defined
 #' ORFs that are 17 bases long etc.
 #' @param grl a \code{\link{GRangesList}} object
 #' @param as.integer a logical (TRUE), remove stub codons
