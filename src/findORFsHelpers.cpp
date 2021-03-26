@@ -41,12 +41,14 @@ vi get_index_list(const vi z, const  string& working_string,
 
 // The string-searching algorithm
 // s - the string to search, z - the scoring vector
+// To understand, look up Knut-morris-pratt and z algorithm.
 void calc_z(const string& s, vi& z)
 {
   const int len = s.size();
   z.resize(len);
 
   int l = 0, r = 0;
+  // For each position in string length l
   for (int i = 1; i < len; ++i)
     if (z[i - l] + i <= r)
       z[i] = z[i - l];
@@ -57,7 +59,7 @@ void calc_z(const string& s, vi& z)
       for (z[i] = r - i; r < len; ++r, ++z[i])
         if (s[r] != s[z[i]])
           break;
-        --r;
+      --r;
     }
 }
 

@@ -72,15 +72,22 @@ findORFs("ATGATGTAA") # only longest of two above
 findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 
 findORFs(c("ATGTAA", "ATGATGTAA"))
+
 ## Get DNA sequences from ORFs
 seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
 names(seq) <- c("tx1", "tx2", "tx3")
 orfs <- findORFs(seq, longestORF = FALSE)
-# With default names you can get sequences like this:
-orf_seqs <- substr(seq[rep.int(as.integer(names(orfs)), lengths(orfs))],
-                  start(orfs@unlistData), end(orfs@unlistData))
+
+#  you can get sequences like this:
+gr <- unlist(orfs, use.names = TRUE)
+gr <- GRanges(seqnames = names(seq)[as.integer(names(gr))],
+ ranges(gr), strand = "+")
+# Give them some proper names:
+names(gr) <- paste0("ORF_", seq.int(length(gr)), "_", seqnames(gr))
+orf_seqs <- getSeq(seq, gr)
+orf_seqs
 # Convert to DNA DNAStringSet and Save as .fasta
-# writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
+# writeXStringSet(orf_seqs, "orfs.fasta")
 ## Reading from file and find ORFs
 
 }

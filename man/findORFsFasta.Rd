@@ -70,11 +70,11 @@ orfs <- findORFsFasta(example_genome)
 # To store ORF sequences (you need indexed genome .fai file):
 fa <- FaFile(example_genome)
 names(orfs) <- paste0("ORF_", seq.int(length(orfs)), "_", seqnames(orfs))
-orfs <- groupGRangesBy(orfs) # Make GRangesList, required for output
-orf_seqs <- txSeqsFromFa(orfs, fa)
+orf_seqs <- getSeq(fa, orfs)
+# You sequences (fa), needs to have isCircular(fa) == TRUE for it to work
+# on circular wrapping ranges!
+
 # writeXStringSet(DNAStringSet(orf_seqs), "orfs.fasta")
-# To extract sequences from negative coordinates, split the 0 position
-# overlapping orfs into 2 exons in the GRangesList (one for - to 0 and 1 to +)
 }
 \seealso{
 Other findORFs: 
