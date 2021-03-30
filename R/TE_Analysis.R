@@ -10,13 +10,18 @@
 #' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
 #' be over CDS and RNA-seq over mRNAs, per transcript. \cr
 #'
-#' #' If you do not need isoform variants, subset to longest isoform in
-#' the returned object (See examples). If you do not have RNA-seq controls,
-#' you can still use DESeq on Ribo-seq alone.
+#' The respective groups are defined as this:\cr
+#' 1. Translation -  te < p.adj & rfp < p.adj &
+#' 2. Transcription -
+#' 3. mRNA abundance -
+#' 4. Buffering -
+#' See Figure 1 in the reference article for a clear definition of the groups!\cr
+#' If you do not need isoform variants, subset to longest isoform per gene
+#' either before or in the returned object (See examples).
+#' If you do not have RNA-seq controls, you can still use DESeq on Ribo-seq alone.
 #' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
-#' What the deltaTE plot calls intensified is here called mRNA abundance and
-#' forwarded is called Buffering.\cr Remember that DESeq by default can not
-#' do global change analysis, it can only find subsets with change in LFC.
+#' Remember that DESeq by default can not
+#' do global change analysis, it can only find subsets with changes in LFC!
 #' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
@@ -38,6 +43,8 @@
 #' Batch effect usually means that you have a strong variance between
 #' biological replicates. Check PCA plot on count tables to verify if
 #' you need to set it to TRUE.
+#' @param complex.categories logical, default FALSE. Seperate into more groups,
+#' will add Inverse (opposite diagonal of mRNA abundance) and Expression (only significant mRNA-seq)
 #' @references doi: 10.1002/cpmb.108
 #' @return a data.table with 9 columns.
 #' (log fold changes, p.ajust values, group, regulation status and gene id)
@@ -69,7 +76,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           batch.effect = FALSE,
                           plot.title = "", width = 6,
                           height = 6, dot.size = 0.4,
-                          relative.name = "DTEG_plot.png") {
+                          relative.name = "DTEG_plot.png", complex.categories = FALSE) {
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
     stop("df.rfp and df.rna must be ORFik experiments!")
   if (length(unique(unlist(df.rfp[, design]))) == 1)
@@ -135,22 +142,32 @@ DTEG.analysis <- function(df.rfp, df.rna,
     # The differential regulation groupings (padj is padjusted)
     both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
     ## The 4 classes of genes
+    # Forwarded are non significant in TE, diagonal line
     forwarded <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj < p.value & res_rna$padj < p.value)]
-
-    exclusive <- rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj > p.value)]
-
-    intensified <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] > 0)]]
-
-    buffered <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] < 0)]]
-    buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)],
-                  buffered)
+    # These two are the X and Y axis
+    exclusive.translation <- rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj > p.value)]
+    exclusive.expression <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj > p.value & res_rna$padj < p.value)]
+    # These are the remaining groups
+    intensified <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] > 0)]] # Called mRNA abundance
+    inverse <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] < 0)]]
+    buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)])
+    # buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)],
+    #               buffered)
 
     n <- rownames(res_te)
     Regulation <- rep("No change", nrow(res_te))
-    Regulation[n %in% forwarded] <- "Buffering"
-    Regulation[n %in% exclusive] <- "Translation"
-    Regulation[n %in% intensified] <- "mRNA abundance"
+    Regulation[n %in% forwarded] <- "Forwarded" # Old Buffering
     Regulation[n %in% buffered] <- "Buffering"
+    Regulation[n %in% inverse] <- "Inverse"
+    Regulation[n %in% exclusive.translation] <- "Translation"
+    Regulation[n %in% exclusive.expression] <- "Expression"
+    Regulation[n %in% intensified] <- "mRNA abundance"
+
+    if (!complex.categories) {
+      Regulation[n %in% exclusive.expression] <- "Buffering"
+      Regulation[n %in% inverse] <- "Buffering"
+      Regulation[n %in% forwarded] <- "Buffering"
+    }
     print(table(Regulation))
 
 
@@ -166,14 +183,12 @@ DTEG.analysis <- function(df.rfp, df.rna,
                                 rfp.padj = res_ribo$padj,
                                 te.padj = res_te$padj
                      )))
-  }#, dds.te = dds.te, ddsMat_ribo = ddsMat_ribo, ddsMat_rna = ddsMat_rna, design = design)
-  #dt.between <- rbindlist(dt.between)
-  # Plot
-
+  }
   dt.between[, Regulation :=
                factor(Regulation,
-                      levels = c("No change", "Translation", "Buffering", "mRNA abundance"),
+                      levels = c("No change", "Translation", "Buffering", "mRNA abundance", "Expression", "Forwarded", "Inverse"),
                       ordered = TRUE)]
+  # Plot the result
   plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height,
                     dot.size, relative.name = relative.name)
   return(dt.between)

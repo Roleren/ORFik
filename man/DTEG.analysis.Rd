@@ -17,7 +17,8 @@ DTEG.analysis(
   width = 6,
   height = 6,
   dot.size = 0.4,
-  relative.name = "DTEG_plot.png"
+  relative.name = "DTEG_plot.png",
+  complex.categories = FALSE
 )
 }
 \arguments{
@@ -63,6 +64,9 @@ you need to set it to TRUE.}
 \item{relative.name}{character, Default: "DTEG_plot.png".
 Relative name of file to be saved in folder specified in output.dir.
 Change to .pdf if you want pdf file instead of png.}
+
+\item{complex.categories}{logical, default FALSE. Seperate into more groups,
+will add Inverse (opposite diagonal of mRNA abundance) and Expression (only significant mRNA-seq)}
 }
 \value{
 a data.table with 9 columns.
@@ -80,13 +84,18 @@ You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
 be over CDS and RNA-seq over mRNAs, per transcript. \cr
 }
 \details{
-#' If you do not need isoform variants, subset to longest isoform in
-the returned object (See examples). If you do not have RNA-seq controls,
-you can still use DESeq on Ribo-seq alone.
+The respective groups are defined as this:\cr
+1. Translation -  te < p.adj & rfp < p.adj &
+2. Transcription -
+3. mRNA abundance -
+4. Buffering -
+See Figure 1 in the reference article for a clear definition of the groups!\cr
+If you do not need isoform variants, subset to longest isoform per gene
+either before or in the returned object (See examples).
+If you do not have RNA-seq controls, you can still use DESeq on Ribo-seq alone.
 \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
-What the deltaTE plot calls intensified is here called mRNA abundance and
-forwarded is called Buffering.\cr Remember that DESeq by default can not
-do global change analysis, it can only find subsets with change in LFC.
+Remember that DESeq by default can not
+do global change analysis, it can only find subsets with changes in LFC!
 }
 \examples{
 ## Simple example

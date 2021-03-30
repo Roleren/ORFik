@@ -1,4 +1,6 @@
 #' Plot DTEG result
+#'
+#' For explanation of plot catagories, see \code{\link{DTEG.analysis}}
 #' @param dt a data.table with the results from \code{\link{DTEG.analysis}}
 #' @param output.dir a character path, default NULL(no save), or a directory
 #' to save to a file will be called "DTEG_plot.png"
@@ -28,7 +30,12 @@ DTEG.plot <- function(dt, output.dir = NULL,
                       height = 6, dot.size = 0.4,
                       xlim = c(-5, 5), ylim = c(-10, 10),
                       relative.name = "DTEG_plot.png") {
-  color.values <- c("black", "orange4", "purple", "darkgreen")
+  color.values <- c("black", "orange4", "purple", "darkgreen", "blue", "yellow", "aquamarine")
+  regulation.levels <- c("No change", "Translation", "Buffering", "mRNA abundance", "Expression", "Forwarded", "Inverse")
+  dt[, Regulation :=
+               factor(Regulation,
+                      levels = regulation.levels,
+                      ordered = TRUE)]
   p.caption <- if (p.value != "") {
     labs(caption = paste("P-value <", p.value))
   } else NULL
@@ -45,6 +52,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
     theme_minimal() +
     geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +
     geom_vline(aes(xintercept =  0), alpha = 0.2, color = "red") +
+    geom_abline(alpha = 0.2, color = "gray67", linetype = "dashed", intercept = 0, slope = 1) +
     xlab("mRNA (log2 fold change)") +
     ylab("RFP (log2 fold change)") +
     p.title +

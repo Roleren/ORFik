@@ -47,7 +47,7 @@ Change to .pdf if you want pdf file instead of png.}
 a ggplot object
 }
 \description{
-Plot DTEG result
+For explanation of plot catagories, see \code{\link{DTEG.analysis}}
 }
 \examples{
 #df.rfp <- read.experiment("Riboseq")
