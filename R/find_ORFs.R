@@ -135,7 +135,7 @@ stopDefinition <- function(transl_table) {
 #' findORFs("ATGATGTAA") # only longest of two above
 #' findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 #'
-#' findORFs(c("ATGTAA", "ATGATGTAA"))
+#' findORFs(c("ATGTAA", "ATGATGTAA")) # 1 ORF per transcript
 #'
 #' ## Get DNA sequences from ORFs
 #' seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
@@ -150,10 +150,10 @@ stopDefinition <- function(transl_table) {
 #' names(gr) <- paste0("ORF_", seq.int(length(gr)), "_", seqnames(gr))
 #' orf_seqs <- getSeq(seq, gr)
 #' orf_seqs
-#' # Convert to DNA DNAStringSet and Save as .fasta
+#' # Save as .fasta (orf_seqs must be of type DNAStringSet)
 #' # writeXStringSet(orf_seqs, "orfs.fasta")
 #' ## Reading from file and find ORFs
-#'
+#' #findORFs(readDNAStringSet("path/to/transcripts.fasta"))
 findORFs <- function(seqs, startCodon =  startDefinition(1),
                      stopCodon = stopDefinition(1), longestORF = TRUE,
                      minimumLength = 0) {
@@ -206,10 +206,11 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' # lets assume that this sequence comes from two exons as follows
 #' # Then we need to use findMapORFs instead of findORFs,
 #' #  for splicing information
-#' gr <- GRanges(seqnames = rep("1", 2), # chromosome 1
+#' gr <- GRanges(seqnames = "1", # chromosome 1
 #'               ranges = IRanges(start = c(21, 10), end = c(23, 15)),
-#'               strand = rep("-", 2), names = rep("tx1", 2))
-#' grl <- GRangesList(tx1 = gr)
+#'               strand = "-", #
+#'               names = "tx1") #From transcript 1 on chr 1
+#' grl <- GRangesList(tx1 = gr) # 1 transcript with 2 exons
 #' findMapORFs(grl, seqs) # ORFs are properly mapped to its genomic coordinates
 #'
 #' grl <- c(grl, grl)

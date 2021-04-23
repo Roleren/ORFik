@@ -71,7 +71,7 @@ findORFs("ATGTTAA") # not in frame anymore
 findORFs("ATGATGTAA") # only longest of two above
 findORFs("ATGATGTAA", longestORF = FALSE) # two ORFs
 
-findORFs(c("ATGTAA", "ATGATGTAA"))
+findORFs(c("ATGTAA", "ATGATGTAA")) # 1 ORF per transcript
 
 ## Get DNA sequences from ORFs
 seq <- DNAStringSet(c("ATGTAA", "AAA", "ATGATGTAA"))
@@ -86,10 +86,10 @@ gr <- GRanges(seqnames = names(seq)[as.integer(names(gr))],
 names(gr) <- paste0("ORF_", seq.int(length(gr)), "_", seqnames(gr))
 orf_seqs <- getSeq(seq, gr)
 orf_seqs
-# Convert to DNA DNAStringSet and Save as .fasta
+# Save as .fasta (orf_seqs must be of type DNAStringSet)
 # writeXStringSet(orf_seqs, "orfs.fasta")
 ## Reading from file and find ORFs
-
+#findORFs(readDNAStringSet("path/to/transcripts.fasta"))
 }
 \seealso{
 Other findORFs: 

@@ -10,11 +10,14 @@
 #' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
 #' be over CDS and RNA-seq over mRNAs, per transcript. \cr
 #'
-#' The respective groups are defined as this:\cr
-#' 1. Translation -  te < p.adj & rfp < p.adj &
-#' 2. Transcription -
-#' 3. mRNA abundance -
-#' 4. Buffering -
+#' The respective groups are defined as this
+#' (given a user defined p value, shown here as 0.05):\cr
+#' 1. Translation -  te.p.adj < 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
+#' 2. mRNA abundance - te.p.adj > 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
+#' 3. Buffering - te.p.adj < 0.05 & rfp.p.adj > 0.05 & rna.p.adj > 0.05\cr\cr
+#'
+#' Buffering also adds some close group which are split up if you set
+#' complex.categories = TRUE (You will then get in addition)
 #' See Figure 1 in the reference article for a clear definition of the groups!\cr
 #' If you do not need isoform variants, subset to longest isoform per gene
 #' either before or in the returned object (See examples).
@@ -96,7 +99,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
   # TE
   se <- cbind(assay(RFP_counts), assay(RNA_counts))
   colData <- rbind(colData(RFP_counts), colData(RNA_counts))
-  combined_se <- SummarizedExperiment(se,
+  combined_se <- SummarizedExperiment(list(counts = se),
                                       rowRanges = rowRanges(RFP_counts),
                                       colData = colData)
   #combined_se <- combined_se[rowMeans(assay(combined_se)) > 1,]
@@ -189,6 +192,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
                       levels = c("No change", "Translation", "Buffering", "mRNA abundance", "Expression", "Forwarded", "Inverse"),
                       ordered = TRUE)]
   # Plot the result
+  message("----------------------"); message("Plotting all results")
   plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height,
                     dot.size, relative.name = relative.name)
   return(dt.between)

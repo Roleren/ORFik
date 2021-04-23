@@ -68,10 +68,11 @@ findORFs(seqs)
 # lets assume that this sequence comes from two exons as follows
 # Then we need to use findMapORFs instead of findORFs,
 #  for splicing information
-gr <- GRanges(seqnames = rep("1", 2), # chromosome 1
+gr <- GRanges(seqnames = "1", # chromosome 1
               ranges = IRanges(start = c(21, 10), end = c(23, 15)),
-              strand = rep("-", 2), names = rep("tx1", 2))
-grl <- GRangesList(tx1 = gr)
+              strand = "-", #
+              names = "tx1") #From transcript 1 on chr 1
+grl <- GRangesList(tx1 = gr) # 1 transcript with 2 exons
 findMapORFs(grl, seqs) # ORFs are properly mapped to its genomic coordinates
 
 grl <- c(grl, grl)
