@@ -336,3 +336,11 @@ test_that("pmapToTranscriptF works as intended", {
   res <- pmapToTranscriptF(ranges(stopSites(grl, asGR = TRUE)), grl)
   expect_equal(end(res), c(17,18))
 })
+
+test_that("pmapFromTranscriptF works as intended", {
+  temp <- pmapToTranscriptF(grl, grl)
+  x <- ranges(unlist(temp, use.names = T))
+  names(x) <- c(1,2)
+  res <- pmapFromTranscriptF(x, grl)
+  expect_equal(ranges(res), ranges(grl))
+})

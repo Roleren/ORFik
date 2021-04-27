@@ -145,16 +145,42 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
 #' @inheritParams pmapToTranscriptF
 #' @return a GRangesList in transcript coordinates
 #' @family ExtendGenomicRanges
+#' @export
+#' @examples
+#' seqname <- c("tx1", "tx2", "tx3")
+#' seqs <- c("ATGGGTATTTATA", "AAAAA", "ATGGGTAATA")
+#' grIn1 <- GRanges(seqnames = "1",
+#'                  ranges = IRanges(start = c(21, 10), end = c(23, 19)),
+#'                  strand = "-")
+#' grIn2 <- GRanges(seqnames = "1",
+#'                  ranges = IRanges(start = c(1), end = c(5)),
+#'                  strand = "-")
+#' grIn3 <- GRanges(seqnames = "1",
+#'                  ranges = IRanges(start = c(1010), end = c(1019)),
+#'                  strand = "-")
+#' grl <- GRangesList(grIn1, grIn2, grIn3)
+#' names(grl) <- seqname
+#' # Find ORFs
+#' test_ranges <- findMapORFs(grl, seqs,
+#'                  "ATG|TGG|GGG",
+#'                  "TAA|AAT|ATA",
+#'                  longestORF = FALSE,
+#'                  minimumLength = 0)
+#' # Genomic coordinates ORFs
+#' test_ranges
+#' # Transcript coordinate ORFs
+#' asTX(test_ranges, reference = grl)
+#' # seqnames will here be index of transcript it came from
 #'
 asTX <- function(grl, reference,
                  ignore.strand = FALSE,
                  x.is.sorted = TRUE,
                  tx.is.sorted = TRUE) {
-  orfNames <- txNames(grl, reference)
+  orfNames <- txNames(grl, reference) # Find tx they came from
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
     stop("not all references are present, so can not map to transcripts.")
   }
-  reference <- reference[orfNames]
+  reference <- reference[orfNames] # Duplicate needed transcripts
   names(reference) <- NULL
   return(pmapToTranscriptF(grl, reference,
                            ignore.strand = ignore.strand,
@@ -195,19 +221,40 @@ asTX <- function(grl, reference,
 #' @return object of same class as input x, names from ranges are kept.
 #' @export
 #' @examples
-#' ranges <- IRanges(start = c(5, 6), end = c(10, 10))
-#' seqnames = rep("chr1", 2)
-#' strands = rep("-", 2)
-#' grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
-#'              c(1, 1))
-#' ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
-#' pmapFromTranscriptF(ranges, grl, TRUE)
+#' library(GenomicFeatures)
+#' # Need 2 ranges object, the target region and whole transcript
+#' # x is target region
+#' x <- GRanges("chr1", IRanges(start = c(26, 29), end = c(27, 29)), "+")
+#' names(x) <- rep("tx1_ORF1", length(x))
+#' x <- groupGRangesBy(x)
+#' # tx is the whole region
+#' tx_gr <- GRanges("chr1", IRanges(c(5, 29), c(27, 30)), "+")
+#' names(tx_gr) <- rep("tx1", length(tx_gr))
+#' tx <- groupGRangesBy(tx_gr)
+#' pmapToTranscriptF(x, tx)
+#' pmapToTranscripts(x, tx)
 #'
+#' # Reuse names for matching
+#' x <- GRanges("chr1", IRanges(start = c(26, 29, 5), end = c(27, 29, 18)), "+")
+#' names(x) <- c(rep("tx1_1", 2), "tx1_2")
+#' x <- groupGRangesBy(x)
+#' tx1_2 <- GRanges("chr1", IRanges(c(4, 28), c(26, 31)), "+")
+#' names(tx1_2) <- rep("tx1", 2)
+#' tx <- c(tx, groupGRangesBy(tx1_2))
+#'
+#' a <- pmapToTranscriptF(x, tx[txNames(x)])
+#' b <- pmapToTranscripts(x, tx[txNames(x)])
+#' identical(a, b)
+#' seqinfo(a)
+#' # A note here, a & b only have 1 seqlength, even though the 2 "tx1"
+#' # are different in size. This is an artifact of using duplicated names.
+#'
+#' ## Also look at the asTx for a similar useful function.
 pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
                               x.is.sorted = TRUE, tx.is.sorted = TRUE) {
   if ((length(x) == 0)) return(x)
 
-  if (length(x) != length(transcripts)) {
+  if (length(x) != length(transcripts)) { # Recycling
     if (length(x) == 1) {
       x <- rep(x, length(transcripts))
     } else if(length(transcripts) == 1) {
@@ -237,7 +284,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   if (is(x, "IRangesList")) {
     indices <- groupings(x)
     xWidths <- as.integer(sum(xWidths))
-    x = unlist(x, use.names = FALSE)
+    x <- unlist(x, use.names = FALSE)
     names(x) <- NULL
   } else if (is(x, "IRanges")) {
     indices <- seq.int(1, length(x))
@@ -304,7 +351,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
                 index = vector("integer"))
   }
 
-  # reverse strand
+  # reverse strand (c++ code)
   if (any(!txStrand)) {
     neg <- pmapToTranscriptsCPP(start(x)[!xStrand], end(x)[!xStrand],
                                 start(tx)[!txStrand], end(tx)[!txStrand],
@@ -325,9 +372,10 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   result <- IRanges(xStart, xEnd)
 
 
-  if (is.gr_or_grl(xClass)) {
+  if (is.gr_or_grl(xClass)) { # If it was GR object, recreate
     newSeqnames <- if (!is.null(oldTxNames)) {
       oldTxNames
+      # TODO: check that bellow seq.int is valid
     } else seq.int(length(result))
     newStrand <- if (ignore.strand) {
       "*"
@@ -336,17 +384,21 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     } else as.character(strand(transcripts))[indices]
     result <- GRanges(seqnames = newSeqnames[indices],
                       ranges = result, strand = newStrand)
-    # Fix unmapped, TODO: remove this when not needed
+    # TODO: remove this when not needed
     unmapped <- start(result) == 0
     if (!ignore.strand) # Check strand correction only if not ignore
       unmapped <- unmapped | (strand(result) != xStrandOriginal)
     if (any(unmapped)) {
       strand(result)[unmapped] <- "*"
     }
+
+    seqlevels.used <- seqlevels(result)
+    if(is.null(names(transcripts))) {
+      seqlevels.used <- as.integer(seqlevels.used)
+    }
     seqlengths(result) <- if (is.grl(transcripts)) {
-      #TODO: fix bug for duplicated names
-      widthPerGroup(transcripts)
-    } else as.integer(width(transcripts))
+      widthPerGroup(transcripts[seqlevels.used])
+    } else as.integer(width(transcripts[seqlevels.used]))
   }
 
   if (is.grl(xClass) | is(xOriginal, "IRangesList")) {
@@ -503,7 +555,7 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 
 #' Get window region of GRanges object
 #'
-#' Per GRanges input (gr) of single position inputs,
+#' Per GRanges input (gr) of single position inputs (center point),
 #' create a GRangesList window output of specified
 #' upstream, downstream region relative to some transcript "tx". \cr
 #' If downstream is 20, it means the window will start 20 downstream of
@@ -544,7 +596,8 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 #' # With multiple extensions downstream
 #' ORF <- rep(ORF, 2)
 #' names(ORF)[2] <- "tx1_2"
-#' windowPerGroup(ORF, tx, upstream = 0, downstream = c(3, 5))
+#' windowPerGroup(ORF, tx, upstream = 0, downstream = c(2, 5))
+#' # The last one gives 2nd and (1st and 2nd) codon as two groups
 #'
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   g <- asTX(gr, tx, tx.is.sorted = TRUE)

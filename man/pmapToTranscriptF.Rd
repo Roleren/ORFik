@@ -53,12 +53,33 @@ Much faster and uses less memory.
 Implemented as dynamic program optimized c++ code.
 }
 \examples{
-ranges <- IRanges(start = c(5, 6), end = c(10, 10))
-seqnames = rep("chr1", 2)
-strands = rep("-", 2)
-grl <- split(GRanges(seqnames, IRanges(c(85, 70), c(89, 82)), strands),
-             c(1, 1))
-ranges <- split(ranges, c(1,1)) # both should be mapped to transcript 1
-pmapFromTranscriptF(ranges, grl, TRUE)
+library(GenomicFeatures)
+# Need 2 ranges object, the target region and whole transcript
+# x is target region
+x <- GRanges("chr1", IRanges(start = c(26, 29), end = c(27, 29)), "+")
+names(x) <- rep("tx1_ORF1", length(x))
+x <- groupGRangesBy(x)
+# tx is the whole region
+tx_gr <- GRanges("chr1", IRanges(c(5, 29), c(27, 30)), "+")
+names(tx_gr) <- rep("tx1", length(tx_gr))
+tx <- groupGRangesBy(tx_gr)
+pmapToTranscriptF(x, tx)
+pmapToTranscripts(x, tx)
 
+# Reuse names for matching
+x <- GRanges("chr1", IRanges(start = c(26, 29, 5), end = c(27, 29, 18)), "+")
+names(x) <- c(rep("tx1_1", 2), "tx1_2")
+x <- groupGRangesBy(x)
+tx1_2 <- GRanges("chr1", IRanges(c(4, 28), c(26, 31)), "+")
+names(tx1_2) <- rep("tx1", 2)
+tx <- c(tx, groupGRangesBy(tx1_2))
+
+a <- pmapToTranscriptF(x, tx[txNames(x)])
+b <- pmapToTranscripts(x, tx[txNames(x)])
+identical(a, b)
+seqinfo(a)
+# A note here, a & b only have 1 seqlength, even though the 2 "tx1"
+# are different in size. This is an artifact of using duplicated names.
+
+## Also look at the asTx for a similar useful function.
 }

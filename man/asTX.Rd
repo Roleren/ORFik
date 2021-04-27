@@ -49,6 +49,33 @@ Similar to GenomicFeatures' pmapToTranscripts, but in this version the
 grl ranges are compared to reference ranges with same name, not
 by index. And it has a security fix.
 }
+\examples{
+seqname <- c("tx1", "tx2", "tx3")
+seqs <- c("ATGGGTATTTATA", "AAAAA", "ATGGGTAATA")
+grIn1 <- GRanges(seqnames = "1",
+                 ranges = IRanges(start = c(21, 10), end = c(23, 19)),
+                 strand = "-")
+grIn2 <- GRanges(seqnames = "1",
+                 ranges = IRanges(start = c(1), end = c(5)),
+                 strand = "-")
+grIn3 <- GRanges(seqnames = "1",
+                 ranges = IRanges(start = c(1010), end = c(1019)),
+                 strand = "-")
+grl <- GRangesList(grIn1, grIn2, grIn3)
+names(grl) <- seqname
+# Find ORFs
+test_ranges <- findMapORFs(grl, seqs,
+                 "ATG|TGG|GGG",
+                 "TAA|AAT|ATA",
+                 longestORF = FALSE,
+                 minimumLength = 0)
+# Genomic coordinates ORFs
+test_ranges
+# Transcript coordinate ORFs
+asTX(test_ranges, reference = grl)
+# seqnames will here be index of transcript it came from
+
+}
 \seealso{
 Other ExtendGenomicRanges: 
 \code{\link{coveragePerTiling}()},

@@ -170,7 +170,7 @@ test_that("findORFs works as intended for plus strand", {
 test_that("findMapORFs works as intended for minus strand", {
 
   #longestORF F with different frames
-  test_ranges <-findMapORFs(grl,seqs,
+  test_ranges <-findMapORFs(grl, seqs,
                             "ATG|TGG|GGG",
                             "TAA|AAT|ATA",
                             longestORF = FALSE,

@@ -24,7 +24,7 @@ downstream from}
 a GRanges, or GRangesList object if any group had > 1 exon.
 }
 \description{
-Per GRanges input (gr) of single position inputs,
+Per GRanges input (gr) of single position inputs (center point),
 create a GRangesList window output of specified
 upstream, downstream region relative to some transcript "tx". \cr
 If downstream is 20, it means the window will start 20 downstream of
@@ -54,7 +54,8 @@ windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 # With multiple extensions downstream
 ORF <- rep(ORF, 2)
 names(ORF)[2] <- "tx1_2"
-windowPerGroup(ORF, tx, upstream = 0, downstream = c(3, 5))
+windowPerGroup(ORF, tx, upstream = 0, downstream = c(2, 5))
+# The last one gives 2nd and (1st and 2nd) codon as two groups
 
 }
 \seealso{
