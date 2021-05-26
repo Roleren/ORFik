@@ -4,7 +4,7 @@
 \alias{STAR.multiQC}
 \title{Create STAR multiQC plot and table}
 \usage{
-STAR.multiQC(folder, type = "aligned")
+STAR.multiQC(folder, type = "aligned", filetype = ".pdf")
 }
 \arguments{
 \item{folder}{path to LOGS folder of ORFik STAR runs. Can also be the path
@@ -16,6 +16,9 @@ parent directory. If no LOGS folder is found it can check for a folder
 \item{type}{a character path, default "aligned".
 Which subfolder to check for. If you want log files for contamination
 do type = "contaminants_depletion"}
+
+\item{filetype}{character, default ".pdf". Which format to save QC plot.
+Alternative: ".png".}
 }
 \value{
 a data.table with all information from STAR runs,

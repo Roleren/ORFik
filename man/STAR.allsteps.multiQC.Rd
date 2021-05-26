@@ -4,7 +4,7 @@
 \alias{STAR.allsteps.multiQC}
 \title{Create STAR multiQC plot and table}
 \usage{
-STAR.allsteps.multiQC(folder, steps = "auto")
+STAR.allsteps.multiQC(folder, steps = "auto", filetype = ".pdf")
 }
 \arguments{
 \item{folder}{path to main output folder of STAR run. The folder that contains
@@ -13,6 +13,9 @@ use for summarized statistics.}
 
 \item{steps}{a character, default "auto". Find which steps you did.
 If manual, a combination of "tr-co-ge". See STAR alignment functions for description.}
+
+\item{filetype}{character, default ".pdf". Which format to save QC plot.
+Alternative: ".png".}
 }
 \value{
 data.table of main statistics, plots and data saved to disc. Named:

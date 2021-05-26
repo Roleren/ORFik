@@ -8,6 +8,8 @@
 #' use for summarized statistics.
 #' @param steps a character, default "auto". Find which steps you did.
 #' If manual, a combination of "tr-co-ge". See STAR alignment functions for description.
+#' @param filetype character, default ".pdf". Which format to save QC plot.
+#' Alternative: ".png".
 #' @return data.table of main statistics, plots and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table merge.data.table
@@ -100,6 +102,8 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", filetype = ".pdf") {
 #' @param type a character path, default "aligned".
 #' Which subfolder to check for. If you want log files for contamination
 #' do type = "contaminants_depletion"
+#' @param filetype character, default ".pdf". Which format to save QC plot.
+#' Alternative: ".png".
 #' @return a data.table with all information from STAR runs,
 #'  plot and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
