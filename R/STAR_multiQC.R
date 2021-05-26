@@ -13,7 +13,7 @@
 #' @importFrom data.table merge.data.table
 #' @family STAR
 #' @export
-STAR.allsteps.multiQC <- function(folder, steps = "auto") {
+STAR.allsteps.multiQC <- function(folder, steps = "auto", filetype = ".pdf") {
   if (steps == "auto") {
     steps <- paste(ifelse(dir.exists(file.path(folder, "aligned/")), "ge", ""),
                    ifelse(dir.exists(file.path(folder, "contaminants_depletion/")), "co", ""),
@@ -27,7 +27,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
   res <- NULL
   if (1 %in% grep("ge", steps)){
     # If genome alignment done
-    aligned <- STAR.multiQC(folder)
+    aligned <- STAR.multiQC(folder, filetype = filetype)
     aligned <- aligned[, c("sample", "sample_id",
                            "total mapped reads %", "total mapped reads #",
                            "Uniquely mapped reads %","Uniquely mapped reads #",
@@ -37,7 +37,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
   }
   if (1 %in% grep("co", steps)) {
     # If contamination depletion was done
-    co <- STAR.multiQC(folder, "contaminants_depletion")
+    co <- STAR.multiQC(folder, "contaminants_depletion", filetype = filetype)
     co <- co[, c("sample",
                  "total mapped reads %", "total mapped reads #",
                  "Uniquely mapped reads %","Uniquely mapped reads #",
@@ -106,7 +106,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto") {
 #' @importFrom data.table melt
 #' @family STAR
 #' @export
-STAR.multiQC <- function(folder, type = "aligned") {
+STAR.multiQC <- function(folder, type = "aligned", filetype = ".pdf") {
   if (!(type %in% c("aligned", "contaminants_depletion")))
       stop("type must be either aligned or contaminants_depletion")
   if (!dir.exists(folder)) stop("folder does not specify existing directory!")
@@ -117,7 +117,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
     new_path <- ifelse(dir.exists(file.path(folder, type, "LOGS/")),
                        file.path(folder, type, "LOGS/"),
                        file.path(folder, "LOGS/"))
-    return(STAR.multiQC(new_path, type = type))
+    return(STAR.multiQC(new_path, type = type, filetype = filetype))
   }
   message("Runing alignment MultiQC")
   # Read log files 1 by 1 (only data column)
@@ -172,7 +172,7 @@ STAR.multiQC <- function(folder, type = "aligned") {
     scale_y_log10() +
     theme_minimal()
 
-  ggsave(file.path(folder, "00_STAR_LOG_plot.png"), gg_STAR,
+  ggsave(file.path(folder, "00_STAR_LOG_plot", filetype), gg_STAR,
          width = 18, height = 9)
   return(dt_f)
 }
