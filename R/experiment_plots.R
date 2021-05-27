@@ -21,7 +21,7 @@
 #' if you make several plots in the same folder,
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
-#' @param format default (".png"), do ".pdf" if you want as pdf
+#' @param plot.ext default (".pdf"), do ".png" if you want as png
 #' @param type a character(default: "bedoc"), load files in experiment
 #' or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
 #' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
@@ -43,7 +43,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(cds, FALSE)),
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
-                             dfr = NULL, idName = "", format = ".png",
+                             dfr = NULL, idName = "", plot.ext = ".pdf",
                              type = "ofst", is.sorted = FALSE,
                              BPPARAM = bpparam()) {
   if (windowSize != 100)
@@ -87,20 +87,20 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
         title <- paste0(title, " RNA-normalized")
       }
       a <- bplapply(scores, function(s, coverage, colors, title,
-                                            idName, outdir, format, df) {
+                                            idName, outdir, plot.ext, df) {
         message(s)
         a <- windowCoveragePlot(coverage, scoring = s, colors = colors,
                                 title = title)
         if (!is.null(outdir)) {
           idName <- ifelse(idName == "", "", paste0("_", idName))
           ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_all_", s,
-                                         idName, format)),
+                                         idName, plot.ext)),
                  a,
                  height = 10)
         }
         return(a)
       }, coverage = coverage, colors = colors, title = title,
-      idName = idName, outdir = outdir, format = format, df = df,
+      idName = idName, outdir = outdir, plot.ext = plot.ext, df = df,
       BPPARAM = BPPARAM)
     }
   }
@@ -157,7 +157,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
                        title = "Coverage metaplot",
                        windowSize = 100,
                        returnPlot = is.null(outdir),
-                       dfr = NULL, idName = "", format = ".png",
+                       dfr = NULL, idName = "", plot.ext = ".pdf",
                        type = "ofst", BPPARAM = bpparam()) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
@@ -184,7 +184,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
       if (!is.null(outdir)) {
         idName <- ifelse(idName == "", "", paste0("_", idName))
         ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_tx_all_", s,
-                                       idName, format)), a,
+                                       idName, plot.ext)), a,
                height = 10)
       }
     }
@@ -266,14 +266,14 @@ rnaNormalize <- function(coverage, df, dfr = NULL, tx, normalizeMode = "position
 #' @param plotFunction Which plot function, default: windowCoveragePlot
 #' @return NULL (or ggplot object if returnCoverage is TRUE)
 plotHelper <- function(coverage, df, outdir, scores, returnCoverage = FALSE,
-                       title = "coverage metaplot", colors = c("skyblue4", "orange"),
+                       title = "coverage metaplot", plot.ext = ".pdf", colors = c("skyblue4", "orange"),
                        plotFunction = "windowCoveragePlot") {
   if (!is.null(outdir)) {
     for(s in scores) {
       stage <- df$stage[1]
       type <- df$type[1]
       sample_name <- paste0(stage, "_", type, "_", s) # What happens on cds ?
-      outName <- paste0(outdir, sample_name, ".png")
+      outName <- paste0(outdir, sample_name, plot.ext)
       if (plotFunction == "windowCoveragePlot") {
         windowCoveragePlot(coverage, output = outName, scoring = s,
                            title = title, colors = colors)

@@ -11,7 +11,7 @@ heatMapRegion(
   scores = c("transcriptNormalized", "sum"),
   type = "ofst",
   cage = NULL,
-  format = ".png",
+  plot.ext = ".pdf",
   acceptedLengths = 21:75,
   upstream = c(50, 30),
   downstream = c(29, 69),
@@ -43,7 +43,7 @@ either "default", usually bam format (the one you gave to experiment),
 \code{\link{GAlignments}} preloaded file of CAGE data. Only used if
 "TSS" is defined as region, to redefine 5' leaders.}
 
-\item{format}{a character, default ".png", alternative ".pdf"}
+\item{format}{a character, default ".pdf", alternative ".png"}
 
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}

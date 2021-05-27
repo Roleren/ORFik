@@ -143,7 +143,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' # heatMapRegion(df, "TIS", type = "pshifted")
 heatMapRegion <- function(df, region = "TIS", outdir = "default",
                           scores = c("transcriptNormalized", "sum"),
-                          type = "ofst", cage = NULL, format = ".png",
+                          type = "ofst", cage = NULL, plot.ext = ".pdf",
                           acceptedLengths = 21:75, upstream = c(50, 30),
                           downstream = c(29, 69),
                           shifting = c("5prime", "3prime")) {
@@ -205,7 +205,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' @param plot.together logical (default: FALSE), plot all in 1 plot (if TRUE)
 #' @param shifting a character, default c("5prime", "3prime"), can also be
 #' either or NULL (no shifting of reads)
-#' @param format a character, default ".png", alternative ".pdf"
+#' @param plot.ext a character, default ".pdf", alternative ".png"
 #' @param upstream 1 or 2 integers, default c(50, 30), how long upstream from 0
 #' should window extend (first index is 5' end extension, second is 3' end extension).
 #' If only 1 shifting, only 1 value should be given, if two are given will use first.
@@ -221,7 +221,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstream,
                      zeroPosition = upstream, acceptedLengths = NULL, type = "ofst",
                      legendPos = "right", colors = "default", addFracPlot = TRUE,
-                     location = "TIS", shifting = NULL, skip.last = FALSE, format = ".png",
+                     location = "TIS", shifting = NULL, skip.last = FALSE, plot.ext = ".pdf",
                      plot.together = TRUE, title = TRUE) {
 
 
@@ -249,8 +249,8 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
           print(paste(i, shift, score))
           out <- paste0(outdir, df@experiment,"_hm_", location, "_",i , "_")
           out <- ifelse(!is.null(shifting),
-                        paste0(out, shift, "_", score, format),
-                        paste0(out, score, format))
+                        paste0(out, shift, "_", score, plot.ext),
+                        paste0(out, score, plot.ext))
 
           plot <- heatMap_single(region, tx, reads = get(i), outdir = out,
                                  shifting = shift, scores = score, upstream = up, downstream = down,
@@ -266,7 +266,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
     if (plot.together) {
       ncols <- max(1, length(shifting))
       final <- gridExtra::grid.arrange(grobs = heatmapList, ncol = ncols)
-      ggsave(paste0(outdir, df@experiment, "_hm_combined_", location, format),
+      ggsave(paste0(outdir, df@experiment, "_hm_combined_", location, plot.ext),
              plot = final, width = 5*ncols, height = ceiling(5.5*(length(heatmapList) / ncols)),
              limitsize = FALSE)
     }

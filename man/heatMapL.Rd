@@ -21,7 +21,7 @@ heatMapL(
   location = "TIS",
   shifting = NULL,
   skip.last = FALSE,
-  format = ".png",
+  plot.ext = ".pdf",
   plot.together = TRUE,
   title = TRUE
 )
@@ -81,7 +81,7 @@ either or NULL (no shifting of reads)}
 
 \item{skip.last}{skip top(highest) read length, default FALSE}
 
-\item{format}{a character, default ".png", alternative ".pdf"}
+\item{format}{a character, default ".pdf", alternative ".png"}
 
 \item{plot.together}{logical (default: FALSE), plot all in 1 plot (if TRUE)}
 

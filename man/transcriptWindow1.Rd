@@ -14,7 +14,7 @@ transcriptWindow1(
   returnPlot = is.null(outdir),
   dfr = NULL,
   idName = "",
-  format = ".png",
+  plot.ext = ".pdf",
   type = "ofst",
   BPPARAM = bpparam()
 )
@@ -46,7 +46,7 @@ if you make several plots in the same folder,
 and same experiment, like splitting transcripts in two groups like
 targets / nontargets etc. (default: "")}
 
-\item{format}{default (".png"), do ".pdf" if you want as pdf}
+\item{plot.ext}{default (".pdf"), do ".png" if you want as png}
 
 \item{type}{a character(default: "bedoc"), load files in experiment
 or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.

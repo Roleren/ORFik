@@ -14,7 +14,7 @@ DTEG.plot(
   dot.size = 0.4,
   xlim = c(-5, 5),
   ylim = c(-10, 10),
-  relative.name = "DTEG_plot.png"
+  relative.name = "DTEG_plot.pdf"
 )
 }
 \arguments{

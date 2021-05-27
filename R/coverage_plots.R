@@ -190,12 +190,12 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
-savePlot <- function(plot, output = NULL, width = 200, height = 150,
+savePlot <- function(plot, output = NULL, width = 200, height = 150, plot.ext = ".pdf"
                      dpi = 300) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)
-      if (ext != "pdf" & ext != "png") output <- paste0(output, ".png")
+      if (ext != "pdf" & ext != "png") output <- paste0(output, plot.ext)
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
              dpi = dpi, limitsize = FALSE)
     } else {

@@ -32,7 +32,7 @@
 #' ORFik experiment that represent the comparison contrasts. Usually found
 #' in "stage", "condition" or "fraction" column.
 #' @param output.dir output.dir directory to save plots,
-#' plot will be named "TE_between.png". If NULL, will not save.
+#' plot will be named "TE_between". If NULL, will not save.
 #' @param RFP_counts a SummarizedExperiment, default:
 #' countTable(df.rfp, "cds", type = "summarized"), all transcripts.
 #' Assign a subset if you don't want to analyze all genes.
@@ -77,9 +77,9 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
                           RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
                           batch.effect = FALSE,
-                          plot.title = "", width = 6,
+                          plot.title = "", plot.ext = ".pdf", width = 6,
                           height = 6, dot.size = 0.4,
-                          relative.name = "DTEG_plot.png", complex.categories = FALSE) {
+                          relative.name = paste0("DTEG_plot", plot.ext), complex.categories = FALSE) {
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
     stop("df.rfp and df.rna must be ORFik experiments!")
   if (length(unique(unlist(df.rfp[, design]))) == 1)

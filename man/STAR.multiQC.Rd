@@ -23,7 +23,7 @@ Alternative: ".png".}
 \value{
 a data.table with all information from STAR runs,
  plot and data saved to disc. Named:
-"/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
+"/00_STAR_LOG_plot.pdf" and "/00_STAR_LOG_table.csv"
 }
 \description{
 Takes a folder with multiple Log.final.out files
