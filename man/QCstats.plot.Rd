@@ -10,7 +10,7 @@ QCstats.plot(stats, output.dir = NULL)
 \item{stats}{path to ORFik QC stats .csv file, or the experiment object.}
 
 \item{output.dir}{NULL or character path, default: NULL, plot not saved to disc.
-If defined saves plot to that directory with the name "/STATS_plot.png".}
+If defined saves plot to that directory with the name "/STATS_plot.pdf".}
 }
 \value{
 ggplot object of the the statistics data

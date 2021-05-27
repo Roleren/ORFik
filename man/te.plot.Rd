@@ -23,7 +23,7 @@ te.plot(
 \item{df.rna}{a \code{\link{experiment}} of RNA-seq}
 
 \item{output.dir}{directory to save plots, plots will be named
-"TE_between.png" and "TE_within.png"}
+"TE_between.pdf" and "TE_within.pdf"}
 
 \item{type}{which plots to make, default: c("default", "between"). Both plots.}
 

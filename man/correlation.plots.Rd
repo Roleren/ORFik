@@ -17,8 +17,8 @@ correlation.plots(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{output.dir}{directory to save to, 2 files named: cor_plot.png and
-cor_plot_log2.png}
+\item{output.dir}{directory to save to, 2 files named: cor_plot.pdf and
+cor_plot_log2.pdf}
 
 \item{region}{a character (default: mrna), make raw count matrices of
 whole mrnas or one of (leaders, cds, trailers)}
