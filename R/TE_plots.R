@@ -3,7 +3,7 @@
 #' For explanation of plot catagories, see \code{\link{DTEG.analysis}}
 #' @param dt a data.table with the results from \code{\link{DTEG.analysis}}
 #' @param output.dir a character path, default NULL(no save), or a directory
-#' to save to a file will be called "DTEG_plot.png"
+#' to save to a file will be called "DTEG_plot.pdf"
 #' @param p.value a numeric, default 0.05 in interval (0,1)
 #' or "" to not show.
 #' What p-value used for the analysis? Will be shown as a caption.
@@ -13,7 +13,7 @@
 #' @param dot.size numeric, default 0.4, size of point dots in plot.
 #' @param xlim numeric vector, default c(-5, 5)
 #' @param ylim numeric vector, default c(-10, 10)
-#' @param relative.name character, Default: "DTEG_plot.png".
+#' @param relative.name character, Default: "DTEG_plot.pdf".
 #' Relative name of file to be saved in folder specified in output.dir.
 #' Change to .pdf if you want pdf file instead of png.
 #' @return a ggplot object
@@ -26,10 +26,10 @@
 #' #DTEG.plot(dt, xlim = c(-2, 2), ylim = c(-2, 2))
 DTEG.plot <- function(dt, output.dir = NULL,
                       p.value = 0.05,
-                      plot.title = "", width = 6,
+                      plot.title = "", plot.ext = ".pdf", width = 6,
                       height = 6, dot.size = 0.4,
                       xlim = c(-5, 5), ylim = c(-10, 10),
-                      relative.name = "DTEG_plot.png") {
+                      relative.name = paste0("DTEG_plot", plot.ext)) {
   color.values <- c("black", "orange4", "purple", "darkgreen", "blue", "yellow", "aquamarine")
   regulation.levels <- c("No change", "Translation", "Buffering", "mRNA abundance", "Expression", "Forwarded", "Inverse")
   dt[, Regulation :=
@@ -77,7 +77,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
 #' @inheritParams te.table
 #' @param dt a data.table with the results from \code{\link{te.table}}
 #' @param output.dir a character path, default NULL(no save), or a directory
-#' to save to a file will be called "TE_within.png"
+#' to save to a file will be called "TE_within.pdf"
 #' @param height a numeric, width of plot in inches. Default "auto".
 #' @return a ggplot object
 #' @family TE
@@ -89,7 +89,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
 #' #te_rna.plot(dt)
 te_rna.plot <- function(dt, output.dir = NULL,
                         filter.rfp = 1, filter.rna = 1,
-                        plot.title = "",
+                        plot.title = "", plot.ext = ".pdf",
                         width = 6, height = "auto",
                         dot.size = 0.4) {
 
@@ -118,7 +118,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
 
   plot(plot)
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, "TE_within.png"), plot,
+    ggsave(file.path(output.dir, paste0("TE_within", plot.ext)), plot,
            width = width, height = height, dpi = 300)
   }
   return(plot)
@@ -140,7 +140,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
 #' @param output.dir directory to save plots, plots will be named
-#' "TE_between.png" and "TE_within.png"
+#' "TE_between.pdf" and "TE_within.pdf"
 #' @param type which plots to make, default: c("default", "between"). Both plots.
 #' @param filter.rfp numeric, default 1. minimum fpkm value to be included in plots
 #' @param filter.rna numeric, default 1. minimum fpkm value to be included in plots
@@ -166,7 +166,7 @@ te.plot <- function(df.rfp, df.rna,
                     type = c("default", "between"),
                     filter.rfp = 1, filter.rna = 1,
                     collapse = FALSE,
-                    plot.title = "",
+                    plot.title = "", plot.ext = ".pdf",
                     width = 6,
                     height = "auto") {
   RNA_MRNA_FPKM <- countTable(df.rna, "mrna", type = "fpkm", collapse = collapse)
@@ -219,7 +219,7 @@ te.plot <- function(df.rfp, df.rna,
       facet_wrap(~ variable, ncol = 1)
 
     plot(plot)
-    ggsave(file.path(output.dir, "TE_within.png"), plot,
+    ggsave(file.path(output.dir, paste0("TE_within", plot.ext)), plot,
            width = width, height = height, dpi = 300)
   }
   if ("between" %in% type) {
@@ -243,7 +243,7 @@ te.plot <- function(df.rfp, df.rna,
       facet_wrap(~ variable, ncol = 2) +
       xlim(c(-5, 5))
     plot(plot)
-    ggsave(file.path(output.dir, "TE_between.png"), plot,
+    ggsave(file.path(output.dir, paste0("TE_between", plot.ext)), plot,
            width = width, height = height, dpi = 300)
   }
   return(dt)

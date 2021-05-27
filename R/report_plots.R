@@ -5,7 +5,7 @@
 #' cds, trailers, mRNA / rRNA etc.
 #' @param stats path to ORFik QC stats .csv file, or the experiment object.
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
-#' If defined saves plot to that directory with the name "/STATS_plot.png".
+#' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @return ggplot object of the the statistics data
 #' @importFrom data.table melt
 #' @importFrom gridExtra grid.arrange
@@ -16,7 +16,7 @@
 #' # QCreport(df)
 #' ## Now you can get plot
 #' # QCstats.plot(df)
-QCstats.plot <- function(stats, output.dir = NULL) {
+QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
   if (is(stats, "experiment")) {
     path <- file.path(dirname(stats$filepath[1]), "QC_STATS/")
     stats <- QCstats(stats)
@@ -87,7 +87,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
   final <- gridExtra::grid.arrange(grobs = plot_list, layout_matrix = lay)
 
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, "STATS_plot.png"), final, width = 13,
+    ggsave(file.path(output.dir, paste0("STATS_plot", plot.ext)), final, width = 13,
            height = 8, dpi = 300)
   }
   return(gg_STAT)
@@ -98,8 +98,8 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 #' Get 2 correlation plots of raw counts and log2(count + 1) over
 #' selected region in: c("mrna", "leaders", "cds", "trailers")
 #' @inheritParams QCplots
-#' @param output.dir directory to save to, 2 files named: cor_plot.png and
-#' cor_plot_log2.png
+#' @param output.dir directory to save to, 2 files named: cor_plot.pdf and
+#' cor_plot_log2.pdf
 #' @param type which value to use, "fpkm", alternative "counts".
 #' @param height numeric, default 400 (in mm)
 #' @param width numeric, default 400 (in mm)
@@ -108,7 +108,7 @@ QCstats.plot <- function(stats, output.dir = NULL) {
 #' @importFrom GGally wrap
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
-                              height = 400, width = 400, size = 0.15) {
+                              height = 400, width = 400, size = 0.15, plot.ext = ".pdf") {
   message("- Correlation plots")
   # Load fpkm values
   data_for_pairs <- countTable(df, region, type = type)
@@ -119,13 +119,13 @@ correlation.plots <- function(df, output.dir,
   paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                          columns = 1:ncol(data_for_pairs),
                          lower = point_settings)
-  ggsave(pasteDir(output.dir, "cor_plot.png"), paired_plot,
+  ggsave(pasteDir(output.dir, paste0("cor_plot", plot.ext)), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
   message("  - log2 scaled fpkm")
   paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
                          columns = 1:ncol(data_for_pairs),
                          lower = point_settings)
-  ggsave(pasteDir(output.dir, "cor_plot_log2.png"), paired_plot,
+  ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
   return(invisible(NULL))
 }
@@ -284,7 +284,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
   plot_list <- list(gg_all_mrna, gg_frame_per_stack, gg_all_tx_regions, gg_all_tx_other, gg_mRNA_regions)
   final <- gridExtra::grid.arrange(grobs = plot_list, layout_matrix = lay)
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, "STATS_plot_Ribo-seq_Check.png"), final,
+    ggsave(file.path(output.dir, paste0("STATS_plot_Ribo-seq_Check", plot.ext)), final,
            width = width, height = height, dpi = 300)
   }
   return(final)

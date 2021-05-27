@@ -8,14 +8,14 @@
 #' use for summarized statistics.
 #' @param steps a character, default "auto". Find which steps you did.
 #' If manual, a combination of "tr-co-ge". See STAR alignment functions for description.
-#' @param filetype character, default ".pdf". Which format to save QC plot.
+#' @param plot.ext character, default ".pdf". Which format to save QC plot.
 #' Alternative: ".png".
 #' @return data.table of main statistics, plots and data saved to disc. Named:
-#' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
+#' "/00_STAR_LOG_plot.pdf" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table merge.data.table
 #' @family STAR
 #' @export
-STAR.allsteps.multiQC <- function(folder, steps = "auto", filetype = ".pdf") {
+STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
   if (steps == "auto") {
     steps <- paste(ifelse(dir.exists(file.path(folder, "aligned/")), "ge", ""),
                    ifelse(dir.exists(file.path(folder, "contaminants_depletion/")), "co", ""),
@@ -29,7 +29,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", filetype = ".pdf") {
   res <- NULL
   if (1 %in% grep("ge", steps)){
     # If genome alignment done
-    aligned <- STAR.multiQC(folder, filetype = filetype)
+    aligned <- STAR.multiQC(folder, plot.ext = plot.ext)
     aligned <- aligned[, c("sample", "sample_id",
                            "total mapped reads %", "total mapped reads #",
                            "Uniquely mapped reads %","Uniquely mapped reads #",
@@ -39,7 +39,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", filetype = ".pdf") {
   }
   if (1 %in% grep("co", steps)) {
     # If contamination depletion was done
-    co <- STAR.multiQC(folder, "contaminants_depletion", filetype = filetype)
+    co <- STAR.multiQC(folder, "contaminants_depletion", plot.ext = plot.ext)
     co <- co[, c("sample",
                  "total mapped reads %", "total mapped reads #",
                  "Uniquely mapped reads %","Uniquely mapped reads #",
@@ -102,15 +102,15 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", filetype = ".pdf") {
 #' @param type a character path, default "aligned".
 #' Which subfolder to check for. If you want log files for contamination
 #' do type = "contaminants_depletion"
-#' @param filetype character, default ".pdf". Which format to save QC plot.
+#' @param plot.ext character, default ".pdf". Which format to save QC plot.
 #' Alternative: ".png".
 #' @return a data.table with all information from STAR runs,
 #'  plot and data saved to disc. Named:
-#' "/00_STAR_LOG_plot.png" and "/00_STAR_LOG_table.csv"
+#' "/00_STAR_LOG_plot.pdf" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table melt
 #' @family STAR
 #' @export
-STAR.multiQC <- function(folder, type = "aligned", filetype = ".pdf") {
+STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
   if (!(type %in% c("aligned", "contaminants_depletion")))
       stop("type must be either aligned or contaminants_depletion")
   if (!dir.exists(folder)) stop("folder does not specify existing directory!")
@@ -121,7 +121,7 @@ STAR.multiQC <- function(folder, type = "aligned", filetype = ".pdf") {
     new_path <- ifelse(dir.exists(file.path(folder, type, "LOGS/")),
                        file.path(folder, type, "LOGS/"),
                        file.path(folder, "LOGS/"))
-    return(STAR.multiQC(new_path, type = type, filetype = filetype))
+    return(STAR.multiQC(new_path, type = type, plot.ext = plot.ext))
   }
   message("Runing alignment MultiQC")
   # Read log files 1 by 1 (only data column)
