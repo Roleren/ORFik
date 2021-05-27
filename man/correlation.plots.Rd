@@ -11,7 +11,8 @@ correlation.plots(
   type = "fpkm",
   height = 400,
   width = 400,
-  size = 0.15
+  size = 0.15,
+  plot.ext = ".pdf"
 )
 }
 \arguments{

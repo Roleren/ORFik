@@ -10,6 +10,7 @@ te_rna.plot(
   filter.rfp = 1,
   filter.rna = 1,
   plot.title = "",
+  plot.ext = ".pdf",
   width = 6,
   height = "auto",
   dot.size = 0.4
@@ -19,7 +20,7 @@ te_rna.plot(
 \item{dt}{a data.table with the results from \code{\link{te.table}}}
 
 \item{output.dir}{a character path, default NULL(no save), or a directory
-to save to a file will be called "TE_within.png"}
+to save to a file will be called "TE_within.pdf"}
 
 \item{filter.rfp}{numeric, default 1. What is the minimum fpkm value?}
 

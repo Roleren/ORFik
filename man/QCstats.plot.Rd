@@ -4,7 +4,7 @@
 \alias{QCstats.plot}
 \title{Make plot of ORFik QCreport}
 \usage{
-QCstats.plot(stats, output.dir = NULL)
+QCstats.plot(stats, output.dir = NULL, plot.ext = ".pdf")
 }
 \arguments{
 \item{stats}{path to ORFik QC stats .csv file, or the experiment object.}

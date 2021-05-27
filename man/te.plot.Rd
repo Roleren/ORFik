@@ -13,6 +13,7 @@ te.plot(
   filter.rna = 1,
   collapse = FALSE,
   plot.title = "",
+  plot.ext = ".pdf",
   width = 6,
   height = "auto"
 )
