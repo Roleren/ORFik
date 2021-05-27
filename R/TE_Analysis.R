@@ -235,9 +235,18 @@ te.table <- function(df.rfp, df.rna,
   if ((filter.rfp < 0) | (filter.rna < 0))
     stop("filter value is < 0, not allowed!")
 
-  dt <- data.table::merge.data.table(RNA_MRNA_FPKM, RFP_CDS_FPKM, by = "id")
-  filtered <- rowMin(as.matrix(dt[,-1])) > max(filter.rna, filter.rfp)
-  txNames <- dt$id; dt$id <- NULL
+  uid <- unique(c(RNA_MRNA_FPKM$id, RFP_CDS_FPKM$id))
+  RNA_MRNA_FPKM$uid <- match(RNA_MRNA_FPKM$id, uid)
+  RNA_MRNA_FPKM$id <- NULL
+  RFP_CDS_FPKM$uid <- match(RFP_CDS_FPKM$id, uid)
+  RFP_CDS_FPKM$id <- NULL
+  setkey(RNA_MRNA_FPKM, uid)
+  setkey(RFP_CDS_FPKM, uid)
+
+  dt <- data.table::merge.data.table(RNA_MRNA_FPKM, RFP_CDS_FPKM, by = "uid")
+  txNames <- uid[dt$uid]
+  dt$uid <- NULL
+  filtered <- rowMin(as.matrix(dt)) > max(filter.rna, filter.rfp)
 
   #dt <- dt[RNA_MRNA_FPKM > filter.rfp & RFP_CDS_FPKM > filter.rna, ]
   dt <- dt[filtered, ]

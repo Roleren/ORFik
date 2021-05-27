@@ -11,6 +11,7 @@ plotHelper(
   scores,
   returnCoverage = FALSE,
   title = "coverage metaplot",
+  plot.ext = ".pdf",
   colors = c("skyblue4", "orange"),
   plotFunction = "windowCoveragePlot"
 )
@@ -30,6 +31,8 @@ see ?coverageScorings for possible scores.}
 or NULL (FALSE).}
 
 \item{title}{Title to give plot}
+
+\item{plot.ext}{default (".pdf"), do ".png" if you want as png}
 
 \item{colors}{Which colors to use, default auto color from function
 \code{\link{experiment.colors}}, new color per library type.

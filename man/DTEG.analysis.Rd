@@ -14,10 +14,11 @@ DTEG.analysis(
   RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
   batch.effect = FALSE,
   plot.title = "",
+  plot.ext = ".pdf",
   width = 6,
   height = 6,
   dot.size = 0.4,
-  relative.name = "DTEG_plot.png",
+  relative.name = paste0("DTEG_plot", plot.ext),
   complex.categories = FALSE
 )
 }
@@ -27,7 +28,7 @@ DTEG.analysis(
 \item{df.rna}{a \code{\link{experiment}} of RNA-seq}
 
 \item{output.dir}{output.dir directory to save plots,
-plot will be named "TE_between.png". If NULL, will not save.}
+plot will be named "TE_between". If NULL, will not save.}
 
 \item{design}{a character vector, default "stage". The columns in the
 ORFik experiment that represent the comparison contrasts. Usually found
@@ -61,7 +62,7 @@ you need to set it to TRUE.}
 
 \item{dot.size}{numeric, default 0.4, size of point dots in plot.}
 
-\item{relative.name}{character, Default: "DTEG_plot.png".
+\item{relative.name}{character, Default: "DTEG_plot.pdf".
 Relative name of file to be saved in folder specified in output.dir.
 Change to .pdf if you want pdf file instead of png.}
 

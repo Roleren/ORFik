@@ -43,7 +43,7 @@ either "default", usually bam format (the one you gave to experiment),
 \code{\link{GAlignments}} preloaded file of CAGE data. Only used if
 "TSS" is defined as region, to redefine 5' leaders.}
 
-\item{format}{a character, default ".pdf", alternative ".png"}
+\item{plot.ext}{a character, default ".pdf", alternative ".png"}
 
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}

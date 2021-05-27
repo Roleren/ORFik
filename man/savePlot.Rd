@@ -4,7 +4,14 @@
 \alias{savePlot}
 \title{Helper function for writing plots to disc}
 \usage{
-savePlot(plot, output = NULL, width = 200, height = 150, dpi = 300)
+savePlot(
+  plot,
+  output = NULL,
+  width = 200,
+  height = 150,
+  plot.ext = ".pdf",
+  dpi = 300
+)
 }
 \arguments{
 \item{plot}{the ggplot to save}
