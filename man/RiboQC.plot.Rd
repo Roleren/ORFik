@@ -9,6 +9,7 @@ RiboQC.plot(
   output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
   width = 6.6,
   height = 4.5,
+  plot.ext = ".pdf",
   type = "pshifted",
   weight = "score",
   BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)

@@ -252,9 +252,11 @@ te.table <- function(df.rfp, df.rna,
   dt <- dt[filtered, ]
   dt.log <- pseudo.transform(dt)
   dt.log10 <- pseudo.transform(dt, log10)
-  dt.melt.rna <- melt(dt.log[, colnames(dt.log) %in% colnames(RNA_MRNA_FPKM)[-1], with = FALSE])
-  dt.melt.rna.10 <- melt(dt.log10[, colnames(dt.log10) %in% colnames(RNA_MRNA_FPKM)[-1], with = FALSE])
-  dt.melt.rfp <- melt(dt.log[, colnames(dt.log) %in% colnames(RFP_CDS_FPKM)[-1], with = FALSE])
+  RNA_MRNA_FPKM$uid <- NULL
+  RFP_CDS_FPKM$uid <- NULL
+  dt.melt.rna <- melt(dt.log[, colnames(dt.log) %in% colnames(RNA_MRNA_FPKM), with = FALSE])
+  dt.melt.rna.10 <- melt(dt.log10[, colnames(dt.log10) %in% colnames(RNA_MRNA_FPKM), with = FALSE])
+  dt.melt.rfp <- melt(dt.log[, colnames(dt.log) %in% colnames(RFP_CDS_FPKM), with = FALSE])
   dt.final <- cbind(dt.melt.rfp, dt.melt.rna$value, dt.melt.rna.10$value)
   filter.names <- paste("RFP", "LSU", paste0(df.rfp@experiment, "_"), sep = "|")
   dt.final[, variable := gsub(filter.names, "", variable)]

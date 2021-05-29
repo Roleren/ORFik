@@ -148,7 +148,7 @@ correlation.plots <- function(df, output.dir,
 #' #shiftFootprintsByExperiment(df)
 #' #RiboQC.plot(df)
 RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
-                        width = 6.6, height = 4.5,
+                        width = 6.6, height = 4.5, plot.ext = ".pdf",
                         type = "pshifted", weight = "score",
                         BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)) {
   stats <- QCstats(df)
