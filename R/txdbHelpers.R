@@ -376,16 +376,19 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
              ifelse(three, utr3_len >= minThreeUTR, TRUE), ]
 
   gene_id <- cds_len <- NULL
-  # If longest per gene, pick longest cds, then longest tx if equal.
-  data.table::setorder(tx, gene_id, -cds_len, -tx_len)
+  tx <- data.frame(tx)
+  tx <- tx[order(tx$gene_id, -rank(tx$cds_len), -rank(tx$tx_len)), ]
+  # can't be used due to crashes of R, no errors reported...
+  # data.table::setorder(tx, gene_id, -cds_len, -tx_len) 
   if (longestPerGene) {
     tx <- tx[!duplicated(tx$gene_id), ]
   }
-  tx <- tx[!is.na(tx$gene_id)]
-  if (stopOnEmpty & length(tx$tx_name) == 0)
-    stop("No transcript has leaders and trailers of specified minFiveUTR",
+  tx <- tx[!is.na(tx$gene_id), ]
+  
+  if (stopOnEmpty & length(tx$tx_name) == 0) 
+    stop("No transcript has leaders and trailers of specified minFiveUTR", 
          " minCDS, minThreeUTR")
-
-  if (by == "gene") return(tx$gene_id)
+  if (by == "gene") 
+    return(tx$gene_id)
   return(tx$tx_name)
 }
