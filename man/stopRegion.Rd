@@ -25,7 +25,7 @@ a GRanges, or GRangesList object if any group had > 1 exon.
 }
 \description{
 Get the stop region of each ORF / region. If you want the stop codon only,
-set upstream = 0 or just use \code{\link{stopCodons}}.
+set downstream = 0 or just use \code{\link{stopCodons}}.
 Standard is 2 upstream and 2 downstream, a width 5 window centered at
 stop site.
 }

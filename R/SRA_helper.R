@@ -82,6 +82,10 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' a integer will download only the first n reads specified by subset. If subset is
 #' defined, will force to use fastq-dump which is slower than ebi download.
 #' @param compress logical, default TRUE. Download compressed files ".gz".
+#' @param use.ebi.ftp logical, default: is.null(subset). Use ORFiks much faster download
+#' function that only works when subset is null,
+#' if subset is defined, it uses fastqdump, it is slower but supports subsetting.
+#' Force it to use fastqdump by setting this to FALSE.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
 #' @return a character vector of download files filepaths
@@ -99,14 +103,19 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' ## Using metadata column to get SRR numbers and to be able to rename samples
 #' outdir <- tempdir() # Specify output directory
 #' info <- download.SRA.metadata("SRP226389", outdir) # By study id
-#' # Download, 5 first reads of each library and rename
-#' #download.SRA(info, outdir, subset = 5)
+#' ## Download, 5 first reads of each library and rename
+#' #files <- download.SRA(info, outdir, subset = 5)
+#' #Biostrings::readDNAStringSet(files[1], format = "fastq")
+#'
+#' ## Download entire library (note, this will take a long time to download!)
+#' #download.SRA(info, outdir)
 #' }
 download.SRA <- function(info, outdir, rename = TRUE,
                          fastq.dump.path = install.sratoolkit(),
                          settings =  paste("--skip-technical", "--split-files"),
                          subset = NULL,
                          compress = TRUE,
+                         use.ebi.ftp = is.null(subset),
                          BPPARAM = bpparam()) {
 
   # If character presume SRR, if not check for column Run or SRR
@@ -129,7 +138,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
     if(!is.numeric(subset)) stop("subset must be numeric if not NULL")
     subset <- as.integer(subset)
     settings <- paste(settings, "-X", subset)
-  } else {
+  } else if (use.ebi.ftp){
     files <- download.ebi(info, outdir, rename, BPPARAM)
     if (length(files) > 0) return(files)
     message("Checking for fastq files using fastq-dump")
@@ -152,7 +161,12 @@ download.SRA <- function(info, outdir, rename = TRUE,
 
   valid <- TRUE
   if (length(files) == 0) valid <- FALSE
-  paired <- length(grep("_[1-2]\\.fastq\\.gz", files))
+  any.paired <- length(grep("_[2]\\.fastq\\.gz", files))
+  # TODO: validate that this will work in download of mixed
+  paired <- ifelse(any.paired,
+                   length(grep("_[1-2]\\.fastq\\.gz", files)),
+                   0)
+
   if (length(SRR) != (paired/2 + length(files) - paired))
     valid <- FALSE
   if (!valid) {
@@ -167,7 +181,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
       rename <- FALSE
       warning("rename = TRUE, but no metadata given. Can not rename!")
     } else if (rename) files <- rename.SRA.files(files, info)
-  } else { # else manual assign names
+  } else { # else names were assigned manually
     files <- rename.SRA.files(files, rename)
   }
   return(files)
@@ -237,11 +251,16 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
     a <- xml2::as_list(a)
 
     dt <- data.table()
-    for(i in seq_along(a$EXPERIMENT_PACKAGE_SET)) {
+    for(i in seq_along(a$EXPERIMENT_PACKAGE_SET)) { # Per sample
+      # Get Sample title
       xml.TITLE <- unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$SAMPLE$TITLE)
-      xml.RUN <- unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET$RUN$IDENTIFIERS$PRIMARY_ID)
+      # For each run in sample
+      xml.RUN <- c()
+      for (j in seq_along(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET)) {
+        xml.RUN <- c(xml.RUN, unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET[j]$RUN$IDENTIFIERS$PRIMARY_ID))
+      }
       xml.TITLE <- ifelse(is.null(xml.TITLE), "", xml.TITLE)
-      xml.RUN <- ifelse(is.null(xml.RUN), "", xml.RUN)
+      if (length(xml.RUN) == 0) xml.RUN <- ""
       dt <- rbind(dt, cbind(xml.TITLE, xml.RUN))
     }
     colnames(dt) <- c("sample_title", "Run")
@@ -402,30 +421,65 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' Locates and check if fastq files exists in ebi
 #'
 #' Look for files in ebi following url: ftp://ftp.sra.ebi.ac.uk/vol1/fastq
-#' Paired end and single end fastq files
+#' Paired end and single end fastq files.\cr
+#' EBI uses 3 ways to organize data inside vol1/fastq:\cr
+#' - 1: Most common: SRR(3 first)/0(2 last)/whole\cr
+#' - 2: less common: SRR(3 first)/00(1 last)/whole\cr
+#' - 3: least common SRR(3 first)/whole
 #' @param SRR character, SRR, ERR or DRR numbers.
 #' @param stop.on.error logical FALSE, if true will stop
 #'  if all files are not found.
 #' @return full url to fastq files, same length as input
 #' (2 urls for paired end data). Returns empty character() if all
 #' files not found.
+#' @examples
+#' # Test the 3 ways to get fastq files from EBI
+#' # Both single end and paired end data
+#'
+#' # Most common: SRR(3 first)/0(2 last)/whole
+#' # Single
+#' ORFik:::find_url_ebi("SRR10503056")
+#' # Paired
+#' ORFik:::find_url_ebi("SRR10500056")
+#'
+#' # less common: SRR(3 first)/00(1 last)/whole
+#' # Single
+#' ORFik:::find_url_ebi("SRR1562873")
+#' # Paired
+#' ORFik:::find_url_ebi("SRR1560083")
+#' # least common SRR(3 first)/whole
+#' # Single
+#' ORFik:::find_url_ebi("SRR105687")
+#' # Paired
+#' ORFik:::find_url_ebi("SRR105788")
 find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   SRR_first_3 <- substring(SRR, 1, 6)
   SRR_last_3 <- paste0("0", reverse(substring(reverse(SRR), 1, 2)))
+  SRR_last_1 <- paste0("00", reverse(substring(reverse(SRR), 1, 1)))
   SRR_default <- file.path("ftp://ftp.sra.ebi.ac.uk/vol1/fastq", SRR_first_3)
   SRR_fastq <- paste0(SRR, ".fastq.gz")
   SRR_fastq_paired <- c(paste0(SRR, c("_1"), ".fastq.gz"),
                         paste0(SRR, c("_2"), ".fastq.gz"))
+  # method 1
   SRR_paths <- file.path(SRR_default, SRR_last_3, SRR, SRR_fastq)
   SRR_paths_paired <- file.path(SRR_default, SRR_last_3, SRR, SRR_fastq_paired)
-  # Special location
+  # method 2:
+  SRR_paths_spec2 <- file.path(SRR_default, SRR_last_1, SRR, SRR_fastq)
+  SRR_paths_paired_spec2 <- file.path(SRR_default, SRR_last_1, SRR, SRR_fastq_paired)
+  # Method 3: Special location
   SRR_paths_spec <- file.path(SRR_default, SRR, SRR_fastq)
   SRR_paths_spec_paired <- file.path(SRR_default, SRR, SRR_fastq_paired)
-  # Check what format the files are found in (4 types)
+  # Check what format the files are found in (3 types: 2 each)
   url.exists <-  sapply(SRR_paths, function(x)
     exists.ftp.file.fast(x, x))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_paired, function(x)
+                    exists.ftp.file.fast(x, x)))
+  url.exists <- c(url.exists,
+                  sapply(SRR_paths_spec2, function(x)
+                    exists.ftp.file.fast(x, x)))
+  url.exists <- c(url.exists,
+                  sapply(SRR_paths_paired_spec2, function(x)
                     exists.ftp.file.fast(x, x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec, function(x)

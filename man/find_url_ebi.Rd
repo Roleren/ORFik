@@ -19,5 +19,30 @@ files not found.
 }
 \description{
 Look for files in ebi following url: ftp://ftp.sra.ebi.ac.uk/vol1/fastq
-Paired end and single end fastq files
+Paired end and single end fastq files.\cr
+EBI uses 3 ways to organize data inside vol1/fastq:\cr
+- 1: Most common: SRR(3 first)/0(2 last)/whole\cr
+- 2: less common: SRR(3 first)/00(1 last)/whole\cr
+- 3: least common SRR(3 first)/whole
+}
+\examples{
+# Test the 3 ways to get fastq files from EBI
+# Both single end and paired end data
+
+# Most common: SRR(3 first)/0(2 last)/whole
+# Single
+ORFik:::find_url_ebi("SRR10503056")
+# Paired
+ORFik:::find_url_ebi("SRR10500056")
+
+# less common: SRR(3 first)/00(1 last)/whole
+# Single
+ORFik:::find_url_ebi("SRR1562873")
+# Paired
+ORFik:::find_url_ebi("SRR1560083")
+# least common SRR(3 first)/whole
+# Single
+ORFik:::find_url_ebi("SRR105687")
+# Paired
+ORFik:::find_url_ebi("SRR105788")
 }

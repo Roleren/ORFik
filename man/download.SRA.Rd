@@ -12,6 +12,7 @@ download.SRA(
   settings = paste("--skip-technical", "--split-files"),
   subset = NULL,
   compress = TRUE,
+  use.ebi.ftp = is.null(subset),
   BPPARAM = bpparam()
 )
 }
@@ -45,6 +46,11 @@ defined, will force to use fastq-dump which is slower than ebi download.}
 
 \item{compress}{logical, default TRUE. Download compressed files ".gz".}
 
+\item{use.ebi.ftp}{logical, default: is.null(subset). Use ORFiks much faster download
+function that only works when subset is null,
+if subset is defined, it uses fastqdump, it is slower but supports subsetting.
+Force it to use fastqdump by setting this to FALSE.}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}
 }
@@ -65,8 +71,12 @@ outdir <- tempdir() # Specify output directory
 ## Using metadata column to get SRR numbers and to be able to rename samples
 outdir <- tempdir() # Specify output directory
 info <- download.SRA.metadata("SRP226389", outdir) # By study id
-# Download, 5 first reads of each library and rename
-#download.SRA(info, outdir, subset = 5)
+## Download, 5 first reads of each library and rename
+#files <- download.SRA(info, outdir, subset = 5)
+#Biostrings::readDNAStringSet(files[1], format = "fastq")
+
+## Download entire library (note, this will take a long time to download!)
+#download.SRA(info, outdir)
 }
 }
 \references{
