@@ -107,7 +107,8 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' #files <- download.SRA(info, outdir, subset = 5)
 #' #Biostrings::readDNAStringSet(files[1], format = "fastq")
 #'
-#' ## Download entire library (note, this will take a long time to download!)
+#' ## Download full libraries of experiment
+#' ## (note, this will take some time to download!)
 #' #download.SRA(info, outdir)
 #' }
 download.SRA <- function(info, outdir, rename = TRUE,
@@ -270,6 +271,7 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
     a <- xml2::as_list(a)
 
     dt <- data.table()
+    # TODO: add fields like author and date
     for(i in seq_along(a$EXPERIMENT_PACKAGE_SET)) { # Per sample
       # Get Sample title
       xml.TITLE <- unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$SAMPLE$TITLE)
@@ -463,14 +465,14 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #'
 #' # less common: SRR(3 first)/00(1 last)/whole
 #' # Single
-#' ORFik:::find_url_ebi("SRR1562873")
+#' #ORFik:::find_url_ebi("SRR1562873")
 #' # Paired
-#' ORFik:::find_url_ebi("SRR1560083")
+#' #ORFik:::find_url_ebi("SRR1560083")
 #' # least common SRR(3 first)/whole
 #' # Single
-#' ORFik:::find_url_ebi("SRR105687")
+#' #ORFik:::find_url_ebi("SRR105687")
 #' # Paired
-#' ORFik:::find_url_ebi("SRR105788")
+#' #ORFik:::find_url_ebi("SRR105788")
 find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   SRR_first_3 <- substring(SRR, 1, 6)
   SRR_last_3 <- paste0("0", reverse(substring(reverse(SRR), 1, 2)))

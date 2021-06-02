@@ -39,6 +39,8 @@ as rowSum(elements_per_group) / ncol(elements_per_group)}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+
 \item{width}{numeric, default 6 (in inches)}
 
 \item{height}{numeric or character, default "auto", which is:

@@ -316,7 +316,20 @@ exists.ftp.file.fast <- function(url, file.path) {
   if (!RCurl::url.exists(paste0(dirname(url), "/")))
     return(FALSE)
 
-  con <- RCurl::getURL(url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+  safe.url <- function(url, attempt = 1, max.attempts = 5) {
+    tryCatch(
+      expr = {
+        Sys.sleep(0.05)
+        RCurl::getURL(url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
+      },
+      error = function(e){
+        if (attempt >= max.attempts) stop("Server is not responding to download data,
+                                      wait 30 seconds and try again!")
+        Sys.sleep(1)
+        safe.url(url, attempt = attempt + 1, max.attempts = max.attempts)
+      })
+  }
+  con <- safe.url(url)
 
   ftp.content <-
     suppressMessages(data.table::fread(con, sep = "\n", header = FALSE))

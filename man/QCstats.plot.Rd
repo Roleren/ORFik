@@ -11,6 +11,8 @@ QCstats.plot(stats, output.dir = NULL, plot.ext = ".pdf")
 
 \item{output.dir}{NULL or character path, default: NULL, plot not saved to disc.
 If defined saves plot to that directory with the name "/STATS_plot.pdf".}
+
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 }
 \value{
 ggplot object of the the statistics data

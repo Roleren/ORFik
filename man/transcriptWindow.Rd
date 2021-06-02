@@ -60,7 +60,7 @@ if you make several plots in the same folder,
 and same experiment, like splitting transcripts in two groups like
 targets / nontargets etc. (default: "")}
 
-\item{plot.ext}{default (".pdf"), do ".png" if you want as png}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{type}{a character(default: "bedoc"), load files in experiment
 or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.

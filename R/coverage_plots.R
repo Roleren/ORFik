@@ -183,10 +183,12 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' Helper function for writing plots to disc
 #' @param plot the ggplot to save
 #' @param output character string (NULL), if set, saves the plot as pdf or png
-#' to path given. If no format is given, is save as png.
+#' to path given. If no format is given,
+#' is save as specified by plot.ext argument.
 #' @param width width of output in mm
 #' @param height height of output in mm
 #' @param dpi (300) dpi of plot
+#' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
@@ -195,7 +197,7 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150, plot.ext = 
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
       ext <- tools::file_ext(output)
-      if (ext != "pdf" & ext != "png") output <- paste0(output, plot.ext)
+      if (ext != "pdf" & ext != "png" & ext != "jpg") output <- paste0(output, plot.ext)
       ggsave(output, plot = plot, width = width, height = height, units = "mm",
              dpi = dpi, limitsize = FALSE)
     } else {

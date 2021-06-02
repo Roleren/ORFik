@@ -8,6 +8,7 @@
 #' or "" to not show.
 #' What p-value used for the analysis? Will be shown as a caption.
 #' @param plot.title title for plots, usually name of experiment etc
+#' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
 #' @param width numeric, default 6 (in inches)
 #' @param height numeric, default 6 (in inches)
 #' @param dot.size numeric, default 0.4, size of point dots in plot.
@@ -145,6 +146,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
 #' @param filter.rfp numeric, default 1. minimum fpkm value to be included in plots
 #' @param filter.rna numeric, default 1. minimum fpkm value to be included in plots
 #' @param plot.title title for plots, usually name of experiment etc
+#' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
 #' @inheritParams countTable
 #' @param width numeric, default 6 (in inches)
 #' @param height numeric or character, default "auto", which is:

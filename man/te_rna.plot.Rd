@@ -28,6 +28,8 @@ to save to a file will be called "TE_within.pdf"}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+
 \item{width}{numeric, default 6 (in inches)}
 
 \item{height}{a numeric, width of plot in inches. Default "auto".}

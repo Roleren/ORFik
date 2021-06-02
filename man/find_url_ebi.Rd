@@ -37,12 +37,12 @@ ORFik:::find_url_ebi("SRR10500056")
 
 # less common: SRR(3 first)/00(1 last)/whole
 # Single
-ORFik:::find_url_ebi("SRR1562873")
+#ORFik:::find_url_ebi("SRR1562873")
 # Paired
-ORFik:::find_url_ebi("SRR1560083")
+#ORFik:::find_url_ebi("SRR1560083")
 # least common SRR(3 first)/whole
 # Single
-ORFik:::find_url_ebi("SRR105687")
+#ORFik:::find_url_ebi("SRR105687")
 # Paired
-ORFik:::find_url_ebi("SRR105788")
+#ORFik:::find_url_ebi("SRR105788")
 }

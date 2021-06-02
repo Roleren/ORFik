@@ -29,6 +29,7 @@
 #' @param out.dir optional output directory, default:
 #' \code{dirname(df$filepath[1])}.
 #' Will make a folder called "QC_STATS" with all results in this directory.
+#' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
 #' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
 #' @importFrom utils write.csv
@@ -39,7 +40,7 @@
 #' # Run QC
 #' # QCreport(df)
 QCreport <- function(df, out.dir = dirname(df$filepath[1]),
-                     BPPARAM = bpparam()) {
+                     plot.ext = ".pdf", BPPARAM = bpparam()) {
   # When experiment is ready, everything down from here is automatic
   message("Started ORFik QC report:")
   validateExperiments(df)
@@ -58,7 +59,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   # Save file
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
   # Get plots
-  QCplots(df, "mrna", stats_folder, BPPARAM = BPPARAM)
+  QCplots(df, "mrna", stats_folder, plot.ext = plot.ext, BPPARAM = BPPARAM)
 
   message(paste("Everything done, saved QC to:", stats_folder))
   return(invisible(NULL))
@@ -92,13 +93,12 @@ ORFikQC <- QCreport
 QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
                                           "/QC_STATS/"),
-
-                    BPPARAM) {
+                    plot.ext = ".pdf", BPPARAM) {
   message("Making QC plots:")
   message("- Annotation to NGS libraries plot:")
-  QCstats.plot(df, stats_folder)
+  QCstats.plot(df, stats_folder, plot.ext = plot.ext)
 
-  correlation.plots(df, stats_folder, region)
+  correlation.plots(df, stats_folder, region, plot.ext = plot.ext)
   # window coverage over mRNA regions
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)

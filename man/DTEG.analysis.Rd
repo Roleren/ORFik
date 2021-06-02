@@ -56,6 +56,8 @@ you need to set it to TRUE.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+
 \item{width}{numeric, default 6 (in inches)}
 
 \item{height}{numeric, default 6 (in inches)}

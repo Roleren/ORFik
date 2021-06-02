@@ -32,7 +32,7 @@ or NULL (FALSE).}
 
 \item{title}{Title to give plot}
 
-\item{plot.ext}{default (".pdf"), do ".png" if you want as png}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{colors}{Which colors to use, default auto color from function
 \code{\link{experiment.colors}}, new color per library type.

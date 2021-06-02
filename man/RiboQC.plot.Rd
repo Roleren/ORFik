@@ -18,12 +18,14 @@ RiboQC.plot(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{output.dir}{directory to save plot,
-default: file.path(dirname(df$filepath[1]), "QC_STATS/"). If NULL will not save.}
+\item{output.dir}{NULL or character path, default: NULL, plot not saved to disc.
+If defined saves plot to that directory with the name "/STATS_plot.pdf".}
 
 \item{width}{width of plot, default 6.6 (in inches)}
 
 \item{height}{height of plot, default 4.5 (in inches)}
+
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{type}{type of library loaded, default pshifted,
 warning if not pshifted might crash if too many read lengths!}
@@ -37,7 +39,11 @@ To see number of threads used, do \code{bpparam()$workers}}
 ggplot object as a grid
 }
 \description{
-Quality control for pshifted Ribo-seq data
+Combines several statistics from the pshifted reads into a plot:\cr
+-1 Coding frame distribution per read length\cr
+-2 Alignment statistics\cr
+-3 Biotype of non-exonic pshifted reads\cr
+-4 mRNA localization of pshifted reads\cr
 }
 \examples{
 df <- ORFik.template.experiment()

@@ -17,11 +17,14 @@ savePlot(
 \item{plot}{the ggplot to save}
 
 \item{output}{character string (NULL), if set, saves the plot as pdf or png
-to path given. If no format is given, is save as png.}
+to path given. If no format is given,
+is save as specified by plot.ext argument.}
 
 \item{width}{width of output in mm}
 
 \item{height}{height of output in mm}
+
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{dpi}{(300) dpi of plot}
 }

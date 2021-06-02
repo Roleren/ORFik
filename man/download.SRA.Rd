@@ -75,7 +75,8 @@ info <- download.SRA.metadata("SRP226389", outdir) # By study id
 #files <- download.SRA(info, outdir, subset = 5)
 #Biostrings::readDNAStringSet(files[1], format = "fastq")
 
-## Download entire library (note, this will take a long time to download!)
+## Download full libraries of experiment
+## (note, this will take some time to download!)
 #download.SRA(info, outdir)
 }
 }

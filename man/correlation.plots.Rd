@@ -31,6 +31,8 @@ whole mrnas or one of (leaders, cds, trailers)}
 \item{width}{numeric, default 400 (in mm)}
 
 \item{size}{numeric, size of dots, default 0.15.}
+
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 }
 \value{
 invisible(NULL)
