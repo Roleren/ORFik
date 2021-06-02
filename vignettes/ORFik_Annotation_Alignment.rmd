@@ -20,22 +20,45 @@ This vignette will walk you through how to how to download annotation and align 
 Here we will show a full example of aligning RNA-seq from yeast using the SacCer3 genome.
 
 ## Specify output folders
+Usually fastq files, processed data (bam files) and annotation (genome references)
+are stored in separate locations, for better clarity and re-usability of files.
 
-First specify where you want to save the different data types:
+Given a single parrent folder, 
+ORFik uses a folder structure of separating these 3 types:
 1. fastq files (raw_data)
 2. bam files (processed_data)
 3. annotation reference files (references)
 
+This is defined in the config() function, and only is needed to run once (config is stored for later experiments),
+so all other experiments will reuse the parrent file structure. ORFik will automatically 
+create suitable locations if the following function is not run;
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   library(ORFik)                        # This package
-  conf <- config.exper(experiment = "CHALMERS_Yeast", # Name
+  config.save(file = "parrent/folder/for/all/NGSdata/and/genome/annotations",
+                     fastq.dir = "fastq/folder/inside/parrent",
+                     bam.dir = "processed/data/folder/inside/parrent",
+                     reference.dir ="genome/annotation/inside/parrent/folder"  
+                     )
+```
+
+Either way if you made a custom config or let ORFik do it for you in next step, check what it is
+by now running config()
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  config()
+```
+We now create the folder structure for a specific experiment
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  conf <- config.exper(experiment = "CHALMERS_Yeast", # short experiment info: here I used author + species
                      assembly = "Yeast_SacCer3", # Reference folder
                      type = c("RNA-seq")) # fastq and bam type
+  conf
 ```
+conf now showe where the different files for the experiment will be saved.
 
 ## Download RNA-seq NGS data
 
-We need some data to align, if you have in-lab data, you don't need this step, since you already have access to the fastq files.
+We need some data to download the data, if you have in-lab data, you don't need this step, since you already have access to the fastq files.
 
 
 On the other hand, if you want to use published data, you need to download it. I here show what would work for the paired end RNA-seq experiment SRP012047.
@@ -51,9 +74,12 @@ the good thing here is that you can specify a project, and it will find all SRR 
 info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
 # Let's take 2 first runs in this experiment:
 info <- info[1:2,]
+
 # 18 MB, ~ 40 sec download time ->
 download.SRA(info, conf["fastq RNA-seq"], subset = 50000) 
-# 1.6 GB, ~ 100 sec download time (faster download) ->
+
+# 1.6 GB, ~ 100 sec download time 
+# (Full size files have faster MB/s download speed than subsets) ->
 # download.SRA(info, conf["fastq RNA-seq"]) 
 ```
 
@@ -71,7 +97,7 @@ We need to decide 3 things:
 - organism: Give scientific name of organism, with either " " or "_" between
 genus(saccharomyces) and species (cerevisiae).
 - output.dir: Where to output the annotation
-- assembly_type: If using ensembl as db argument, you need to decide if you want primary_assembly or toplevel. The uncompressed toplevel file of human genome is > 70 GB, so for big genomes you should usually set to primary_assembly. But for small organisms like yeast, they don't have a primary assembly so use "toplevel".
+- assembly_type: If using ensembl as db argument, you need to decide if you want primary_assembly or toplevel. The uncompressed toplevel file of human genome is > 70 GB, so for big genomes you should usually set to primary_assembly (no chromosome haplotypes). But for small organisms like yeast, they don't have a primary assembly so use "toplevel".
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   annotation <- getGenomeAndAnnotation(
@@ -82,12 +108,24 @@ genus(saccharomyces) and species (cerevisiae).
 ```
 The function will also create a txdb object to speed up loading of gtf annotation, and index your genome to a .fai file. 
 
-If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object paths, this makes it easy to rerun the script, when you have some steps already finished.
+If you run this function again after you have run this function and downloaded the data once, it will not re-download, but just output the correct object paths, this makes it easy to rerun the script (for other experiments of same species), when you have some steps already finished.
 
-If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. Note that some species does not have well annotated rRNAs, tRNAs etc, so you can either set rRNA = "silva" to download the Silva database (~ 2GB file) or manually download and add the sequences from tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
+If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are within the genome of the species, so they are extracted from the .gtf file. 
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  annotation <- getGenomeAndAnnotation(
+                      organism = organism, 
+                      genome = TRUE, GTF = TRUE,
+                      phix = TRUE, ncRNA = TRUE, tRNA = TRUE, rRNA = TRUE,
+                      output.dir = conf["ref"],
+                      assembly_type = "toplevel"
+                      )
+```
+Note that some species does not have well annotated rRNAs, tRNAs etc, so you can either set rRNA = "silva" to download the Silva database (~ 2GB file) or manually download and add the sequences from tRNAs from tRNA scan or similar databases. If the gtf does not have Non coding RNAs, they can be extracted by setting ncRNA = "auto", it will then check if the species exists in the NONCODE database and automatically download them for you if they exists. 
 
 ## RNA-seq alignment
-ORFik uses the STAR aligner, which is splice aware and fast. This will only work on unix systems (Linux or Mac) for now.
+ORFik uses the STAR aligner, which is splice aware and fast and shown to usually map the highest amount of reads.
+The sad thing is that it only works on unix systems (Linux or Mac). 
+(NOTE: for windows users: installing and running ORFik on Windows subsystem for Linux: WSL will make this work)
 To align the data we need two steps, the indexing of the genome step and the 
 alignment to the genome step.
 
