@@ -28,8 +28,10 @@ Downloads metadata from SRA
 ## Originally on SRA
 outdir <- tempdir() # Specify output directory
 # download.SRA.metadata("SRP226389", outdir)
-## ORiginally on ENA
+## Originally on ENA
 # download.SRA.metadata("ERP116106", outdir)
+## Originally on GEO (GSE)
+# download.SRA.metadata("GSE61011", outdir)
 }
 \references{
 doi: 10.1093/nar/gkq1019

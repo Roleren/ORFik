@@ -210,8 +210,10 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' ## Originally on SRA
 #' outdir <- tempdir() # Specify output directory
 #' # download.SRA.metadata("SRP226389", outdir)
-#' ## ORiginally on ENA
+#' ## Originally on ENA
 #' # download.SRA.metadata("ERP116106", outdir)
+#' ## Originally on GEO (GSE)
+#' # download.SRA.metadata("GSE61011", outdir)
 download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
@@ -219,7 +221,7 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
   if (file.exists(destfile)) {
     message(paste("Existing metadata file found in dir:", outdir, "will not download"))
   } else {
-    is.GSE <- grep("GSE", x = SRP)
+    is.GSE <- length(grep("GSE", x = SRP)) == 1
     if (is.GSE) {
       message("GSE inserted, trying to find SRP from the GSE")
       url <- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
