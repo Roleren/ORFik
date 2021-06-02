@@ -7,8 +7,9 @@
 download.SRA.metadata(SRP, outdir, remove.invalid = TRUE)
 }
 \arguments{
-\item{SRP}{a string, a study ID as either the SRP, ERP, DRP or PRJ of the study,
-examples would be "SRP226389" or "ERP116106".}
+\item{SRP}{a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
+examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
+to find the files.}
 
 \item{outdir}{directory to save file,
 The file will be called "SraRunInfo_SRP.csv", where SRP is

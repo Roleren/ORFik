@@ -189,8 +189,9 @@ download.SRA <- function(info, outdir, rename = TRUE,
 
 #' Downloads metadata from SRA
 #'
-#' @param SRP a string, a study ID as either the SRP, ERP, DRP or PRJ of the study,
-#' examples would be "SRP226389" or "ERP116106".
+#' @param SRP a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
+#' examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
+#' to find the files.
 #' @param outdir directory to save file,
 #' The file will be called "SraRunInfo_SRP.csv", where SRP is
 #' the SRP argument.
@@ -218,6 +219,22 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
   if (file.exists(destfile)) {
     message(paste("Existing metadata file found in dir:", outdir, "will not download"))
   } else {
+    is.GSE <- grep("GSE", x = SRP)
+    if (is.GSE) {
+      message("GSE inserted, trying to find SRP from the GSE")
+      url <- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
+      url <- paste0(url, SRP, "&form=text")
+      # Get GSE info
+      a <- fread(url, sep = "!", header = F, col.names = c("row.info", "info"))
+      # Now find SRP from GSE
+      SRP_line <- grepl("Series_relation = ", a$info)
+      if (length(SRP_line) == 0) stop("GSE does not have a recorded SRP; check that it is correct!")
+      b <- a[SRP_line,]$info
+      d <- b[grepl("=SRP", b)]
+      if (length(d) == 0) stop("GSE does not have a recorded SRP; check that it is correct!")
+      SRP <- gsub(".*term=", replacement = "", d)
+      message(paste("Found SRP, will continue using:", SRP))
+    }
     url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="
     url <- paste0(url, SRP)
     download.file(url, destfile = destfile)
