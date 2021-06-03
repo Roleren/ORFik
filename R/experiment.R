@@ -240,7 +240,8 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' @param txdb A path to gff/gtf file used for libraries
 #' @param fa A path to fasta genome/sequences used for libraries, remember the
 #' file must have a fasta index too.
-#' @param viewTemplate run View() on template when finished, default (TRUE)
+#' @param viewTemplate run View() on template when finished, default (FALSE).
+#' Usually gives you a better view of result than using print().
 #' @param organism character, default: "" (no organism set), scientific name
 #' of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.
 #' If you have a SRA metadata csv file, you can set this argument to
@@ -308,7 +309,7 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiments/",
                               txdb = "", fa = "", organism = "",
                               pairedEndBam = FALSE,
-                              viewTemplate = TRUE,
+                              viewTemplate = FALSE,
                               types = c("bam", "bed", "wig"),
                               libtype = "auto", stage = "auto", rep = "auto",
                               condition = "auto", fraction = "auto") {

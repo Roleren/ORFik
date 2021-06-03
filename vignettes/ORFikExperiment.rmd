@@ -13,51 +13,80 @@ vignette: >
 # Introduction
 
 Welcome to the introduction of data management with ORFik experiment. This vignette will walk you through how to work with large amounts of sequencing data effectively in ORFik.
-`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq and CageSeq data, we advice you to read ORFikOverview vignette, before starting this one.
+`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq, RCP-seq, TCP-seq, Chip-seq and Cage data, we advice you to read ORFikOverview vignette, before starting this one.
 
 ## Motivation
-NGS libraries are becoming more and more numerous. As a bioinformatician you often need to use many data-sets, like RNA-seq or ribo-seq together, to make some plots or statistics. A lot of things can go wrong when you scale up from just 1 data-set to many.
+NGS libraries are becoming more and more numerous. As a bioinformatician / biologist you often work on multi-library experiments, like 6 libraries of RNA-seq and 6 Ribo-seq libraries, split on 3 conditions with 2 replicates each. Then make some plots or statistics. A lot of things can go wrong when you scale up from just 1 library to many, or even to multiple experiments.
 
-Another problem is also that annotations like gff and fasta files combined with the NGS data, must be separately loaded. Making it possible to use wrong annotation for the NGS data, or wrong chromosome naming as chr1 vs 1 etc.
+Another problem is also that annotations like gff and fasta files combined with the NGS data, must be separately loaded. Making it possible to use wrong annotation for the NGS data.
 
 ## What is an ORFik experiment?
-It is an object to massively simplify / error correcting your code, by having a table of all libraries and annotation of an experiment. That contains filepaths and info for each library / annotation files in the experiment. It also tries to guess grouping / types / pairs (paired end bam files etc.) by the file names. It is also a safety in that it verifies your experiments contain no duplicate files, or empty or non-accessible files.  Making it almost impossible to load the wrong data. In addition it checks chromosome naming of libraries and annotation, making sure you are not mixing chr1 vs 1 as name for chromosome 1 etc.
+It is an object that simplify and error correct your NGS workflow, creating a single R object that stores and controls all results relevant to a specific experiment. It contains following important parts:
 
-The main reason to represent your NGS data as an ORFik experiment will now be shown.
+- filepaths and info for each library in the experiment (for multiple files formats: bam, bed, wig, ofst, ..) 
+- genome annotation files of the experiment (fasta genome, index, gtf, txdb)
+- organism name (for automatic GO, sequence analysis..)
+- description and author information (list.experiments(), show all experiments you have made with ORFik, easy to find and load them later)
+- API: ORFik supports a rich API for using the experiment,like outputLibs(experiment, type = "wig") will load all libraries converted to wig format into R,  loadTxdb(experiment) will load the txdb (gtf) of experiment, 
+transcriptWindow() will automatically plot metacoverage of all libraries in the experiment, countTable(experiment) will load count tables, etc..)
+- Safety: It is also a safety in that it verifies your experiments contain no duplicate, empty or non-accessible files. Making it almost impossible to load the wrong data. In addition it has other safety checks; comparing chromosome naming of libraries and annotation, making sure there is no mixing of chr1 vs 1 as name for chromosome 1 etc.
 
-## Example of creating an ORFik experiment
+# creating an ORFik experiment
+Let's say we have a human experiment, containing annotation files (.gtf and .fasta genome) + Next generation sequencing libraries (NGS-data); RNA-seq, ribo-seq and CAGE.
+
+An example of how to make the experiment will now be shown:
+
 First load ORFik
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 library(ORFik)
 ```
 
-Let's say we have a human experiment, containing annotation files (.gtf and .fasta genome) + Next generation sequencing libraries (NGS-data); RNA-seq, ribo-seq and CAGE.
-```{r eval = TRUE, echo = TRUE}
-# Read from (create.experiment() template)
-# 1. Pick directory (normally a folder with bam / bed / wig files)
-dir <- system.file("extdata", "", package = "ORFik")
-list.files(dir)
-```
+In a normal experiment, you would usually have only bam files from alignment of your experiment to start with (and split this into 3 experiments, 1 for RNA-seq, 1 for Ribo-seq and 1 for CAGE), but to simplify this for you to replicate we use the ORFik example data.
+
+## A minimal experiment
+The minimal amount of information you need to make an ORFik experiment is:
+
+- 1. A folder with NGS data
+- 2. A path to transcriptome annotation (gtf->slow or txdb->faster)
+- 3. A path to genome (fasta)
+- 4. A name for the experiment
 
 ```{r eval = TRUE, echo = TRUE}
-# 2. Pick an experiment name
-exper <- "ORFik"
-# 3. Pick .gff/.gtf and fasta location
+# 1. Pick directory (normally a folder with your aligned bam files)
+NGS.dir <- system.file("extdata", "", package = "ORFik")
+# 2. .gff/.gtf location
 txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+# 3. fasta genome location
 fasta <- system.file("extdata", "genome.fasta", package = "ORFik")
-template <- create.experiment(dir = dir,   # dir is the NGS files
-                              exper,       # Experiment name
-                              txdb = txdb, # gtf / gff / gff.db annotation
-                              fa = fasta,  # Fasta genome
+# 4. Pick an experiment name
+exper.name <- "ORFik_example_human"
+
+
+list.files(NGS.dir)
+```
+Experiments are created by all ac folder, so remember to keep your experiment folder clean of NGS libraries not related to the experiment.
+
+```{r eval = TRUE, echo = TRUE}
+
+
+template <- create.experiment(dir = NGS.dir,  # directory of the NGS files for the experiment
+                              exper.name,     # Experiment name
+                              txdb = txdb,    # gtf / gff / gff.db annotation
+                              fa = fasta,     # Fasta genome
                               organism = "Homo sapiens", # Scientific naming
                               saveDir = NULL, # If not NULL, saves experiment directly
-                              viewTemplate = FALSE)
+                              )
 data.frame(template)
 ```
 You see from the template, it excludes files with .bai or .fai, .rdata etc, and only using data of NGS libraries, defined by argument (type).
 
 You can also see it tries to guess library types, stages, replicates, condition etc. It will also try to auto-detect paired end bam files.
-To fix the things it did not find, you either save the file and modify in Excel / Libre office, or do it directly in R.
+
+## Fixing or updating an experiment
+To fix the things it did not find (a condition not specified, etc), there are 3 ways: 
+
+
+you either save the file and modify in Excel / Libre office, or do it directly in R.
 
 Let's update the template to have correct tissue-fraction in one of the samples.
 ```{r eval = TRUE, echo = TRUE}

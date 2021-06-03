@@ -176,7 +176,7 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
     scale_y_log10() +
     theme_minimal()
 
-  ggsave(file.path(folder, paste0("00_STAR_LOG_plot", filetype)), gg_STAR,
+  ggsave(file.path(folder, paste0("00_STAR_LOG_plot", plot.ext)), gg_STAR,
          width = 18, height = 9)
   return(dt_f)
 }

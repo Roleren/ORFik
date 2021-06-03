@@ -12,7 +12,7 @@ create.experiment(
   fa = "",
   organism = "",
   pairedEndBam = FALSE,
-  viewTemplate = TRUE,
+  viewTemplate = FALSE,
   types = c("bam", "bed", "wig"),
   libtype = "auto",
   stage = "auto",
@@ -48,7 +48,8 @@ be c(T, F, F). If you have a SRA metadata csv file, you can set this argument to
 study$LibraryLayout == "PAIRED", where study is the SRA metadata for all files
 that was aligned.}
 
-\item{viewTemplate}{run View() on template when finished, default (TRUE)}
+\item{viewTemplate}{run View() on template when finished, default (FALSE).
+Usually gives you a better view of result than using print().}
 
 \item{types}{Default (bam, bed, wig), which types of libraries to allow}
 
