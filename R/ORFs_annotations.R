@@ -58,7 +58,7 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
   dif <- rand5 %% 1
   rand5 <- rand5 + (dif*3)
   rand3 <- (possible / 2) - (dif*3)
-  if (!all(possible == (rand5 + rand3))) stop("Bug, report on github page!")
+  if (!all(possible == (rand5 + rand3))) stop("Bug, report on ORFik issues page!")
   rand3 <- widths - rand3 + 1
 
   possible_start <- data.table(max = widths - 3, random = rand5)

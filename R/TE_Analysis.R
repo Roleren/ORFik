@@ -208,6 +208,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
 #' @param filter.rna numeric, default 1. What is the minimum fpkm value?
 #' @return a data.table with 6 columns
 #' @family TE
+#' @importFrom data.table setkey
 #' @export
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")

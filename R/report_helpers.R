@@ -100,7 +100,7 @@ trim_detection <- function(df, finals, out.dir) {
       print("Input file paths:")
       print(df$filepath)
       message("unexpected behavior, did you delete or merge any files?",
-           "else report this bug on ORFik github page!")
+           "else report this bug on ORFik issues page!")
       message("Could not find raw read counts of data, setting to NA")
 
     } else if (notMatch) { # did not match all

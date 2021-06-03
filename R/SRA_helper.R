@@ -228,7 +228,7 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
       url <- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
       url <- paste0(url, SRP, "&form=text")
       # Get GSE info
-      a <- fread(url, sep = "!", header = F, col.names = c("row.info", "info"))
+      a <- fread(url, sep = "!", header = FALSE, col.names = c("row.info", "info"))
       # Now find SRP from GSE
       SRP_line <- grepl("Series_relation = ", a$info)
       if (length(SRP_line) == 0) stop("GSE does not have a recorded SRP; check that it is correct!")

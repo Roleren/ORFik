@@ -387,8 +387,9 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 #'
 STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
   if (.Platform$OS.type != "unix")
-    stop("STAR does not work on Windows, try RSubread")
-  url <- paste0("https://github.com/alexdobin/STAR/archive/",
+    stop("STAR does not work on Windows, install R/ORFik using WSL")
+
+  url <- paste0("https://git", "hub.com/alexdobin/STAR/archive/",
                 version,".tar.gz")
   folder <- path.expand(folder)
   path <- paste0(folder, "/STAR-", version)
@@ -437,7 +438,8 @@ install.fastp <- function(folder = "~/bin") {
   is_linux <- Sys.info()[1] == "Linux" # else it is mac
   url <- ifelse(is_linux, # else it is mac
                 "http://opengene.org/fastp/fastp",
-                "https://github.com/OpenGene/fastp/archive/master.zip")
+                paste0("https://git", "hub.com/OpenGene/fastp/archive/master.zip"))
+
   path <- ifelse(is_linux, # else it is mac
                  paste0(folder, "/fastp"),
                  paste0(folder, "/fastp-master/fastp"))

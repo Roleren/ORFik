@@ -339,7 +339,7 @@ test_that("pmapToTranscriptF works as intended", {
 
 test_that("pmapFromTranscriptF works as intended", {
   temp <- pmapToTranscriptF(grl, grl)
-  x <- ranges(unlist(temp, use.names = T))
+  x <- ranges(unlist(temp, use.names = TRUE))
   names(x) <- c(1,2)
   res <- pmapFromTranscriptF(x, grl)
   expect_equal(ranges(res), ranges(grl))
