@@ -14,6 +14,7 @@ vignette: >
 
 Welcome to the `ORFik` package. 
 `ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data and NGS data.
+
 This vignette will walk you through how to how to download annotation and align data with ORFik.
 
 Here we will show a full example of aligning RNA-seq from yeast using the SacCer3 genome.
@@ -226,7 +227,7 @@ If you have less than 40 GB free memory (32 GB might work), adjust this during i
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 index <- STAR.index(annotation, max.ram = 20, SAsparse = 2)
 ```
-### Systems with that restricts max open files
+### Systems that restricts max open files
 STAR can use a lot of threads, each threads makes many several files open. Some systems have a restriction on how many files you can have open. This is found by doing "ulimit -Hn" in the terminal.
 If STAR crashes from this error, you need either increase amount of open files allowed (requires root access) or decrease the amount of cores used by STAR (does not require root access):
 ```{r eval = FALSE, echo = TRUE, message = FALSE}

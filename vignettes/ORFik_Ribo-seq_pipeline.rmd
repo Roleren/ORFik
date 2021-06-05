@@ -18,10 +18,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Welcome to the `ORFik` package. 
 `ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data and NGS data.
+
 This vignette will preview a simple Ribo-seq pipeline using ORFik. It is important you read all the other vignettes before this one, since functions will not be explained here in detail. 
 
 # Pipeline
 This pipeline will shows steps needed to analyse Ribo-seq from Alexaki et al, 2020
+
 The following steps are done:
 
 1. Define directory paths

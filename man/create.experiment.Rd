@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{create.experiment}
 \alias{create.experiment}
-\title{Create a ORFik \code{\link{experiment}}}
+\title{Create an ORFik \code{\link{experiment}}}
 \usage{
 create.experiment(
   dir,
@@ -22,9 +22,13 @@ create.experiment(
 )
 }
 \arguments{
-\item{dir}{Which directory / directories to create experiment from}
+\item{dir}{Which directory / directories to create experiment from,
+must be a directory with NGS data from your experiment. Will include
+all files of file type specified by "types" argument. So do not mix
+files from other experiments in the same folder!}
 
-\item{exper}{Short name of experiment, max 5 characters long}
+\item{exper}{Short name of experiment. Will be name used to load
+experiment, and name shown when running \code{\link{list.experiments}}}
 
 \item{saveDir}{Directory to save experiment csv file, default:
 "~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
@@ -55,37 +59,46 @@ Usually gives you a better view of result than using print().}
 
 \item{libtype}{character, default "auto". Library types,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file name.}
+"auto" means ORFik will try to guess from file names.}
 
 \item{stage}{character, default "auto". Developmental stage, tissue or
 cell line, must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file name.}
+"auto" means ORFik will try to guess from file names.}
 
 \item{rep}{character, default "auto". Replicate numbering,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file name.}
+"auto" means ORFik will try to guess from file names.}
 
 \item{condition}{character, default "auto". Library conditions,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file name.}
+"auto" means ORFik will try to guess from file names.}
 
 \item{fraction}{character, default "auto". Fractionation of library,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file name.}
+"auto" means ORFik will try to guess from file names.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,
  only a template for it!
 }
 \description{
-Create information on runs / samples from an experiment as a single R object.
-By using files in a folder / folders. It will try to make an experiment table
-with information per sample. There will be several columns you can fill in,
-most of there it will try to auto-detect. Like if it is RNA-seq or Ribo-seq,
-Wild type or mutant etc.
+Create a single R object that stores and controls all results relevant to
+a specific Next generation sequencing experiment.
+Click the experiment link above in the title if you are not sure what an
+ORFik experiment is.\cr\cr
+By using files in a folder / folders. It will make an experiment table
+with information per sample, this object allows you to use the extensive API in
+ORFik that works on experiments. \cr\cr
+Information Auto-detection:\cr
+There will be several columns you can fill in, when creating the object,
+if the files have logical names like (RNA-seq_WT_rep1.bam) it will try to auto-detect
+the most likely values for the columns. Like if it is RNA-seq or Ribo-seq,
+Wild type or mutant, is this replicate 1 or 2 etc.\cr
 You will have to fill in the details that were not auto detected.
 Easiest way to fill in the blanks are in a csv editor like libre Office
-or excel. Remember that each row (sample) must have a unique combination
+or excel. You can also remake the experiment and specify the
+specific column manually.
+Remember that each row (sample) must have a unique combination
 of values.
 An extra column called "reverse" is made if there are paired data,
 like +/- strand wig files.

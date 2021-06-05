@@ -64,38 +64,52 @@ exper.name <- "ORFik_example_human"
 
 list.files(NGS.dir)
 ```
-Experiments are created by all ac folder, so remember to keep your experiment folder clean of NGS libraries not related to the experiment.
+Experiments are created by all accepted files from a folder (file extension given by type argument, default: bam, bed, wig), so remember to keep your experiment folder clean of other NGS libraries not related to the experiment.
 
 ```{r eval = TRUE, echo = TRUE}
-
-
+# This experiment is intentionally malformed, so we first make only a template:
 template <- create.experiment(dir = NGS.dir,  # directory of the NGS files for the experiment
                               exper.name,     # Experiment name
                               txdb = txdb,    # gtf / gff / gff.db annotation
                               fa = fasta,     # Fasta genome
                               organism = "Homo sapiens", # Scientific naming
-                              saveDir = NULL, # If not NULL, saves experiment directly
+                              saveDir = NULL, # Create template instead of ready experiment
                               )
-data.frame(template)
+# The experiment contains 3 main parts:
+# 1. Annotation, organism, general info:
+data.frame(template)[1:3, ]
+# 2. NGS data set-up info:
+data.frame(template)[4:8, 1:5]
+# 3. NGS File paths:
+data.frame(template)[4:8, 6]
 ```
+
+
 You see from the template, it excludes files with .bai or .fai, .rdata etc, and only using data of NGS libraries, defined by argument (type).
 
 You can also see it tries to guess library types, stages, replicates, condition etc. It will also try to auto-detect paired end bam files.
 
 ## Fixing or updating an experiment
+Since every NGS file in a experiment must be a unique set of information columns (
+there can not be 2 RNA-seq libraries from wildtype that are replicate1 etc), 
+the create.experiment function will intentionally abort if it can not distinguish all the libraries in 
+some way. (Example: It might find 2 files that are categorized as RNA-seq replicate 1, but the condtion: 
+Wild type vs crispr mutant was not auto-detected), so the files would be non-unique.
+
 To fix the things it did not find (a condition not specified, etc), there are 3 ways: 
 
-
-you either save the file and modify in Excel / Libre office, or do it directly in R.
+- Specify the values manually in create.experiment. Example: condition = rep(c("WT", "Mutant"), each = 3)
+- Open the file in Excel / Libre office and edit
+- Edit the template (only applies if object was not directly saved, like in this vignette)
 
 Let's update the template to have correct tissue-fraction in one of the samples.
 ```{r eval = TRUE, echo = TRUE}
 template$X5[6] <- "heart_valve" # <- fix non unique row (tissue fraction is heart valve)
-# read experiment from template
-df <- read.experiment(template)
+
+df <- read.experiment(template)# read experiment from template
 ```
 
-To save it, do:
+Normally you read experiments saved to disc, if you made only a template, save it by doing:
 ```{r eval = FALSE, echo = TRUE}
 save.experiment(df, file = "path/to/save/experiment.csv")
 ```
@@ -106,60 +120,74 @@ To see the object, just show it like this:
 ```{r eval = TRUE, echo = TRUE}
 df
 ```
-You see here that file paths are hidden, you can acces them like this:
+You see here that file paths are hidden, you can access them  like this:
 
-If you have varying version of libraries, like p-shifted, bam, simplified wig files, you can get
-filepaths to different version with this function.
 
 ```{r eval = TRUE, echo = TRUE}
 filepath(df, type = "default")
 ```
-## Loading all data in experiment
-```{r eval = TRUE, echo = TRUE, warning = FALSE}
-# First load experiment if not present
-# We use our already loaded experiment: (df) here
+If you have varying version of libraries, like p-shifted, bam, simplified wig files, you can get
+filepaths to different version with this function.
 
-# Load transcript annotation
-txdb <- loadTxdb(df) # transcript annotation
-# And now NGS data
-outputLibs(df, chrStyle = seqlevelsStyle(txdb)) # Use txdb as seqlevelsStyle reference
-```
+## Loading data from experiment
+
+### Loading NGS data
+
+There are 2 ways to load NGS data, the first one is to load data into an environment.
 By default all libraries are loaded into .GlobalEnv (global environment) with names decided by
 columns in experiment, to see what the names will be, do:
-
 ```{r eval = TRUE, echo = TRUE}
 bamVarName(df) #This will be the names:
 ```
 
-If you have multiple experiments, it might be a chance of non-unique naming, 2 experiments might have a library called cage.
-To be sure names are unique, add the experiment in the variable name:
+Now let's auto-load the libraries to the global environment
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
+outputLibs(df)
+```
+
+The second way is to load manually, more secure, but also more cumbersome.
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+files <- filepath(df, type = "default")
+CAGE_loaded_manually <- fimport(files[1])
+```
+
+If you use the auto-loading and you have multiple experiments, it might be a chance of non-unique naming, 2 experiments might have a library called cage.
+To be sure names are unique, we add the experiment name in the variable name:
 ```{r eval = TRUE, echo = TRUE}
 df@expInVarName <- TRUE
 bamVarName(df) #This will be the names:
 ```
+
 You see here that the experiment name, "ORFik" is in the variable name
 If you are only working on one experiment, you do not need to include the name, since
 there is no possibility of duplicate naming (the experiment class validates all names are unique). 
 
 Since we want NGS data names without "ORFik", let's remove the loaded libraries and load them again.
-
 ```{r eval = TRUE, echo = TRUE}
 df@expInVarName <- FALSE
 remove.experiments(df)
-outputLibs(df, chrStyle = seqlevelsStyle(txdb)) 
+outputLibs(df) 
 ```
 
-## Loading transcript regions
+### Loading Annotation and specific regions
+
+There is also many function to load specific parts of the annotation:
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
+txdb <- loadTxdb(df) # transcript annotation
+```
+
 Let's say we want to load all leaders, cds and 3' UTRs that are longer than 30.
 With ORFik experiment this is easy:
 ```{r eval = TRUE, echo = TRUE}
-txNames <- filterTranscripts(txdb, minFiveUTR = 30,minCDS = 30, minThreeUTR = 30)
+txNames <- filterTranscripts(txdb, minFiveUTR = 30, minCDS = 30, minThreeUTR = 30)
 loadRegions(txdb, parts = c("leaders", "cds", "trailers"), names.keep = txNames)
 ```
 The regions are now loaded into .GlobalEnv, only keeping transcripts from txNames.
 
 ## Plotting with ORFik experiments
-Lets make a plot with coverage over mrna in just ribo-seq
+ORFik supports a myriad of plots for experiments. 
+Lets make a plot with coverage over mrna, seperated by 5' UTR, CDS and 3' UTR in one of the 
+ribo-seq libraries from the experiment
 ```{r eval = TRUE, echo = TRUE, warning=FALSE}
 transcriptWindow(leaders, cds, trailers, df[3,])
 ```
@@ -247,7 +275,7 @@ In addition there is a QC report for Ribo-seq, with some addition analysis of re
 RiboQC.plot(df)
 ```
 
-# Using the ORFik system in your script
+# Using the ORFik experiment system in your script
 Usually you want to do some operation on multiple data-sets. If ORFik does not include a premade function for what you want, you can make it yourself. If your data is in the format of an ORFik experiment, this operation is simple.
 
 ## Looping over all libraries in experiment
@@ -288,6 +316,8 @@ lapply(files, FUN = function(file, cds) {
 ```
 
 ### Reformat output to data.table (merge column-wise)
+
+Since the output from the above loops will output lists, a very fast conversion to data.table can be done with:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 library(data.table)
 
@@ -298,8 +328,26 @@ cds <- loadRegion(df, "cds")
 res <- bplapply(libs, FUN = function(lib, cds) { 
         return(entropy(cds, get(lib)))
     }, cds = cds)
+
+res.by.columns <- copy(res)
 # Add some names and convert
-names(res) <- libs
-data.table::setDT(res) # Will give 1 column per library
-res # Now by columns
+names(res.by.columns) <- libs
+data.table::setDT(res.by.columns) # Will give 1 column per library
+res.by.columns # Now by columns
 ```
+
+### Reformat output to data.table (merge row-wise)
+
+To merge row-wise do:
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+res.by.rows <- copy(res)
+# Add some names and convert
+names(res.by.rows) <- libs
+res.by.rows <- rbindlist(res.by.rows) # Will bind rows per library
+res.by.columns # now melted row-wise
+```
+
+# Conclusion
+
+ORFik contains a whole API for using the ORFik.experiment class to simplify coding over experiments. More examples of use shown 
+in documentation and in the Annotation_Alignment and Ribo-seq pipeline vignettes.

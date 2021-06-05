@@ -6,10 +6,24 @@
 \alias{experiment}
 \title{experiment class definition}
 \description{
-It is an object to massivly simplify your coding, by having a
-table of all libraries of an experiment. That contains
-filepaths and info for each library in the experiment. It also tries
-to guess grouping / types / pairs by the file names.
+It is an object that simplify and error correct your NGS workflow, creating a single R object that stores and controls all results relevant to a specific experiment. It contains following important parts:
+\cr
+\itemize{
+ \item{filepaths : }{and info for each library in the experiment
+ (for multiple files formats: bam, bed, wig, ofst, ..)}
+ \item{genome : }{annotation files of the experiment
+ (fasta genome, index, gtf, txdb)}
+ \item{organism : }{name (for automatic GO, sequence analysis..)}
+ \item{description : }{and author information (list.experiments(),
+ show all experiments you have made with ORFik, easy to find and load them later)}
+ \item{API : }{ORFik supports a rich API for using the experiment,
+ like outputLibs(experiment, type = "wig") will load all libraries
+ converted to wig format into R,  loadTxdb(experiment) will load the
+ txdb (gtf) of experiment, transcriptWindow() will automatically plot
+ metacoverage of all libraries in the experiment, countTable(experiment) will load count tables, etc..)}
+ \item{Safety : }{It is also a safety in that it verifies your experiments contain
+  no duplicate, empty or non-accessible files.}
+}
 \cr
 Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather

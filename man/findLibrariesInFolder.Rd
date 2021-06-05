@@ -7,7 +7,10 @@
 findLibrariesInFolder(dir, types, pairedEndBam = FALSE)
 }
 \arguments{
-\item{dir}{Which directory / directories to create experiment from}
+\item{dir}{Which directory / directories to create experiment from,
+must be a directory with NGS data from your experiment. Will include
+all files of file type specified by "types" argument. So do not mix
+files from other experiments in the same folder!}
 
 \item{types}{Default (bam, bed, wig), which types of libraries to allow}
 
