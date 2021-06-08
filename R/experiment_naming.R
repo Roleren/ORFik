@@ -8,22 +8,25 @@
 #' of the main name in second column as a list.
 libNames <- function() {
   mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
-                "SSU", "ATAC", "tRNA", "SHAPE",
-                "ChIP", "PRPF")
+                "SSU", "ATAC", "PRPF", "PAS-Seq", "PAL-Seq","SHAPE",
+                "ChIP", "PAR-CLIP", "tRNA")
   allNames <-
-    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq",
-           "Input", "input", "total RNA"),
+    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq",
+           "Input", "input", "total RNA", "Total RNA", "total_RNA"),
          c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
-           "Ribosome", "ribosome", "Profiling","profiling",
-           "Footprint", "footprint", "RP "),
+           "riboseq", "Ribosome", "ribosome", "Profiling","profiling",
+           "Footprint", "footprint", "RP ", "ribo_profile"),
          c("QTI"),
          c("CAGE", "cage"),
          c("80S","LSU"),
          c("40S","SSU"),
          c("ATAC"),
          c("PRPF"),
+         c("PAS-Seq"),
+         c("PAL-Seq"),
          c("SHAPE"),
          c("ChIP"),
+         c("PAR-CLIP"),
          c("tRNA")
     )
   dt <- data.table(mainName, allNames)

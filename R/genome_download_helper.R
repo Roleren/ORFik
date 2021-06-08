@@ -68,9 +68,19 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip,
     organismCapital <- paste0(toupper(substr(organism, 1, 1)),
                               substr(organism, 2, nchar(organism)))
     organismCapital <- gsub("_", " ", organismCapital)
-    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
-    if (!is.logical(genome) & !is.null(genome))
-      seqlevelsStyle(txdb) <- seqlevelsStyle(FaFile(genome))[1]
+
+    if (!is.logical(genome) & !is.null(genome)) {
+      fa <- FaFile(genome)
+      fa.seqinfo <- seqinfo(fa)
+      if ("MT" %in% names(fa.seqinfo))
+        isCircular(fa.seqinfo)["MT"] <- TRUE
+      txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
+                                               chrominfo = fa.seqinfo)
+      seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
+    } else {
+      txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
+    }
+
     txdb_file <- paste0(gtf, ".db")
     AnnotationDbi::saveDb(txdb, txdb_file)
   } else { # check if it already exists

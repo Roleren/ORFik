@@ -14,6 +14,11 @@ names(ORFranges) = rep("tx1_1",3)
 names(ORFranges2) = rep("tx1_2",3)
 grl <- GRangesList(tx1_1 = ORFranges, tx1_2 = ORFranges2)
 gr <- unlist(grl, use.names = FALSE)
+grl.with.seqinfo <- grl
+seqlengths(grl.with.seqinfo) <- 50
+grl.with.seqinfo.neg <- grl.with.seqinfo
+strand(grl.with.seqinfo.neg) <- "-"
+grl.with.seqinfo.neg <- sortPerGroup(grl.with.seqinfo.neg)
 
 cds1 <- ORFranges <- GRanges(seqnames = Rle(rep("1", 2)),
                              ranges = IRanges(start = c(100, 110),
@@ -113,6 +118,16 @@ test_that("assignFirstExonsStartSite works as intended", {
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
   expect_equal(firstStartPerGroup(reassigned, FALSE), newStarts)
+
+  # Bellow 0:
+  newStarts<- as.integer(c(-5, -10))
+  reassigned <- ORFik:::assignFirstExonsStartSite(grl.with.seqinfo, newStarts)
+  expect_equal(startSites(reassigned, is.sorted = TRUE), c(1, 1))
+  # Above seqlength:
+  newStarts<- as.integer(c(26, 51))
+  reassigned <- ORFik:::assignFirstExonsStartSite(grl.with.seqinfo.neg, newStarts)
+  expect_equal(startSites(reassigned, is.sorted = TRUE), c(26, 50))
+
 })
 
 test_that("assignLastExonsStopSite works as intended", {
@@ -121,6 +136,15 @@ test_that("assignLastExonsStopSite works as intended", {
   expect_is(reassigned,"GRangesList")
   expect_equal(length(reassigned), 2)
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), newStops)
+
+  # Bellow 0:
+  newStops<- as.integer(c(-5, -10))
+  reassigned <- ORFik:::assignLastExonsStopSite(grl.with.seqinfo.neg, newStops)
+  expect_equal(stopSites(reassigned, is.sorted = TRUE), c(1, 1))
+  # Above seqlength:
+  newStops<- as.integer(c(26, 51))
+  reassigned <- ORFik:::assignLastExonsStopSite(grl.with.seqinfo, newStops)
+  expect_equal(stopSites(reassigned, is.sorted = TRUE), c(26, 50))
 })
 
 
