@@ -7,12 +7,16 @@
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
 libNames <- function() {
-  mainName <- c("RNA", "RFP", "CAGE", "LSU",
+  mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
                 "SSU", "ATAC", "tRNA", "SHAPE",
                 "ChIP", "PRPF")
   allNames <-
-    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq"),
-         c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq"),
+    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq",
+           "Input", "input", "total RNA"),
+         c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
+           "Ribosome", "ribosome", "Profiling","profiling",
+           "Footprint", "footprint", "RP "),
+         c("QTI"),
          c("CAGE", "cage"),
          c("80S","LSU"),
          c("40S","SSU"),
