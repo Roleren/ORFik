@@ -433,7 +433,12 @@ findFromPath <- function(filepaths, candidates, slot = "auto") {
   types <- c()
   for (path in filepaths) {
     hit <- unlist(sapply(candidates, grep, x = path))
+    if (length(hit) > 1) # Remove multiple hits from same group:
+      hit <- hit[!duplicated(mainNames(names(hit), dt))]
     hitRel <- unlist(sapply(candidates, grep, x = gsub(".*/", "", path)))
+    if (length(hitRel) > 1) # Remove multiple hits from same group:
+      hitRel <- hitRel[!duplicated(mainNames(names(hitRel), dt))]
+
     # Assign the one (if existing) with 1 match
     type <- if(length(hit) == 1 & length(hitRel) == 0) {
       names(hit)

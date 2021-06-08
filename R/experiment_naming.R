@@ -11,7 +11,7 @@ libNames <- function() {
                 "SSU", "ATAC", "tRNA", "SHAPE",
                 "ChIP", "PRPF")
   allNames <-
-    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq",
+    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq",
            "Input", "input", "total RNA"),
          c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
            "Ribosome", "ribosome", "Profiling","profiling",
