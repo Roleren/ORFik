@@ -31,7 +31,7 @@ files from other experiments in the same folder!}
 experiment, and name shown when running \code{\link{list.experiments}}}
 
 \item{saveDir}{Directory to save experiment csv file, default:
-"~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
+"~/Bio_data/ORFik_experiments/". Set to NULL if you don't want to save
 it to disc.}
 
 \item{txdb}{A path to gff/gtf file used for libraries}

@@ -1,7 +1,8 @@
 #' experiment class definition
 #'
-#' It is an object that simplify and error correct your NGS workflow, creating a single R object that stores and controls all results relevant to a specific experiment. It contains following important parts:
-#' \cr
+#' It is an object that simplify and error correct your NGS workflow,
+#' creating a single R object that stores and controls all results relevant
+#' to a specific experiment.\cr It contains following important parts:
 #' \itemize{
 #'  \item{filepaths : }{and info for each library in the experiment
 #'  (for multiple files formats: bam, bed, wig, ofst, ..)}
@@ -18,7 +19,6 @@
 #'  \item{Safety : }{It is also a safety in that it verifies your experiments contain
 #'   no duplicate, empty or non-accessible files.}
 #' }
-#' \cr
 #' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 #' more ease to find not only counts, but rather
 #' information about libraries, and annotation, so that more tasks are
@@ -261,7 +261,7 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' @param exper Short name of experiment. Will be name used to load
 #' experiment, and name shown when running \code{\link{list.experiments}}
 #' @param saveDir Directory to save experiment csv file, default:
-#' "~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
+#' "~/Bio_data/ORFik_experiments/". Set to NULL if you don't want to save
 #' it to disc.
 #' @param types Default (bam, bed, wig), which types of libraries to allow
 #' @param txdb A path to gff/gtf file used for libraries

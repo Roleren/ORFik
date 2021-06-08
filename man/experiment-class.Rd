@@ -6,8 +6,9 @@
 \alias{experiment}
 \title{experiment class definition}
 \description{
-It is an object that simplify and error correct your NGS workflow, creating a single R object that stores and controls all results relevant to a specific experiment. It contains following important parts:
-\cr
+It is an object that simplify and error correct your NGS workflow,
+creating a single R object that stores and controls all results relevant
+to a specific experiment.\cr It contains following important parts:
 \itemize{
  \item{filepaths : }{and info for each library in the experiment
  (for multiple files formats: bam, bed, wig, ofst, ..)}
@@ -24,7 +25,6 @@ It is an object that simplify and error correct your NGS workflow, creating a si
  \item{Safety : }{It is also a safety in that it verifies your experiments contain
   no duplicate, empty or non-accessible files.}
 }
-\cr
 Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather
 information about libraries, and annotation, so that more tasks are

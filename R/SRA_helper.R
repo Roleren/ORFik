@@ -221,7 +221,7 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
   destfile <- paste0(outdir, "/SraRunInfo_", SRP, ".csv")
   if (file.exists(destfile)) {
     message(paste("Existing metadata file found in dir:", outdir, "will not download"))
-  } else {
+  } else { # Find SRP from GSE
     is.GSE <- length(grep("GSE", x = SRP)) == 1
     if (is.GSE) {
       message("GSE inserted, trying to find SRP from the GSE")
@@ -236,6 +236,8 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
       d <- b[grepl("=SRP", b)]
       if (length(d) == 0) stop("GSE does not have a recorded SRP; check that it is correct!")
       SRP <- gsub(".*term=", replacement = "", d)
+      SRP <- unique(SRP)
+      if (length(SRP) > 1) stop("Found multiple non identical SRPs for GSE:", SRP)
       message(paste("Found SRP, will continue using:", SRP))
     }
     url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="

@@ -18,13 +18,13 @@
 #' are stored as \code{\link{SummarizedExperiment}}, for easy loading into
 #' DEseq, conversion to normalized fpkm values,
 #' or collapsing replicates in an experiment.
-#' And can be imported with \code{\link{countTable}} function.\cr
+#' And can be imported with \code{\link{countTable}} function.\cr\cr
 #' Everything will be outputed in the directory of your NGS data,
 #' inside the folder ./QC_STATS/, relative to data location in 'df'.
 #' You can specify new out location with out.dir if you want.\cr
 #' To make a ORFik experiment, see ?ORFik::experiment \cr
 #' To see some normal mrna coverage profiles of different RNA-seq protocols:
-#' https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/
+#' \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/}
 #' @inheritParams outputLibs
 #' @param out.dir optional output directory, default:
 #' \code{dirname(df$filepath[1])}.
