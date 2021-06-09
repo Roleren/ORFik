@@ -2,8 +2,8 @@
 #'
 #' It uses Fourier transform + periodogram for finding periodic
 #' vectors on the transcript
-#' normalized counts over all CDS regions from 0 to 149, where TIS is
-#' 0.\cr
+#' normalized counts over all CDS regions from position 0 (TIS) to 149
+#' (or other max position if increased by the user.\cr
 #' Checks if there is a periodicity and if the periodicity is 3,
 #' more precisely between 2.9 and 3.1.
 #'

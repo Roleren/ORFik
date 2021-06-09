@@ -146,7 +146,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
                           type = "ofst", cage = NULL, plot.ext = ".pdf",
                           acceptedLengths = 21:75, upstream = c(50, 30),
                           downstream = c(29, 69),
-                          shifting = c("5prime", "3prime")) {
+                          shifting = c("5prime", "3prime"),
+                          longestPerGene = FALSE) {
 
   if (outdir == "default") outdir <- paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")
   if (!(any(region %in% c("TIS", "TSS", "TTS")))) stop("region must be either TSS, TIS or TTS")
@@ -156,19 +157,25 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
   txdb <- loadTxdb(df)
   if ("TIS" %in% region) {
     message("TIS")
-    txNames <- filterTranscripts(txdb, 51, 70, 0)
-    center <- loadRegion(txdb, "cds")[txNames]
-    mrna <- loadRegion(txdb, "mrna")[txNames]
+    minLeaderLength <- max(upstream) + 1
+    minCDSLength <- max(downstream) + 1
+    txNames <- filterTranscripts(txdb, minLeaderLength, minCDSLength, 0,
+                                 longestPerGene = longestPerGene)
+    center <- loadRegion(txdb, "cds", names.keep = txNames)
+    mrna <- loadRegion(txdb, "mrna", names.keep = txNames)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TIS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   if ("TSS" %in% region) {
     message("TSS")
-    txNames <- filterTranscripts(txdb, 70, 0, 0)
-    center <- loadRegion(txdb, "leaders")[txNames]
+    minLeaderLength <- max(downstream) + 1
+    minOutsideTXLength <- max(upstream) + 1
+    txNames <- filterTranscripts(txdb, minLeaderLength, 0, 0,
+                                 longestPerGene = longestPerGene)
+    center <- loadRegion(txdb, "leaders", names.keep = txNames)
     mrna <- loadRegion(txdb, "mrna")
-    len <- startSites(center, keep.names = TRUE, is.sorted = TRUE) > 51
+    len <- startSites(center, keep.names = TRUE, is.sorted = TRUE) > minOutsideTXLength
     center <- center[len]
     mrna <- mrna[names(center)]
     if (!is.null(cage)) {
@@ -176,16 +183,19 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
       center <- reassignTSSbyCage(center, cage)
       mrna <- downstreamFromPerGroup(mrna, startSites(center, is.sorted = TRUE))
     }
-    mrna <- extendLeaders(mrna, 51)
+    mrna <- extendLeaders(mrna, minOutsideTXLength)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TSS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
   }
   if ("TTS" %in% region) {
     message("TTS")
-    txNames <- filterTranscripts(txdb, 0, 51, 70)
-    center <- loadRegion(txdb, "trailers")[txNames]
-    mrna <- loadRegion(txdb, "mrna")[txNames]
+    minCDSLength <- max(upstream) + 1
+    minTrailerLength <- max(downstream) + 1
+    txNames <- filterTranscripts(txdb, 0, minCDSLength, minTrailerLength,
+                                 longestPerGene = longestPerGene)
+    center <- loadRegion(txdb, "trailers", names.keep = txNames)
+    mrna <- loadRegion(txdb, "mrna", names.keep = txNames)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TTS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)

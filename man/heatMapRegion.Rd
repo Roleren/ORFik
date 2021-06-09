@@ -15,7 +15,8 @@ heatMapRegion(
   acceptedLengths = 21:75,
   upstream = c(50, 30),
   downstream = c(29, 69),
-  shifting = c("5prime", "3prime")
+  shifting = c("5prime", "3prime"),
+  longestPerGene = FALSE
 )
 }
 \arguments{
