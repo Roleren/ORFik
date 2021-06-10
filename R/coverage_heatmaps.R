@@ -116,6 +116,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' Input CAGE file if you use TSS and want improved 5' annotation.
 #'
 #' @inheritParams heatMapL
+#' @inheritParams filterTranscripts
 #' @param region a character, default "TIS", can be any combination of the
 #'  set: c("TSS", "TIS", "TTS"), which are: Transcription start site
 #'  (5' end of mrna), Translation initation site (5' end of CDS),
