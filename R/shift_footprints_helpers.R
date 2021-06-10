@@ -53,7 +53,8 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
     stop("interval vector must be subset of x indices!")
   meta <- x[seq.int(max.pos)] # First 40 or other specified
   pos <- -(length(x)/2):(length(x)/2 - 1) # The positions
-  frames <- rep(c(0,1,2), 20)[seq.int(max.pos)]
+  frames <- rep(c(0,1,2), 20)[seq.int(max.pos)] # Frame vector
+  # Find best frame
   max.frame = which.max(c(sum(meta[frames == 0]), sum(meta[frames == 1]),
                         sum(meta[frames == 2]))) - 1
   # subset to best frame
@@ -72,8 +73,11 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
       downs <- c(downs, downstream); ups <- c(ups, upstream)
       means <- c(means, m)
     }
-    # New scaler, punishes regions far away from -12.
-    scaled_means <- means / (abs(pos[interval] + 12) + 1)
+    # Find center position of frame:
+    center.pos <- c(12, 11, 13)[max.frame + 1]
+    # New scaler, punishes rare extreme regions far away from center position.
+    scaled_means <- means / (abs(pos[interval] + center.pos) + 1)^0.25
+
     # Debug
     # data.table(ups, downs, means, scaled_means, pos = pos[interval])
     offset <- pos[interval[which.max(abs(scaled_means))]]
