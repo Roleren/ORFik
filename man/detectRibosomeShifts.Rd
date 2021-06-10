@@ -18,7 +18,8 @@ detectRibosomeShifts(
   min_reads = 1000,
   accepted.lengths = 26:34,
   heatmap = FALSE,
-  must.be.periodic = TRUE
+  must.be.periodic = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -76,6 +77,10 @@ You can also set a filepath to save the file there.}
 
 \item{must.be.periodic}{logical TRUE, if FALSE will not filter on
 periodic read lengths. (The Fourier transform filter will be skipped).}
+
+\item{verbose}{logical FALSE, if TRUE report details of
+read length filtering (periodogram) and
+change point analysis per read length.}
 }
 \value{
 a data.table with lengths of footprints and their predicted

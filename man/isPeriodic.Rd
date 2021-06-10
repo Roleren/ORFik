@@ -4,11 +4,13 @@
 \alias{isPeriodic}
 \title{Find if there is a periodicity of 3 in the vector}
 \usage{
-isPeriodic(x)
+isPeriodic(x, verbose = FALSE)
 }
 \arguments{
 \item{x}{(numeric) Vector of values to detect periodicity of 3 like in
 RiboSeq data.}
+
+\item{verbose}{logical, default FALSE. Report details of periodogram.}
 }
 \value{
 a logical, if it is periodic.
@@ -19,10 +21,14 @@ vectors on the transcript
 normalized counts over all CDS regions from position 0 (TIS) to 149
 (or other max position if increased by the user.\cr
 Checks if there is a periodicity and if the periodicity is 3,
-more precisely between 2.9 and 3.1.
+more precisely between 2.9 and 3.1.\cr
 }
 \details{
+Input data:\cr
 Transcript normalized means per CDS TIS region, count reads per position,
 divide that number per position by the total of that transcript, then sum
-up these numbers per position for all transcripts.
+up these numbers per position for all transcripts.\cr
+Detection method:\cr
+The maximum dominant Fourier frequencies is found by finding which
+period has the highest spectrum density (using a 10% cosine taper).
 }

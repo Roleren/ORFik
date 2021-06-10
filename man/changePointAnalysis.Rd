@@ -8,7 +8,9 @@ changePointAnalysis(
   x,
   feature = "start",
   max.pos = 40L,
-  interval = seq.int(14L, 24L)
+  interval = seq.int(14L, 24L),
+  center.pos = 12,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -24,6 +26,11 @@ if tail is not relevant.}
 \item{interval}{integer vector , default seq.int(14L, 24L).
 Seperation points for upstream and downstream windows.
 That is (+/- 5 from -12) position.}
+
+\item{center.pos}{integer, default 12. Centering position for likely p-site.
+A first qualified guess to save time. 12 means 12 bases before TIS.}
+
+\item{verbose}{logical, default FALSE. Report details of change point analysis.}
 }
 \value{
 a single numeric offset, -12 would mean p-site is 12 bases upstream
@@ -33,9 +40,11 @@ Creates sliding windows of transcript normalized counts per position
 and check which window has most in upstream window vs downstream window.
 Pick the position with highest absolute value maximum of the window difference.
 Checks windows with split sites between positions -17 to -7, where 0 is TIS.
-Normally you expect the shift around -12.
+Normally you expect the shift around -12 for Ribo-seq, in TCP-seq / RCP-seq
+it is usually a bit higher, usually because of cross-linking variations.
 }
 \details{
+For visual explanation, see the supl. data of ORFik paper:
 Transcript normalized means per CDS TIS region, count reads per position,
 divide that number per position by the total of that transcript, then sum
 up these numbers per position for all transcripts.

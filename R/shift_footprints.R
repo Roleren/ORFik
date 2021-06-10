@@ -132,6 +132,9 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' @inheritParams footprints.analysis
 #' @param must.be.periodic logical TRUE, if FALSE will not filter on
 #' periodic read lengths. (The Fourier transform filter will be skipped).
+#' @param verbose logical FALSE, if TRUE report details of
+#' read length filtering (periodogram) and
+#' change point analysis per read length.
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -171,7 +174,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
-  heatmap = FALSE, must.be.periodic = TRUE) {
+  heatmap = FALSE, must.be.periodic = TRUE, verbose = FALSE) {
 
   txdb <- loadTxdb(txdb)
   # Filters for cds and footprints
@@ -204,10 +207,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   cds <- cds[countOverlapsW(cds, footprints, "score") > 0]
   top_tx <- percentage_to_ratio(top_tx, cds)
   if (must.be.periodic) {
+    period.score <- ifelse(verbose, "periodicv", "periodic")
     periodicity <- windowPerReadLength(cds, tx, footprints,
                                        pShifted = FALSE, upstream = 0,
                                        downstream = firstN - 1,
-                                       zeroPosition = 0, scoring = "periodic",
+                                       zeroPosition = 0, scoring = period.score,
                                        acceptedLengths = tab$size)
     validLengths <- periodicity[score == TRUE,]$fraction
   } else validLengths <- accepted.lengths
@@ -225,7 +229,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     rw <- rw[sum.count >= quantile(sum.count, top_tx), ]
     rw <- coverageScorings(rw, scoring = "sum")
     footprints.analysis(rw, heatmap)
-    offset <- rw[, .(offsets_start = changePointAnalysis(score)),
+    offset <- rw[, .(offsets_start = changePointAnalysis(score,
+                                                         verbose = verbose)),
                  by = fraction]
   }
   if (stop & !is.null(minThreeUTR)) {

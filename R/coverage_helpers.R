@@ -320,7 +320,7 @@ coverageScorings <- function(coverage, scoring = "zscore",
       stop("Can not use frameSum scoring when no frames are given!")
     groupFPF <- quote(list(fraction, genes, frame))
     scoring <- "sum"
-  } else if (scoring == "periodic") {
+  } else if (scoring %in% c("periodic", "periodicv")) {
     groupFPF <- ifelse(!is.null(cov$fraction),
                                 (quote(fraction)), quote(""))
   }
@@ -363,9 +363,11 @@ coverageScorings <- function(coverage, scoring = "zscore",
     res <- cov[, .(score = sum(count, na.rm = TRUE)),
                         by = eval(groupFPF)]
     res[, `:=`  (score = score / uniques)]
-  }  else if (scoring == "periodic") {
+  } else if (scoring %in% c("periodic", "periodicv")) {
     cov <- coverageScorings(cov, "transcriptNormalized")
-    res <- cov[, .(score = isPeriodic(score)), by = eval(groupFPF)]
+    verbose <- scoring == "periodicv"
+    res <- cov[, .(score = isPeriodic(score, verbose = verbose)),
+               by = eval(groupFPF)]
   } else stop(paste("Invalid scoring: ", scoring))
   res[] # for print
   return(res)
