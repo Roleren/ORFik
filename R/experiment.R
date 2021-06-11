@@ -745,15 +745,23 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 
 #' Converted format of NGS libraries
 #'
-#' Export as either .ofst, .bedo or .bedoc files.\cr
+#' Export as either .ofst, .wig, .bedo or .bedoc files:\cr
+#' Export files as .ofst for fastest load speed into R.\cr
+#' Export files as .wig for use in IGV or other genome browsers.\cr
 #' Export files as .bedo files: It is a bed file with 2 score columns.
 #' Gives a massive speedup when cigar string and bam flags are not needed.\cr
 #' Export files as .bedoc files: If cigar is needed, gives you replicates
 #' and cigar, so a fast way to load a GAlignment object, other bam flags
 #' are lost. If type is bedoc addSizeColumn and method will be ignored.
 #'
-#' See \code{\link{export.bedo}} and \code{\link{export.bedoc}}
-#' for information on file formats
+#' See \code{\link{export.ofst}}, \code{\link{export.wiggle}},
+#' \code{\link{export.bedo}} and \code{\link{export.bedoc}}
+#' for information on file formats.\cr
+#' If libraries of the experiment are
+#' already loaded into environment (default: .globalEnv) is will export
+#' using those files as templates. If they are not in environment the
+#' .ofst files from the bam files are loaded (unless you are converting
+#' to .ofst then the .bam files are loaded).
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir optional output directory, default:
 #' dirname(df$filepath[1]),
