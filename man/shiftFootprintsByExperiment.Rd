@@ -20,7 +20,8 @@ shiftFootprintsByExperiment(
   BPPARAM = bpparam(),
   log = TRUE,
   heatmap = FALSE,
-  must.be.periodic = TRUE
+  must.be.periodic = TRUE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -73,7 +74,9 @@ p-shifting.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 
-\item{log}{logical, default (TRUE), output a log file with parameters used.}
+\item{log}{logical, default (TRUE), output a log file with parameters used and
+a .rds file with all shifts per library
+(can be loaded with \code{\link{shifts.load}})}
 
 \item{heatmap}{a logical or character string, default FALSE.
 If TRUE, will plot heatmap of
@@ -81,7 +84,14 @@ raw reads before p-shifting to console, to see if shifts given make sense.
 You can also set a filepath to save the file there.}
 
 \item{must.be.periodic}{logical TRUE, if FALSE will not filter on
-periodic read lengths. (The Fourier transform filter will be skipped).}
+periodic read lengths. (The Fourier transform filter will be skipped).
+This is useful if you are not going to do periodicity analysis, that is:
+for you more coverage depth (more read lengths)
+is more important than only keeping the high quality periodic read lengths.}
+
+\item{verbose}{logical FALSE, if TRUE report details of
+read length filtering (periodogram) and
+change point analysis per read length.}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",

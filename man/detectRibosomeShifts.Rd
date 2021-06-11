@@ -76,7 +76,10 @@ raw reads before p-shifting to console, to see if shifts given make sense.
 You can also set a filepath to save the file there.}
 
 \item{must.be.periodic}{logical TRUE, if FALSE will not filter on
-periodic read lengths. (The Fourier transform filter will be skipped).}
+periodic read lengths. (The Fourier transform filter will be skipped).
+This is useful if you are not going to do periodicity analysis, that is:
+for you more coverage depth (more read lengths)
+is more important than only keeping the high quality periodic read lengths.}
 
 \item{verbose}{logical FALSE, if TRUE report details of
 read length filtering (periodogram) and
@@ -116,8 +119,16 @@ gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 \dontrun{
 footprints <- readBam(riboSeq_file)
+## Using CDS start site as reference point:
+detectRibosomeShifts(footprints, gtf_file)
+## Using CDS start site and stop site as 2 reference points:
+#detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
+## Debug and detailed information for accepted reads lengths and p-site:
+detectRibosomeShifts(footprints, gtf_file, heatmap = TRUE, verbose = TRUE)
+## Debug why read length 31 was not accepted or wrong p-site:
+#detectRibosomeShifts(footprints, gtf_file, must.be.periodic = FALSE,
+#              accepted.lengths = 31, heatmap = TRUE, verbose = TRUE)
 
-detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
 ## Subset bam file
 param = ScanBamParam(flag = scanBamFlag(
                        isDuplicate = FALSE,
@@ -131,7 +142,7 @@ library(GenomicFeatures)
 txdb <- loadTxdb(gtf_file)
 tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 tx <- extendLeaders(tx, 30)
-# Now run function, without 5' and 3' UTRs
+## Now run function, without 5' and 3' UTRs
 detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
                      minCDS = 150L, minThreeUTR = NULL, firstN = 150L,
                      tx = tx)

@@ -132,6 +132,9 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' @inheritParams footprints.analysis
 #' @param must.be.periodic logical TRUE, if FALSE will not filter on
 #' periodic read lengths. (The Fourier transform filter will be skipped).
+#' This is useful if you are not going to do periodicity analysis, that is:
+#' for you more coverage depth (more read lengths)
+#' is more important than only keeping the high quality periodic read lengths.
 #' @param verbose logical FALSE, if TRUE report details of
 #' read length filtering (periodogram) and
 #' change point analysis per read length.
@@ -149,8 +152,16 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
 #' \dontrun{
 #' footprints <- readBam(riboSeq_file)
+#' ## Using CDS start site as reference point:
+#' detectRibosomeShifts(footprints, gtf_file)
+#' ## Using CDS start site and stop site as 2 reference points:
+#' #detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
+#' ## Debug and detailed information for accepted reads lengths and p-site:
+#' detectRibosomeShifts(footprints, gtf_file, heatmap = TRUE, verbose = TRUE)
+#' ## Debug why read length 31 was not accepted or wrong p-site:
+#' #detectRibosomeShifts(footprints, gtf_file, must.be.periodic = FALSE,
+#' #              accepted.lengths = 31, heatmap = TRUE, verbose = TRUE)
 #'
-#' detectRibosomeShifts(footprints, gtf_file, stop = TRUE)
 #' ## Subset bam file
 #' param = ScanBamParam(flag = scanBamFlag(
 #'                        isDuplicate = FALSE,
@@ -164,7 +175,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' txdb <- loadTxdb(gtf_file)
 #' tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
 #' tx <- extendLeaders(tx, 30)
-#' # Now run function, without 5' and 3' UTRs
+#' ## Now run function, without 5' and 3' UTRs
 #' detectRibosomeShifts(footprints, txdb, start = TRUE, minFiveUTR = NULL,
 #'                      minCDS = 150L, minThreeUTR = NULL, firstN = 150L,
 #'                      tx = tx)
@@ -279,7 +290,9 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
 #' p-shifting.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
-#' @param log logical, default (TRUE), output a log file with parameters used.
+#' @param log logical, default (TRUE), output a log file with parameters used and
+#' a .rds file with all shifts per library
+#' (can be loaded with \code{\link{shifts.load}})
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",
 #' wig, bedo or .bedo)
 #' @importFrom rtracklayer export.bed
@@ -306,7 +319,8 @@ shiftFootprintsByExperiment <- function(df,
                                         output_format = c("ofst", "wig"),
                                         BPPARAM = bpparam(),
                                         log = TRUE, heatmap = FALSE,
-                                        must.be.periodic = TRUE) {
+                                        must.be.periodic = TRUE,
+                                        verbose = FALSE) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
@@ -324,7 +338,8 @@ shiftFootprintsByExperiment <- function(df,
                           top_tx, minFiveUTR, minCDS, minThreeUTR,
                           firstN, min_reads, accepted.lengths,
                           output_format, heatmap = heatmap,
-                          must.be.periodic = must.be.periodic
+                          must.be.periodic = must.be.periodic,
+                          verbose = verbose
                           ) {
     message(file)
     rfp <- fimport(file)
@@ -335,7 +350,8 @@ shiftFootprintsByExperiment <- function(df,
                                    firstN = firstN, min_reads = min_reads,
                                    accepted.lengths = accepted.lengths,
                                    heatmap = heatmap,
-                                   must.be.periodic = must.be.periodic)
+                                   must.be.periodic = must.be.periodic,
+                                   verbose = verbose)
     shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
 
@@ -365,7 +381,7 @@ shiftFootprintsByExperiment <- function(df,
       firstN = firstN, min_reads = min_reads,
       accepted.lengths = accepted.lengths, output_format = output_format,
       heatmap = heatmap, must.be.periodic = must.be.periodic,
-      BPPARAM = BPPARAM)
+      verbose = verbose, BPPARAM = BPPARAM)
 
   if (log) {
     fileConn<-file(paste0(path, "/pshifting_arguments.txt"), "w")
@@ -376,7 +392,7 @@ shiftFootprintsByExperiment <- function(df,
     close(fileConn)
     # Save shifts
     names(shifts) <- rfpFiles
-    saveRDS(shifts, file = paste0(path, "/shifting_table.rds"))
+    saveRDS(shifts, file = file.path(path, "shifting_table.rds"))
   }
   return(invisible(NULL))
 }
