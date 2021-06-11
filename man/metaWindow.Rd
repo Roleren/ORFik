@@ -66,7 +66,9 @@ You can also assign a score column manually.}
 \value{
 A data.table with scored counts (score) of
 reads mapped to positions (position) specified in windows along with
-frame (frame).
+frame (frame) per gene (genes) per library (fraction) per transcript region
+(feature). Column that does not apply is not given, by position and (score/count)
+is always returned.
 }
 \description{
 Sums up coverage over set of GRanges objects as a meta representation.

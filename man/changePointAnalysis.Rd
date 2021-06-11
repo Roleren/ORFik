@@ -10,6 +10,7 @@ changePointAnalysis(
   max.pos = 40L,
   interval = seq.int(14L, 24L),
   center.pos = 12,
+  info = NULL,
   verbose = FALSE
 )
 }
@@ -29,6 +30,8 @@ That is (+/- 5 from -12) position.}
 
 \item{center.pos}{integer, default 12. Centering position for likely p-site.
 A first qualified guess to save time. 12 means 12 bases before TIS.}
+
+\item{info}{specify read length if wanted for verbose output.}
 
 \item{verbose}{logical, default FALSE. Report details of change point analysis.}
 }

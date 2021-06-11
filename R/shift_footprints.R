@@ -229,7 +229,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     rw <- rw[sum.count >= quantile(sum.count, top_tx), ]
     rw <- coverageScorings(rw, scoring = "sum")
     footprints.analysis(rw, heatmap)
-    offset <- rw[, .(offsets_start = changePointAnalysis(score,
+    if (verbose) {
+      message("-------------------")
+      message("Change point analysis (start): ups (upstream window score), downs (downstream window score)")
+    }
+    offset <- rw[, .(offsets_start = changePointAnalysis(score, info = unique(fraction),
                                                          verbose = verbose)),
                  by = fraction]
   }

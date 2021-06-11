@@ -4,11 +4,13 @@
 \alias{isPeriodic}
 \title{Find if there is a periodicity of 3 in the vector}
 \usage{
-isPeriodic(x, verbose = FALSE)
+isPeriodic(x, info = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{(numeric) Vector of values to detect periodicity of 3 like in
 RiboSeq data.}
+
+\item{info}{specify read length if wanted for verbose output.}
 
 \item{verbose}{logical, default FALSE. Report details of periodogram.}
 }

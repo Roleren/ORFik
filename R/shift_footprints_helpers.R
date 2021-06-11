@@ -16,20 +16,24 @@
 #' period has the highest spectrum density (using a 10% cosine taper).
 #' @param x (numeric) Vector of values to detect periodicity of 3 like in
 #' RiboSeq data.
+#' @param info specify read length if wanted for verbose output.
 #' @param verbose logical, default FALSE. Report details of periodogram.
 #' @return a logical, if it is periodic.
 #' @importFrom stats fft spec.pgram
 #'
-isPeriodic <- function(x, verbose = FALSE) {
+isPeriodic <- function(x, info = NULL, verbose = FALSE) {
   if (sum(x) == 0) return(FALSE)
   amplitudes <- abs(fft(x))
   amp <- amplitudes[2 : (length(amplitudes) / 2 + 1)]
   specter <- spec.pgram(x = x, plot = FALSE)
   periods <- 1 / specter$freq
   if (verbose) {
+
     dt <- data.table(periods,
                      amp, spec = specter$spec)[order(spec, decreasing = TRUE)][1:10,]
     message("Top 10 periods from spectrogram, look for period > 2.9 & < 3.1:")
+    if (!is.null(info)) message("Info / Read length: ", info)
+
     print(dt)
   }
   return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
@@ -59,13 +63,14 @@ isPeriodic <- function(x, verbose = FALSE) {
 #'  That is (+/- 5 from -12) position.
 #' @param center.pos integer, default 12. Centering position for likely p-site.
 #' A first qualified guess to save time. 12 means 12 bases before TIS.
+#' @param info specify read length if wanted for verbose output.
 #' @param verbose logical, default FALSE. Report details of change point analysis.
 #' @return a single numeric offset, -12 would mean p-site is 12 bases upstream
 #' @family pshifting
 #'
 changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
                                 interval = seq.int(14L, 24L),
-                                center.pos = 12, verbose = FALSE) {
+                                center.pos = 12, info = NULL, verbose = FALSE) {
   if (max.pos > length(x)) stop("Can not subset max.pos > length of x")
   if (!all(interval %in% seq.int(x)))
     stop("interval vector must be subset of x indices!")
@@ -99,6 +104,7 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
     # Debug information:
     if (verbose) {
       dt <- data.table(ups, downs, means, scaled_means, pos = pos[interval])
+      message("Info / Read length: ", info)
       message("Possible change points of the max frame with sliding windows:")
       print(dt)
     }
