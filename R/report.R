@@ -103,8 +103,7 @@ QCplots <- function(df, region = "mrna",
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)
   txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = TRUE,
-                               stopOnEmpty = FALSE,
-                               create.fst.version = TRUE)
+                               stopOnEmpty = FALSE)
   if (length(txNames) == 0) { # No valid tx to plot
     warning("No 5' UTRs or 3' of significant length defined, metacoverage plots",
     " can not be made, check your annotation file")

@@ -306,14 +306,15 @@ importGtfFromTxdb <- function(txdb) {
     }
   }
   if (is(txdb, "TxDb")) {
-    if (!(file_ext(metadata(txdb)[3,2]) %in%
+    genome <- metadata(txdb)[3,2]
+    if (!(file_ext(genome) %in%
           c("gtf", "gff", "gff3", "gff2"))) {
       message("This is error txdb ->")
       message("It should be found by: metadata(txdb)[3,2]")
       print(txdb)
       stop("Could not find valid gtf / gff file, only data base object!")
     }
-    txdb <- metadata(txdb)[3,2]
+    txdb <- genome
   }
   if (!file.exists(txdb)) {
     message <- paste("Could not open gtf, did you rename folder of gtf?")
@@ -353,8 +354,12 @@ importGtfFromTxdb <- function(txdb) {
 #' ~ 0.01 second next time you run filterTranscripts with this txdb object.
 #' The file is stored in the
 #' same folder as the genome this txdb is created from, with the name:\cr
-#' paste0(ORFik:::remove.file_ext(metadata(txdb)[3,2]), "_txLengths.fst")\cr
-#' Some error checks are done to see this is a valid location.
+#' \code{paste0(ORFik:::remove.file_ext(metadata(txdb)[3,2]), "_",
+#'        gsub(" \\(.*| |:", "", metadata(txdb)[metadata(txdb)[,1] ==
+#'         "Creation time",2]), "_txLengths.fst")}\cr
+#' Some error checks are done to see this is a valid location, if the txdb
+#' data source is a repository like UCSC and not a local folder, it will not
+#' be made.
 #' @return a character vector of valid transcript names
 #' @export
 #' @examples
@@ -404,7 +409,7 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 #' A speedup wrapper around \code{\link{transcriptLengths}},
 #' default load time of lengths is ~ 15 seconds, if ORFik fst
 #' optimized lengths object has been made, load that file instead:
-#' load time reduced to ~ 0.01 second.
+#' load time reduced to ~ 0.1 second.
 #' @inheritParams filterTranscripts
 #' @param with.utr5_len logical TRUE, include length of 5' UTRs,
 #'  ignored if .fst exists
@@ -420,8 +425,11 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
                                        create.fst.version = FALSE) {
   txdb <- loadTxdb(txdb)
   # Path to gtf:
-  genome <- remove.file_ext(metadata(txdb)[3,2])
-  possible_fst <- paste0(genome, "_txLengths.fst")
+  genome <- metadata(txdb)[3,2]
+  genome_ext <- remove.file_ext(genome)
+  creation.time <- gsub(" \\(.*| |:", "",
+                        metadata(txdb)[metadata(txdb)[,1] == "Creation time",2])
+  possible_fst <- paste0(genome_ext, "_",creation.time, "_txLengths.fst")
   if (file.exists(possible_fst)) { # If fst exists
     return(setDT(fst::read_fst(possible_fst)))
   } else if (create.fst.version) { # If make fst
@@ -431,12 +439,15 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
         with.utr5_len = with.utr5_len,
         with.utr3_len = with.utr3_len))
     # Validation save location
-    if (dir.exists(dirname(possible_fst))) {
-      if (file.exists(metadata(txdb)[3,2]) |
-          file.exists(paste0(metadata(txdb)[3,2], ".db"))) {
-        message("Creating fst speedup file for transcript lengths, at location:")
-        message(possible_fst)
-        fst::write_fst(tx, possible_fst)
+    if (file_ext(genome) %in%
+          c("gtf", "gff", "gff3", "gff2")) {
+      if (dir.exists(dirname(possible_fst))) {
+        if (file.exists(genome) |
+            file.exists(paste0(genome, ".db"))) {
+          message("Creating fst speedup file for transcript lengths, at location:")
+          message(possible_fst)
+          fst::write_fst(tx, possible_fst)
+        }
       }
     }
     return(tx)

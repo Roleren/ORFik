@@ -45,8 +45,12 @@ reducing load time from ~ 15 seconds to
 ~ 0.01 second next time you run filterTranscripts with this txdb object.
 The file is stored in the
 same folder as the genome this txdb is created from, with the name:\cr
-paste0(ORFik:::remove.file_ext(metadata(txdb)[3,2]), "_txLengths.fst")\cr
-Some error checks are done to see this is a valid location.}
+\code{paste0(ORFik:::remove.file_ext(metadata(txdb)[3,2]), "_",
+       gsub(" \\(.*| |:", "", metadata(txdb)[metadata(txdb)[,1] ==
+        "Creation time",2]), "_txLengths.fst")}\cr
+Some error checks are done to see this is a valid location, if the txdb
+data source is a repository like UCSC and not a local folder, it will not
+be made.}
 }
 \value{
 a character vector of valid transcript names
