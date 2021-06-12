@@ -333,7 +333,7 @@ importGtfFromTxdb <- function(txdb) {
 #' You can set the integer to 0, that will return all within that group.
 #'
 #' If your annotation does not have leaders or trailers, set them to NULL,
-#' since 0 does mean there must exist a column called utr3_len etc.
+#' since 0 means there must exist a column called utr3_len etc.
 #' Genes with gene_id = NA will be be removed.
 #' @inheritParams loadRegion
 #' @param minFiveUTR (integer) minimum bp for 5' UTR during filtering for the
@@ -347,6 +347,14 @@ importGtfFromTxdb <- function(txdb) {
 #' longest total transcript. So if transcript is shorter but cds is longer,
 #'  it will still be the one returned.
 #' @param stopOnEmpty logical TRUE, stop if no valid transcripts are found ?
+#' @param create.fst.version logical, FALSE. If TRUE, creates a .fst version
+#' of the transcript length table (if it not already exists),
+#' reducing load time from ~ 15 seconds to
+#' ~ 0.01 second next time you run filterTranscripts with this txdb object.
+#' The file is stored in the
+#' same folder as the genome this txdb is created from, with the name:\cr
+#' paste0(ORFik:::remove.file_ext(metadata(txdb)[3,2]), "_txLengths.fst")\cr
+#' Some error checks are done to see this is a valid location.
 #' @return a character vector of valid transcript names
 #' @export
 #' @examples
@@ -360,15 +368,13 @@ importGtfFromTxdb <- function(txdb) {
 filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
                               minThreeUTR = 30L, longestPerGene = TRUE,
                               stopOnEmpty = TRUE,
-                              by = "tx") {
+                              by = "tx", create.fst.version = FALSE) {
   if (!(by %in% c("tx", "gene"))) stop("by must be either tx or gene!")
   txdb <- loadTxdb(txdb)
   five <- !is.null(minFiveUTR)
   three <- !is.null(minThreeUTR)
 
-  tx <- data.table::setDT(
-    GenomicFeatures::transcriptLengths(
-      txdb, with.cds_len = TRUE, with.utr5_len = five, with.utr3_len = three))
+  tx <- optimizedTranscriptLengths(txdb, five, three, create.fst.version)
   five <- rep(five, nrow(tx))
   three <- rep(three, nrow(tx))
 
@@ -379,16 +385,66 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
   tx <- data.frame(tx)
   tx <- tx[order(tx$gene_id, -rank(tx$cds_len), -rank(tx$tx_len)), ]
   # can't be used due to crashes of R, no errors reported...
-  # data.table::setorder(tx, gene_id, -cds_len, -tx_len) 
+  # data.table::setorder(tx, gene_id, -cds_len, -tx_len)
   if (longestPerGene) {
     tx <- tx[!duplicated(tx$gene_id), ]
   }
   tx <- tx[!is.na(tx$gene_id), ]
-  
-  if (stopOnEmpty & length(tx$tx_name) == 0) 
-    stop("No transcript has leaders and trailers of specified minFiveUTR", 
+
+  if (stopOnEmpty & length(tx$tx_name) == 0)
+    stop("No transcript has leaders and trailers of specified minFiveUTR",
          " minCDS, minThreeUTR")
-  if (by == "gene") 
+  if (by == "gene")
     return(tx$gene_id)
   return(tx$tx_name)
+}
+
+#' Load length of all transcripts
+#'
+#' A speedup wrapper around \code{\link{transcriptLengths}},
+#' default load time of lengths is ~ 15 seconds, if ORFik fst
+#' optimized lengths object has been made, load that file instead:
+#' load time reduced to ~ 0.01 second.
+#' @inheritParams filterTranscripts
+#' @param with.utr5_len logical TRUE, include length of 5' UTRs,
+#'  ignored if .fst exists
+#' @param with.utr3_len logical TRUE, include length of 3' UTRs,
+#'  ignored if .fst exists
+#' @return a data.table of loaded lengths 8 columns,
+#' 1 row per transcript isoform.
+#' @importFrom data.table setDT
+#' @importFrom fst read_fst
+#' @importFrom fst write_fst
+optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
+                                       with.utr3_len = TRUE,
+                                       create.fst.version = FALSE) {
+  txdb <- loadTxdb(txdb)
+  # Path to gtf:
+  genome <- remove.file_ext(metadata(txdb)[3,2])
+  possible_fst <- paste0(genome, "_txLengths.fst")
+  if (file.exists(possible_fst)) { # If fst exists
+    return(setDT(fst::read_fst(possible_fst)))
+  } else if (create.fst.version) { # If make fst
+    tx <- data.table::setDT(
+      GenomicFeatures::transcriptLengths(
+        txdb, with.cds_len = TRUE,
+        with.utr5_len = with.utr5_len,
+        with.utr3_len = with.utr3_len))
+    # Validation save location
+    if (dir.exists(dirname(possible_fst))) {
+      if (file.exists(metadata(txdb)[3,2]) |
+          file.exists(paste0(metadata(txdb)[3,2], ".db"))) {
+        message("Creating fst speedup file for transcript lengths, at location:")
+        message(possible_fst)
+        fst::write_fst(tx, possible_fst)
+      }
+    }
+    return(tx)
+  }
+  # Else load normally
+  return(data.table::setDT(
+    GenomicFeatures::transcriptLengths(
+      txdb, with.cds_len = TRUE,
+      with.utr5_len = with.utr5_len,
+      with.utr3_len = with.utr3_len)))
 }

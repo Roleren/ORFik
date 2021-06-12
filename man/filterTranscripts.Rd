@@ -11,7 +11,8 @@ filterTranscripts(
   minThreeUTR = 30L,
   longestPerGene = TRUE,
   stopOnEmpty = TRUE,
-  by = "tx"
+  by = "tx",
+  create.fst.version = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,15 @@ longest total transcript. So if transcript is shorter but cds is longer,
 
 \item{by}{a character, default "tx" Either "tx" or "gene". What names to
 output region by, the transcript name "tx" or gene names "gene"}
+
+\item{create.fst.version}{logical, FALSE. If TRUE, creates a .fst version
+of the transcript length table (if it not already exists),
+reducing load time from ~ 15 seconds to
+~ 0.01 second next time you run filterTranscripts with this txdb object.
+The file is stored in the
+same folder as the genome this txdb is created from, with the name:\cr
+paste0(ORFik:::remove.file_ext(metadata(txdb)[3,2]), "_txLengths.fst")\cr
+Some error checks are done to see this is a valid location.}
 }
 \value{
 a character vector of valid transcript names
@@ -52,7 +62,7 @@ So only transcripts with leaders, cds and trailers will be returned.
 You can set the integer to 0, that will return all within that group.
 
 If your annotation does not have leaders or trailers, set them to NULL,
-since 0 does mean there must exist a column called utr3_len etc.
+since 0 means there must exist a column called utr3_len etc.
 Genes with gene_id = NA will be be removed.
 }
 \examples{
