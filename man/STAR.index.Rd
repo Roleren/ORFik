@@ -11,6 +11,7 @@ STAR.index(
   max.cpus = min(90, detectCores() - 1),
   max.ram = 30,
   SAsparse = 1,
+  tmpDirStar = "-",
   wait = TRUE,
   remake = FALSE,
   script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik")
@@ -20,7 +21,7 @@ STAR.index(
 \item{arguments}{a named character vector containing paths wanted to
 use for index creation. They must be named correctly:
 names must be a subset of:
-c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")}
+c("gtf", "genome", "contaminants", "phix", "rRNA", "tRNA","ncRNA")}
 
 \item{output.dir}{directory to save indices, default:
 paste0(dirname(arguments[1]), "/STAR_index/"), where arguments is the
@@ -44,6 +45,10 @@ you might need to set this to 2.
 suffux array sparsity, i.e.  distance between indices:
 use bigger numbers to decrease needed RAM at the cost of mapping
 speed reduction. Only applies to genome, not conaminants.}
+
+\item{tmpDirStar}{character, default "-". STAR automatic temp folder creation,
+deleted when done. If you are on a NFS file share drive, and you have a non NFS tmp dir,
+set this to \code{tempdir()} or the relevant folder to get a considerable speedup!}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it
