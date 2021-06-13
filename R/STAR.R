@@ -11,7 +11,7 @@
 #' @param arguments a named character vector containing paths wanted to
 #' use for index creation. They must be named correctly:
 #' names must be a subset of:
-#' c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA")
+#' c("gtf", "genome", "contaminants", "phix", "rRNA", "tRNA","ncRNA")
 #' @param output.dir directory to save indices, default:
 #' paste0(dirname(arguments[1]), "/STAR_index/"), where arguments is the
 #' arguments input for this function.
@@ -30,6 +30,9 @@
 #' suffux array sparsity, i.e.  distance between indices:
 #' use bigger numbers to decrease needed RAM at the cost of mapping
 #' speed reduction. Only applies to genome, not conaminants.
+#' @param tmpDirStar character, default "-". STAR automatic temp folder creation,
+#' deleted when done. If you are on a NFS file share drive, and you have a non NFS tmp dir,
+#' set this to \code{tempdir()} or the relevant folder to get a considerable speedup!
 #' @param script location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
@@ -50,7 +53,7 @@
 #' # STAR.index(arguments, output.dir)
 STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
                        star.path = STAR.install(), max.cpus = min(90, detectCores() - 1),
-                       max.ram = 30, SAsparse = 1,
+                       max.ram = 30, SAsparse = 1, tmpDirStar = "-",
                        wait = TRUE, remake = FALSE,
                        script = system.file("STAR_Aligner",
                                             "STAR_MAKE_INDEX.sh",
@@ -80,13 +83,14 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   max.cpus <- paste("-m", max.cpus)
   max.ram <- paste("-R", format(max.ram*1e9, scientific = FALSE))
   SAsparse <- paste("-a", SAsparse)
+  tmpDirStar <- paste("-T", tmpDirStar)
   # TODO: ADD check for file size vs available RAM.
   # file.size(annotation["genome"]) / 1e9
   # system("cat /proc/meminfo")
   #memory_GB <- as.integer(gsub(" |MemTotal:|kB", replacement = "", a[1])) / 1e6
 
   full <- paste(script, out, star.path, max.cpus, max.ram, SAsparse,
-                paste(hits, collapse = " "))
+                tmpDirStar, paste(hits, collapse = " "))
   message("STAR indexing:\n")
   print(full); print("\n")
   if (.Platform$OS.type == "unix") {

@@ -25,6 +25,7 @@ OPTIONS:
 	-S         path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-m	   max cpus allowed (defualt 40)
 	-r	   genomeSAsparseD argument, default 1.
+	-T     STAR temp dir, default -.
 	-h	   this help message
 example usage (easy): STAR_MAKE_INDEX.sh -o <out.dir> -s <in.species>
 
@@ -49,7 +50,8 @@ species=""
 genomeGTF=""
 genome=""
 species=""
-while getopts ":o:s:p:r:R:a:c:n:t:f:g:G:S:m:h" opt; do
+tmpStarDir="-"
+while getopts ":o:s:p:r:R:a:c:n:t:f:g:G:S:m:T:h" opt; do
     case $opt in
     s)
 	species=$OPTARG
@@ -107,6 +109,10 @@ while getopts ":o:s:p:r:R:a:c:n:t:f:g:G:S:m:h" opt; do
     m)
 	      maxCPU=$OPTARG
 	      echo "-m maxCPU: $OPTARG"
+        ;;
+    T)
+	      tmpStarDir=$OPTARG
+	      echo "-T tmpStarDir: $OPTARG"
         ;;
     h)
         usage
@@ -199,7 +205,8 @@ if [[ ${genome} != "" ]]; then
 	--sjdbOverhang 72 \
 	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
 	--genomeSAsparseD $SAsparse \
-	--outFileNamePrefix ${mainGenomeOut}
+	--outFileNamePrefix ${mainGenomeOut} \
+	--outTmpDir ${tmpStarDir}
 fi
 # contaminants
 if [[ $contaminants != "" ]]; then
