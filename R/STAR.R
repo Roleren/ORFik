@@ -31,8 +31,10 @@
 #' use bigger numbers to decrease needed RAM at the cost of mapping
 #' speed reduction. Only applies to genome, not conaminants.
 #' @param tmpDirStar character, default "-". STAR automatic temp folder creation,
-#' deleted when done. If you are on a NFS file share drive, and you have a non NFS tmp dir,
-#' set this to \code{tempdir()} or the relevant folder to get a considerable speedup!
+#' deleted when done. The directory can no exists, as a safety STAR must make it!.
+#' If you are on a NFS file share drive, and you have a non NFS tmp dir,
+#' set this to \code{tempfile()} or the manually specified folder to get a
+#' considerable speedup!
 #' @param script location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
