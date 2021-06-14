@@ -387,6 +387,7 @@ rename.SRA.files <- function(files, new_names) {
     warning("Did not find a way for valid renaming, returning without renaming!")
     return(files)
   }
+  names(new_names) <- basename(files)
   return(new_names)
 }
 
@@ -417,7 +418,10 @@ download.ebi <- function(info, outdir, rename = TRUE,
   urls <- ORFik:::find_url_ebi(SRR)
   if (length(urls) == 0) {
     message("Fastq files not found on ebi")
-    return(files)
+    return(NULL)
+  } else if (length(urls) < length(SRR)) {
+    message("Not al fastq files found on ebi")
+    return(NULL)
   }
 
   files <- file.path(outdir, basename(urls))

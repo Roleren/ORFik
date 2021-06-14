@@ -234,6 +234,18 @@ If STAR crashes from this error, you need either increase amount of open files a
 STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
                     max.cpus = 4) # Reduce cores to 4 usually works for most systems
 ```
+### Restart STAR from crashed step
+STAR can sometimes crash, maybe your disc becomes full or you specified a wrong parameter etc. 
+ORFik has some clever tricks to continue alignment from where it crashed. 
+Let's say the trimming is done and it fails during genome alignment. Then 
+of course if you rerun the function as it was, it would re-trim the raw fastq-reads.
+To continue using the completed trim files instead and only do genome alignment, do:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
+                    max.cpus = 4, steps = "tr-ge", resume = "ge") # Resume ge using completed tr
+```
+This would save you the time to re-trim, or update the path of input files to the fastq files
+of the trimmed folder.
 
 # Create an ORFik experiment of the Yeast data
 The next step is to make an ORFik experiment (check out the ORFik experiment vignette if you are unfamiliar with this class).
