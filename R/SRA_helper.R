@@ -480,10 +480,16 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' # Paired
 #' #ORFik:::find_url_ebi("SRR105788")
 find_url_ebi <- function(SRR, stop.on.error = FALSE) {
+  ebi_server <- "ftp://ftp.sra.ebi.ac.uk"
+  # Check that we can connect to ebi
+  exists.ftp.dir.fast(ebi_server, report.error = TRUE)
+
+  # Create candidate directories
   SRR_first_3 <- substring(SRR, 1, 6)
   SRR_last_3 <- paste0("0", reverse(substring(reverse(SRR), 1, 2)))
   SRR_last_1 <- paste0("00", reverse(substring(reverse(SRR), 1, 1)))
-  SRR_default <- file.path("ftp://ftp.sra.ebi.ac.uk/vol1/fastq", SRR_first_3)
+  SRR_default <- file.path(ebi_server, "vol1/fastq", SRR_first_3)
+
   SRR_fastq <- paste0(SRR, ".fastq.gz")
   SRR_fastq_paired <- c(paste0(SRR, c("_1"), ".fastq.gz"),
                         paste0(SRR, c("_2"), ".fastq.gz"))
@@ -498,22 +504,22 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   SRR_paths_spec_paired <- file.path(SRR_default, SRR, SRR_fastq_paired)
   # Check what format the files are found in (3 types: 2 each)
   url.exists <-  sapply(SRR_paths, function(x)
-    exists.ftp.file.fast(x, x))
+    exists.ftp.file.fast(x))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_paired, function(x)
-                    exists.ftp.file.fast(x, x)))
+                    exists.ftp.file.fast(x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec2, function(x)
-                    exists.ftp.file.fast(x, x)))
+                    exists.ftp.file.fast(x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_paired_spec2, function(x)
-                    exists.ftp.file.fast(x, x)))
+                    exists.ftp.file.fast(x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec, function(x)
-                    exists.ftp.file.fast(x, x)))
+                    exists.ftp.file.fast(x)))
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec_paired, function(x)
-                    exists.ftp.file.fast(x, x)))
+                    exists.ftp.file.fast(x)))
   final.path.temp <- names(url.exists[url.exists])
   # Sort them correctly as input
   final.path <- unlist(sapply(c(SRR, "asdasd"), function(x, final.path.temp) {

@@ -2,19 +2,19 @@
 % Please edit documentation in R/utils.R
 \name{exists.ftp.file.fast}
 \alias{exists.ftp.file.fast}
-\title{A copy of biomartr ftp check}
+\title{A fast ftp file check}
 \usage{
-exists.ftp.file.fast(url, file.path)
+exists.ftp.file.fast(url, report.error = FALSE)
 }
 \arguments{
-\item{url}{character, full path directory of url}
+\item{url}{character, url to a ftp file}
 
-\item{file.path}{character, full path url to file}
+\item{report.error}{logical, FALSE. If TRUE,
+stop and report error.}
 }
 \value{
 logical, TRUE if file exists
 }
 \description{
-Will be removed when biomartr::exists.ftp.file.new
- is pushed to CRAN stable
+Check if ftp file exists
 }

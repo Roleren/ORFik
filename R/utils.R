@@ -304,44 +304,78 @@ combn.pairs <- function(x) {
   return(pairs)
 }
 
-#' A copy of biomartr ftp check
+#' A fast ftp directory check
 #'
-#' Will be removed when biomartr::exists.ftp.file.new
-#'  is pushed to CRAN stable
-#' @param url character, full path directory of url
-#' @param file.path character, full path url to file
-#' @return logical, TRUE if file exists
-#' @importFrom RCurl url.exists
+#' Check if ftp directory exists
+#' @param url character, url to a ftp directory.
+#' @param report.error logical, FALSE. If TRUE,
+#' stop and report error.
+#' @return logical, TRUE if url directory exists
 #' @importFrom httr http_error
-exists.ftp.file.fast <- function(url, file.path) {
+exists.ftp.dir.fast <- function(url.dir, report.error = FALSE) {
   url.dir.not.exists <- tryCatch(
     expr = {
-      httr::http_error(paste0(dirname(url), "/"))
+      httr::http_error(url.dir)
     },
     error = function(e){
-      TRUE
+      e
     })
-  if (url.dir.not.exists)
-    return(FALSE)
-
-  safe.url <- function(url, attempt = 1, max.attempts = 5) {
-    tryCatch(
-      expr = {
-        Sys.sleep(0.05)
-        RCurl::getURL(url, ftp.use.epsv = FALSE, dirlistonly = TRUE)
-      },
-      error = function(e){
-        if (attempt >= max.attempts) stop("Server is not responding to download data,
-                                      wait 30 seconds and try again!")
-        Sys.sleep(1)
-        safe.url(url, attempt = attempt + 1, max.attempts = max.attempts)
-      })
+  if (is.logical(url.dir.not.exists)) { # Directory exists
+    return(TRUE)
+  } else { # Directory does not exist
+    if (report.error) {
+      msg <- url.dir.not.exists$message
+      if (length(grep("Timeout was reached.", msg)) == 1 |
+          length(grep("Recv failure:", msg)) == 1) {
+        stop("FTP port 21 is not connecting to || ", url.dir,
+             " || wait 5 minutes, if it still does not work",
+             " check your firewall and FTP settings!")
+      } else if (length(grep("Could not resolve host", msg)) == 1){
+        stop("Server is not up:,", url.dir, "check again in 5 minutes!")
+      }  else if (length(grep("Server denied you to change", msg)) == 1){
+        stop("Directory does not exist: ", url.dir)
+      }
+    }
   }
-  con <- safe.url(url)
+  # Else return that file does not exist
+  return(FALSE)
+}
 
-  ftp.content <-
-    suppressMessages(data.table::fread(con, sep = "\n", header = FALSE))
+#' A fast ftp file check
+#'
+#' Check if ftp file exists
+#' @param url character, url to a ftp file
+#' @param report.error logical, FALSE. If TRUE,
+#' stop and report error.
+#' @return logical, TRUE if file exists
+#' @importFrom httr http_error
+exists.ftp.file.fast <- function(url, report.error = FALSE) {
+  # Stop early if directory does not exist
+  if (!exists.ftp.dir.fast(paste0(dirname(url), "/"), report.error))
+    return(FALSE)
+  # Else check if file exists
+  url.not.exists <- tryCatch(
+    expr = {
+      httr::http_error(url)
+    },
+    error = function(e){
+      e
+    })
 
-  return(is.element(as.character(basename(file.path)),
-                    as.character(ftp.content$V1)))
+  if (is.logical(url.not.exists)) { # File exists
+    return(TRUE)
+  } else { # File does not exist
+    if (report.error) {
+      msg <- url.dir.not.exists$message
+      if (length(grep("Timeout was reached.", msg)) == 1 |
+          length(grep("Recv failure:", msg)) == 1) {
+        stop("FTP port 21 is not connecting to || ", url.dir,
+             " || wait 5 minutes, if it still does not work",
+             " check your internet connection, firewall and FTP settings!")
+      } else if (length(grep("Given file does not exist", msg)) == 1){
+        stop("File does not exist,", url.dir)
+      }
+    }
+  }
+  return(FALSE)
 }
