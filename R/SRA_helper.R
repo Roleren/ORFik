@@ -514,7 +514,11 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   url.exists <- c(url.exists,
                   sapply(SRR_paths_spec_paired, function(x)
                     exists.ftp.file.fast(x, x)))
-  final.path <- names(url.exists[url.exists])
+  final.path.temp <- names(url.exists[url.exists])
+  # Sort them correctly as input
+  final.path <- unlist(sapply(c(SRR, "asdasd"), function(x, final.path.temp) {
+    sort(final.path.temp[grepl(x, final.path.temp)])
+  }, final.path.temp = final.path.temp), use.names = FALSE)
 
   valid <- TRUE
   if (length(final.path) == 0) valid <- FALSE
