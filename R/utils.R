@@ -312,8 +312,16 @@ combn.pairs <- function(x) {
 #' @param file.path character, full path url to file
 #' @return logical, TRUE if file exists
 #' @importFrom RCurl url.exists
+#' @importFrom httr http_error
 exists.ftp.file.fast <- function(url, file.path) {
-  if (!RCurl::url.exists(paste0(dirname(url), "/")))
+  url.dir.not.exists <- tryCatch(
+    expr = {
+      httr::http_error(paste0(dirname(url), "/"))
+    },
+    error = function(e){
+      TRUE
+    })
+  if (url.dir.not.exists)
     return(FALSE)
 
   safe.url <- function(url, attempt = 1, max.attempts = 5) {
