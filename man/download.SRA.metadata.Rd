@@ -22,7 +22,8 @@ The directory will be created if not existing.}
 a data.table of the opened file
 }
 \description{
-Downloads metadata from SRA
+Given a experiment identifier, query information from different locations of SRA
+to get a complete metadata table of the experiment.
 }
 \examples{
 ## Originally on SRA

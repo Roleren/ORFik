@@ -18,7 +18,7 @@ path to runnable fastp
 \description{
 On Linux, will not run "make", only use precompiled fastp file.\cr
 On Mac OS it will use precompiled binaries.\cr
-Does not work yet for Windows!
+For windows must be installed through WSL (Windows Subsystem Linux)
 }
 \examples{
 ## With default folder:

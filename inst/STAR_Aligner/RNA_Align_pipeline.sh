@@ -51,6 +51,8 @@ OPTIONS:
 	-k	a character, Keep loaded genomes STAR index:
 	    yes (y), no: Remove loaded (n), no shared genome (noShared),
 	    default (n)
+	-q	a character, Do quality filtering:
+	    yes: "default" no: "disable". Uses default fastp QF.
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -77,13 +79,14 @@ steps=$allSteps
 resume="n"
 alignment="Local"
 adapter="auto"
+quality_filtering="disable"
 maxCPU=90
 multimap=10
 trim_front=3
 keep="n"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:q:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -116,6 +119,10 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:h" opt; do
     a)
         adapter=$OPTARG
         echo "-a adapter sequence $OPTARG"
+        ;;
+    q)
+	      quality_filtering=$OPTARG
+	      echo "-q quality filtering $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
@@ -381,28 +388,37 @@ function trimPaired()
 	fi
 }
 
-if [ $adapter == "standard" ]; then
-	adapter="AAAAAAAAAA"
-elif [ $adapter == "illumina" ]; then
-  echo "Using Illumina preset adapter"
-	adapter="AGATCGGAAGAGC"
-elif [ $adapter == "small_RNA" ]; then
-  echo "Using Small RNA preset adapter"
-	adapter="TGGAATTCTCGG"
-elif [ $adapter == "nextera" ]; then
-  echo "Using Nextera preset adapter"
-	adapter="CTGTCTCTTATA"
-elif [ $adapter == "" ]; then
-	adapter="auto"
+# Adapter definition for fastp
+if [ -z  "$adapter" ]; then
+	adapter="" # "" is auto detection
+elif [ $adapter == "disable" ]; then
+	adapter="--disable_adapter_trimming"
+else
+	# Check if it is one of the templates
+	if [ $adapter == "standard" ]; then
+		adapter="AAAAAAAAAA"
+	elif [ $adapter == "illumina" ]; then
+	  echo "Using Illumina preset adapter"
+		adapter="AGATCGGAAGAGC"
+	elif [ $adapter == "small_RNA" ]; then
+	  echo "Using Small RNA preset adapter"
+		adapter="TGGAATTCTCGG"
+	elif [ $adapter == "nextera" ]; then
+	  echo "Using Nextera preset adapter"
+		adapter="CTGTCTCTTATA"
+	fi
+	adapter="--adapter_sequence=${adapter}"
 fi
 
-#echo "trimming is: $(trimPaired ${out_dir} ${ibn} ${in_file_two})"
-
-#echo "ph: $(inputFile $resume $in_file "ph" ${out_dir} ${ibn} ${in_file_two})"
-#exit 1
+# Quality filtering for fastp
+if [ $quality_filtering == "default" ]; then
+	quality_filtering="" # Default QF
+elif [ $quality_filtering == "disable" ]; then
+	quality_filtering="--disable_quality_filtering"
+fi
 
 #------------------------------------------------------------------------------------------
-    #3 Trim adaptors
+    #3 FASTP (Trim adaptors, Cut, Quality, fastq report)
     #------------------------------------------------------------------------------------------
     #--in1 input file
     #--out1 output name
@@ -410,14 +426,13 @@ fi
     #--length_required minimum length
     #--disable_quality_filtering no fastq filtering
     #--adapter_sequence adapter sequence, normally set manually (normally needed)
-    if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
+if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
 	echo trimming
 	if [ ! -d ${out_dir}/trim ]; then
         mkdir ${out_dir}/trim
   fi
 
-	if [ $adapter == "disable" ]; then
-		eval $fastp \
+	eval $fastp \
 		--in1=${in_file} \
 		--in2="${in_file_two}" \
 		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \
@@ -427,37 +442,9 @@ fi
 		--trim_front1=${trim_front} \
 		--trim_front2=${trim_front} \
 		--length_required=$min_length \
-		--disable_quality_filtering \
-		--disable_adapter_trimming \
+		$quality_filtering \
+		$adapter \
 		--thread $(nCores 16 $maxCPU)
-	elif [ $adapter == "auto" ]; then
-		eval $fastp \
-		--in1=${in_file} \
-		--in2="${in_file_two}" \
-		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \
-		--out2=$(trimPaired ${out_dir} ${ibn} ${in_file_two}) \
-		--json=${out_dir}/trim/report_${ibn}.json \
-		--html=${out_dir}/trim/report_${ibn}.html \
-		--trim_front1=${trim_front} \
-		--trim_front2=${trim_front} \
-		--length_required=$min_length \
-		--disable_quality_filtering \
-		--thread $(nCores 16 $maxCPU)
-	else
-		eval $fastp \
-		--in1=${in_file} \
-		--in2="${in_file_two}" \
-		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \
-		--out2=$(trimPaired ${out_dir} ${ibn} ${in_file_two}) \
-		--json=${out_dir}/trim/report_${ibn}.json \
-		--html=${out_dir}/trim/report_${ibn}.html \
-		--trim_front1=${trim_front} \
-		--trim_front2=${trim_front} \
-		--length_required=$min_length \
-		--disable_quality_filtering \
-		--adapter_sequence=$adapter \
-		--thread $(nCores 16 $maxCPU)
-	fi
 fi
 
 #------------------------------------------------------------------------------------------

@@ -8,14 +8,17 @@
 #' of the main name in second column as a list.
 libNames <- function() {
   mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
-                "SSU", "ATAC", "PRPF", "PAS-Seq", "PAL-Seq","SHAPE",
+                "SSU", "ATAC", "PRPF", "PAS-Seq", "PAL-Seq", "RIP","SHAPE",
                 "ChIP", "PAR-CLIP", "tRNA")
   allNames <-
     list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq",
-           "Input", "input", "total RNA", "Total RNA", "total_RNA"),
+           "Input", "input", "total RNA", "Total RNA", "total_RNA", "mRNA$",
+           "_rna_", "^rna_", "^mrna_", "^RNA ", "\\.rna$", "_RNA$", "_rna$"),
          c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
            "riboseq", "Ribosome", "ribosome", "Profiling","profiling",
-           "Footprint", "footprint", "RP ", "ribo_profile"),
+           "Footprint", "ribo_profile", "footprint", "^ribo_",
+           "^RP ", " RP ", "_RP_", "^FP_", "^fp_"," RP$", " rp$", ".rp$",
+           "_rp_", "\\.rp\\.", "_RF"),
          c("QTI"),
          c("CAGE", "cage"),
          c("80S","LSU"),
@@ -24,6 +27,7 @@ libNames <- function() {
          c("PRPF"),
          c("PAS-Seq"),
          c("PAL-Seq"),
+         c("RIP-Seq", "^rip_"),
          c("SHAPE"),
          c("ChIP"),
          c("PAR-CLIP"),
@@ -136,11 +140,17 @@ tissueNames <- function() {
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
 cellLineNames <- function() {
-  mainName <- c("HEK293", "HeLa", "THP1", "PC3")
+  mainName <- c("CN34", "HEK293", "HeLa", "Hesc", "MDA", "NPC", "THP1", "TSC2", "U2OS", "PC3")
   allNames <-
-    list(c("HEK293", "Hek293"),
+    list(c("CN34"),
+         c("HEK293", "Hek293", "293T"),
          c("HeLa", "HELA", "Hela", "hela"),
+         c("hesc", "Hesc"),
+         c("MDA-"),
+         c("npc", "NPC"),
          c("THP-1", "THP1"),
+         c("TSC2"),
+         c("U2OS"),
          c("PC3", "PC-3")
     )
   dt <- data.table(mainName, allNames)
@@ -158,12 +168,12 @@ cellLineNames <- function() {
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
-    list(c("rep1", "Rep1", "run1", "run_1_", "_r1_", "WT1"),
-         c("rep2", "Rep2", "run2", "run_2_", "_r2_", "WT2"),
-         c("rep3", "Rep3", "run3", "run_3_", "_r3_", "WT3"),
-         c("rep4", "Rep4", "run4", "run_4_", "_r4_", "WT4"),
-         c("rep5", "Rep5", "run5", "run_5_", "_r5_", "WT5"),
-         c("rep6", "Rep6", "run6", "run_6_", "_r6_", "WT6")
+    list(c("rep1", "Rep1", "replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$"),
+         c("rep2", "Rep2", "replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$"),
+         c("rep3", "Rep3", "replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$"),
+         c("rep4", "Rep4", "replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$"),
+         c("rep5", "Rep5", "replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$"),
+         c("rep6", "Rep6", "replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

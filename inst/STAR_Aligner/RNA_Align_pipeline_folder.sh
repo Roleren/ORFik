@@ -51,6 +51,8 @@ OPTIONS:
 				      from, as defined in -s, start on genome, do -r "ge")
 	-m	max cpus allowed (defualt 90)
 	-i	include subfolders (defualt n, for no), if you want subfolder do y, for yes.
+	-q	a character, Do quality filtering:
+	    yes: "default" no: "disable". Uses default fastp QF.
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -75,6 +77,7 @@ steps=$allSteps
 resume="n"
 alignment="Local"
 adapter="auto"
+quality_filtering="disable"
 maxCPU=90
 multimap=10
 subfolders="n"
@@ -84,7 +87,7 @@ STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
 align_single=""
 cleaning=""
-while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
+while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:q:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
@@ -117,6 +120,10 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
     a)
         adapter=$OPTARG
         echo "-a adapter sequence $OPTARG"
+        ;;
+    q)
+	      quality_filtering=$OPTARG
+	      echo "-q quality filtering $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
@@ -171,7 +178,7 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:h:" opt; do
 done
 
 echo $'\n'
-
+# steps == "all" is never called from R
 if [ $steps == "all" ]; then
 	steps="tr-ph-rR-nc-tR-ge"
 fi
@@ -220,7 +227,7 @@ function findPairs()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
     echo "-------------------------------------------"
 	done
 }
@@ -246,7 +253,7 @@ function findPairsSub()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
@@ -294,7 +301,7 @@ do
   		fi
       x=$in_dir/$x
 
-  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
   		echo "----------------------------------------------"
   	done
   fi

@@ -190,6 +190,8 @@ download.SRA <- function(info, outdir, rename = TRUE,
 
 #' Downloads metadata from SRA
 #'
+#' Given a experiment identifier, query information from different locations of SRA
+#' to get a complete metadata table of the experiment.
 #' @param SRP a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
 #' examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
 #' to find the files.
@@ -262,7 +264,8 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
     return(file)
   } else {
     if ("sample_title" %in% colnames(file)) return(file)
-
+    file[, MONTH := substr(ReleaseDate, 6, 7)]
+    file[, YEAR := gsub("-.*", "", ReleaseDate)]
     file <- file[, -c("ReleaseDate", "LoadDate", "download_path", "RunHash", "ReadHash", "Consent")]
     # Download xml and add more data
     url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=xml&term="
@@ -275,18 +278,21 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
     dt <- data.table()
     # TODO: add fields like author and date
     for(i in seq_along(a$EXPERIMENT_PACKAGE_SET)) { # Per sample
+      EXP_SAMPLE <- a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE
       # Get Sample title
-      xml.TITLE <- unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$SAMPLE$TITLE)
+      xml.TITLE <- unlist(EXP_SAMPLE$SAMPLE$TITLE)
+      xml.AUTHOR <- unlist(EXP_SAMPLE$Organization$Contact$Name$Last)
       # For each run in sample
       xml.RUN <- c()
-      for (j in seq_along(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET)) {
-        xml.RUN <- c(xml.RUN, unlist(a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE$RUN_SET[j]$RUN$IDENTIFIERS$PRIMARY_ID))
+      for (j in seq_along(EXP_SAMPLE$RUN_SET)) {
+        xml.RUN <- c(xml.RUN, unlist(EXP_SAMPLE$RUN_SET[j]$RUN$IDENTIFIERS$PRIMARY_ID))
       }
       xml.TITLE <- ifelse(is.null(xml.TITLE), "", xml.TITLE)
+      xml.AUTHOR <- ifelse(is.null(xml.AUTHOR), "", xml.AUTHOR)
       if (length(xml.RUN) == 0) xml.RUN <- ""
-      dt <- rbind(dt, cbind(xml.TITLE, xml.RUN))
+      dt <- rbind(dt, cbind(xml.AUTHOR, xml.TITLE, xml.RUN))
     }
-    colnames(dt) <- c("sample_title", "Run")
+    colnames(dt) <- c("AUTHOR", "sample_title", "Run")
     dt <- dt[Run %in% file$Run]
     if (length(dt) > 0) {
       file <- data.table::merge.data.table(file, dt, by = "Run")

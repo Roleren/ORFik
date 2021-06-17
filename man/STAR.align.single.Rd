@@ -13,6 +13,7 @@ STAR.align.single(
   fastp = install.fastp(),
   steps = "tr-ge",
   adapter.sequence = "auto",
+  quality.filtering = FALSE,
   min.length = 20,
   mismatches = 3,
   trim.front = 0,
@@ -76,9 +77,11 @@ give the output files from that trimmer as input.dir here.}
  for SSU&LSU at: https://www.arb-silva.de/) for your species.}
 
 \item{adapter.sequence}{character, default: "auto". Auto detect adapter using fastp
-adapter auto detection, checking first 1.5M reads. (auto detect adapter, is not
-very reliable for Ribo-seq, so then you must include a manually specified,
-else alignment will most likely fail!). If already trimmed or trimming not wanted:
+adapter auto detection, checking first 1.5M reads. (Auto detection of adapter will
+not work 100% of the time (if the library is of low quality), then you must rerun
+this function with specified adapter from fastp adapter analysis
+, using FASTQC or other adapter detection tools, else alignment will most likely fail!).
+If already trimmed or trimming not wanted:
 adapter.sequence = "disable" .You can manually assign adapter like:
 "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
 presets:\cr
@@ -88,14 +91,24 @@ presets:\cr
  \item{nextera: }{CTGTCTCTTATA}
 }}
 
+\item{quality.filtering}{logical, default FALSE. Not needed for modern
+library prep of RNA-seq, Ribo-seq etc (usually < ~ 0.5% of reads are removed).
+If you are aligning bad quality data, set this to TRUE.\cr
+These filters will then be applied (default of fastp), filter if:
+\itemize{
+ \item{Number of N bases in read: }{> 5}
+ \item{Read quality: }{> 40\% of bases in the read are <Q15}
+}}
+
 \item{min.length}{20, minimum length of aligned read without mismatches
-to pass filter.}
+to pass filter. Anything under 20 is dangerous, as chance of random hits will
+become high!}
 
 \item{mismatches}{3, max non matched bases. Excludes soft-clipping, this only
 filters reads that have defined mismatches in STAR.
 Only applies for genome alignment step.}
 
-\item{trim.front}{0, default trim 0 bases 5'. For Ribo-seq set use 0.
+\item{trim.front}{0, default trim 0 bases 5'. For Ribo-seq use default 0.
 Ignored if tr (trim) is not one of the arguments in "steps"}
 
 \item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
@@ -131,15 +144,18 @@ output.dir, can be used as as input in ORFik::create.experiment
 }
 \description{
 Given a single NGS fastq/fasta library, or a paired setup of 2 mated
-libraries. Run alignment and optionally remove contaminants.
+libraries. Run either combination of fastq trimming, contamination removal and
+genome alignment. Works for (Linux, Mac and WSL (Windows Subsystem Linux))
 }
 \details{
-Can only run on unix systems (Linux and Mac), and requires
-minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
+Can only run on unix systems (Linux, Mac and WSL (Windows Subsystem Linux)),
+and requires a minimum of 30GB memory on genomes like human, rat, zebrafish etc.\cr
 If for some reason the internal STAR alignment bash script will not work for you,
-like if you have a very small genome. You can copy the internal alignment script,
+like if you want more customization of the STAR/fastp arguments.
+You can copy the internal alignment script,
 edit it and give that as the Index script used for this function.\cr
-The trimmer used is fastp (the fastest I could find), works on mac and linux.
+The trimmer used is fastp (the fastest I could find), also works on
+(Linux, Mac and WSL (Windows Subsystem Linux)).
 If you want to use your own trimmer set file1/file2 to the location of
 the trimmed files from your program.\cr
 A note on trimming from creator of STAR about trimming:
