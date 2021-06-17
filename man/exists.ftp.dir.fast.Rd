@@ -7,10 +7,10 @@
 exists.ftp.dir.fast(url.dir, report.error = FALSE)
 }
 \arguments{
+\item{url.dir}{character, url to a ftp directory.}
+
 \item{report.error}{logical, FALSE. If TRUE,
 stop and report error.}
-
-\item{url}{character, url to a ftp directory.}
 }
 \value{
 logical, TRUE if url directory exists

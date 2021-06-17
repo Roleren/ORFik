@@ -307,7 +307,7 @@ combn.pairs <- function(x) {
 #' A fast ftp directory check
 #'
 #' Check if ftp directory exists
-#' @param url character, url to a ftp directory.
+#' @param url.dir character, url to a ftp directory.
 #' @param report.error logical, FALSE. If TRUE,
 #' stop and report error.
 #' @return logical, TRUE if url directory exists

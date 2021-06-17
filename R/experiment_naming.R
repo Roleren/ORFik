@@ -16,7 +16,7 @@ libNames <- function() {
            "_rna_", "^rna_", "^mrna_", "^RNA ", "\\.rna$", "_RNA$", "_rna$"),
          c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
            "riboseq", "Ribosome", "ribosome", "Profiling","profiling",
-           "Footprint", "ribo_profile", "footprint", "^ribo_",
+           "Footprint", "ribo_profile", "footprint", "^ribo_", "_ribo_",
            "^RP ", " RP ", "_RP_", "^FP_", "^fp_"," RP$", " rp$", ".rp$",
            "_rp_", "\\.rp\\.", "_RF"),
          c("QTI"),
