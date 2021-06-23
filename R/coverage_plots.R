@@ -10,7 +10,7 @@
 #' ggplot object, and reassign like: obj + scale_color_brewer() etc.
 #' @param hitMap a data.frame/data.table, given from metaWindow
 #' (must have columns: position, (score or count) and frame)
-#' @param length an integer (29), which length is this for?
+#' @param length an integer (29), which read length is this for?
 #' @param region a character (start), either "start or "stop"
 #' @param output character (NULL), if set, saves the plot as pdf or png
 #' to path given. If no format is given, is save as pdf.
@@ -21,9 +21,19 @@
 #' @param forHeatmap a logical (FALSE), should the plot be part of
 #' a heatmap? It will scale it differently. Removing title, x and y labels, and
 #' truncate spaces between bars.
+#' @param title character, title of plot. Default "auto", will make it:
+#' paste("Length", length, "over", region, "of", type).
+#' Else set your own (set to NULL to remove all together).
+#' @param facet logical, default FALSE. If you input multiple read lengths,
+#' specified by fraction column of hitMap, it will split the plots for
+#' each read length, putting them under each other. Ignored if forHeatmap
+#' is TRUE.
+#' @param frameSum logical default FALSE. If TRUE, add an addition plot
+#' to the right, sum per frame over all positions per length.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
-#' @importFrom data.table setDF
+#' @importFrom data.table setDT
+#' @importFrom cowplot plot_grid
 #' @family coveragePlot
 #' @export
 #' @examples
@@ -38,9 +48,11 @@
 #'
 #' # See vignette for more examples
 #'
-pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
+pSitePlot <- function(hitMap, length = unique(hitMap$fraction),
+                      region = "start", output = NULL,
                       type = "canonical CDS", scoring = "Averaged counts",
-                      forHeatmap = FALSE) {
+                      forHeatmap = FALSE, title = "auto",
+                      facet = FALSE, frameSum = FALSE) {
   hitMap <- setDT(copy(hitMap))
   if (is.null(hitMap$score)) hitMap[, score := count]
   if (is.null(hitMap$frame)) {
@@ -48,7 +60,7 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
   }
   plot <- ggplot(hitMap, aes(x = position, y = score,
                              fill = factor(frame))) +
-    guides(fill = FALSE)
+    guides(fill = "none")
   if (forHeatmap) {
     plot <- plot + ggtitle("") +
       geom_bar(stat = "identity", width = 1) +
@@ -58,15 +70,33 @@ pSitePlot <- function(hitMap, length = 29, region = "start", output = NULL,
             axis.text = element_blank(),
             plot.margin = unit(c(0.1,0.3,-0.5,0.8), "cm")) +
       theme(panel.background=element_rect(fill="white", colour="gray")) +
-      scale_y_continuous(n.breaks = 2) +
       scale_fill_grey()
   } else {
+    if (!is.null(title)) {
+      if (title == "auto") {
+        title <- paste("Length", length, "over", region, "of", type)
+      }
+    }
+
     plot <- plot +
       geom_bar(stat = "identity") +
-      labs(title = paste("Length", length, "over", region, "of", type)) +
+      labs(title = title) +
       xlab(paste("\nshift from first", region, "nucleotide [bp]")) +
       ylab(prettyScoring(scoring)) +
-      scale_x_continuous(breaks = xAxisScaler(hitMap$position))
+      scale_x_continuous(breaks = xAxisScaler(hitMap$position)) +
+      scale_y_continuous(n.breaks = 3)
+    if (facet) {
+      plot <- plot +
+        facet_wrap(~ fraction, ncol = 1, scales = "free_y")
+    }
+    if (frameSum) {
+      hitMap2 <- setDT(copy(hitMap))
+      hitMap2[, position := frame]
+      plot2 <- pSitePlot(hitMap2, facet = facet, title = "Sum per Frame")
+      plot2 <- plot2 + ylab(label = "") + xlab("Frame")
+      plot <- cowplot::plot_grid(plot, plot2, ncol = 2,
+                                 rel_widths = c(3,1), align = "v")
+    }
   }
 
   return(savePlot(plot, output))

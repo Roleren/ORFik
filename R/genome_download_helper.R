@@ -52,8 +52,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' @param genome a character path, default NULL.
 #' if set, must be path to genome fasta file, must be indexed.
 #' If you want to make sure chromosome naming of the GTF matches the genome.
-#' Not necessary if you downloaded from same source. If value is NULL or FALSE,
-#' will be ignored.
+#' If value is NULL or FALSE, it will be ignored.
 get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip,
                            genome) {
   if (GTF) { # gtf of organism
@@ -64,25 +63,7 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip,
 
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
-    message("Making txdb of GTF")
-    organismCapital <- paste0(toupper(substr(organism, 1, 1)),
-                              substr(organism, 2, nchar(organism)))
-    organismCapital <- gsub("_", " ", organismCapital)
-
-    if (!is.logical(genome) & !is.null(genome)) {
-      fa <- FaFile(genome)
-      fa.seqinfo <- seqinfo(fa)
-      if ("MT" %in% names(fa.seqinfo))
-        isCircular(fa.seqinfo)["MT"] <- TRUE
-      txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
-                                               chrominfo = fa.seqinfo)
-      seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
-    } else {
-      txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
-    }
-
-    txdb_file <- paste0(gtf, ".db")
-    AnnotationDbi::saveDb(txdb, txdb_file)
+    makeTxdbFromGenome(gtf, genome, organism)
   } else { # check if it already exists
     gtf <- grep(pattern = organism,
                 x = list.files(output.dir, full.names = TRUE),

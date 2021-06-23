@@ -38,8 +38,7 @@ that are zipped when downloaded, should be TRUE!}
 \item{genome}{a character path, default NULL.
 if set, must be path to genome fasta file, must be indexed.
 If you want to make sure chromosome naming of the GTF matches the genome.
-Not necessary if you downloaded from same source. If value is NULL or FALSE,
-will be ignored.}
+If value is NULL or FALSE, it will be ignored.}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,

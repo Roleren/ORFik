@@ -40,6 +40,9 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
                              levels = stats$Sample)
   stats$Sample <-  factor(stats$Sample, levels = stats$Sample)
   colnames(stats) <- gsub("percentage", "%", colnames(stats))
+  # Update all values to numeric
+  stats[,(seq.int(ncol(stats))[-c(1,2)]):= lapply(.SD, as.numeric),
+        .SDcols = seq.int(ncol(stats))[-c(1,2)]]
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
 
   step_counts <- c("mRNA", "rRNA")

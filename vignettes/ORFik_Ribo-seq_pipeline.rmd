@@ -121,8 +121,7 @@ create.experiment(paste0(conf["bam Ribo-seq"], "/aligned/"),
                   organism = organism,
                   pairedEndBam = paired.end.rfp,
                   rep = c(1,2,3,1,2,3),
-                  condition = c(rep("CO", 3), rep("WT", 3)),
-                  viewTemplate = FALSE)
+                  condition = rep(c("CO", "WT"), each = 3))
 create.experiment(paste0(conf["bam RNA-seq"], "/aligned/"),
                   exper = conf["exp RNA-seq"],
                   fa = annotation["genome"],
@@ -130,8 +129,7 @@ create.experiment(paste0(conf["bam RNA-seq"], "/aligned/"),
                   organism = organism,
                   pairedEndBam = paired.end.rna,
                   rep = c(1,2,3,1,2,3),
-                  condition = c(rep("CO", 3), rep("WT", 3)),
-                  viewTemplate = FALSE)
+                  condition = rep(c("CO", "WT"), each = 3))
 
 library(ORFik)
 df.rfp <- read.experiment("Alexaki_Human_Ribo-seq")
@@ -148,6 +146,12 @@ ORFikQC(df.rna)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # From ORFikQC it looks like 20, 21, 27 and 28 are candidates for Ribosomal footprints
 shiftFootprintsByExperiment(df.rfp, accepted.lengths = c(20:21, 27:28))
+# Now check if you are happy with shifts, these libraries have some interesting
+# periodicity for read length 20 and 27, 
+# it has identical amount of reads in frame 0 and 1, not optimal for ORF detection.
+shiftPlots(df.rfp, output = "auto", downstream = 30) # Barplots, better details
+shiftPlots(df.rfp, output = "auto", downstream = 30, type = "heatmap") # Heatmaps, better overview
+
 # Ribo-seq specific QC
 remove.experiments(df.rfp) # Remove loaded data (it is not pshifted)
 ORFik:::RiboQC.plot(df.rfp, BPPARAM = BiocParallel::SerialParam(progressbar = T))

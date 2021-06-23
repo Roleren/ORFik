@@ -20,6 +20,8 @@ NGS libraries are becoming more and more numerous. As a bioinformatician / biolo
 
 Another problem is also that annotations like gff and fasta files combined with the NGS data, must be separately loaded. Making it possible to use wrong annotation for the NGS data.
 
+So to summarize, the ORFik experiment API abstracts what could be done with 1 NGS library and a corresponding organism annotation to the level of multiple libraries and the comparison between them, standardizing ploting, comparisons, loading libraries and many much more.
+
 ## What is an ORFik experiment?
 It is an object that simplify and error correct your NGS workflow, creating a single R object that stores and controls all results relevant to a specific experiment. It contains following important parts:
 
@@ -127,7 +129,10 @@ You see here that file paths are hidden, you can access them  like this:
 filepath(df, type = "default")
 ```
 If you have varying version of libraries, like p-shifted, bam, simplified wig files, you can get
-filepaths to different version with this function.
+file paths to different version with this function, like this:
+```{r eval = TRUE, echo = TRUE}
+filepath(df[df$libtype == "RFP", ], type = "pshifted")[2] # RFP = Ribo-seq, Default location for pshifted reads
+```
 
 ## Loading data from experiment
 
@@ -221,22 +226,24 @@ To load p-shifted libraries, you can do:
 outputLibs(df[df$libtype == "RFP",], type = "pshifted")
 ```
 
-## Converting bam files to faster formats
+# Converting bam files to faster formats
 
 Bam files are slow to load, and usually you don't need all the information
 contained in a bam file.
 
-Usually you convert to bed or wig files, but ORFik also support 2 formats
+Usually you convert to bed or wig files, but ORFik also support 3 formats
 for much faster loading and use of data.
 
-### ofst: ORFik serialized format
-From the bam file store these columns as a serialized file:
+## ofst: ORFik serialized format
+From the bam file store these columns as a serialized file (using the insane facebook zstandard compression):
 seqname, start, cigar, strand, score (number of identical replicates for that read). 
 
-This is the fastest format to use, loading time of 10GB Ribo-seq bam file reduced from minutes to ~ 1 second and ~ 20MB size.
+This is the fastest format to use, loading time of 10GB Ribo-seq bam file reduced from ~ 5 minutes to ~ 1 second and ~ 15MB size.
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+convertLibs(df, type = "ofst") # Collapsed
+```
 
-
-### bedo: bed ORFik file
+## bedo: bed ORFik file
 From the bam file store these columns as text file:
 seqname, start, end (if not all widths are 1), strand, score (number of identical replicates for that read), size (size of cigar Ms according to reference)
 
@@ -244,7 +251,7 @@ The R object loaded from these files are GRanges, since cigar is not needed.
 
 Loading time of 10GB Ribo-seq bam file reduced to ~ 10 seconds and ~ 100MB size.
 
-### bedoc: bed ORFik file with cigar
+## bedoc: bed ORFik file with cigar
 From the bam file store these columns as text file:
 seqname, cigar, start, strand, score (number of identical replicates for that read)
 
@@ -258,17 +265,47 @@ simplified libraries for plotting, meta coverage, ++.
 
 
 ## General report
+
+To optimize the experiment for use in ORFik, always run QCreport, you will then get:
+
+- 1. ofst collapsed reads of the bam files for faster loading (saved in /ofst folder relative to the bam files)
+- 2. count tables over mrna, 5' UTRs, CDS and 3' UTRs for all transcripts
+- 3. QC plots from experiment (correlation, metacoverage, alignment stats, coverage of (5' UTRs, CDS and 3' UTRs), ++)
+- 4. Statistics summarized in csv files.
+
+### How to run QC:
 The default QC report:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 QCreport(df)
 ```
-The plots and statistics are saved to disc.
+
+### How to load optimized output from QC:
+Load Count tables for cds (FPKM normalized):
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+countTable(df, region = "cds", type = "fpkm")
+```
+
+Load Count tables for all mRNAs (DESeq object):
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+countTable(df, region = "mrna", type = "deseq")
+```
+
+### How to load the QC statistics:
+The statistics are saved in /QC_STATS/ folder relative to the bam files as csv files.
 To see the statistics, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 QCstats(df)
 ```
+### How to see the QC plots:
+The plots are saved in /QC_STATS/ folder relative to the bam files, 
+this folder will contain all plots from the QC, either as pdf or png files
+dependent on what you specify in the QC.
 
-## Ribo-seq specific QC
+## Ribo-seq specific pshifting and QC
+To pshift all ribo-seq files in an experiment, do:
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+shiftFootprintsByExperiment(df)
+```
 
 In addition there is a QC report for Ribo-seq, with some addition analysis of read lengths and frames. This should only be run on when you have pshifted the reads.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
@@ -279,7 +316,8 @@ RiboQC.plot(df)
 Usually you want to do some operation on multiple data-sets. If ORFik does not include a premade function for what you want, you can make it yourself. If your data is in the format of an ORFik experiment, this operation is simple.
 
 ## Looping over all libraries in experiment
-There are 3 ways to run loops for the data:
+Not all functions in ORFik supports abstraction from single library to the experiment syntax. 
+Here 3 ways to run loops for the data for these cases are shown:
 
 1. if you know you have enough memory to load all data at once
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
@@ -304,7 +342,7 @@ res <- bplapply(files, FUN = function(file, cds) {
 
 ```
 
-3. No parallel evaluation
+3. No parallel evaluation (If you do not have a lot of memory)
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 files <- filepath(df, type = "pshifted")
 cds <- loadRegion(df, "cds")
@@ -329,7 +367,7 @@ res <- bplapply(libs, FUN = function(lib, cds) {
         return(entropy(cds, get(lib)))
     }, cds = cds)
 
-res.by.columns <- copy(res)
+res.by.columns <- copy(res) # data.table copies default by reference
 # Add some names and convert
 names(res.by.columns) <- libs
 data.table::setDT(res.by.columns) # Will give 1 column per library
@@ -349,5 +387,5 @@ res.by.columns # now melted row-wise
 
 # Conclusion
 
-ORFik contains a whole API for using the ORFik.experiment class to simplify coding over experiments. More examples of use shown 
+ORFik contains a whole API for using the ORFik.experiment S4 class to simplify coding over experiments. More examples of use shown 
 in documentation and in the Annotation_Alignment and Ribo-seq pipeline vignettes.

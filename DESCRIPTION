@@ -6,6 +6,7 @@ Encoding: UTF-8
 Authors@R: c(
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "cre", "dtc")),
   person(given = "Kornel", family = "Labun", email = "kornellabun@gmail.com", role = c("aut", "cph")),
+  person(given = "Michal", family = "Swirski", email = "michal.swirski@uw.edu.pl", role = c("ctb")),
   person(given = "Katarzyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
   person(given = "Yamila", family = "Torres Cleuren", email = "yamilatorrescleuren@gmail.com", role = c("ctb", "ths")),
   person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")))

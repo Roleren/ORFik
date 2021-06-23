@@ -1,3 +1,50 @@
+
+#' Make txdb from genome
+#'
+#' Make a Txdb with defined seqlevels and
+#' seqlevelsstyle from the fasta genome.
+#' This makes it more fail safe than standard Txdb creation.
+#' Example is that you can not create a coverage window outside
+#' the chromosome boundary, this is only possible if you have
+#' set the seqlengths.
+#' @param gtf path to gtf file
+#' @param genome character, default NULL. Path to fasta genome
+#' corresponding to the gtf. If NULL, can not set seqlevels.
+#' @param organism Scientific name of organism, first letter
+#' must be capital! Example: Homo sapiens. Will force first letter
+#' to capital and convert any "_" (underscore) to " " (space)
+#' @return NULL, Txdb saved to disc named paste0(gtf, ".db")
+#' @export
+makeTxdbFromGenome <- function(gtf, genome = NULL, organism) {
+  message("Making txdb of GTF")
+  organismCapital <- paste0(toupper(substr(organism, 1, 1)),
+                            substr(organism, 2, nchar(organism)))
+  organismCapital <- gsub("_", " ", organismCapital)
+
+  if (!is.logical(genome) & !is.null(genome)) {
+    fa <- FaFile(genome)
+    fa.seqinfo <- seqinfo(fa)
+    if ("MT" %in% names(fa.seqinfo)) { # Ensembl
+      isCircular(fa.seqinfo)["MT"] <- TRUE
+    } else if ("chrM" %in% names(fa.seqinfo)) { # UCSC
+      isCircular(fa.seqinfo)["chrM"] <- TRUE
+    } else if ("Mito" %in% names(fa.seqinfo)) { # UCSC
+      isCircular(fa.seqinfo)["Mito"] <- TRUE
+    }
+
+    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
+                                             chrominfo = fa.seqinfo)
+    seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
+  } else {
+    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
+  }
+
+  txdb_file <- paste0(gtf, ".db")
+  AnnotationDbi::saveDb(txdb, txdb_file)
+  message("Txdb stored at: ", txdb_file)
+  return(invisible(NULL))
+}
+
 #' Get new exon ids after update of txdb
 #' @param txList a list, call of as.list(txdb)
 #' @return a new valid ordered list of exon ids (integer)
@@ -207,7 +254,7 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
   if (!is.null(names.keep)) { # If subset
     subset <- names(region) %in% names.keep
     if (length(subset) == 0)
-      stop(paste("Found no transcripts kepts, for region:", part))
+      stop(paste("Found no kept transcripts, for region:", part))
     region <- region[subset]
   }
   return(region)
@@ -306,13 +353,13 @@ importGtfFromTxdb <- function(txdb) {
     }
   }
   if (is(txdb, "TxDb")) {
-    genome <- metadata(txdb)[3,2]
+    genome <- metadata(txdb)[metadata(txdb)[,1] == "Data source", 2]
     if (!(file_ext(genome) %in%
           c("gtf", "gff", "gff3", "gff2"))) {
       message("This is error txdb ->")
-      message("It should be found by: metadata(txdb)[3,2]")
+      message("It should be found by: metadata(txdb)[metadata(txdb)[,1] == 'Data source',]")
       print(txdb)
-      stop("Could not find valid gtf / gff file, only data base object!")
+      stop("Your Txdb does not point to a valid gtf/gff (no valid Data source defined)")
     }
     txdb <- genome
   }

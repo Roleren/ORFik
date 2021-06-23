@@ -4,7 +4,7 @@
 \alias{download.SRA.metadata}
 \title{Downloads metadata from SRA}
 \usage{
-download.SRA.metadata(SRP, outdir, remove.invalid = TRUE)
+download.SRA.metadata(SRP, outdir, remove.invalid = TRUE, auto.detect = FALSE)
 }
 \arguments{
 \item{SRP}{a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
@@ -17,9 +17,17 @@ the SRP argument.
 The directory will be created if not existing.}
 
 \item{remove.invalid}{logical, default TRUE. Remove Runs with 0 reads (spots)}
+
+\item{auto.detect}{logical, default FALSE. If TRUE, ORFik will add additional columns:\cr
+LIBRARYTYPE: (is this Ribo-seq or mRNA-seq, CAGE etc), \cr
+REPLICATE: (is this replicate 1, 2 etc),\cr
+STAGE: (Which time point, cell line or tissue is this, HEK293, TCP-1, 24hpf etc),\cr
+CONDITION: (is this Wild type control or a mutant etc).\cr
+These values are only qualified guesses from the metadata, so always double check!}
 }
 \value{
-a data.table of the opened file
+a data.table of the metadata, 1 row per sample,
+ SRR run number defined in Run column.
 }
 \description{
 Given a experiment identifier, query information from different locations of SRA

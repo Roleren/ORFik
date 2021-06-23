@@ -432,24 +432,25 @@ findFromPath <- function(filepaths, candidates, slot = "auto") {
   candidates <- unlist(dt$allNames)
   types <- c()
   for (path in filepaths) {
-    hit <- unlist(sapply(candidates, grep, x = path))
-    if (length(hit) > 1) # Remove multiple hits from same group:
-      hit <- hit[!duplicated(mainNames(names(hit), dt))]
-    hitRel <- unlist(sapply(candidates, grep, x = gsub(".*/", "", path)))
-    if (length(hitRel) > 1) # Remove multiple hits from same group:
-      hitRel <- hitRel[!duplicated(mainNames(names(hitRel), dt))]
+    hit <- names(unlist(sapply(candidates, grep, x = path)))
+    if (length(hit) > 0) # Remove multiple hits from same group:
+      hit <- unique(mainNames(hit, dt))
+    hitRel <- names(unlist(sapply(candidates, grep, x = gsub(".*/", "", path))))
+    if (length(hitRel) > 0) # Remove multiple hits from same group:
+      hitRel <- unique(mainNames(hitRel, dt))
 
     # Assign the one (if existing) with 1 match
     type <- if(length(hit) == 1 & length(hitRel) == 0) {
-      names(hit)
-    } else if(length(hit) == 0 & length(hitRel) == 1) names(hitRel)
-    over <- hit[names(hit) %in% names(hitRel)] #overlaps
+      hit
+    } else if(length(hit) == 0 & length(hitRel) == 1) {
+      hitRel
+    }
+    over <- hit[hit %in% hitRel] #overlaps
     # If exactly one overlap, set to that one
-    type <- ifelse(length(over) == 1, names(over),
+    type <- ifelse(length(over) == 1, over,
                    ifelse(is.null(type), "", type))
     types <- c(types, type)
   }
-  types <- mainNames(types, dt)
 
   return(types)
 }

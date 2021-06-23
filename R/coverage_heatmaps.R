@@ -258,7 +258,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
             zero <- zeroPosition[s]
           }
           print(paste(i, shift, score))
-          out <- paste0(outdir, df@experiment,"_hm_", location, "_",i , "_")
+          out <- file.path(outdir, paste0(df@experiment,"_hm_", location, "_",i , "_"))
           out <- ifelse(!is.null(shifting),
                         paste0(out, shift, "_", score, plot.ext),
                         paste0(out, score, plot.ext))
@@ -277,7 +277,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
     if (plot.together) {
       ncols <- max(1, length(shifting))
       final <- gridExtra::grid.arrange(grobs = heatmapList, ncol = ncols)
-      ggsave(paste0(outdir, df@experiment, "_hm_combined_", location, plot.ext),
+      ggsave(file.path(outdir, paste0(df@experiment, "_hm_combined_", location, plot.ext)),
              plot = final, width = 5*ncols, height = ceiling(5.5*(length(heatmapList) / ncols)),
              limitsize = FALSE)
     }

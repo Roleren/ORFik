@@ -61,6 +61,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   # Get plots
   QCplots(df, "mrna", stats_folder, plot.ext = plot.ext, BPPARAM = BPPARAM)
 
+  message("--------------------------")
   message(paste("Everything done, saved QC to:", stats_folder))
   return(invisible(NULL))
 }
@@ -94,6 +95,7 @@ QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
                                           "/QC_STATS/"),
                     plot.ext = ".pdf", BPPARAM) {
+  message("--------------------------")
   message("Making QC plots:")
   message("- Annotation to NGS libraries plot:")
   QCstats.plot(df, stats_folder, plot.ext = plot.ext)
@@ -105,10 +107,25 @@ QCplots <- function(df, region = "mrna",
   txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = TRUE,
                                stopOnEmpty = FALSE)
   if (length(txNames) == 0) { # No valid tx to plot
-    warning("No 5' UTRs or 3' of significant length defined, metacoverage plots",
-    " can not be made, check your annotation file")
+    warning("No 5' UTRs or 3' of significant length defined, UTR metacoverage plots",
+    " can not be made, check your annotation file. In case no UTRs exist in your annotation,
+    you can add pseudo UTRs, to also see coverage profiles over those areas.")
+    # Check if CDS exists
+    txNames <- filterTranscripts(txdb, 0, 100, 0, longestPerGene = TRUE,
+                                 stopOnEmpty = FALSE)
+    if (length(txNames) == 0) {
+      warnings("No CDS of length 100 detected, skipping meta coverage completely!")
+      return(invisible(NULL))
+    }
+    message("  - Metacoverage of CDS region only")
+    transcriptWindow(GRangesList(), loadRegion(txdb, "cds", txNames),
+                     GRangesList(), df = df, outdir = stats_folder,
+                     scores = c("sum", "zscore", "transcriptNormalized"),
+                     is.sorted = TRUE, BPPARAM = BPPARAM, windowSize = 100)
     return(invisible(NULL))
   }
+
+
   loadRegions(txdb, parts = c("leaders", "cds", "trailers"),
               names.keep = txNames)
   # Plot seperated by leader, cds & trailer

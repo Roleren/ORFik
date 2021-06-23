@@ -12,8 +12,9 @@ of the main name in second column as a list.
 }
 \description{
 Used to standardize nomeclature for experiments.\cr
-Example: THP-1 is main naming, but a variant is THP1
-THP1 will then be renamed to THP-1
+Example: THP1 is main naming, but a variant is THP-1
+THP-1 will then be renamed to THP1 (variables in R,
+can not have - in them)
 }
 \seealso{
 Other experiment_naming: 

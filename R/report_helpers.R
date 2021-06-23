@@ -14,16 +14,20 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
   convertLibs(df, NULL) # Speedup by reducing unwanted information
 
   # Make count tables
+  message("--------------------------")
   dt_list <- countTable_regions(df, geneOrTxNames = "tx",
                                 longestPerGene = FALSE,
                                 out.dir = out.dir, lib.type = type,
                                 BPPARAM = BPPARAM)
   # Special regions rRNA etc..
+  types <- c()
+  # TODO: Check if there is a way to get this from txdb directly
   gff.df <- importGtfFromTxdb(txdb)
   types <- unique(gff.df$transcript_biotype)
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
   # Put into csv, the standard stats
+  message("--------------------------")
   message("Making alignment statistics for lib:")
   # Helper function, sum countOverlaps with weight
   sCo <- function(region, lib) {

@@ -13,7 +13,8 @@ libNames <- function() {
   allNames <-
     list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq",
            "Input", "input", "total RNA", "Total RNA", "total_RNA", "mRNA$",
-           "_rna_", "^rna_", "^mrna_", "^RNA ", "\\.rna$", "_RNA$", "_rna$"),
+           "_rna_", "^rna_", "^mrna_", "^RNA ", "\\.rna$", "_RNA$", "_rna$",
+           "PolyA"),
          c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
            "riboseq", "Ribosome", "ribosome", "Profiling","profiling",
            "Footprint", "ribo_profile", "footprint", "^ribo_", "_ribo_",
@@ -134,13 +135,15 @@ tissueNames <- function() {
 #' Get cell-line name variants
 #'
 #' Used to standardize nomeclature for experiments.\cr
-#' Example: THP-1 is main naming, but a variant is THP1
-#' THP1 will then be renamed to THP-1
+#' Example: THP1 is main naming, but a variant is THP-1
+#' THP-1 will then be renamed to THP1 (variables in R,
+#' can not have - in them)
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
 cellLineNames <- function() {
-  mainName <- c("CN34", "HEK293", "HeLa", "Hesc", "MDA", "NPC", "THP1", "TSC2", "U2OS", "PC3")
+  mainName <- c("CN34", "HEK293", "HeLa", "Hesc", "MDA",
+                "NPC", "THP1", "TSC2", "U2OS", "PC3", "3T3")
   allNames <-
     list(c("CN34"),
          c("HEK293", "Hek293", "293T"),
@@ -151,7 +154,8 @@ cellLineNames <- function() {
          c("THP-1", "THP1"),
          c("TSC2"),
          c("U2OS"),
-         c("PC3", "PC-3")
+         c("PC3", "PC-3"),
+         c("3T3")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
@@ -192,7 +196,7 @@ conditionNames <- function() {
                 "Mutant", "cas9", "NMDA", "DHPG")
   allNames <-
     list(c("WT", "wt", "wild_type", "Wild_type",
-           "control", "Control", "Basal"),
+           "control", "Control", "Basal", "_mock_"),
          c("MZ", "dicer"),
          c("4Ei", "4ei"),
          c("silvesterol", "Silvesterol"),

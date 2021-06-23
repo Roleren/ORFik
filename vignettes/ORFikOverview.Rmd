@@ -423,8 +423,8 @@ windowsStart
 
 Calculate meta-coverage over start and stop windowed regions.
 ```{r eval = TRUE, echo = TRUE, warning = FALSE} 
-hitMapStart <- metaWindow(footprintsGR, windowsStart, withFrames = TRUE)
-hitMapStop <- metaWindow(footprintsGR, windowsStop, withFrames = TRUE)
+hitMapStart <- metaWindow(footprintsGR, windowsStart, withFrames = TRUE, fraction = 29)
+hitMapStop <- metaWindow(footprintsGR, windowsStop, withFrames = TRUE, fraction = 29)
 ```
 
 Plot start/stop windows for length 29.

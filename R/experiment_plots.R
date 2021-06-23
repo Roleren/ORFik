@@ -163,7 +163,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
     varNames <- bamVarName(df)
-    outputLibs(df, leaders, type = type)
+    outputLibs(df, type = type)
 
     coverage <- bplapply(varNames, function(x, df, windowSize) {
       message(x)

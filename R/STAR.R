@@ -62,7 +62,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
                                             package = "ORFik")) {
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
-    message("Loading premade files information,
+    message("Loading premade index files,
             do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }

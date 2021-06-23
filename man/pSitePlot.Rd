@@ -6,19 +6,22 @@
 \usage{
 pSitePlot(
   hitMap,
-  length = 29,
+  length = unique(hitMap$fraction),
   region = "start",
   output = NULL,
   type = "canonical CDS",
   scoring = "Averaged counts",
-  forHeatmap = FALSE
+  forHeatmap = FALSE,
+  title = "auto",
+  facet = FALSE,
+  frameSum = FALSE
 )
 }
 \arguments{
 \item{hitMap}{a data.frame/data.table, given from metaWindow
 (must have columns: position, (score or count) and frame)}
 
-\item{length}{an integer (29), which length is this for?}
+\item{length}{an integer (29), which read length is this for?}
 
 \item{region}{a character (start), either "start or "stop"}
 
@@ -34,6 +37,18 @@ see ?coverageScorings for info and more alternatives.}
 \item{forHeatmap}{a logical (FALSE), should the plot be part of
 a heatmap? It will scale it differently. Removing title, x and y labels, and
 truncate spaces between bars.}
+
+\item{title}{character, title of plot. Default "auto", will make it:
+paste("Length", length, "over", region, "of", type).
+Else set your own (set to NULL to remove all together).}
+
+\item{facet}{logical, default FALSE. If you input multiple read lengths,
+specified by fraction column of hitMap, it will split the plots for
+each read length, putting them under each other. Ignored if forHeatmap
+is TRUE.}
+
+\item{frameSum}{logical default FALSE. If TRUE, add an addition plot
+to the right, sum per frame over all positions per length.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,

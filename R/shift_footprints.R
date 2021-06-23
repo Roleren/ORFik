@@ -267,11 +267,12 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 
 #' Shift footprints of each file in experiment
 #'
-#' For more details, see: \code{\link{detectRibosomeShifts}}
-#'
-#' #' Saves files to a specified location as .ofst and .wig,
+#' A function that combines the steps of periodic read length detection,
+#' p-site shift detection and p-shifting into 1 function.
+#' For more details, see: \code{\link{detectRibosomeShifts}}\cr
+#' Saves files to a specified location as .ofst and .wig,
 #' The .ofst file will include a score column containing read width. \cr
-#' The .wig fiels, will be saved in pairs of +/- strand, and score column
+#' The .wig files, will be saved in pairs of +/- strand, and score column
 #' will be replicates of reads starting at that position,
 #' score = 5 means 5 reads.\cr
 #' Remember that different species might have different default Ribosome
@@ -402,9 +403,18 @@ shiftFootprintsByExperiment <- function(df,
 #' A good validation for you p-shifting, to see shifts are corresponding
 #' and close to the CDS TIS.
 #' @inheritParams shiftFootprintsByExperiment
+#' @inheritParams windowPerReadLength
 #' @param output name to save file, full path. (Default NULL) No saving.
+#' Sett to "auto" to save to QC_STATS folder of experiment named:
+#' "pshifts_barplots.png" or "pshifts_heatmaps.png" depending on type argument.
+#' Folder must exist!
 #' @param scoring which scoring scheme to use for heatmap, default
 #' "transcriptNormalized". Some alternatives: "sum", "zscore".
+#' @param type character, default "bar". Plot as faceted bars,
+#' gives more detailed information of read lengths,
+#' but harder to see patterns over multiple read lengths.
+#' Alternative: "heatmaps", better overview of patterns over
+#' multiple read lengths.
 #' @param title Title for top of plot, default "Ribo-seq".
 #' A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"
 #' @param addFracPlot logical, default TRUE, add positional sum plot on top
@@ -419,26 +429,58 @@ shiftFootprintsByExperiment <- function(df,
 #' #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        scoring = "transcriptNormalized",
+                       pShifted = TRUE,
+                       upstream = if (pShifted) 5 else 20,
+                       downstream = if (pShifted) 20 else 5,
+                       type = "bar",
                        addFracPlot = TRUE,
                        BPPARAM = bpparam()) {
-  txNames <- filterTranscripts(df, 20, 21, 1)
+  if (!(type %in% c("bar", "heatmap")))
+    stop("The 'type' argument must be bar or heatmap")
   txdb <- loadTxdb(df)
+  txNames <- filterTranscripts(txdb, upstream, downstream + 1, 0)
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
   style <- seqlevelsStyle(cds)
   plots <- bplapply(seq(nrow(df)),
-                    function(x, cds, mrna, style, paths, df) {
+                    function(x, cds, mrna, style, paths, df, upstream,
+                             downstream, type) {
     miniTitle <- gsub("_", " ", bamVarName(df, skip.experiment = TRUE)[x])
     hitMap <- windowPerReadLength(cds, mrna,  fimport(paths[x], style),
-                                  pShifted = TRUE)
-    coverageHeatMap(hitMap, scoring = scoring, addFracPlot = addFracPlot,
-                    title = miniTitle)
+                                  upstream = upstream, downstream = downstream)
+    if (type == "heatmap") {
+      coverageHeatMap(hitMap, scoring = scoring, addFracPlot = addFracPlot,
+                      title = miniTitle)
+    } else {
+      hitMap[, frame := position %% 3]
+      pSitePlot(hitMap, scoring = scoring,
+                facet = TRUE, frameSum = TRUE, title = miniTitle)
+    }
   }, cds = cds, mrna = mrna, style = style, BPPARAM = BPPARAM,
-  paths = filepath(df, "pshifted"), df = df)
+     paths = filepath(df, "pshifted"), df = df, upstream = upstream,
+     downstream = downstream, type = type)
   res <- do.call("grid.arrange", c(plots, ncol=1, top = title))
-  if (!is.null(output))
-    ggsave(output, res,
-           width = 225, height = (length(res) -1)*65,
-           units = "mm", dpi = 300)
+  if (!is.null(output)) {
+    if (type == "heatmap") {
+      if (output == "auto") {
+        dir.to.save <- file.path(dirname(df.rfp$filepath[1]), "QC_STATS")
+        output <- file.path(dir.to.save, "pshifts_heatmaps.png")
+      }
+      ggsave(output, res,
+             width = 225, height = (length(res) -1)*65,
+             units = "mm", dpi = 300)
+    } else {
+      if (output == "auto") {
+        dir.to.save <- file.path(dirname(df.rfp$filepath[1]), "QC_STATS")
+        output <- file.path(dir.to.save, "pshifts_barplots.png")
+      }
+      ggsave(output, res,
+             width = 225, height = (length(res) -1)*85,
+             units = "mm", dpi = 300)
+    }
+    message("Saved pshift plots to location: ",
+            output)
+  }
+
   return(res)
 }

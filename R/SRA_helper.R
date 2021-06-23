@@ -200,7 +200,14 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' the SRP argument.
 #' The directory will be created if not existing.
 #' @param remove.invalid logical, default TRUE. Remove Runs with 0 reads (spots)
-#' @return a data.table of the opened file
+#' @param auto.detect logical, default FALSE. If TRUE, ORFik will add additional columns:\cr
+#' LIBRARYTYPE: (is this Ribo-seq or mRNA-seq, CAGE etc), \cr
+#' REPLICATE: (is this replicate 1, 2 etc),\cr
+#' STAGE: (Which time point, cell line or tissue is this, HEK293, TCP-1, 24hpf etc),\cr
+#' CONDITION: (is this Wild type control or a mutant etc).\cr
+#' These values are only qualified guesses from the metadata, so always double check!
+#' @return a data.table of the metadata, 1 row per sample,
+#'  SRR run number defined in Run column.
 #' @importFrom utils download.file
 #' @importFrom data.table fread
 #' @importFrom data.table fwrite
@@ -217,7 +224,8 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' # download.SRA.metadata("ERP116106", outdir)
 #' ## Originally on GEO (GSE)
 #' # download.SRA.metadata("GSE61011", outdir)
-download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
+download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE,
+                                  auto.detect = FALSE) {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
   destfile <- paste0(outdir, "/SraRunInfo_", SRP, ".csv")
@@ -299,6 +307,18 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE) {
     }
     # Remove xml and keep runinfo
     file.remove(destfile_xml)
+
+    # Create ORFik guess columns from metadata:
+    if (auto.detect) {
+      file$LIBRARYTYPE <- findFromPath(file$sample_title,
+                                       libNames(), "auto")
+      file$REPLICATE <- findFromPath(file$sample_title,
+                                     repNames(), "auto")
+      stages <- rbind(stageNames(), tissueNames(), cellLineNames())
+      file$STAGE <- findFromPath(file$sample_title, stages, "auto")
+      file$CONDITION <- findFromPath(file$sample_title,
+                                     conditionNames(), "auto")
+    }
     fwrite(file, destfile)
   }
   return(file)
