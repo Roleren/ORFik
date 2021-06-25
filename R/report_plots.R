@@ -146,6 +146,8 @@ correlation.plots <- function(df, output.dir,
 #' @param width width of plot, default 6.6 (in inches)
 #' @param height height of plot, default 4.5 (in inches)
 #' @param weight which column in reads describe duplicates, default "score".
+#' @param bar.position character, default "dodge". Should Ribo-seq frames
+#' per read length be positioned as "dodge" or "stack" (on top of each other).
 #' @inheritParams QCstats.plot
 #' @inheritParams outputLibs
 #' @return ggplot object as a grid
@@ -158,9 +160,10 @@ correlation.plots <- function(df, output.dir,
 #' #RiboQC.plot(df)
 RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
                         width = 6.6, height = 4.5, plot.ext = ".pdf",
-                        type = "pshifted", weight = "score",
+                        type = "pshifted", weight = "score", bar.position = "dodge",
                         BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)) {
   stats <- QCstats(df)
+  stopifnot(bar.position %in% c("stack", "dodge"))
 
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
 
@@ -169,6 +172,8 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
                              levels = stats$Sample)
   stats$Sample <-  factor(stats$Sample, levels = stats$Sample)
   colnames(stats) <- gsub("percentage", "%", colnames(stats))
+  stats[,(seq.int(ncol(stats))[-c(1,2)]):= lapply(.SD, as.numeric),
+        .SDcols = seq.int(ncol(stats))[-c(1,2)]]
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
 
   step_counts <- c("mRNA", "rRNA")
@@ -197,8 +202,10 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
   # Frame distribution over all
   frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
     total <- regionPerReadLength(cds, get(lib, mode = "S4"),
-                                 withFrames = TRUE, scoring = "frameSumPerL")
+                                 withFrames = TRUE, scoring = "frameSumPerL",
+                                 weight = weight)
     total[, length := fraction]
+    #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
     total[, fraction := rep(lib, nrow(total))]
   }, cds = cds, weight = weight, BPPARAM = BPPARAM)
   frame_sum_per <- rbindlist(frame_sum_per1)
@@ -212,7 +219,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
   frame_sum_per[, fraction := factor(fraction, levels = unique(fraction), ordered = TRUE)]
   # stacked
   gg_frame_per_stack <- ggplot(frame_sum_per, aes(x = length, y = percent)) +
-    geom_bar(aes(fill = frame), stat="identity", position = "stack")+
+    geom_bar(aes(fill = frame), stat="identity", position = bar.position)+
     scale_x_continuous(breaks = unique(frame_sum_per$length)) +
     theme_minimal() +
     rm.minor+
@@ -241,7 +248,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
     labs(fill = "tx. type")  +
     scale_y_continuous(breaks = c(50, 100))
   gg_all_tx_regions
-
+  # all_tx_types <= 1%
   gg_all_tx_other <-
     ggplot(dt_all_tx_other, aes(y = percentage, x = sample_id)) +
     geom_bar(aes(fill = variable), stat="identity", position = "stack")+
@@ -251,7 +258,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
     temp_theme +
     labs(fill = "tx. other") +
     scale_fill_grey()  +
-    scale_y_continuous(n.breaks = 2)
+    scale_y_continuous(n.breaks = 3)
   gg_all_tx_other
 
   # Aligned reads

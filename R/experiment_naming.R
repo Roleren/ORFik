@@ -9,16 +9,16 @@
 libNames <- function() {
   mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
                 "SSU", "ATAC", "PRPF", "PAS-Seq", "PAL-Seq", "RIP","SHAPE",
-                "ChIP", "PAR-CLIP", "tRNA")
+                "ChIP", "CLIP", "tRNA", "miRNA")
   allNames <-
-    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq",
-           "Input", "input", "total RNA", "Total RNA", "total_RNA", "mRNA$",
-           "_rna_", "^rna_", "^mrna_", "^RNA ", "\\.rna$", "_RNA$", "_rna$",
-           "PolyA"),
-         c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq",
-           "riboseq", "Ribosome", "ribosome", "Profiling","profiling",
-           "Footprint", "ribo_profile", "footprint", "^ribo_", "_ribo_",
-           "^RP ", " RP ", "_RP_", "^FP_", "^fp_"," RP$", " rp$", ".rp$",
+    list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq", "RNA seq",
+           "rnaseq", "Input", "input", "total RNA", "Total RNA", "total_RNA",
+           "mRNA$", "_mrna_","_rna_", "^rna_", "^mrna_", "^RNA ", "^mRNA ",
+           "\\.rna$", "_RNA$", "_rna$","PolyA"),
+         c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq", "Ribo_seq",
+           "riboseq", "Riboseq", "Ribosome", "ribosome", "Profiling","profiling",
+           "Footprint", "ribo_profile", "footprint", "^ribo_", "_ribo_", "_ribo$", "_Ribo$",
+           "^RP ", " RP ", "_RP_", "^FP_", "^fp_", "_fp_","RP$", "rp$",
            "_rp_", "\\.rp\\.", "_RF"),
          c("QTI"),
          c("CAGE", "cage"),
@@ -32,7 +32,8 @@ libNames <- function() {
          c("SHAPE"),
          c("ChIP"),
          c("PAR-CLIP"),
-         c("tRNA")
+         c("tRNA"),
+         c("miRNA")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
@@ -142,13 +143,14 @@ tissueNames <- function() {
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
 cellLineNames <- function() {
-  mainName <- c("CN34", "HEK293", "HeLa", "Hesc", "MDA",
+  mainName <- c("CN34", "HEK293", "HeLa", "Hesc", "HCT116", "MDA",
                 "NPC", "THP1", "TSC2", "U2OS", "PC3", "3T3")
   allNames <-
     list(c("CN34"),
-         c("HEK293", "Hek293", "293T"),
+         c("HEK293", "Hek293", "293T", "HEK_"),
          c("HeLa", "HELA", "Hela", "hela"),
          c("hesc", "Hesc"),
+         c("HCT116"),
          c("MDA-"),
          c("npc", "NPC"),
          c("THP-1", "THP1"),
@@ -193,9 +195,9 @@ repNames <- function() {
 #' of the main name in second column as a list.
 conditionNames <- function() {
   mainName <- c("WT", "MZ", "4Ei", "Silvesterol",
-                "Mutant", "cas9", "NMDA", "DHPG")
+                "Mutant", "cas9", "NMDA", "DHPG", "knockdown")
   allNames <-
-    list(c("WT", "wt", "wild_type", "Wild_type",
+    list(c("WT", "wt", "wild_type", "Wild_type", "untreated",
            "control", "Control", "Basal", "_mock_"),
          c("MZ", "dicer"),
          c("4Ei", "4ei"),
@@ -203,7 +205,28 @@ conditionNames <- function() {
          c("mutant", "Mutant"),
          c("Cas9", "cas9"),
          c("NMDA"),
-         c("DHPG")
+         c("DHPG"),
+         c("knockdown", "Knockdown", "_kd_")
+    )
+  dt <- data.table(mainName, allNames)
+  return(dt)
+}
+
+#' Get translocation inhibitor name variants
+#'
+#' Used to standardize nomeclature for experiments.\cr
+#' Example: cycloheximide, lactimidomycin, harringtonine
+#' @family experiment_naming
+#' @return a data.table with 2 columns, the main name, and all name variants
+#' of the main name in second column as a list.
+inhibitorNames <- function() {
+  mainName <- c("chloram","chx", "harr", "frozen", "lactim")
+  allNames <-
+    list(c("chloramphenicol", "Chloramphenicol"),
+         c("cycloheximide", "Cycloheximide", "chx", "CHX"),
+         c("harringtonine", "Harringtonine"),
+         c("frozen", "freeze", "freezing"),
+         c("lactimidomycin", "Lactimidomycin")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

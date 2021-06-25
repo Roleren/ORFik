@@ -19,6 +19,7 @@ rep1 will then be renamed to 1
 Other experiment_naming: 
 \code{\link{cellLineNames}()},
 \code{\link{conditionNames}()},
+\code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
 \code{\link{mainNames}()},
 \code{\link{stageNames}()},

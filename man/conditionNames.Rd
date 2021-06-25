@@ -18,6 +18,7 @@ control will then be renamed to WT
 \seealso{
 Other experiment_naming: 
 \code{\link{cellLineNames}()},
+\code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
 \code{\link{mainNames}()},
 \code{\link{repNames}()},

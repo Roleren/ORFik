@@ -161,7 +161,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
     }
   }
 
-  hitMap <- coverageScorings(hitMap, scoring)
+  hitMap <- coverageScorings(hitMap, scoring, copy.dt = FALSE)
 
   if (withFrames & length(window_size) == 1) {
     hitMap[, frame := c(rev(rep_len(seq.int(2L, 0L), zeroPosition)),
@@ -281,7 +281,8 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #' mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
 #' periodic, NULL). More info in details
 #' @param copy.dt logical TRUE, copy object, to avoid overwriting original object.
-#' Set to false to speed up, if original object is not needed.
+#' Set to false to run function using reference to object,
+#' a speed up if original object is not needed.
 #' @return a data.table with new scores (size dependent on score used)
 #' @family coverage
 #' @export
@@ -306,7 +307,7 @@ coverageScorings <- function(coverage, scoring = "zscore",
                                is.null(cov$genes)))
   groupFPF <- coverageGroupings(c(is.null(cov$fraction),
                                 is.null(cov$feature)), "FPF")
-  if (is.null(cov$count)) cov$count <- cov$score
+  if (is.null(cov$count)) cov[, count := score]
   if (scoring == "meanPos") { # rare scoring schemes
     groupFPF <- quote(list(genes, position))
     scoring <- "mean"
@@ -469,9 +470,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 
     count[, genes := groupings(coverage)]
     if (length(window_size) != 1) { # different size windows
-      count[, ones := rep.int(1L, length(genes))]
-      count[, position := cumsum(ones), by = genes]
-      count[, ones := NULL]
+      count[, position := seq_len(.N), by = genes]
     } else { # all same size
       count[, position := rep.int(seq.int(window_size), length(coverage))]
     }
@@ -494,6 +493,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @inheritParams windowPerReadLength
 #' @param withFrames logical TRUE, add ORF frame (frame 0, 1, 2), starting
 #' on first position of every grl.
+#' @param exclude.zero.cov.grl logical, default TRUE. Do not include
+#' ranges that does not have any coverage (0 reads on them),
+#' this makes it faster to run.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a data.table with lengths by coverage.
 #' @family coverage
@@ -510,24 +512,28 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
                                 withFrames = TRUE,
                                 scoring = "transcriptNormalized",
-                                weight = "score", BPPARAM = bpparam()) {
+                                weight = "score",
+                                exclude.zero.cov.grl = TRUE,
+                                BPPARAM = bpparam()) {
   rWidth <- readWidths(reads)
   all_lengths <- sort(unique(rWidth))
   if (!is.null(acceptedLengths))
     all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
-  hasHits <- ORFik:::hasHits(grl, reads)
-  grl <- grl[hasHits]
+  if (exclude.zero.cov.grl) {
+    grl <- grl[hasHits(grl, reads)]
+  }
 
-  dt <- bplapply(all_lengths, function(l, grl, reads, weight, rWidth, scoring) {
-    d <- coveragePerTiling(grl, reads[rWidth == l], as.data.table = TRUE, withFrames = TRUE,
-                           weight = weight, is.sorted = TRUE)
+  dt <- bplapply(all_lengths, function(l, grl, reads, weight, rWidth,
+                                       scoring, withFrames) {
+    d <- coveragePerTiling(grl, reads[rWidth == l], as.data.table = TRUE,
+                           withFrames = withFrames, weight = weight,
+                           is.sorted = TRUE)
     d[, fraction := l]
-    return(coverageScorings(d, scoring))
+    return(coverageScorings(d, scoring, copy.dt = FALSE))
   }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
-     scoring = scoring, BPPARAM = BPPARAM)
+     scoring = scoring, withFrames = withFrames, BPPARAM = BPPARAM)
 
-  dt <- rbindlist(dt)
-  return(dt)
+  return(rbindlist(dt))
 }
 
 #' Find proportion of reads per position per read length in window

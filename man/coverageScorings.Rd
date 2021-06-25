@@ -15,7 +15,8 @@ mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
 periodic, NULL). More info in details}
 
 \item{copy.dt}{logical TRUE, copy object, to avoid overwriting original object.
-Set to false to speed up, if original object is not needed.}
+Set to false to run function using reference to object,
+a speed up if original object is not needed.}
 }
 \value{
 a data.table with new scores (size dependent on score used)

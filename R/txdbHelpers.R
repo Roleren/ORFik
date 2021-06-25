@@ -15,6 +15,10 @@
 #' to capital and convert any "_" (underscore) to " " (space)
 #' @return NULL, Txdb saved to disc named paste0(gtf, ".db")
 #' @export
+#' @examples
+#' gtf <- "/path/to/local/annotation.gtf"
+#' genome <- "/path/to/local/genome.fasta"
+#' #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
 makeTxdbFromGenome <- function(gtf, genome = NULL, organism) {
   message("Making txdb of GTF")
   organismCapital <- paste0(toupper(substr(organism, 1, 1)),
@@ -208,6 +212,7 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' Load transcript region
 #'
 #' Usefull to simplify loading of standard regions, like cds' and leaders.
+#' Adds another safety in that seqlevels will be set
 #'
 #' Load as GRangesList if input is not already GRangesList.
 #' @param txdb a TxDb file or a path to one of:
@@ -257,6 +262,10 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
       stop(paste("Found no kept transcripts, for region:", part))
     region <- region[subset]
   }
+  if (all(seqlevels(region) %in% seqlevels(txdb))) { # Avoid warnings
+    seqlevels(region) <- seqlevels(txdb)
+  }
+
   return(region)
 }
 

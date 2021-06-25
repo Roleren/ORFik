@@ -12,6 +12,7 @@ RiboQC.plot(
   plot.ext = ".pdf",
   type = "pshifted",
   weight = "score",
+  bar.position = "dodge",
   BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)
 )
 }
@@ -31,6 +32,9 @@ If defined saves plot to that directory with the name "/STATS_plot.pdf".}
 warning if not pshifted might crash if too many read lengths!}
 
 \item{weight}{which column in reads describe duplicates, default "score".}
+
+\item{bar.position}{character, default "dodge". Should Ribo-seq frames
+per read length be positioned as "dodge" or "stack" (on top of each other).}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}

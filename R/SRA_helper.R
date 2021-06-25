@@ -296,7 +296,8 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE,
         xml.RUN <- c(xml.RUN, unlist(EXP_SAMPLE$RUN_SET[j]$RUN$IDENTIFIERS$PRIMARY_ID))
       }
       xml.TITLE <- ifelse(is.null(xml.TITLE), "", xml.TITLE)
-      xml.AUTHOR <- ifelse(is.null(xml.AUTHOR), "", xml.AUTHOR)
+      xml.AUTHOR <- ifelse(is.null(xml.AUTHOR), "",
+                           ifelse(xml.AUTHOR %in% c("Curators", "GEO"), "", xml.AUTHOR))
       if (length(xml.RUN) == 0) xml.RUN <- ""
       dt <- rbind(dt, cbind(xml.AUTHOR, xml.TITLE, xml.RUN))
     }
@@ -318,6 +319,8 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE,
       file$STAGE <- findFromPath(file$sample_title, stages, "auto")
       file$CONDITION <- findFromPath(file$sample_title,
                                      conditionNames(), "auto")
+      file$INHIBITOR <- findFromPath(file$sample_title,
+                                     inhibitorNames(), "auto")
     }
     fwrite(file, destfile)
   }

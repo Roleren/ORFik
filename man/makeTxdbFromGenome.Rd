@@ -27,3 +27,8 @@ Example is that you can not create a coverage window outside
 the chromosome boundary, this is only possible if you have
 set the seqlengths.
 }
+\examples{
+gtf <- "/path/to/local/annotation.gtf"
+genome <- "/path/to/local/genome.fasta"
+#makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
+}

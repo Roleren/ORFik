@@ -429,6 +429,17 @@ groupings <- function(grl){
   return(rep.int(seq.int(length(l)), l))
 }
 
+#' Reverse elements within list
+#'
+#' A faster version of S4Vectors::revElements
+#' @param x RleList
+#' @return a RleList (reversed inside list elements)
+revElementsF <- function(x) {
+  b <- rev(x)
+  b@unlistData <- rev(x@unlistData)
+  return(rev(b))
+}
+
 #' coverageByTranscript with weights
 #'
 #' Extends the function with weights,
@@ -499,7 +510,7 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
     uex_cvg <- cvg1[uex]
     uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
   }
-  uex_cvg <- revElements(uex_cvg, strand(uex) == "-")
+  uex_cvg[strand(uex) == "-"] <- revElementsF(uex_cvg)[strand(uex) == "-"]
   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
   ex_cvg <- uex_cvg[ex2uex]
   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)

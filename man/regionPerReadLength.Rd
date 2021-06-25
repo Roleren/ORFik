@@ -11,6 +11,7 @@ regionPerReadLength(
   withFrames = TRUE,
   scoring = "transcriptNormalized",
   weight = "score",
+  exclude.zero.cov.grl = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -40,6 +41,10 @@ would mean score column tells that this alignment region was found 5 times.
 ORFik .bedo files, contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
+
+\item{exclude.zero.cov.grl}{logical, default TRUE. Do not include
+ranges that does not have any coverage (0 reads on them),
+this makes it faster to run.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

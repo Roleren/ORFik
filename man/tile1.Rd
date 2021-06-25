@@ -4,16 +4,21 @@
 \alias{tile1}
 \title{Tile each GRangesList group to 1-base resolution.}
 \usage{
-tile1(grl, sort.on.return = TRUE, matchNaming = TRUE)
+tile1(grl, sort.on.return = TRUE, matchNaming = TRUE, is.sorted = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object with names}
+\item{grl}{a \code{\link{GRangesList}} object with names.}
 
-\item{sort.on.return}{logical (T), should the groups be
-sorted before return.}
+\item{sort.on.return}{logical (TRUE), should the groups be
+sorted before return (Negative ranges should be in decreasing order).
+Makes it a bit slower, but much safer for downstream analysis.}
 
-\item{matchNaming}{logical (T), should groups keep unlisted names
+\item{matchNaming}{logical (TRUE), should groups keep unlisted names
 and meta data.(This make the list very big, for > 100K groups)}
+
+\item{is.sorted}{logical (TRUE), grl is presorted
+(negative coordinates are decreasing). Set to FALSE if they are not,
+else output will most likely be wrong!}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1

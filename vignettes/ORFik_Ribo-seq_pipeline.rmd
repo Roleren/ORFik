@@ -154,7 +154,7 @@ shiftPlots(df.rfp, output = "auto", downstream = 30, type = "heatmap") # Heatmap
 
 # Ribo-seq specific QC
 remove.experiments(df.rfp) # Remove loaded data (it is not pshifted)
-ORFik:::RiboQC.plot(df.rfp, BPPARAM = BiocParallel::SerialParam(progressbar = T))
+RiboQC.plot(df.rfp, BPPARAM = BiocParallel::SerialParam(progressbar = T))
 remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Create heatmaps (Ribo-seq)

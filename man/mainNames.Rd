@@ -24,6 +24,7 @@ ribo-seq will then be renamed to RFP
 Other experiment_naming: 
 \code{\link{cellLineNames}()},
 \code{\link{conditionNames}()},
+\code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
 \code{\link{repNames}()},
 \code{\link{stageNames}()},

@@ -62,7 +62,7 @@ TSS if it is within boundary of 5' leader range, specified by
 `extension` in bp. A max peak must also be higher than minimum
 CageSeq peak cutoff specified in `filterValue`. The new TSS will then
 be the positioned where the cage read (with highest read count in the
-interval).
+interval). If no CAGE supports a leader, the width will be set to 1 base.
 }
 \examples{
 txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",

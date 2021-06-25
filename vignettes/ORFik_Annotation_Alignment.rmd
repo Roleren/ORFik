@@ -36,7 +36,7 @@ ORFik uses a folder structure of separating these 3 types:
 
 * 1. fastq files (raw_data)
 * 2. bam files (processed_data)
-* 3. annotation reference files (references)
+* 3. annotation reference files (gtf + fasta genome references)
 
 This is defined in the config() function, and only is needed to run once (config is stored for later experiments),
 so all other experiments will reuse the parent file structure. ORFik will try to automatically 
@@ -113,7 +113,14 @@ organism <- info$ScientificName[1]
 is_paired_end <- all(info$LibraryLayout == "PAIRED")
 ```
 
-# Download genome and gtf files
+# Annotation (Fasta genome and gtf file)
+
+There are two ways to use annotation:
+
+- 1. Download using ORFik (This is safer, to make sure you use a high quality genome build)
+- 2. Use your local annotation (ORFik includes some tricks to improve your custom annotation)
+
+## Download genome and gtf files
 To download the genome annotation we use the getGenomeAndAnnotation function.
 We need to decide 3 things:
 
@@ -137,7 +144,7 @@ for faster access to genomic regions.
 
 If you rerun this function after is has completed, it will not re-download, only output the correct object paths, this makes it easy to rerun the script (for other experiments of same species), when you have some steps already completed before.
 
-## Contaminants
+### Contaminants
 
 If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, or tRNAs, also specify these in the function. By default it will download phix from refseq and the other contaminants are usually defined within the genome annotation of the species, so they are extracted from the .gtf file. 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
@@ -159,6 +166,45 @@ If the gtf does not have Non-coding RNAs, they can be extracted by setting ncRNA
 Genomes without defined tRNAs are rare, and no web API to access tRNAs for all common experimental organisms exists. 
 So in that rare case, you must manually download and add the sequences from tRNAs using tRNA scan or similar databases (then add this
 file to the getGenomeAndAnnotation call using argument tRNA = "path/to/downloaded/tRNAs.fasta") 
+
+## Local annotation
+If you are not downloading annotation through ORFik, we need to create the Txdb object (Bioconductor optimized annotation format)
+
+This will save you a lot of the common warnings and problems downstream:
+- correct seqlevels
+- correct seqlengths
+- correct organism assigned
+- faster loading
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  gtf <- "/path/to/local/annotation.gtf"
+  genome <- "/path/to/local/genome.fasta"
+  makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
+```
+The txdb is saved in same directory as the gtf, with an extension ".db"
+
+## Annotation without defined UTRs
+Without defined UTRs an annotation will give you considerable less quality results. So optimial is always to
+find an annotation with UTRs. If that is not possible ORFik contains two ways to create 5' UTR annotation, 
+3' UTR annotation will be included soon.
+
+### Create 5' UTR annotation from CAGE
+If you have CAGE libraries, ORFik can in a simple way create 5' UTRs for your annotation:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  txdb <- "/path/to/local/annotation.gtf.db"
+  cage <- "/path/to/CAGE.ofst" # Can be bed, wig etc (ofst is fastest)
+  reassigned_txdb <- assignTSSByCage(txdb, cage)
+  AnnotationDbi::saveDb("/path/to/local/annotation_cage.db")
+```
+
+### Create Pseudo 5' UTR annotation
+If you do not have CAGE, you can also just specify some fixed 5' UTR lengths
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  txdb <- "/path/to/local/annotation.gtf.db"
+  # Not implemented yet!
+  #reassigned_txdb <- assignTSSByCage(txdb, cage = NULL, pseudo.length = 100)
+  #AnnotationDbi::saveDb("/path/to/local/annotation_pseudo_leaders.db")
+```
 
 # RNA-seq alignment
 ORFik uses the STAR aligner, which is splice aware and fast and shown to usually map the highest amount of reads.
@@ -268,7 +314,7 @@ create.experiment(exper = "yeast_exp_RNA",
                   )
 ```
 
-The files is now saved to default directory which is: saveDir = "~/Bio_data/ORFik_experiments/"
+The files is now saved to default directory, which is: saveDir = "~/Bio_data/ORFik_experiments/"
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 df <- read.experiment("yeast_exp_RNA")

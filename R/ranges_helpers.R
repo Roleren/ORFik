@@ -74,11 +74,15 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' will be splited by positions of 1. Returned values are sorted as the same
 #' groups as the original GRangesList, except they are in bp resolutions.
 #' This is not supported originally by GenomicRanges for GRangesList.
-#' @param grl a \code{\link{GRangesList}} object with names
-#' @param sort.on.return logical (T), should the groups be
-#'  sorted before return.
-#' @param matchNaming logical (T), should groups keep unlisted names
+#' @param grl a \code{\link{GRangesList}} object with names.
+#' @param sort.on.return logical (TRUE), should the groups be
+#'  sorted before return (Negative ranges should be in decreasing order).
+#'  Makes it a bit slower, but much safer for downstream analysis.
+#' @param matchNaming logical (TRUE), should groups keep unlisted names
 #'  and meta data.(This make the list very big, for > 100K groups)
+#' @param is.sorted logical (TRUE), grl is presorted
+#' (negative coordinates are decreasing). Set to FALSE if they are not,
+#' else output will most likely be wrong!
 #' @return a GRangesList grouped by original group, tiled to 1
 #' @importFrom S4Vectors DataFrame
 #' @export
@@ -95,8 +99,11 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' grl <- GRangesList(tx1_1 = gr1, tx1_2 = gr2)
 #' tile1(grl)
 #'
-tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
+tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE,
+                  is.sorted = TRUE) {
   if (!is.grl(grl)) stop("grl must be a GRangesList")
+  if (!is.sorted) grl <- sortPerGroup(grl)
+
   # optimize by removing all unecessary data
   ORFs <- unlist(grl, use.names = FALSE)
   mcols(ORFs) <- NULL
@@ -104,6 +111,12 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
   tilex <- tile(ORFs, width =  1L)
   grouping <- groupings(grl)
   names(tilex) <- grouping
+
+  # only negative with > 1 exons must be sorted
+  if (sort.on.return) {
+    negIndices <- !strandBool(tilex) & numExonsPerGroup(tilex) > 1
+    tilex[negIndices] <- sortPerGroup(tilex[negIndices], quick.rev = TRUE)
+  }
 
   if (matchNaming) {
     if (!is.null(names(grl))) {
@@ -119,15 +132,8 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE) {
     names(tilex) <- NULL
     tilex <- groupGRangesBy(tilex, grouping)
   }
-
-  # only negative with > 1 exons must be sorted
-  if (sort.on.return) {
-    negIndices <- !strandBool(tilex) & numExonsPerGroup(tilex) > 1
-    tilex[negIndices] <- sortPerGroup(tilex[negIndices])
-  }
   return(tilex)
 }
-
 
 #' Map genomic to transcript coordinates by reference
 #'

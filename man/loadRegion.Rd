@@ -27,6 +27,7 @@ a GrangesList of region
 }
 \description{
 Usefull to simplify loading of standard regions, like cds' and leaders.
+Adds another safety in that seqlevels will be set
 }
 \details{
 Load as GRangesList if input is not already GRangesList.

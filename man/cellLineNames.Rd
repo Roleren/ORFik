@@ -19,6 +19,7 @@ can not have - in them)
 \seealso{
 Other experiment_naming: 
 \code{\link{conditionNames}()},
+\code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
 \code{\link{mainNames}()},
 \code{\link{repNames}()},

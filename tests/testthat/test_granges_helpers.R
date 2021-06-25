@@ -78,6 +78,12 @@ test_that("tile1 works as intended", {
   expect_equal(as.integer(unlist(end(tilex[2]))),
                c(20, 21, 22, 23, 24, 25, 30, 31, 32, 33,
                  34, 35, 40, 41, 42, 43, 44, 45))
+
+  tilex <- tile1(GRangesList(GRanges("1", IRanges(c(50, 1), c(55, 10)),
+                                     "-")))
+  expect_equal(numExonsPerGroup(tilex, FALSE), 16L)
+  expect_equal(numExonsPerGroup(tilex), widthPerGroup(tilex))
+
 })
 
 test_that("widthPerGroup works as intended", {
