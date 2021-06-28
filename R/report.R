@@ -120,7 +120,7 @@ QCplots <- function(df, region = "mrna",
     message("  - Metacoverage of CDS region only")
     transcriptWindow(GRangesList(), loadRegion(txdb, "cds", txNames),
                      GRangesList(), df = df, outdir = stats_folder,
-                     scores = c("sum", "zscore", "transcriptNormalized"),
+                     scores = c("sum", "transcriptNormalized"),
                      is.sorted = TRUE, BPPARAM = BPPARAM, windowSize = 100)
     return(invisible(NULL))
   }
@@ -132,7 +132,7 @@ QCplots <- function(df, region = "mrna",
   message("  - seperated into 5' UTR, CDS and 3' UTR regions")
   transcriptWindow(leaders, get("cds", mode = "S4"),
                    trailers, df = df, outdir = stats_folder,
-                   scores = c("sum", "zscore", "transcriptNormalized"),
+                   scores = c("sum", "transcriptNormalized"),
                    is.sorted = TRUE, BPPARAM = BPPARAM)
   # Plot all transcripts as 1 region
   # TODO: Make this safe enough to include for 32GB computers

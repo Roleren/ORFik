@@ -222,7 +222,7 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' NOTE: difference between tx and mrna is that tx are all transcripts, while
 #' mrna are all transcripts with a cds
 #' @param names.keep a character vector of subset of names to keep. Example:
-#' loadRegions(txdb, names = ENST1000005), will return only that transcript.
+#' loadRegions(txdb, names = "ENST1000005"), will return only that transcript.
 #' Remember if you set by to "gene", then this list must be with gene names.
 #' @param by a character, default "tx" Either "tx" or "gene". What names to
 #' output region by, the transcript name "tx" or gene names "gene"
@@ -454,7 +454,7 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 
   if (stopOnEmpty & length(tx$tx_name) == 0)
     stop("No transcript has leaders and trailers of specified minFiveUTR",
-         " minCDS, minThreeUTR")
+         " minCDS, minThreeUTR, create pseudo-UTRs, see annotation vignette!")
   if (by == "gene")
     return(tx$gene_id)
   return(tx$tx_name)

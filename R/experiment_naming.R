@@ -206,7 +206,7 @@ conditionNames <- function() {
          c("Cas9", "cas9"),
          c("NMDA"),
          c("DHPG"),
-         c("knockdown", "Knockdown", "_kd_")
+         c("knockdown", "Knockdown", "_kd_", " KD ")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

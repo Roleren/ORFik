@@ -391,6 +391,10 @@ function trimPaired()
 # Adapter definition for fastp
 if [ -z  "$adapter" ]; then
 	adapter="" # "" is auto detection
+elif [ $adapter == "auto" ]; then
+	adapter="" # "auto" is auto detection
+elif [ $adapter == "autoPE" ]; then
+	adapter="--detect_adapter_for_pe" # auto detection for PE
 elif [ $adapter == "disable" ]; then
 	adapter="--disable_adapter_trimming"
 else

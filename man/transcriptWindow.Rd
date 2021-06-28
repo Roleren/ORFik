@@ -10,7 +10,7 @@ transcriptWindow(
   trailers,
   df,
   outdir = NULL,
-  scores = c("sum", "zscore"),
+  scores = c("sum", "transcriptNormalized"),
   allTogether = TRUE,
   colors = experiment.colors(df),
   title = "Coverage metaplot",
@@ -22,6 +22,7 @@ transcriptWindow(
   plot.ext = ".pdf",
   type = "ofst",
   is.sorted = FALSE,
+  drop.zero.dt = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -36,7 +37,7 @@ transcriptWindow(
 
 \item{outdir}{directory to save to (default: NULL, no saving)}
 
-\item{scores}{scoring function (default: c("sum", "zscore")),
+\item{scores}{scoring function (default: c("sum", "transcriptNormalized")),
 see ?coverageScorings for possible scores.}
 
 \item{allTogether}{plot all coverage plots in 1 output? (defualt: TRUE)}
@@ -69,6 +70,12 @@ Will load default if bedoc is not found}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
+
+\item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
+remove all 0 count positions.
+This greatly speeds up and most importantly, greatly reduces memory usage.
+Will not change any plots, unless 0 positions are used in some sense.
+(mean, median, zscore coverage will only scale differently)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

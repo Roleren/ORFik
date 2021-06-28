@@ -313,6 +313,11 @@ download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE,
     if (auto.detect) {
       file$LIBRARYTYPE <- findFromPath(file$sample_title,
                                        libNames(), "auto")
+      if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library strategy
+        file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LIBRARYTYPE <-
+          findFromPath(file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LibraryStrategy,
+                       libNames(), "auto")
+      }
       file$REPLICATE <- findFromPath(file$sample_title,
                                      repNames(), "auto")
       stages <- rbind(stageNames(), tissueNames(), cellLineNames())

@@ -17,7 +17,7 @@
 #' @return a data.table with columns position, score
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                 windowSize = 100, fraction = "1",
-                                weight = "score",
+                                weight = "score", drop.zero.dt = FALSE,
                                 BPPARAM = bpparam()) {
   # Load data
   txdb <- loadTxdb(txdb)
@@ -31,7 +31,8 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
     trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction,
-                        weight, is.sorted = TRUE, BPPARAM = BPPARAM)
+                        weight, is.sorted = TRUE, drop.zero.dt = drop.zero.dt,
+                        BPPARAM = BPPARAM)
 
   } else {
     tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
@@ -40,7 +41,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                    windowSize))
     tx <- tx[txNames]
     txCov <- scaledWindowPositions(tx, reads, windowSize, weight = weight,
-                                   is.sorted = TRUE)
+                                   is.sorted = TRUE, drop.zero.dt = drop.zero.dt)
     txCov[, `:=` (fraction = fraction, feature = "transcript")]
   }
   txCov[] # for print
@@ -62,16 +63,18 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' @return a data.table with columns position, score
 splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
                        fraction = "1", weight = "score",
-                       is.sorted = FALSE,
+                       is.sorted = FALSE, drop.zero.dt = FALSE,
                        BPPARAM = BiocParallel::SerialParam()) {
   features <- c("leaders", "cds", "trailers")
   txCov <- bplapply(features, FUN = function(feature, reads, leaders, cds,
-                                    trailers, windowSize, weight) {
+                                    trailers, windowSize, weight, drop.zero.dt) {
     cov <- scaledWindowPositions(get(feature, mode = "S4"), reads, windowSize,
-                                 weight = weight, is.sorted = is.sorted)
+                                 weight = weight, is.sorted = is.sorted,
+                                 drop.zero.dt = drop.zero.dt)
     cov[, `:=` (feature = feature)]
   },  reads = reads, leaders = leaders, cds = cds,trailers = trailers,
-  windowSize = windowSize, weight = weight, BPPARAM = BPPARAM)
+  windowSize = windowSize, drop.zero.dt = drop.zero.dt, weight = weight,
+  BPPARAM = BPPARAM)
 
   txCov <- rbindlist(txCov)
   txCov[, `:=` (fraction = fraction)]
@@ -132,7 +135,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                        fraction = NULL, feature = NULL,
                        forceUniqueEven = !is.null(scoring),
                        forceRescale = TRUE,
-                       weight = "score") {
+                       weight = "score", drop.zero.dt = FALSE) {
   window_size <- unique(widthPerGroup(windows))
   if (!is.null(zeroPosition) & !is.numeric(zeroPosition))
     stop("zeroPosition must be numeric if defined")
@@ -145,11 +148,13 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 
 
   if ((length(window_size) != 1) & forceRescale) {
-    hitMap <- scaledWindowPositions(windows, x, scaleTo, weight = weight)
+    hitMap <- scaledWindowPositions(windows, x, scaleTo, weight = weight,
+                                    drop.zero.dt = drop.zero.dt)
   } else {
     hitMap <- coveragePerTiling(windows, x, is.sorted = TRUE,
-                                keep.names = TRUE, as.data.table = TRUE,
-                                withFrames = FALSE, weight = weight)
+                                keep.names = FALSE, as.data.table = TRUE,
+                                withFrames = FALSE, weight = weight,
+                                drop.zero.dt = drop.zero.dt)
     zeroPosition <- ifelse(is.null(zeroPosition), (window_size)/2,
                            zeroPosition)
     hitMap[, position := position - (zeroPosition + 1) ]
@@ -183,14 +188,13 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #' For example scale a coverage table of a all human CDS to width 100
 #'
 #' Nice for making metaplots, the score will be mean of merged positions.
-#' @param grl GRangesList or GRanges of your ranges
-#' @param reads GRanges object of your reads.
 #' @param scaleTo an integer (100), if windows have different size,
 #'  a meta window can not directly be created, since a meta window must
 #'  have equal size for all windows. Rescale all windows to scaleTo.
 #'  i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
 #'  1 number per grl group.
-#' @param scoring a character, one of (meanPos, sumPos)
+#' @param scoring a character, one of (meanPos, sumPos, ..) Check the
+#' coverageScoring function for more options.
 #' @inheritParams coveragePerTiling
 #' @return A data.table with scored counts (counts) of
 #' reads mapped to positions (position) specified in windows along with
@@ -208,13 +212,14 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #'
 scaledWindowPositions <- function(grl, reads, scaleTo = 100,
                                   scoring = "meanPos", weight = "score",
-                                  is.sorted = FALSE) {
+                                  is.sorted = FALSE,
+                                  drop.zero.dt = FALSE) {
   if ((length(scaleTo) != 1) & length(scaleTo) != length(grl))
     stop("length of scaleTo must either be 1 or length(grl)")
 
-  count <- coveragePerTiling(grl, reads, is.sorted = is.sorted, keep.names = TRUE,
+  count <- coveragePerTiling(grl, reads, is.sorted = is.sorted, keep.names = FALSE,
                              as.data.table = TRUE, withFrames = FALSE,
-                             weight = weight)
+                             weight = weight, drop.zero.dt = drop.zero.dt)
   count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
   count[, position := ceiling(scalingFactor * position)]
 
@@ -315,17 +320,17 @@ coverageScorings <- function(coverage, scoring = "zscore",
     groupFPF <- quote(list(genes, position))
     scoring <- "sum"
   } else if (scoring == "frameSum") {
-    if (is.null(coverage$frame))
+    if (is.null(cov$frame))
       stop("Can not use frameSum scoring when no frames are given!")
     groupFPF <- quote(list(genes, frame))
     scoring <- "sum"
   } else if (scoring == "frameSumPerL") {
-    if (is.null(coverage$frame))
+    if (is.null(cov$frame))
       stop("Can not use frameSum scoring when no frames are given!")
     groupFPF <- quote(list(fraction, frame))
     scoring <- "sum"
   } else if (scoring == "frameSumPerLG") {
-    if (is.null(coverage$frame))
+    if (is.null(cov$frame))
       stop("Can not use frameSum scoring when no frames are given!")
     groupFPF <- quote(list(fraction, genes, frame))
     scoring <- "sum"
@@ -390,12 +395,12 @@ coverageScorings <- function(coverage, scoring = "zscore",
 
 #' Get coverage per group
 #'
-#' It tiles each GRangesList group to width 1, and finds hits per position.
+#' It tiles each GRangesList group to width 1, and finds hits per position.\cr
 #' A range from 1:5 will split into c(1,2,3,4,5) and count hits on each.
-#'
 #' This is a safer speedup of coverageByTranscript from GenomicFeatures.
 #' It also gives the possibility to return as data.table, for faster
 #' computations.
+#'
 #' NOTE: If reads contains a $score column, it will presume that this is
 #' the number of replicates per reads, weights for the
 #' coverage() function.
@@ -407,7 +412,11 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' column in 'reads'
 #' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
-#' @param keep.names logical (TRUE), keep names or not.
+#' @param keep.names logical (TRUE), keep names or not. If as.data.table is TRUE,
+#' names (genes column) will be a factor column, if FALSE it will be an
+#' integer column (index of gene), so first input grl element is 1. Dropping names
+#' gives ~ 20 \% speedup. If drop.zero.dt is FALSE, data.table will not
+#' return names, will use index (to avoid memory explosion).
 #' @param as.data.table a logical (FALSE), return as data.table with 2 columns,
 #' position and count.
 #' @param withFrames a logical (FALSE), only available if as.data.table is
@@ -416,9 +425,18 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' @param weight (default: 'score'), if defined a character name
 #' of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 #' would mean score column tells that this alignment region was found 5 times.
-#' ORFik .bedo files, contains a score column like this.
+#' ORFik ofst, bedoc and .bedo files contains a score column like this.
 #' As do CAGEr CAGE files and many other package formats.
 #' You can also assign a score column manually.
+#' @param drop.zero.dt logical FALSE, if TRUE and as.data.table is TRUE,
+#' remove all 0 count positions.
+#' This greatly speeds up and most importantly, greatly reduces memory usage.
+#' Will not change any plots, unless 0 positions are used in some sense.
+#' (mean, median, zscore coverage will only scale differently)
+#' @param fraction integer or character, a description column. Useful for grouping
+#' multiple outputs together. If returned as Rle, this
+#' is added as: metadata(coverage) <- list(fraction = fraction). If as.data.table
+#' it will be added as an additional column.
 #' @return a numeric RleList, one numeric-Rle per group with # of hits per position.
 #' Or data.table if as.data.table is TRUE,
 #' with column names c("count" [numeric or integer], "genes" [integer], "position" [integer])
@@ -447,40 +465,64 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' class(dt$count) # integer
 #'
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
-                              keep.names = TRUE, as.data.table = FALSE,
-                              withFrames = FALSE, weight = "score") {
+                               keep.names = TRUE, as.data.table = FALSE,
+                               withFrames = FALSE, weight = "score",
+                               drop.zero.dt = FALSE, fraction = NULL) {
+  if (!is.null(fraction)) stopifnot(length(fraction) == 1)
   if (!is.sorted) grl <- sortPerGroup(grl)
+
   score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
   if (score.defined) {
-    coverage <- coverageByTranscriptW(reads, grl, weight = weight)
+    coverage <- ORFik:::coverageByTranscriptW(reads, grl, weight = weight)
   } else coverage <- coverageByTranscript(reads, grl)
 
   if (!keep.names) names(coverage) <- NULL
 
   if (as.data.table) {
-    window_size <- unique(widthPerGroup(grl, FALSE))
-    count.is.integer <- if(is.character(weight)) { # Save space if integer
-      is.integer(mcols(reads)[,colnames(mcols(reads)) %in% weight])
-    } else is.integer(weight)
+    if (drop.zero.dt) { # Drop 0 count rows
+      if (!keep.names) names(coverage) <- seq.int(length(coverage))
+      runV <- unlist(runValue(coverage), use.names = FALSE)
+      ir <- unlist(ranges(coverage), use.names = TRUE)[runV > 0]
+      if (length(ir) == 0) {
+        warning("No coverage found, Returning empty data.table!")
+        return(data.table())
+      }
+      runV <- runV[runV > 0]
+      runV <- rep.int(runV, width(ir))
+      ir <- unlist(tile(ir, width = 1))
+      count <- data.table(count = runV) #
+      if (keep.names) {
+        count[, `:=`(genes = factor(names(ir)), position = start(ir))]
+      } else {
+        count[, `:=`(genes = as.integer(names(ir)),
+                     position = start(ir))]
+      }
+    } else { # Keep all 0 count rows
+      window_size <- unique(widthPerGroup(grl, FALSE))
+      count.is.integer <- if (is.character(weight)) { # Save space if integer
+        is.integer(mcols(reads)[,colnames(mcols(reads)) %in% weight])
+      } else is.integer(weight)
 
-    count <- if (count.is.integer) {
-      data.table(count = unlist(IntegerList(coverage), use.names = FALSE))
+      count <- if (count.is.integer) {
+        data.table(count = unlist(IntegerList(coverage), use.names = FALSE))
       } else data.table(count = unlist(NumericList(coverage),
                                        use.names = FALSE))
 
-    count[, genes := groupings(coverage)]
-    if (length(window_size) != 1) { # different size windows
-      count[, position := seq_len(.N), by = genes]
-    } else { # all same size
-      count[, position := rep.int(seq.int(window_size), length(coverage))]
+      count[, genes := ORFik:::groupings(coverage)]
+      if (length(window_size) != 1) { # different size windows
+        count[, position := seq_len(.N), by = genes]
+      } else { # all same size
+        count[, position := rep.int(seq.int(window_size), length(coverage))]
+      }
     }
-
     if (withFrames) {
       count[, frame := (position - 1) %% 3]
     }
+    if (!is.null(fraction)) count[, fraction := fraction]
     count[]# for print
     return(count)
   }
+  if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
   return(coverage)
 }
 
@@ -513,7 +555,9 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
                                 withFrames = TRUE,
                                 scoring = "transcriptNormalized",
                                 weight = "score",
+                                keep.names = FALSE,
                                 exclude.zero.cov.grl = TRUE,
+                                drop.zero.dt = TRUE,
                                 BPPARAM = bpparam()) {
   rWidth <- readWidths(reads)
   all_lengths <- sort(unique(rWidth))
@@ -524,14 +568,16 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
   }
 
   dt <- bplapply(all_lengths, function(l, grl, reads, weight, rWidth,
-                                       scoring, withFrames) {
-    d <- coveragePerTiling(grl, reads[rWidth == l], as.data.table = TRUE,
-                           withFrames = withFrames, weight = weight,
-                           is.sorted = TRUE)
+                                       scoring, withFrames, drop.zero.dt, keep.names) {
+    d <- coveragePerTiling(grl, reads[rWidth == l], keep.names = keep.names,
+                           as.data.table = TRUE, withFrames = withFrames,
+                           weight = weight, is.sorted = TRUE,
+                           drop.zero.dt = drop.zero.dt)
     d[, fraction := l]
     return(coverageScorings(d, scoring, copy.dt = FALSE))
   }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
-     scoring = scoring, withFrames = withFrames, BPPARAM = BPPARAM)
+     scoring = scoring, withFrames = withFrames, drop.zero.dt = drop.zero.dt,
+     keep.names = keep.names, BPPARAM = BPPARAM)
 
   return(rbindlist(dt))
 }
@@ -580,7 +626,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 acceptedLengths = NULL,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized",
-                                weight = "score") {
+                                weight = "score", drop.zero.dt = FALSE) {
 
   if (is.null(tx)) upstream <- min(upstream, 0)
 
@@ -608,7 +654,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
     dt <- rbindlist(list(dt, metaWindow(
       x = reads[rWidth == l], windows = windows, scoring = scoring,
       zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l,
-      weight = weight)))
+      weight = weight, drop.zero.dt = drop.zero.dt)))
   }
 
   dt[] # for print

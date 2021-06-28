@@ -10,13 +10,16 @@ scaledWindowPositions(
   scaleTo = 100,
   scoring = "meanPos",
   weight = "score",
-  is.sorted = FALSE
+  is.sorted = FALSE,
+  drop.zero.dt = FALSE
 )
 }
 \arguments{
-\item{grl}{GRangesList or GRanges of your ranges}
+\item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{reads}{GRanges object of your reads.}
+\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
+column in 'reads'}
 
 \item{scaleTo}{an integer (100), if windows have different size,
 a meta window can not directly be created, since a meta window must
@@ -24,17 +27,24 @@ have equal size for all windows. Rescale all windows to scaleTo.
 i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
 1 number per grl group.}
 
-\item{scoring}{a character, one of (meanPos, sumPos)}
+\item{scoring}{a character, one of (meanPos, sumPos, ..) Check the
+coverageScoring function for more options.}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik .bedo files, contains a score column like this.
+ORFik ofst, bedoc and .bedo files contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
+
+\item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
+remove all 0 count positions.
+This greatly speeds up and most importantly, greatly reduces memory usage.
+Will not change any plots, unless 0 positions are used in some sense.
+(mean, median, zscore coverage will only scale differently)}
 }
 \value{
 A data.table with scored counts (counts) of

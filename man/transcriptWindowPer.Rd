@@ -14,6 +14,7 @@ transcriptWindowPer(
   reads,
   returnCoverage = FALSE,
   windowSize = 100,
+  drop.zero.dt = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -28,7 +29,7 @@ transcriptWindowPer(
 
 \item{outdir}{directory to save to (default: NULL, no saving)}
 
-\item{scores}{scoring function (default: c("sum", "zscore")),
+\item{scores}{scoring function (default: c("sum", "transcriptNormalized")),
 see ?coverageScorings for possible scores.}
 
 \item{reads}{a GRanges / GAligment object of reads, can also be a list of those.}
@@ -36,6 +37,12 @@ see ?coverageScorings for possible scores.}
 \item{returnCoverage}{return data.table with coverage (default: FALSE)}
 
 \item{windowSize}{size of binned windows, default: 100}
+
+\item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
+remove all 0 count positions.
+This greatly speeds up and most importantly, greatly reduces memory usage.
+Will not change any plots, unless 0 positions are used in some sense.
+(mean, median, zscore coverage will only scale differently)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

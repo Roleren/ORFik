@@ -13,6 +13,7 @@ detectRibosomeShifts(
   minFiveUTR = 30L,
   minCDS = 150L,
   minThreeUTR = 30L,
+  txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
   firstN = 150L,
   tx = NULL,
   min_reads = 1000,
@@ -41,7 +42,7 @@ codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 If peridicity around stop codon is stronger than at the start codon, use
 stop instead of start region for p-shifting.}
 
-\item{top_tx}{(integer), default 10. Specify which % of the top covered by RiboSeq
+\item{top_tx}{(integer), default 10. Specify which \% of the top covered by RiboSeq
 reads transcripts to use for estimation of the shifts. By default we take top 10%
 top covered transcripts as they represent less noisy dataset. This is only
 applicable when there are more than 1000 transcripts.}
@@ -54,6 +55,13 @@ transcripts}
 
 \item{minThreeUTR}{(integer) minimum bp for 3' UTR during filtering for the
 transcripts. Set to NULL if no 3' UTRs exists for annotation.}
+
+\item{txNames}{a character vector of subset of CDS to use. Default:
+txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)\cr
+Example:
+c("ENST1000005"), will use only that transcript (You should use at least 100!).
+Remember that top_tx argument, will by default specify to use top 10 \%
+of those CDSs. Set that to 100, to use all these specified transcripts.}
 
 \item{firstN}{(integer) Represents how many bases of the transcripts
 downstream of start codons to use for initial estimation of the

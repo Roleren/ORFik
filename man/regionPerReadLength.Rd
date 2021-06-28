@@ -11,7 +11,9 @@ regionPerReadLength(
   withFrames = TRUE,
   scoring = "transcriptNormalized",
   weight = "score",
+  keep.names = FALSE,
   exclude.zero.cov.grl = TRUE,
+  drop.zero.dt = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -38,13 +40,19 @@ but instead want per gene per position raw counts.}
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik .bedo files, contains a score column like this.
+ORFik ofst, bedoc and .bedo files contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 
 \item{exclude.zero.cov.grl}{logical, default TRUE. Do not include
 ranges that does not have any coverage (0 reads on them),
 this makes it faster to run.}
+
+\item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
+remove all 0 count positions.
+This greatly speeds up and most importantly, greatly reduces memory usage.
+Will not change any plots, unless 0 positions are used in some sense.
+(mean, median, zscore coverage will only scale differently)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

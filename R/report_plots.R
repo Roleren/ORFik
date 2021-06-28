@@ -203,7 +203,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
   frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
     total <- regionPerReadLength(cds, get(lib, mode = "S4"),
                                  withFrames = TRUE, scoring = "frameSumPerL",
-                                 weight = weight)
+                                 weight = weight, drop.zero.dt = TRUE)
     total[, length := fraction]
     #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
     total[, fraction := rep(lib, nrow(total))]

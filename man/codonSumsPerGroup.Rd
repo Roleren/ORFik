@@ -7,14 +7,16 @@
 codonSumsPerGroup(grl, reads, weight = "score", is.sorted = FALSE)
 }
 \arguments{
-\item{grl}{GRangesList or GRanges of your ranges}
+\item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{reads}{GRanges object of your reads.}
+\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
+column in 'reads'}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik .bedo files, contains a score column like this.
+ORFik ofst, bedoc and .bedo files contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 

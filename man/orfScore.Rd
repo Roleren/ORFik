@@ -20,7 +20,7 @@ increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik .bedo files, contains a score column like this.
+ORFik ofst, bedoc and .bedo files contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 

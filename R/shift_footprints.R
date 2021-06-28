@@ -113,11 +113,17 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 #' If peridicity around stop codon is stronger than at the start codon, use
 #' stop instead of start region for p-shifting.
-#' @param top_tx (integer), default 10. Specify which % of the top covered by RiboSeq
+#' @param top_tx (integer), default 10. Specify which \% of the top covered by RiboSeq
 #' reads transcripts to use for estimation of the shifts. By default we take top 10%
 #' top covered transcripts as they represent less noisy dataset. This is only
 #' applicable when there are more than 1000 transcripts.
 #' @inheritParams filterTranscripts
+#' @param txNames a character vector of subset of CDS to use. Default:
+#' txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)\cr
+#' Example:
+#' c("ENST1000005"), will use only that transcript (You should use at least 100!).
+#' Remember that top_tx argument, will by default specify to use top 10 \%
+#' of those CDSs. Set that to 100, to use all these specified transcripts.
 #' @param firstN (integer) Represents how many bases of the transcripts
 #' downstream of start codons to use for initial estimation of the
 #' periodicity.
@@ -184,13 +190,11 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
+  txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
   firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
   heatmap = FALSE, must.be.periodic = TRUE, verbose = FALSE) {
 
   txdb <- loadTxdb(txdb)
-  # Filters for cds and footprints
-  txNames <- filterTranscripts(txdb, minFiveUTR = minFiveUTR, minCDS = minCDS,
-                               minThreeUTR = minThreeUTR)
   cds <- loadRegion(txdb, part = "cds", names.keep = txNames)
   footprints <- fimport(footprints, cds)
 
@@ -202,7 +206,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     stop("txdb and footprints did not have any matched seqnames")
   }
   txNames <- txNames[txNames %in% names(cds)]
-  if (is.null(tx)) tx <- loadRegion(txdb)
+  if (is.null(tx)) tx <- loadRegion(txdb, part = "mrna")
   tx <- tx[txNames]
 
   # find periodic read lengths
@@ -249,11 +253,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
                  by = fraction]
   }
   if (stop & !is.null(minThreeUTR)) {
-    threeUTRs <- loadRegion(txdb, "trailers")[txNames]
+    threeUTRs <- loadRegion(txdb, "trailers", names.keep = txNames)
     rw <- windowPerReadLength(threeUTRs, tx, footprints, FALSE,
                               upstream = 30, downstream = 29,
                               acceptedLengths = validLengths,
-                              scoring = "sum")
+                              scoring = "sum", drop.zero.dt = TRUE)
     footprints.analysis(rw, heatmap, region = "start of 3' UTR")
     if (nrow(offset) == 0) {
       offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
@@ -318,7 +322,7 @@ shiftFootprintsByExperiment <- function(df,
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 26:34,
                                         output_format = c("ofst", "wig"),
-                                        BPPARAM = bpparam(),
+                                        BPPARAM = bpparam(), tx = NULL,
                                         log = TRUE, heatmap = FALSE,
                                         must.be.periodic = TRUE,
                                         verbose = FALSE) {
@@ -332,15 +336,17 @@ shiftFootprintsByExperiment <- function(df,
   message(paste("Shifting reads in experiment:", df@experiment))
 
   txdb <- loadTxdb(df)
+  tx <- loadRegion(txdb, part = "mrna")
+  txNames <- filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)
   rfpFiles <- filepath(df, "ofst") # If ofst file not present, uses bam file
 
   shifts <- bplapply(rfpFiles,
            FUN = function(file, path, df, start, stop,
                           top_tx, minFiveUTR, minCDS, minThreeUTR,
                           firstN, min_reads, accepted.lengths,
-                          output_format, heatmap = heatmap,
+                          output_format, heatmap = heatmap, tx,
                           must.be.periodic = must.be.periodic,
-                          verbose = verbose
+                          txNames, verbose = verbose
                           ) {
     message(file)
     rfp <- fimport(file)
@@ -348,9 +354,10 @@ shiftFootprintsByExperiment <- function(df,
                                    stop = stop, top_tx = top_tx,
                                    minFiveUTR = minFiveUTR,
                                    minCDS = minCDS, minThreeUTR = minThreeUTR,
-                                   firstN = firstN, min_reads = min_reads,
+                                   txNames = txNames, firstN = firstN,
+                                   min_reads = min_reads,
                                    accepted.lengths = accepted.lengths,
-                                   heatmap = heatmap,
+                                   heatmap = heatmap, tx = tx,
                                    must.be.periodic = must.be.periodic,
                                    verbose = verbose)
     shifted <- shiftFootprints(rfp, shifts)
@@ -382,7 +389,7 @@ shiftFootprintsByExperiment <- function(df,
       firstN = firstN, min_reads = min_reads,
       accepted.lengths = accepted.lengths, output_format = output_format,
       heatmap = heatmap, must.be.periodic = must.be.periodic,
-      verbose = verbose, BPPARAM = BPPARAM)
+      verbose = verbose, tx = tx, txNames = txNames, BPPARAM = BPPARAM)
 
   if (log) {
     fileConn<-file(paste0(path, "/pshifting_arguments.txt"), "w")

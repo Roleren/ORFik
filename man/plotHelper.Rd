@@ -24,7 +24,7 @@ position), it is possible to have additionals: (genes, fraction, feature)}
 
 \item{outdir}{directory to save to (default: NULL, no saving)}
 
-\item{scores}{scoring function (default: c("sum", "zscore")),
+\item{scores}{scoring function (default: c("sum", "transcriptNormalized")),
 see ?coverageScorings for possible scores.}
 
 \item{returnCoverage}{(defualt: FALSE), return the ggplot object (TRUE)

@@ -11,7 +11,9 @@ coveragePerTiling(
   keep.names = TRUE,
   as.data.table = FALSE,
   withFrames = FALSE,
-  weight = "score"
+  weight = "score",
+  drop.zero.dt = FALSE,
+  fraction = NULL
 )
 }
 \arguments{
@@ -24,7 +26,11 @@ column in 'reads'}
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 
-\item{keep.names}{logical (TRUE), keep names or not.}
+\item{keep.names}{logical (TRUE), keep names or not. If as.data.table is TRUE,
+names (genes column) will be a factor column, if FALSE it will be an
+integer column (index of gene), so first input grl element is 1. Dropping names
+gives ~ 20 \% speedup. If drop.zero.dt is FALSE, data.table will not
+return names, will use index (to avoid memory explosion).}
 
 \item{as.data.table}{a logical (FALSE), return as data.table with 2 columns,
 position and count.}
@@ -36,9 +42,20 @@ TRUE, return the ORF frame, 1,2,3, where position 1 is 1, 2 is 2 and
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik .bedo files, contains a score column like this.
+ORFik ofst, bedoc and .bedo files contains a score column like this.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
+
+\item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
+remove all 0 count positions.
+This greatly speeds up and most importantly, greatly reduces memory usage.
+Will not change any plots, unless 0 positions are used in some sense.
+(mean, median, zscore coverage will only scale differently)}
+
+\item{fraction}{integer or character, a description column. Useful for grouping
+multiple outputs together. If returned as Rle, this
+is added as: metadata(coverage) <- list(fraction = fraction). If as.data.table
+it will be added as an additional column.}
 }
 \value{
 a numeric RleList, one numeric-Rle per group with # of hits per position.
@@ -46,13 +63,13 @@ Or data.table if as.data.table is TRUE,
 with column names c("count" [numeric or integer], "genes" [integer], "position" [integer])
 }
 \description{
-It tiles each GRangesList group to width 1, and finds hits per position.
+It tiles each GRangesList group to width 1, and finds hits per position.\cr
 A range from 1:5 will split into c(1,2,3,4,5) and count hits on each.
-}
-\details{
 This is a safer speedup of coverageByTranscript from GenomicFeatures.
 It also gives the possibility to return as data.table, for faster
 computations.
+}
+\details{
 NOTE: If reads contains a $score column, it will presume that this is
 the number of replicates per reads, weights for the
 coverage() function.

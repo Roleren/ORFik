@@ -117,7 +117,8 @@ is_paired_end <- all(info$LibraryLayout == "PAIRED")
 
 There are two ways to use annotation:
 
-- 1. Download using ORFik (This is safer, to make sure you use a high quality genome build)
+- 1. Download using ORFik (This is safer, to make sure you use a high quality genome build, 
+and the gtf converted txdb object is correct)
 - 2. Use your local annotation (ORFik includes some tricks to improve your custom annotation)
 
 ## Download genome and gtf files
@@ -184,7 +185,7 @@ This will save you a lot of the common warnings and problems downstream:
 The txdb is saved in same directory as the gtf, with an extension ".db"
 
 ## Annotation without defined UTRs
-Without defined UTRs an annotation will give you considerable less quality results. So optimial is always to
+If you do not have defined UTRs an your annotation, this will give you considerable less quality results (no results using leaders can be created). So optimial is always to
 find an annotation with UTRs. If that is not possible ORFik contains two ways to create 5' UTR annotation, 
 3' UTR annotation will be included soon.
 
@@ -203,7 +204,7 @@ If you do not have CAGE, you can also just specify some fixed 5' UTR lengths
   txdb <- "/path/to/local/annotation.gtf.db"
   # Not implemented yet!
   #reassigned_txdb <- assignTSSByCage(txdb, cage = NULL, pseudo.length = 100)
-  #AnnotationDbi::saveDb("/path/to/local/annotation_pseudo_leaders.db")
+  AnnotationDbi::saveDb("/path/to/local/annotation_pseudo_leaders.db")
 ```
 
 # RNA-seq alignment
@@ -230,13 +231,13 @@ ORFik uses the fastp for trimming reads, this also only works on unix (Linux or 
 Now let's see what we need as inputs for the alignment pipeline:
 We need usually 9 arguments (more are possible if you need them):
 
-- input.dir.rna: directory with fastq files (or trimmed files on mac)
+- input.dir.rna: directory with raw fastq files (or user pre-trimmed files)
 - output.dir.rna: output directory for bam files
 - index: the STAR index from previous step
 - paired.end: "yes" in this case, or "no" if single end.
-- steps: steps of depletion and alignment wanted:
+- steps: steps wanted from trimming, depletion and alignment wanted:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-co-ge")
-			 tr: trimming (only for unix), co: deplete contaminants included, ph: phix depletion, rR: rrna depletion,
+			 tr: trimming (only for unix / WSL), co: deplete contaminants included, ph: phix depletion, rR: rrna depletion,
 			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment)
 		Write your wanted steps, seperated by "-". Order does not matter.
 		To just do trim and alignment to genome write "tr-ge"

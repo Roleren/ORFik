@@ -16,6 +16,7 @@ transcriptWindow1(
   idName = "",
   plot.ext = ".pdf",
   type = "ofst",
+  drop.zero.dt = drop.zero.dt,
   BPPARAM = bpparam()
 )
 }
@@ -24,7 +25,7 @@ transcriptWindow1(
 
 \item{outdir}{directory to save to (default: NULL, no saving)}
 
-\item{scores}{scoring function (default: c("sum", "zscore")),
+\item{scores}{scoring function (default: c("sum", "transcriptNormalized")),
 see ?coverageScorings for possible scores.}
 
 \item{colors}{Which colors to use, default auto color from function
@@ -52,6 +53,12 @@ targets / nontargets etc. (default: "")}
 or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 Will load default if bedoc is not found}
+
+\item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
+remove all 0 count positions.
+This greatly speeds up and most importantly, greatly reduces memory usage.
+Will not change any plots, unless 0 positions are used in some sense.
+(mean, median, zscore coverage will only scale differently)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

@@ -18,6 +18,7 @@ shiftFootprintsByExperiment(
   accepted.lengths = 26:34,
   output_format = c("ofst", "wig"),
   BPPARAM = bpparam(),
+  tx = NULL,
   log = TRUE,
   heatmap = FALSE,
   must.be.periodic = TRUE,
@@ -39,7 +40,7 @@ codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 If peridicity around stop codon is stronger than at the start codon, use
 stop instead of start region for p-shifting.}
 
-\item{top_tx}{(integer), default 10. Specify which % of the top covered by RiboSeq
+\item{top_tx}{(integer), default 10. Specify which \% of the top covered by RiboSeq
 reads transcripts to use for estimation of the shifts. By default we take top 10%
 top covered transcripts as they represent less noisy dataset. This is only
 applicable when there are more than 1000 transcripts.}
@@ -73,6 +74,11 @@ keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
 p-shifting.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
+
+\item{tx}{a GRangesList, if you do not have 5' UTRs in annotation, send
+your own version. Example: extendLeaders(tx, 30)
+Where 30 bases will be new "leaders". Since each original transcript was
+either only CDS or non-coding (filtered out).}
 
 \item{log}{logical, default (TRUE), output a log file with parameters used and
 a .rds file with all shifts per library

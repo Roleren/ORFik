@@ -5,7 +5,7 @@
 #' @inheritParams splitIn3Tx
 #' @param df an ORFik \code{\link{experiment}}
 #' @param outdir directory to save to (default: NULL, no saving)
-#' @param scores scoring function (default: c("sum", "zscore")),
+#' @param scores scoring function (default: c("sum", "transcriptNormalized")),
 #' see ?coverageScorings for possible scores.
 #' @param allTogether plot all coverage plots in 1 output? (defualt: TRUE)
 #' @param colors Which colors to use, default auto color from function
@@ -35,7 +35,7 @@
 #' loadRegions(df) # Load leader, cds and trailers as GRangesList
 #' #transcriptWindow(leaders, cds, trailers, df, outdir = "directory/to/save")
 transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
-                             scores = c("sum", "zscore"), allTogether = TRUE,
+                             scores = c("sum", "transcriptNormalized"), allTogether = TRUE,
                              colors = experiment.colors(df),
                              title = "Coverage metaplot",
                              windowSize = min(100,
@@ -44,7 +44,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                            min(widthPerGroup(trailers, FALSE))),
                              returnPlot = is.null(outdir),
                              dfr = NULL, idName = "", plot.ext = ".pdf",
-                             type = "ofst", is.sorted = FALSE,
+                             type = "ofst", is.sorted = FALSE, drop.zero.dt = TRUE,
                              BPPARAM = bpparam()) {
   if (windowSize != 100)
     message(paste0("NOTE: windowSize is not 100! It is: ", windowSize))
@@ -69,17 +69,19 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
         }
         readsList <- readsList[-1]
         transcriptWindowPer(leaders, cds, trailers, df[i,], outdir, scores,
-                            fractions, readsList)
+                            fractions, readsList, drop.zero.dt = drop.zero.dt)
       }
     } else { # all combined
       coverage <- bplapply(varNames, function(x, leaders, cds, trailers,
-                                              windowSize, is.sorted) {
+                                              windowSize, is.sorted, drop.zero.dt) {
         message(x)
         splitIn3Tx(leaders, cds, trailers,
                    get(x), fraction = x,
-                   windowSize = windowSize, is.sorted = is.sorted)
+                   windowSize = windowSize, is.sorted = is.sorted,
+                   drop.zero.dt = drop.zero.dt)
       }, leaders = leaders, cds = cds, trailers = trailers,
-         is.sorted = is.sorted, windowSize = windowSize, BPPARAM = BPPARAM)
+         is.sorted = is.sorted, windowSize = windowSize, drop.zero.dt = drop.zero.dt,
+         BPPARAM = BPPARAM)
 
       coverage <- rbindlist(coverage)
       if (!is.null(dfr)) {
@@ -122,7 +124,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
 transcriptWindowPer <- function(leaders, cds, trailers, df,
                                 outdir = NULL, scores = c("sum", "zscore"),
                                 reads, returnCoverage = FALSE,
-                                windowSize = 100, BPPARAM = bpparam()) {
+                                windowSize = 100, drop.zero.dt = TRUE,
+                                BPPARAM = bpparam()) {
   libTypes <- libraryTypes(df)
   if (is(reads, "list") | is(reads, "GAlignmentsList") |
       is(reads, "GRangesList")) {
@@ -133,12 +136,12 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
   }
 
   coverage <- bplapply(reads, function(x, leaders, cds, trailers,
-                                          fraction, windowSize) {
+                                          fraction, windowSize, drop.zero.dt) {
     message(names(x)[1])
     splitIn3Tx(leaders, cds, trailers, x, fraction = names(x)[1],
-               windowSize = windowSize)
+               windowSize = windowSize, drop.zero.dt = drop.zero.dt)
   }, leaders = leaders, cds = cds, trailers = trailers,
-     windowSize = windowSize, BPPARAM = BPPARAM)
+     windowSize = windowSize, drop.zero.dt = drop.zero.dt, BPPARAM = BPPARAM)
   coverage <- rbindlist(coverage)
 
   return(plotHelper(coverage, df, outdir, scores, returnCoverage))
@@ -158,18 +161,20 @@ transcriptWindow1 <- function(df, outdir = NULL,
                        windowSize = 100,
                        returnPlot = is.null(outdir),
                        dfr = NULL, idName = "", plot.ext = ".pdf",
-                       type = "ofst", BPPARAM = bpparam()) {
+                       type = "ofst", drop.zero.dt = drop.zero.dt,
+                       BPPARAM = bpparam()) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
     varNames <- bamVarName(df)
     outputLibs(df, type = type)
 
-    coverage <- bplapply(varNames, function(x, df, windowSize) {
+    coverage <- bplapply(varNames, function(x, df, windowSize, drop.zero.dt) {
       message(x)
       windowPerTranscript(df, reads = get(x), splitIn3 = FALSE, fraction = x,
-                          windowSize = windowSize)
-    }, df = df, windowSize = windowSize, BPPARAM = BPPARAM)
+                          windowSize = windowSize, drop.zero.dt = drop.zero.dt)
+    }, df = df, windowSize = windowSize, drop.zero.dt = drop.zero.dt,
+    BPPARAM = BPPARAM)
     coverage <- rbindlist(coverage)
 
     if (!is.null(dfr)) {
