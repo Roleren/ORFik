@@ -8,6 +8,11 @@ optimized_txdb_path(txdb, create.dir = FALSE, stop.error = TRUE)
 }
 \arguments{
 \item{txdb}{a loaded TxDb object}
+
+\item{create.dir}{logical FALSE, if TRUE create the
+optimization directory, this should only be called first time used.}
+
+\item{stop.error}{logical TRUE}
 }
 \value{
 a character file path, returns NULL if not valid

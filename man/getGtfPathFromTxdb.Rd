@@ -8,6 +8,8 @@ getGtfPathFromTxdb(txdb, stop.error = TRUE)
 }
 \arguments{
 \item{txdb}{a loaded TxDb object}
+
+\item{stop.error}{logical TRUE}
 }
 \value{
 a character file path, returns NULL if not valid

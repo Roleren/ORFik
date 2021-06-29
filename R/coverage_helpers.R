@@ -168,7 +168,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                                 keep.names = FALSE, as.data.table = TRUE,
                                 withFrames = FALSE, weight = weight,
                                 drop.zero.dt = drop.zero.dt)
-    zeroPosition <- ifelse(is.null(zeroPosition), as.integer(width / 2),
+    zeroPosition <- ifelse(is.null(zeroPosition), as.integer(window_size / 2),
                            as.integer(zeroPosition))
     hitMap[, position := position - (zeroPosition + 1L) ]
   }
@@ -613,7 +613,6 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
                                 withFrames = TRUE,
                                 scoring = "transcriptNormalized",
                                 weight = "score",
-                                keep.names = FALSE,
                                 exclude.zero.cov.grl = TRUE,
                                 drop.zero.dt = TRUE,
                                 BPPARAM = bpparam()) {
@@ -626,8 +625,8 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
   }
 
   dt <- bplapply(all_lengths, function(l, grl, reads, weight, rWidth,
-                                       scoring, withFrames, drop.zero.dt, keep.names) {
-    d <- coveragePerTiling(grl, reads[rWidth == l], keep.names = keep.names,
+                                       scoring, withFrames, drop.zero.dt) {
+    d <- coveragePerTiling(grl, reads[rWidth == l],
                            as.data.table = TRUE, withFrames = withFrames,
                            weight = weight, is.sorted = TRUE,
                            drop.zero.dt = drop.zero.dt)
@@ -635,7 +634,7 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
     return(coverageScorings(d, scoring, copy.dt = FALSE))
   }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
      scoring = scoring, withFrames = withFrames, drop.zero.dt = drop.zero.dt,
-     keep.names = keep.names, BPPARAM = BPPARAM)
+     BPPARAM = BPPARAM)
 
   return(rbindlist(dt))
 }

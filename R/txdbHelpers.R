@@ -422,6 +422,7 @@ importGtfFromTxdb <- function(txdb) {
 #'
 #' Will crash and report proper error if no gtf is found
 #' @param txdb a loaded TxDb object
+#' @param stop.error logical TRUE
 #' @return a character file path, returns NULL if not valid
 #' and stop.error is FALSE.
 getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
@@ -522,6 +523,9 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 
 #' Get path for optimization files for txdb
 #' @param txdb a loaded TxDb object
+#' @param create.dir logical FALSE, if TRUE create the
+#' optimization directory, this should only be called first time used.
+#' @param stop.error logical TRUE
 #' @return a character file path, returns NULL if not valid
 #' and stop.error is FALSE.
 optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE) {

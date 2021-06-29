@@ -11,7 +11,6 @@ regionPerReadLength(
   withFrames = TRUE,
   scoring = "transcriptNormalized",
   weight = "score",
-  keep.names = FALSE,
   exclude.zero.cov.grl = TRUE,
   drop.zero.dt = TRUE,
   BPPARAM = bpparam()
