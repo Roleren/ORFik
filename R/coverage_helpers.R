@@ -96,7 +96,8 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' @param zeroPosition an integer DEFAULT (NULL), the point if all windows
 #' are equal size, that should be set to position 0. Like leaders and
 #' cds combination, then 0 is the TIS and -1 is last base in leader. NOTE!:
-#' if windows have different widths, this will be ignored.
+#' if not all windows have equal width, this will be ignored. If all have
+#' equal width and zeroPosition is NULL, it is set to as.integer(width / 2).
 #' @param scaleTo an integer (100), if windows have different size,
 #'  a meta window can not directly be created, since a meta window must
 #'  have equal size for all windows. Rescale (bin) all windows to scaleTo.
@@ -112,6 +113,10 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' windows to width of the \code{scaleTo} argument, making a binned meta
 #' coverage.
 #' @inheritParams coveragePerTiling
+#' @param append.zeroes logical, default FALSE. If TRUE and drop.zero.dt
+#' is TRUE and all windows have equal length, it will add back 0 values after transformation.
+#' Sometimes needed for correct plots, if TRUE, will call abort if not all
+#' windows are equal length!
 #' @return A data.table with scored counts (score) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame) per gene (genes) per library (fraction) per transcript region
@@ -135,17 +140,25 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                        fraction = NULL, feature = NULL,
                        forceUniqueEven = !is.null(scoring),
                        forceRescale = TRUE,
-                       weight = "score", drop.zero.dt = FALSE) {
+                       weight = "score", drop.zero.dt = FALSE,
+                       append.zeroes = FALSE) {
   window_size <- unique(widthPerGroup(windows))
   if (!is.null(zeroPosition) & !is.numeric(zeroPosition))
-    stop("zeroPosition must be numeric if defined")
+    stop("zeroPosition must be numeric / integer if defined!")
   if (length(window_size) != 1 & forceUniqueEven)
     stop("All input 'windows' should have the same sum(width(windows)),
           when forceUniqueEven is TRUE")
   if (forceUniqueEven & any(window_size %% 2 != 0))
     stop("Width of the window has to be even number, when forceUniqueEven
           is TRUE")
-
+  if ((length(window_size) != 1) & append.zeroes) {
+    stop("Can not append zeroes when windows are of different size, run without optimization!")
+  }
+  if (!is.null(scoring)) {
+    if ((drop.zero.dt | append.zeroes) & (scoring %in% c("periodic", "periodicv"))) {
+      stop("append.zeroes / drop.zero.dt optimization with score as periodic is not allowed!")
+    }
+  }
 
   if ((length(window_size) != 1) & forceRescale) {
     hitMap <- scaledWindowPositions(windows, x, scaleTo, weight = weight,
@@ -155,11 +168,11 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
                                 keep.names = FALSE, as.data.table = TRUE,
                                 withFrames = FALSE, weight = weight,
                                 drop.zero.dt = drop.zero.dt)
-    zeroPosition <- ifelse(is.null(zeroPosition), (window_size)/2,
-                           zeroPosition)
-    hitMap[, position := position - (zeroPosition + 1) ]
+    zeroPosition <- ifelse(is.null(zeroPosition), as.integer(width / 2),
+                           as.integer(zeroPosition))
+    hitMap[, position := position - (zeroPosition + 1L) ]
   }
-  # Special if for debug periodicity
+  # Special "if", for debug periodicity
   if (!is.null(scoring)) {
     if ((scoring == "periodicv") & !is.null(fraction)) {
       hitMap[, fraction := rep(fraction, nrow(hitMap))]
@@ -167,6 +180,10 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
   }
 
   hitMap <- coverageScorings(hitMap, scoring, copy.dt = FALSE)
+  if (append.zeroes) { # Add back zero values now
+    hitMap <- appendZeroes(hitMap, max.pos = window_size - zeroPosition -1,
+                           min.pos = -zeroPosition, fractions = NULL)
+  }
 
   if (withFrames & length(window_size) == 1) {
     hitMap[, frame := c(rev(rep_len(seq.int(2L, 0L), zeroPosition)),
@@ -526,11 +543,52 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   return(coverage)
 }
 
+#' Append zero values to data.table
+#'
+#' For every position in width max.pos - min.pos + 1, append
+#' 0 values in data.table. Needed when coveragePerTiling was run
+#' on coverage window with drop.zero.dt as TRUE and you need to plot
+#' 0 positions after a transformation by coverageScorings.
+#' @param dt a data.table from coverageByTiling that is
+#' normalized by coverageScorings.
+#' @param max.pos integer, max position of dt
+#' @param min.pos integer, default 1L. Minimum position of dt
+#' @param fractions default unique(dt$fraction), will repeat
+#' each fraction max.pos - min.pos + 1 times.
+#' @return a data.table with appended 0 values
+appendZeroes <- function(dt, max.pos, min.pos = 1L,
+                          fractions = unique(dt$fraction)) {
+  width <- max.pos - min.pos + 1L
+  if (!is.null(fractions)) {
+    by.columns <- c("fraction", "position")
+    temp <- data.table(position = seq.int(min.pos, max.pos), fraction = rep(fractions, each = width))
+  } else {
+    by.columns <- c("position")
+    temp <- data.table(position = seq.int(min.pos, max.pos))
+  }
+  if (!is.null(dt$frame)) {
+    temp[, frame := (position %% 3) - 1]
+  }
+
+  temp <- data.table::merge.data.table(temp, dt, by = by.columns,
+                                     all.x = TRUE, all.y = FALSE)
+  if (!is.null(temp$score)) {
+    temp[is.na(score), score := 0]
+  }
+  if (!is.null(temp$count)) {
+    temp[is.na(count), count := 0]
+  }
+
+  data.table::setcolorder(temp, c(colnames(dt)))
+  return(temp)
+}
+
 #' Find proportion of reads per position per read length in region
 #'
 #' This is defined as:
 #' Given some transcript region (like CDS), get coverage per position.
-#'
+#' By default only returns positions that have hits, set drop.zero.dt
+#' to FALSE to get all 0 positions.
 #'
 #' @inheritParams windowPerReadLength
 #' @param withFrames logical TRUE, add ORF frame (frame 0, 1, 2), starting
@@ -593,6 +651,9 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' The exception is when upstream is negative, that is,
 #' going into downstream region of the object.
 #'
+#' Careful when you create windows where not all transcripts are long enough,
+#' this function usually is used first with filterTranscripts to make sure they
+#' are of all of valid length!
 #' @inheritParams startRegion
 #' @inheritParams coveragePerTiling
 #' @param pShifted a logical (TRUE), are Ribo-seq reads p-shifted to size
@@ -610,7 +671,13 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' see ?coverageScorings for more info. Use to decide a scoring of hits
 #' per position for metacoverage etc. Set to NULL if you do not want meta coverage,
 #' but instead want per gene per position raw counts.
-#' @return a data.table with lengths by coverage / vector of proportions
+#' @param append.zeroes logical, default FALSE. If TRUE and drop.zero.dt
+#' is TRUE and all windows have equal length, it will add back 0 values after transformation.
+#' Sometimes needed for correct plots, if TRUE, will call abort if not all
+#' windows are equal length!
+#' @return a data.table with 4 columns: position (in window), score,
+#' fraction (read length). If score is NULL, will also return genes (index of grl).
+#' A note is that if no coverage is found, it returns an empty data.table.
 #' @family coverage
 #' @importFrom data.table rbindlist
 #' @export
@@ -626,7 +693,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 acceptedLengths = NULL,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized",
-                                weight = "score", drop.zero.dt = FALSE) {
+                                weight = "score", drop.zero.dt = FALSE,
+                                append.zeroes = FALSE) {
 
   if (is.null(tx)) upstream <- min(upstream, 0)
 
@@ -654,7 +722,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
     dt <- rbindlist(list(dt, metaWindow(
       x = reads[rWidth == l], windows = windows, scoring = scoring,
       zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l,
-      weight = weight, drop.zero.dt = drop.zero.dt)))
+      weight = weight,
+      drop.zero.dt = drop.zero.dt, append.zeroes = append.zeroes)))
   }
 
   dt[] # for print

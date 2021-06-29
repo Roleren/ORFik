@@ -10,16 +10,24 @@
 #' @param gtf path to gtf file
 #' @param genome character, default NULL. Path to fasta genome
 #' corresponding to the gtf. If NULL, can not set seqlevels.
+#' If value is NULL or FALSE, it will be ignored.
 #' @param organism Scientific name of organism, first letter
 #' must be capital! Example: Homo sapiens. Will force first letter
 #' to capital and convert any "_" (underscore) to " " (space)
+#' @param optimize logical, default FALSE. Create a folder
+#' within the folder of the gtf, that includes optimized objects
+#' to speed up loading of annotation regions from up to 15 seconds
+#' on human genome down to 0.1 second. ORFik will then load these optimized
+#' objects instead. Currently optimizes filterTranscript() function and
+#' loadRegion() function.
 #' @return NULL, Txdb saved to disc named paste0(gtf, ".db")
 #' @export
 #' @examples
 #' gtf <- "/path/to/local/annotation.gtf"
 #' genome <- "/path/to/local/genome.fasta"
 #' #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
-makeTxdbFromGenome <- function(gtf, genome = NULL, organism) {
+makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
+                               optimize = FALSE) {
   message("Making txdb of GTF")
   organismCapital <- paste0(toupper(substr(organism, 1, 1)),
                             substr(organism, 2, nchar(organism)))
@@ -46,6 +54,21 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism) {
   txdb_file <- paste0(gtf, ".db")
   AnnotationDbi::saveDb(txdb, txdb_file)
   message("Txdb stored at: ", txdb_file)
+
+  if (optimize) {
+    base_path <- optimized_txdb_path(txdb, create.dir = TRUE)
+    message("--------------------------")
+    message("Optimizing annotation, saving to: ", dirname(base_path))
+    # Save all transcript, cds and UTR lengths as .fst
+    optimizedTranscriptLengths(txdb, create.fst.version = TRUE)
+    # Save RDS version of all transcript regions
+    message("Creating rds speedup files for transcript regions")
+    parts <- c("mrna", "leaders", "cds", "trailers")
+    for (i in parts) {
+      saveRDS(loadRegion(txdb, i, by = "tx"),
+              file = paste0(base_path, "_", i, ".rds"))
+    }
+  }
   return(invisible(NULL))
 }
 
@@ -225,32 +248,57 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' loadRegions(txdb, names = "ENST1000005"), will return only that transcript.
 #' Remember if you set by to "gene", then this list must be with gene names.
 #' @param by a character, default "tx" Either "tx" or "gene". What names to
-#' output region by, the transcript name "tx" or gene names "gene"
+#' output region by, the transcript name "tx" or gene names "gene".
+#' NOTE: this is note the same as cdsBy(txdb, by = "gene"), cdsBy would then
+#' only give 1 cds per Gene, loadRegion gives all isoforms, but with gene names.
+#' @param skip.optimized logical, default FALSE. If TRUE, will not search for optimized
+#' rds files to load created from ORFik::makeTxdbFromGenome(..., optimize = TRUE). The
+#' optimized files are ~ 100x faster to load for human genome.
 #' @return a GrangesList of region
 #' @export
 #' @examples
 #' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
 #' loadRegion(gtf, "cds")
 #' loadRegion(gtf, "intron")
-loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
+loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
+                       skip.optimized = FALSE) {
   if (is.grl(txdb)) return(txdb)
-  if (length(part) != 1) stop("argument: (path) must be length 1")
+  if (length(part) != 1) stop("argument: (part) must be length 1,
+                              use loadRegions for multi region loading!")
   txdb <- loadTxdb(txdb)
+  # Check for optimized paths
+  optimized_path <- optimized_txdb_path(txdb, stop.error = FALSE)
+  optimized <- !is.null(optimized_path) & !skip.optimized
   region <-
     if (part %in% c("tx", "transcript", "transcripts")) {
-      exonsBy(txdb, by = "tx", use.names = TRUE)
+      optimized.rds <- paste0(optimized_path, "_", "tx", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else exonsBy(txdb, by = "tx", use.names = TRUE)
     } else if (part %in% c("leader", "leaders", "5'", "5", "5utr",
                            "fiveUTRs", "5pUTR")) {
-      fiveUTRsByTranscript(txdb, use.names = TRUE)
+      optimized.rds <- paste0(optimized_path, "_", "leaders", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else fiveUTRsByTranscript(txdb, use.names = TRUE)
     } else if (part %in% c("cds", "CDS", "mORF")) {
-      cdsBy(txdb, by = "tx", use.names = TRUE)
+      optimized.rds <- paste0(optimized_path, "_", "cds", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else cdsBy(txdb, by = "tx", use.names = TRUE)
     } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr",
                            "threeUTRs", "3pUTR")) {
-      threeUTRsByTranscript(txdb, use.names = TRUE)
+      optimized.rds <- paste0(optimized_path, "_", "trailers", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else threeUTRsByTranscript(txdb, use.names = TRUE)
     } else if (part %in% c("intron", "introns")) {
       intronsByTranscript(txdb, use.names = TRUE)
     }  else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
-      loadRegion(txdb, "tx")[names(cdsBy(txdb, use.names = TRUE))]
+      optimized.rds <- paste0(optimized_path, "_", "mrna", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else exonsBy(txdb, by = "tx", use.names = TRUE)[names(cdsBy(txdb, use.names = TRUE))]
     } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
 
   if (by == "gene") {
@@ -288,12 +336,12 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx") {
 #' loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
 loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", names.keep = NULL,
-                        by = "tx",
+                        by = "tx", skip.optimized = FALSE,
                         envir = .GlobalEnv) {
   txdb <- loadTxdb(txdb)
   for (i in parts) {
     assign(x = paste0(i, extension),
-           value = loadRegion(txdb, i,names.keep, by),
+           value = loadRegion(txdb, i, names.keep, by, skip.optimized),
            envir = envir)
   }
   return(invisible(NULL))
@@ -362,20 +410,32 @@ importGtfFromTxdb <- function(txdb) {
     }
   }
   if (is(txdb, "TxDb")) {
-    genome <- metadata(txdb)[metadata(txdb)[,1] == "Data source", 2]
-    if (!(file_ext(genome) %in%
-          c("gtf", "gff", "gff3", "gff2"))) {
-      message("This is error txdb ->")
-      message("It should be found by: metadata(txdb)[metadata(txdb)[,1] == 'Data source',]")
-      print(txdb)
-      stop("Your Txdb does not point to a valid gtf/gff (no valid Data source defined)")
-    }
-    txdb <- genome
+    txdb <- getGtfPathFromTxdb(txdb)
   }
   if (!file.exists(txdb)) {
     message <- paste("Could not open gtf, did you rename folder of gtf?")
   }
   return(import(txdb))
+}
+
+#' Get path of GTF that created txdb
+#'
+#' Will crash and report proper error if no gtf is found
+#' @param txdb a loaded TxDb object
+#' @return a character file path, returns NULL if not valid
+#' and stop.error is FALSE.
+getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
+  genome <- metadata(txdb)[metadata(txdb)[,1] == "Data source", 2]
+  if (!(file_ext(genome) %in%
+        c("gtf", "gff", "gff3", "gff2"))) {
+    if (stop.error) {
+      message("This is error txdb ->")
+      message("It should be found by: metadata(txdb)[metadata(txdb)[,1] == 'Data source',]")
+      print(txdb)
+      stop("Your Txdb does not point to a valid gtf/gff (no valid Data source defined)")
+    } else return(NULL)
+  }
+  return(genome)
 }
 
 
@@ -460,6 +520,25 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
   return(tx$tx_name)
 }
 
+#' Get path for optimization files for txdb
+#' @param txdb a loaded TxDb object
+#' @return a character file path, returns NULL if not valid
+#' and stop.error is FALSE.
+optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE) {
+  genome <- getGtfPathFromTxdb(txdb, stop.error = stop.error)
+  if (is.null(genome)) {
+    return(NULL)
+  }
+  base_dir <- file.path(dirname(genome), "ORFik_optimized")
+  base_path <- file.path(base_dir, basename(remove.file_ext(genome)))
+  creation.time <- gsub(" \\(.*| |:", "",
+                        metadata(txdb)[metadata(txdb)[,1] == "Creation time",2])
+  if (create.dir) {
+    dir.create(base_dir, showWarnings = FALSE, recursive = TRUE)
+  }
+  return(paste0(base_path, "_", creation.time))
+}
+
 #' Load length of all transcripts
 #'
 #' A speedup wrapper around \code{\link{transcriptLengths}},
@@ -480,32 +559,27 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
                                        with.utr3_len = TRUE,
                                        create.fst.version = FALSE) {
   txdb <- loadTxdb(txdb)
-  # Path to gtf:
-  genome <- metadata(txdb)[3,2]
-  genome_ext <- remove.file_ext(genome)
-  creation.time <- gsub(" \\(.*| |:", "",
-                        metadata(txdb)[metadata(txdb)[,1] == "Creation time",2])
-  possible_fst <- paste0(genome_ext, "_",creation.time, "_txLengths.fst")
-  if (file.exists(possible_fst)) { # If fst exists
+
+  optimized_path <- optimized_txdb_path(txdb, stop.error = FALSE)
+  found_gtf <- !is.null(optimized_path)
+  possible_fst <- paste0(optimized_path, "_txLengths.fst")
+  if (file.exists(possible_fst) & found_gtf) { # If fst exists
     return(setDT(fst::read_fst(possible_fst)))
-  } else if (create.fst.version) { # If make fst
+  } else if (create.fst.version & found_gtf) { # If make fst
     tx <- data.table::setDT(
       GenomicFeatures::transcriptLengths(
         txdb, with.cds_len = TRUE,
         with.utr5_len = with.utr5_len,
         with.utr3_len = with.utr3_len))
     # Validation save location
-    if (file_ext(genome) %in%
-          c("gtf", "gff", "gff3", "gff2")) {
-      if (dir.exists(dirname(possible_fst))) {
-        if (file.exists(genome) |
-            file.exists(paste0(genome, ".db"))) {
-          message("Creating fst speedup file for transcript lengths, at location:")
-          message(possible_fst)
-          fst::write_fst(tx, possible_fst)
-        }
+    if (dir.exists(dirname(possible_fst))) {
+        message("Creating fst speedup file for transcript lengths, at location:")
+        message(possible_fst)
+        fst::write_fst(tx, possible_fst)
+    } else {
+        stop("Optimization directory does not exist: ", dirname(possible_fst))
       }
-    }
+
     return(tx)
   }
   # Else load normally

@@ -17,7 +17,8 @@ findPeaksPerGene(
 \item{tx}{a GRangesList}
 
 \item{reads}{a GAlignments or GRanges, must be 1 width reads like p-shifts,
-or other reads that is single positioned.}
+or other reads that is single positioned. It will work with non 1 width bases,
+but you then get larger areas for peaks.}
 
 \item{top_tx}{numeric, default 0.50 (only use 50\% top transcripts by
 read counts).}

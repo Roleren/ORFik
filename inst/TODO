@@ -1,13 +1,9 @@
 TODO
 -----------------------
-    o Make check for spaces in findORFsFasta
-    o remove unnecesary type checking ("started doing this now")
-    o split files into smaller files, tests too
-    o remove whole utils file?
+    o Add more verbose outputs
 
     CageSeq:
-    o remove cageFromFile etc. so that we don't load the data for the user
-    o remove filterCage so that we don't filter, user filters himself
+    o Add more statistics for user if wanted
 
     RiboSeq:
-    o parseCigar implement into C++ (this is not the slow part thought)
+    o Add ability to re-pshift experiment by input shifts

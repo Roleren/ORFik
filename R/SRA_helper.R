@@ -195,9 +195,9 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' @param SRP a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
 #' examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
 #' to find the files.
-#' @param outdir directory to save file,
+#' @param outdir directory to save file, default: tempdir().
 #' The file will be called "SraRunInfo_SRP.csv", where SRP is
-#' the SRP argument.
+#' the SRP argument. We advice to use bioproject IDs "PRJNA...".
 #' The directory will be created if not existing.
 #' @param remove.invalid logical, default TRUE. Remove Runs with 0 reads (spots)
 #' @param auto.detect logical, default FALSE. If TRUE, ORFik will add additional columns:\cr
@@ -224,7 +224,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' # download.SRA.metadata("ERP116106", outdir)
 #' ## Originally on GEO (GSE)
 #' # download.SRA.metadata("GSE61011", outdir)
-download.SRA.metadata <- function(SRP, outdir, remove.invalid = TRUE,
+download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE,
                                   auto.detect = FALSE) {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
@@ -514,6 +514,7 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' # Paired
 #' #ORFik:::find_url_ebi("SRR105788")
 find_url_ebi <- function(SRR, stop.on.error = FALSE) {
+  message("Finding optimal download urls from ebi...")
   ebi_server <- "ftp://ftp.sra.ebi.ac.uk"
   # Check that we can connect to ebi
   exists.ftp.dir.fast(ebi_server, report.error = TRUE)

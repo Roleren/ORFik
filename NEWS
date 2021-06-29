@@ -49,3 +49,13 @@ SIGNIFICANT USER-VISIBLE CHANGES
     o Added pmapToTranscriptsF, a much faster pmapToTranscripts.
     o All of ORFik now supports weights for representing duplicated reads.
     This will speed up all function related to NGS data a lot.
+
+CHANGES IN VERSION 1.13.7
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Massive improvement in speed of coveragePerTiling
+    o Improved p-shifting analysis (also added verbose output)
+    o Added possible optimization for annotation
+    o Rewritten vignettes

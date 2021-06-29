@@ -4,7 +4,13 @@
 \alias{loadRegion}
 \title{Load transcript region}
 \usage{
-loadRegion(txdb, part = "tx", names.keep = NULL, by = "tx")
+loadRegion(
+  txdb,
+  part = "tx",
+  names.keep = NULL,
+  by = "tx",
+  skip.optimized = FALSE
+)
 }
 \arguments{
 \item{txdb}{a TxDb file or a path to one of:
@@ -20,7 +26,13 @@ loadRegions(txdb, names = "ENST1000005"), will return only that transcript.
 Remember if you set by to "gene", then this list must be with gene names.}
 
 \item{by}{a character, default "tx" Either "tx" or "gene". What names to
-output region by, the transcript name "tx" or gene names "gene"}
+output region by, the transcript name "tx" or gene names "gene".
+NOTE: this is note the same as cdsBy(txdb, by = "gene"), cdsBy would then
+only give 1 cds per Gene, loadRegion gives all isoforms, but with gene names.}
+
+\item{skip.optimized}{logical, default FALSE. If TRUE, will not search for optimized
+rds files to load created from ORFik::makeTxdbFromGenome(..., optimize = TRUE). The
+optimized files are ~ 100x faster to load for human genome.}
 }
 \value{
 a GrangesList of region

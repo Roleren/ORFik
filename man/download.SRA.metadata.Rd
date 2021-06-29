@@ -4,16 +4,21 @@
 \alias{download.SRA.metadata}
 \title{Downloads metadata from SRA}
 \usage{
-download.SRA.metadata(SRP, outdir, remove.invalid = TRUE, auto.detect = FALSE)
+download.SRA.metadata(
+  SRP,
+  outdir = tempdir(),
+  remove.invalid = TRUE,
+  auto.detect = FALSE
+)
 }
 \arguments{
 \item{SRP}{a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
 examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
 to find the files.}
 
-\item{outdir}{directory to save file,
+\item{outdir}{directory to save file, default: tempdir().
 The file will be called "SraRunInfo_SRP.csv", where SRP is
-the SRP argument.
+the SRP argument. We advice to use bioproject IDs "PRJNA...".
 The directory will be created if not existing.}
 
 \item{remove.invalid}{logical, default TRUE. Remove Runs with 0 reads (spots)}

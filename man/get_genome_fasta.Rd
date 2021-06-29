@@ -29,8 +29,7 @@ This will give you all no copies of any chromosomes.
 As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 \code{assembly_type = "toplevel")}.
 This will give you all multi-chromosomes (copies of the same chromosome with small variations).
-As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-To get primary assembly with 1 chromosome variant per chromosome:}
+As an example the toplevel fasta genome in human is over 70 GB uncompressed.}
 
 \item{db}{database to use for genome and GTF,
 default adviced: "ensembl" (will contain haplotypes, large file!).
@@ -61,11 +60,18 @@ annotation["genome"] = "path/to/genome.fasta"\cr
 annotation["gtf"] = "path/to/gtf.gtf"
 }
 \examples{
-output.dir <- "/Bio_data/references/zebrafish"
-#getGenomeAndAnnotation("Danio rerio", output.dir)
 
-## Get Phix contamints to deplete during alignment
+## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir())
+## Get Danio rerio genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Danio rerio", tempdir())
+
+output.dir <- "/Bio_data/references/zebrafish"
+## Get Danio rerio and Phix contamints to deplete during alignment
 #getGenomeAndAnnotation("Danio rerio", output.dir, phix = TRUE)
+
+## Optimize for ORFik (speed up for large annotations like human or zebrafish)
+#getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 
 }
 \seealso{

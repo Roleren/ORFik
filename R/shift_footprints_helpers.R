@@ -17,11 +17,20 @@
 #' @param x (numeric) Vector of values to detect periodicity of 3 like in
 #' RiboSeq data.
 #' @param info specify read length if wanted for verbose output.
-#' @param verbose logical, default FALSE. Report details of periodogram.
+#' @param verbose logical, default FALSE.
+#' Report details of analysis/periodogram. Good if you are not sure
+#' if the analysis was correct.
+#' @param strict.fft logical, TRUE. Use a FFT without noise filter.
+#' This means keep only reads lengths that are "periodic for the human eye".
+#' If you want more coverage, set to FALSE, to also get read lengths
+#' that are "messy", but the noise filter detects the periodicity of 3.
+#' This should only be done when you do not need high quality
+#' periodic reads! Example would be differential translation analysis by
+#' counts over each ORF.
 #' @return a logical, if it is periodic.
 #' @importFrom stats fft spec.pgram
 #'
-isPeriodic <- function(x, info = NULL, verbose = FALSE) {
+isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
   if (sum(x) == 0) return(FALSE)
   amplitudes <- abs(fft(x))
   amp <- amplitudes[2 : (length(amplitudes) / 2 + 1)]
@@ -36,7 +45,12 @@ isPeriodic <- function(x, info = NULL, verbose = FALSE) {
 
     print(dt)
   }
-  return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
+  if (strict.fft) {
+    return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
+  } else {
+    return((periods[which.max(specter$spec)] > 2.9) &
+             (periods[which.max(specter$spec)] < 3.1))
+  }
 }
 
 #' Get the offset for specific RiboSeq read width

@@ -4,7 +4,15 @@
 \alias{get_genome_gtf}
 \title{Download genome (fasta), annotation (GTF) and contaminants}
 \usage{
-get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip, genome)
+get_genome_gtf(
+  GTF,
+  output.dir,
+  organism,
+  assembly_type,
+  gunzip,
+  genome,
+  optimize = FALSE
+)
 }
 \arguments{
 \item{GTF}{logical, default: TRUE, download gtf of organism specified
@@ -29,16 +37,23 @@ This will give you all no copies of any chromosomes.
 As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 \code{assembly_type = "toplevel")}.
 This will give you all multi-chromosomes (copies of the same chromosome with small variations).
-As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-To get primary assembly with 1 chromosome variant per chromosome:}
+As an example the toplevel fasta genome in human is over 70 GB uncompressed.}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}
 
-\item{genome}{a character path, default NULL.
-if set, must be path to genome fasta file, must be indexed.
-If you want to make sure chromosome naming of the GTF matches the genome.
-If value is NULL or FALSE, it will be ignored.}
+\item{genome}{character path, default NULL.
+Path to fasta genome, corresponding to the gtf. must be indexed
+(.fai file must exist there).
+If you want to make sure chromosome naming of the GTF matches the genome
+and correct seqlengths. If value is NULL or FALSE, it will be ignored.}
+
+\item{optimize}{logical, default FALSE. Create a folder
+within the folder of the gtf, that includes optimized objects
+to speed up loading of annotation regions from up to 15 seconds
+on human genome down to 0.1 second. ORFik will then load these optimized
+objects instead. Currently optimizes filterTranscript() and
+loadRegion().}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,
@@ -62,11 +77,18 @@ annotation["genome"] = "path/to/genome.fasta"\cr
 annotation["gtf"] = "path/to/gtf.gtf"
 }
 \examples{
-output.dir <- "/Bio_data/references/zebrafish"
-#getGenomeAndAnnotation("Danio rerio", output.dir)
 
-## Get Phix contamints to deplete during alignment
+## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir())
+## Get Danio rerio genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Danio rerio", tempdir())
+
+output.dir <- "/Bio_data/references/zebrafish"
+## Get Danio rerio and Phix contamints to deplete during alignment
 #getGenomeAndAnnotation("Danio rerio", output.dir, phix = TRUE)
+
+## Optimize for ORFik (speed up for large annotations like human or zebrafish)
+#getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 
 }
 \seealso{

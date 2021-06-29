@@ -17,7 +17,8 @@ getGenomeAndAnnotation(
   rRNA = FALSE,
   gunzip = TRUE,
   remake = FALSE,
-  assembly_type = "primary_assembly"
+  assembly_type = "primary_assembly",
+  optimize = FALSE
 )
 }
 \arguments{
@@ -106,8 +107,14 @@ This will give you all no copies of any chromosomes.
 As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 \code{assembly_type = "toplevel")}.
 This will give you all multi-chromosomes (copies of the same chromosome with small variations).
-As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-To get primary assembly with 1 chromosome variant per chromosome:}
+As an example the toplevel fasta genome in human is over 70 GB uncompressed.}
+
+\item{optimize}{logical, default FALSE. Create a folder
+within the folder of the gtf, that includes optimized objects
+to speed up loading of annotation regions from up to 15 seconds
+on human genome down to 0.1 second. ORFik will then load these optimized
+objects instead. Currently optimizes filterTranscript() and
+loadRegion().}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,
@@ -131,11 +138,18 @@ annotation["genome"] = "path/to/genome.fasta"\cr
 annotation["gtf"] = "path/to/gtf.gtf"
 }
 \examples{
-output.dir <- "/Bio_data/references/zebrafish"
-#getGenomeAndAnnotation("Danio rerio", output.dir)
 
-## Get Phix contamints to deplete during alignment
+## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir())
+## Get Danio rerio genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Danio rerio", tempdir())
+
+output.dir <- "/Bio_data/references/zebrafish"
+## Get Danio rerio and Phix contamints to deplete during alignment
 #getGenomeAndAnnotation("Danio rerio", output.dir, phix = TRUE)
+
+## Optimize for ORFik (speed up for large annotations like human or zebrafish)
+#getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 
 }
 \seealso{

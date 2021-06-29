@@ -37,7 +37,9 @@ longest total transcript. So if transcript is shorter but cds is longer,
 \item{stopOnEmpty}{logical TRUE, stop if no valid transcripts are found ?}
 
 \item{by}{a character, default "tx" Either "tx" or "gene". What names to
-output region by, the transcript name "tx" or gene names "gene"}
+output region by, the transcript name "tx" or gene names "gene".
+NOTE: this is note the same as cdsBy(txdb, by = "gene"), cdsBy would then
+only give 1 cds per Gene, loadRegion gives all isoforms, but with gene names.}
 
 \item{create.fst.version}{logical, FALSE. If TRUE, creates a .fst version
 of the transcript length table (if it not already exists),

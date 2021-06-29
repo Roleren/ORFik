@@ -15,7 +15,8 @@ windowPerReadLength(
   zeroPosition = upstream,
   scoring = "transcriptNormalized",
   weight = "score",
-  drop.zero.dt = FALSE
+  drop.zero.dt = FALSE,
+  append.zeroes = FALSE
 )
 }
 \arguments{
@@ -63,9 +64,16 @@ remove all 0 count positions.
 This greatly speeds up and most importantly, greatly reduces memory usage.
 Will not change any plots, unless 0 positions are used in some sense.
 (mean, median, zscore coverage will only scale differently)}
+
+\item{append.zeroes}{logical, default FALSE. If TRUE and drop.zero.dt
+is TRUE and all windows have equal length, it will add back 0 values after transformation.
+Sometimes needed for correct plots, if TRUE, will call abort if not all
+windows are equal length!}
 }
 \value{
-a data.table with lengths by coverage / vector of proportions
+a data.table with 4 columns: position (in window), score,
+fraction (read length). If score is NULL, will also return genes (index of grl).
+A note is that if no coverage is found, it returns an empty data.table.
 }
 \description{
 This is defined as:
@@ -76,6 +84,11 @@ grl from upstream and downstream. If tx is NULL, it will use only downstream
 , since it has no reference on how to find upstream region.
 The exception is when upstream is negative, that is,
 going into downstream region of the object.
+}
+\details{
+Careful when you create windows where not all transcripts are long enough,
+this function usually is used first with filterTranscripts to make sure they
+are of all of valid length!
 }
 \examples{
 cds <- GRangesList(tx1 = GRanges("1", 100:129, "+"))

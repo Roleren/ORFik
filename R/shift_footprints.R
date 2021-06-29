@@ -141,9 +141,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' This is useful if you are not going to do periodicity analysis, that is:
 #' for you more coverage depth (more read lengths)
 #' is more important than only keeping the high quality periodic read lengths.
-#' @param verbose logical FALSE, if TRUE report details of
-#' read length filtering (periodogram) and
-#' change point analysis per read length.
+#' @inheritParams isPeriodic
 #' @return a data.table with lengths of footprints and their predicted
 #' coresponding offsets
 #' @family pshifting
@@ -192,7 +190,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
   txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
   firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
-  heatmap = FALSE, must.be.periodic = TRUE, verbose = FALSE) {
+  heatmap = FALSE, must.be.periodic = TRUE, strict.fft = TRUE, verbose = FALSE) {
 
   txdb <- loadTxdb(txdb)
   cds <- loadRegion(txdb, part = "cds", names.keep = txNames)
@@ -206,7 +204,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     stop("txdb and footprints did not have any matched seqnames")
   }
   txNames <- txNames[txNames %in% names(cds)]
-  if (is.null(tx)) tx <- loadRegion(txdb, part = "mrna")
+  if (is.null(tx)) tx <- loadRegion(txdb, part = "tx")
   tx <- tx[txNames]
 
   # find periodic read lengths
@@ -220,14 +218,17 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   if (nrow(tab) == 0) stop("No valid read lengths found with",
                             "accepted.lengths and counts > min_reads")
   cds <- cds[countOverlapsW(cds, footprints, "score") > 0]
+  if (verbose) message("Number of CDSs used for p-site detection: ", length(cds))
   top_tx <- percentage_to_ratio(top_tx, cds)
   if (must.be.periodic) {
-    period.score <- ifelse(verbose, "periodicv", "periodic")
     periodicity <- windowPerReadLength(cds, tx, footprints,
                                        pShifted = FALSE, upstream = 0,
                                        downstream = firstN - 1,
-                                       zeroPosition = 0, scoring = period.score,
-                                       acceptedLengths = tab$size)
+                                       zeroPosition = 0, scoring = "transcriptNormalized",
+                                       acceptedLengths = tab$size,
+                                       drop.zero.dt = TRUE, append.zeroes = TRUE)
+    periodicity <- periodicity[, .(score = isPeriodic(score, unique(fraction), verbose, strict.fft)),
+                               by = fraction]
     validLengths <- periodicity[score == TRUE,]$fraction
   } else validLengths <- accepted.lengths
   if (length(validLengths) == 0)
@@ -257,7 +258,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     rw <- windowPerReadLength(threeUTRs, tx, footprints, FALSE,
                               upstream = 30, downstream = 29,
                               acceptedLengths = validLengths,
-                              scoring = "sum", drop.zero.dt = TRUE)
+                              scoring = "sum")
     footprints.analysis(rw, heatmap, region = "start of 3' UTR")
     if (nrow(offset) == 0) {
       offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
@@ -324,7 +325,7 @@ shiftFootprintsByExperiment <- function(df,
                                         output_format = c("ofst", "wig"),
                                         BPPARAM = bpparam(), tx = NULL,
                                         log = TRUE, heatmap = FALSE,
-                                        must.be.periodic = TRUE,
+                                        must.be.periodic = TRUE, strict.fft = TRUE,
                                         verbose = FALSE) {
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
@@ -344,9 +345,9 @@ shiftFootprintsByExperiment <- function(df,
            FUN = function(file, path, df, start, stop,
                           top_tx, minFiveUTR, minCDS, minThreeUTR,
                           firstN, min_reads, accepted.lengths,
-                          output_format, heatmap = heatmap, tx,
-                          must.be.periodic = must.be.periodic,
-                          txNames, verbose = verbose
+                          output_format, heatmap, tx,
+                          must.be.periodic, txNames, strict.fft,
+                          verbose = verbose
                           ) {
     message(file)
     rfp <- fimport(file)
@@ -359,7 +360,7 @@ shiftFootprintsByExperiment <- function(df,
                                    accepted.lengths = accepted.lengths,
                                    heatmap = heatmap, tx = tx,
                                    must.be.periodic = must.be.periodic,
-                                   verbose = verbose)
+                                   strict.fft = strict.fft, verbose = verbose)
     shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
 
@@ -384,12 +385,13 @@ shiftFootprintsByExperiment <- function(df,
 
     return(shifts)
   }, path = path, df = df, start = start, stop = stop,
-      top_tx = top_tx, minFiveUTR = minFiveUTR,
-      minCDS = minCDS, minThreeUTR = minThreeUTR,
-      firstN = firstN, min_reads = min_reads,
-      accepted.lengths = accepted.lengths, output_format = output_format,
-      heatmap = heatmap, must.be.periodic = must.be.periodic,
-      verbose = verbose, tx = tx, txNames = txNames, BPPARAM = BPPARAM)
+     top_tx = top_tx, minFiveUTR = minFiveUTR,
+     minCDS = minCDS, minThreeUTR = minThreeUTR,
+     firstN = firstN, min_reads = min_reads,
+     accepted.lengths = accepted.lengths, output_format = output_format,
+     heatmap = heatmap, must.be.periodic = must.be.periodic,
+     strict.fft = strict.fft, verbose = verbose, tx = tx, txNames = txNames,
+     BPPARAM = BPPARAM)
 
   if (log) {
     fileConn<-file(paste0(path, "/pshifting_arguments.txt"), "w")
@@ -402,6 +404,11 @@ shiftFootprintsByExperiment <- function(df,
     names(shifts) <- rfpFiles
     saveRDS(shifts, file = file.path(path, "shifting_table.rds"))
   }
+  if (verbose) {
+    message("Shifting done, detected shifts per file:")
+    print(shifts)
+  }
+
   return(invisible(NULL))
 }
 

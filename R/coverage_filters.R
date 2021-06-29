@@ -80,7 +80,8 @@ filterExtremePeakGenes <-
 #' of a sliding window instead of over the whole tx.
 #' @param tx a GRangesList
 #' @param reads a GAlignments or GRanges, must be 1 width reads like p-shifts,
-#' or other reads that is single positioned.
+#' or other reads that is single positioned. It will work with non 1 width bases,
+#' but you then get larger areas for peaks.
 #' @param top_tx numeric, default 0.50 (only use 50\% top transcripts by
 #' read counts).
 #' @param min_reads_per_tx numeric, default 20. Gene must have at least

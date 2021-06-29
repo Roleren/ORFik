@@ -54,11 +54,18 @@ annotation["genome"] = "path/to/genome.fasta"\cr
 annotation["gtf"] = "path/to/gtf.gtf"
 }
 \examples{
-output.dir <- "/Bio_data/references/zebrafish"
-#getGenomeAndAnnotation("Danio rerio", output.dir)
 
-## Get Phix contamints to deplete during alignment
+## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir())
+## Get Danio rerio genome and gtf (create txdb for R)
+#getGenomeAndAnnotation("Danio rerio", tempdir())
+
+output.dir <- "/Bio_data/references/zebrafish"
+## Get Danio rerio and Phix contamints to deplete during alignment
 #getGenomeAndAnnotation("Danio rerio", output.dir, phix = TRUE)
+
+## Optimize for ORFik (speed up for large annotations like human or zebrafish)
+#getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 
 }
 \seealso{

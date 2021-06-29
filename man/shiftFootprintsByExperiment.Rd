@@ -22,6 +22,7 @@ shiftFootprintsByExperiment(
   log = TRUE,
   heatmap = FALSE,
   must.be.periodic = TRUE,
+  strict.fft = TRUE,
   verbose = FALSE
 )
 }
@@ -95,9 +96,17 @@ This is useful if you are not going to do periodicity analysis, that is:
 for you more coverage depth (more read lengths)
 is more important than only keeping the high quality periodic read lengths.}
 
-\item{verbose}{logical FALSE, if TRUE report details of
-read length filtering (periodogram) and
-change point analysis per read length.}
+\item{strict.fft}{logical, TRUE. Use a FFT without noise filter.
+This means keep only reads lengths that are "periodic for the human eye".
+If you want more coverage, set to FALSE, to also get read lengths
+that are "messy", but the noise filter detects the periodicity of 3.
+This should only be done when you do not need high quality
+periodic reads! Example would be differential translation analysis by
+counts over each ORF.}
+
+\item{verbose}{logical, default FALSE.
+Report details of analysis/periodogram. Good if you are not sure
+if the analysis was correct.}
 }
 \value{
 NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",

@@ -184,6 +184,9 @@ This will save you a lot of the common warnings and problems downstream:
 ```
 The txdb is saved in same directory as the gtf, with an extension ".db"
 
+It should be noted that Bioconductor BSGenome packages are not currently supported as annotation for ORFik alignments, since they lack some of the functionality needed for ORFik. 
+They might be supported in the future and can already be used for all other parts of ORFik. 
+
 ## Annotation without defined UTRs
 If you do not have defined UTRs an your annotation, this will give you considerable less quality results (no results using leaders can be created). So optimial is always to
 find an annotation with UTRs. If that is not possible ORFik contains two ways to create 5' UTR annotation, 

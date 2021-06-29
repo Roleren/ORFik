@@ -62,6 +62,8 @@ a data.table with lengths by coverage.
 \description{
 This is defined as:
 Given some transcript region (like CDS), get coverage per position.
+By default only returns positions that have hits, set drop.zero.dt
+to FALSE to get all 0 positions.
 }
 \examples{
 # Raw counts per gene per position

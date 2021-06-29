@@ -4,7 +4,7 @@
 \alias{isPeriodic}
 \title{Find if there is a periodicity of 3 in the vector}
 \usage{
-isPeriodic(x, info = NULL, verbose = FALSE)
+isPeriodic(x, info = NULL, verbose = FALSE, strict.fft = TRUE)
 }
 \arguments{
 \item{x}{(numeric) Vector of values to detect periodicity of 3 like in
@@ -12,7 +12,17 @@ RiboSeq data.}
 
 \item{info}{specify read length if wanted for verbose output.}
 
-\item{verbose}{logical, default FALSE. Report details of periodogram.}
+\item{verbose}{logical, default FALSE.
+Report details of analysis/periodogram. Good if you are not sure
+if the analysis was correct.}
+
+\item{strict.fft}{logical, TRUE. Use a FFT without noise filter.
+This means keep only reads lengths that are "periodic for the human eye".
+If you want more coverage, set to FALSE, to also get read lengths
+that are "messy", but the noise filter detects the periodicity of 3.
+This should only be done when you do not need high quality
+periodic reads! Example would be differential translation analysis by
+counts over each ORF.}
 }
 \value{
 a logical, if it is periodic.

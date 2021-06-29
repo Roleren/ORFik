@@ -15,6 +15,11 @@ test_that("coverageScorings works as intended", {
   coverage <- coveragePerTiling(grl, footprintsGood, is.sorted = TRUE,
                                 as.data.table = TRUE)
   expect_is(coverage, "data.table")
+  coverage2 <- coveragePerTiling(grl, footprintsGood, is.sorted = TRUE,
+                                as.data.table = TRUE, drop.zero.dt = TRUE,
+                                fraction = 28)
+  expect_equal(nrow(coverage[count > 0,]), nrow(coverage2))
+  expect_equal(unique(coverage2$fraction), 28)
 
   # fracPos
   dt <- coverageScorings(coverage, "fracPos")
@@ -64,6 +69,12 @@ test_that("windowPerReadLength works as intended", {
   strand(footprintsGood) <- "-"
   grltest <- windowPerReadLength(grl, tx, footprintsGood,
                                  scoring = "fracPos")
+  # Optimization works
+  expect_equal(windowPerReadLength(grl, tx, footprintsGood,
+                                   scoring = "transcriptNormalized"),
+               windowPerReadLength(grl, tx, footprintsGood,
+                                   scoring = "transcriptNormalized",
+                                   drop.zero.dt = TRUE, append.zeroes = TRUE))
 
 })
 
@@ -81,9 +92,14 @@ test_that("windowPerReadLength works as intended strange cases", {
 
 test_that("regionPerReadLength works as intended", {
   # Per frame
-  grltest <- regionPerReadLength(grl, footprintsGood, scoring = "frameSumPerLG")
+  grltest <- regionPerReadLength(grl, footprintsGood, scoring = "frameSumPerLG",
+                                 drop.zero.dt = FALSE)
   expect_is(grltest, "data.table")
   expect_equal(nrow(grltest), 6)
   expect_equal(grltest$score[1], 10)
   expect_equal(grltest$score[4], 7)
+  grltest <- regionPerReadLength(grl, footprintsGood, scoring = "frameSumPerL",
+                                 drop.zero.dt = T)
+  expect_equal(nrow(grltest), 1)
+  expect_equal(grltest$score[1], 17)
 })

@@ -87,7 +87,12 @@
 #' \code{assembly_type = "toplevel")}.
 #' This will give you all multi-chromosomes (copies of the same chromosome with small variations).
 #' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-#' To get primary assembly with 1 chromosome variant per chromosome:
+#' @param optimize logical, default FALSE. Create a folder
+#' within the folder of the gtf, that includes optimized objects
+#' to speed up loading of annotation regions from up to 15 seconds
+#' on human genome down to 0.1 second. ORFik will then load these optimized
+#' objects instead. Currently optimizes filterTranscript() and
+#' loadRegion().
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
 #' @importFrom R.utils gunzip
@@ -102,18 +107,26 @@
 #' @family STAR
 #' @export
 #' @examples
-#' output.dir <- "/Bio_data/references/zebrafish"
-#' #getGenomeAndAnnotation("Danio rerio", output.dir)
 #'
-#' ## Get Phix contamints to deplete during alignment
+#' ## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
+#' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir())
+#' ## Get Danio rerio genome and gtf (create txdb for R)
+#' #getGenomeAndAnnotation("Danio rerio", tempdir())
+#'
+#' output.dir <- "/Bio_data/references/zebrafish"
+#' ## Get Danio rerio and Phix contamints to deplete during alignment
 #' #getGenomeAndAnnotation("Danio rerio", output.dir, phix = TRUE)
+#'
+#' ## Optimize for ORFik (speed up for large annotations like human or zebrafish)
+#' #getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 #'
 getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    GTF = TRUE, genome = TRUE,
                                    merge_contaminants = TRUE, phix = FALSE,
                                    ncRNA = FALSE, tRNA = FALSE, rRNA = FALSE,
                                    gunzip = TRUE, remake = FALSE,
-                                   assembly_type = "primary_assembly") {
+                                   assembly_type = "primary_assembly",
+                                   optimize = FALSE) {
   # Pre checks
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
@@ -146,7 +159,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
   gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip,
-                        genome)
+                        genome, optimize = optimize)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:
