@@ -99,7 +99,7 @@ test_that("regionPerReadLength works as intended", {
   expect_equal(grltest$score[1], 10)
   expect_equal(grltest$score[4], 7)
   grltest <- regionPerReadLength(grl, footprintsGood, scoring = "frameSumPerL",
-                                 drop.zero.dt = T)
+                                 drop.zero.dt = TRUE)
   expect_equal(nrow(grltest), 1)
   expect_equal(grltest$score[1], 17)
 })
