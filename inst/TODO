@@ -7,3 +7,16 @@ TODO
 
     RiboSeq:
     o Add ability to re-pshift experiment by input shifts
+
+    Alignment:
+    o Add genomeSAindexNbases 14 check to reduce to 10 if small
+    o wrap fastp UMI and barcode demultiplexing
+
+    SRA Download:
+    Make find.url.ebi less likely to fail
+
+    SRA metadata:
+    o Include better Auther and Pubmed detection
+
+    P-shifting
+    o Do more tests for RCP-seq 80 libraries (these have different read lengths)

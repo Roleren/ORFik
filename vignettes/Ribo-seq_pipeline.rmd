@@ -1,11 +1,11 @@
 ---
-title: "ORFik_Ribo-seq_pipeline"
+title: "Ribo-seq pipeline"
 author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
 output: BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{ORFik_Ribo-seq_pipeline}
+  %\VignetteIndexEntry{Ribo-seq pipeline}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -61,12 +61,16 @@ conf <- config.exper(experiment = "Alexaki_Human",
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Download fastq files for experiment and rename (Skip if you have the files already)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# SRA Meta data download (work for ERA and DRA too)
-study <- download.SRA.metadata("PRJNA591214", outdir = conf["fastq Ribo-seq"])
-# Subset
-study.rfp <- study[grep("mRNA-Seq", sample_title, invert = TRUE),]
-study.rna <- study[grep("Ribo-Seq", sample_title, invert = TRUE),]
+# SRA Meta data download (work for ERA, DRA and GEO too)
+study <- download.SRA.metadata("PRJNA591214", auto.detect = TRUE)
+# Auto detection worked, all Ribo-seq and RNA-seq samples detected
+# NOTE: Could not detect condition CO, only wild type (WT)
+
+# Split study into (Ribo-seq / RNA-seq)
+study.rfp <- study[LIBRARYTYPE == "RFP",]
+study.rna <- study[LIBRARYTYPE == "RNA",]
 # Download fastq files (uses SRR numbers (RUN column) from study))
+# The sample_title column had good names to rename files:
 download.SRA(study.rfp, conf["fastq Ribo-seq"],
              rename = study.rfp$sample_title, subset = 2000000)
 download.SRA(study.rna, conf["fastq RNA-seq"],

@@ -175,18 +175,20 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  for SSU&LSU at: https://www.arb-silva.de/) for your species.
 #' @param adapter.sequence character, default: "auto". Auto detect adapter using fastp
 #' adapter auto detection, checking first 1.5M reads. (Auto detection of adapter will
-#' not work 100% of the time (if the library is of low quality), then you must rerun
-#' this function with specified adapter from fastp adapter analysis
+#' not work 100\% of the time (if the library is of low quality), then you must rerun
+#' this function with specified adapter from fastp adapter analysis.
 #' , using FASTQC or other adapter detection tools, else alignment will most likely fail!).
 #' If already trimmed or trimming not wanted:
 #' adapter.sequence = "disable" .You can manually assign adapter like:
 #' "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
 #' presets:\cr
 #' \itemize{
-#'  \item{illumina (standard for 100 bp sequencing): }{AGATCGGAAGAGC}
+#'  \item{illumina (TrueSeq ~75/100 bp sequencing): }{AGATCGGAAGAGC}
 #'  \item{small_RNA (standard for ~50 bp sequencing): }{TGGAATTCTCGG}
 #'  \item{nextera: }{CTGTCTCTTATA}
 #' }
+#' Paired end auto detection uses overlap sequence of pairs, to use the slower
+#' more secure paired end adapter detection, specify as: "autoPE".
 #' @param quality.filtering logical, default FALSE. Not needed for modern
 #' library prep of RNA-seq, Ribo-seq etc (usually < ~ 0.5% of reads are removed).
 #' If you are aligning bad quality data, set this to TRUE.\cr

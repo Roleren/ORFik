@@ -8,13 +8,16 @@ download.SRA.metadata(
   SRP,
   outdir = tempdir(),
   remove.invalid = TRUE,
-  auto.detect = FALSE
+  auto.detect = FALSE,
+  abstract = "printsave"
 )
 }
 \arguments{
-\item{SRP}{a string, a study ID as either the SRP, ERP, DRP, PRJ or GSE of the study,
+\item{SRP}{a string, a study ID as either the PRJ, SRP, ERP, DRPor GSE of the study,
 examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
-to find the files.}
+to find the files. The call works as long the runs are registered on the efetch server,
+as their is a linked SRP link from bioproject or GSE. Example which fails is "PRJNA449388",
+which does not have a linking like this.}
 
 \item{outdir}{directory to save file, default: tempdir().
 The file will be called "SraRunInfo_SRP.csv", where SRP is
@@ -29,6 +32,13 @@ REPLICATE: (is this replicate 1, 2 etc),\cr
 STAGE: (Which time point, cell line or tissue is this, HEK293, TCP-1, 24hpf etc),\cr
 CONDITION: (is this Wild type control or a mutant etc).\cr
 These values are only qualified guesses from the metadata, so always double check!}
+
+\item{abstract}{character, default "printsave". If abstract for project exists,
+print and save it (save the file to same directory as runinfo).
+Alternatives: "print", Only print first time downloaded,
+will not be able to print later.\cr
+save" save it, no print\cr
+"no" skip download of abstract}
 }
 \value{
 a data.table of the metadata, 1 row per sample,
@@ -36,16 +46,22 @@ a data.table of the metadata, 1 row per sample,
 }
 \description{
 Given a experiment identifier, query information from different locations of SRA
-to get a complete metadata table of the experiment.
+to get a complete metadata table of the experiment. It first finds Runinfo for each
+library, then sample info,
+if pubmed id is not found searches for that and searches for author through pubmed.
+A common problem is that the project is not linked to an article, you will not then
+get a pubmed id.
 }
 \examples{
 ## Originally on SRA
-outdir <- tempdir() # Specify output directory
-# download.SRA.metadata("SRP226389", outdir)
-## Originally on ENA
-# download.SRA.metadata("ERP116106", outdir)
-## Originally on GEO (GSE)
-# download.SRA.metadata("GSE61011", outdir)
+download.SRA.metadata("SRP226389")
+## Now try with auto detection (guessing additional library info)
+## Need to specify output dir as tempfile() to re-download
+#download.SRA.metadata("SRP226389", tempfile(), auto.detect = TRUE)
+## Originally on ENA (RCP-seq data)
+# download.SRA.metadata("ERP116106")
+## Originally on GEO (GSE) (save to directory to keep info with fastq files)
+# download.SRA.metadata("GSE61011", "/path/to/fastq.folder/")
 }
 \references{
 doi: 10.1093/nar/gkq1019

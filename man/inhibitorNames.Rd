@@ -16,8 +16,10 @@ Example: cycloheximide, lactimidomycin, harringtonine
 }
 \seealso{
 Other experiment_naming: 
+\code{\link{batchNames}()},
 \code{\link{cellLineNames}()},
 \code{\link{conditionNames}()},
+\code{\link{fractionNames}()},
 \code{\link{libNames}()},
 \code{\link{mainNames}()},
 \code{\link{repNames}()},

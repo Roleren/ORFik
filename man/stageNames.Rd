@@ -4,7 +4,10 @@
 \alias{stageNames}
 \title{Get stage name variants}
 \usage{
-stageNames()
+stageNames(zebrafish.stages = FALSE)
+}
+\arguments{
+\item{zebrafish.stages}{logical, FALSE. If true, convert time points to stages.}
 }
 \value{
 a data.table with 2 columns, the main name, and all name variants
@@ -12,13 +15,20 @@ of the main name in second column as a list.
 }
 \description{
 Used to standardize nomeclature for experiments.\cr
-Example: 64Cell stage is same as 2 hours post fertilization,
+Example: Find timepoints 2 hours, 4 hours etc.
+Example: If using zebrafish stages as TRUE,
+64Cell stage is same as 2 hours post fertilization,
 so all 2hpf will be converted to 64Cell etc.
+}
+\references{
+https://www.mbl.edu/zebrafish/files/2013/03/Kimmel_stagingseries1.pdf
 }
 \seealso{
 Other experiment_naming: 
+\code{\link{batchNames}()},
 \code{\link{cellLineNames}()},
 \code{\link{conditionNames}()},
+\code{\link{fractionNames}()},
 \code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
 \code{\link{mainNames}()},

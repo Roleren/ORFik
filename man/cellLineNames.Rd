@@ -4,7 +4,11 @@
 \alias{cellLineNames}
 \title{Get cell-line name variants}
 \usage{
-cellLineNames()
+cellLineNames(convertToTissue = FALSE)
+}
+\arguments{
+\item{convertToTissue}{logical, FALSE. If TRUE, return tissue type. NONE is
+returned for general non-differentiated cell lines like 3T3.}
 }
 \value{
 a data.table with 2 columns, the main name, and all name variants
@@ -18,7 +22,9 @@ can not have - in them)
 }
 \seealso{
 Other experiment_naming: 
+\code{\link{batchNames}()},
 \code{\link{conditionNames}()},
+\code{\link{fractionNames}()},
 \code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
 \code{\link{mainNames}()},
