@@ -21,9 +21,9 @@ Inside same folder as input files, then create subfolder "collapsed", and add a 
 of "collapsed_" to the output names in that folder.}
 
 \item{header.out.format}{character, default "ribotoolkit", else must be "fastx".
-How the read header of the output fasta should be formated: ribotoolkit: "<seq1_x55",
+How the read header of the output fasta should be formated: ribotoolkit: ">seq1_x55",
 sequence 1 has 55 duplicated reads collapsed.
-fastx: "<1-55", sequence 1 has 55 duplicated reads collapsed}
+fastx: ">1-55", sequence 1 has 55 duplicated reads collapsed}
 
 \item{compress}{logical, default FALSE}
 

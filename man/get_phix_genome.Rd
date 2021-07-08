@@ -41,7 +41,7 @@ annotation["gtf"] = "path/to/gtf.gtf"
 \examples{
 
 ## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
-#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir())
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
 ## Get Danio rerio genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Danio rerio", tempdir())
 
