@@ -59,8 +59,10 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
 #' How the read header of the output fasta should be formated: ribotoolkit: "<seq1_x55",
 #' sequence 1 has 55 duplicated reads collapsed.
 #' fastx: "<1-55", sequence 1 has 55 duplicated reads collapsed
+#' @param prefix character, default "collapsed_"
+#' Prefix to name of output file.
 #' @param compress logical, default FALSE
-#' @return invisible(NULL)
+#' @return invisible(NULL), files saved to disc in fasta format.
 #' @export
 #' @examples
 #'
@@ -69,7 +71,8 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
 #' # collapse.fastq(infiles)
 #'
 collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collapsed"),
-                           header.out.format = "ribotoolkit", compress = FALSE) {
+                           header.out.format = "ribotoolkit", compress = FALSE,
+                           prefix = "collapsed_") {
   if (!dir.exists(outdir)) {
     dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   }
@@ -79,22 +82,24 @@ collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collaps
 
   for (f in seq_along(files)) {
     file <- files[f]
-    message(file)
+    message("File ", f, "/", length(files), ":  ", file)
     seqs <- readDNAStringSet(file, format = format[f],
                              use.names = FALSE)
     replicates <- table(seqs)
     replicates <- sort(replicates, decreasing = TRUE)
     if (header.out.format == "fastx") {
-      headers <- paste0(">", seq.int(length(replicates)), "-", replicates)
+      headers <- paste0(seq.int(length(replicates)), "-", replicates)
     } else if (header.out.format == "ribotoolkit") {
-      headers <- paste0(">seq", seq.int(length(replicates)), "_x", replicates)
+      headers <- paste0("seq", seq.int(length(replicates)), "_x", replicates)
     } else stop("format must be 'fastx' or 'ribotoolkit'")
     new_seqs <- names(replicates)
     names(new_seqs) <- headers
-    new_seqs <- DNAStringSet(new_seqs, use.names = TRUE)
-    new_file_name <- paste0("collapsed_", basename(file),
+    fasta_name <- gsub(pattern = "\\.fastq$", replacement = ".fasta",
+                       basename(file))
+    new_file_name <- paste0(prefix, fasta_name,
                             ifelse(compress, ".gz", ""))
-    writeXStringSet(new_seqs, file.path(outdir, new_file_name),
+    writeXStringSet(DNAStringSet(new_seqs, use.names = TRUE),
+                    file.path(outdir, new_file_name),
                     compress = compress, format = "fasta")
   }
   return(invisible(NULL))

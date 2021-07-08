@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #HT 12/02/19
-# script to process and align genomic non paired fastq datasets
+# script to process and align genomic fastq datasets
 #1 STAR INDICES (If not existing, must be done in seperate script for now)
 #2 make directories
 #3 Trim adaptor
@@ -62,8 +62,7 @@ fastp location must be: ~/bin/fastp
 
 NOTES:
 if STAR is stuck on load, run this line:
-STAR --genomeDir /export/valenfs/projects/uORFome/STAR_INDEX_ZEBRAFISH/genomeDir/ --genomeLoad Remove
-Also the minimum read quality is set to 10, it will be removed if less.
+STAR --genomeDir /references/human/STAR_INDEX/genomeDir/ --genomeLoad Remove
 
 example usage: RNA_Align_pipeline.sh -f <in.fastq.gz> -o <out_dir>
 
@@ -377,7 +376,7 @@ function keepOrNot()
 	fi
 }
 
-
+# Add paired read 2, if exists
 #  ${out_dir} ${ibn} ${in_file_two}
 function trimPaired()
 {

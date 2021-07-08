@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #HT 12/02/19
-# script to process and align genomic non paired fastq datasets
+# script to process and align genomic fastq datasets
 #1 STAR INDICES (If not existing, must be done in seperate script for now)
 #2 make directories
 #3 Trim adaptor

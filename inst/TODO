@@ -8,6 +8,9 @@ TODO
     RiboSeq:
     o Add ability to re-pshift experiment by input shifts
 
+    OFST file format:
+    o Implement ofst indexing of files
+
     Alignment:
     o Add genomeSAindexNbases 14 check to reduce to 10 if small
     o wrap fastp UMI and barcode demultiplexing
