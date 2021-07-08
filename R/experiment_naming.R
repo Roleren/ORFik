@@ -112,8 +112,8 @@ stageNames <- function(zebrafish.stages = FALSE) {
 tissueNames <- function() {
   mainName <- c("adipose", "amygdala","brain", "bladder", "blood", "bone","breast",
     "colon", "cortex", "eye", "frontal_lobe", "heart",
-    "kidney", "liver", "lung", "melanocyte", "mesenchymal", "monocyte", "muscle",
-    "myeloid","ovary", "prostate",
+    "kidney", "liver", "lung", "melanocyte", "mesenchymal", "muscle",
+    "myeloid","ovary", "pancrease","prostate",
     "rectum", "retina","testis","urunary", "vagina", "skin", "tongue", "throat")
   allNames <-
     list(c("adipose", "Adipose", "Adipocyte", "adipocyte"),
@@ -133,10 +133,10 @@ tissueNames <- function() {
          c("lung", "Lung"),
          c("Melanocyte", "melanocyte"),
          c("mesenchym", "Mesenchym"),
-         c("Monocyte", "monocyte"),
          c("muscle", "Muscle", "myotubes", "Myotubes"),
          c("myeloid", "Myeloid"),
          c("ovary", "Ovary"),
+         c("pancrease"),
          c("prostate", "Prostate"),
          c("rectum", "Rectum", "anus", "Anus"),
          c("Retina", "retina"),
@@ -166,15 +166,15 @@ cellLineNames <- function(convertToTissue = FALSE) {
   if (convertToTissue) {
     mainName <- c("ovary", "lung", "lung","breast", "kidney", "ovary",
                   "liver", "NONE", "colon", "breast", "blood", "liver",
-                  "NONE", "bone","breast", "breast", "blood","throat",
-                  "pancreas", "blood", "skin", "breast", "bone", "prostate",
-                  "NONE")
+                  "NONE", "bone", "breast", "breast", "breast", "blood",
+                  "throat", "pancreas", "blood", "skin", "breast", "bone",
+                  "prostate", "NONE")
   } else {
     mainName <- c("A2780", "A549", "Calu3","CN34", "HEK293", "HeLa",
                   "HepG2", "Hesc", "HCT116", "Hmel", "HSB2", "Huh7",
-                  "iPSC", "K562","MCF10A", "MDA", "MV4-11","NPC",
-                  "PANC1","THP1", "TSC2", "T47D","U2OS", "PC3",
-                  "3T3")
+                  "iPSC", "K562", "MCF7","MCF10A", "MDA", "MV4-11",
+                  "NPC", "PANC1","THP1", "TSC2", "T47D","U2OS",
+                  "PC3", "3T3")
   }
 
 
@@ -193,6 +193,7 @@ cellLineNames <- function(convertToTissue = FALSE) {
          c("Huh7"),
          c("iPSC", "ipsc"),
          c("K562"),
+         c("MCF7", "MCF-7"),
          c("MCF10-A", "MCF10A"),
          c("MDA-"),
          c("MV4-11"),
@@ -298,7 +299,8 @@ inhibitorNames <- function() {
          c("cycloheximide", "Cycloheximide", "chx", "CHX"),
          c("harringtonin", "Harringtonin", "_har_", "_harr_", "_harr$", "_Harr$"),
          c("frozen", "freeze", "freezing"),
-         c("lactimidomycin", "Lactimidomycin", "ltm", "_LTM$")
+         c("lactimidomycin", "Lactimidomycin", "ltm", "_LTM$"),
+         c("Puromycin","puromycin", "_puro_")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

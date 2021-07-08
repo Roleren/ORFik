@@ -524,12 +524,12 @@ download.ebi <- function(info, outdir, rename = TRUE,
     message("Fastq files not found on ebi")
     return(NULL)
   } else if (length(urls) < length(SRR)) {
-    message("Not al fastq files found on ebi")
+    message("Not all fastq files found on ebi")
     return(NULL)
   }
 
   files <- file.path(outdir, basename(urls))
-  message("Starting download of SRA runs:")
+  message("Starting download of EBI runs:")
   method <- ifelse(Sys.info()[1] == "Linux", "wget", "auto")
   BiocParallel::bplapply(urls, function(i, outdir, method) {
     message(i)
@@ -608,23 +608,24 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   SRR_paths_spec <- file.path(SRR_default, SRR, SRR_fastq)
   SRR_paths_spec_paired <- file.path(SRR_default, SRR, SRR_fastq_paired)
   # Check what format the files are found in (3 types: 2 each)
-  url.exists <-  sapply(SRR_paths, function(x)
-    exists.ftp.file.fast(x))
-  url.exists <- c(url.exists,
-                  sapply(SRR_paths_paired, function(x)
-                    exists.ftp.file.fast(x)))
-  url.exists <- c(url.exists,
-                  sapply(SRR_paths_spec2, function(x)
-                    exists.ftp.file.fast(x)))
-  url.exists <- c(url.exists,
-                  sapply(SRR_paths_paired_spec2, function(x)
-                    exists.ftp.file.fast(x)))
-  url.exists <- c(url.exists,
-                  sapply(SRR_paths_spec, function(x)
-                    exists.ftp.file.fast(x)))
-  url.exists <- c(url.exists,
-                  sapply(SRR_paths_spec_paired, function(x)
-                    exists.ftp.file.fast(x)))
+  lib_counter <- 0
+  SRR_possibilities <- list(SRR_paths, SRR_paths_paired, SRR_paths_spec2,
+                            SRR_paths_paired_spec2, SRR_paths_spec,
+                            SRR_paths_spec_paired)
+  url.exists <- c()
+  for (i in seq_along(SRR_possibilities)) { # For each url area
+    if (lib_counter == length(SRR)) break
+    url.temp <-  sapply(SRR_possibilities[[i]], function(x)
+      exists.ftp.file.fast(x))
+    url.temp <- url.temp[url.temp]
+    if (i %% 2 == 1) {
+      lib_counter <- lib_counter + length(url.temp)
+    } else {
+      lib_counter <- lib_counter + (length(url.temp)/2)
+    }
+    url.exists <- c(url.exists, url.temp)
+  }
+
   final.path.temp <- names(url.exists[url.exists])
   # Sort them correctly as input
   final.path <- unlist(sapply(c(SRR, "asdasd"), function(x, final.path.temp) {
@@ -632,12 +633,13 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   }, final.path.temp = final.path.temp), use.names = FALSE)
 
   valid <- TRUE
-  if (length(final.path) == 0) valid <- FALSE
+  if (lib_counter != length(SRR)) valid <- FALSE
   paired <- length(grep("_[1-2]\\.fastq\\.gz",final.path))
   if (length(SRR) != (paired/2 + length(final.path) - paired))
     valid <- FALSE
-  if (!valid & stop.on.error) stop("Did not find fastq files on ENA",
-                                   "check with download.SRA instead")
+  if (!valid & stop.on.error) stop("Did not find all fastq files on ENA",
+                                   "set use.ebi.ftp to FALSE,
+                                   to use fastq-dump instead")
   if (!valid) final.path <- character()
 
   return(final.path)
