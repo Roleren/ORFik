@@ -366,14 +366,14 @@ exists.ftp.file.fast <- function(url, report.error = FALSE) {
     return(TRUE)
   } else { # File does not exist
     if (report.error) {
-      msg <- url.dir.not.exists$message
+      msg <- url.not.exists$message
       if (length(grep("Timeout was reached.", msg)) == 1 |
           length(grep("Recv failure:", msg)) == 1) {
-        stop("FTP port 21 is not connecting to || ", url.dir,
+        stop("FTP port 21 is not connecting to || ", url,
              " || wait 5 minutes, if it still does not work",
              " check your internet connection, firewall and FTP settings!")
       } else if (length(grep("Given file does not exist", msg)) == 1){
-        stop("File does not exist,", url.dir)
+        stop("File does not exist,", url)
       }
     }
   }
