@@ -4,13 +4,17 @@
 \alias{find_url_ebi}
 \title{Locates and check if fastq files exists in ebi}
 \usage{
-find_url_ebi(SRR, stop.on.error = FALSE)
+find_url_ebi(SRR, stop.on.error = FALSE, study = NULL)
 }
 \arguments{
 \item{SRR}{character, SRR, ERR or DRR numbers.}
 
-\item{stop.on.error}{logical FALSE, if true will stop
-if all files are not found.}
+\item{stop.on.error}{logical FALSE, if TRUE will stop
+if all files are not found. If FALSE returns empty character vector if error
+is catched.}
+
+\item{study}{default NULL, optional PRJ (study id) to speed up search
+for URLs.}
 }
 \value{
 full url to fastq files, same length as input

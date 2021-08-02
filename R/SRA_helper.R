@@ -505,10 +505,15 @@ rename.SRA.files <- function(files, new_names) {
 #' @family sra
 download.ebi <- function(info, outdir, rename = TRUE,
                          BPPARAM = bpparam()) {
+
+  study <- NULL
   # If character presume SRR, if not check for column Run or SRR
   SRR <- if (is.character(info)) { # if character
     info
   } else { # else metadata
+    # Check if study is specified
+    if (length(unique(info$BioProject)) == 1)
+      study <- info$BioProject[1]
     if (is.null(info$Run)) { # If not called Run
       info$SRR
     } else  { # If called Run
@@ -519,12 +524,12 @@ download.ebi <- function(info, outdir, rename = TRUE,
     stop("Could not find SRR numbers in 'info'")
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-  urls <- ORFik:::find_url_ebi(SRR)
+  urls <- ORFik:::find_url_ebi(SRR, study = study)
   if (length(urls) == 0) {
-    message("Fastq files not found on ebi")
+    message("None of the Fastq files specified found on ebi")
     return(NULL)
   } else if (length(urls) < length(SRR)) {
-    message("Not all fastq files found on ebi")
+    message("Not all fastq files specified found on ebi")
     return(NULL)
   }
 
@@ -558,8 +563,11 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' - 2: less common: SRR(3 first)/00(1 last)/whole\cr
 #' - 3: least common SRR(3 first)/whole
 #' @param SRR character, SRR, ERR or DRR numbers.
-#' @param stop.on.error logical FALSE, if true will stop
-#'  if all files are not found.
+#' @param stop.on.error logical FALSE, if TRUE will stop
+#'  if all files are not found. If FALSE returns empty character vector if error
+#'  is catched.
+#' @param study default NULL, optional PRJ (study id) to speed up search
+#' for URLs.
 #' @return full url to fastq files, same length as input
 #' (2 urls for paired end data). Returns empty character() if all
 #' files not found.
@@ -583,8 +591,13 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' #ORFik:::find_url_ebi("SRR105687")
 #' # Paired
 #' #ORFik:::find_url_ebi("SRR105788")
-find_url_ebi <- function(SRR, stop.on.error = FALSE) {
+find_url_ebi <- function(SRR, stop.on.error = FALSE, study = NULL) {
   message("Finding optimal download urls from ebi...")
+  final.path <- if (!is.null(study)) {
+    find_url_ebi_safe(study, SRR, stop.on.error = stop.on.error)
+  } else find_url_ebi_safe(SRR, stop.on.error = stop.on.error)
+  return(final.path)
+  # TODO: remove when not needed
   ebi_server <- "ftp://ftp.sra.ebi.ac.uk"
   # Check that we can connect to ebi
   exists.ftp.dir.fast(ebi_server, report.error = TRUE)
@@ -643,4 +656,33 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE) {
   if (!valid) final.path <- character()
 
   return(final.path)
+}
+
+#' Find URL for EBI fastq files
+#'
+#' Safer version
+#' @param accession character: (PRJ, SRP, ERP, DRP, SRX, SRR, ERR,..). For studies or samples,
+#' it returns all runs per study or sample.
+#' @param SRR character, which SRR numbers to subset by (can also be ERR or DRR numbers)
+#' @param stop.on.error logical FALSE, if TRUE will stop
+#'  if all files are not found. If FALSE returns empty character vector if error
+#'  is catched.
+#' @return character (1 element per SRR number)
+find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE) {
+  a <- data.table()
+  for (i in accession) {
+    search_url <- paste0("http://www.ebi.ac.uk/ena/portal/api/filereport?accession=",
+                         i, "&result=read_run&fields=run_accession,fastq_ftp")
+    temp <- suppressWarnings(temp <- fread(search_url, header = TRUE))
+    a <- rbindlist(list(a, temp))
+  }
+  if (!is.null(SRR)) {
+    if (!all(SRR %in% a$run_accession)) {
+      if (stop.on.error) stop("Study does not contain some of the SRR numbers given!")
+      return(character())
+    }
+    a <- a[run_accession %in% SRR,]
+  }
+
+  return(unlist(strsplit(a$fastq_ftp, ";")))
 }
