@@ -59,23 +59,30 @@ Usually gives you a better view of result than using print().}
 
 \item{libtype}{character, default "auto". Library types,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file names.}
+"auto" means ORFik will try to guess from file names.
+Example: RFP (Ribo-seq), RNA (RNA-seq), CAGE, SSU (TCP-seq 40S),
+LSU (TCP-seq 80S).}
 
 \item{stage}{character, default "auto". Developmental stage, tissue or
 cell line, must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file names.}
+"auto" means ORFik will try to guess from file names.
+Example: HEK293 (Cell line), Sphere (zebrafish stage), ovary (Tissue).}
 
 \item{rep}{character, default "auto". Replicate numbering,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file names.}
+"auto" means ORFik will try to guess from file names.
+Example: 1 (rep 1), 2 rep(2). Insert only numbers here!}
 
 \item{condition}{character, default "auto". Library conditions,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file names.}
+"auto" means ORFik will try to guess from file names.
+Example: WT (wild type), mutant, etc.}
 
 \item{fraction}{character, default "auto". Fractionation of library,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file names.}
+"auto" means ORFik will try to guess from file names. This columns
+is used to make experiment unique, if the other columns are not sufficient.
+Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,

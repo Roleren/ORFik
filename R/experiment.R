@@ -283,18 +283,25 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' @param libtype character, default "auto". Library types,
 #' must be length 1 or equal length of number of libraries.
 #' "auto" means ORFik will try to guess from file names.
+#' Example: RFP (Ribo-seq), RNA (RNA-seq), CAGE, SSU (TCP-seq 40S),
+#' LSU (TCP-seq 80S).
 #' @param stage character, default "auto". Developmental stage, tissue or
 #' cell line, must be length 1 or equal length of number of libraries.
 #' "auto" means ORFik will try to guess from file names.
+#' Example: HEK293 (Cell line), Sphere (zebrafish stage), ovary (Tissue).
 #' @param rep character, default "auto". Replicate numbering,
 #' must be length 1 or equal length of number of libraries.
 #' "auto" means ORFik will try to guess from file names.
+#' Example: 1 (rep 1), 2 rep(2). Insert only numbers here!
 #' @param condition character, default "auto". Library conditions,
 #' must be length 1 or equal length of number of libraries.
 #' "auto" means ORFik will try to guess from file names.
+#' Example: WT (wild type), mutant, etc.
 #' @param fraction character, default "auto". Fractionation of library,
 #' must be length 1 or equal length of number of libraries.
-#' "auto" means ORFik will try to guess from file names.
+#' "auto" means ORFik will try to guess from file names. This columns
+#' is used to make experiment unique, if the other columns are not sufficient.
+#' Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View
@@ -357,7 +364,7 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
     # set lib column names
     df[4,] <- c("libtype", "stage", "rep", "condition", "fraction","filepath")
   }
-
+  ## Specify library information columns
   # set file paths
   df[5:(5+length(files)-1), 6] <- files
   # Set library type (RNA-seq etc)
@@ -369,7 +376,10 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
   df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames(), rep)
   # Set condition (WT, control, mutant etc)
   df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames(), condition)
+  # Set fraction (cytosolic, dmso, mutant etc)
+  df[5:(5+length(files)-1), 5] <- findFromPath(files, fractionNames(), fraction)
 
+  ## Add names to info columns
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
   df[3, seq(2)] <- c("fasta", fa)
