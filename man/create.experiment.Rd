@@ -18,7 +18,8 @@ create.experiment(
   stage = "auto",
   rep = "auto",
   condition = "auto",
-  fraction = "auto"
+  fraction = "auto",
+  author = ""
 )
 }
 \arguments{
@@ -83,6 +84,9 @@ must be length 1 or equal length of number of libraries.
 "auto" means ORFik will try to guess from file names. This columns
 is used to make experiment unique, if the other columns are not sufficient.
 Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.}
+
+\item{author}{character, default "". Main author of experiment,
+usually last name is enough. When printing will state "author et al" in info.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,

@@ -117,15 +117,16 @@ experiment <- setClass("experiment",
                                   txdb = "character",
                                   fafile = "character",
                                   organism = "character",
+                                  author = "character",
                                   expInVarName = "logical"),
                        contains = "DataFrame")
 
 #' experiment show definition
 #'
-#' Show a simplified version of experiment.
+#' Show a simplified version of the experiment.
 #' The show function simplifies the view so that any
 #' column of data (like replicate or stage) is not shown, if all
-#' values are identical in that column. Filepath is also never shown.
+#' values are identical in that column. Filepaths are also never shown.
 #' @param object an ORFik \code{\link{experiment}}
 #' @export
 #' @return print state of experiment
@@ -137,6 +138,7 @@ setMethod("show",
             cat("experiment:", object@experiment, "with",
                 length(unique(object@listData$libtype)), "library", type, "and",
                 length(object@listData$libtype), "runs","\n")
+            if (object@author != "") cat(object@author, "et al. \n")
 
             obj <- as.data.table(as(object@listData, Class = "DataFrame"))
             if (nrow(obj) > 0) {
@@ -219,15 +221,16 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
   } else stop("file must be either character or data.frame template")
   org <- ifelse(info[2,5] == "organism" & !is.na(info[2,6]),
                 info[2,6], "")
+  author <- ifelse(info[3,5] == "author" & !is.na(info[3,6]),
+                   info[3,6], "")
   exper <- info[1, 2]
   txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
   fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
 
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
-                   organism = org, listData = listData,
-                   expInVarName = TRUE)
-
-  df@expInVarName <- FALSE
+                   organism = org, author = author,
+                   listData = listData,
+                   expInVarName = FALSE)
   validateExperiments(df)
   return(df)
 }
@@ -302,6 +305,8 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' "auto" means ORFik will try to guess from file names. This columns
 #' is used to make experiment unique, if the other columns are not sufficient.
 #' Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.
+#' @param author character, default "". Main author of experiment,
+#' usually last name is enough. When printing will state "author et al" in info.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View
@@ -346,7 +351,8 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
                               viewTemplate = FALSE,
                               types = c("bam", "bed", "wig"),
                               libtype = "auto", stage = "auto", rep = "auto",
-                              condition = "auto", fraction = "auto") {
+                              condition = "auto", fraction = "auto",
+                              author = "") {
   notDir <- !all(dir.exists(dir))
   if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a existing directory!"))
   file_dt <- findLibrariesInFolder(dir, types, pairedEndBam)
@@ -384,6 +390,7 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
   df[2, seq(2)] <- c("gff", txdb)
   df[3, seq(2)] <- c("fasta", fa)
   if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
+  if (author != "") df[3, seq(5, 6)] <- c("author", author)
   df[is.na(df)] <- ""
   if (!is.null(saveDir)) {
     cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
@@ -1078,6 +1085,7 @@ ORFik.template.experiment <- function(as.temp = FALSE) {
   template <- create.experiment(dir = dir, saveDir = NULL,
                                 exper, txdb = txdb, fa = fa,
                                 organism = "Homo sapiens",
+                                author = "Tjeldnes",
                                 viewTemplate = FALSE)
   # read experiment
   if (as.temp) return(template)

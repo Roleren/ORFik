@@ -7,11 +7,15 @@ df <- ORFik.template.experiment()
 test_that("Experiment class created as intended", {
   # test from example table in orfik
   expect_equal(ncol(df), 6)
-
 })
 
 test_that("output organism correctly", {
   expect_equal(organism.df(df), "Homo sapiens")
+})
+
+test_that("Show experiment correctly", {
+  expect_identical(capture_output(df, print = T),
+                   "experiment: ORFik with 3 library types and 4 runs \nTjeldnes et al. \n   libtype stage\n1:    CAGE heart\n2:     RFP heart\n3:     RFP      \n4:     RNA heart")
 })
 
 
