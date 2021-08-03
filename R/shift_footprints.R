@@ -433,6 +433,8 @@ shiftFootprintsByExperiment <- function(df,
 #' A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"
 #' @param addFracPlot logical, default TRUE, add positional sum plot on top
 #' per heatmap.
+#' @param plot.ext default ".pdf". Alternative ".png". Only added if output is
+#' "auto".
 #' @importFrom gridExtra grid.arrange
 #' @return a ggplot2 grob object
 #' @export
@@ -448,7 +450,9 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        downstream = if (pShifted) 20 else 5,
                        type = "bar",
                        addFracPlot = TRUE,
+                       plot.ext = ".pdf",
                        BPPARAM = bpparam()) {
+  stopifnot(plot.ext %in% c(".png", ".pdf"))
   if (!(type %in% c("bar", "heatmap")))
     stop("The 'type' argument must be bar or heatmap")
   txdb <- loadTxdb(df)
@@ -478,7 +482,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
     if (type == "heatmap") {
       if (output == "auto") {
         dir.to.save <- file.path(dirname(df$filepath[1]), "QC_STATS")
-        output <- file.path(dir.to.save, "pshifts_heatmaps.png")
+        output <- file.path(dir.to.save, paste0("pshifts_heatmaps", plot.ext))
       }
       ggsave(output, res,
              width = 225, height = (length(res) -1)*65,
@@ -486,7 +490,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
     } else {
       if (output == "auto") {
         dir.to.save <- file.path(dirname(df$filepath[1]), "QC_STATS")
-        output <- file.path(dir.to.save, "pshifts_barplots.png")
+        output <- file.path(dir.to.save, paste0("pshifts_barplots", plot.ext))
       }
       ggsave(output, res,
              width = 225, height = (length(res) -1)*85,

@@ -14,6 +14,7 @@ shiftPlots(
   downstream = if (pShifted) 20 else 5,
   type = "bar",
   addFracPlot = TRUE,
+  plot.ext = ".pdf",
   BPPARAM = bpparam()
 )
 }
@@ -47,6 +48,9 @@ multiple read lengths.}
 
 \item{addFracPlot}{logical, default TRUE, add positional sum plot on top
 per heatmap.}
+
+\item{plot.ext}{default ".pdf". Alternative ".png". Only added if output is
+"auto".}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
