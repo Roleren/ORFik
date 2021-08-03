@@ -14,7 +14,7 @@ test_that("output organism correctly", {
 })
 
 test_that("Show experiment correctly", {
-  expect_identical(capture_output(df, print = T),
+  expect_identical(capture_output(df, print = TRUE),
                    "experiment: ORFik with 3 library types and 4 runs \nTjeldnes et al. \n   libtype stage\n1:    CAGE heart\n2:     RFP heart\n3:     RFP      \n4:     RNA heart")
 })
 
