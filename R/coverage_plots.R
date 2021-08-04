@@ -87,7 +87,7 @@ pSitePlot <- function(hitMap, length = unique(hitMap$fraction),
       scale_y_continuous(n.breaks = 3)
     if (facet) {
       plot <- plot +
-        facet_wrap(~ fraction, ncol = 1, scales = "free_y")
+        facet_wrap(~ fraction, ncol = 1, scales = "free_y", strip.position = "right")
     }
     if (frameSum) {
       hitMap2 <- setDT(copy(hitMap))
