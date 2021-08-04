@@ -181,6 +181,7 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 #' @param path path to .rds file containing the shifts as a list,
 #' one list element per shifted bam file.
 #' @return a list of the shifts, one list element per shifted bam file.
+#' @family pshifting
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()

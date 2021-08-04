@@ -185,3 +185,51 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
   }
   return(dt_read_lengths)
 }
+
+#' Find shifted Ribo-seq frame distributions
+#'
+#' Per library: get coverage over CDS per frame per readlength
+#' Return as data.datable with information and best frame found.
+#' Can be used to automize re-shifting of read lengths (find read lengths
+#' where frame 0 is not the best frame over the entire cds)
+#' @inheritParams RiboQC.plot
+#' @return data.table with columns: fraction (library) frame (0, 1, 2)
+#' score (coverage) length (read length)
+#'    percent (coverage percentage of library)
+#'    percent_length (coverage percentage of library and length)
+#'    best_frame (TRUE/FALSE, is this the best frame per length)
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[3,]
+#' dt <- orfFrameDistributions(df[3,])
+#' ## Check that frame 0 is best frame for all
+#' all(dt[frame == 0,]$best_frame)
+orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
+                                  BPPARAM = BiocParallel::bpparam()) {
+  outputLibs(df, type = type)
+  cds <- loadRegion(df, part = "cds")
+  libs <- bamVarName(df)
+
+  # Frame distribution over all
+  frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
+    total <- regionPerReadLength(cds, get(lib, mode = "S4"),
+                                 withFrames = TRUE, scoring = "frameSumPerL",
+                                 weight = weight, drop.zero.dt = TRUE)
+    total[, length := fraction]
+    #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
+    total[, fraction := rep(lib, nrow(total))]
+  }, cds = cds, weight = weight, BPPARAM = BPPARAM)
+  frame_sum_per <- rbindlist(frame_sum_per1)
+
+  frame_sum_per$frame <- as.factor(frame_sum_per$frame)
+  frame_sum_per$fraction <- as.factor(frame_sum_per$fraction)
+  frame_sum_per[, percent := (score / sum(score))*100, by = fraction]
+  frame_sum_per[, percent_length := (score / sum(score))*100, by = .(fraction, length)]
+  frame_sum_per[, best_frame := (percent_length / max(percent_length)) == 1, by = .(fraction, length)]
+  frame_sum_per[, fraction := factor(fraction, levels = libs,
+                                     labels = bamVarName(df, skip.libtype = TRUE), ordered = TRUE)]
+
+  frame_sum_per[, fraction := factor(fraction, levels = unique(fraction), ordered = TRUE)]
+  frame_sum_per[]
+  return(frame_sum_per)
+}

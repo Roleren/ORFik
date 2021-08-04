@@ -10,8 +10,9 @@ shiftFootprints(footprints, shifts, sort = TRUE)
 \item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads}
 
 \item{shifts}{a data.frame / data.table with minimum 2 columns,
-fraction (selected_lengths) and selected_shifts (relative position).
-Output from \code{\link{detectRibosomeShifts}}}
+fraction (selected read lengths) and offsets_start (relative position in nt).
+Output from \code{\link{detectRibosomeShifts}}.\cr
+Run \code{ORFik::shifts.load(df)[[1]]} for an example of input.}
 
 \item{sort}{logical, default TRUE. If False will keep original order of
 reads, and not sort output reads in increasing genomic location per
@@ -67,6 +68,8 @@ https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 Other pshifting: 
 \code{\link{changePointAnalysis}()},
 \code{\link{detectRibosomeShifts}()},
-\code{\link{shiftFootprintsByExperiment}()}
+\code{\link{shiftFootprintsByExperiment}()},
+\code{\link{shiftPlots}()},
+\code{\link{shifts.load}()}
 }
 \concept{pshifting}

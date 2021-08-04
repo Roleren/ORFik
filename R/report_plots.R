@@ -194,30 +194,9 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
                     plot.title = element_text(size=11),
                     panel.grid.minor = element_blank())
 
-
-  outputLibs(df, type = type)
-  cds <- loadRegion(df, part = "cds")
-  libs <- bamVarName(df)
-
-  # Frame distribution over all
-  frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
-    total <- regionPerReadLength(cds, get(lib, mode = "S4"),
-                                 withFrames = TRUE, scoring = "frameSumPerL",
-                                 weight = weight, drop.zero.dt = TRUE)
-    total[, length := fraction]
-    #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
-    total[, fraction := rep(lib, nrow(total))]
-  }, cds = cds, weight = weight, BPPARAM = BPPARAM)
-  frame_sum_per <- rbindlist(frame_sum_per1)
-
-  frame_sum_per$frame <- as.factor(frame_sum_per$frame)
-  frame_sum_per$fraction <- as.factor(frame_sum_per$fraction)
-  frame_sum_per[, percent := (score / sum(score))*100, by = fraction]
-  frame_sum_per[, fraction := factor(fraction, levels = libs,
-                                     labels = bamVarName(df, skip.libtype = TRUE), ordered = TRUE)]
-
-  frame_sum_per[, fraction := factor(fraction, levels = unique(fraction), ordered = TRUE)]
-  # stacked
+  # frame distributions
+  frame_sum_per <- orfFrameDistributions(df, type = type, weight = weight,
+                                         BPPARAM = BPPARAM)
   gg_frame_per_stack <- ggplot(frame_sum_per, aes(x = length, y = percent)) +
     geom_bar(aes(fill = frame), stat="identity", position = bar.position)+
     scale_x_continuous(breaks = unique(frame_sum_per$length)) +
@@ -229,7 +208,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
     scale_y_continuous(breaks = c(15, 35))
   gg_frame_per_stack
 
-  # all_tx_types > 1%
+  # content: all_tx_types > 1%
   all_tx_types <- which(colnames(stats) == "All_tx_types") + 1
   all_tx_regions <- colnames(stats)[c(all_tx_types:length(colnames(stats)))]
   all_tx_regions <- c("mRNA", all_tx_regions)
@@ -248,7 +227,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
     labs(fill = "tx. type")  +
     scale_y_continuous(breaks = c(50, 100))
   gg_all_tx_regions
-  # all_tx_types <= 1%
+  # content: all_tx_types <= 1%
   gg_all_tx_other <-
     ggplot(dt_all_tx_other, aes(y = percentage, x = sample_id)) +
     geom_bar(aes(fill = variable), stat="identity", position = "stack")+

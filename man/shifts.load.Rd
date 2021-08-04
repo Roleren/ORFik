@@ -31,3 +31,12 @@ df <- df[df$libtype == "RFP",]
 #shiftFootprintsByExperiment(df)
 #shifts.load(df)
 }
+\seealso{
+Other pshifting: 
+\code{\link{changePointAnalysis}()},
+\code{\link{detectRibosomeShifts}()},
+\code{\link{shiftFootprintsByExperiment}()},
+\code{\link{shiftFootprints}()},
+\code{\link{shiftPlots}()}
+}
+\concept{pshifting}

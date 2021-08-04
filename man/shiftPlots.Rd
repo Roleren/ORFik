@@ -67,3 +67,12 @@ df <- df[3,] #lets only p-shift RFP sample at index 3
 #shiftFootprintsByExperiment(df, output_format = "bedo)
 #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 }
+\seealso{
+Other pshifting: 
+\code{\link{changePointAnalysis}()},
+\code{\link{detectRibosomeShifts}()},
+\code{\link{shiftFootprintsByExperiment}()},
+\code{\link{shiftFootprints}()},
+\code{\link{shifts.load}()}
+}
+\concept{pshifting}

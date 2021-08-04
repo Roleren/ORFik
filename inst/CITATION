@@ -1,0 +1,15 @@
+citEntry(entry="article",
+         title = "ORFik: a comprehensive R toolkit for the analysis of translation",
+         author = personList( as.person("Tjeldnes, Håkon"),
+                              as.person("Labun, Kornel"),
+                              as.person("Torres Cleuren, Yamila"),
+                              as.person("Chyżyńska, Katarzyna"),
+                              as.person("Świrski, Michał"),
+                              as.person("Valen, Eivind")),
+         year = 2021,
+         journal = "BMC Bioinformatics",
+         doi = "https://doi.org/10.1186/s12859-021-04254-w",
+         textVersion = 
+         paste("Tjeldnes, H., Labun, K., Torres Cleuren, Y. et al.",
+               "ORFik: a comprehensive R toolkit for the analysis of translation.",
+               "BMC Bioinformatics 22, 336 (2021). https://doi.org/10.1186/s12859-021-04254-w"))

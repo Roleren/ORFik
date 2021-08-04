@@ -174,6 +174,8 @@ https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 Other pshifting: 
 \code{\link{changePointAnalysis}()},
 \code{\link{shiftFootprintsByExperiment}()},
-\code{\link{shiftFootprints}()}
+\code{\link{shiftFootprints}()},
+\code{\link{shiftPlots}()},
+\code{\link{shifts.load}()}
 }
 \concept{pshifting}

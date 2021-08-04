@@ -56,6 +56,8 @@ up these numbers per position for all transcripts.
 Other pshifting: 
 \code{\link{detectRibosomeShifts}()},
 \code{\link{shiftFootprintsByExperiment}()},
-\code{\link{shiftFootprints}()}
+\code{\link{shiftFootprints}()},
+\code{\link{shiftPlots}()},
+\code{\link{shifts.load}()}
 }
 \concept{pshifting}
