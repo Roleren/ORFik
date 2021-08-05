@@ -82,7 +82,7 @@ fiveUTRs <- GenomicRanges::GRangesList(
                          exon_rank = 1))
 names(fiveUTRs) <- "tx1"
 
-# make fake CageSeq data from promoter of 5' leaders, notice score column
+# make fake CAGE data from promoter of 5' leaders, notice score column
 cage <- GenomicRanges::GRanges(
   seqnames = "1",
   ranges =  IRanges::IRanges(500, width = 1),

@@ -158,10 +158,10 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused,
   if (cageMcol) {
     gr <- unlist(fiveUTRs, use.names = FALSE)
     cageM <- rep.int(0, length(gr))
-    group <- groupOld <- groupings(fiveUTRs)
-    group <- group[group %in% maxPeakPosition$to]
+    groupOld <- groupings(fiveUTRs)
+    groupHits <- groupings(fiveUTRs[maxPeakPosition$to])
 
-    cageM[maxPeakPosition$to] <- maxPeakPosition$score[group]
+    cageM[groupOld %in% maxPeakPosition$to] <- maxPeakPosition$score[groupHits]
     mcols(gr) <- DataFrame(row.names = names(gr), mcols(gr),
                            cage = cageM)
     fiveUTRs <- groupGRangesBy(gr, names(fiveUTRs)[groupOld])
@@ -233,7 +233,7 @@ addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused,
 #'                          exon_rank = 1))
 #' names(fiveUTRs) <- "tx1"
 #'
-#' # make fake CageSeq data from promoter of 5' leaders, notice score column
+#' # make fake CAGE data from promoter of 5' leaders, notice score column
 #' cage <- GenomicRanges::GRanges(
 #'   seqnames = "1",
 #'   ranges =  IRanges::IRanges(500, width = 1),
