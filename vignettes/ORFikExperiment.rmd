@@ -270,7 +270,7 @@ To optimize the experiment for use in ORFik, always run QCreport, you will then 
 
 - 1. ofst collapsed reads of the bam files for faster loading (saved in /ofst folder relative to the bam files)
 - 2. count tables over mrna, 5' UTRs, CDS and 3' UTRs for all transcripts
-- 3. QC plots from experiment (correlation, metacoverage, alignment stats, coverage of (5' UTRs, CDS and 3' UTRs), ++)
+- 3. QC plots from experiment (correlation, metacoverage, alignment stats, coverage of (5' UTRs, CDS and 3' UTRs), PCA outlier analysis, ++)
 - 4. Statistics summarized in csv files.
 
 ### How to run QC:

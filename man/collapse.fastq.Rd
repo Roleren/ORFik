@@ -13,7 +13,9 @@ collapse.fastq(
 )
 }
 \arguments{
-\item{files}{paths to fasta / fastq files to collapse.}
+\item{files}{paths to fasta / fastq files to collapse. I tries to detect format per file,
+if file does not have .fastq, .fastq.gz, .fq or fq.gz extensions, it will be treated
+as a .fasta file format.}
 
 \item{outdir}{outdir to save files, default:
 \code{file.path(dirname(files[1]), "collapsed")}.

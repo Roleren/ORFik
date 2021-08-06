@@ -114,6 +114,10 @@ correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
                               height = 400, width = 400, size = 0.15, plot.ext = ".pdf") {
   message("- Correlation plots")
+  if (nrow(df) > 40) { # Avoid error from ggplot2 backend
+    message("ORFik only supports correlation plots for up to 40 libraries in experiment")
+    return(invisible(NULL))
+  }
   # Load fpkm values
   data_for_pairs <- countTable(df, region, type = type)
   # Settings for points
@@ -132,6 +136,55 @@ correlation.plots <- function(df, output.dir,
   ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
   return(invisible(NULL))
+}
+
+#' Simple PCA analysis
+#'
+#' Detect outlier libraries with PCA analysis.
+#' Will output PCA plot of PCA component 1 (x-axis) vs
+#' PCA component 2 (y-axis) for each library (colored by library),
+#' shape by replicate. Will be extended to allow batch correction
+#' in the future.
+#' @inheritParams QCplots
+#' @param output.dir default NULL, else character path to directory.
+#' File saved as "PCAplot_(experiment name)(plot.ext)"
+#' @param table data.table, default countTable(df, "cds", type = "fpkm"),
+#' a data.table of counts per column (default normalized fpkm values).
+#' @param title character, default "CDS fpkm (All genes)".
+#' @return ggplot or invisible(NULL) if output.dir is defined
+pcaExperiment <- function(df, output.dir = NULL,
+                          table = countTable(df, "cds", type = "fpkm"),
+                          title = "CDS fpkm (All genes)",
+                          plot.ext = ".pdf") {
+  pca <- stats::prcomp(table, scale = FALSE)
+  dt <- data.table(pca$rotation, keep.rownames = T)
+  dt$sample <- dt$rn
+  if (any(df$rep > 1, na.rm = TRUE)) {
+    dt$replicate <- df$rep
+    dt$replicate[is.na(dt$replicate)] <- 1
+    dt$replicate <- as.factor(dt$replicate)
+  } else dt$replicate <- as.factor("1")
+
+  plot <- ggplot(data = dt,
+                 aes(x = PC1, y = PC2)) +
+    geom_point(aes(shape=replicate, color = sample),
+               size = 3, alpha = 0.8) +
+    scale_fill_brewer() +
+    ggtitle(title) +
+    theme(legend.text=element_text(size=7))
+  if(!is.null(output.dir)) {
+    if (output.dir == "auto") {
+      path <- file.path(dirname(df$filepath[1]), "QC_STATS",
+                        paste0("PCAplot_", df@experiment, plot.ext))
+    } else {
+      path <- file.path(output.dir,
+                        paste0("PCAplot_", df@experiment, plot.ext))
+    }
+    ggsave(path, plot,
+           height = 4 + (nrow(df)*0.1), width = 5 + (nrow(df)*0.1))
+    return(invisible(NULL))
+  }
+  return(plot)
 }
 
 #' Quality control for pshifted Ribo-seq data

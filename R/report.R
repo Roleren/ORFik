@@ -101,6 +101,8 @@ QCplots <- function(df, region = "mrna",
   QCstats.plot(df, stats_folder, plot.ext = plot.ext)
 
   correlation.plots(df, stats_folder, region, plot.ext = plot.ext)
+  message("- PCA outlier plot:")
+  pcaExperiment(df, "auto")
   # window coverage over mRNA regions
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)

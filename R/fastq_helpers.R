@@ -32,7 +32,7 @@
 #' mergeFastq(in_files, out_files)
 #' }
 mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
-  # TODO: Make work on windows
+  # TODO: Make it work on windows
   if (.Platform$OS.type != "unix") stop("Merge does not work on windows OS")
   if (length(in_files) != length(out_files)) stop("Not equal length of in_files and out_files!")
 
@@ -50,7 +50,9 @@ mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
 #' For each unique read in the file, collapse into 1 and state in the fasta header
 #' how many reads existed of that type. This is done after trimming usually, works
 #' best for reads < 50 read length. Not so effective for 150 bp length mRNA-seq etc.
-#' @param files paths to fasta / fastq files to collapse.
+#' @param files paths to fasta / fastq files to collapse. I tries to detect format per file,
+#' if file does not have .fastq, .fastq.gz, .fq or fq.gz extensions, it will be treated
+#' as a .fasta file format.
 #' @param outdir outdir to save files, default:
 #' \code{file.path(dirname(files[1]), "collapsed")}.
 #' Inside same folder as input files, then create subfolder "collapsed", and add a prefix
@@ -85,14 +87,19 @@ collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collaps
     message("File ", f, "/", length(files), ":  ", file)
     seqs <- readDNAStringSet(file, format = format[f],
                              use.names = FALSE)
-    replicates <- table(seqs)
-    replicates <- sort(replicates, decreasing = TRUE)
+    # Fast collapser using data.table
+    replicates <- data.table(seqs = as.character(a))
+    # Much faster with 1 core actually, strange..
+    old_threads <- data.table::getDTthreads()
+    data.table::setDTthreads(1)
+    replicates <- replicates[, .N, by = seqs][order(N, decreasing = TRUE),]
+    data.table::setDTthreads(old_threads)
     if (header.out.format == "fastx") {
-      headers <- paste0(seq.int(length(replicates)), "-", replicates)
+      headers <- paste0(seq.int(nrow(replicates)), "-", replicates$N)
     } else if (header.out.format == "ribotoolkit") {
-      headers <- paste0("seq", seq.int(length(replicates)), "_x", replicates)
+      headers <- paste0("seq", seq.int(nrow(replicates)), "_x", replicates$N)
     } else stop("format must be 'fastx' or 'ribotoolkit'")
-    new_seqs <- names(replicates)
+    new_seqs <- replicates$seqs
     names(new_seqs) <- headers
     fasta_name <- gsub(pattern = "\\.fastq$", replacement = ".fasta",
                        basename(file))
