@@ -6,7 +6,6 @@ TODO
     o Add more statistics for user if wanted
 
     RiboSeq:
-    o Add ability to re-pshift experiment by input shifts
     o Fix x-axis scales for large samples in RiboQC.plot
 
     OFST file format:
@@ -17,11 +16,13 @@ TODO
     o wrap fastp UMI and barcode demultiplexing
 
     SRA Download:
-    Make find.url.ebi less likely to fail
+    Test if it is possible to speed up EBI download even more
 
     SRA metadata:
     o Include better Auther and Pubmed detection
 
     P-shifting
     o Do more tests for RCP-seq 80 libraries (these have different read lengths)
-    o Check shiftPlots with facet title on side instead of top.
+
+    QC
+    o Add possibility for batch correction of correlation plots

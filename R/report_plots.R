@@ -121,10 +121,7 @@ correlation.plots <- function(df, output.dir,
                               height = 400, width = 400, size = 0.15, plot.ext = ".pdf",
                               complex.correlation.plots = TRUE) {
   message("- Correlation plots")
-  if (nrow(df) > 40) { # Avoid error from ggplot2 backend
-    message("ORFik only supports correlation plots for up to 40 libraries in experiment")
-    return(invisible(NULL))
-  }
+
   # Load fpkm values
   data_for_pairs <- countTable(df, region, type = type)
   # Settings for points
@@ -136,6 +133,10 @@ correlation.plots <- function(df, output.dir,
          height = height, width = width, units = 'mm', dpi = 300)
 
   if (complex.correlation.plots) {
+    if (nrow(df) > 30) { # Avoid error from ggplot2 backend
+      message("ORFik only supports complex correlation plots for up to 30 libraries in experiment!")
+      return(invisible(NULL))
+    }
     message("  - raw scaled fpkm (complex)")
     paired_plot <- ggpairs(as.data.frame(data_for_pairs),
                            columns = 1:ncol(data_for_pairs),

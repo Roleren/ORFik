@@ -217,7 +217,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   tab <- lengths[, .(counts = sum(score)), by = size]
   tab <- tab[(counts >= min_reads) & (size %in% accepted.lengths),]
   if (nrow(tab) == 0) stop("No valid read lengths found with",
-                            "accepted.lengths and counts > min_reads")
+                            " accepted.lengths and counts > min_reads")
   cds <- cds[countOverlapsW(cds, footprints, "score") > 0]
   if (verbose) message("Number of CDSs used for p-site detection: ", length(cds))
   top_tx <- percentage_to_ratio(top_tx, cds)
@@ -317,11 +317,18 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @examples
 #' df <- ORFik.template.experiment()
 #' df <- df[3,] #lets only p-shift RFP sample at index 3
-#' # If you want to check it in IGV do:
+#' ## If you want to check it in IGV do:
 #' shiftFootprintsByExperiment(df)
 #' # Then use the .wig files that are created, which are readable in IGV.
 #' # If you only need in R, do: (then you get no .wig files)
 #' #shiftFootprintsByExperiment(df, output_format = "ofst")
+#' ## With debug info:
+#' #shiftFootprintsByExperiment(df, verbose = TRUE)
+#' ## Re-shift, if you think some are wrong
+#' ## Here we update library 1, third read length to shift 12
+#' shift.list <- shifts.load(df)
+#' shift.list[[1]]$offsets_start[3] <- -12
+#' #shiftFootprintsByExperiment(df, shift.list = shift.list)
 shiftFootprintsByExperiment <- function(df,
                                         out.dir = pasteDir(dirname(
                                           df$filepath[1]), "/pshifted/"),
