@@ -12,7 +12,8 @@ correlation.plots(
   height = 400,
   width = 400,
   size = 0.15,
-  plot.ext = ".pdf"
+  plot.ext = ".pdf",
+  complex.correlation.plots = TRUE
 )
 }
 \arguments{
@@ -33,11 +34,18 @@ whole mrnas or one of (leaders, cds, trailers)}
 \item{size}{numeric, size of dots, default 0.15.}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+
+\item{complex.correlation.plots}{logical, default TRUE. Add in addition
+to simple correlation plot two computationally heavy dots + correlation plots.
+Useful for deeper analysis, but takes longer time to run, especially on low-quality
+gpu computers. Set to FALSE to skip these.}
 }
 \value{
 invisible(NULL)
 }
 \description{
-Get 2 correlation plots of raw counts and log2(count + 1) over
+Get 3 correlation plots (1 simple (correlation colors), 2 complex with
+correlation value + dot plots of per gene )
+of raw counts and log2(count + 1) over
 selected region in: c("mrna", "leaders", "cds", "trailers")
 }

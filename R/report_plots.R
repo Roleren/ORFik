@@ -99,7 +99,9 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
 
 #' Correlation plots between all samples
 #'
-#' Get 2 correlation plots of raw counts and log2(count + 1) over
+#' Get 3 correlation plots (1 simple (correlation colors), 2 complex with
+#' correlation value + dot plots of per gene )
+#' of raw counts and log2(count + 1) over
 #' selected region in: c("mrna", "leaders", "cds", "trailers")
 #' @inheritParams QCplots
 #' @param output.dir directory to save to, 2 files named: cor_plot.pdf and
@@ -108,11 +110,16 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
 #' @param height numeric, default 400 (in mm)
 #' @param width numeric, default 400 (in mm)
 #' @param size numeric, size of dots, default 0.15.
+#' @param complex.correlation.plots logical, default TRUE. Add in addition
+#' to simple correlation plot two computationally heavy dots + correlation plots.
+#' Useful for deeper analysis, but takes longer time to run, especially on low-quality
+#' gpu computers. Set to FALSE to skip these.
 #' @return invisible(NULL)
 #' @importFrom GGally wrap
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
-                              height = 400, width = 400, size = 0.15, plot.ext = ".pdf") {
+                              height = 400, width = 400, size = 0.15, plot.ext = ".pdf",
+                              complex.correlation.plots = TRUE) {
   message("- Correlation plots")
   if (nrow(df) > 40) { # Avoid error from ggplot2 backend
     message("ORFik only supports correlation plots for up to 40 libraries in experiment")
@@ -123,18 +130,26 @@ correlation.plots <- function(df, output.dir,
   # Settings for points
   point_settings <- list(continuous = wrap("points", alpha = 0.3, size = size),
                          combo = wrap("dot", alpha = 0.4, size=0.2))
-  message("  - raw scaled fpkm")
-  paired_plot <- ggpairs(as.data.frame(data_for_pairs),
-                         columns = 1:ncol(data_for_pairs),
-                         lower = point_settings)
-  ggsave(pasteDir(output.dir, paste0("cor_plot", plot.ext)), paired_plot,
+  message("  - raw scaled fpkm (simple)")
+  paired_plot <- ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2)
+  ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
-  message("  - log2 scaled fpkm")
-  paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
-                         columns = 1:ncol(data_for_pairs),
-                         lower = point_settings)
-  ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), paired_plot,
-         height = height, width = width, units = 'mm', dpi = 300)
+
+  if (complex.correlation.plots) {
+    message("  - raw scaled fpkm (complex)")
+    paired_plot <- ggpairs(as.data.frame(data_for_pairs),
+                           columns = 1:ncol(data_for_pairs),
+                           lower = point_settings)
+    ggsave(pasteDir(output.dir, paste0("cor_plot", plot.ext)), paired_plot,
+           height = height, width = width, units = 'mm', dpi = 300)
+    message("  - log2 scaled fpkm (complex)")
+    paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
+                           columns = 1:ncol(data_for_pairs),
+                           lower = point_settings)
+    ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), paired_plot,
+           height = height, width = width, units = 'mm', dpi = 300)
+  }
+
   return(invisible(NULL))
 }
 
