@@ -201,7 +201,7 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()[3,]
-#' dt <- orfFrameDistributions(df[3,])
+#' dt <- orfFrameDistributions(df)
 #' ## Check that frame 0 is best frame for all
 #' all(dt[frame == 0,]$best_frame)
 orfFrameDistributions <- function(df, type = "pshifted", weight = "score",

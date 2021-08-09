@@ -15,7 +15,7 @@
 \item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
 \item{addScoreColumn}{= TRUE, if FALSE,
-only collapse and not keep score column.}
+only collapse and not keep score column of counts for collapsed reads.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need

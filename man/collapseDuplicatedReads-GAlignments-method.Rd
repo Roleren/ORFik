@@ -4,13 +4,21 @@
 \alias{collapseDuplicatedReads,GAlignments-method}
 \title{Collapse duplicated reads}
 \usage{
-\S4method{collapseDuplicatedReads}{GAlignments}(x, addScoreColumn = TRUE)
+\S4method{collapseDuplicatedReads}{GAlignments}(x, addScoreColumn = TRUE, reuse.score.column = TRUE)
 }
 \arguments{
 \item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
 \item{addScoreColumn}{= TRUE, if FALSE,
-only collapse and not add score column.}
+only collapse and not keep score column of counts for collapsed reads.
+Returns directly without collapsing if reuse.score.column is FALSE and
+score is already defined.}
+
+\item{reuse.score.column}{logical (TRUE), if addScoreColumn is TRUE,
+and a score column exists, will sum up the scores to create a new score.
+If FALSE, will skip old score column and create new according to number
+of replicated reads after conversion.
+If addScoreColumn is FALSE, this argument is ignored.}
 }
 \value{
 a GRanges, GAlignments or GAlignmentPairs object, same as input

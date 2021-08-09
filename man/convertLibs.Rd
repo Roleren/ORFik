@@ -21,14 +21,17 @@ convertLibs(
 
 \item{out.dir}{optional output directory, default:
 dirname(df$filepath[1]),
-if it is NULL, it will just reassign R objects to simplified libraries.}
+if it is NULL, it will just reassign R objects to simplified libraries.
+Will then create a final folder specfied as: paste0(out.dir, "/", type, "/").
+Here the files will be saved in format given by the type argument.}
 
 \item{addScoreColumn}{logical, default TRUE, if FALSE will not add
 replicate numbers as score column, see ORFik::convertToOneBasedRanges.}
 
 \item{addSizeColumn}{logical, default TRUE, if FALSE will not add
 size (width) as size column, see ORFik::convertToOneBasedRanges.
-Does not apply for .ofst or .bedoc.}
+Does not apply for (GAlignment version of.ofst) or .bedoc. Since they
+contain the original cigar.}
 
 \item{must.overlap}{default (NULL), else a GRanges / GRangesList object, so
 only reads that overlap (must.overlap) are kept. This is useful when you
@@ -50,9 +53,10 @@ library to converted form after saving. Ignored when out.dir = NULL.}
 NULL (saves files to disc or R .GlobalEnv)
 }
 \description{
-Export as either .ofst, .wig, .bedo or .bedoc files:\cr
+Export as either .ofst, .wig, .bedo (legacy format) or .bedoc (legacy format) files:\cr
 Export files as .ofst for fastest load speed into R.\cr
 Export files as .wig for use in IGV or other genome browsers.\cr
+Legacy formats:\cr
 Export files as .bedo files: It is a bed file with 2 score columns.
 Gives a massive speedup when cigar string and bam flags are not needed.\cr
 Export files as .bedoc files: If cigar is needed, gives you replicates

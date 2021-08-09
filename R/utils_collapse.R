@@ -135,7 +135,7 @@ setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseD
 
 #' @inherit collapseDuplicatedReads
 #' @param addScoreColumn = TRUE, if FALSE,
-#' only collapse and not keep score column.
+#' only collapse and not keep score column of counts for collapsed reads.
 #' @inheritParams convertToOneBasedRanges
 setMethod("collapseDuplicatedReads", "GRanges",
           function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
@@ -173,16 +173,25 @@ setMethod("collapseDuplicatedReads", "GRanges",
 
 #' @inherit collapseDuplicatedReads
 #' @param addScoreColumn = TRUE, if FALSE,
-#' only collapse and not add score column.
+#' only collapse and not keep score column of counts for collapsed reads.
+#' Returns directly without collapsing if reuse.score.column is FALSE and
+#' score is already defined.
+#' @inheritParams convertToOneBasedRanges
 setMethod("collapseDuplicatedReads", "GAlignments",
-          function(x, addScoreColumn = TRUE) {
-            if ("score" %in% colnames(mcols(x))) return(x)
+          function(x, addScoreColumn = TRUE, reuse.score.column = TRUE) {
+            if (("score" %in% colnames(mcols(x))) & !reuse.score.column) return(x)
 
             dt <- data.table(seqnames = factor(seqnames(x)),
                              start = start(ranges(x)),
                              cigar = cigar(x),
                              strand = factor(strand(x)))
-            dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
+            if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
+              dt[, score := mcols(x)$score]
+              dt <- dt[, .(score = sum(score)), .(seqnames, start, cigar, strand)]
+            } else { # Do not reuse or "score" does not exist
+              dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
+            }
+
             if (!addScoreColumn) dt$score <- NULL
             return(getGAlignments(dt))
           })

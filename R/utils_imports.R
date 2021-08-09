@@ -47,8 +47,9 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' If QNAMES of the aligned reads are from collapsed fasta files
 #' (if the names are formated from collapsing in either
 #' (ORFik, ribotoolkit or fastx)), the
-#' bam file will contain a meta column called collapsed with the counts
-#' of duplicates per read.\cr
+#' bam file will contain a meta column called "score" with the counts
+#' of duplicates per read. Only works for single end reads, as perfect duplication
+#' events for paired end is more rare.\cr
 #'
 #' In the future will use a faster .bam loader for big .bam files in R.
 #' @param path a character / data.table with path to .bam file. There
@@ -121,21 +122,24 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
   headers <- unlist(scanBam(BamFile(path, yieldSize=2),
                             param = ScanBamParam(what = "qname")),
                     use.names = FALSE)
-  bam.is.collapsed <- all(seq_along(headers) %in%grep("^(>|>seq)\\d+(-|_x)\\d+$", headers))
+  # Check with and without extra ">" start sign
+  bam.is.collapsed <- all(seq_along(headers) %in%
+                            grep("(^(>|>seq)\\d+(-|_x)\\d+$)|(^(seq)\\d+(-|_x)\\d+$)", headers))
   if (bam.is.collapsed) {
 
     headers <- unlist(scanBam(path, param = ScanBamParam(what = "qname")),
                       use.names = FALSE)
-    format.header <- ifelse(all(seq_along(headers) %in% grep("^>seq\\d+_x\\d+$", headers)),
+    format.header <- ifelse(all(seq_along(headers) %in%
+                                  grep("^>seq\\d+_x\\d+$|^seq\\d+_x\\d+$", headers)),
                             "ribotoolkit",
                             "fastx")
-    if (format == "ribotoolkit") {
+    if (format.header == "ribotoolkit") {
       scores <- as.integer(gsub(".*_x", "", headers))
     } else {
       scores <- as.integer(gsub(".*-", "", headers))
     }
     bam <- matchSeqStyle(readGAlignments(path, param = param), chrStyle)
-    mcols(bam) <- DataFrame(collapsed = scores)
+    mcols(bam) <- DataFrame(score = scores)
     return(bam)
   } else return(matchSeqStyle(readGAlignments(path, param = param), chrStyle))
 }

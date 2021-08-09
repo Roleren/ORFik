@@ -513,7 +513,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
         output <- file.path(dir.to.save, paste0("pshifts_barplots", plot.ext))
       }
       ggsave(output, res,
-             width = 225, height = (length(res) -1)*90,
+             width = 225, height = (length(res) -1)*95,
              units = "mm", dpi = 300, limitsize = FALSE)
     }
     message("Saved pshift plots to location: ",

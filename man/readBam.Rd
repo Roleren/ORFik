@@ -65,8 +65,9 @@ readGAlignmentPairs that takes care of some common errors.\cr
 If QNAMES of the aligned reads are from collapsed fasta files
 (if the names are formated from collapsing in either
 (ORFik, ribotoolkit or fastx)), the
-bam file will contain a meta column called collapsed with the counts
-of duplicates per read.\cr
+bam file will contain a meta column called "score" with the counts
+of duplicates per read. Only works for single end reads, as perfect duplication
+events for paired end is more rare.\cr
 }
 \details{
 In the future will use a faster .bam loader for big .bam files in R.

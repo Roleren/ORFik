@@ -88,7 +88,7 @@ collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collaps
     seqs <- readDNAStringSet(file, format = format[f],
                              use.names = FALSE)
     # Fast collapser using data.table
-    replicates <- data.table(seqs = as.character(a))
+    replicates <- data.table(seqs = as.character(seqs))
     # Much faster with 1 core actually, strange..
     old_threads <- data.table::getDTthreads()
     data.table::setDTthreads(1)
