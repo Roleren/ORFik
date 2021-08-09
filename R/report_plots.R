@@ -128,7 +128,7 @@ correlation.plots <- function(df, output.dir,
   point_settings <- list(continuous = wrap("points", alpha = 0.3, size = size),
                          combo = wrap("dot", alpha = 0.4, size=0.2))
   message("  - raw scaled fpkm (simple)")
-  paired_plot <- ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2)
+  paired_plot <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2)
   ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
 
