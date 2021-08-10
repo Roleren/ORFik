@@ -81,7 +81,7 @@ windows are equal length!}
 A data.table with scored counts (score) of
 reads mapped to positions (position) specified in windows along with
 frame (frame) per gene (genes) per library (fraction) per transcript region
-(feature). Column that does not apply is not given, by position and (score/count)
+(feature). Column that does not apply is not given, but position and (score/count)
 is always returned.
 }
 \description{

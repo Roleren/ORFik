@@ -120,7 +120,7 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
 #' @return A data.table with scored counts (score) of
 #' reads mapped to positions (position) specified in windows along with
 #' frame (frame) per gene (genes) per library (fraction) per transcript region
-#' (feature). Column that does not apply is not given, by position and (score/count)
+#' (feature). Column that does not apply is not given, but position and (score/count)
 #' is always returned.
 #' @family coverage
 #' @export
@@ -501,8 +501,14 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
       runV <- unlist(runValue(coverage), use.names = FALSE)
       ir <- unlist(ranges(coverage), use.names = TRUE)[runV > 0]
       if (length(ir) == 0) {
-        warning("No coverage found, Returning empty data.table!")
-        return(data.table())
+
+        count <- data.table(count = integer(), genes = integer(), position = integer())
+        if (withFrames) count[, frame = integer()]
+        if (!is.null(fraction)) {
+          count[, fraction = integer()]
+          warning("No coverage found for fraction: ", fraction, ". Returning empty data.table!")
+        } else warning("No coverage found, Returning empty data.table!")
+        return(count)
       }
       runV <- runV[runV > 0]
       runV <- rep.int(runV, width(ir))

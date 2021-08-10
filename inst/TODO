@@ -26,3 +26,6 @@ TODO
 
     QC
     o Add possibility for batch correction of correlation plots
+
+    Coverage
+    o Check if coverage might need a new "append.single"", to make sure each fraction gets a choice.
