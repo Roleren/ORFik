@@ -319,7 +319,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #'
 coverageScorings <- function(coverage, scoring = "zscore",
                              copy.dt = TRUE) {
-  if (is.null(scoring) | (nrow(coverage) == 0)) return(coverage)
+  if (is.null(scoring)) return(coverage)
   cov <- if (copy.dt) {
     setDT(copy(coverage))
   } else coverage
@@ -501,11 +501,10 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
       runV <- unlist(runValue(coverage), use.names = FALSE)
       ir <- unlist(ranges(coverage), use.names = TRUE)[runV > 0]
       if (length(ir) == 0) {
-
         count <- data.table(count = integer(), genes = integer(), position = integer())
         if (withFrames) count[, frame = integer()]
         if (!is.null(fraction)) {
-          count[, fraction = integer()]
+          count[, fraction = new(class(fraction))]
           warning("No coverage found for fraction: ", fraction, ". Returning empty data.table!")
         } else warning("No coverage found, Returning empty data.table!")
         return(count)
@@ -636,7 +635,7 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
                            as.data.table = TRUE, withFrames = withFrames,
                            weight = weight, is.sorted = TRUE,
                            drop.zero.dt = drop.zero.dt)
-    if (nrow(d) > 0) d[, fraction := l]
+    d[, fraction := l]
     return(coverageScorings(d, scoring, copy.dt = FALSE))
   }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
      scoring = scoring, withFrames = withFrames, drop.zero.dt = drop.zero.dt,

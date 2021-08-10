@@ -9,6 +9,8 @@ names(tx) <- "tx1"
 footprintsGood <- GRanges("1", IRanges(seq.int(21, 49, 3), width = 1), "+")
 footprintsGood$size <- 29
 footprintsBad <- GRanges()
+footprintsMiss <- GRanges("1", IRanges(500, width = 1), "+")
+footprintsMiss$size <- 29
 
 test_that("coverageScorings works as intended", {
   # no reads hit
@@ -75,6 +77,16 @@ test_that("windowPerReadLength works as intended", {
                windowPerReadLength(grl, tx, footprintsGood,
                                    scoring = "transcriptNormalized",
                                    drop.zero.dt = TRUE, append.zeroes = TRUE))
+  expect_equal(windowPerReadLength(grl, tx, footprintsBad,
+                                   scoring = "transcriptNormalized"),
+               windowPerReadLength(grl, tx, footprintsBad,
+                                   scoring = "transcriptNormalized",
+                                   drop.zero.dt = TRUE, append.zeroes = TRUE))
+  expect_equal(windowPerReadLength(grl, tx, footprintsMiss,
+                                   scoring = "transcriptNormalized"),
+               suppressWarnings(windowPerReadLength(grl, tx, footprintsMiss,
+                                   scoring = "transcriptNormalized",
+                                   drop.zero.dt = TRUE, append.zeroes = TRUE)))
 
 })
 
