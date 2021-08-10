@@ -319,7 +319,7 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
 #'
 coverageScorings <- function(coverage, scoring = "zscore",
                              copy.dt = TRUE) {
-  if (is.null(scoring)) return(coverage)
+  if (is.null(scoring) | (nrow(coverage) == 0)) return(coverage)
   cov <- if (copy.dt) {
     setDT(copy(coverage))
   } else coverage
@@ -630,7 +630,7 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
                            as.data.table = TRUE, withFrames = withFrames,
                            weight = weight, is.sorted = TRUE,
                            drop.zero.dt = drop.zero.dt)
-    d[, fraction := l]
+    if (nrow(d) > 0) d[, fraction := l]
     return(coverageScorings(d, scoring, copy.dt = FALSE))
   }, grl = grl, reads = reads, weight = weight, rWidth = rWidth,
      scoring = scoring, withFrames = withFrames, drop.zero.dt = drop.zero.dt,
