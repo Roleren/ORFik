@@ -339,7 +339,7 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' #template <- create.experiment(dir = dir, exper, txdb = txdb,
 #' #                               fa = fa, organism = org,
 #' #                               viewTemplate = FALSE)
-#' ## Custom location
+#' ## Custom location (If you work in a team, use a shared folder)
 #' #template <- create.experiment(dir = dir, exper, txdb = txdb,
 #' #                               saveDir = "~/MY/CUSTOME/LOCATION",
 #' #                               fa = fa, organism = org,

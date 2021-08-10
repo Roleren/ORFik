@@ -351,8 +351,10 @@ specific enough for your purposes.
 
 In RiboSeq data ribosomal footprints are restricted to their p-site positions 
 and shifted with respect to the shifts visible over the start and stop 
-codons. `ORFik` has multiple functions for processing of RiboSeq data. We will
-go through an example processing of RiboSeq data below.
+codons. `ORFik` has multiple functions for processing of RiboSeq data.
+
+Usually you would run detectRibosomeShifts to find shifts in a single function call, 
+but we will here go through a detailed example to better understand processing of RiboSeq data.
 
 Example raw RiboSeq footprints (unshifted):
 ```{r eval = TRUE, echo = TRUE}
@@ -456,6 +458,14 @@ shiftedFootprints <- shiftFootprints(footprints, shifts)
 shiftedFootprints
 ```
 
+To efficiently compute and store these ranges, a smart trick is to collapse duplicated reads:
+```{r eval = TRUE, echo = TRUE, warning = FALSE} 
+shiftedFootprints <- collapseDuplicatedReads(shiftedFootprints, addSizeColumn = TRUE)
+shiftedFootprints
+```
+
+In advanced use cases for multiple libraries, the function `shiftFootprintsByExperiment` automatically detects p-sites, then shifts and finally stores them as collapsed reads (with optional verbose output for detecting outliers or errors).
+
 # Gene identity functions for ORFs or genes
 
 `ORFik` contains functions of gene identity that can be used to predict 
@@ -494,7 +504,7 @@ Make some toy ribo seq and rna seq data:
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE}
 starts <- unlist(ORFik:::firstExonPerGroup(fiveUTR_ORFs), use.names = FALSE)
 RFP <- promoters(starts, upstream = 0, downstream = 1)
-score(RFP) <- rep(29, length(RFP)) # the original read widths
+RFP$size <- rep(29, length(RFP)) # store read widths
 # set RNA-seq seq to duplicate transcripts
 RNA <- unlist(exonsBy(txdb, by = "tx", use.names = TRUE), use.names = TRUE)
 ```

@@ -33,10 +33,11 @@ The following steps are done:
 5. Make ORFik experiment
 6. QC
 7. Heatmaps
-8. Differentially translated genes
-9. Peak analysis
-10. Feature table
-11. uORF analysis
+8. Count table analysis: TE tables
+9. Differentially translated genes
+10. Peak analysis
+11. Feature table
+12. uORF analysis
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -172,6 +173,22 @@ heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "psh
               outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Count table analysis: TE tables
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# TE per library match
+countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = FALSE)
+countsRNA <- countTable(df.rna, region = "mrna", type = "fpkm", collapse = FALSE)
+countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
+# TE per condition (WT vs CO)
+countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = TRUE)
+countsRNA <- countTable(df.rna, region = "mrna", type = "fpkm", collapse = TRUE)
+countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
+# TE merged all libraries
+countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = "all")
+countsRNA <- countTable(df.rna, region = "mrna", type = "fpkm", collapse = "all")
+countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Differential translation analysis (condition: WT vs CO)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # We here get 11 unique DTEG genes
@@ -219,7 +236,7 @@ table(dt$StartCodons)
 dt[startCodonCoverage > 5,]
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # uORF analysis (advanced) (using the extension package to ORFik: uORFomePipe)
-# Will create a mysql database + files with results
+# Will create a mysql database + bed12 file of uORFs with color codes + plots + files with results
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 devtools::install_github("Roleren/uORFomePipe", dependencies = TRUE)
 library(uORFomePipe)
