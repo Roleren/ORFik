@@ -502,9 +502,9 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
       ir <- unlist(ranges(coverage), use.names = TRUE)[runV > 0]
       if (length(ir) == 0) {
         count <- data.table(count = integer(), genes = integer(), position = integer())
-        if (withFrames) count[, frame = integer()]
+        if (withFrames) count[, frame := integer()]
         if (!is.null(fraction)) {
-          count[, fraction = new(class(fraction))]
+          count[, fraction := new(class(fraction))]
           warning("No coverage found for fraction: ", fraction, ". Returning empty data.table!")
         } else warning("No coverage found, Returning empty data.table!")
         return(count)
