@@ -173,7 +173,7 @@ pcaExperiment <- function(df, output.dir = NULL,
                           title = "CDS fpkm (All genes)",
                           plot.ext = ".pdf") {
   pca <- stats::prcomp(table, scale = FALSE)
-  dt <- data.table(pca$rotation, keep.rownames = T)
+  dt <- data.table(pca$rotation, keep.rownames = TRUE)
   dt$sample <- dt$rn
   if (any(df$rep > 1, na.rm = TRUE)) {
     dt$replicate <- df$rep
