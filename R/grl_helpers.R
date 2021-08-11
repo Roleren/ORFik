@@ -383,6 +383,7 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
 #'
 unlistGrl <- function(grl) {
   validGRL(class(grl))
+  if (length(grl) == 0) return(unlist(grl))
   unl <- unlist(grl[1], use.names = FALSE)
   return(unlist(grl, use.names = is.null(names(unl))))
 }
