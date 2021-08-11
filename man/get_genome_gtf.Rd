@@ -9,6 +9,7 @@ get_genome_gtf(
   output.dir,
   organism,
   assembly_type,
+  db,
   gunzip,
   genome,
   optimize = FALSE
@@ -21,7 +22,7 @@ file already exist. If you want to use a custom gtf from you hard drive,
 set GTF = FALSE,
 and assign: \cr annotation <- getGenomeAndAnnotation(gtf = FALSE)\cr
 annotation["gtf"] = "path/to/gtf.gtf".\cr
-Only db = "ensembl" allowed for GTF.}
+If db is not "ensembl", you will instead get a gff file.}
 
 \item{output.dir}{directory to save downloaded data}
 
@@ -38,6 +39,11 @@ As an example, the  primary_assembly fasta genome in human is only a few GB unco
 \code{assembly_type = "toplevel")}.
 This will give you all multi-chromosomes (copies of the same chromosome with small variations).
 As an example the toplevel fasta genome in human is over 70 GB uncompressed.}
+
+\item{db}{database to use for genome and GTF,
+default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
+else it will contain haplotypes, very large file!).
+Alternatives: "refseq" (primary assembly) and "genbank" (mix)}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}
@@ -89,6 +95,19 @@ output.dir <- "/Bio_data/references/zebrafish"
 
 ## Optimize for ORFik (speed up for large annotations like human or zebrafish)
 #getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
+
+## How to save malformed refseq gffs:
+## First run function and let it crash:
+#annotation <- getGenomeAndAnnotation(organism = "Arabidopsis thaliana", output.dir = "~/Desktop/test_plant/",
+#  assembly_type = "primary_assembly", db = "refseq")
+## Then apply a fix (example for linux, too long rows):
+# \code{system("cat ~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.gff | awk '{ if (length($0) < 32768) print }' > ~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed2.gff")}
+## Then updated arguments:
+annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
+ "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
+names(annotation) <- c("gtf", "genome")
+# Make the txdb (for faster R use)
+# makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
 
 }
 \seealso{

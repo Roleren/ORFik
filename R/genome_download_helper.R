@@ -24,18 +24,23 @@ get_genome_fasta <- function(genome, output.dir, organism,
                                      path = output.dir, gunzip = gunzip)
     }
 
+    if (any(genome == "Not available")) stop("Could not find genome, check spelling!")
     message("Making .fai index of genome")
     indexFa(genome)
+    message("Genome download and fasta indexing complete")
   } else { # check if it already exists
     genome <- grep(pattern = organism,
                    x = list.files(output.dir, full.names = TRUE),
                    value = TRUE)
-
-    genome <- grep(pattern = "\\.fa", x = genome, value = TRUE)
+    if (db == "refseq") {
+      genome <- grep(pattern = "\\.fna", x = genome, value = TRUE)
+    } else genome <- grep(pattern = "\\.fa", x = genome, value = TRUE)
     genome <- grep(pattern = "\\.fai", x = genome, value = TRUE, invert = TRUE)
     if (length(genome) != 1) {
       if (length(genome) > 1) {
-        genome <- grep(pattern = "\\.dna", x = genome, value = TRUE)
+        if (db == "refseq") {
+          genome <- grep(pattern = "_refseq", x = genome, value = TRUE)
+        } else genome <- grep(pattern = "\\.dna", x = genome, value = TRUE)
       }
       if (length(genome) > 1) {
         warning("Found multiple candidates for pre downloaded genome,
@@ -45,6 +50,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
       } else if (length(genome) == 0) genome <- FALSE
     }
   }
+
   return(genome)
 }
 
@@ -55,13 +61,22 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' If you want to make sure chromosome naming of the GTF matches the genome
 #' and correct seqlengths. If value is NULL or FALSE, it will be ignored.
 #' @inheritParams makeTxdbFromGenome
-get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip,
-                           genome, optimize = FALSE) {
-  if (GTF) { # gtf of organism
-    gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
-                                     type = "dna",
-                                     id.type = assembly_type,
-                                     path = output.dir)
+get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
+                           gunzip, genome, optimize = FALSE) {
+  if (GTF != FALSE) { # gtf of organism
+    if (db == "ensembl") {
+      gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
+                                       type = "dna",
+                                       id.type = assembly_type,
+                                       path = output.dir)
+    } else {
+      message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
+      " and might crash during gff reading step!",
+      " Until this is fixed in rtracklayer, check out example",
+      " in ?getGenomeAndAnnotation on how to rescue those gffs")
+      gtf <-biomartr:::getGFF(db = db, organism = organism,
+                        path = output.dir, reference = TRUE)
+    }
 
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
@@ -70,7 +85,10 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, gunzip,
     gtf <- grep(pattern = organism,
                 x = list.files(output.dir, full.names = TRUE),
                 value = TRUE)
-    gtf <- grep(pattern = "\\.gtf", x = gtf, value = TRUE)
+    if (db == "ensembl") {
+      gtf <- grep(pattern = "\\.gtf", x = gtf, value = TRUE)
+    } else gtf <- grep(pattern = "\\.gff", x = gtf, value = TRUE)
+
     gtf <- grep(pattern = "\\.db", x = gtf, value = TRUE, invert = TRUE)
     if (length(gtf) != 1) {
       warning("Found multiple candidates for pre downloaded gtf,

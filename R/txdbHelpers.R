@@ -46,7 +46,10 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
                                              chrominfo = fa.seqinfo)
-    seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
+    if (seqlevelsStyle(txdb)[1] != seqlevelsStyle(fa)[1]) {
+      seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
+    }
+
   } else {
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
   }

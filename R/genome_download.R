@@ -18,7 +18,8 @@
 #' for full list of supported organisms.
 #' @param output.dir directory to save downloaded data
 #' @param db database to use for genome and GTF,
-#' default adviced: "ensembl" (will contain haplotypes, large file!).
+#' default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
+#' else it will contain haplotypes, very large file!).
 #' Alternatives: "refseq" (primary assembly) and "genbank" (mix)
 #' @param GTF logical, default: TRUE, download gtf of organism specified
 #' in "organism" argument. If FALSE, check if the downloaded
@@ -26,7 +27,7 @@
 #' set GTF = FALSE,
 #' and assign: \cr annotation <- getGenomeAndAnnotation(gtf = FALSE)\cr
 #' annotation["gtf"] = "path/to/gtf.gtf".\cr
-#' Only db = "ensembl" allowed for GTF.
+#' If db is not "ensembl", you will instead get a gff file.
 #' @param genome logical, default: TRUE, download genome of organism
 #' specified in "organism" argument. If FALSE, check if the downloaded
 #' file already exist. If you want to use a custom gtf from you hard drive,
@@ -120,6 +121,19 @@
 #' ## Optimize for ORFik (speed up for large annotations like human or zebrafish)
 #' #getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 #'
+#' ## How to save malformed refseq gffs:
+#' ## First run function and let it crash:
+#' #annotation <- getGenomeAndAnnotation(organism = "Arabidopsis thaliana", output.dir = "~/Desktop/test_plant/",
+#' #  assembly_type = "primary_assembly", db = "refseq")
+#' ## Then apply a fix (example for linux, too long rows):
+#' # \code{system("cat ~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.gff | awk '{ if (length($0) < 32768) print }' > ~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed2.gff")}
+#' ## Then updated arguments:
+#' annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
+#'  "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
+#' names(annotation) <- c("gtf", "genome")
+#' # Make the txdb (for faster R use)
+#' # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
+#'
 getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    GTF = TRUE, genome = TRUE,
                                    merge_contaminants = TRUE, phix = FALSE,
@@ -141,6 +155,9 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   # Start process
   dir.create(output.dir, recursive = TRUE)
   organism <- gsub(" ", "_", organism)
+  if (db == "refseq") {
+    organism <- gsub("_", " ", organism)
+  }
   ## Go through all contaminants:
   if (!(tRNA %in% c("", FALSE, TRUE))) {
     if (!file.exists(tRNA)) stop(paste("local tRNA file is given and does not exist:",
@@ -158,8 +175,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
-  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, gunzip,
-                        genome, optimize = optimize)
+  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
+                        gunzip, genome, optimize = optimize)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:
