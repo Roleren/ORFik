@@ -463,6 +463,7 @@ shiftFootprintsByExperiment <- function(df,
 #' @param plot.ext default ".pdf". Alternative ".png". Only added if output is
 #' "auto".
 #' @importFrom gridExtra grid.arrange
+#' @importFrom gridExtra arrangeGrob
 #' @return a ggplot2 grob object
 #' @family pshifting
 #' @export

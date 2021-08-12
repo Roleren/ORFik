@@ -227,11 +227,19 @@ index <- STAR.index(annotation)
 ```
 If you run this function again after index exists in current file location, it will not re-index, but just output the correct object paths. Do remake = TRUE if you want to re-index.
 
-## Aligning the data
+## Trimming and Aligning the data
 
-ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS). If you are on windows, or you want to trim the reads yourself, just run the trimming and give the folder with the trimmed reads as input in next step. Also if you are unsure of what the 3' adapter was, run first FASTQC to which adapters are detected. The great thing with fastp is that it has auto detection and removal of adapters, if you check out the resulting files you will see fastp has auto removed the Illumina adapters.
+### Trimming data
+ORFik uses the fastp for trimming reads, this also only works on unix (Linux or Mac OS). If you are on windows, or you want to trim the reads yourself, just run the trimming and give the folder with the trimmed reads as input in next step. 
 
-Now let's see what we need as inputs for the alignment pipeline:
+Most Illumina sequencing contains 3' adapters. This is because let's say you sequence 100 bases, but the actual RNA read is only 28 nt long, you still need 72 bases as fillers, to not screw up that all should be 100 bases long.
+The great thing with fastp is that it has auto detection and removal of adapters, if you check out the resulting files you will see fastp has auto removed the Illumina adapters. In rare cases some libraries are have a double set of adapters, or low quality adapters, in those cases run fastqc (or another 3' adapter analyzer) to see what it missed. 
+
+The final rule is that for Ribo-seq, your trimmed reads should be no longer than 55 nt, else STAR (using the default local alignment) will not be able to find the 28nt of the read that align (STAR must by default align ~ 50% of the read). For RNA-seq
+adapter trimming is not really that crucial, as local alignment will find the hit anyway.
+
+### Aligning the data
+Now let's see what we need as inputs for the trimming / alignment pipeline:
 We need usually 9 arguments (more are possible if you need them):
 
 - input.dir.rna: directory with raw fastq files (or user pre-trimmed files)
@@ -258,7 +266,33 @@ alignment <-
                     max.cpus = 30, trim.front = 3, min.length = 20)
 ```
 
-If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format. You will also get a MultiQC report from STAR runs made by ORFik for you.
+If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format. You will also get a MultiQC report from STAR runs made by ORFik for you. 
+
+### UMI and collapsing reads
+Some of the newer NGS libraries contains Unique molecular identifiers. If you need to store the UMI in the read header, fastp supports this.
+A direct wrapper for this in STAR.align.folder is currently not implemented yet, but will be soon!
+
+Collapsing of duplicated reads is supported (all identical reads merged, with a replicat counter in the header), 
+to do this, first only trim the reads to remove adapters.
+If your reads are < 55 bases long on average, it is a good idea to collapse duplicated reads (much faster alignment and processing). Note in this case the reads are paired end, so then collapsing is very dangerous. But for single end reads, you could do this: 
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+alignment <- 
+  STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
+                    paired.end = is_paired_end,
+                    steps = "tr", # (Only trim)
+                    adapter.sequence = "auto",
+                    max.cpus = 30, trim.front = 3, min.length = 20)
+trimmed_files <- file.path(conf["bam RNA-seq"], "trim")
+ORFik::collapse.fastq(trimmed_files, "trim")) # Collapse all files in trim folder
+# Then align using collapsed reads
+alignment <- 
+  STAR.align.folder(trimmed_files, conf["bam RNA-seq"], index,
+                    paired.end = is_paired_end,
+                    steps = "ge", # (Only genome alignment from collapsed)
+                    max.cpus = 30, min.length = 20)
+```
+Usually, RNA-seq is > 55 bases, so only do this for short reads like Ribo-seq!
 
 ## Solving errors when aligning:
 Running STAR is a heavy job for most machines, so you may experience an error if your machine is not good enough or you have 

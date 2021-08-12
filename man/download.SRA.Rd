@@ -53,7 +53,8 @@ if subset is defined, it uses fastqdump, it is slower but supports subsetting.
 Force it to use fastqdump by setting this to FALSE.}
 
 \item{ebiDLMethod}{character, default "auto". Which download protocol
-to use in download.file when using ebi ftp download.
+to use in download.file when using ebi ftp download. Sometimes "curl"
+is might not work (the default auto usually), in those cases use wget.
 See "method" argument of ?download.file, for more info.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().

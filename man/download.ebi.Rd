@@ -31,7 +31,8 @@ rename, that is keep the SRR numbers, you then can manually rename files
 to something more meaningful.}
 
 \item{ebiDLMethod}{character, default "auto". Which download protocol
-to use in download.file when using ebi ftp download.
+to use in download.file when using ebi ftp download. Sometimes "curl"
+is might not work (the default auto usually), in those cases use wget.
 See "method" argument of ?download.file, for more info.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
