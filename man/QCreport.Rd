@@ -21,7 +21,8 @@ Will make a folder called "QC_STATS" with all results in this directory.}
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}}
+To see number of threads used, do \code{bpparam()$workers}.
+You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 invisible(NULL) (objects are stored to disc)

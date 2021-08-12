@@ -37,7 +37,8 @@ warning if not pshifted might crash if too many read lengths!}
 per read length be positioned as "dodge" or "stack" (on top of each other).}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}}
+To see number of threads used, do \code{bpparam()$workers}.
+You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 ggplot object as a grid

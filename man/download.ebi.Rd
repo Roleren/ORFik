@@ -4,7 +4,13 @@
 \alias{download.ebi}
 \title{Faster download of fastq files}
 \usage{
-download.ebi(info, outdir, rename = TRUE, BPPARAM = bpparam())
+download.ebi(
+  info,
+  outdir,
+  rename = TRUE,
+  ebiDLMethod = "auto",
+  BPPARAM = bpparam()
+)
 }
 \arguments{
 \item{info}{character vector of only SRR numbers or
@@ -23,6 +29,10 @@ If new names found and still duplicates, will
 add "_rep1", "_rep2" to make them unique. If no valid names, will not
 rename, that is keep the SRR numbers, you then can manually rename files
 to something more meaningful.}
+
+\item{ebiDLMethod}{character, default "auto". Which download protocol
+to use in download.file when using ebi ftp download.
+See "method" argument of ?download.file, for more info.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}

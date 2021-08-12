@@ -440,6 +440,7 @@ shiftFootprintsByExperiment <- function(df,
 
 #' Plot shifted heatmaps per library
 #'
+#' Around CDS TISs, plot coverage.
 #' A good validation for you p-shifting, to see shifts are corresponding
 #' and close to the CDS TIS.
 #' @inheritParams shiftFootprintsByExperiment
@@ -469,7 +470,8 @@ shiftFootprintsByExperiment <- function(df,
 #' df <- ORFik.template.experiment()
 #' df <- df[3,] #lets only p-shift RFP sample at index 3
 #' #shiftFootprintsByExperiment(df, output_format = "bedo)
-#' #shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
+#' #grob <- shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
+#' #plot(grob) #Only plot in RStudio for small amount of files!
 shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        scoring = "transcriptNormalized",
                        pShifted = TRUE,
@@ -504,7 +506,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   }, cds = cds, mrna = mrna, style = style, BPPARAM = BPPARAM,
      paths = filepath(df, "pshifted"), df = df, upstream = upstream,
      downstream = downstream, type = type)
-  res <- do.call("grid.arrange", c(plots, ncol=1, top = title))
+  res <- do.call("arrangeGrob", c(plots, ncol=1, top = title))
   if (!is.null(output)) {
     if (type == "heatmap") {
       if (output == "auto") {
@@ -519,9 +521,10 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
         dir.to.save <- file.path(dirname(df$filepath[1]), "QC_STATS")
         output <- file.path(dir.to.save, paste0("pshifts_barplots", plot.ext))
       }
+      dpi <- ifelse(nrow(df) < 22, 300, 200)
       ggsave(output, res,
              width = 225, height = (length(res) -1)*95,
-             units = "mm", dpi = 300, limitsize = FALSE)
+             units = "mm", dpi = dpi, limitsize = FALSE)
     }
     message("Saved pshift plots to location: ",
             output)

@@ -707,7 +707,8 @@ filepath <- function(df, type, basename = FALSE) {
 #' Can also be custom user made folders inside the experiments bam folder.
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
-#' To see number of threads used, do \code{bpparam()$workers}
+#' To see number of threads used, do \code{bpparam()$workers}.
+#' You can also add a time remaining bar, for a more detailed pipeline.
 #' @return NULL (libraries set by envir assignment)
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam
@@ -781,7 +782,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' using those files as templates. If they are not in environment the
 #' .ofst files from the bam files are loaded (unless you are converting
 #' to .ofst then the .bam files are loaded).
-#' @param df an ORFik \code{\link{experiment}}
+#' @inheritParams outputLibs
 #' @param out.dir optional output directory, default:
 #' dirname(df$filepath[1]),
 #' if it is NULL, it will just reassign R objects to simplified libraries.
@@ -803,7 +804,6 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' Will make a folder within out.dir with this name containing the files.
 #' @param reassign.when.saving logical, default FALSE. If TRUE, will reassign
 #' library to converted form after saving. Ignored when out.dir = NULL.
-#' @param envir which environment to save to, default .GlobalEnv
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
 #' @examples
@@ -817,7 +817,7 @@ convertLibs <- function(df,
                        must.overlap = NULL, method = "None",
                        type = "ofst",
                        reassign.when.saving = FALSE,
-                       envir = .GlobalEnv) {
+                       envir = .GlobalEnv, BPPARAM = bpparam()) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig")))
     stop("type must be either ofst, bedo or bedoc")
 
@@ -831,7 +831,7 @@ convertLibs <- function(df,
     message(paste("Saving,", type, "files to:", out.dir))
   }
 
-  outputLibs(df, type = "ofst", chrStyle = must.overlap)
+  outputLibs(df, type = "ofst", chrStyle = must.overlap, BPPARAM = BPPARAM)
 
   varNames <- bamVarName(df)
   i <- 1

@@ -13,6 +13,7 @@ download.SRA(
   subset = NULL,
   compress = TRUE,
   use.ebi.ftp = is.null(subset),
+  ebiDLMethod = "auto",
   BPPARAM = bpparam()
 )
 }
@@ -50,6 +51,10 @@ defined, will force to use fastq-dump which is slower than ebi download.}
 function that only works when subset is null,
 if subset is defined, it uses fastqdump, it is slower but supports subsetting.
 Force it to use fastqdump by setting this to FALSE.}
+
+\item{ebiDLMethod}{character, default "auto". Which download protocol
+to use in download.file when using ebi ftp download.
+See "method" argument of ?download.file, for more info.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}

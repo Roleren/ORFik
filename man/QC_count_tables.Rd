@@ -19,7 +19,8 @@ These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 Can also be custom user made folders inside the experiments bam folder.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}}
+To see number of threads used, do \code{bpparam()$workers}.
+You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 a data.table of the count info

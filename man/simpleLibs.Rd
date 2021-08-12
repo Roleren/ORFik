@@ -13,7 +13,8 @@ simpleLibs(
   method = "None",
   type = "ofst",
   reassign.when.saving = FALSE,
-  envir = .GlobalEnv
+  envir = .GlobalEnv,
+  BPPARAM = bpparam()
 )
 }
 \arguments{
@@ -47,7 +48,11 @@ Will make a folder within out.dir with this name containing the files.}
 \item{reassign.when.saving}{logical, default FALSE. If TRUE, will reassign
 library to converted form after saving. Ignored when out.dir = NULL.}
 
-\item{envir}{which environment to save to, default .GlobalEnv}
+\item{envir}{environment to save to, default (.GlobalEnv)}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam().
+To see number of threads used, do \code{bpparam()$workers}.
+You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 NULL (saves files to disc or R .GlobalEnv)

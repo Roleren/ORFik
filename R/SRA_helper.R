@@ -86,6 +86,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' function that only works when subset is null,
 #' if subset is defined, it uses fastqdump, it is slower but supports subsetting.
 #' Force it to use fastqdump by setting this to FALSE.
+#' @param ebiDLMethod character, default "auto". Which download protocol
+#' to use in download.file when using ebi ftp download.
+#' See "method" argument of ?download.file, for more info.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
 #' @return a character vector of download files filepaths
@@ -117,6 +120,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
                          subset = NULL,
                          compress = TRUE,
                          use.ebi.ftp = is.null(subset),
+                         ebiDLMethod = "auto",
                          BPPARAM = bpparam()) {
 
   # If character presume SRR, if not check for column Run or SRR
@@ -140,7 +144,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
     subset <- as.integer(subset)
     settings <- paste(settings, "-X", subset)
   } else if (use.ebi.ftp){
-    files <- download.ebi(info, outdir, rename, BPPARAM)
+    files <- download.ebi(info, outdir, rename, ebiDLMethod, BPPARAM)
     if (length(files) > 0) return(files)
     message("Checking for fastq files using fastq-dump")
   }
@@ -504,7 +508,7 @@ rename.SRA.files <- function(files, new_names) {
 #' @return character, full filepath of downloaded  files
 #' @family sra
 download.ebi <- function(info, outdir, rename = TRUE,
-                         BPPARAM = bpparam()) {
+                         ebiDLMethod = "auto", BPPARAM = bpparam()) {
 
   study <- NULL
   # If character presume SRR, if not check for column Run or SRR
@@ -535,7 +539,7 @@ download.ebi <- function(info, outdir, rename = TRUE,
 
   files <- file.path(outdir, basename(urls))
   message("Starting download of EBI runs:")
-  method <- ifelse(Sys.info()[1] == "Linux", "wget", "auto")
+  method <- ebiDLMethod
   BiocParallel::bplapply(urls, function(i, outdir, method) {
     message(i)
     download.file(i, destfile = file.path(outdir, basename(i)),

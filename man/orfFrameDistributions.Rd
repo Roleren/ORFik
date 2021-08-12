@@ -20,7 +20,8 @@ warning if not pshifted might crash if too many read lengths!}
 \item{weight}{which column in reads describe duplicates, default "score".}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}}
+To see number of threads used, do \code{bpparam()$workers}.
+You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 data.table with columns: fraction (library) frame (0, 1, 2)

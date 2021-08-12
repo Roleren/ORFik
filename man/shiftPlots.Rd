@@ -58,6 +58,7 @@ per heatmap.}
 a ggplot2 grob object
 }
 \description{
+Around CDS TISs, plot coverage.
 A good validation for you p-shifting, to see shifts are corresponding
 and close to the CDS TIS.
 }
@@ -65,7 +66,8 @@ and close to the CDS TIS.
 df <- ORFik.template.experiment()
 df <- df[3,] #lets only p-shift RFP sample at index 3
 #shiftFootprintsByExperiment(df, output_format = "bedo)
-#shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
+#grob <- shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
+#plot(grob) #Only plot in RStudio for small amount of files!
 }
 \seealso{
 Other pshifting: 
