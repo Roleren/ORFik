@@ -10,10 +10,12 @@ trimming.table(trim_folder)
 \item{trim_folder}{folder of trimmed files}
 }
 \value{
-a data.table with 4 columns, raw_library (names of library),
+a data.table with 6 columns, raw_library (names of library),
  raw_reads (numeric, number of raw reads),
  trim_reads (numeric, number of trimmed reads),
- % trimmed (numeric, percentage of trimmed reads)
+ % trimmed (numeric, percentage of trimmed reads),
+ raw_mean_length (numeric, raw mean read length),
+ trim_mean_length (numeric, trim mean read length).
 }
 \description{
 From fastp runs in ORFik alignment process

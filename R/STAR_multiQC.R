@@ -185,10 +185,12 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
 #'
 #' From fastp runs in ORFik alignment process
 #' @param trim_folder folder of trimmed files
-#' @return a data.table with 4 columns, raw_library (names of library),
+#' @return a data.table with 6 columns, raw_library (names of library),
 #'  raw_reads (numeric, number of raw reads),
 #'  trim_reads (numeric, number of trimmed reads),
-#'  % trimmed (numeric, percentage of trimmed reads)
+#'  % trimmed (numeric, percentage of trimmed reads),
+#'  raw_mean_length (numeric, raw mean read length),
+#'  trim_mean_length (numeric, trim mean read length).
 trimming.table <- function(trim_folder) {
 
   raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)
@@ -196,6 +198,8 @@ trimming.table <- function(trim_folder) {
                                      " did you change wd delete them?")
   raw_reads <- data.table()
   trim_reads <- data.table()
+  raw_mean_length <- data.table()
+  trim_mean_length <- data.table()
   lib <- raw_library[1]
   for (lib in raw_library) { # Read json files
     a <- data.table::fread(lib, nrows = 7, skip = 2, sep = ":", col.names = c("id", "value"))
@@ -213,10 +217,13 @@ trimming.table <- function(trim_folder) {
     b$id <- gsub("\\\t", "", b$id)
     raw_reads <- rbind(raw_reads, a$value[1])
     trim_reads <- rbind(trim_reads, b$value[1])
+    raw_mean_length <- rbind(raw_mean_length, a$value[7])
+    trim_mean_length <- rbind(trim_mean_length, b$value[7])
   }
   raw_data <- cbind(raw_library = basename(raw_library), raw_reads = raw_reads,
                     trim_reads = trim_reads,
-                    `% trimmed` = round((1 - (trim_reads / raw_reads)) * 100, 3))
+                    `% trimmed` = round((1 - (trim_reads / raw_reads)) * 100, 3),
+                    raw_mean_length = raw_mean_length, trim_mean_length = trim_mean_length)
 
   raw_data$raw_library <- gsub("report_|\\.json$",
                                x = raw_data$raw_library, replacement = "")
