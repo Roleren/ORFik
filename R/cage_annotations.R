@@ -376,7 +376,7 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   leaderEnds <- cdsStartSites
 
   undefinedLeaders <- GRanges(seqnamesPerGroup(cds01, keep.names = FALSE),
-                              leaderEnds,
+                              IRanges(leaderEnds, width = 1),
                               strandPerGroup(cds01, keep.names = FALSE))
 
   names(undefinedLeaders) <- names(cds01)

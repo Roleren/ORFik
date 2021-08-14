@@ -202,11 +202,13 @@ If you have CAGE libraries, ORFik can in a simple way create 5' UTRs for your an
 ```
 
 ### Create Pseudo 5' UTR annotation
-If you do not have CAGE, you can also just specify some fixed 5' UTR lengths
+If you do not have CAGE, you can also just specify some fixed 5' UTR lengths, for all
+CDS transcripts that does not have a 5' UTR.
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   txdb <- "/path/to/local/annotation.gtf.db"
   reassigned_txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = 100)
   AnnotationDbi::saveDb("/path/to/local/annotation_pseudo_leaders.db")
+  leaders <- loadRegion(reassigned_txdb, "leaders")
 ```
 
 # RNA-seq alignment
@@ -271,9 +273,9 @@ If you used the fastp (tr step), you will get a pre-alignment QC report. Just li
 Some of the newer NGS libraries contains Unique molecular identifiers. If you need to store the UMI in the read header, fastp supports this.
 A direct wrapper for this in STAR.align.folder is currently not implemented yet, but will be soon!
 
-Collapsing of duplicated reads is supported (all identical reads merged, with a replicat counter in the header), 
+Collapsing of duplicated reads is supported (all identical reads merged, with a replicate counter in the header), 
 to do this, first only trim the reads to remove adapters.
-If your reads are < 55 bases long on average, it is a good idea to collapse duplicated reads (much faster alignment and processing). Note in this case the reads are paired end, so then collapsing is very dangerous. But for single end reads, you could do this: 
+If your reads are < 50 bases long on average, it is a good idea to collapse duplicated reads (much faster alignment and processing). Note in this case the reads are paired end, so then collapsing is very dangerous. But for single end reads, you could do this: 
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 alignment <- 
@@ -283,6 +285,9 @@ alignment <-
                     adapter.sequence = "auto",
                     max.cpus = 30, trim.front = 3, min.length = 20)
 trimmed_files <- file.path(conf["bam RNA-seq"], "trim")
+# Check that trimmed reads are average < 50 bases, else collapsing makes little sense for speedup.
+trim_table <- ORFik:::trimming.table(trimmed.out)
+stopifnot(all(trim_table$trim_mean_length < 50)) 
 ORFik::collapse.fastq(trimmed_files, "trim")) # Collapse all files in trim folder
 # Then align using collapsed reads
 alignment <- 
@@ -291,7 +296,7 @@ alignment <-
                     steps = "ge", # (Only genome alignment from collapsed)
                     max.cpus = 30, min.length = 20)
 ```
-Usually, RNA-seq is > 55 bases, so only do this for short reads like Ribo-seq!
+Usually, RNA-seq is > 50 bases, so only do this for short reads like Ribo-seq!
 
 ## Solving errors when aligning:
 Running STAR is a heavy job for most machines, so you may experience an error if your machine is not good enough or you have 

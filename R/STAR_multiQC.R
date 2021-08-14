@@ -227,6 +227,6 @@ trimming.table <- function(trim_folder) {
 
   raw_data$raw_library <- gsub("report_|\\.json$",
                                x = raw_data$raw_library, replacement = "")
-
+  colnames(raw_data) <- gsub("\\.x", "", colnames(raw_data))
   return(raw_data)
 }
