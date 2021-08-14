@@ -302,6 +302,13 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
   txList$splicings$exon_id <- remakeTxdbExonIds(txList)
   # Since exons have changed, their official exon names can not be preserved.
   txList$splicings$exon_name <- NULL
+  # Copy useful metadata
+  original_meta <- metadata(txdb)
+  original_meta <- original_meta[!(original_meta$name %in% c("Db type", "Supporting package","DBSCHEMAVERSION",
+                                                             "Creation time",
+                                                             "RSQLite version at creation time",
+                                                             "GenomicFeatures version at creation time")),]
+  txList$metadata <- original_meta
 
   return(do.call(makeTxDb, txList))
 }
@@ -322,6 +329,11 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' interval). If no CAGE supports a leader, the width will be set to 1 base.
 #'
 #' @inheritParams reassignTxDbByCage
+#' @param pseudoLength a numeric, default 1. Either if no CAGE supports
+#' the leader, or if CAGE is set to NULL,
+#' add a pseudo length for all the UTRs. Will not extend a leader if
+#' it would make it go outside the defined seqlengths of the genome.
+#' So this length is not guaranteed for all!
 #' @importFrom data.table setkeyv
 #' @family CAGE
 #' @return a TxDb obect of reassigned transcripts
@@ -334,16 +346,24 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #'
 #' \dontrun{
 #'   assignTSSByCage(txdbFile, cagePath)
-#'   Minimum 20 cage tags for new TSS
+#'   #Minimum 20 cage tags for new TSS
 #'   assignTSSByCage(txdbFile, cagePath, filterValue = 20)
+#'   # Create pseudo leaders for the ones without hits
+#'   assignTSSByCage(txdbFile, cagePath, pseudoLength = 100)
+#'   # Create only pseudo leaders (in example 2 leaders are added)
+#'   assignTSSByCage(txdbFile, cage = NULL, pseudoLength = 100)
 #' }
 assignTSSByCage <- function(txdb, cage, extension = 1000,
                             filterValue = 1, restrictUpstreamToTx = FALSE,
-                            removeUnused = FALSE, preCleanup = TRUE) {
+                            removeUnused = FALSE, preCleanup = TRUE,
+                            pseudoLength = 1) {
+  if (!is.numeric(pseudoLength) & (length(pseudoLength) == 1)) {
+    stop("pseudoLength must be length 1 and numeric!")
+  }
   txdb <- loadTxdb(txdb)
-  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
+  fiveUTRs <- loadRegion(txdb, part = "leaders")
+  cds <- loadRegion(txdb, part = "cds")
 
-  cds <- cdsBy(txdb,"tx",use.names = TRUE)
   cds01 <- cds[!(names(cds) %in% names(fiveUTRs))]
   if (length(cds01) == 0) {
     return(txdb)
@@ -356,16 +376,22 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   leaderEnds <- cdsStartSites
 
   undefinedLeaders <- GRanges(seqnamesPerGroup(cds01, keep.names = FALSE),
-                              leaderEnds, strandPerGroup(cds01,
-                                                         keep.names = FALSE))
+                              leaderEnds,
+                              strandPerGroup(cds01, keep.names = FALSE))
+
   names(undefinedLeaders) <- names(cds01)
   #make exon_rank col as integer
   undefinedLeaders$exon_rank <- rep.int(1L, length(undefinedLeaders))
   #make GRangesListfrom GRanges
   undefinedLeaders <- groupGRangesBy(undefinedLeaders)
-  newLeaders <- reassignTSSbyCage(undefinedLeaders, cage, extension,
-                                  filterValue, restrictUpstreamToTx,
-                                  removeUnused, preCleanup)
+  if (pseudoLength != 1) {
+    undefinedLeaders <- extendLeaders(undefinedLeaders, extension = pseudoLength)
+  }
+  newLeaders <- if (!is.null(cage)) {
+    reassignTSSbyCage(undefinedLeaders, cage, extension,
+                      filterValue, restrictUpstreamToTx,
+                      removeUnused, preCleanup)
+  } else undefinedLeaders
 
   txList <- as.list(txdb)
   # find all transcripts with 5' UTRs
@@ -375,6 +401,12 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   txList$splicings$exon_id <- remakeTxdbExonIds(txList)
   # Since exons have changed, their official exon names can not be preserved.
   txList$splicings$exon_name <- NULL
-
+  # Copy useful metadata
+  original_meta <- metadata(txdb)
+  original_meta <- original_meta[!(original_meta$name %in% c("Db type", "Supporting package","DBSCHEMAVERSION",
+                                                             "Creation time",
+                                                             "RSQLite version at creation time",
+                                                             "GenomicFeatures version at creation time")),]
+  txList$metadata <- original_meta
   return(do.call(makeTxDb, txList))
 }

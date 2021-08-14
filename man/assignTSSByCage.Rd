@@ -11,7 +11,8 @@ assignTSSByCage(
   filterValue = 1,
   restrictUpstreamToTx = FALSE,
   removeUnused = FALSE,
-  preCleanup = TRUE
+  preCleanup = TRUE,
+  pseudoLength = 1
 )
 }
 \arguments{
@@ -45,6 +46,12 @@ support.}
 \item{preCleanup}{logical (TRUE), if TRUE,
 remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
 This is to keep original TSS if it is only +/- 5 bases from the original.}
+
+\item{pseudoLength}{a numeric, default 1. Either if no CAGE supports
+the leader, or if CAGE is set to NULL,
+add a pseudo length for all the UTRs. Will not extend a leader if
+it would make it go outside the defined seqlengths of the genome.
+So this length is not guaranteed for all!}
 }
 \value{
 a TxDb obect of reassigned transcripts
@@ -72,8 +79,12 @@ cagePath <- system.file("extdata", "cage-seq-heart.bed.bgz",
 
 \dontrun{
   assignTSSByCage(txdbFile, cagePath)
-  Minimum 20 cage tags for new TSS
+  #Minimum 20 cage tags for new TSS
   assignTSSByCage(txdbFile, cagePath, filterValue = 20)
+  # Create pseudo leaders for the ones without hits
+  assignTSSByCage(txdbFile, cagePath, pseudoLength = 100)
+  # Create only pseudo leaders (in example 2 leaders are added)
+  assignTSSByCage(txdbFile, cage = NULL, pseudoLength = 100)
 }
 }
 \seealso{

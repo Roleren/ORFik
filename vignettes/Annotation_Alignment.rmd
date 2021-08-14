@@ -205,8 +205,7 @@ If you have CAGE libraries, ORFik can in a simple way create 5' UTRs for your an
 If you do not have CAGE, you can also just specify some fixed 5' UTR lengths
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   txdb <- "/path/to/local/annotation.gtf.db"
-  # Not implemented yet!
-  #reassigned_txdb <- assignTSSByCage(txdb, cage = NULL, pseudo.length = 100)
+  reassigned_txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = 100)
   AnnotationDbi::saveDb("/path/to/local/annotation_pseudo_leaders.db")
 ```
 

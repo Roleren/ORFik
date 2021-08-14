@@ -430,8 +430,16 @@ importGtfFromTxdb <- function(txdb) {
 #' and stop.error is FALSE.
 getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
   genome <- metadata(txdb)[metadata(txdb)[,1] == "Data source", 2]
-  if (!(file_ext(genome) %in%
-        c("gtf", "gff", "gff3", "gff2"))) {
+  valid <- TRUE
+  if (length(genome) == 0) valid <- FALSE
+  if (valid) {
+    if (!(file_ext(genome) %in%
+          c("gtf", "gff", "gff3", "gff2"))) {
+      valid <- FALSE
+    }
+  }
+
+  if (!valid) {
     if (stop.error) {
       message("This is error txdb ->")
       message("It should be found by: metadata(txdb)[metadata(txdb)[,1] == 'Data source',]")
