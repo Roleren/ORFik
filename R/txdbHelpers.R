@@ -19,7 +19,8 @@
 #' to speed up loading of annotation regions from up to 15 seconds
 #' on human genome down to 0.1 second. ORFik will then load these optimized
 #' objects instead. Currently optimizes filterTranscript() function and
-#' loadRegion() function.
+#' loadRegion() function for 5' UTRs, 3' UTRs, CDS,
+#'  mRNA (all transcript with CDS) and tx (all transcripts).
 #' @return NULL, Txdb saved to disc named paste0(gtf, ".db")
 #' @export
 #' @examples
@@ -66,7 +67,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     optimizedTranscriptLengths(txdb, create.fst.version = TRUE)
     # Save RDS version of all transcript regions
     message("Creating rds speedup files for transcript regions")
-    parts <- c("mrna", "leaders", "cds", "trailers")
+    parts <- c("tx", "mrna", "leaders", "cds", "trailers")
     for (i in parts) {
       saveRDS(loadRegion(txdb, i, by = "tx"),
               file = paste0(base_path, "_", i, ".rds"))

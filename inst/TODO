@@ -23,6 +23,7 @@ TODO
 
     P-shifting
     o Do more tests for RCP-seq 80 libraries (these have different read lengths)
+    o Add filter for minimum reads in TIS region.
 
     QC
     o Add possibility for batch correction of correlation plots
