@@ -144,7 +144,7 @@ kozakHeatmap <- function(seqs, rate, start = 1, stop = max(nchar(seqs)),
 #' @export
 kozak_IR_ranking <- function(cds_k, mrna, dt.ir, faFile, group.min = 10,
                              species = "human") {
-  faFile <- ORFik:::findFa(faFile)
+  faFile <- findFa(faFile)
   seqs <- startRegionString(cds_k, tx = mrna, faFile = faFile, upstream = 4, downstream = -1)
   dt.ir$seqs <- seqs
 
