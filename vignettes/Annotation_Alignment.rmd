@@ -269,10 +269,26 @@ alignment <-
 
 If you used the fastp (tr step), you will get a pre-alignment QC report. Just like FastQC in html format. You will also get a MultiQC report from STAR runs made by ORFik for you. 
 
-### UMI and collapsing reads
+### UMIs
 Some of the newer NGS libraries contains Unique molecular identifiers. If you need to store the UMI in the read header, fastp supports this.
 A direct wrapper for this in STAR.align.folder is currently not implemented yet, but will be soon!
+For now you can call fastp directly through a system call:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+dir.create("~/UMIandTrimmed")
+system(paste(install.fastp(), 
+             "-i", "~/sample1.fastq.gz",
+             "-o", "~/UMIandTrimmed/sample1.UMIandTrimmed.fastq.gz"
+             "--adapter_sequence=AGATCGGAAGAGC",
+             "--umi", 
+             "--umi_loc", "read1", 
+             "--umi_len", 12))
+# Read fastp documentation for info about umi arguments
+```
 
+A speed up, if UMIs are not needed is also to just trim the UMIs away. Using the "trim.front" argument in STAR.align.folder.
+This can be done when sequencing is not done on very low input samples and sequencing <= 80 million reads. A good intro can be found here: [dnatech.genomecenter.ucdavis.edu](https://dnatech.genomecenter.ucdavis.edu/faqs/what-are-umis-and-why-are-they-used-in-high-throughput-sequencing/)
+
+### Collapsing duplicated reads
 Collapsing of duplicated reads is supported (all identical reads merged, with a replicate counter in the header), 
 to do this, first only trim the reads to remove adapters.
 If your reads are < 50 bases long on average, it is a good idea to collapse duplicated reads (much faster alignment and processing). Note in this case the reads are paired end, so then collapsing is very dangerous. But for single end reads, you could do this: 
