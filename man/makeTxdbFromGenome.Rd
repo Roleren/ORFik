@@ -22,7 +22,8 @@ within the folder of the gtf, that includes optimized objects
 to speed up loading of annotation regions from up to 15 seconds
 on human genome down to 0.1 second. ORFik will then load these optimized
 objects instead. Currently optimizes filterTranscript() function and
-loadRegion() function.}
+loadRegion() function for 5' UTRs, 3' UTRs, CDS,
+ mRNA (all transcript with CDS) and tx (all transcripts).}
 }
 \value{
 NULL, Txdb saved to disc named paste0(gtf, ".db")
