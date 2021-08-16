@@ -28,6 +28,7 @@
 #' periodic reads! Example would be differential translation analysis by
 #' counts over each ORF.
 #' @return a logical, if it is periodic.
+#' @keywords internal
 #' @importFrom stats fft spec.pgram
 #'
 isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
@@ -80,6 +81,7 @@ isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
 #' @param info specify read length if wanted for verbose output.
 #' @param verbose logical, default FALSE. Report details of change point analysis.
 #' @return a single numeric offset, -12 would mean p-site is 12 bases upstream
+#' @keywords internal
 #' @family pshifting
 #'
 changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
@@ -137,6 +139,7 @@ changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
 #' @param top_tx numeric
 #' @param cds GRangesList object
 #' @param minimum.cds numeric, default 1000
+#' @keywords internal
 #' @return numeric, as ratio of 1
 percentage_to_ratio <- function(top_tx, cds, minimum.cds = 1000) {
   if (!is.numeric(top_tx) |top_tx < 0 | top_tx > 100)
@@ -158,6 +161,7 @@ percentage_to_ratio <- function(top_tx, cds, minimum.cds = 1000) {
 #' You can also set a filepath to save the file there.
 #' @param region a character string, default "start of CDS"
 #' @return invisible(NULL)
+#' @keywords internal
 footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
   region <- paste("Position relative to", region)
   if (heatmap != FALSE) {

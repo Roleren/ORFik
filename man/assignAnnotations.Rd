@@ -23,3 +23,4 @@ isoform - for coding protein alignment in relation to cds on coresponding
 transcript,
 for non-coding transcripts alignment in relation to the transcript.
 }
+\keyword{internal}

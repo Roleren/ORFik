@@ -21,3 +21,4 @@ a data.table of the update finals object with trim info
 \description{
 Only works if alignment was done using ORFik with STAR.
 }
+\keyword{internal}

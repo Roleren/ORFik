@@ -101,3 +101,4 @@ Other heatmaps:
 \code{\link{heatMap_single}()}
 }
 \concept{heatmaps}
+\keyword{internal}

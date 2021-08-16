@@ -91,6 +91,7 @@ ORFikQC <- QCreport
 #' @family QC report
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
+#' @keywords internal
 QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
                                           "/QC_STATS/"),

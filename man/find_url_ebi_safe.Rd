@@ -22,3 +22,4 @@ character (1 element per SRR number)
 \description{
 Safer version
 }
+\keyword{internal}

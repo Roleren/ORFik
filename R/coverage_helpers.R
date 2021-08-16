@@ -15,6 +15,7 @@
 #' @inheritParams coveragePerTiling
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a data.table with columns position, score
+#' @keywords internal
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                 windowSize = 100, fraction = "1",
                                 weight = "score", drop.zero.dt = FALSE,
@@ -61,6 +62,7 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @inheritParams windowPerTranscript
 #' @return a data.table with columns position, score
+#' @keywords internal
 splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
                        fraction = "1", weight = "score",
                        is.sorted = FALSE, drop.zero.dt = FALSE,
@@ -561,6 +563,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 #' @param fractions default unique(dt$fraction), will repeat
 #' each fraction max.pos - min.pos + 1 times.
 #' @return a data.table with appended 0 values
+#' @keywords internal
 appendZeroes <- function(dt, max.pos, min.pos = 1L,
                           fractions = unique(dt$fraction)) {
   width <- max.pos - min.pos + 1L
@@ -746,6 +749,7 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
 #' @param grouping which grouping to perform, default "GF"
 #' Gene & Fraction grouping. Alternative "FGF", Fraction & position & feature.
 #' @return a quote of the grouping to pass to data.table
+#' @keywords internal
 coverageGroupings <- function(logicals, grouping = "GF") {
   one <- !logicals[1]
   two <- !logicals[2]
@@ -775,6 +779,7 @@ coverageGroupings <- function(logicals, grouping = "GF") {
 #' Used to count genes in ORFik meta plots
 #' @param coverage a data.table with coverage
 #' @return number of genes in coverage
+#' @keywords internal
 getNGenesCoverage <- function(coverage) {
   if (is.null(coverage$genes)) return(0)
   if (is.null(coverage$fraction)) {

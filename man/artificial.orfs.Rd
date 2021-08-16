@@ -51,3 +51,10 @@ the second codon will always be from the start region etc.\cr
 Also If there are many very short original cds, the distribution
 will be skewed towards more smaller artificial cds.
 }
+\examples{
+txdb <- ORFik.template.experiment()
+#cds <- loadRegion(txdb, "cds")
+## To get enough CDSs, just replicate them
+# cds <- rep(cds, 100)
+#artificial.orfs(cds)
+}

@@ -36,3 +36,4 @@ Example: counts c(1,0,0,1), with reg_len = 2, gives
 c(1,0) and c(0,1), these are summed and returned as data.table
 10 bases, will give 3 codons, 1 base codons does not exist.
 }
+\keyword{internal}

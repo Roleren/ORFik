@@ -18,3 +18,4 @@ a character vector from the seq() function, aligned to 0.
 \description{
 Works for all coverage plots.
 }
+\keyword{internal}

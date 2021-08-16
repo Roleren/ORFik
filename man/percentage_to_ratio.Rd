@@ -19,3 +19,4 @@ numeric, as ratio of 1
 \description{
 50 -> 0.5 etc, if length cds > minimum.cds
 }
+\keyword{internal}

@@ -33,3 +33,4 @@ the filtered Granges object
 \description{
 Filter peak of cage-data by value
 }
+\keyword{internal}

@@ -11,7 +11,7 @@
 #' @importFrom S4Vectors pc
 #' @return a GRangesList of cds exons added to ends
 #' @family uorfs
-#'
+#' @keywords internal
 addCdsOnLeaderEnds <- function(fiveUTRs, cds, onlyFirstExon = FALSE) {
   if (length(cds) == 0) {
     warning("cds is empty, returning without using it.")
@@ -111,7 +111,7 @@ uORFSearchSpace <- function(fiveUTRs, cage = NULL, extension = 1000,
 #' to filter against.
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
-#'
+#' @keywords internal
 filterUORFs <- function(uorfs, cds) {
   if (is.null(cds) || length(uorfs) == 0) return(uorfs)
   validGRL(class(cds), "cds")
@@ -135,6 +135,7 @@ filterUORFs <- function(uorfs, cds) {
 #' to filter against.
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
+#' @keywords internal
 removeORFsWithinCDS <- function(grl, cds) {
   overlaps <- findOverlaps(query = grl, cds, type = "within")
   if (length(overlaps) > 0) return(grl[-unique(from(overlaps))])
@@ -146,6 +147,7 @@ removeORFsWithinCDS <- function(grl, cds) {
 #' @inheritParams removeORFsWithinCDS
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
+#' @keywords internal
 removeORFsWithSameStopAsCDS <- function(grl, cds) {
   overlaps <- findOverlaps(query =  stopSites(grl, asGR = TRUE,
                                               is.sorted = TRUE),
@@ -160,6 +162,7 @@ removeORFsWithSameStopAsCDS <- function(grl, cds) {
 #' @inheritParams removeORFsWithinCDS
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
+#' @keywords internal
 removeORFsWithSameStartAsCDS <- function(grl, cds) {
   starts <- startSites(grl, asGR = TRUE, is.sorted = TRUE)
   cdsstarts <- startSites(cds, asGR = TRUE, is.sorted = TRUE)
@@ -173,6 +176,7 @@ removeORFsWithSameStartAsCDS <- function(grl, cds) {
 #' @inheritParams removeORFsWithinCDS
 #' @return (GRangesList) of filtered uORFs
 #' @family uorfs
+#' @keywords internal
 removeORFsWithStartInsideCDS <- function(grl, cds) {
   starts <- startSites(grl, asGR = TRUE, is.sorted = TRUE)
   overlaps <- findOverlaps(starts, cds, type = "within")

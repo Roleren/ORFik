@@ -26,6 +26,13 @@
 #' (for default arguments this is: 7*30 = 210 cds)
 #' @return GRangesList of new ORFs (sorted: + strand increasing start,
 #'  - strand decreasing start)
+#' @export
+#' @examples
+#' txdb <- ORFik.template.experiment()
+#' #cds <- loadRegion(txdb, "cds")
+#' ## To get enough CDSs, just replicate them
+#' # cds <- rep(cds, 100)
+#' #artificial.orfs(cds)
 artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
                             bin.if.few = TRUE) {
   #start5 = 1; end5 = 4; start3 = -4; end3 = 0;bin.if.few = TRUE; groupings <- ORFik:::groupings
@@ -109,7 +116,7 @@ artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
 #' 'downstream' - rel_orf is downstream towards the tran
 #' 'none' - when none of the above options is true
 #' @return A string object of defined isoform towards transcript.
-#'
+#' @keywords internal
 defineIsoform <- function(
   rel_orf, tran, isoform_names = c(
     "perfect_match", "elong_START_match", "trunc_START_match",
@@ -216,7 +223,7 @@ defineIsoform <- function(
 #' 'transcript', isoform' and 'biotype'.
 #' @importFrom S4Vectors queryHits
 #' @importFrom S4Vectors subjectHits
-#'
+#' @keywords internal
 assignAnnotations <- function(ORFs, con) {
 
     message("Loading annotations from gtf file")

@@ -121,6 +121,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
 #' @param windowSize size of binned windows, default: 100
 #' @family experiment plots
 #' @return NULL, or ggplot object if returnPlot is TRUE
+#' @keywords internal
 transcriptWindowPer <- function(leaders, cds, trailers, df,
                                 outdir = NULL, scores = c("sum", "zscore"),
                                 reads, returnCoverage = FALSE,
@@ -153,7 +154,7 @@ transcriptWindowPer <- function(leaders, cds, trailers, df,
 #' @inheritParams transcriptWindow
 #' @return NULL, or ggplot object if returnPlot is TRUE
 #' @family experiment plots
-#'
+#' @keywords internal
 transcriptWindow1 <- function(df, outdir = NULL,
                        scores = c("sum", "zscore"),
                        colors = experiment.colors(df),
@@ -270,6 +271,7 @@ rnaNormalize <- function(coverage, df, dfr = NULL, tx, normalizeMode = "position
 #' @param title Title to give plot
 #' @param plotFunction Which plot function, default: windowCoveragePlot
 #' @return NULL (or ggplot object if returnCoverage is TRUE)
+#' @keywords internal
 plotHelper <- function(coverage, df, outdir, scores, returnCoverage = FALSE,
                        title = "coverage metaplot", plot.ext = ".pdf", colors = c("skyblue4", "orange"),
                        plotFunction = "windowCoveragePlot") {

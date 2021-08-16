@@ -43,3 +43,4 @@ Other GRanges:
 \code{\link{upstreamFromPerGroup}()}
 }
 \concept{GRanges}
+\keyword{internal}

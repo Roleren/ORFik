@@ -15,3 +15,4 @@ a RleList (reversed inside list elements)
 \description{
 A faster version of S4Vectors::revElements
 }
+\keyword{internal}

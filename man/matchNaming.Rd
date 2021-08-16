@@ -19,3 +19,4 @@ a GRangesList
 Given a GRangesList and a reference, make the naming convention and
 the number of metacolumns equal to reference
 }
+\keyword{internal}

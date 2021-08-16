@@ -42,3 +42,4 @@ Other coveragePlot:
 \code{\link{windowCoveragePlot}()}
 }
 \concept{coveragePlot}
+\keyword{internal}

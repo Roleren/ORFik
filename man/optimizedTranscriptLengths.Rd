@@ -45,3 +45,4 @@ default load time of lengths is ~ 15 seconds, if ORFik fst
 optimized lengths object has been made, load that file instead:
 load time reduced to ~ 0.1 second.
 }
+\keyword{internal}

@@ -28,3 +28,4 @@ Other experiment_naming:
 \code{\link{stageNames}()}
 }
 \concept{experiment_naming}
+\keyword{internal}

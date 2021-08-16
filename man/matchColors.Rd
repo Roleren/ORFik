@@ -17,3 +17,4 @@ number of genes in coverage
 \description{
 Check that colors match with the number of fractions.
 }
+\keyword{internal}

@@ -15,3 +15,4 @@ a data.frame, modified call of as.list(txdb)
 \description{
 Update exon ranks of exon data.frame inside txdb object
 }
+\keyword{internal}

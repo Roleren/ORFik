@@ -22,3 +22,4 @@ Similar to normal transform like log2 or log10.
 But keep 0 values as 0, to avoid Inf values and negtive values
 are made as -scale(abs(x)), to avoid NaN values.
 }
+\keyword{internal}

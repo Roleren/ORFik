@@ -17,3 +17,4 @@ GRangesList object of fiveUTRs
 \description{
 Extend first exon of each transcript with length specified
 }
+\keyword{internal}

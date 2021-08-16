@@ -17,3 +17,4 @@ character path without file extension
 \description{
 Allows removal of compression
 }
+\keyword{internal}

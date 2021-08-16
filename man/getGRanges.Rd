@@ -17,3 +17,4 @@ GRanges object
 \description{
 Internal GRanges loader from fst data.frame
 }
+\keyword{internal}

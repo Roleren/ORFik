@@ -15,3 +15,4 @@ a new valid ordered list of exon ids (integer)
 \description{
 Get new exon ids after update of txdb
 }
+\keyword{internal}

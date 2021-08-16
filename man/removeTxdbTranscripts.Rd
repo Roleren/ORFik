@@ -17,3 +17,4 @@ a txList
 \description{
 Remove all transcripts, except the ones in fiveUTRs.
 }
+\keyword{internal}

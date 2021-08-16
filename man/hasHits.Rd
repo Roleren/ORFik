@@ -23,3 +23,4 @@ a list of logicals, T == hit, F == no hit
 Finding GRanges groups that have overlap hits with reads
 Similar to %over%.
 }
+\keyword{internal}

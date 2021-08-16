@@ -422,6 +422,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
 #' to something more meaningful.
 #' @return a character vector of new file names
 #' @family sra
+#' @keywords internal
 rename.SRA.files <- function(files, new_names) {
   info <- NULL # Set to default
   if (!is.character(new_names)) { # Then auto-guess from meta data
@@ -508,6 +509,7 @@ rename.SRA.files <- function(files, new_names) {
 #' @inheritParams download.SRA
 #' @return character, full filepath of downloaded  files
 #' @family sra
+#' @keywords internal
 download.ebi <- function(info, outdir, rename = TRUE,
                          ebiDLMethod = "auto", BPPARAM = bpparam()) {
 
@@ -673,6 +675,7 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE, study = NULL) {
 #'  if all files are not found. If FALSE returns empty character vector if error
 #'  is catched.
 #' @return character (1 element per SRR number)
+#' @keywords internal
 find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE) {
   a <- data.table()
   for (i in accession) {

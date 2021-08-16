@@ -327,6 +327,7 @@ countTable <- function(df, region = "mrna", type = "count",
 #' @return a list of data.table, 1 data.table per region. The regions
 #' will be the names the list elements.
 #' @family countTable
+#' @keywords internal
 countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
                                longestPerGene = TRUE,
                                geneOrTxNames = "tx",

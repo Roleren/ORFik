@@ -26,3 +26,4 @@ a GRanges object of first exons
 Add cage max peaks as new transcript start sites for each 5' leader
 (*) strands are not supported, since direction must be known.
 }
+\keyword{internal}

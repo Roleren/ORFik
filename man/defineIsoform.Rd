@@ -39,3 +39,4 @@ A string object of defined isoform towards transcript.
 \description{
 Overlaps GRanges object with provided annotations.
 }
+\keyword{internal}

@@ -24,3 +24,4 @@ a numeric vector of weights of equal size to subject
 \description{
 Get weights from a subject GenomicRanges object
 }
+\keyword{internal}

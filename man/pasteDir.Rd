@@ -18,3 +18,4 @@ the pasted string
 A paste function for directories
 Makes sure slashes are corrected, and not doubled.
 }
+\keyword{internal}

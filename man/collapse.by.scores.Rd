@@ -27,3 +27,4 @@ res <- convertToOneBasedRanges(gr,
 ORFik:::collapse.by.scores(res)
 
 }
+\keyword{internal}

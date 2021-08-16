@@ -21,3 +21,4 @@ a candidate library types (character vector)
 \description{
 From the given \code{\link{experiment}}
 }
+\keyword{internal}

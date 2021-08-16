@@ -22,3 +22,6 @@ frame 0, frame 1, frame 2
 GRanges object should be beforehand
 tiled to size of 1. This subsetting takes account for strand.
 }
+\examples{
+subsetToFrame(GRanges("1", IRanges(1:10, width = 1), "+"), 2)
+}

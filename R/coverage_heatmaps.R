@@ -229,6 +229,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' @importFrom gridExtra grid.arrange
 #' @return invisible(NULL), plots are saved
 #' @family heatmaps
+#' @keywords internal
 heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstream,
                      zeroPosition = upstream, acceptedLengths = NULL, type = "ofst",
                      legendPos = "right", colors = "default", addFracPlot = TRUE,

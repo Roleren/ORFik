@@ -19,3 +19,4 @@ Works for all coverage plots, that need 0 position aligning
 It basicly bins the x axis on floor(length of x axis / 20) or
 1 if x < 20
 }
+\keyword{internal}

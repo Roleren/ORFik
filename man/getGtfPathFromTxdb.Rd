@@ -18,3 +18,4 @@ and stop.error is FALSE.
 \description{
 Will crash and report proper error if no gtf is found
 }
+\keyword{internal}

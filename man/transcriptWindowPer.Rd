@@ -62,3 +62,4 @@ Other experiment plots:
 \code{\link{transcriptWindow}()}
 }
 \concept{experiment plots}
+\keyword{internal}

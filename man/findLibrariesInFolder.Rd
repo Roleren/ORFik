@@ -31,3 +31,4 @@ Will try to guess paired / unpaired wig, bed, bam files.
 \details{
 Set pairedEndBam if you have paired end reads as a single bam file.
 }
+\keyword{internal}

@@ -18,3 +18,4 @@ logical, TRUE if url directory exists
 \description{
 Check if ftp directory exists
 }
+\keyword{internal}

@@ -34,3 +34,4 @@ Other sra:
 \code{\link{install.sratoolkit}()}
 }
 \concept{sra}
+\keyword{internal}

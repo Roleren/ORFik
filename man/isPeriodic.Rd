@@ -44,3 +44,4 @@ Detection method:\cr
 The maximum dominant Fourier frequencies is found by finding which
 period has the highest spectrum density (using a 10% cosine taper).
 }
+\keyword{internal}

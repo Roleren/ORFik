@@ -51,7 +51,7 @@ countOverlapsW <- function(query, subject, weight = NULL, ...) {
 #' 10 bases, will give 3 codons, 1 base codons does not exist.
 #' @inheritParams scaledWindowPositions
 #' @return a data.table with codon sums
-#'
+#' @keywords internal
 codonSumsPerGroup <- function(grl, reads, weight = "score", is.sorted = FALSE) {
   dt <- scaledWindowPositions(grl, reads, numCodons(grl), weight = weight,
                               is.sorted = is.sorted)
@@ -73,7 +73,7 @@ codonSumsPerGroup <- function(grl, reads, weight = "score", is.sorted = FALSE) {
 #' @param librarySize a numeric of size 1, the # of reads in library
 #' @family features
 #' @return a numeric vector
-#'
+#' @keywords internal
 fpkm_calc <- function(counts, lengthSize, librarySize) {
   return((as.numeric(counts) * (10^9)) /
            (as.numeric(lengthSize) * as.numeric(librarySize)))
@@ -103,7 +103,7 @@ startRegionString <- function(grl, tx, faFile, upstream = 20,
 #' @param overlaps default NULL, if not null must be
 #' countOverlaps(grl, reads), input if you have it already.
 #' @return a list of logicals, T == hit, F == no hit
-#'
+#' @keywords internal
 hasHits <- function(grl, reads, keep.names = FALSE, overlaps = NULL) {
   if (is.null(overlaps)) overlaps <- countOverlaps(grl, reads)
   if (!keep.names) {
@@ -120,7 +120,7 @@ hasHits <- function(grl, reads, keep.names = FALSE, overlaps = NULL) {
 #' @param y GRanges object for which coverage should be extracted
 #' @return numeric vector of coverage of input GRanges object
 #' @family features
-#'
+#' @keywords internal
 subsetCoverage <- function(cov, y) {
   cov1 <- cov[[as.vector(seqnames(y)[1])]]
   return(as.vector(cov1[ranges(y)]))

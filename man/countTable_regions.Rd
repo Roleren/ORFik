@@ -59,3 +59,4 @@ Other countTable:
 \code{\link{countTable}()}
 }
 \concept{countTable}
+\keyword{internal}

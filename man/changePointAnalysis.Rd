@@ -61,3 +61,4 @@ Other pshifting:
 \code{\link{shifts.load}()}
 }
 \concept{pshifting}
+\keyword{internal}

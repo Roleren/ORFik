@@ -39,7 +39,7 @@ strandBool <- function(grl) {
 #'  or GRanges object
 #' @param reference a GRangesList of a reference
 #' @return a GRangesList
-#'
+#' @keywords internal
 matchNaming <- function(gr, reference) {
   if (is.grl(gr)) gr <- unlistGrl(gr)
 

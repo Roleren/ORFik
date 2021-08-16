@@ -17,3 +17,4 @@ a GRangesList of reads restricted to firstN and tiled by 1
 \description{
 Will restrict GRangesList to `N` bp downstream from the first base.
 }
+\keyword{internal}

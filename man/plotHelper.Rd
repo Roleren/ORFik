@@ -46,3 +46,4 @@ NULL (or ggplot object if returnCoverage is TRUE)
 \description{
 Should only be used internally
 }
+\keyword{internal}

@@ -17,3 +17,4 @@ a list, modified call of as.list(txdb)
 \description{
 Remove exons in txList that are not in fiveUTRs
 }
+\keyword{internal}

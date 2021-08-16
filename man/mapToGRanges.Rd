@@ -42,3 +42,4 @@ Other ORFHelpers:
 \code{\link{uniqueOrder}()}
 }
 \concept{ORFHelpers}
+\keyword{internal}

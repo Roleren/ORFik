@@ -24,3 +24,4 @@ It finds which of these exists, and auto groups
 \details{
 Normally not used directly!
 }
+\keyword{internal}

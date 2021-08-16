@@ -38,3 +38,4 @@ variable name of library (character vector)
 \description{
 Get variable name per filepath in experiment
 }
+\keyword{internal}

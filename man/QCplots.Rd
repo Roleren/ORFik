@@ -47,3 +47,4 @@ Other QC report:
 \code{\link{QCstats}()}
 }
 \concept{QC report}
+\keyword{internal}

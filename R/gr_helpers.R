@@ -152,6 +152,7 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
 #' GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
 #' that this alignment region was found 5 times.
 #' @return a numeric vector of weights of equal size to subject
+#' @keywords internal
 getWeights <- function(subject, weight = 1L) {
   weight <- if (is.numeric(weight)) {
     if (length(weight) == 1) {

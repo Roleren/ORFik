@@ -15,3 +15,4 @@ a list of character vector pairs
 \description{
 Given a character vector, get all unique combinations of 2.
 }
+\keyword{internal}

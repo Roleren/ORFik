@@ -25,3 +25,4 @@ Normally not used directly.
 Groups first each group, then either decreasing or increasing
 (on starts if byStarts == T, on ends if byStarts == F)
 }
+\keyword{internal}

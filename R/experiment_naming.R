@@ -6,6 +6,7 @@
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 libNames <- function() {
   mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
                 "SSU", "ATAC", "PRPF", "PAS-Seq", "PAL-Seq", "RIP","SHAPE",
@@ -53,6 +54,7 @@ libNames <- function() {
 #' @references https://www.mbl.edu/zebrafish/files/2013/03/Kimmel_stagingseries1.pdf
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 stageNames <- function(zebrafish.stages = FALSE) {
   if (zebrafish.stages) {
     mainName <- c("unfertilized", "fertilized",
@@ -109,6 +111,7 @@ stageNames <- function(zebrafish.stages = FALSE) {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 tissueNames <- function() {
   mainName <- c("adipose", "amygdala","brain", "bladder", "blood", "bone","breast",
     "colon", "cortex", "eye", "frontal_lobe", "heart",
@@ -162,6 +165,7 @@ tissueNames <- function() {
 #' returned for general non-differentiated cell lines like 3T3.
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 cellLineNames <- function(convertToTissue = FALSE) {
   if (convertToTissue) {
     mainName <- c("ovary", "lung", "lung","breast", "kidney", "ovary",
@@ -218,6 +222,7 @@ cellLineNames <- function(convertToTissue = FALSE) {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
@@ -239,6 +244,7 @@ repNames <- function() {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 batchNames <- function() {
   mainName <- c("b1", "b2", "b3", "b4", "b5", "b6")
   allNames <-
@@ -261,6 +267,7 @@ batchNames <- function() {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 conditionNames <- function() {
   mainName <- c("WT", "MZ", "4Ei",
                 "Mutant", "cas9", "NMDA", "DHPG", "KD",
@@ -292,6 +299,7 @@ conditionNames <- function() {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 inhibitorNames <- function() {
   mainName <- c("chloram","chx", "harr", "frozen", "lactim")
   allNames <-
@@ -313,6 +321,7 @@ inhibitorNames <- function() {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 fractionNames <- function() {
   mainName <- c("cyto","mito", "nuc","dmso", "thaps", "auxin", "silvestrol")
   allNames <-
@@ -339,6 +348,7 @@ fractionNames <- function() {
 #' @family experiment_naming
 #' @return a data.table with 2 columns, the main name, and all name variants
 #' of the main name in second column as a list.
+#' @keywords internal
 mainNames <- function(names, dt) {
   g <- groupings(dt$allNames)
   dt.long <- data.table(mainName = c(dt$mainName[g], c("", "")),

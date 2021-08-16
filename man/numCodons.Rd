@@ -22,3 +22,4 @@ Choose either only whole codons, or with stubs.
 ORF stubs are not relevant, since there are no correctly defined
 ORFs that are 17 bases long etc.
 }
+\keyword{internal}

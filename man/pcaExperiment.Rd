@@ -35,3 +35,4 @@ PCA component 2 (y-axis) for each library (colored by library),
 shape by replicate. Will be extended to allow batch correction
 in the future.
 }
+\keyword{internal}

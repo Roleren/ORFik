@@ -1,4 +1,5 @@
 #' @inherit getGenomeAndAnnotation
+#' @keywords internal
 get_genome_fasta <- function(genome, output.dir, organism,
                              assembly_type, db, gunzip) {
   if (genome != FALSE) { # fasta genome of organism
@@ -61,6 +62,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' If you want to make sure chromosome naming of the GTF matches the genome
 #' and correct seqlengths. If value is NULL or FALSE, it will be ignored.
 #' @inheritParams makeTxdbFromGenome
+#' @keywords internal
 get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
                            gunzip, genome, optimize = FALSE) {
   if (GTF != FALSE) { # gtf of organism
@@ -100,6 +102,7 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
 }
 
 #' @inherit getGenomeAndAnnotation
+#' @keywords internal
 get_noncoding_rna <- function(ncRNA, output.dir, organism, gunzip) {
   if (is.logical(ncRNA)) return(ncRNA)
 
@@ -126,6 +129,7 @@ get_noncoding_rna <- function(ncRNA, output.dir, organism, gunzip) {
 }
 
 #' @inherit getGenomeAndAnnotation
+#' @keywords internal
 get_phix_genome <- function(phix, output.dir, gunzip) {
   if (phix) {
     message("Downloading phix genome")

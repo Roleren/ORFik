@@ -81,3 +81,4 @@ a data.table with features
 \description{
 Not used directly, calculates all features internally for computeFeatures.
 }
+\keyword{internal}

@@ -17,3 +17,4 @@ GAlignments object
 \description{
 Internal GAlignments loader from fst data.frame
 }
+\keyword{internal}

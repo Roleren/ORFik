@@ -184,13 +184,18 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
 #' Create trimming table
 #'
 #' From fastp runs in ORFik alignment process
-#' @param trim_folder folder of trimmed files
+#' @param trim_folder folder of trimmed files, only reads
+#' fastp .json files
 #' @return a data.table with 6 columns, raw_library (names of library),
 #'  raw_reads (numeric, number of raw reads),
 #'  trim_reads (numeric, number of trimmed reads),
 #'  % trimmed (numeric, percentage of trimmed reads),
 #'  raw_mean_length (numeric, raw mean read length),
 #'  trim_mean_length (numeric, trim mean read length).
+#' @export
+#' @examples
+#' trimed_folder <- "path/to/fastp.json"
+#' #trimming.table(trimed_folder)
 trimming.table <- function(trim_folder) {
 
   raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)

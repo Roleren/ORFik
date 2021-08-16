@@ -18,3 +18,4 @@ a \code{\link{GRangesList}}
 Reverse minus strand per group in a GRangesList
 Only reverse if minus strand is in increasing order
 }
+\keyword{internal}

@@ -75,7 +75,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' transcripts (T) or by ORFs (F)?
 #' @return A \code{\link{GRangesList}} of ORFs.
 #' @family ORFHelpers
-#'
+#' @keywords internal
 mapToGRanges <- function(grl, result, groupByTx = TRUE) {
   if(length(result) == 0) return(GRangesList())
   validGRL(class(grl))
@@ -439,7 +439,7 @@ stopRegion <- function(grl, tx = NULL, is.sorted = TRUE,
 #'  versions on different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
 #' @family ORFHelpers
-#'
+#' @keywords internal
 orfID <- function(grl, with.tx = FALSE) {
   seqnames <- seqnamesPerGroup(grl, FALSE)
   strands <- strandPerGroup(grl, FALSE)
@@ -587,6 +587,7 @@ longestORFs <- function(grl) {
 #' @param as.integer a logical (TRUE), remove stub codons
 #' @param keep.names a logical (FALSE)
 #' @return an integer vector
+#' @keywords internal
 numCodons <- function(grl, as.integer = TRUE,  keep.names = FALSE) {
   if (as.integer) return(ceiling(widthPerGroup(grl, keep.names) / 3))
   return(widthPerGroup(grl, keep.names) / 3)

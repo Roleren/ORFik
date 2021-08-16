@@ -22,3 +22,4 @@ a GAlignment/GRanges object depending on input.
 \description{
 To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 }
+\keyword{internal}

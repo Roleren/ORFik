@@ -11,7 +11,7 @@
 #' name or ORF name, if ORfs are by transcript, check duplicates.
 #' @return an integer vector of indices for exon ranks
 #' @importFrom S4Vectors nrun Rle
-#'
+#' @keywords internal
 makeExonRanks <- function(grl, byTranscript = FALSE) {
   validGRL(class(grl))
   g <- groupings(grl)
@@ -759,7 +759,8 @@ extendTrailers <- function(grl, extension = 1000L, is.circular =
 #' @param frame A numeric indicating which frame to extract
 #' @return GRanges object reduced to only first frame
 #' @export
-#'
+#' @examples
+#' subsetToFrame(GRanges("1", IRanges(1:10, width = 1), "+"), 2)
 subsetToFrame <- function(x, frame) {
   if (as.vector(strand(x) == "+")[1]) {
     x[seq.int(frame, length(x), 3)]

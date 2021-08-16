@@ -7,7 +7,8 @@
 trimming.table(trim_folder)
 }
 \arguments{
-\item{trim_folder}{folder of trimmed files}
+\item{trim_folder}{folder of trimmed files, only reads
+fastp .json files}
 }
 \value{
 a data.table with 6 columns, raw_library (names of library),
@@ -19,4 +20,8 @@ a data.table with 6 columns, raw_library (names of library),
 }
 \description{
 From fastp runs in ORFik alignment process
+}
+\examples{
+trimed_folder <- "path/to/fastp.json"
+#trimming.table(trimed_folder)
 }

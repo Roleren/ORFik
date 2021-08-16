@@ -29,3 +29,4 @@ Other ORFik_experiment:
 \code{\link{validateExperiments}()}
 }
 \concept{ORFik_experiment}
+\keyword{internal}

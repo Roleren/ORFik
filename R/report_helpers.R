@@ -4,6 +4,7 @@
 #' @inheritParams outputLibs
 #' @inheritParams QCreport
 #' @return a data.table of the count info
+#' @keywords internal
 QC_count_tables <- function(df, out.dir, type = "ofst",
                             BPPARAM = bpparam()) {
   txdb <- loadTxdb(df)
@@ -82,6 +83,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
 #' @inheritParams QCreport
 #' @param finals a data.table with current output from QCreport
 #' @return a data.table of the update finals object with trim info
+#' @keywords internal
 trim_detection <- function(df, finals, out.dir) {
   # Update raw reads to real number
   # Needs a folder called trim
@@ -162,6 +164,7 @@ QCstats <- function(df, path = file.path(dirname(df$filepath[1]),
 #' @return a data.table object of the the read length data with columns:
 #' \code{c("sample", "sample_id", "read length", "counts",
 #'  "counts_per_sample", "perc_of_counts_per_sample")}
+#' @keywords internal
 readLengthTable <- function(df, output.dir = NULL, type = "ofst",
                             BPPARAM = bpparam()) {
   file.name <- file.path(output.dir, "readLengths.csv")

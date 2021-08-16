@@ -77,3 +77,4 @@ Other STAR:
 \code{\link{STAR.remove.crashed.genome}()},
 \code{\link{install.fastp}()}
 }
+\keyword{internal}

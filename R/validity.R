@@ -6,7 +6,7 @@
 #' @param reads a GRanges, GAlignment or GAlignmentPairs object
 #' @return a character vector of valid seqlevels
 #' @family validity
-#'
+#' @keywords internal
 validSeqlevels <- function(grl, reads) {
   readNames <- unique(seqnames(reads))
   seqMatch <- readNames %in%
@@ -19,7 +19,7 @@ validSeqlevels <- function(grl, reads) {
 #' either a character from class or the object itself.
 #' @return a boolean
 #' @family validity
-#'
+#' @keywords internal
 is.grl <- function(class) {
   if (!is.character(class)) {
     class <- class(class)
@@ -33,7 +33,7 @@ is.grl <- function(class) {
 #'  either a character from class or the object itself.
 #' @return a boolean
 #' @family validity
-#'
+#' @keywords internal
 is.gr_or_grl <- function(class) {
   if (!is.character(class)) {
     class <- class(class)
@@ -46,7 +46,7 @@ is.gr_or_grl <- function(class) {
 #'  either a character from class or the object itself.
 #' @return a boolean
 #' @family validity
-#'
+#' @keywords internal
 is.range <- function(class) {
   if (!is.character(class)) {
     class <- class(class)
@@ -59,7 +59,7 @@ is.range <- function(class) {
 #' @param grl a GRangesList or GRanges to check
 #' @return a logical (TRUE/FALSE)
 #' @family validity
-#'
+#' @keywords internal
 is.ORF <- function(grl) {
   if (is.gr_or_grl(class(grl))){
     if (is.grl(grl)) {
@@ -79,7 +79,7 @@ is.ORF <- function(grl) {
 #' @param checkNULL should NULL classes be checked and return indeces of these?
 #' @return either NULL or indices (checkNULL == TRUE)
 #' @family validity
-#'
+#' @keywords internal
 validGRL <- function(class, type = "grl", checkNULL = FALSE) {
   if(length(class) != length(type)) stop("not equal length of classes",
                                          " and types, see validGRL")
@@ -104,7 +104,7 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE) {
 #' @param class, the given class of RNA object
 #' @return NULL, stop if unvalid object
 #' @family validity
-#'
+#' @keywords internal
 checkRNA <- function(class){
   if (is.null(class) || (class == "NULL")) {
     message("No RNA added, skipping feature te and fpkm of RNA, ",
@@ -122,7 +122,7 @@ checkRNA <- function(class){
 #' @param class, the given class of RFP object
 #' @return NULL, stop if invalid object
 #' @family validity
-#'
+#' @keywords internal
 checkRFP <- function(class) {
   if (class != "GAlignments" & class != "GRanges") {
     stop("RFP must be either GAlignments or GRanges")
@@ -134,6 +134,7 @@ checkRFP <- function(class) {
 #' @param ... any amount of arguments that are possible to convert
 #'  to characters
 #' @return the pasted string
+#' @keywords internal
 pasteDir <- function(...) {
   temp <- gsub(pattern = "//", x = paste(..., sep = "/"), replacement = "/")
   return(gsub(pattern = "/\\.", temp, replacement = "."))

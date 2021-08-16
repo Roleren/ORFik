@@ -58,3 +58,4 @@ Per transcript part, bin them all to windowSize (default 100),
 and make a data.table, rows are positions, useful for plotting with ORFik
 and ggplot2.
 }
+\keyword{internal}

@@ -97,6 +97,7 @@ convertToOneBasedRanges <- function(gr, method = "5prime",
 #' (number of replicates) for all reads at that position
 #' @param x a GRanges object
 #' @return merged GRanges object
+#' @keywords internal
 #' @examples
 #' gr_s1 <- rep(GRanges("chr1", 1:10,"+"), 2)
 #' gr_s2 <- GRanges("chr1", 1:12,"+")

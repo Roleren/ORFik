@@ -193,6 +193,7 @@ computeFeaturesCage <- function(grl, RFP, RNA = NULL, Gtf = NULL, tx = NULL,
 #' @inheritParams computeFeaturesCage
 #' @param st (NULL), if defined must be: st = startRegion(grl, tx, T, -3, 9)
 #' @return a data.table with features
+#' @keywords internal
 allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                               faFile, riboStart, riboStop,
                               sequenceFeatures, uorfFeatures,

@@ -36,3 +36,4 @@ Other experiment_naming:
 \code{\link{tissueNames}()}
 }
 \concept{experiment_naming}
+\keyword{internal}

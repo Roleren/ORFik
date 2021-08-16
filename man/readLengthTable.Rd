@@ -29,3 +29,4 @@ a data.table object of the the read length data with columns:
 Summarizing all libraries in experiment,
 make a table of proportion of read lengths.
 }
+\keyword{internal}

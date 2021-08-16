@@ -26,3 +26,4 @@ For every position in width max.pos - min.pos + 1, append
 on coverage window with drop.zero.dt as TRUE and you need to plot
 0 positions after a transformation by coverageScorings.
 }
+\keyword{internal}

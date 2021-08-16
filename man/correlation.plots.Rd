@@ -13,7 +13,8 @@ correlation.plots(
   width = 400,
   size = 0.15,
   plot.ext = ".pdf",
-  complex.correlation.plots = TRUE
+  complex.correlation.plots = TRUE,
+  data_for_pairs = countTable(df, region, type = type)
 )
 }
 \arguments{
@@ -39,6 +40,9 @@ whole mrnas or one of (leaders, cds, trailers)}
 to simple correlation plot two computationally heavy dots + correlation plots.
 Useful for deeper analysis, but takes longer time to run, especially on low-quality
 gpu computers. Set to FALSE to skip these.}
+
+\item{data_for_pairs}{a data.table from ORFik::countTable of counts wanted.
+Default is fpkm of all mRNA counts over all libraries.}
 }
 \value{
 invisible(NULL)

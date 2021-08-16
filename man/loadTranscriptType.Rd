@@ -26,6 +26,11 @@ only contain 5S rRNA etc. If your gtf does not contain evertyhing you need,
 use a resource like repeatmasker and download a gtf:
 https://genome.ucsc.edu/cgi-bin/hgTables
 }
+\examples{
+gtf <- "path/to.gtf"
+#loadTranscriptType(gtf, part = "rRNA")
+#loadTranscriptType(gtf, part = "miRNA")
+}
 \references{
 doi: 10.1002/0471250953.bi0410s25
 }

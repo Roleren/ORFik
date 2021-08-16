@@ -439,6 +439,7 @@ save.experiment <- function(df, file) {
 #' @param slot character, default "auto". If auto, use auto guessing of slot,
 #' else must be a character vector of length 1 or equal length as filepaths.
 #' @return a candidate library types (character vector)
+#' @keywords internal
 findFromPath <- function(filepaths, candidates, slot = "auto") {
   if (all(slot != "auto")) { # If not auto guess
     if(length(slot) != 1 & length(slot) != length(filepaths)) {
@@ -477,6 +478,7 @@ findFromPath <- function(filepaths, candidates, slot = "auto") {
 #' @param df an ORFik \code{\link{experiment}}
 #' @return library types (character vector)
 #' @family ORFik_experiment
+#' @keywords internal
 libraryTypes <- function(df) {
   if (is(df, "experiment")) {
     return(unique(df$libtype))
@@ -492,6 +494,7 @@ libraryTypes <- function(df) {
 #' @param df an ORFik \code{\link{experiment}}
 #' @return NULL (Stops if failed)
 #' @family ORFik_experiment
+#' @keywords internal
 validateExperiments <- function(df) {
   libTypes <- libraryTypes(df)
   if (!is(df, "experiment")) stop("df must be experiment!")
@@ -580,6 +583,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' @param skip.experiment a logical (FALSE), don't include experiment
 #' @param skip.libtype a logical (FALSE), don't include libtype
 #' @return variable name of library (character vector)
+#' @keywords internal
 bamVarNamePicker <- function(df, skip.replicate = FALSE,
                              skip.condition = FALSE,
                              skip.stage = FALSE, skip.fraction = FALSE,
@@ -908,6 +912,7 @@ remove.experiments <- function(df, envir = .GlobalEnv) {
 #' @importFrom tools file_ext
 #' @return (data.table) All files found from types parameter.
 #' With 2 extra column (logical), is it wig pairs, and paired bam files.
+#' @keywords internal
 findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
   regex <- paste("\\.", types, collapse = "|", sep = "")
   # Find files in multiple dirs in correct order

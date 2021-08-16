@@ -54,3 +54,4 @@ Other sra:
 \code{\link{rename.SRA.files}()}
 }
 \concept{sra}
+\keyword{internal}

@@ -23,3 +23,4 @@ GAlignmentPairs object
 \description{
 Internal GAlignmentPairs loader from fst data.frame
 }
+\keyword{internal}

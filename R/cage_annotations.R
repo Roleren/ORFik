@@ -5,6 +5,7 @@
 #' these following rules:
 #' all reads in region (-5:-1, 1:5) for each tss will be removed, removes noise.
 #' @return the filtered Granges object
+#' @keywords internal
 #'
 filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
                        preCleanup = TRUE) {
@@ -35,6 +36,7 @@ filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
 #' @param fiveUTRs The 5' leader sequences as GRangesList
 #' @param extension The number of basses to extend transcripts upstream
 #' @return GRangesList object of fiveUTRs
+#' @keywords internal
 #'
 extendsTSSexons <- function(fiveUTRs, extension = 1000) {
   fiveAsgr <- unlist(fiveUTRs, use.names = TRUE)
@@ -64,6 +66,7 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
 #' @param shiftedfiveUTRs The 5' leader sequences as GRangesList
 #'  shifted by CAGE
 #' @return GRangesList object of restricted fiveUTRs
+#' @keywords internal
 restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs) {
   if (length(fiveUTRs) != length(shiftedfiveUTRs))
     stop("fiveUTRs and shifted must be equal size!")
@@ -102,7 +105,7 @@ restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs) {
 #'  used to reassign 5' leaders
 #' @importFrom data.table as.data.table
 #' @return a data.table of max peaks
-#'
+#' @keywords internal
 findMaxPeaks <- function(cageOverlaps, filteredCage) {
 
   dt <- as.data.table(filteredCage)
@@ -126,7 +129,7 @@ findMaxPeaks <- function(cageOverlaps, filteredCage) {
 #'  leaders to not extend closer than 5 bases from closest upstream leader,
 #'  set this to TRUE.
 #' @return a Hits object
-#'
+#' @keywords internal
 findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
 
   shiftedfiveUTRs <- extendsTSSexons(fiveUTRs, extension)
@@ -144,7 +147,7 @@ findNewTSS <- function(fiveUTRs, cageData, extension, restrictUpstreamToTx) {
 #' @param maxPeakPosition The max peak for each 5' leader found by cage
 #' @inheritParams reassignTSSbyCage
 #' @return a GRanges object of first exons
-#'
+#' @keywords internal
 addNewTSSOnLeaders <- function(fiveUTRs, maxPeakPosition, removeUnused,
                                cageMcol) {
 

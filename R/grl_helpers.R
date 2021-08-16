@@ -4,7 +4,7 @@
 #' @param grl (GRangesList)
 #' @param firstN (integer) Allow only this many bp downstream, maximum.
 #' @return a GRangesList of reads restricted to firstN and tiled by 1
-#'
+#' @keywords internal
 downstreamN <- function(grl, firstN = 150L) {
   return(heads(tile1(grl, matchNaming = FALSE), firstN))
 }
@@ -72,7 +72,7 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
 #' @importFrom data.table as.data.table :=
 #' @return an equally named GRangesList, where each group is sorted within
 #' group.
-#'
+#' @keywords internal
 gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
   if (length(grl) == 0) return(GRangesList())
 
@@ -159,6 +159,7 @@ sortPerGroup <- function(grl, ignore.strand = FALSE, quick.rev = FALSE){
 #' @param grl a \code{\link{GRangesList}}
 #' @param onlyIfIncreasing logical, default (TRUE), only reverse if decreasing
 #' @return a \code{\link{GRangesList}}
+#' @keywords internal
 reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
   minus <- !strandBool(grl)
   if (onlyIfIncreasing) {
@@ -393,7 +394,7 @@ unlistGrl <- function(grl) {
 #'
 #' @param grl a GRangesList or GRanges object
 #' @return same type and structure as input without meta columns
-#'
+#' @keywords internal
 removeMetaCols <- function(grl) {
   wasGRL <- FALSE
   if (!is.gr_or_grl(class(grl))) {
@@ -419,6 +420,7 @@ removeMetaCols <- function(grl) {
 #'
 #' @param grl GRangesList
 #' @return an integer vector
+#' @export
 #' @examples
 #' grl <- GRangesList(GRanges("1", c(1, 3, 5), "+"),
 #'                    GRanges("1", c(19, 21, 23), "+"))
@@ -435,6 +437,7 @@ groupings <- function(grl){
 #' A faster version of S4Vectors::revElements
 #' @param x RleList
 #' @return a RleList (reversed inside list elements)
+#' @keywords internal
 revElementsF <- function(x) {
   b <- rev(x)
   b@unlistData <- rev(x@unlistData)

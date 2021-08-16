@@ -32,3 +32,4 @@ if they are all paired, return a data.table with matches as 2 columns
 Find pair of forward and reverse strand wig / bed files and
 paired end bam files split in two
 }
+\keyword{internal}

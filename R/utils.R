@@ -7,7 +7,7 @@
 #' @param skip.name default (TRUE), skip name column (column 4)
 #' @return a \code{\link{GRanges}} object from bed
 #' @family utils
-#'
+#' @keywords internal
 bedToGR <- function(x, skip.name = TRUE) {
   if (ncol(x) < 3) stop("bed file must have a least 3 columns!")
   starts <- x[, 2L] + 1L
@@ -30,6 +30,7 @@ bedToGR <- function(x, skip.name = TRUE) {
 #' Additional columns will be assigned as meta columns
 #' @return GRanges object
 #' @importFrom S4Vectors new2
+#' @keywords internal
 getGRanges <- function(df) {
   if (!all(c("seqnames", "start", "width", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
@@ -64,6 +65,7 @@ getGRanges <- function(df) {
 #' Additional columns will be assigned as meta columns
 #' @return GAlignments object
 #' @importFrom S4Vectors new2
+#' @keywords internal
 getGAlignments <- function(df) {
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
@@ -99,6 +101,7 @@ getGAlignments <- function(df) {
 #' @inheritParams readBam
 #' @return GAlignmentPairs object
 #' @importFrom S4Vectors new2
+#' @keywords internal
 getGAlignmentsPairs <- function(df, strandMode = 0) {
   if (nrow(df) == 0) {
     return(GenomicAlignments::GAlignmentPairs(first = GAlignments(),
@@ -153,6 +156,7 @@ getGAlignmentsPairs <- function(df, strandMode = 0) {
 #' compressions of these variants.
 #' @return if not all are paired, return original list,
 #' if they are all paired, return a data.table with matches as 2 columns
+#' @keywords internal
 findNGSPairs <- function(paths, f = c("forward", "fwd"),
                          r = c("reverse", "rev"), format = "wig") {
   f <- paste0(f, "\\.", format, "*", collapse = "|")
@@ -183,6 +187,7 @@ findNGSPairs <- function(paths, f = c("forward", "fwd"),
 #' @param basename relative path (TRUE) or full path (FALSE)? (default: FALSE)
 #' @importFrom tools file_ext
 #' @return character path without file extension
+#' @keywords internal
 remove.file_ext <- function(path, basename = FALSE) {
   out <- c()
   for (p in path) {
@@ -212,6 +217,7 @@ remove.file_ext <- function(path, basename = FALSE) {
 #' Will use 1st seqlevel-style if more are present.
 #' Like: c("NCBI", "UCSC") -> pick "NCBI"
 #' @return a GAlignment/GRanges object depending on input.
+#' @keywords internal
 matchSeqStyle <- function(range, chrStyle = NULL) {
   # TODO: Check if this makes it safer:
   # if (tryCatch(seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs),
@@ -239,7 +245,7 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
 #' @return the reads as GRanges,  GAlignment or GAlignmentPairs
 #' @importFrom GenomicAlignments first
 #' @family utils
-#'
+#' @keywords internal
 optimizeReads <- function(grl, reads) {
   seqMatch <- validSeqlevels(grl, reads)
   reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
@@ -265,6 +271,7 @@ optimizeReads <- function(grl, reads) {
 #' @param by.reference logical, FALSE. if TRUE, update object by reference
 #' if it is data.table.
 #' @return same object class as x, with transformed values
+#' @keywords internal
 pseudo.transform <- function(x, scale = log2, by.reference = FALSE) {
 
   if (!by.reference)
@@ -293,6 +300,7 @@ pseudo.transform <- function(x, scale = log2, by.reference = FALSE) {
 #' @param x a character vector, will unique elements for you.
 #' @return a list of character vector pairs
 #' @importFrom utils combn
+#' @keywords internal
 combn.pairs <- function(x) {
   pairs <- list() # creating compairisons :list of pairs
   comparisons.design <- unique(x)
@@ -312,6 +320,7 @@ combn.pairs <- function(x) {
 #' stop and report error.
 #' @return logical, TRUE if url directory exists
 #' @importFrom httr http_error
+#' @keywords internal
 exists.ftp.dir.fast <- function(url.dir, report.error = FALSE) {
   url.dir.not.exists <- tryCatch(
     expr = {
@@ -349,6 +358,7 @@ exists.ftp.dir.fast <- function(url.dir, report.error = FALSE) {
 #' stop and report error.
 #' @return logical, TRUE if file exists
 #' @importFrom httr http_error
+#' @keywords internal
 exists.ftp.file.fast <- function(url, report.error = FALSE) {
   # Stop early if directory does not exist
   if (!exists.ftp.dir.fast(paste0(dirname(url), "/"), report.error))

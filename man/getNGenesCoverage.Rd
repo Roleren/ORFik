@@ -15,3 +15,4 @@ number of genes in coverage
 \description{
 Used to count genes in ORFik meta plots
 }
+\keyword{internal}

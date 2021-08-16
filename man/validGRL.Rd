@@ -31,3 +31,4 @@ Other validity:
 \code{\link{validSeqlevels}()}
 }
 \concept{validity}
+\keyword{internal}

@@ -30,3 +30,4 @@ Other ORFik_experiment:
 \code{\link{save.experiment}()}
 }
 \concept{ORFik_experiment}
+\keyword{internal}

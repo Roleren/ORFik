@@ -18,3 +18,4 @@ logical, TRUE if file exists
 \description{
 Check if ftp file exists
 }
+\keyword{internal}

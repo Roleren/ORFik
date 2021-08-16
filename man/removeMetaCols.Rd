@@ -15,3 +15,4 @@ same type and structure as input without meta columns
 \description{
 Removes meta columns
 }
+\keyword{internal}

@@ -22,3 +22,4 @@ Example: leader1: start on 10, leader2: stop on 8,
 extend leader1 to 5 -> this function will resize leader1
 to 9, to be outside leader2, so that CAGE reads can not wrongly overlap.
 }
+\keyword{internal}

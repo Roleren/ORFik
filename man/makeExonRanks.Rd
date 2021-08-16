@@ -24,3 +24,4 @@ There are two ways to make vector of exon ranking:
 Either by transcript or by original groupings.
 Must be ordered, so that same transcripts are ordered together.
 }
+\keyword{internal}

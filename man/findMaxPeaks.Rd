@@ -20,3 +20,4 @@ a data.table of max peaks
 Find max peak for each transcript,
 returns as data.table, without names, but with index
 }
+\keyword{internal}

@@ -32,3 +32,4 @@ Other utils:
 \code{\link{readWig}()}
 }
 \concept{utils}
+\keyword{internal}

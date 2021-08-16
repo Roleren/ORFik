@@ -33,3 +33,4 @@ Other uorfs:
 \code{\link{uORFSearchSpace}()}
 }
 \concept{uorfs}
+\keyword{internal}

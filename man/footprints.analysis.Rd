@@ -23,3 +23,4 @@ invisible(NULL)
 \description{
 For internal use only!
 }
+\keyword{internal}

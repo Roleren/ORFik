@@ -23,3 +23,4 @@ a Hits object
 \description{
 Finds max peaks per trancsript from reads in the cagefile
 }
+\keyword{internal}

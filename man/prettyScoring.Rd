@@ -15,3 +15,4 @@ a new scoring name or the same if pretty
 \description{
 Prettify scoring name
 }
+\keyword{internal}

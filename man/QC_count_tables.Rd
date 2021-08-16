@@ -28,3 +28,4 @@ a data.table of the count info
 \description{
 The better the annotation / gtf used, the more results you get.
 }
+\keyword{internal}

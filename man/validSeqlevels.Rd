@@ -29,3 +29,4 @@ Other validity:
 \code{\link{validGRL}()}
 }
 \concept{validity}
+\keyword{internal}

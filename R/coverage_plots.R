@@ -222,6 +222,7 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
+#' @keywords internal
 savePlot <- function(plot, output = NULL, width = 200, height = 150, plot.ext = ".pdf",
                      dpi = 300) {
   if (!is.null(output)) {
@@ -246,6 +247,7 @@ savePlot <- function(plot, output = NULL, width = 200, height = 150, plot.ext = 
 #' 1 if x < 20
 #' @param covPos a numeric vector of positions in coverage
 #' @return a numeric vector from the seq() function, aligned to 0.
+#' @keywords internal
 xAxisScaler <- function(covPos) {
   pos <- length(unique(covPos))
   min <- min(covPos)
@@ -263,6 +265,7 @@ xAxisScaler <- function(covPos) {
 #' @param increments.y increments of y axis, default "auto".
 #' Or a numeric value < max position & > min position.
 #' @return a character vector from the seq() function, aligned to 0.
+#' @keywords internal
 yAxisScaler <- function(covPos, increments.y = "auto") {
   covPos <- as.integer(covPos)
   pos <- length(covPos)
@@ -283,6 +286,7 @@ yAxisScaler <- function(covPos, increments.y = "auto") {
 #' Prettify scoring name
 #' @param scoring a character (the scoring)
 #' @return a new scoring name or the same if pretty
+#' @keywords internal
 prettyScoring <- function(scoring) {
   if (is.null(scoring)) return("raw")
   if (scoring == "log2sum") {
@@ -301,6 +305,7 @@ prettyScoring <- function(scoring) {
 #' @param coverage a data.table with coverage
 #' @param colors a character vector of colors
 #' @return number of genes in coverage
+#' @keywords internal
 matchColors <- function(coverage, colors) {
   nFractions <- length(unique(coverage$fraction))
   nColors <- length(colors)

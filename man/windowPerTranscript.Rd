@@ -54,3 +54,4 @@ and ggplot2.
 NOTE: All ranges with smaller width than windowSize, will of course be
 removed. What is the 100th position on a 1 width object ?
 }
+\keyword{internal}

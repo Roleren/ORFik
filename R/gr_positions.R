@@ -11,7 +11,7 @@
 #' @inheritParams extendLeaders
 #' @return the same GRangesList with new start sites
 #' @family GRanges
-#'
+#' @keywords internal
 assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
                                         all(isCircular(grl) %in% TRUE)) {
   if (length(grl) != length(newStarts)) stop("length of grl and newStarts ",
@@ -63,7 +63,7 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
 #' @return the same GRangesList with new stop sites
 #' @importFrom data.table .N .I
 #' @family GRanges
-#'
+#' @keywords internal
 assignLastExonsStopSite <- function(grl, newStops, is.circular =
                                       all(isCircular(grl) %in% TRUE)) {
   if (length(grl) != length(newStops)) stop("length of grl and newStops ",
@@ -120,7 +120,7 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
 #' then stopsites will be used.
 #' @return a GRangesList of downstream part
 #' @family GRanges
-#'
+#' @keywords internal
 downstreamOfPerGroup <- function(tx, downstreamOf) {
   if (is.grl(downstreamOf)) {
     downstreamOf <- stopSites(downstreamOf, asGR = TRUE, is.sorted = TRUE,
@@ -152,7 +152,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #' @inheritParams extendLeaders
 #' @return a GRangesList of downstream part
 #' @family GRanges
-#'
+#' @keywords internal
 downstreamFromPerGroup <- function(tx, downstreamFrom, is.circular =
                                      all(isCircular(tx) %in% TRUE)) {
   # Needs speed update!
@@ -199,7 +199,7 @@ downstreamFromPerGroup <- function(tx, downstreamFrom, is.circular =
 #' @inheritParams extendLeaders
 #' @return a GRangesList of upstream part
 #' @family GRanges
-#'
+#' @keywords internal
 upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE,
                                is.circular = all(isCircular(tx) %in% TRUE)) {
   posIndices <- strandBool(tx)
@@ -276,7 +276,7 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE,
 #' is the new start point of first valid exon.
 #' @return a GRangesList of upstream part
 #' @family GRanges
-#'
+#' @keywords internal
 upstreamFromPerGroup <- function(tx, upstreamFrom) {
   posIndices <- strandBool(tx)
   posStarts <- start(tx[posIndices])
