@@ -12,8 +12,14 @@
 #' @param width numeric, default 6 (in inches)
 #' @param height numeric, default 6 (in inches)
 #' @param dot.size numeric, default 0.4, size of point dots in plot.
-#' @param xlim numeric vector, default c(-5, 5)
-#' @param ylim numeric vector, default c(-10, 10)
+#' @param xlim numeric vector or character preset, default: "bidir.max"
+#' (Equal in both + / - direction, using max value + 0.5 of rna column in dt).
+#' If you want ggplot to decide limit, set to "auto".
+#' For numeric vector, specify min and max x limit: like c(-5, 5)
+#' @param ylim numeric vector or character preset, default: "bidir.max"
+#' (Equal in both + / - direction, using max value + 0.5 of rfp column in dt).
+#' If you want ggplot to decide limit, set to "auto".
+#' For numeric vector, specify min and max y limit: like c(-10, 10)
 #' @param relative.name character, Default: "DTEG_plot.pdf".
 #' Relative name of file to be saved in folder specified in output.dir.
 #' Change to .pdf if you want pdf file instead of png.
@@ -29,14 +35,22 @@ DTEG.plot <- function(dt, output.dir = NULL,
                       p.value = 0.05,
                       plot.title = "", plot.ext = ".pdf", width = 6,
                       height = 6, dot.size = 0.4,
-                      xlim = c(-5, 5), ylim = c(-10, 10),
+                      xlim = "bidir.max", ylim = "bidir.max",
                       relative.name = paste0("DTEG_plot", plot.ext)) {
-  color.values <- c("black", "orange4", "purple", "darkgreen", "blue", "yellow", "aquamarine")
-  regulation.levels <- c("No change", "Translation", "Buffering", "mRNA abundance", "Expression", "Forwarded", "Inverse")
+  if (is.character(xlim)) stopifnot(xlim %in% c("bidir.max", "auto"))
+  if (is.character(ylim)) stopifnot(ylim %in% c("bidir.max", "auto"))
+  stopifnot(c("rna", "rfp", "Regulation", "variable") %in% colnames(dt))
+
+
+  regulation.levels <- c("No change", "Buffering", "mRNA abundance", "Expression",
+                         "Forwarded", "Inverse", "Translation")
+  color.values <- c("black", "purple", "darkgreen", "blue", "yellow", "aquamarine", "orange4")
+  color.values <- color.values[regulation.levels %in% unique(dt$Regulation)]
   dt[, Regulation :=
                factor(Regulation,
                       levels = regulation.levels,
                       ordered = TRUE)]
+  setorder(dt, Regulation)
   p.caption <- if (p.value != "") {
     labs(caption = paste("P-value <", p.value))
   } else NULL
@@ -59,8 +73,24 @@ DTEG.plot <- function(dt, output.dir = NULL,
     p.title +
     p.caption +
     facet_wrap(~ variable, ncol = 2) +
-    xlim(xlim) + ylim(ylim) +
     guides(color = guide_legend(override.aes = list(alpha = 0.8, size = 1.3)))
+  if (!all(xlim == "auto")) {
+    if (all(xlim == "bidir.max")) {
+      plot.between <- plot.between + xlim(c(-max(abs(dt$rna)) - 0.5,
+                                            max(abs(dt$rna)) + 0.5))
+    } else {
+      plot.between <- plot.between + xlim(xlim)
+    }
+  }
+  if (!all(ylim == "auto")) {
+    if (all(ylim == "bidir.max")) {
+      plot.between <- plot.between + ylim(c(-max(abs(dt$rfp)) - 0.5,
+                                            max(abs(dt$rfp)) + 0.5))
+    } else {
+      plot.between <- plot.between + ylim(ylim)
+    }
+  }
+
   plot(plot.between)
   if (!is.null(output.dir)) {
     ggsave(file.path(output.dir, relative.name), plot.between,

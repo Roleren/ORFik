@@ -13,8 +13,8 @@ DTEG.plot(
   width = 6,
   height = 6,
   dot.size = 0.4,
-  xlim = c(-5, 5),
-  ylim = c(-10, 10),
+  xlim = "bidir.max",
+  ylim = "bidir.max",
   relative.name = paste0("DTEG_plot", plot.ext)
 )
 }
@@ -38,9 +38,15 @@ What p-value used for the analysis? Will be shown as a caption.}
 
 \item{dot.size}{numeric, default 0.4, size of point dots in plot.}
 
-\item{xlim}{numeric vector, default c(-5, 5)}
+\item{xlim}{numeric vector or character preset, default: "bidir.max"
+(Equal in both + / - direction, using max value + 0.5 of rna column in dt).
+If you want ggplot to decide limit, set to "auto".
+For numeric vector, specify min and max x limit: like c(-5, 5)}
 
-\item{ylim}{numeric vector, default c(-10, 10)}
+\item{ylim}{numeric vector or character preset, default: "bidir.max"
+(Equal in both + / - direction, using max value + 0.5 of rfp column in dt).
+If you want ggplot to decide limit, set to "auto".
+For numeric vector, specify min and max y limit: like c(-10, 10)}
 
 \item{relative.name}{character, Default: "DTEG_plot.pdf".
 Relative name of file to be saved in folder specified in output.dir.
