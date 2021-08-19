@@ -23,7 +23,9 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
   # Special regions rRNA etc..
   types <- c()
   # TODO: Check if there is a way to get this from txdb directly
-  gff.df <- importGtfFromTxdb(txdb)
+  gff.df <- importGtfFromTxdb(txdb, stop.on.error = FALSE)
+  if (is.null(gff.df)) warnings("No biotypes defined in GTF,",
+                                " skiping biotype analysis!")
   types <- unique(gff.df$transcript_biotype)
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
@@ -168,7 +170,10 @@ QCstats <- function(df, path = file.path(dirname(df$filepath[1]),
 readLengthTable <- function(df, output.dir = NULL, type = "ofst",
                             BPPARAM = bpparam()) {
   file.name <- file.path(output.dir, "readLengths.csv")
-  if (file.exists(file.name)) return(fread(file.name, header = TRUE))
+  if (file.exists(file.name)) {
+    message("Using previously stored readlengths in QC_STATS folder!")
+    return(fread(file.name, header = TRUE))
+  }
 
   outputLibs(df, type = type, BPPARAM = BPPARAM)
   dt_read_lengths <- data.table(); sample_id <- 1

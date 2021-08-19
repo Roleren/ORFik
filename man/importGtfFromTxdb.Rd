@@ -4,13 +4,14 @@
 \alias{importGtfFromTxdb}
 \title{Import the GTF / GFF that made the txdb}
 \usage{
-importGtfFromTxdb(txdb)
+importGtfFromTxdb(txdb, stop.on.error = TRUE)
 }
 \arguments{
 \item{txdb}{a TxDb, path to txdb / gff or ORFik experiment object}
 }
 \value{
-data.frame, the gtf/gff object imported with rtracklayer::import
+data.frame, the gtf/gff object imported with rtracklayer::import.
+Or NULL, if stop.on.error is FALSE, and no GTF file found.
 }
 \description{
 Import the GTF / GFF that made the txdb

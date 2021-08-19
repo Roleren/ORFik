@@ -188,7 +188,8 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' }
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
-  top_tx = 10L, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = 30L,
+  top_tx = 10L, minFiveUTR = 30L, minCDS = 150L,
+  minThreeUTR = ifelse(stop, 30, NULL),
   txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
   firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
   heatmap = FALSE, must.be.periodic = TRUE, strict.fft = TRUE, verbose = FALSE) {
@@ -334,7 +335,8 @@ shiftFootprintsByExperiment <- function(df,
                                           df$filepath[1]), "/pshifted/"),
                                         start = TRUE, stop = FALSE,
                                         top_tx = 10L, minFiveUTR = 30L,
-                                        minCDS = 150L, minThreeUTR = 30L,
+                                        minCDS = 150L,
+                                        minThreeUTR = ifelse(stop, 30, NULL),
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 26:34,
                                         output_format = c("ofst", "wig"),
@@ -360,7 +362,6 @@ shiftFootprintsByExperiment <- function(df,
   txdb <- loadTxdb(df)
   tx <- loadRegion(txdb, part = "mrna")
   txNames <- filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)
-
 
   shifts <- bplapply(rfpFiles,
            FUN = function(file, path, df, start, stop,

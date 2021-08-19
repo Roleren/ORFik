@@ -4,7 +4,13 @@
 \alias{countTable}
 \title{Extract count table directly from experiment}
 \usage{
-countTable(df, region = "mrna", type = "count", collapse = FALSE)
+countTable(
+  df,
+  region = "mrna",
+  type = "count",
+  collapse = FALSE,
+  count.folder = "default"
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}} or path to folder with
@@ -26,6 +32,16 @@ normalization alternatives are: "fpkm", "log2fpkm" or "log10fpkm".}
 within the group SAMPLE will be collapsed to one. If "all", all
 groups will be merged into 1 column called merged_all. Collapse is defined
 as rowSum(elements_per_group) / ncol(elements_per_group)}
+
+\item{count.folder}{character, default "auto" (Use count tables from
+original bam files stored in "QC_STATS", these are like HTseq count tables).
+To load your custome count tables from pshifted reads, set to "pshifted"
+(remember to create the pshifted tables first!). If you
+have custom ranges, like reads over uORFs stored in a folder called
+"/uORFs" relative to the bam files, set to "uORFs". Always create these
+custom count tables with \code{\link{makeSummarizedExperimentFromBam}}.
+Always make the location of the folder directly
+inside the bam file directory!}
 }
 \value{
 a data.table/SummarizedExperiment/DESeq object
@@ -33,10 +49,11 @@ of columns as counts / normalized counts per library, column name
 is name of library. Rownames must be unique for now. Might change.
 }
 \description{
-Used to quickly load read count tables to R. \cr
+Used to quickly load pre-created read count tables to R. \cr
 If df is experiment:
 Extracts by getting /QC_STATS directory, and searching for region
-Requires \code{\link{ORFikQC}} to have been run on experiment!
+Requires \code{\link{ORFikQC}} to have been run on experiment,
+to get default count tables!
 }
 \details{
 If df is path to folder:

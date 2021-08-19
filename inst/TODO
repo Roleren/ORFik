@@ -24,6 +24,8 @@ TODO
     P-shifting
     o Do more tests for RCP-seq 80 libraries (these have different read lengths)
     o Add filter for minimum reads in TIS region.
+    o Add count tables for pshifted counts
+    o Add used shift to shiftPlots
 
     QC
     o Add possibility for batch correction of correlation plots
@@ -31,3 +33,4 @@ TODO
     Coverage
     o Check if coverage might need a new "append.single"", to make sure each fraction gets a choice.
     o make sure remove.zero.dt, does not make any functions fail!
+    o Add new add.flank.zero, to make max and min correct.

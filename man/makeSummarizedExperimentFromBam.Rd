@@ -7,7 +7,7 @@
 makeSummarizedExperimentFromBam(
   df,
   saveName = NULL,
-  longestPerGene = TRUE,
+  longestPerGene = FALSE,
   geneOrTxNames = "tx",
   region = "mrna",
   type = "count",
@@ -23,15 +23,17 @@ if set save experiment to path given. Always saved as .rds.,
 it is optional to add .rds, it will be added for you if not present.
 Also used to load existing file with that name.}
 
-\item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
-isoforms per gene.}
+\item{longestPerGene}{a logical (default FALSE), if FALSE all transcript
+isoforms per gene. Ignored if "region" is not a character of either:
+"mRNA","tx", "cds", "leaders" or "trailers".}
 
 \item{geneOrTxNames}{a character vector (default "tx"), should row names
 keep trancript names ("tx") or change to gene names ("gene")}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers).
-Can also be a \code{\link{GRangesList}}, then it uses this region directly.}
+Can also be a \code{\link{GRangesList}}, then it uses this region directly.
+Can then be uORFs or a subset of CDS etc.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
@@ -50,7 +52,9 @@ a \code{\link{SummarizedExperiment}} object or data.table if
 "type" is not "count, with rownames as transcript / gene names.
 }
 \description{
-Make a summerizedExperiment / matrix object from bam files
+Make a summerizedExperiment / matrix object from bam files or
+other library formats sepcified by lib.type argument. Works
+like HTSeq, to give you count tables per library.
 }
 \details{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
@@ -61,8 +65,14 @@ not remake it!
 ##Make experiment
 df <- ORFik.template.experiment()
 # makeSummarizedExperimentFromBam(df)
-# Only cds (coding sequences):
+## Only cds (coding sequences):
 # makeSummarizedExperimentFromBam(df, region = "cds")
-# FPKM instead of raw counts on whole mrna regions
+## FPKM instead of raw counts on whole mrna regions
 # makeSummarizedExperimentFromBam(df, type = "fpkm")
+## Make count tables of pshifted libraries over uORFs
+#uORFs <- GRangesList("chr1", 1:9, "+)
+#saveName <- file.path(dirname(df$filepath[1]), "uORFs", "countTable_uORFs")
+#makeSummarizedExperimentFromBam(df, , region = uORFs)
+## To load the uORFs later
+# c
 }

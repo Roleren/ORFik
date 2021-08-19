@@ -1,6 +1,8 @@
 #' Make a count matrix from a library or experiment
 #'
-#' Make a summerizedExperiment / matrix object from bam files
+#' Make a summerizedExperiment / matrix object from bam files or
+#' other library formats sepcified by lib.type argument. Works
+#' like HTSeq, to give you count tables per library.
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
 #' NOTE: If the file called saveName exists, it will then load file,
@@ -10,13 +12,15 @@
 #' if set save experiment to path given. Always saved as .rds.,
 #' it is optional to add .rds, it will be added for you if not present.
 #' Also used to load existing file with that name.
-#' @param longestPerGene a logical (default TRUE), if FALSE all transcript
-#' isoforms per gene.
+#' @param longestPerGene a logical (default FALSE), if FALSE all transcript
+#' isoforms per gene. Ignored if "region" is not a character of either:
+#' "mRNA","tx", "cds", "leaders" or "trailers".
 #' @param geneOrTxNames a character vector (default "tx"), should row names
 #' keep trancript names ("tx") or change to gene names ("gene")
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #' of whole mrnas or one of (leaders, cds, trailers).
 #' Can also be a \code{\link{GRangesList}}, then it uses this region directly.
+#' Can then be uORFs or a subset of CDS etc.
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
 #' @param lib.type a character(default: "default"), load files in experiment
@@ -34,12 +38,18 @@
 #' ##Make experiment
 #' df <- ORFik.template.experiment()
 #' # makeSummarizedExperimentFromBam(df)
-#' # Only cds (coding sequences):
+#' ## Only cds (coding sequences):
 #' # makeSummarizedExperimentFromBam(df, region = "cds")
-#' # FPKM instead of raw counts on whole mrna regions
+#' ## FPKM instead of raw counts on whole mrna regions
 #' # makeSummarizedExperimentFromBam(df, type = "fpkm")
+#' ## Make count tables of pshifted libraries over uORFs
+#' #uORFs <- GRangesList("chr1", 1:9, "+)
+#' #saveName <- file.path(dirname(df$filepath[1]), "uORFs", "countTable_uORFs")
+#' #makeSummarizedExperimentFromBam(df, , region = uORFs)
+#' ## To load the uORFs later
+#' # c
 makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
-                                            longestPerGene = TRUE,
+                                            longestPerGene = FALSE,
                                             geneOrTxNames = "tx",
                                             region = "mrna", type = "count",
                                             lib.type = "ofst",
@@ -51,7 +61,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   validateExperiments(df)
 
   if (is(region, "character")) {
-    txdb <- loadTxdb(df@txdb)
+    txdb <- loadTxdb(df)
     tx <- loadRegion(txdb, region)
   } else tx <- region
 
@@ -170,10 +180,11 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
 #' Extract count table directly from experiment
 #'
-#' Used to quickly load read count tables to R. \cr
+#' Used to quickly load pre-created read count tables to R. \cr
 #' If df is experiment:
 #' Extracts by getting /QC_STATS directory, and searching for region
-#' Requires \code{\link{ORFikQC}} to have been run on experiment!
+#' Requires \code{\link{ORFikQC}} to have been run on experiment,
+#' to get default count tables!
 #'
 #' If df is path to folder:
 #' Loads the the file in that directory with the regex region.rds,
@@ -195,6 +206,15 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' within the group SAMPLE will be collapsed to one. If "all", all
 #' groups will be merged into 1 column called merged_all. Collapse is defined
 #' as rowSum(elements_per_group) / ncol(elements_per_group)
+#' @param count.folder character, default "auto" (Use count tables from
+#' original bam files stored in "QC_STATS", these are like HTseq count tables).
+#' To load your custome count tables from pshifted reads, set to "pshifted"
+#' (remember to create the pshifted tables first!). If you
+#' have custom ranges, like reads over uORFs stored in a folder called
+#' "/uORFs" relative to the bam files, set to "uORFs". Always create these
+#' custom count tables with \code{\link{makeSummarizedExperimentFromBam}}.
+#' Always make the location of the folder directly
+#' inside the bam file directory!
 #' @return a data.table/SummarizedExperiment/DESeq object
 #' of columns as counts / normalized counts per library, column name
 #' is name of library. Rownames must be unique for now. Might change.
@@ -222,14 +242,18 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # for differential expression analysis
 #' # countTable(df, "mrna", type = "deseq")
 countTable <- function(df, region = "mrna", type = "count",
-                       collapse = FALSE) {
+                       collapse = FALSE,
+                       count.folder = "default") {
   # TODO fix bug if deseq!
   df.temp <- NULL
   if (is(df, "experiment")) {
     if (nrow(df) == 0) stop("df experiment has 0 rows (samples)!")
     df.temp <- df
     dir = dirname(df$filepath[1])
-    df <- paste0(dir, "/QC_STATS")
+    if (count.folder == "default") {
+      count.folder <- "QC_STATS"
+    }
+    df <- paste0(dir, "/", count.folder)
   }
   if (is(df, "character")) {
     if (dir.exists(df)) {
@@ -318,26 +342,40 @@ countTable <- function(df, region = "mrna", type = "count",
 
 #' Make a list of count matrices from experiment
 #'
+#' By default will make count tables over mRNA, leaders, cds and trailers for
+#' all libraries in experiment. region
+#'
 #' @inheritParams makeSummarizedExperimentFromBam
 #' @inheritParams QCreport
 #' @param regions a character vector, default:
 #'  c("mrna", "leaders", "cds", "trailers"), make raw count matrices
-#' of whole regions specified.
+#' of whole regions specified. Can also be a custom GRangesList of
+#' for example uORFs or a subset of cds etc.
+#' @param rel.dir relative output directory for out.dir, default:
+#' "QC_STATS". For pshifted, write "pshifted".
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a list of data.table, 1 data.table per region. The regions
 #' will be the names the list elements.
 #' @family countTable
-#' @keywords internal
+#' @export
+#' @examples
+#' ##Make experiment
+#' df <- ORFik.template.experiment()
+#' ## Create count tables for all default regions
+#' # countTable_regions(df)
+#' ## Pshifted reads (first create pshiftead libs)
+#' # countTable_regions(df, lib.type = "pshifted", rel.dir = "pshifted")
 countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
-                               longestPerGene = TRUE,
+                               longestPerGene = FALSE,
                                geneOrTxNames = "tx",
                                regions = c("mrna", "leaders", "cds",
                                            "trailers"),
                                type = "count", lib.type = "ofst",
                                weight = "score",
+                               rel.dir = "/QC_STATS/",
                                BPPARAM = bpparam()) {
 
-  stats_folder <- pasteDir(out.dir, "/QC_STATS/")
+  stats_folder <- pasteDir(out.dir, rel.dir)
   countDir <- paste0(stats_folder, "countTable_")
   libs <- bplapply(
     regions,

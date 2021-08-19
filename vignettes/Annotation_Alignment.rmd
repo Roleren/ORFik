@@ -207,9 +207,20 @@ CDS transcripts that does not have a 5' UTR.
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   txdb <- "/path/to/local/annotation.gtf.db"
   reassigned_txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = 100)
-  AnnotationDbi::saveDb("/path/to/local/annotation_pseudo_leaders.db")
+  AnnotationDbi::saveDb(reassigned_txdb,
+                        "/path/to/local/annotation_pseudo_leaders.db")
   leaders <- loadRegion(reassigned_txdb, "leaders")
 ```
+
+### Fixing malformed gtf/gff
+If you have a non reference-genome gff, your gff might be malformed.
+Your gtf/gff needs to follow the gtf/gff standardizations: [specifications](https://www.ensembl.org/info/website/upload/gff.html).
+
+Most importantly it need the 8 first coordinate columns correctly defined, 
+and the 9th attribute column needs at least gene_id and transcript_id!
+Else it will be useless in most of R analysis in ORFik. 
+Even better if it also has gene_biotype column defined, this will make
+you able to load for example all long-non-coding RNA coordinates directly.
 
 # RNA-seq alignment
 ORFik uses the STAR aligner, which is splice aware and fast and shown to usually map the highest amount of reads.

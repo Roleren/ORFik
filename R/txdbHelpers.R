@@ -412,10 +412,11 @@ txNamesToGeneNames <- function(txNames, txdb) {
 }
 
 #' Import the GTF / GFF that made the txdb
-#'
+#' @inheritParams getGtfPathFromTxdb
 #' @param txdb a TxDb, path to txdb / gff or ORFik experiment object
-#' @return data.frame, the gtf/gff object imported with rtracklayer::import
-importGtfFromTxdb <- function(txdb) {
+#' @return data.frame, the gtf/gff object imported with rtracklayer::import.
+#' Or NULL, if stop.on.error is FALSE, and no GTF file found.
+importGtfFromTxdb <- function(txdb, stop.on.error = TRUE) {
   if (is(txdb, "experiment")) txdb <- txdb@txdb
   if(is(txdb, "character")) {
     if (!(file_ext(txdb) %in% c("gtf", "gff", "gff3", "gff2"))) {
@@ -424,7 +425,8 @@ importGtfFromTxdb <- function(txdb) {
     }
   }
   if (is(txdb, "TxDb")) {
-    txdb <- getGtfPathFromTxdb(txdb)
+    txdb <- getGtfPathFromTxdb(txdb, stop.error = stop.error)
+    if (!stop.error) return(txdb)
   }
   if (!file.exists(txdb)) {
     message <- paste("Could not open gtf, did you rename folder of gtf?")
@@ -436,7 +438,8 @@ importGtfFromTxdb <- function(txdb) {
 #'
 #' Will crash and report proper error if no gtf is found
 #' @param txdb a loaded TxDb object
-#' @param stop.error logical TRUE
+#' @param stop.error logical TRUE, stop if Txdb does not have a gtf.
+#' If FALSE, return NULL.
 #' @return a character file path, returns NULL if not valid
 #' and stop.error is FALSE.
 #' @keywords internal

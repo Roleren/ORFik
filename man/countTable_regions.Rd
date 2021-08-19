@@ -7,12 +7,13 @@
 countTable_regions(
   df,
   out.dir = dirname(df$filepath[1]),
-  longestPerGene = TRUE,
+  longestPerGene = FALSE,
   geneOrTxNames = "tx",
   regions = c("mrna", "leaders", "cds", "trailers"),
   type = "count",
   lib.type = "ofst",
   weight = "score",
+  rel.dir = "/QC_STATS/",
   BPPARAM = bpparam()
 )
 }
@@ -23,15 +24,17 @@ countTable_regions(
 \code{dirname(df$filepath[1])}.
 Will make a folder called "QC_STATS" with all results in this directory.}
 
-\item{longestPerGene}{a logical (default TRUE), if FALSE all transcript
-isoforms per gene.}
+\item{longestPerGene}{a logical (default FALSE), if FALSE all transcript
+isoforms per gene. Ignored if "region" is not a character of either:
+"mRNA","tx", "cds", "leaders" or "trailers".}
 
 \item{geneOrTxNames}{a character vector (default "tx"), should row names
 keep trancript names ("tx") or change to gene names ("gene")}
 
 \item{regions}{a character vector, default:
  c("mrna", "leaders", "cds", "trailers"), make raw count matrices
-of whole regions specified.}
+of whole regions specified. Can also be a custom GRangesList of
+for example uORFs or a subset of cds etc.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
 "log2fpkm" or "log10fpkm"}
@@ -45,6 +48,9 @@ Can also be custom user made folders inside the experiments bam folder.}
 will check for a metacolumn called "score" in libraries. If not found,
 will not use weights.}
 
+\item{rel.dir}{relative output directory for out.dir, default:
+"QC_STATS". For pshifted, write "pshifted".}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
@@ -52,11 +58,19 @@ a list of data.table, 1 data.table per region. The regions
 will be the names the list elements.
 }
 \description{
-Make a list of count matrices from experiment
+By default will make count tables over mRNA, leaders, cds and trailers for
+all libraries in experiment. region
+}
+\examples{
+##Make experiment
+df <- ORFik.template.experiment()
+## Create count tables for all default regions
+# countTable_regions(df)
+## Pshifted reads (first create pshiftead libs)
+# countTable_regions(df, lib.type = "pshifted", rel.dir = "pshifted")
 }
 \seealso{
 Other countTable: 
 \code{\link{countTable}()}
 }
 \concept{countTable}
-\keyword{internal}
