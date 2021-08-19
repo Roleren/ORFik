@@ -189,7 +189,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #'
 detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L,
-  minThreeUTR = ifelse(stop, 30, NULL),
+  minThreeUTR = if (stop) {30} else NULL,
   txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
   firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
   heatmap = FALSE, must.be.periodic = TRUE, strict.fft = TRUE, verbose = FALSE) {
@@ -336,7 +336,7 @@ shiftFootprintsByExperiment <- function(df,
                                         start = TRUE, stop = FALSE,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L,
-                                        minThreeUTR = ifelse(stop, 30, NULL),
+                                        minThreeUTR = if (stop) {30} else NULL,
                                         firstN = 150L, min_reads = 1000,
                                         accepted.lengths = 26:34,
                                         output_format = c("ofst", "wig"),
