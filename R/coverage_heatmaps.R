@@ -112,15 +112,16 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' Create coverage heatmaps of specified region
 #'
 #' Simplified input space for easier abstraction of coverage heatmaps\cr
-#' Pick your region and plot \cr
+#' Pick your transcript region and plot directly \cr
 #' Input CAGE file if you use TSS and want improved 5' annotation.
 #'
 #' @inheritParams heatMapL
 #' @inheritParams filterTranscripts
 #' @param region a character, default "TIS", can be any combination of the
-#'  set: c("TSS", "TIS", "TTS"), which are: Transcription start site
+#'  set: c("TSS", "TIS", "TTS", "TES"), which are: Transcription start site
 #'  (5' end of mrna), Translation initation site (5' end of CDS),
-#'  Translation termination site (3' end of CDS)
+#'  Translation termination site (3' end of CDS),
+#'   Transcription end site (3' end of 3' UTRs)
 #' @param outdir a character path, default: "default", saves to:
 #' \code{paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")}, a created
 #' folder within the ORFik experiment data folder for plots. Change if you
@@ -151,7 +152,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
                           longestPerGene = FALSE) {
 
   if (outdir == "default") outdir <- paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")
-  if (!(any(region %in% c("TIS", "TSS", "TTS")))) stop("region must be either TSS, TIS or TTS")
+  if (!(any(region %in% c("TIS", "TSS", "TTS", "TES"))))
+    stop("region must be either TSS, TIS, TTS or TES")
   dir.create(outdir, showWarnings = FALSE,
              recursive = TRUE)
   message(paste0("Plot save location:\n", outdir))
@@ -200,6 +202,24 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TTS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
+  }
+  # Transcription End site
+  if ("TES" %in% region) {
+    message("TES")
+    minOutsideTXLength <- max(downstream) + 1
+    minTrailerLength <- max(upstream) + 1
+    txNames <- filterTranscripts(txdb, 0, 0, minTrailerLength, longestPerGene = longestPerGene)
+    center <- loadRegion(txdb, "trailer", names.keep = txNames)
+    mrna <- loadRegion(txdb, "mrna")
+    len <- stopSites(center, keep.names = TRUE, is.sorted = TRUE) >
+      minOutsideTXLength
+    center <- center[len]
+    mrna <- mrna[names(center)]
+    mrna <- extendTrailers(mrna, minOutsideTXLength)
+    heatMapL(center, mrna, df, outdir, scores = scores,
+             upstream, downstream, zeroPosition = upstream, addFracPlot = TRUE, location = "TES",
+             shifting = shifting, skip.last = FALSE, acceptedLengths = acceptedLengths,
+             type = type)
   }
   return(invisible(NULL))
 }

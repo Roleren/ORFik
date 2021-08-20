@@ -23,9 +23,10 @@ heatMapRegion(
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{region}{a character, default "TIS", can be any combination of the
-set: c("TSS", "TIS", "TTS"), which are: Transcription start site
+set: c("TSS", "TIS", "TTS", "TES"), which are: Transcription start site
 (5' end of mrna), Translation initation site (5' end of CDS),
-Translation termination site (3' end of CDS)}
+Translation termination site (3' end of CDS),
+ Transcription end site (3' end of 3' UTRs)}
 
 \item{outdir}{a character path, default: "default", saves to:
 \code{paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")}, a created
@@ -70,7 +71,7 @@ invisible(NULL), plots are saved
 }
 \description{
 Simplified input space for easier abstraction of coverage heatmaps\cr
-Pick your region and plot \cr
+Pick your transcript region and plot directly \cr
 Input CAGE file if you use TSS and want improved 5' annotation.
 }
 \examples{

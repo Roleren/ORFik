@@ -23,7 +23,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
   # Special regions rRNA etc..
   types <- c()
   # TODO: Check if there is a way to get this from txdb directly
-  gff.df <- importGtfFromTxdb(txdb, stop.on.error = FALSE)
+  gff.df <- importGtfFromTxdb(txdb, stop.error = FALSE)
   if (is.null(gff.df)) warnings("No biotypes defined in GTF,",
                                 " skiping biotype analysis!")
   types <- unique(gff.df$transcript_biotype)
