@@ -217,7 +217,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- mrna[names(center)]
     mrna <- extendTrailers(mrna, minOutsideTXLength)
     heatMapL(center, mrna, df, outdir, scores = scores,
-             upstream, downstream, zeroPosition = downstream, addFracPlot = TRUE, location = "TES",
+             upstream, downstream, zeroPosition = upstream, addFracPlot = TRUE, location = "TES",
              shifting = shifting, skip.last = FALSE, acceptedLengths = acceptedLengths,
              type = type)
   }
