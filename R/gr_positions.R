@@ -96,7 +96,8 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
     GenomicRanges::makeGRangesListFromDataFrame(dt,
                                                 split.field = "group",
                                                 names.field = "group_name",
-                                                keep.extra.columns = TRUE)
+                                                keep.extra.columns = TRUE,
+                                                seqinfo = seqinfo(grl))
   names(ngrl) <- names(grl)
 
   return(ngrl)

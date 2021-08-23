@@ -203,7 +203,8 @@ startSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   if (asGR) {
     startSites <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
                           ranges = IRanges(startSites, width = 1),
-                          strand = strandPerGroup(grl, FALSE))
+                          strand = strandPerGroup(grl, FALSE),
+                          seqinfo = seqinfo(grl))
   }
   if (keep.names) {
     names(startSites) <- names(grl)
@@ -243,7 +244,8 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
   if (asGR) {
     stopSites <- GRanges(seqnames = seqnamesPerGroup(grl, FALSE),
                          ranges = IRanges(stopSites, width = 1),
-                         strand = strandPerGroup(grl, FALSE))
+                         strand = strandPerGroup(grl, FALSE),
+                         seqinfo = seqinfo(grl))
   }
   if (keep.names) {
     names(stopSites) <- names(grl)

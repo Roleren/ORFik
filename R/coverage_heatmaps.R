@@ -210,6 +210,9 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     minOutsideTXLength <- max(downstream) + 1
     txNames <- filterTranscripts(txdb, 0, 0, minTrailerLength, longestPerGene = longestPerGene)
     center <- loadRegion(txdb, "trailer", names.keep = txNames)
+    center <- stopSites(center, asGR = TRUE,
+                        keep.names = TRUE, is.sorted = TRUE)
+    center <- groupGRangesBy(center)
     mrna <- loadRegion(txdb, "mrna")
     len <- stopSites(center, keep.names = TRUE, is.sorted = TRUE) >
       minOutsideTXLength
