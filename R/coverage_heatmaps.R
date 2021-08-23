@@ -206,8 +206,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
   # Transcription End site
   if ("TES" %in% region) {
     message("TES")
-    minOutsideTXLength <- max(downstream) + 1
     minTrailerLength <- max(upstream) + 1
+    minOutsideTXLength <- max(downstream) + 1
     txNames <- filterTranscripts(txdb, 0, 0, minTrailerLength, longestPerGene = longestPerGene)
     center <- loadRegion(txdb, "trailer", names.keep = txNames)
     mrna <- loadRegion(txdb, "mrna")
@@ -217,7 +217,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- mrna[names(center)]
     mrna <- extendTrailers(mrna, minOutsideTXLength)
     heatMapL(center, mrna, df, outdir, scores = scores,
-             upstream, downstream, zeroPosition = upstream, addFracPlot = TRUE, location = "TES",
+             upstream, downstream, zeroPosition = downstream, addFracPlot = TRUE, location = "TES",
              shifting = shifting, skip.last = FALSE, acceptedLengths = acceptedLengths,
              type = type)
   }
