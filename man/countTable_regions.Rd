@@ -13,7 +13,7 @@ countTable_regions(
   type = "count",
   lib.type = "ofst",
   weight = "score",
-  rel.dir = "/QC_STATS/",
+  rel.dir = "QC_STATS",
   BPPARAM = bpparam()
 )
 }

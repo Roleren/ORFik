@@ -372,11 +372,10 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
                                            "trailers"),
                                type = "count", lib.type = "ofst",
                                weight = "score",
-                               rel.dir = "/QC_STATS/",
+                               rel.dir = "QC_STATS",
                                BPPARAM = bpparam()) {
 
-  stats_folder <- file.path(out.dir, rel.dir)
-  countDir <- paste0(stats_folder, "countTable_")
+  countDir <- pasteDir(file.path(out.dir, rel.dir, "countTable_"))
   libs <- bplapply(
     regions,
     function(region, countDir, df, geneOrTxNames, longestPerGene) {
