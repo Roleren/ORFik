@@ -34,7 +34,10 @@
 #' @param output.dir output.dir directory to save plots,
 #' plot will be named "TE_between". If NULL, will not save.
 #' @param RFP_counts a SummarizedExperiment, default:
-#' countTable(df.rfp, "cds", type = "summarized"), all transcripts.
+#' \code{countTable(df.rfp, "cds", type = "summarized")},
+#' unshifted libraries, all transcripts.
+#' If you have pshifted reads and countTables, do:
+#' \code{countTable(df.rfp, "cds", type = "summarized", count.folder = "pshifted")}
 #' Assign a subset if you don't want to analyze all genes.
 #' It is recommended to not subset, to give DESeq2 data for variance analysis.
 #' @param RNA_counts a SummarizedExperiment, default:
@@ -60,6 +63,10 @@
 #' #df.rfp <- read.experiment("Riboseq")
 #' #df.rna <- read.experiment("RNAseq")
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
+#' ## If you want to use the pshifted libs for analysis:
+#' #dt <- DTEG.analysis(df.rfp, df.rna,
+#' #                    RFP_counts = countTable(df.rfp, region = "cds",
+#' #                       type = "summarized", count.folder = "pshifted"))
 #' ## Restrict DTEGs by log fold change (LFC):
 #' ## subset to abs(LFC) < 1.5 for both rfp and rna
 #' #dt[abs(rfp) < 1.5 & abs(rna) < 1.5, Regulation := "No change"]

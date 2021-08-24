@@ -119,7 +119,7 @@ STAR.align.folder(conf["fastq RNA-seq"], conf["bam RNA-seq"], index,
 # Create experiment (Starting point if alignment is finished)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 library(ORFik)
-create.experiment(paste0(conf["bam Ribo-seq"], "/aligned/"),
+create.experiment(file.path(conf["bam Ribo-seq"], "aligned/"),
                   exper = conf["exp Ribo-seq"],
                   fa = annotation["genome"],
                   txdb = paste0(annotation["gtf"], ".db"),
@@ -127,7 +127,7 @@ create.experiment(paste0(conf["bam Ribo-seq"], "/aligned/"),
                   pairedEndBam = paired.end.rfp,
                   rep = c(1,2,3,1,2,3),
                   condition = rep(c("CO", "WT"), each = 3))
-create.experiment(paste0(conf["bam RNA-seq"], "/aligned/"),
+create.experiment(file.path(conf["bam RNA-seq"], "aligned/"),
                   exper = conf["exp RNA-seq"],
                   fa = annotation["genome"],
                   txdb = paste0(annotation["gtf"], ".db"),
@@ -171,20 +171,23 @@ remove.experiments(df.rfp)
 # After pshifting
 heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
               outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
-
+remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Count table analysis: TE tables
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# Shifting looks good, let's make count tables of pshifted libraries:
+countTable_regions(df.rfp, lib.type = "pshifted", rel.dir = "pshifted")
+
 # TE per library match
-countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = FALSE)
+countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = FALSE, count.folder = "pshifted")
 countsRNA <- countTable(df.rna, region = "mrna", type = "fpkm", collapse = FALSE)
 countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
-# TE per condition (WT vs CO)
-countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = TRUE)
+# TE per condition (WT vs CO) (collapse replicates)
+countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = TRUE, count.folder = "pshifted")
 countsRNA <- countTable(df.rna, region = "mrna", type = "fpkm", collapse = TRUE)
 countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
 # TE merged all libraries
-countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = "all")
+countsRFP <- countTable(df.rfp, region = "cds", type = "fpkm", collapse = "all", count.folder = "pshifted")
 countsRNA <- countTable(df.rna, region = "mrna", type = "fpkm", collapse = "all")
 countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
 
@@ -193,7 +196,9 @@ countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # We here get 11 unique DTEG genes
 # Now let's check if the CO group overexpress the F9 Gene (ENSG00000101981):
-res <- DTEG.analysis(df.rfp, df.rna, design = "condition")
+res <- DTEG.analysis(df.rfp, df.rna, design = "condition", 
+                     RFP_counts = countTable(df.rfp, region = "cds", type = "summarized",
+                                             count.folder = "pshifted"))
 significant_genes <- res[Regulation != "No change",]
 gene_names <- txNamesToGeneNames(significant_genes$id, df.rfp)
 "ENSG00000101981" %in% unique(gene_names) # TRUE
