@@ -441,7 +441,7 @@ save.experiment <- function(df, file) {
 #' @return a candidate library types (character vector)
 #' @keywords internal
 findFromPath <- function(filepaths, candidates, slot = "auto") {
-  if (all(slot != "auto")) { # If not auto guess
+  if (all(slot != "auto", na.rm = TRUE)) { # If not auto guess
     if(length(slot) != 1 & length(slot) != length(filepaths)) {
       stop("When experiment slot is not auto, length must be 1 or length(files)!")
     } else return(slot)
@@ -533,15 +533,16 @@ validateExperiments <- function(df) {
 #'
 #' What will each sample be called given the columns of the experiment?
 #' @param df an ORFik \code{\link{experiment}}
-#' @param skip.replicate a logical (FALSE), don't include replicate
+#' @param skip.replicate a logical (FALSE), if TRUE don't include replicate
 #' in variable name.
-#' @param skip.condition a logical (FALSE), don't include condition
+#' @param skip.condition a logical (FALSE), if TRUE don't include condition
 #' in variable name.
-#' @param skip.stage a logical (FALSE), don't include stage
+#' @param skip.stage a logical (FALSE), if TRUE don't include stage
 #' in variable name.
-#' @param skip.fraction a logical (FALSE), don't include fraction
-#' @param skip.experiment a logical (FALSE), don't include experiment
-#' @param skip.libtype a logical (FALSE), don't include libtype
+#' @param skip.fraction a logical (FALSE), if TRUE don't include fraction
+#' @param skip.experiment a logical (\code{!df@expInVarName}),
+#' if TRUE don't include experiment
+#' @param skip.libtype a logical (FALSE), if TRUE don't include libtype
 #' @return variable names of libraries (character vector)
 #' @export
 #' @family ORFik_experiment
@@ -699,9 +700,11 @@ filepath <- function(df, type, basename = FALSE) {
   return(paths)
 }
 
-#' Output bam/bed/bedo/bedoc/ofst/wig files to R as variables
+#' Output NGS libraries to R as variables
 #'
-#' Variable names defined by df (ORFik experiment DataFrame)
+#' By default loads the original files of the experiment into
+#' the global environment, named by the rows of the experiment
+#' required to make all libraries have unique names.\cr
 #' Uses multiple cores to load, defined by multicoreParam
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams fimport
@@ -709,6 +712,9 @@ filepath <- function(df, type, basename = FALSE) {
 #' or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
 #' These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 #' Can also be custom user made folders inside the experiments bam folder.
+#' @param naming a character (default: "minimum"). Name files as minimum
+#' information needed to make all files unique. Set to "full" to get full
+#' names.
 #' @param envir environment to save to, default (.GlobalEnv)
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
@@ -728,16 +734,22 @@ filepath <- function(df, type, basename = FALSE) {
 #' ## .wig file load, if wiggle files does not exists
 #' ## it will load default
 #' # outputLibs(df, type = "wig")
+#' ## Load libs to new environment (called ORFik)
+#' # outputLibs(df, envir = assign(df@experiment, new.env(parent = .GlobalEnv)))
 #' @family ORFik_experiment
 outputLibs <- function(df, chrStyle = NULL, type = "default",
-                       param = NULL, strandMode = 0,
+                       param = NULL, strandMode = 0, naming = "minimum",
                        envir = .GlobalEnv, BPPARAM = bpparam()) {
+  stopifnot(naming %in% c("minimum", "full"))
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
 
   for (df in dfl) {
     validateExperiments(df)
-    varNames <- bamVarName(df)
+    if (naming == "minimum") {
+      varNames <- bamVarName(df)
+    } else varNames <- bamVarName(df, FALSE, FALSE, FALSE, FALSE)
+
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage
       if (exists(x = varNames[i], envir = envir, inherits = FALSE,
@@ -840,7 +852,7 @@ convertLibs <- function(df,
   varNames <- bamVarName(df)
   i <- 1
   message("--------------------------")
-  message("Converting to new format:")
+  message("Converting libraries to new format: ", type)
   for (f in varNames) {
     message(f)
     if (type %in% c("bedo", "wig")) { # bedo, wig

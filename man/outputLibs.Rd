@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment.R
 \name{outputLibs}
 \alias{outputLibs}
-\title{Output bam/bed/bedo/bedoc/ofst/wig files to R as variables}
+\title{Output NGS libraries to R as variables}
 \usage{
 outputLibs(
   df,
@@ -10,6 +10,7 @@ outputLibs(
   type = "default",
   param = NULL,
   strandMode = 0,
+  naming = "minimum",
   envir = .GlobalEnv,
   BPPARAM = bpparam()
 )
@@ -57,6 +58,10 @@ See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs us
 This is to guarantee hits, but will also make mismatches of overlapping
 transcripts in opposite directions.}
 
+\item{naming}{a character (default: "minimum"). Name files as minimum
+information needed to make all files unique. Set to "full" to get full
+names.}
+
 \item{envir}{environment to save to, default (.GlobalEnv)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
@@ -67,7 +72,9 @@ You can also add a time remaining bar, for a more detailed pipeline.}
 NULL (libraries set by envir assignment)
 }
 \description{
-Variable names defined by df (ORFik experiment DataFrame)
+By default loads the original files of the experiment into
+the global environment, named by the rows of the experiment
+required to make all libraries have unique names.\cr
 Uses multiple cores to load, defined by multicoreParam
 }
 \examples{
@@ -81,6 +88,8 @@ df <- ORFik.template.experiment()
 ## .wig file load, if wiggle files does not exists
 ## it will load default
 # outputLibs(df, type = "wig")
+## Load libs to new environment (called ORFik)
+# outputLibs(df, envir = assign(df@experiment, new.env(parent = .GlobalEnv)))
 }
 \seealso{
 Other ORFik_experiment: 

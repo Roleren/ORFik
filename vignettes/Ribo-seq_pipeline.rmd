@@ -139,7 +139,10 @@ create.experiment(file.path(conf["bam RNA-seq"], "aligned/"),
 library(ORFik)
 df.rfp <- read.experiment("Alexaki_Human_Ribo-seq")
 df.rna <- read.experiment("Alexaki_Human_RNA-seq")
-list.experiments() # Show all experiments you have made with ORFik 
+# Show all experiments you have made with ORFik so far 
+list.experiments()
+# Show all annotations you have made with ORFik so far 
+list.genomes()
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Convert files and run Annotation vs alignment QC
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -171,11 +174,12 @@ remove.experiments(df.rfp)
 # After pshifting
 heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
               outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
-remove.experiments(df.rfp)
+
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Count table analysis: TE tables
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Shifting looks good, let's make count tables of pshifted libraries:
+# As a note: Correlation between count tables of pshifted vs raw libs is ~ 40% usually.
 countTable_regions(df.rfp, lib.type = "pshifted", rel.dir = "pshifted")
 
 # TE per library match
@@ -196,16 +200,18 @@ countsTE <- (countsRFP + 1) / (countsRNA + 1) # with pseudo count
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # We here get 11 unique DTEG genes
 # Now let's check if the CO group overexpress the F9 Gene (ENSG00000101981):
-res <- DTEG.analysis(df.rfp, df.rna, design = "condition", 
-                     RFP_counts = countTable(df.rfp, region = "cds", type = "summarized",
-                                             count.folder = "pshifted"))
+res <- DTEG.analysis(df.rfp, df.rna, design = "condition")
 significant_genes <- res[Regulation != "No change",]
 gene_names <- txNamesToGeneNames(significant_genes$id, df.rfp)
 "ENSG00000101981" %in% unique(gene_names) # TRUE
 # It does, good good.
 # How is it regulated ?
 significant_genes[which(gene_names == "ENSG00000101981"),] # By mRNA abundance
-
+# If you downloaded the full libraries, do this to use pshifted libraries instead.
+# Not a valid result for pshifted libraries using subset
+res <- DTEG.analysis(df.rfp, df.rna, design = "condition", 
+                     RFP_counts = countTable(df.rfp, region = "cds", type = "summarized",
+                                             count.folder = "pshifted"))
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Peak detection (strong peaks in CDS)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -231,7 +237,7 @@ dt <- computeFeatures(cds,
                 grl.is.sorted = TRUE, faFile = df.rfp,
                 weight.RFP = "score", weight.RNA = "score",
                 riboStart = 21, uorfFeatures = FALSE)
-# The 8 remaining significant DTEGs.
+# The significant DTEGs.
 dt[names(cds) %in%  significant_genes$id,]
 # All genes with strong 3nt periodicity of Ribo-seq
 dt[ORFScores > 5,]

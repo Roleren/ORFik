@@ -100,10 +100,10 @@ config.save <- function(file = "~/Bio_data/ORFik_config.csv",
 #'  - logical (does it have a gtf)
 #'  - logical (does it have a fasta genome)
 #'  - logical (does it have a STAR index)
-#'  @export
-#'  @examples
-#'  listGenomes()
-listGenomes <- function(reference.folder = ORFik::config()["ref"]) {
+#' @export
+#' @examples
+#' list.genomes()
+list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
   candidates <- list.dirs(reference.folder, recursive = FALSE)
   outputs <- file.path(list.dirs(reference.folder, recursive = FALSE), "outputs.rds")
   valid <- file.exists(outputs)

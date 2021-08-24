@@ -17,20 +17,21 @@ bamVarName(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{skip.replicate}{a logical (FALSE), don't include replicate
+\item{skip.replicate}{a logical (FALSE), if TRUE don't include replicate
 in variable name.}
 
-\item{skip.condition}{a logical (FALSE), don't include condition
+\item{skip.condition}{a logical (FALSE), if TRUE don't include condition
 in variable name.}
 
-\item{skip.stage}{a logical (FALSE), don't include stage
+\item{skip.stage}{a logical (FALSE), if TRUE don't include stage
 in variable name.}
 
-\item{skip.fraction}{a logical (FALSE), don't include fraction}
+\item{skip.fraction}{a logical (FALSE), if TRUE don't include fraction}
 
-\item{skip.experiment}{a logical (FALSE), don't include experiment}
+\item{skip.experiment}{a logical (\code{!df@expInVarName}),
+if TRUE don't include experiment}
 
-\item{skip.libtype}{a logical (FALSE), don't include libtype}
+\item{skip.libtype}{a logical (FALSE), if TRUE don't include libtype}
 }
 \value{
 variable names of libraries (character vector)
