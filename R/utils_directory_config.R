@@ -43,6 +43,10 @@ config.exper <- function(experiment, assembly, type,
 #' @param file file of config for ORFik, default: "~/Bio_data/ORFik_config.csv"
 #' @return a named character vector of length 3
 #' @export
+#' @examples
+#' ## Load another config (not adviced!)
+#' config_location <- "/media/Bio_data/ORFik_config.csv"
+#' #config(config_location)
 config <- function(file = "~/Bio_data/ORFik_config.csv") {
   if(!file.exists(file)) {
     message("--------------------------------")
@@ -73,6 +77,11 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
 #'  default: config()["ref"]
 #' @return invisible(NULL), file saved to disc
 #' @export
+#' @examples
+#' ## Save at another config location (not adviced!)
+#' config_location <- "/media/Bio_data/ORFik_config.csv"
+#' #config.save(config_location, "/media/Bio_data/raw_data/",
+#' # "/media/Bio_data/processed_data", /media/Bio_data/references/)
 config.save <- function(file = "~/Bio_data/ORFik_config.csv",
                         fastq.dir, bam.dir, reference.dir) {
   conf <- data.frame(type = c("fastq", "bam", "ref"),
@@ -81,4 +90,42 @@ config.save <- function(file = "~/Bio_data/ORFik_config.csv",
   return(invisible(NULL))
 }
 
+#' List genomes created with ORFik
+#'
+#' Given the reference.folder, list all valid references.
+#' @param reference.folder character path, default:
+#' \code{ORFik::config()["ref"]}.
+#' @return a data.table with 4 columns:\cr
+#'  - character (name of folder)\cr
+#'  - logical (does it have a gtf)
+#'  - logical (does it have a fasta genome)
+#'  - logical (does it have a STAR index)
+#'  @export
+#'  @examples
+#'  listGenomes()
+listGenomes <- function(reference.folder = ORFik::config()["ref"]) {
+  candidates <- list.dirs(reference.folder, recursive = FALSE)
+  outputs <- file.path(list.dirs(reference.folder, recursive = FALSE), "outputs.rds")
+  valid <- file.exists(outputs)
+  if (sum(valid) == 0) {
+    message("No valid ORFik-made references in folder!")
+    return(data.table())
+  }
+  candidates <- candidates[valid]
+  outputs <- outputs[valid]
 
+  availableGenomes <- data.table()
+  for(i in seq_along(outputs)) {
+    out <- outputs[i]
+    cand <- candidates[i]
+    annotation <- readRDS(outputs[i])
+    availableGenomes <- rbindlist(list(availableGenomes,
+                                       data.table(name = basename(cand),
+                                                  gtf = "gtf" %in% names(annotation),
+                                                  genome = "genome" %in% names(annotation))))
+  }
+  indices <- file.path(candidates, "STAR_index")
+  availableGenomes[, STAR_index := file.exists(indices)]
+  availableGenomes[]
+  return(availableGenomes)
+}
