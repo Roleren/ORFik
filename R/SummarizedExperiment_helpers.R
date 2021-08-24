@@ -375,7 +375,7 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
                                rel.dir = "/QC_STATS/",
                                BPPARAM = bpparam()) {
 
-  stats_folder <- pasteDir(out.dir, rel.dir)
+  stats_folder <- file.path(out.dir, rel.dir)
   countDir <- paste0(stats_folder, "countTable_")
   libs <- bplapply(
     regions,
