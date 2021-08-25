@@ -25,6 +25,7 @@
 #' Change to .pdf if you want pdf file instead of png.
 #' @return a ggplot object
 #' @family TE
+#' @importFrom data.table setorder
 #' @export
 #' @examples
 #' #df.rfp <- read.experiment("Riboseq")
