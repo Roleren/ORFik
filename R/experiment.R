@@ -1027,7 +1027,12 @@ organism.df <- function(df) {
 #' @param libtypeExclusive search for experiments with exclusivly this
 #' libtype, default (NULL, all)
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
-#' @return a data.table, 1 row per experiment with columns experiment (name), libtypes
+#' @return a data.table, 1 row per experiment with columns:\cr
+#'  - experiment (name),\cr
+#'  - organism\cr
+#'  - author \cr
+#'  - libtypes\cr
+#'  - number of samples
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam
 #' @export
@@ -1065,15 +1070,17 @@ list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
 
   info <- bplapply(experiments, function(x, dir) { # Open each experiment in parallell
     e <- read.experiment(x, dir)
-    list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism)
+    list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism,
+         author = e@author)
   }, dir = dir)
 
   info <- unlist(info, recursive = FALSE)
   libtypes <- info[grep("libtype", names(info))]
   samples <- unlist(info[names(info) == "runs"])
   organism <- unlist(info[names(info) == "organism"])
+  author <- unlist(info[names(info) == "author"])
 
-  dt <- data.table(name = gsub(".csv", "", experiments), libtypes, samples, organism)
+  dt <- data.table(name = gsub(".csv", "", experiments), organism, author,libtypes, samples)
   dt <- dt[order(organism, name),]
   if (!is.null(libtypeExclusive)) {
     message(paste("subset on libtype:", libtypeExclusive))

@@ -24,7 +24,12 @@ libtype, default (NULL, all)}
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
-a data.table, 1 row per experiment with columns experiment (name), libtypes
+a data.table, 1 row per experiment with columns:\cr
+ - experiment (name),\cr
+ - organism\cr
+ - author \cr
+ - libtypes\cr
+ - number of samples
 }
 \description{
 Will only search .csv extension, also exclude any experiment
