@@ -21,5 +21,8 @@ a data.table with 4 columns:\cr
 Given the reference.folder, list all valid references.
 }
 \examples{
-list.genomes()
+## Run with default config path
+#list.genomes()
+## Run with custom config path
+list.genomes(tempdir())
 }

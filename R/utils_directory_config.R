@@ -44,6 +44,8 @@ config.exper <- function(experiment, assembly, type,
 #' @return a named character vector of length 3
 #' @export
 #' @examples
+#' ## Make with default config path
+#' #config()
 #' ## Load another config (not adviced!)
 #' config_location <- "/media/Bio_data/ORFik_config.csv"
 #' #config(config_location)
@@ -102,7 +104,10 @@ config.save <- function(file = "~/Bio_data/ORFik_config.csv",
 #'  - logical (does it have a STAR index)
 #' @export
 #' @examples
-#' list.genomes()
+#' ## Run with default config path
+#' #list.genomes()
+#' ## Run with custom config path
+#' list.genomes(tempdir())
 list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
   candidates <- list.dirs(reference.folder, recursive = FALSE)
   outputs <- file.path(list.dirs(reference.folder, recursive = FALSE), "outputs.rds")

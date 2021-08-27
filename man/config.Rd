@@ -22,6 +22,8 @@ Defines a folder for:
 Update or use another config using \code{config.save()} function.
 }
 \examples{
+## Make with default config path
+#config()
 ## Load another config (not adviced!)
 config_location <- "/media/Bio_data/ORFik_config.csv"
 #config(config_location)
