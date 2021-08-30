@@ -15,4 +15,7 @@ a list of character vector pairs
 \description{
 Given a character vector, get all unique combinations of 2.
 }
-\keyword{internal}
+\examples{
+df <- ORFik.template.experiment()
+ORFik:::combn.pairs(df[, "libtype"])
+}

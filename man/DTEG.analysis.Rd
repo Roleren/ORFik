@@ -13,6 +13,7 @@ DTEG.analysis(
   RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
   RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
   batch.effect = FALSE,
+  pairs = combn.pairs(unlist(df.rfp[, design])),
   plot.title = "",
   plot.ext = ".pdf",
   width = 6,
@@ -56,6 +57,9 @@ set to TRUE, will use replicate column to represent batch effects.
 Batch effect usually means that you have a strong variance between
 biological replicates. Check PCA plot on count tables to verify if
 you need to set it to TRUE.}
+
+\item{pairs}{list of character pairs, the experiment contrasts. Default:
+\code{combn.pairs(unlist(df.rfp[, design])}}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
@@ -125,6 +129,14 @@ do global change analysis, it can only find subsets with changes in LFC!
 ## Convert to gene id
 #dt[, id := txNamesToGeneNames(id, df.rfp)]
 ## To get by gene symbol, use biomaRt conversion
+## To flip directionality of contrast pair nr 2:
+#design <- "condition"
+#pairs <- combn.pairs(unlist(df.rfp[, design])
+#pairs[[2]] <- rev(pars[[2]])
+#dt <- DTEG.analysis(df.rfp, df.rna,
+#                    RFP_counts = countTable(df.rfp, region = "cds",
+#                       type = "summarized", count.folder = "pshifted"),
+#                       pairs = pairs)
 }
 \references{
 doi: 10.1002/cpmb.108

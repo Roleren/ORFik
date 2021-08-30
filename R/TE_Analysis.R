@@ -49,6 +49,8 @@
 #' Batch effect usually means that you have a strong variance between
 #' biological replicates. Check PCA plot on count tables to verify if
 #' you need to set it to TRUE.
+#' @param pairs list of character pairs, the experiment contrasts. Default:
+#'  \code{combn.pairs(unlist(df.rfp[, design])}
 #' @param complex.categories logical, default FALSE. Seperate into more groups,
 #' will add Inverse (opposite diagonal of mRNA abundance) and Expression (only significant mRNA-seq)
 #' @references doi: 10.1002/cpmb.108
@@ -77,13 +79,21 @@
 #' ## Convert to gene id
 #' #dt[, id := txNamesToGeneNames(id, df.rfp)]
 #' ## To get by gene symbol, use biomaRt conversion
+#' ## To flip directionality of contrast pair nr 2:
+#' #design <- "condition"
+#' #pairs <- combn.pairs(unlist(df.rfp[, design])
+#' #pairs[[2]] <- rev(pars[[2]])
+#' #dt <- DTEG.analysis(df.rfp, df.rna,
+#' #                    RFP_counts = countTable(df.rfp, region = "cds",
+#' #                       type = "summarized", count.folder = "pshifted"),
+#' #                       pairs = pairs)
 DTEG.analysis <- function(df.rfp, df.rna,
                           output.dir = paste0(dirname(df.rfp$filepath[1]),
                                               "/QC_STATS/"),
                           design = "stage", p.value = 0.05,
                           RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
                           RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
-                          batch.effect = FALSE,
+                          batch.effect = FALSE, pairs = combn.pairs(unlist(df.rfp[, design])),
                           plot.title = "", plot.ext = ".pdf", width = 6,
                           height = 6, dot.size = 0.4,
                           relative.name = paste0("DTEG_plot", plot.ext), complex.categories = FALSE) {
@@ -128,8 +138,6 @@ DTEG.analysis <- function(df.rfp, df.rna,
   ddsMat_rna <- DESeqDataSet(se = RNA_counts, design = main.design)
   ddsMat_rna <- DESeq(ddsMat_rna)
   message("----------------------")
-  # Create contrasts
-  pairs <- combn.pairs(unlist(df.rfp[, design]))
 
   # Per contrast
   dt.between <- data.table()

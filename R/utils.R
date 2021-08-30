@@ -300,7 +300,10 @@ pseudo.transform <- function(x, scale = log2, by.reference = FALSE) {
 #' @param x a character vector, will unique elements for you.
 #' @return a list of character vector pairs
 #' @importFrom utils combn
-#' @keywords internal
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' ORFik:::combn.pairs(df[, "libtype"])
 combn.pairs <- function(x) {
   pairs <- list() # creating compairisons :list of pairs
   comparisons.design <- unique(x)
