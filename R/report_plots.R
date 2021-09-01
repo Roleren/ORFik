@@ -45,7 +45,7 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
         .SDcols = seq.int(ncol(stats))[-c(1,2)]]
   dt_plot <- melt(stats, id.vars = c("Sample", "sample_id"))
 
-  step_counts <- c("mRNA", "rRNA")
+  step_counts <- c("mRNA", "ncRNA", "Introns", "Intergenic")
   stat_regions <- colnames(stats)[c(which(colnames(stats) %in% step_counts))]
   dt_STAT <- dt_plot[(variable %in% stat_regions),]
   dt_STAT_normalized <- copy(dt_STAT)

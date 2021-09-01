@@ -326,6 +326,11 @@ coverageScorings <- function(coverage, scoring = "zscore",
     setDT(copy(coverage))
   } else coverage
 
+  # if (!is.null(coverage$genes)) {
+  #   if (is(coverage$genes, "factor")) {
+  #     coverage[, genes := as.integer(genes)]
+  #   }
+  # }
   # find groupings
   groupGF <- coverageGroupings(c(is.null(cov$fraction),
                                is.null(cov$genes)))

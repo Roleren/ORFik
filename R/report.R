@@ -42,14 +42,14 @@
 QCreport <- function(df, out.dir = dirname(df$filepath[1]),
                      plot.ext = ".pdf", BPPARAM = bpparam()) {
   # When experiment is ready, everything down from here is automatic
-  message("Started ORFik QC report:")
   validateExperiments(df)
+  message("Started ORFik QC report for experiment: ", df@experiment)
   stats_folder <- pasteDir(out.dir, "/QC_STATS/")
   if (!dir.create(stats_folder, recursive = TRUE)) {
     if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
-  message("- Converting input files to .ofst")
   convertLibs(df, reassign.when.saving = TRUE)
+  message("--------------------------")
   message("- Creating read length tables:")
   dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)
   # Get count tables
