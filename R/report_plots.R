@@ -279,7 +279,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
   gg_frame_per_stack
 
   # content: all_tx_types > 1%
-  all_tx_types <- which(colnames(stats) == "All_tx_types") + 1
+  all_tx_types <- which(colnames(stats) == "ratio_cds_leader") + 1
   all_tx_regions <- colnames(stats)[c(all_tx_types:length(colnames(stats)))]
   all_tx_regions <- c("mRNA", all_tx_regions)
   dt_all_tx_regions<- dt_plot[(variable %in% all_tx_regions),]

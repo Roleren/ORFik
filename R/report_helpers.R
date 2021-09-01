@@ -79,7 +79,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
                            Transcript = tx_reads_total,
                            ncRNA = ncRNA_reads_total,
                            Introns = intronic_reads_total,
-                           Intergenic = intergenic_reads)
+                           Intergenic = intergenic_reads_total)
 
     res_mrna[,percentage_mrna_aligned := round(100* (mRNA / res$Aligned_reads), 2)]
     res_mrna[,percentage_tx_aligned := round(100* (Transcript / res$Aligned_reads), 2)]
