@@ -54,7 +54,7 @@ export.bed12 <- function(grl, file, rgb = 0) {
 #'
 #' Will create 2 files, 1 for + strand (*_forward.wig)
 #' and 1 for - strand (*_reverse.wig). If all
-#' files are * stranded, will output 1 file.
+#' ranges are * stranded, will output 1 file.
 #' Can be direct input for ucsc browser or IGV
 #'
 #' @references https://genome.ucsc.edu/goldenPath/help/wiggle.html
@@ -98,6 +98,53 @@ export.wiggle <- function(x, file) {
   return(invisible(NULL))
 }
 
+#' Export as bigWig format
+#'
+#' Will create 2 files, 1 for + strand (*_forward.bigWig)
+#' and 1 for - strand (*_reverse.bigWig). If all
+#' ranges are * stranded, will output 1 file.
+#' Can be direct input for ucsc browser or IGV
+#'
+#' @references https://genome.ucsc.edu/goldenPath/help/bigWig.html
+#' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
+#' Will be converted to 5' end position of original range. If score column
+#' does not exist, will group ranges and give replicates as score column.
+#' @param file a character path to valid output file name
+#' @return invisible(NULL) (File is saved as 2 .bigWig files)
+#' @importFrom rtracklayer export.bw
+#' @export
+#' @family utils
+#' @examples
+#' x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
+#' # export.bigWig(x, "output/path/rna.bigWig")
+export.bigWig <- function(x, file) {
+  if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
+    stop("x must be GRanges, GAlignments or GAlignmentPairs")
+  if (!is(x, "GRanges")) x <- GRanges(x)
+
+  x <- resize(x, width = 1, fix = "start")
+  if (!("score" %in% colnames(mcols(x)))) {
+    x <- convertToOneBasedRanges(x, method = "None",
+                                 addScoreColumn = TRUE,
+                                 addSizeColumn = FALSE)
+  } else { # merge reads by sum of existing scores
+    x <- collapse.by.scores(x)
+  }
+  strands <- as.character(strand(x))
+  if (all(strands == "*")) {
+    file <- gsub("\\.bigWig", "", file)
+    file <- paste0(file, ".bigWig")
+    export.wig(x, file)
+  } else {
+    file <- gsub("\\.bigWig", "", file)
+    forward_file <- paste0(file, "_forward.bigWig")
+    reverse_file <- paste0(file, "_reverse.bigWig")
+    export.bw(x[strandBool(x)], forward_file)
+    export.bw(x[!strandBool(x)], reverse_file)
+  }
+  return(invisible(NULL))
+}
+
 #' Store GRanges object as .bedo
 #'
 #' .bedo is .bed ORFik, an optimized bed format for coverage reads with
@@ -125,7 +172,8 @@ export.bedo <- function(object, out) {
 
 #' Store GAlignments object as .bedoc
 #'
-#' A much faster way to store, load and use bam files.\cr
+#' A fast way to store, load and use bam files.
+#' (we now recommend using \code{link{export.ofst}} instead!)\cr
 #' .bedoc is .bed ORFik, an optimized bed format for coverage reads with
 #' cigar and replicate number.\cr
 #' .bedoc is a text based format with columns (5 maximum):\cr

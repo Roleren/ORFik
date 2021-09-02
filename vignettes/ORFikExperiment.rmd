@@ -202,12 +202,12 @@ If your experiment consists of Ribo-seq, you want to do p-site shifting.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 shiftFootprintsByExperiment(df[df$libtype == "RFP",])
 ```
-P-shifted ribo-seq will automaticly be stored as .wig (wiggle files for IGV and other genome browsers) and .ofst (ORFik serialized for R) files in a ./pshifted folder, relative to original libraries. 
+P-shifted ribo-seq will automaticly be stored as .bigWwig (track files for IGV/UCSC) and .ofst (ORFik serialized for R) files in a ./pshifted folder, relative to original libraries. 
 
 To validate p-shifting, use shiftPlots. Here is an example from Bazzini et al. 2014 I made.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 df.baz <- read.experiment("zf_bazzini14_RFP")
-shiftPlots(df.baz, title = "Ribo-seq, zebrafish, Bazzini et al. 2014")
+shiftPlots(df.baz, title = "Ribo-seq, zebrafish, Bazzini et al. 2014", type = "heatmaps")
 ```
 ![p-site analysis](../inst/images/pshift_bazzini.png)
 
@@ -231,7 +231,7 @@ outputLibs(df[df$libtype == "RFP",], type = "pshifted")
 Bam files are slow to load, and usually you don't need all the information
 contained in a bam file.
 
-Usually you convert to bed or wig files, but ORFik also support 3 formats
+Usually you convert to bed or bigWig files, but ORFik also support 3 formats
 for much faster loading and use of data.
 
 ## ofst: ORFik serialized format

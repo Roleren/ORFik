@@ -115,7 +115,7 @@ collapse.by.scores <- function(x) {
                    score = mcols(x)$score)
   dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
   # TODO change makeGRangesFromDataFrame to internal fast function
-  return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
+  return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE, seqinfo = seqinfo(x)))
 }
 
 #' Collapse duplicated reads
@@ -169,7 +169,7 @@ setMethod("collapseDuplicatedReads", "GRanges",
             }
             if (!addScoreColumn) dt$score <- NULL
             # TODO change makeGRangesFromDataFrame to internal fast function
-            return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE))
+            return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE, seqinfo = seqinfo(x)))
           })
 
 #' @inherit collapseDuplicatedReads

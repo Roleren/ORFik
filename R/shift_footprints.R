@@ -294,9 +294,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' The wig format version can be used in IGV, the score column is counts of that
 #' read with that read length, the cigar reference width is lost,
 #' ofst is much faster to save and load in R, and retain cigar reference width,
-#' but can not be used in IGV. \cr You can also do bedoc format, bed format
-#' keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
-#' p-shifting.
+#' but can not be used in IGV. \cr Also for larger tracks, you can use "bigWig".
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @param log logical, default (TRUE), output a log file with parameters used and
 #' a .rds file with all shifts per library
@@ -318,9 +316,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @examples
 #' df <- ORFik.template.experiment()
 #' df <- df[3,] #lets only p-shift RFP sample at index 3
-#' ## If you want to check it in IGV do:
+#' ## Output files as both .ofst and .wig(can be viewed in IGV/UCSC)
 #' shiftFootprintsByExperiment(df)
-#' # Then use the .wig files that are created, which are readable in IGV.
 #' # If you only need in R, do: (then you get no .wig files)
 #' #shiftFootprintsByExperiment(df, output_format = "ofst")
 #' ## With debug info:
@@ -348,8 +345,8 @@ shiftFootprintsByExperiment <- function(df,
   path <- out.dir
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
-  if (!any(c("bed", "bedo", "wig", "ofst") %in% output_format))
-    stop("output_format allowed bed, bedo, wig or ofst")
+  if (!any(c("bed", "bedo", "wig", "ofst", "bigWig") %in% output_format))
+    stop("output_format allowed: bed, bedo, wig, bigWig or ofst")
   rfpFiles <- filepath(df, "ofst") # If ofst file not present, uses bam file
   if (!is.null(shift.list)) {
     if (!all(names(shift.list) %in% rfpFiles))
@@ -409,6 +406,17 @@ shiftFootprintsByExperiment <- function(df,
     if ("wig" %in% output_format) {
       export.wiggle(shifted, paste0(name, "_pshifted.wig"))
     }
+    if ("bigWig" %in% output_format) {
+      if (anyNA(seqlengths(shifted))) {
+        seqinfo(shifted) <- seqinfo(findFa(df))[seqlevels(shifted),]
+      }
+      if (anyNA(seqlengths(shifted))) {
+        seqinfo(shifted) <- seqinfo(loadTxdb(df))[seqlevels(shifted),]
+      }
+      if (!anyNA(seqlengths(shifted))) {
+        export.bigWig(shifted, paste0(name, "_pshifted.bigWig"))
+      } else warning("Could not export bigWig, reads does not have defined seqlengths!")
+    }
 
     return(shifts)
   }, path = path, df = df, start = start, stop = stop,
@@ -455,7 +463,7 @@ shiftFootprintsByExperiment <- function(df,
 #' @param type character, default "bar". Plot as faceted bars,
 #' gives more detailed information of read lengths,
 #' but harder to see patterns over multiple read lengths.
-#' Alternative: "heatmaps", better overview of patterns over
+#' Alternative: "heatmap", better overview of patterns over
 #' multiple read lengths.
 #' @param title Title for top of plot, default "Ribo-seq".
 #' A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"

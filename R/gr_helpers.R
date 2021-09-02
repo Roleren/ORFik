@@ -101,6 +101,7 @@ groupGRangesBy <- function(gr, other = NULL) {
 #'
 readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
 
+  if (length(reads) == 0) return(integer(0))
   if (is(reads, "GRanges")) {
     readWidth <- width(reads)
     is.one_based <- all(as.integer(readWidth) == rep(1, length(readWidth)))

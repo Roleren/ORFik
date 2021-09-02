@@ -15,7 +15,8 @@ export.bedoc(object, out)
 NULL, object saved to disc
 }
 \description{
-A much faster way to store, load and use bam files.\cr
+A fast way to store, load and use bam files.
+(we now recommend using \code{link{export.ofst}} instead!)\cr
 .bedoc is .bed ORFik, an optimized bed format for coverage reads with
 cigar and replicate number.\cr
 .bedoc is a text based format with columns (5 maximum):\cr

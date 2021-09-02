@@ -43,7 +43,7 @@ irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.}
 \item{type}{character, default "bar". Plot as faceted bars,
 gives more detailed information of read lengths,
 but harder to see patterns over multiple read lengths.
-Alternative: "heatmaps", better overview of patterns over
+Alternative: "heatmap", better overview of patterns over
 multiple read lengths.}
 
 \item{addFracPlot}{logical, default TRUE, add positional sum plot on top

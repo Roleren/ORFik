@@ -2,6 +2,8 @@ TODO
 -----------------------
     General:
     o Add more verbose outputs
+    o Add import/export for bigwig
+    o Make seqinfo be kept through the chain
 
     CageSeq:
     o Add more statistics for user if wanted

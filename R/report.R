@@ -29,6 +29,8 @@
 #' @param out.dir optional output directory, default:
 #' \code{dirname(df$filepath[1])}.
 #' Will make a folder called "QC_STATS" with all results in this directory.
+#' Warning: If you assign not default path, you will have a hazzle to load files later.
+#' Much easier to load count tables, statistics, ++ later with default.
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
 #' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
@@ -53,7 +55,9 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   message("- Creating read length tables:")
   dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)
   # Get count tables
-  finals <- QC_count_tables(df, out.dir, BPPARAM)
+  QC_count_tables(df, out.dir, BPPARAM)
+  # Alignment statistcs
+  finals <- alignmentFeatureStatistics(df, out.dir, BPPARAM)
   # Do trimming detection
   finals <- trim_detection(df, finals, out.dir)
   # Save file
@@ -99,11 +103,11 @@ QCplots <- function(df, region = "mrna",
   message("--------------------------")
   message("Making QC plots:")
   message("- Annotation to NGS libraries plot:")
-  QCstats.plot(df, stats_folder, plot.ext = plot.ext)
+  QCstats.plot(stats_folder, stats_folder, plot.ext = plot.ext)
 
   correlation.plots(df, stats_folder, region, plot.ext = plot.ext)
   message("- PCA outlier plot:")
-  pcaExperiment(df, "auto")
+  pcaExperiment(df, stats_folder)
   # window coverage over mRNA regions
   message("- Meta coverage plots")
   txdb <- loadTxdb(df)

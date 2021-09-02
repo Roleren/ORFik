@@ -515,7 +515,7 @@ validateExperiments <- function(df) {
   }
   if (any(is.na(emptyFiles))) {
     message("Error in experiment:", df@experiment)
-    stop(paste("File is not existing:\n", files[is.na(emptyFiles)]))
+    stop(paste("File does not exist:\n", files[is.na(emptyFiles)]))
   }
 
   if (any(emptyFiles)) {
@@ -816,7 +816,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' @param method character, default "None", the method to reduce ranges,
 #' for more info see \code{\link{convertToOneBasedRanges}}
 #' @param type a character of format, default "ofst".
-#' Alternatives: "ofst", "wig","bedo" or "bedoc". Which format you want.
+#' Alternatives: "ofst", "bigWig", "wig","bedo" or "bedoc". Which format you want.
 #' Will make a folder within out.dir with this name containing the files.
 #' @param reassign.when.saving logical, default FALSE. If TRUE, will reassign
 #' library to converted form after saving. Ignored when out.dir = NULL.
@@ -834,7 +834,7 @@ convertLibs <- function(df,
                        type = "ofst",
                        reassign.when.saving = FALSE,
                        envir = .GlobalEnv, BPPARAM = bpparam()) {
-  if (!(type %in% c("ofst", "bedo", "bedoc", "wig")))
+  if (!(type %in% c("ofst", "bedo", "bedoc", "wig", "bigWig")))
     stop("type must be either ofst, bedo or bedoc")
 
   validateExperiments(df)
@@ -877,11 +877,12 @@ convertLibs <- function(df,
         export.ofst(gr, file = output)
       } else if (type == "wig"){
         export.wiggle(gr, file = output)
+      } else if (type == "bigWig"){
+        export.bigWig(gr, file = output)
       } else # Must be bedoc, check done
         export.bedoc(gr, output)
     if (reassign.when.saving)
       assign(x = f, value = gr, envir = envir)
-
     } else {
       assign(x = f, value = gr, envir = envir)
     }

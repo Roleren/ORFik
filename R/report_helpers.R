@@ -7,11 +7,8 @@
 #' @keywords internal
 QC_count_tables <- function(df, out.dir, type = "ofst",
                             BPPARAM = bpparam()) {
-  txdb <- loadTxdb(df)
-  loadRegions(txdb, parts = c("mrna", "leaders", "cds", "trailers", "tx"))
-  outputLibs(df, leaders, type = type, BPPARAM = BPPARAM)
-  libs <- bamVarName(df)
-  # Update this to use correct
+  outputLibs(df, findFa(df), type = type, BPPARAM = BPPARAM)
+  # TODO: test if needed
   suppressMessages(convertLibs(df, NULL)) # Speedup by reducing unwanted information
 
   # Make count tables
@@ -20,18 +17,36 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
                                 longestPerGene = FALSE,
                                 out.dir = out.dir, lib.type = type,
                                 BPPARAM = BPPARAM)
+  return(invisible(NULL))
+}
+
+#' Create alignment feature statistcs
+#'
+#' Among others how much reads are in mRNA, introns, intergenic,
+#' and check of reads from rRNA and other ncRNAs.
+#' The better the annotation / gtf used, the more results you get.
+#' @inheritParams outputLibs
+#' @inheritParams QCreport
+#' @return a data.table of the statistcs
+#' @keywords internal
+alignmentFeatureStatistics <- function(df, out.dir, type = "ofst",
+                                       BPPARAM = bpparam()) {
+  message("--------------------------")
+  message("Making alignment statistics for lib:")
   # Special regions rRNA etc..
   types <- c()
   # TODO: Check if there is a way to get this from txdb directly
+  txdb <- loadTxdb(df)
+  fa <- findFa(df)
+  outputLibs(df, fa, type = type, BPPARAM = BPPARAM)
   gff.df <- importGtfFromTxdb(txdb, stop.error = FALSE)
   if (is.null(gff.df)) warnings("No biotypes defined in GTF,",
                                 " skiping biotype analysis!")
   types <- unique(gff.df$transcript_biotype)
+  # The ncRNAs regions to check
   types <-types[types %in% c("Mt_rRNA", "snRNA", "snoRNA", "lincRNA", "miRNA",
                              "rRNA", "Mt_rRNA", "ribozyme", "Mt_tRNA")]
-  # Put into csv, the standard stats
-  message("--------------------------")
-  message("Making alignment statistics for lib:")
+
   # Helper function, sum countOverlaps with weight
   sCo <- function(region, lib) {
     weight <- "score"
@@ -45,7 +60,8 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
   leaders <- loadRegion(txdb, "leaders")
   trailers <- loadRegion(txdb, "trailers")
   introns <- loadRegion(txdb, "introns")
-  finals <- bplapply(libs, function(s, dt_list, sCo, tx, gff.df, libs) {
+  libs <- bamVarName(df)
+  finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs) {
     message(s)
     lib <- get(s)
     # Raw stats
@@ -93,16 +109,19 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
       numbers <- c(numbers, sCo(tx[unique(valids$transcript_id)], lib))
     }
 
-    res_extra <- data.frame(matrix(numbers, nrow = 1))
-    colnames(res_extra) <- c(types)
-
     # Lib width distribution, after soft.clip
     widths <- round(summary(readWidths(lib)))
     res_widths <- data.frame(matrix(widths, nrow = 1))
     colnames(res_widths) <- paste(names(widths), "read length")
-    cbind(res, res_widths, res_mrna, res_extra)
-  }, dt_list = dt_list, sCo = sCo, tx = tx, gff.df = gff.df,
-     libs = libs, BPPARAM = BPPARAM)
+    res_final <- cbind(res, res_widths, res_mrna)
+    if (length(numbers) > 0) {
+      res_extra <- data.frame(matrix(numbers, nrow = 1))
+      colnames(res_extra) <- c(types)
+      res_final <- cbind(res_final, res_extra)
+    }
+    return(res_final)
+  }, sCo = sCo, tx = tx, gff.df = gff.df,
+  libs = libs, BPPARAM = BPPARAM)
 
   return(rbindlist(finals))
 }

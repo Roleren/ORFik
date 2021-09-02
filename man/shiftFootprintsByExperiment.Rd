@@ -71,9 +71,7 @@ wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.
 The wig format version can be used in IGV, the score column is counts of that
 read with that read length, the cigar reference width is lost,
 ofst is much faster to save and load in R, and retain cigar reference width,
-but can not be used in IGV. \cr You can also do bedoc format, bed format
-keeping cigar: \code{\link{export.bedoc}}. bedoc is usually not used for
-p-shifting.}
+but can not be used in IGV. \cr Also for larger tracks, you can use "bigWig".}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 
@@ -136,9 +134,8 @@ read lengths, for human, mouse etc, normally around 27:30.
 \examples{
 df <- ORFik.template.experiment()
 df <- df[3,] #lets only p-shift RFP sample at index 3
-## If you want to check it in IGV do:
+## Output files as both .ofst and .wig(can be viewed in IGV/UCSC)
 shiftFootprintsByExperiment(df)
-# Then use the .wig files that are created, which are readable in IGV.
 # If you only need in R, do: (then you get no .wig files)
 #shiftFootprintsByExperiment(df, output_format = "ofst")
 ## With debug info:

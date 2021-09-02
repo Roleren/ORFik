@@ -7,7 +7,7 @@
 QCstats.plot(stats, output.dir = NULL, plot.ext = ".pdf")
 }
 \arguments{
-\item{stats}{path to ORFik QC stats .csv file, or the experiment object.}
+\item{stats}{the experiment object or path to custom ORFik QC folder.}
 
 \item{output.dir}{NULL or character path, default: NULL, plot not saved to disc.
 If defined saves plot to that directory with the name "/STATS_plot.pdf".}

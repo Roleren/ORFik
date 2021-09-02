@@ -82,8 +82,10 @@ test_that("filepath work as intended", {
 })
 
 test_that("transcriptWindow plots correctly", {
-  df <- df[3,]
-  expect_warning(loadRegions(df))
-  transcriptWindow(leaders, get("cds", mode = "S4"), trailers, df)
+  expect_warning(loadRegions(df[3,]))
+  transcriptWindow(leaders, get("cds", mode = "S4"), trailers, df[3,])
 })
 
+test_that("QCreport work as intended", {
+  suppressWarnings(QCreport(df[3,], out.dir = tempdir()))
+})

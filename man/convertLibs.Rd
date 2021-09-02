@@ -42,7 +42,7 @@ only need the reads over transcript annotation or subset etc.}
 for more info see \code{\link{convertToOneBasedRanges}}}
 
 \item{type}{a character of format, default "ofst".
-Alternatives: "ofst", "wig","bedo" or "bedoc". Which format you want.
+Alternatives: "ofst", "bigWig", "wig","bedo" or "bedoc". Which format you want.
 Will make a folder within out.dir with this name containing the files.}
 
 \item{reassign.when.saving}{logical, default FALSE. If TRUE, will reassign

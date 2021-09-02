@@ -22,7 +22,9 @@ countTable_regions(
 
 \item{out.dir}{optional output directory, default:
 \code{dirname(df$filepath[1])}.
-Will make a folder called "QC_STATS" with all results in this directory.}
+Will make a folder called "QC_STATS" with all results in this directory.
+Warning: If you assign not default path, you will have a hazzle to load files later.
+Much easier to load count tables, statistics, ++ later with default.}
 
 \item{longestPerGene}{a logical (default FALSE), if FALSE all transcript
 isoforms per gene. Ignored if "region" is not a character of either:

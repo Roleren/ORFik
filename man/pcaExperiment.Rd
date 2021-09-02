@@ -26,7 +26,7 @@ a data.table of counts per column (default normalized fpkm values).}
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 }
 \value{
-ggplot or invisible(NULL) if output.dir is defined
+ggplot or invisible(NULL) if output.dir is defined or < 3 samples
 }
 \description{
 Detect outlier libraries with PCA analysis.

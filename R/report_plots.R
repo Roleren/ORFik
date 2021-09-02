@@ -3,7 +3,7 @@
 #' From post-alignment QC relative to annotation, make a plot for all samples.
 #' Will contain among others read lengths, reads overlapping leaders,
 #' cds, trailers, mRNA / rRNA etc.
-#' @param stats path to ORFik QC stats .csv file, or the experiment object.
+#' @param stats the experiment object or path to custom ORFik QC folder.
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
@@ -23,9 +23,9 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
     stats <- QCstats(stats)
     if (is.null(stats))
       stop("No QC report made for experiment, run ORFik QCreport")
-  } else {
+  } else { # From path to QC folder
     path <- stats
-    stats <- fread(stats)
+    stats <- fread(file.path(stats, "STATS.csv"))
   }
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
 
@@ -124,6 +124,10 @@ correlation.plots <- function(df, output.dir,
                               complex.correlation.plots = TRUE,
                               data_for_pairs = countTable(df, region, type = type)) {
   message("- Correlation plots")
+  if (nrow(df) == 1) { # Avoid error from ggplot2 backend
+    message("-  Skipping correlation plots (only 1 sample)")
+    return(invisible(NULL))
+  }
   # Settings for points
   point_settings <- list(continuous = GGally::wrap("points", alpha = 0.3, size = size),
                          combo = GGally::wrap("dot", alpha = 0.4, size=0.2))
@@ -167,12 +171,16 @@ correlation.plots <- function(df, output.dir,
 #' @param table data.table, default countTable(df, "cds", type = "fpkm"),
 #' a data.table of counts per column (default normalized fpkm values).
 #' @param title character, default "CDS fpkm (All genes)".
-#' @return ggplot or invisible(NULL) if output.dir is defined
+#' @return ggplot or invisible(NULL) if output.dir is defined or < 3 samples
 #' @keywords internal
 pcaExperiment <- function(df, output.dir = NULL,
                           table = countTable(df, "cds", type = "fpkm"),
                           title = "CDS fpkm (All genes)",
                           plot.ext = ".pdf") {
+  if (nrow(df) < 3) {
+    message("-  Skipping PCA analysis (< 3 samples)")
+    return(invisible(NULL))
+  }
   pca <- stats::prcomp(table, scale = FALSE)
   dt <- data.table(pca$rotation, keep.rownames = TRUE)
   dt$sample <- dt$rn
