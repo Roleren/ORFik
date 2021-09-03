@@ -5,7 +5,7 @@ TODO
     o Add import/export for bigwig
     o Make seqinfo be kept through the chain
 
-    CageSeq:
+    CAGE:
     o Add more statistics for user if wanted
 
     RiboSeq:
@@ -37,3 +37,4 @@ TODO
     o Check if coverage might need a new "append.single"", to make sure each fraction gets a choice.
     o make sure remove.zero.dt, does not make any functions fail!
     o Add new add.flank.zero, to make max and min correct.
+    o Updated heatmapRegion to use remove.zero.dt as TRUE

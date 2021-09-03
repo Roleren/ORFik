@@ -325,7 +325,7 @@ If you get both (+/-) strand and only want (+) ORFs, do:
 
 See individual functions for more examples.
 
-# CageSeq data for 5' UTR re-annotation
+# CAGE data for 5' UTR re-annotation
 
 In the previous example we used the reference annotation of the 5' UTRs from Hg19. 
 

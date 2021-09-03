@@ -252,6 +252,8 @@ import.bedoc <- function(path) {
 #' Import with import.ofst
 #' @param file a path to a .ofst file
 #' @inheritParams readBam
+#' @param seqinfo Seqinfo object, defaul NULL (created from ranges).
+#' Add to avoid warnings later on differences in seqinfo.
 #' @return a GAlignment, GAlignmentPairs or GRanges object,
 #' dependent of if cigar/cigar1 is defined in .ofst file.
 #' @importFrom fst read_fst
@@ -268,13 +270,13 @@ import.bedoc <- function(path) {
 #' ga <- ORFik:::getGAlignments(df)
 #' # export.ofst(ga, file = tmp)
 #' # import.ofst(tmp)
-import.ofst <- function(file, strandMode = 0) {
+import.ofst <- function(file, strandMode = 0, seqinfo = NULL) {
   df <- read_fst(file)
   if ("cigar" %in% colnames(df)) {
-    getGAlignments(df)
+    getGAlignments(df, seqinfo = seqinfo)
   } else if ("cigar1" %in% colnames(df)) {
-    getGAlignmentsPairs(df, strandMode)
-  } else getGRanges(df)
+    getGAlignmentsPairs(df, strandMode = strandMode, seqinfo = seqinfo)
+  } else getGRanges(df, seqinfo = seqinfo)
 }
 
 #' Load any type of sequencing reads

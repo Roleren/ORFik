@@ -4,12 +4,15 @@
 \alias{getGAlignments}
 \title{Internal GAlignments loader from fst data.frame}
 \usage{
-getGAlignments(df)
+getGAlignments(df, seqinfo = NULL)
 }
 \arguments{
 \item{df}{a data.frame with columns minimum 4 columns:
 seqnames, start ("pos" in final GA object), strand and width.\cr
 Additional columns will be assigned as meta columns}
+
+\item{seqinfo}{Seqinfo object, defaul NULL (created from ranges).
+Add to avoid warnings later on differences in seqinfo.}
 }
 \value{
 GAlignments object

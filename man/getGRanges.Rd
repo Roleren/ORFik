@@ -4,12 +4,15 @@
 \alias{getGRanges}
 \title{Internal GRanges loader from fst data.frame}
 \usage{
-getGRanges(df)
+getGRanges(df, seqinfo = NULL)
 }
 \arguments{
 \item{df}{a data.frame with columns minimum 4 columns:
 seqnames, start, strand and width.\cr
 Additional columns will be assigned as meta columns}
+
+\item{seqinfo}{Seqinfo object, defaul NULL (created from ranges).
+Add to avoid warnings later on differences in seqinfo.}
 }
 \value{
 GRanges object

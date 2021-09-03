@@ -47,6 +47,7 @@ extendsTSSexons <- function(fiveUTRs, extension = 1000) {
   firstExons <- fiveAsgr[fiveAsgr$exon_rank == 1]
   posIDs <- strandBool(firstExons)
   promo <- promoters(firstExons, upstream = extension)
+
   start(firstExons[posIDs]) <- pmax(rep(1, length(promo[posIDs])),
                                     start(promo[posIDs]))
   end(firstExons[!posIDs]) <- end(promo[!posIDs])

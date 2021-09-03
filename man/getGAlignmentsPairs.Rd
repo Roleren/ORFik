@@ -4,7 +4,7 @@
 \alias{getGAlignmentsPairs}
 \title{Internal GAlignmentPairs loader from fst data.frame}
 \usage{
-getGAlignmentsPairs(df, strandMode = 0)
+getGAlignmentsPairs(df, strandMode = 0, seqinfo = NULL)
 }
 \arguments{
 \item{df}{a data.frame with columns minimum 6 columns:
@@ -16,6 +16,9 @@ One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
 See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
 This is to guarantee hits, but will also make mismatches of overlapping
 transcripts in opposite directions.}
+
+\item{seqinfo}{Seqinfo object, defaul NULL (created from ranges).
+Add to avoid warnings later on differences in seqinfo.}
 }
 \value{
 GAlignmentPairs object

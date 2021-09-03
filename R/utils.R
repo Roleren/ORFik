@@ -28,10 +28,11 @@ bedToGR <- function(x, skip.name = TRUE) {
 #' @param df a data.frame with columns minimum 4 columns:
 #' seqnames, start, strand and width.\cr
 #' Additional columns will be assigned as meta columns
+#' @inheritParams import.ofst
 #' @return GRanges object
 #' @importFrom S4Vectors new2
 #' @keywords internal
-getGRanges <- function(df) {
+getGRanges <- function(df, seqinfo = NULL) {
   if (!all(c("seqnames", "start", "width", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
   ranges <- new2("IRanges", start = df$start,
@@ -42,7 +43,9 @@ getGRanges <- function(df) {
   if (is.null(levels(df$seqnames))) {
     df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
   }
-  seqinfo <- Seqinfo(levels(df$seqnames))
+  if (!is.null(seqinfo)) {
+    stopifnot(is(seqinfo, "Seqinfo"))
+  } else seqinfo <- Seqinfo(levels(df$seqnames))
   df$NAMES <- NULL
   if (ncol(df) == 4){
     mcols <- NULL
@@ -63,18 +66,21 @@ getGRanges <- function(df) {
 #' @param df a data.frame with columns minimum 4 columns:
 #' seqnames, start ("pos" in final GA object), strand and width.\cr
 #' Additional columns will be assigned as meta columns
+#' @inheritParams import.ofst
 #' @return GAlignments object
 #' @importFrom S4Vectors new2
 #' @keywords internal
-getGAlignments <- function(df) {
+getGAlignments <- function(df, seqinfo = NULL) {
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
   if (nrow(df) == 0) return(GenomicAlignments::GAlignments())
   if (is.null(levels(df$seqnames))) {
     df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
   }
+  if (!is.null(seqinfo)) {
+    stopifnot(is(seqinfo, "Seqinfo"))
+  } else seqinfo <- Seqinfo(levels(df$seqnames))
 
-  seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
   if (ncol(df) == 4){
@@ -98,11 +104,11 @@ getGAlignments <- function(df) {
 #' @param df a data.frame with columns minimum 6 columns:
 #' seqnames, start1/start2 (integers), cigar1/cigar2 and strand\cr
 #' Additional columns will be assigned as meta columns
-#' @inheritParams readBam
+#' @inheritParams import.ofst
 #' @return GAlignmentPairs object
 #' @importFrom S4Vectors new2
 #' @keywords internal
-getGAlignmentsPairs <- function(df, strandMode = 0) {
+getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
   if (nrow(df) == 0) {
     return(GenomicAlignments::GAlignmentPairs(first = GAlignments(),
                                               last = GAlignments(),
@@ -111,7 +117,9 @@ getGAlignmentsPairs <- function(df, strandMode = 0) {
   if (is.null(levels(df$seqnames))) {
     df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
   }
-  seqinfo <- Seqinfo(levels(df$seqnames))
+  if (!is.null(seqinfo)) {
+    stopifnot(is(seqinfo, "Seqinfo"))
+  } else seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
   if (ncol(df) == 6){
