@@ -41,6 +41,7 @@ Other utils:
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},
 \code{\link{readBam}()},
+\code{\link{readBigWig}()},
 \code{\link{readWig}()}
 }
 \concept{utils}

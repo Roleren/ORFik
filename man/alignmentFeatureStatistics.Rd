@@ -4,16 +4,10 @@
 \alias{alignmentFeatureStatistics}
 \title{Create alignment feature statistcs}
 \usage{
-alignmentFeatureStatistics(df, out.dir, type = "ofst", BPPARAM = bpparam())
+alignmentFeatureStatistics(df, type = "ofst", BPPARAM = bpparam())
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
-
-\item{out.dir}{optional output directory, default:
-\code{dirname(df$filepath[1])}.
-Will make a folder called "QC_STATS" with all results in this directory.
-Warning: If you assign not default path, you will have a hazzle to load files later.
-Much easier to load count tables, statistics, ++ later with default.}
 
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".

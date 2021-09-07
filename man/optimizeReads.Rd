@@ -29,6 +29,7 @@ Other utils:
 \code{\link{findFa}()},
 \code{\link{fread.bed}()},
 \code{\link{readBam}()},
+\code{\link{readBigWig}()},
 \code{\link{readWig}()}
 }
 \concept{utils}

@@ -57,7 +57,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   # Get count tables
   QC_count_tables(df, out.dir, BPPARAM)
   # Alignment statistcs
-  finals <- alignmentFeatureStatistics(df, out.dir, BPPARAM)
+  finals <- alignmentFeatureStatistics(df, BPPARAM)
   # Do trimming detection
   finals <- trim_detection(df, finals, out.dir)
   # Save file

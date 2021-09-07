@@ -29,7 +29,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
 #' @inheritParams QCreport
 #' @return a data.table of the statistcs
 #' @keywords internal
-alignmentFeatureStatistics <- function(df, out.dir, type = "ofst",
+alignmentFeatureStatistics <- function(df, type = "ofst",
                                        BPPARAM = bpparam()) {
   message("--------------------------")
   message("Making alignment statistics for lib:")

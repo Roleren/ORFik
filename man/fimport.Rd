@@ -54,13 +54,14 @@ a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
  depending on input.
 }
 \description{
-Wraps around rtracklayer::import and tries to speed up loading with the
+Wraps around ORFik file format loaders and rtracklayer::import
+and tries to speed up loading with the
 use of data.table. Supports gzip, gz, bgz compression formats.
 Also safer chromosome naming with the argument chrStyle
 }
 \details{
-NOTE: For wig you can send in 2 files, so that it automaticly merges
-forward and reverse stranded objects. You can also just send 1 wig file,
+NOTE: For wig/bigWig files you can send in 2 files, so that it automatically
+merges forward and reverse stranded objects. You can also just send 1 wig/bigWig file,
 it will then have "*" as strand.
 }
 \examples{
@@ -84,6 +85,7 @@ Other utils:
 \code{\link{fread.bed}()},
 \code{\link{optimizeReads}()},
 \code{\link{readBam}()},
+\code{\link{readBigWig}()},
 \code{\link{readWig}()}
 }
 \concept{utils}

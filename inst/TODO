@@ -14,6 +14,9 @@ TODO
     OFST file format:
     o Implement ofst indexing of files
 
+    ORFik experiment:
+    o Fix very slow loading speed of read.experiment
+
     Alignment:
     o Add genomeSAindexNbases 14 check to reduce to 10 if small
     o wrap fastp UMI and barcode demultiplexing
