@@ -6,10 +6,27 @@ get_genome_fasta <- function(genome, output.dir, organism,
     if (db == "ensembl") {
       message(paste("Starting", assembly_type, "genome retrieval of",
                     organism, "from ensembl: "))
-      genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
-                                          release = NULL,
-                                          id.type = assembly_type,
-                                          path = output.dir)[1]
+      genome <- tryCatch(biomartr:::getENSEMBL.Seq(organism, type = "dna",
+                                                   release = NULL,
+                                                   id.type = assembly_type,
+                                                   path = output.dir)[1],
+                         error = function(e) {
+                           return(e)
+                         }
+      )
+      if (inherits(genome, "error")) {
+        if (genome$message[1] == "Given file does not exist") {
+        message("Could not find assembly_type: ", assembly_type)
+        assembly_types_cand <- c("toplevel", "primary_assembly")
+        assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
+        message("Switching to search for assembly_type: ", assembly_type)
+        genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
+                                            release = NULL,
+                                            id.type = assembly_type,
+                                            path = output.dir)[1]
+        } else stop(genome)
+      }
+
       if (is.logical(genome)) {
         if (genome == FALSE) {
           message("Remember some small genome organisms like yeast,",
