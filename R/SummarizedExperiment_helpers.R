@@ -333,6 +333,10 @@ countTable <- function(df, region = "mrna", type = "count",
       }
       rownames(ress) <- names(ranges(res))
       return(ress)
+    } else if (length(df) > 1) {
+      message(paste("More than 1 count table: ", df))
+      stop("Folder contains multiple count tables for the same region, ORFik does not
+           know which to pick. Delete or move the one that is not supposed to be there!")
     }
   }
   message(paste("Invalid count table:", df))

@@ -87,5 +87,5 @@ test_that("transcriptWindow plots correctly", {
 })
 
 test_that("QCreport work as intended", {
-  suppressWarnings(QCreport(df[3,], out.dir = tempdir()))
+  expect_warning(QCreport(df[3,], out.dir = tempdir()))
 })

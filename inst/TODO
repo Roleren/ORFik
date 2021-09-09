@@ -20,6 +20,7 @@ TODO
     Alignment:
     o Add genomeSAindexNbases 14 check to reduce to 10 if small
     o wrap fastp UMI and barcode demultiplexing
+    o Try to include download of tRNA-scan tRNA fasta files
 
     SRA Download:
     Test if it is possible to speed up EBI download even more
