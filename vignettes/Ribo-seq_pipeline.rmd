@@ -28,8 +28,8 @@ The following steps are done:
 
 1. Define directory paths
 2. Download Ribo-seq & RNA-seq data from SRA (subset to 2 million reads per library)
-3. Download annotation and contaminants
-4. Align data
+3. Download genome annotation and contaminants
+4. Trim & Align data
 5. Make ORFik experiment
 6. QC
 7. Heatmaps

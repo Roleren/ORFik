@@ -3,7 +3,8 @@
 #' From post-alignment QC relative to annotation, make a plot for all samples.
 #' Will contain among others read lengths, reads overlapping leaders,
 #' cds, trailers, mRNA / rRNA etc.
-#' @param stats the experiment object or path to custom ORFik QC folder.
+#' @param stats the experiment object or path to custom ORFik QC folder where a file
+#' called "STATS.csv" is located.
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".

@@ -4,6 +4,7 @@ TODO
     o Add more verbose outputs
     o Add import/export for bigwig
     o Make seqinfo be kept through the chain
+    o Make startCodon and stopCodon inherit all exon_ranks
 
     CAGE:
     o Add more statistics for user if wanted
@@ -36,6 +37,7 @@ TODO
 
     QC
     o Add possibility for batch correction of correlation plots
+    o Add counts per group in DTEG analysis plots
 
     Coverage
     o Check if coverage might need a new "append.single"", to make sure each fraction gets a choice.

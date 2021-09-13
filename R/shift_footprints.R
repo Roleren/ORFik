@@ -114,9 +114,9 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' codons. Default FASLE. Only use if there exists 3' UTRs for the annotation.
 #' If peridicity around stop codon is stronger than at the start codon, use
 #' stop instead of start region for p-shifting.
-#' @param top_tx (integer), default 10. Specify which \% of the top covered by RiboSeq
-#' reads transcripts to use for estimation of the shifts. By default we take top 10%
-#' top covered transcripts as they represent less noisy dataset. This is only
+#' @param top_tx (integer), default 10. Specify which \% of the top TIS coverage
+#' transcripts to use for estimation of the shifts. By default we take top 10%
+#' top covered transcripts as they represent less noisy data-set. This is only
 #' applicable when there are more than 1000 transcripts.
 #' @inheritParams filterTranscripts
 #' @param txNames a character vector of subset of CDS to use. Default:
@@ -132,9 +132,11 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' your own version. Example: extendLeaders(tx, 30)
 #' Where 30 bases will be new "leaders". Since each original transcript was
 #' either only CDS or non-coding (filtered out).
-#' @param min_reads default (1000), how many reads must a read-length have to
-#' be considered for periodicity.
-#' @param accepted.lengths accepted readlengths, default 26:34, usually ribo-seq
+#' @param min_reads default (1000), how many reads must a read-length have in total
+#' to be considered for periodicity.
+#' @param min_reads_TIS default (50), how many reads must a read-length have in the
+#' TIS region to be considered for periodicity.
+#' @param accepted.lengths accepted read lengths, default 26:34, usually ribo-seq
 #' is strongest between 27:32.
 #' @inheritParams footprints.analysis
 #' @param must.be.periodic logical TRUE, if FALSE will not filter on
@@ -191,7 +193,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   top_tx = 10L, minFiveUTR = 30L, minCDS = 150L,
   minThreeUTR = if (stop) {30} else NULL,
   txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
-  firstN = 150L, tx = NULL, min_reads = 1000, accepted.lengths = 26:34,
+  firstN = 150L, tx = NULL, min_reads = 1000, min_reads_TIS = 50, accepted.lengths = 26:34,
   heatmap = FALSE, must.be.periodic = TRUE, strict.fft = TRUE, verbose = FALSE) {
 
   txdb <- loadTxdb(txdb)
@@ -246,14 +248,21 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     rw[, sum.count := sum(count), by = genes]
     rw <- rw[sum.count >= quantile(sum.count, top_tx), ]
     rw <- coverageScorings(rw, scoring = "sum")
-    footprints.analysis(rw, heatmap)
+    rw[, frac.score := sum(score), by = fraction]
+
     if (verbose) {
+      message("-------------------")
+      message("Coverage of TIS region per read length before filtering")
+      print(rw[, .(total_counts = unique(frac.score)), by = fraction])
       message("-------------------")
       message("Change point analysis (start): ups (upstream window score), downs (downstream window score)")
     }
+    rw <- rw[frac.score > min_reads_TIS, ]
+    footprints.analysis(rw, heatmap)
     offset <- rw[, .(offsets_start = changePointAnalysis(score, info = unique(fraction),
                                                          verbose = verbose)),
                  by = fraction]
+    validLengths <- offset$fraction
   }
   if (stop & !is.null(minThreeUTR)) {
     threeUTRs <- loadRegion(txdb, "trailers", names.keep = txNames)
@@ -263,11 +272,16 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
                               scoring = "sum")
     footprints.analysis(rw, heatmap, region = "start of 3' UTR")
     if (nrow(offset) == 0) {
-      offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop")),
+      offset <- rw[, .(offsets_stop = changePointAnalysis(score, "stop",
+                                                          info = unique(fraction),
+                                                          verbose = verbose)),
                    by = fraction]
-    } else offset$offsets_stop <- rw[, .(changePointAnalysis(score, "stop")),
+    } else offset$offsets_stop <- rw[, .(changePointAnalysis(score, "stop",
+                                                             info = unique(fraction),
+                                                             verbose = verbose)),
                                      by = fraction]$V1
   }
+  if (nrow(offset) == 0) message("No offsets found, run with verbose = TRUE, to see why.")
 
   return(offset)
 }
@@ -334,7 +348,8 @@ shiftFootprintsByExperiment <- function(df,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L,
                                         minThreeUTR = if (stop) {30} else NULL,
-                                        firstN = 150L, min_reads = 1000,
+                                        firstN = 150L,
+                                        min_reads = 1000, min_reads_TIS = 50,
                                         accepted.lengths = 26:34,
                                         output_format = c("ofst", "wig"),
                                         BPPARAM = bpparam(), tx = NULL,
@@ -363,8 +378,9 @@ shiftFootprintsByExperiment <- function(df,
   shifts <- bplapply(rfpFiles,
            FUN = function(file, path, df, start, stop,
                           top_tx, minFiveUTR, minCDS, minThreeUTR,
-                          firstN, min_reads, accepted.lengths,
-                          output_format, heatmap, tx, shift.list,
+                          firstN, min_reads, min_reads_TIS,
+                          accepted.lengths, output_format,
+                          heatmap, tx, shift.list,
                           must.be.periodic, txNames, strict.fft,
                           verbose = verbose
                           ) {
@@ -378,7 +394,7 @@ shiftFootprintsByExperiment <- function(df,
                                      minFiveUTR = minFiveUTR,
                                      minCDS = minCDS, minThreeUTR = minThreeUTR,
                                      txNames = txNames, firstN = firstN,
-                                     min_reads = min_reads,
+                                     min_reads = min_reads, min_reads_TIS = min_reads_TIS,
                                      accepted.lengths = accepted.lengths,
                                      heatmap = heatmap, tx = tx,
                                      must.be.periodic = must.be.periodic,
@@ -422,7 +438,7 @@ shiftFootprintsByExperiment <- function(df,
   }, path = path, df = df, start = start, stop = stop,
      top_tx = top_tx, minFiveUTR = minFiveUTR,
      minCDS = minCDS, minThreeUTR = minThreeUTR,
-     firstN = firstN, min_reads = min_reads,
+     firstN = firstN, min_reads = min_reads, min_reads_TIS = min_reads_TIS,
      accepted.lengths = accepted.lengths, output_format = output_format,
      heatmap = heatmap, must.be.periodic = must.be.periodic,
      strict.fft = strict.fft, verbose = verbose, tx = tx,

@@ -301,7 +301,7 @@ conditionNames <- function() {
 #' of the main name in second column as a list.
 #' @keywords internal
 inhibitorNames <- function() {
-  mainName <- c("chloram","chx", "harr", "frozen", "lactim")
+  mainName <- c("chloram","chx", "harr", "frozen", "lactim", "puro")
   allNames <-
     list(c("chloramphenicol", "Chloramphenicol"),
          c("cycloheximide", "Cycloheximide", "chx", "CHX"),

@@ -409,6 +409,9 @@ else
 	elif [ $adapter == "nextera" ]; then
 	  echo "Using Nextera preset adapter"
 		adapter="CTGTCTCTTATA"
+	elif [ $adapter == "ingolia12" ]; then
+	  echo "Using Ingolia(2012 Ribo-seq) preset adapter"
+		adapter="CTGTAGGCACCATCAAT"
 	fi
 	adapter="--adapter_sequence=${adapter}"
 fi
