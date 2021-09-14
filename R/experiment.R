@@ -1,172 +1,3 @@
-#' experiment class definition
-#'
-#' It is an object that simplify and error correct your NGS workflow,
-#' creating a single R object that stores and controls all results relevant
-#' to a specific experiment.\cr It contains following important parts:
-#' \itemize{
-#'  \item{filepaths : }{and info for each library in the experiment
-#'  (for multiple files formats: bam, bed, wig, ofst, ..)}
-#'  \item{genome : }{annotation files of the experiment
-#'  (fasta genome, index, gtf, txdb)}
-#'  \item{organism : }{name (for automatic GO, sequence analysis..)}
-#'  \item{description : }{and author information (list.experiments(),
-#'  show all experiments you have made with ORFik, easy to find and load them later)}
-#'  \item{API : }{ORFik supports a rich API for using the experiment,
-#'  like outputLibs(experiment, type = "wig") will load all libraries
-#'  converted to wig format into R,  loadTxdb(experiment) will load the
-#'  txdb (gtf) of experiment, transcriptWindow() will automatically plot
-#'  metacoverage of all libraries in the experiment, countTable(experiment) will load count tables, etc..)}
-#'  \item{Safety : }{It is also a safety in that it verifies your experiments contain
-#'   no duplicate, empty or non-accessible files.}
-#' }
-#' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
-#' more ease to find not only counts, but rather
-#' information about libraries, and annotation, so that more tasks are
-#' possible. Like coverage per position in some transcript etc.\cr\cr
-#' ## Constructor:\cr
-#' Simplest way to make is to call:\cr
-#' create.experiment(dir)\cr
-#' On some folder with NGS libraries (usually bam files) and see what you get.
-#' Some of the fields
-#' might be needed to fill in manually. Each resulting row must be unique
-#' (not including filepath, they are always unique), that means
-#' if it has replicates then that must be said explicit. And all
-#' filepaths must be unique and have files with size > 0.\cr\cr
-#' Here all the columns in the experiment will be described:
-#' name (column info): examples\cr
-#' \describe{
-#'      \item{libtype}{library type: rna-seq, ribo-seq, CAGE etc}
-#'      \item{stage}{stage or tissue: 64cell, Shield, HEK293}
-#'      \item{rep}{replicate: 1,2,3 etc}
-#'      \item{condition}{treatment or condition: :
-#'      WT (wild-type), control, target, mzdicer, starved}
-#'      \item{fraction}{fraction of total: 18, 19 (TCP / RCP fractions),
-#'      or other ways to split library.\cr}
-#'      \item{filepath}{Full filepath to file}
-#'      \item{reverse}{optional: 2nd filepath or info, only used if paired files}
-#' }
-#'
-#' @details
-#' Special rules:\cr
-#' Supported:\cr
-#' Single/paired end bam, bed, wig, ofst + compressions of these\cr
-#' The reverse column of the experiments says "paired-end" if bam file.
-#' If a pair of wig files, forward and reverse strand, reverse is filepath
-#' to '-' strand wig file.
-#' Paired forward / reverse wig files, must have same name except
-#'  _forward / _reverse in name\cr
-#' Paired end bam, when creating experiment, set pairedEndBam = c(T, T, T, F).
-#' For 3 paired end libraries, then one single end.\cr
-#' Naming:
-#' Will try to guess naming for tissues / stages, replicates etc.
-#' If it finds more than one hit for one file, it will not guess.
-#' Always check that it guessed correctly.
-#' @importFrom methods new
-#' @examples
-#' ## To see an internal ORFik example
-#' df <- ORFik.template.experiment()
-#' ## See libraries in experiment
-#' df
-#' ## See organism of experiment
-#' organism.df(df)
-#' ## See file paths in experiment
-#' filepath(df, "default")
-#' ## Output objects in R, to .GlobalEnv
-#' #outputLibs(df)
-#'
-#' ## This is how to make it:
-#' \dontrun{
-#' library(ORFik)
-#'
-#' # 1. Update path to experiment data  directory (bam, bed, wig files etc)
-#' exp_dir = "/data/processed_data/RNA-seq/Lee_zebrafish_2013/aligned/"
-#'
-#' # 2. Set a short character name for experiment, (Lee et al 2013 -> Lee13, etc)
-#' exper_name = "Lee13"
-#'
-#' # 3. Create a template experiment (gtf and fasta genome)
-#' temp <- create.experiment(exp_dir, exper_name, saveDir = NULL,
-#'  txdb = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.79.gtf",
-#'  fa = "/data/references/Zv9_zebrafish/Danio_rerio.Zv9.fa",
-#'  organism = "Homo sapiens")
-#'
-#' # 4. Make sure each row(sample) is unique and correct
-#' # You will get a view open now, check the data.frame that it is correct:
-#' # library type (RNA-seq, Ribo-seq), stage, rep, condition, fraction.
-#' # Let say it did not figure out it is RNA-seq, then we do:"
-#'
-#' temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are library types
-#'
-#' # You can also do this in your spread sheet program (excel, libre office)
-#' # Now save new version, if you did not use spread sheet.
-#' saveName <- paste0("/data/processed_data/experiment_tables_for_R/",
-#'  exper_name,".csv")
-#' save.experiment(temp, saveName)
-#'
-#' # 5. Load experiment, this will validate that you actually made it correct
-#' df <- read.experiment(saveName)
-#'
-#' # Set experiment name not to be assigned in R variable names
-#' df@expInVarName <- FALSE
-#' df
-#' }
-#' @export
-#' @family ORFik_experiment
-experiment <- setClass("experiment",
-                       slots=list(experiment = "character",
-                                  txdb = "character",
-                                  fafile = "character",
-                                  organism = "character",
-                                  author = "character",
-                                  expInVarName = "logical"),
-                       contains = "DataFrame")
-
-#' experiment show definition
-#'
-#' Show a simplified version of the experiment.
-#' The show function simplifies the view so that any
-#' column of data (like replicate or stage) is not shown, if all
-#' values are identical in that column. Filepaths are also never shown.
-#' @param object an ORFik \code{\link{experiment}}
-#' @export
-#' @return print state of experiment
-setMethod("show",
-          "experiment",
-          function(object) {
-            type <- ifelse(length(unique(object@listData$libtype)) == 1,
-                           "type", "types")
-            cat("experiment:", object@experiment, "with",
-                length(unique(object@listData$libtype)), "library", type, "and",
-                length(object@listData$libtype), "runs","\n")
-            if (object@author != "") cat(object@author, "et al. \n")
-
-            obj <- as.data.table(as(object@listData, Class = "DataFrame"))
-            if (nrow(obj) > 0) {
-              obj <- obj[,-"filepath"]
-              if (!is.null(obj$reverse)) obj <- obj[,-"reverse"]
-              skip <- c()
-              for (i in 2:ncol(obj)) {
-                if (nrow(unique(obj[,i, with = F])) == 1)
-                  skip <- c(skip, i)
-              }
-              if (length(skip) > 0) {
-                show(obj[,-skip, with = F])
-              } else show(obj)
-            }
-          }
-)
-
-#' Internal nrow function for ORFik experiment
-#' Number of runs in experiment
-#' @param x an ORFik \code{\link{experiment}}
-#' @return number of rows in experiment (integer)
-setMethod("nrow",
-          "experiment",
-          function(x) {
-            nrow(as.data.table(as(x@listData, Class = "DataFrame")))
-          }
-)
-
 #' Read ORFik \code{\link{experiment}}
 #'
 #' Read in runs / samples from an experiment as a single R object.
@@ -230,7 +61,8 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
                    organism = org, author = author,
                    listData = listData,
-                   expInVarName = FALSE)
+                   expInVarName = FALSE,
+                   envir = .GlobalEnv)
   validateExperiments(df)
   return(df)
 }
@@ -476,15 +308,31 @@ findFromPath <- function(filepaths, candidates, slot = "auto") {
 
 #' Which type of library type in \code{\link{experiment}}?
 #' @param df an ORFik \code{\link{experiment}}
+#' @param uniqueTypes logical, default TRUE. Only return unique lib types.
 #' @return library types (character vector)
 #' @family ORFik_experiment
-#' @keywords internal
-libraryTypes <- function(df) {
-  if (is(df, "experiment")) {
-    return(unique(df$libtype))
-  } else if (is(df, "character") | is(df, "factor")) {
-    return(gsub("_.*", x = df, replacement = ""))
-  } else stop("library types must be data.frame or character vector!")
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' libraryTypes(df)
+#' libraryTypes(df, uniqueTypes = FALSE)
+libraryTypes <- function(df, uniqueTypes = TRUE) {
+  dfl <- df
+  if(!is(dfl, "list")) dfl <- list(dfl)
+  libtypes <- c()
+  for (df in dfl) {
+    if (is(df, "experiment")) {
+      libtypes <- if (uniqueTypes) {
+        c(libtypes, unique(df$libtype))
+      } else c(libtypes, df$libtype)
+
+    } else if (is(df, "character") | is(df, "factor")) {
+      libtypes <- if (uniqueTypes) {
+        c(libtypes, unique(gsub("_.*", x = df, replacement = "")))
+      } else c(libtypes, gsub("_.*", x = df, replacement = ""))
+    } else stop("library types must be data.frame or character vector!")
+  }
+  return(libtypes)
 }
 
 #' Validate ORFik \code{\link{experiment}}
@@ -503,16 +351,13 @@ validateExperiments <- function(df) {
   if (length(libTypes) == 0) stop("df have no valid sequencing libraries!")
   if (nrow(df) == 0) stop("df must have at least 1 row!")
   files <- df$filepath
+  if (length(df$filepath) == 0) stop("df have no filepaths!")
   if (!is.null(df$reverse)) {
     reversePaths <- df$reverse[!(df$reverse %in% c("", "paired-end"))]
     files <- c(files, reversePaths)
   }
 
-  emptyFiles <- c()
-  for (i in files) {
-    emptyFiles <- c(emptyFiles, as.numeric(sapply(as.character(i),
-                                                  file.size)) == 0)
-  }
+  emptyFiles <- file.size(files) == 0
   if (any(is.na(emptyFiles))) {
     message("Error in experiment:", df@experiment)
     stop(paste("File does not exist:\n", files[is.na(emptyFiles)]))
@@ -522,9 +367,11 @@ validateExperiments <- function(df) {
     print(files[emptyFiles])
     stop("Empty files in list, see above for which")
   }
-  if (length(bamVarName(df)) != length(unique(bamVarName(df))))
+  names <- bamVarName(df)
+  if (length(names) != length(unique(names)))
     stop("experiment table has non-unique rows!",
-         " update replicate, stage, condition, to get non unique rows!")
+         " update either replicate, stage, condition or fraction,",
+         "to get non unique rows!")
   if (length(files) != length(unique(files)))
     stop("Duplicated filepaths in experiment!")
 }
@@ -560,13 +407,16 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.fraction = length(unique(df$fraction)) == 1,
                        skip.experiment = !df@expInVarName,
                        skip.libtype = FALSE) {
-
+  dfl <- df
+  if(!is(dfl, "list")) dfl <- list(dfl)
   varName <- c()
-  for (i in 1:nrow(df)) {
-    varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
-                                           skip.condition, skip.stage,
-                                           skip.fraction, skip.experiment,
-                                           skip.libtype))
+  for (df in dfl) {
+    for (i in 1:nrow(df)) {
+      varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
+                                             skip.condition, skip.stage,
+                                             skip.fraction, skip.experiment,
+                                             skip.libtype))
+    }
   }
   return(varName)
 }
@@ -626,7 +476,8 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' Get filepaths to ORFik experiment
 #'
 #' If other type than "default" is given and that type is not found,
-#' it will return you default filepaths without warning. \cr
+#' it will return you ofst files, if they do not exist, then
+#' default filepaths without warning. \cr
 #'
 #' For pshifted libraries, it will load ".bedo"
 #' prioritized over ".bed", if there exists both file types for the same file.
@@ -647,20 +498,12 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' # filepath(df, "pshifted")
 filepath <- function(df, type, basename = FALSE) {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
+  stopifnot(length(type) == 1)
 
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
     input <- NULL
-    if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
-      out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
-      if (dir.exists(out.dir)) {
-        input <- paste0(out.dir,
-                        remove.file_ext(x,
-                                        basename = TRUE)
-                        , ".", type)
-        if (!file.exists(input)) type <- "default"
-      } else type <- "default"
-    } else if (type == "pshifted") {
+    if (type == "pshifted") {
       out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir,
@@ -671,16 +514,33 @@ filepath <- function(df, type, basename = FALSE) {
           input <- paste0(out.dir,
                           remove.file_ext(x,
                                           basename = TRUE)
-                          , "_pshifted.bedo")
-          if (!file.exists(input)) { # if not bedo
+                          , "_pshifted.bigWig")
+          if (!file.exists(input)) { # if not bigWig
             input <- paste0(out.dir,
                             remove.file_ext(x,
                                             basename = TRUE)
-                            , "_pshifted.bed")
-            if (!file.exists(input))
-              type <- "default"
+                            , "_pshifted.wig")
+            if (!file.exists(input)) { # if not wig
+              input <- paste0(out.dir,
+                              remove.file_ext(x,
+                                              basename = TRUE)
+                              , "_pshifted.bed")
+              if (!file.exists(input))
+                type <- "ofst"
+            }
           }
         }
+      } else type <- "ofst"
+    }
+
+    if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
+      out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
+      if (dir.exists(out.dir)) {
+        input <- paste0(out.dir,
+                        remove.file_ext(x,
+                                        basename = TRUE)
+                        , ".", type)
+        if (!file.exists(input)) type <- "default"
       } else type <- "default"
     }
     if (type == "default") {
@@ -712,14 +572,22 @@ filepath <- function(df, type, basename = FALSE) {
 #' or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
 #' These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 #' Can also be custom user made folders inside the experiments bam folder.
+#' It acts in a recursive manner with priority: If you state "pshifted",
+#' but it does not exist, it checks "ofst". If no .ofst files, it uses
+#' "default", which always exists.
 #' @param naming a character (default: "minimum"). Name files as minimum
 #' information needed to make all files unique. Set to "full" to get full
 #' names.
-#' @param envir environment to save to, default (.GlobalEnv)
+#' @param output.mode character, default "envir". Output libraries to environment.
+#' Alternative: "list", return as list. "envirlist", output to envir and return
+#' as list.
+#' @param envir environment to save to, default
+#' \code{envExp(df)}, which defaults to .GlobalEnv
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
-#' @return NULL (libraries set by envir assignment)
+#' @return NULL (libraries set by envir assignment), unless output.mode is
+#' "list" or "envirlist": Then you get a list of the libraries.
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam
 #' @export
@@ -739,11 +607,13 @@ filepath <- function(df, type, basename = FALSE) {
 #' @family ORFik_experiment
 outputLibs <- function(df, chrStyle = NULL, type = "default",
                        param = NULL, strandMode = 0, naming = "minimum",
-                       envir = .GlobalEnv, BPPARAM = bpparam()) {
+                       output.mode = "envir",
+                       envir = envExp(df), BPPARAM = bpparam()) {
   stopifnot(naming %in% c("minimum", "full"))
+  stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
-
+  all_libs <- NULL
   for (df in dfl) {
     validateExperiments(df)
     if (naming == "minimum") {
@@ -759,7 +629,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     }
     # Par apply
     if (!all(loaded)) {
-      message(paste0("Outputting libraries from: ", df@experiment))
+      message(paste0("Outputting libraries from: ", names(df)))
       paths <- filepath(df, type)
       libs <- bplapply(seq_along(paths),
                        function(i, paths, df, chrStyle, param, strandMode) {
@@ -770,25 +640,29 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
       param = param, strandMode = strandMode)
 
       # assign to environment
-      for (i in 1:nrow(df)) { # For each stage
-        assign(varNames[i], libs[[i]], envir = envir)
+      if (output.mode %in% c("envir", "envirlist")) {
+        for (i in 1:nrow(df)) { # For each stage
+          assign(varNames[i], libs[[i]], envir = envir)
+        }
       }
+      if (output.mode %in% c("list", "envirlist")) {
+        all_libs <- c(all_libs, libs)
+      }
+
+    } else if (output.mode %in% c("list", "envirlist")) {
+      all_libs <- c(all_libs, lapply(varNames, function(x) get(x, envir = envir)))
     }
   }
+  if (!is.null(all_libs)) return(all_libs)
   return(invisible(NULL))
 }
 
 #' Converted format of NGS libraries
 #'
-#' Export as either .ofst, .wig, .bedo (legacy format) or .bedoc (legacy format) files:\cr
+#' Export as either .ofst, .wig, .bigWig,.bedo (legacy format) or .bedoc (legacy format) files:\cr
 #' Export files as .ofst for fastest load speed into R.\cr
-#' Export files as .wig for use in IGV or other genome browsers.\cr
-#' Legacy formats:\cr
-#' Export files as .bedo files: It is a bed file with 2 score columns.
-#' Gives a massive speedup when cigar string and bam flags are not needed.\cr
-#' Export files as .bedoc files: If cigar is needed, gives you replicates
-#' and cigar, so a fast way to load a GAlignment object, other bam flags
-#' are lost. If type is bedoc addSizeColumn and method will be ignored.
+#' Export files as .wig / bigWig for use in IGV or other genome browsers.\cr
+#' The input files are checked if they exist from: \code {envExp(df)}.\cr
 #'
 #' See \code{\link{export.ofst}}, \code{\link{export.wiggle}},
 #' \code{\link{export.bedo}} and \code{\link{export.bedoc}}
@@ -833,7 +707,8 @@ convertLibs <- function(df,
                        must.overlap = NULL, method = "None",
                        type = "ofst",
                        reassign.when.saving = FALSE,
-                       envir = .GlobalEnv, BPPARAM = bpparam()) {
+                       envir = .GlobalEnv,
+                       BPPARAM = bpparam()) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig", "bigWig")))
     stop("type must be either ofst, bedo or bedoc")
 
@@ -896,11 +771,10 @@ convertLibs <- function(df,
 simpleLibs <- convertLibs
 
 
-#' Remove bam/bed/wig files load in R as variables
+#' Remove ORFik experiment libraries load in R
 #'
 #' Variable names defined by df, in envir defined
-#' @param df an ORFik \code{\link{experiment}}
-#' @param envir environment to save to, default (.GlobalEnv)
+#' @inheritParams outputLibs
 #' @return NULL (objects removed from envir specified)
 #' @export
 #' @examples
@@ -909,7 +783,7 @@ simpleLibs <- convertLibs
 #' # outputLibs(df)
 #' # Then remove them with:
 #' # remove.experiments(df)
-remove.experiments <- function(df, envir = .GlobalEnv) {
+remove.experiments <- function(df, envir = envExp(df)) {
   rm(list =  bamVarName(df), envir = envir)
   message(paste0("Removed loaded libraries from experiment:",
                  df@experiment))
@@ -985,36 +859,6 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
     }
   } else stop("Found no valid files in folder")
   return(files)
-}
-
-#' Get organism of the ORFik experiment
-#'
-#' Uses the txdb / gtf organism information, if existing.
-#' @param df an ORFik \code{\link{experiment}}
-#' @return organism (character vector), if no organism set: NA
-#' @family ORFik_experiment
-#' @importFrom BiocGenerics organism
-#' @export
-#' @examples
-#' # if you have set organism in txdb of
-#' # ORFik experiment:
-#' df <- ORFik.template.experiment()
-#' #organism.df(df)
-#'
-#' #' If you have not set the organism you can do:
-#' #txdb <- GenomicFeatures::makeTxDbFromGFF("pat/to/gff_or_gff")
-#' #BiocGenerics::organism(txdb) <- "Homo sapiens"
-#' #saveDb(txdb, paste0("pat/to/gff_or_gff", ".db"))
-#' # then use this txdb in you ORFik experiment and load:
-#' # create.experiment(exper = "new_experiment",
-#' #   txdb = paste0("pat/to/gff_or_gff", ".db")) ...
-#' # organism.df(read.experiment("new-experiment))
-organism.df <- function(df) {
-  if (df@organism != "") return(df@organism)
-  org <- BiocGenerics::organism(loadTxdb(df))
-  if (is.na(org))
-    message("Organism not set in either of experiment and txdb of gtf")
-  return(org)
 }
 
 #' List current experiment available

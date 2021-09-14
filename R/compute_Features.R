@@ -255,8 +255,8 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
       scores[, gc := gcContent(grl, faFile)]
 
       # Start and stop codons
-      starts <- startCodons(grl, is.sorted = TRUE)
-      stops <- stopCodons(grl, is.sorted = TRUE)
+      starts <- startCodons(removeMetaCols(grl), is.sorted = TRUE)
+      stops <- stopCodons(removeMetaCols(grl), is.sorted = TRUE)
       scores[, StartCodons := txSeqsFromFa(starts, faFile, TRUE, FALSE)]
       scores[, StopCodons := txSeqsFromFa(stops, faFile, TRUE, FALSE)]
     } else {

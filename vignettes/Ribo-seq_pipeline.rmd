@@ -37,7 +37,8 @@ The following steps are done:
 9. Differentially translated genes
 10. Peak analysis
 11. Feature table
-12. uORF analysis
+11. Gene plotting (Advanced)
+12. uORF analysis (Advanced)
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -99,6 +100,8 @@ annotation <- getGenomeAndAnnotation(
 # Remove max.ram = 20 and SAsparse = 2, if you have more than 64GB ram
 index <- STAR.index(annotation, wait = TRUE, max.ram = 20, SAsparse = 2)
 
+# Show all annotations you have made with ORFik so far 
+list.genomes()
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Alignment (with depletion of phix, rRNA, ncRNA and tRNAs) & (with MultiQC of final STAR alignment)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -137,12 +140,12 @@ create.experiment(file.path(conf["bam RNA-seq"], "aligned/"),
                   condition = rep(c("CO", "WT"), each = 3))
 
 library(ORFik)
+# Show the experiments you have made with ORFik so far 
+list.experiments()
 df.rfp <- read.experiment("Alexaki_Human_Ribo-seq")
 df.rna <- read.experiment("Alexaki_Human_RNA-seq")
-# Show all experiments you have made with ORFik so far 
-list.experiments()
-# Show all annotations you have made with ORFik so far 
-list.genomes()
+
+
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Convert files and run Annotation vs alignment QC
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -246,7 +249,18 @@ table(dt$StartCodons)
 # All genes with strong start codon peak
 dt[startCodonCoverage > 5,]
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# uORF analysis (advanced) (using the extension package to ORFik: uORFomePipe)
+# Gene plotting (advanced under development!)
+# (Using package that extends ORFik for interactive html plots (RiboCrypt))
+# Will create interactive plot for Ribo-seq and RNA-seq sample: Wild type rep 3
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+devtools::install_github("Miswi/RiboCrypt", dependencies = TRUE)
+library(RiboCrypt)
+RiboCrypt::multiOmicsPlot_list(cds[1640], cds[1640], reference_sequence = findFa(df.rfp@fafile), reads = list(fimport(filepath(df.rna[6,], "ofst")), fimport(filepath(df.rfp[6,], "pshifted"))), 
+                               ylabels = c("RNA", "RFP"), withFrames = c(F, T), frames_type = "columns")
+
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# uORF analysis (advanced under development!)
+# (using the extension package to ORFik: uORFomePipe)
 # Will create a mysql database + bed12 file of uORFs with color codes + plots + files with results
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 devtools::install_github("Roleren/uORFomePipe", dependencies = TRUE)

@@ -91,27 +91,27 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:q:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
-        echo "-f input folder $OPTARG"
+        echo "-f input folder: $OPTARG"
 	      ;;
     o)
         out_dir=$OPTARG
-        echo "-o output folder $OPTARG"
+        echo "-o output folder: $OPTARG"
         ;;
     p)
 	      paired=$OPTARG
-        echo "-p paired end $OPTARG"
+        echo "-p paired end: $OPTARG"
         ;;
     l)
         min_length=$OPTARG
-        echo "-l minimum length of reads $OPTARG"
+        echo "-l minimum length of reads: $OPTARG"
         ;;
     T)
         mismatches=$OPTARG
-        echo "-T max mismatches of reads $OPTARG"
+        echo "-T max mismatches of reads: $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
-        echo "-g genome dir for all STAR indices $OPTARG"
+        echo "-g genome dir for all STAR indices: $OPTARG"
         ;;
     s)
         steps=$OPTARG
@@ -119,19 +119,19 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:q:h:" opt; do
         ;;
     a)
         adapter=$OPTARG
-        echo "-a adapter sequence $OPTARG"
+        echo "-a adapter sequence: $OPTARG"
         ;;
     q)
 	      quality_filtering=$OPTARG
-	      echo "-q quality filtering $quality_filtering"
+	      echo "-q quality filtering: $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
-        echo "-t trim front number $OPTARG"
+        echo "-t trim front number: $OPTARG"
         ;;
     A)
         alignment=$OPTARG
-        echo "-A alignment type $OPTARG"
+        echo "-A alignment type: $OPTARG"
         ;;
     r)
       	resume=$OPTARG

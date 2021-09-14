@@ -436,6 +436,7 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
 #' findFa(path)
 #'
 findFa <- function(faFile) {
+  if (is.list(faFile)) faFile <- faFile[[1]]
   if (is.character(faFile)) {
     if (file.exists(faFile)) {
       return(FaFile(faFile))

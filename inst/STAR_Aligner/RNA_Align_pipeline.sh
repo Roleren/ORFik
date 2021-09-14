@@ -89,27 +89,27 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:q:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
-        echo "-f input file $OPTARG"
+        echo "-f input file: $OPTARG"
 	      ;;
     F)
       	in_file_two=$OPTARG
-      	echo "-F input file 2 $OPTARG"
+      	echo "-F input file 2: $OPTARG"
 	      ;;
     o)
         out_dir=$OPTARG
-        echo "-o output folder $OPTARG"
+        echo "-o output folder: $OPTARG"
         ;;
     l)
         min_length=$OPTARG
-        echo "-l minimum length of reads $OPTARG"
+        echo "-l minimum length of reads: $OPTARG"
         ;;
     T)
         mismatches=$OPTARG
-        echo "-T max mismatches of reads $OPTARG"
+        echo "-T max mismatches of reads: $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
-        echo "-g genome dir for all indices $OPTARG"
+        echo "-g genome dir for all indices: $OPTARG"
         ;;
     s)
         steps=$OPTARG
@@ -117,19 +117,19 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:q:h" opt; do
         ;;
     a)
         adapter=$OPTARG
-        echo "-a adapter sequence $OPTARG"
+        echo "-a adapter sequence: $OPTARG"
         ;;
     q)
 	      quality_filtering=$OPTARG
-	      echo "-q quality filtering $quality_filtering"
+	      echo "-q quality filtering: $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
-        echo "-t trim front number $OPTARG"
+        echo "-t trim front (nt): $OPTARG"
         ;;
     A)
         alignment=$OPTARG
-        echo "-A alignment type $OPTARG"
+        echo "-A alignment type: $OPTARG"
         ;;
     r)
 	resume=$OPTARG

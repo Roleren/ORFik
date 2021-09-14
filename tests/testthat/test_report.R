@@ -6,11 +6,16 @@ df <- ORFik.template.experiment()
 
 test_that("Experiment class created as intended", {
   # test from example table in orfik
+  expect_equal(nrow(df), 4)
+})
+
+test_that("Experiment class created as intended", {
+  # test from example table in orfik
   expect_equal(ncol(df), 6)
 })
 
 test_that("output organism correctly", {
-  expect_equal(organism.df(df), "Homo sapiens")
+  expect_equal(organism(df), "Homo sapiens")
 })
 
 test_that("Show experiment correctly", {

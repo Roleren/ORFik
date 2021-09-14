@@ -48,7 +48,8 @@ Will make a folder within out.dir with this name containing the files.}
 \item{reassign.when.saving}{logical, default FALSE. If TRUE, will reassign
 library to converted form after saving. Ignored when out.dir = NULL.}
 
-\item{envir}{environment to save to, default (.GlobalEnv)}
+\item{envir}{environment to save to, default
+\code{envExp(df)}, which defaults to .GlobalEnv}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

@@ -2,14 +2,15 @@
 % Please edit documentation in R/experiment.R
 \name{remove.experiments}
 \alias{remove.experiments}
-\title{Remove bam/bed/wig files load in R as variables}
+\title{Remove ORFik experiment libraries load in R}
 \usage{
-remove.experiments(df, envir = .GlobalEnv)
+remove.experiments(df, envir = envExp(df))
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{envir}{environment to save to, default (.GlobalEnv)}
+\item{envir}{environment to save to, default
+\code{envExp(df)}, which defaults to .GlobalEnv}
 }
 \value{
 NULL (objects removed from envir specified)

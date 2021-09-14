@@ -136,9 +136,9 @@ filepath(df[df$libtype == "RFP", ], type = "pshifted")[2] # RFP = Ribo-seq, Defa
 
 ## Loading data from experiment
 
-### Loading NGS data
+### Loading NGS data to environment
 
-There are 2 ways to load NGS data, the first one is to load data into an environment.
+There are 3 ways to load NGS data, the first one is to load data into an environment.
 By default all libraries are loaded into .GlobalEnv (global environment) with names decided by
 columns in experiment, to see what the names will be, do:
 ```{r eval = TRUE, echo = TRUE}
@@ -147,16 +147,32 @@ bamVarName(df) #This will be the names:
 
 Now let's auto-load the libraries to the global environment
 ```{r eval = TRUE, echo = TRUE, warning = FALSE}
-outputLibs(df)
+outputLibs(df) # With default output.mode = "envir".
+```
+To remove the outputted libraries:
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
+# remove.experiments(df)
 ```
 
-The second way is to load manually, more secure, but also more cumbersome.
+### Loading NGS data as list
+The second way gives you a list, where the elements are the NGS libraries.
+There are also two ways of loading the list:
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
+outputLibs(df, output.mode = "envirlist") # Make sure NGS exist in envir, then return as list
+```
+```{r eval = TRUE, echo = TRUE, warning = FALSE}
+# Check envir, if it exist, list them and return, if not, only return list
+outputLibs(df, output.mode = "list") 
+```
+
+### Loading NGS data by fimport
+The third way is to load manually, more secure, but also more cumbersome.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 files <- filepath(df, type = "default")
 CAGE_loaded_manually <- fimport(files[1])
 ```
 
-If you use the auto-loading and you have multiple experiments, it might be a chance of non-unique naming, 2 experiments might have a library called cage.
+If you use the auto-loading to environment and you have multiple experiments, it might be a chance of non-unique naming, 2 experiments might have a library called cage.
 To be sure names are unique, we add the experiment name in the variable name:
 ```{r eval = TRUE, echo = TRUE}
 df@expInVarName <- TRUE

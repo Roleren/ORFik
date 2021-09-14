@@ -50,7 +50,7 @@ Other ORFik_experiment:
 \code{\link{experiment-class}},
 \code{\link{filepath}()},
 \code{\link{libraryTypes}()},
-\code{\link{organism.df}()},
+\code{\link{organism,experiment-method}},
 \code{\link{outputLibs}()},
 \code{\link{save.experiment}()},
 \code{\link{validateExperiments}()}

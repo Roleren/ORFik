@@ -4,16 +4,23 @@
 \alias{libraryTypes}
 \title{Which type of library type in \code{\link{experiment}}?}
 \usage{
-libraryTypes(df)
+libraryTypes(df, uniqueTypes = TRUE)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
+
+\item{uniqueTypes}{logical, default TRUE. Only return unique lib types.}
 }
 \value{
 library types (character vector)
 }
 \description{
 Which type of library type in \code{\link{experiment}}?
+}
+\examples{
+df <- ORFik.template.experiment()
+libraryTypes(df)
+libraryTypes(df, uniqueTypes = FALSE)
 }
 \seealso{
 Other ORFik_experiment: 
@@ -22,11 +29,10 @@ Other ORFik_experiment:
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
 \code{\link{filepath}()},
-\code{\link{organism.df}()},
+\code{\link{organism,experiment-method}},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},
 \code{\link{save.experiment}()},
 \code{\link{validateExperiments}()}
 }
 \concept{ORFik_experiment}
-\keyword{internal}

@@ -12,7 +12,10 @@ filepath(df, type, basename = FALSE)
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
 These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
-Can also be custom user made folders inside the experiments bam folder.}
+Can also be custom user made folders inside the experiments bam folder.
+It acts in a recursive manner with priority: If you state "pshifted",
+but it does not exist, it checks "ofst". If no .ofst files, it uses
+"default", which always exists.}
 
 \item{basename}{logical, default (FALSE).
 Get relative paths instead of full. Only use for inspection!}
@@ -23,7 +26,8 @@ if paired libraries exists
 }
 \description{
 If other type than "default" is given and that type is not found,
-it will return you default filepaths without warning. \cr
+it will return you ofst files, if they do not exist, then
+default filepaths without warning. \cr
 }
 \details{
 For pshifted libraries, it will load ".bedo"
@@ -44,7 +48,7 @@ Other ORFik_experiment:
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
 \code{\link{libraryTypes}()},
-\code{\link{organism.df}()},
+\code{\link{organism,experiment-method}},
 \code{\link{outputLibs}()},
 \code{\link{read.experiment}()},
 \code{\link{save.experiment}()},
