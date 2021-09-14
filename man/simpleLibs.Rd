@@ -59,15 +59,10 @@ You can also add a time remaining bar, for a more detailed pipeline.}
 NULL (saves files to disc or R .GlobalEnv)
 }
 \description{
-Export as either .ofst, .wig, .bedo (legacy format) or .bedoc (legacy format) files:\cr
+Export as either .ofst, .wig, .bigWig,.bedo (legacy format) or .bedoc (legacy format) files:\cr
 Export files as .ofst for fastest load speed into R.\cr
-Export files as .wig for use in IGV or other genome browsers.\cr
-Legacy formats:\cr
-Export files as .bedo files: It is a bed file with 2 score columns.
-Gives a massive speedup when cigar string and bam flags are not needed.\cr
-Export files as .bedoc files: If cigar is needed, gives you replicates
-and cigar, so a fast way to load a GAlignment object, other bam flags
-are lost. If type is bedoc addSizeColumn and method will be ignored.
+Export files as .wig / bigWig for use in IGV or other genome browsers.\cr
+The input files are checked if they exist from: \code{envExp(df)}.\cr
 }
 \details{
 See \code{\link{export.ofst}}, \code{\link{export.wiggle}},

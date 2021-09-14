@@ -23,12 +23,29 @@ test_that("Show experiment correctly", {
                    "experiment: ORFik with 3 library types and 4 runs \nTjeldnes et al. \n   libtype stage\n1:    CAGE heart\n2:     RFP heart\n3:     RFP      \n4:     RNA heart")
 })
 
+test_that("Experiment class loaded as intended to custom environment", {
+  # load file
+  envExp(df) <- new.env()
+  outputLibs(df[3,])
+  expect_equal(exists("RFP", envir = envExp(df)), TRUE)
+  expect_equal(exists("RFP", envir = .GlobalEnv), FALSE)
+})
+
+test_that("remove.experiment works as intended", {
+  # load file
+  remove.experiments(df[3,])
+  expect_equal(exists("RFP", envir = envExp(df)), FALSE)
+  expect_equal(exists("RFP", envir = .GlobalEnv), FALSE)
+  envExp(df) <- .GlobalEnv
+})
+
 
 test_that("Experiment class loaded as intended", {
   # load file
   outputLibs(df)
   expect_equal(exists("CAGE_heart"), TRUE)
 })
+
 
 test_that("Experiment class correct naming", {
   # load file

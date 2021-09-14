@@ -662,7 +662,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
 #' Export as either .ofst, .wig, .bigWig,.bedo (legacy format) or .bedoc (legacy format) files:\cr
 #' Export files as .ofst for fastest load speed into R.\cr
 #' Export files as .wig / bigWig for use in IGV or other genome browsers.\cr
-#' The input files are checked if they exist from: \code {envExp(df)}.\cr
+#' The input files are checked if they exist from: \code{envExp(df)}.\cr
 #'
 #' See \code{\link{export.ofst}}, \code{\link{export.wiggle}},
 #' \code{\link{export.bedo}} and \code{\link{export.bedoc}}
@@ -731,12 +731,12 @@ convertLibs <- function(df,
   for (f in varNames) {
     message(f)
     if (type %in% c("bedo", "wig")) { # bedo, wig
-    gr <- convertToOneBasedRanges(gr = get(f),
+    gr <- convertToOneBasedRanges(gr = get(f, envir = envExp(df), mode = "S4"),
                                   addScoreColumn = addScoreColumn,
                                   addSizeColumn = addSizeColumn,
                                   method = method)
     } else if (type %in% c("bedoc", "ofst")) {
-      gr <- collapseDuplicatedReads(x = get(f),
+      gr <- collapseDuplicatedReads(x = get(f, envir = envExp(df), mode = "S4"),
                                     addScoreColumn = addScoreColumn)
     }
 

@@ -35,7 +35,8 @@ fastp and STAR log files
 combined with annotation to create relevant statistics.\cr\cr
 This report consists of several steps:\cr
 1. Convert bam file / Input files to ".ofst" format, if not already done.
-This format is around 400x faster to use in R than the bam format.\cr
+This format is around 400x faster to use in R than the bam format.
+Files are also outputted to R environment specified by \code{envExp(df)}\cr
 2. From this report you will get a summary csv table, with distribution of
 aligned reads and overlap counts over transcript regions like:
 leader, cds, trailer, lincRNAs, tRNAs, rRNAs, snoRNAs etc. It will be called

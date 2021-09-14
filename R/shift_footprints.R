@@ -222,7 +222,14 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
   if (nrow(tab) == 0) stop("No valid read lengths found with",
                             " accepted.lengths and counts > min_reads")
   cds <- cds[countOverlapsW(cds, footprints, "score") > 0]
-  if (verbose) message("Number of CDSs used for p-site detection: ", length(cds))
+  if (verbose) {
+    message("-------------------")
+    message("Number of CDSs used for p-site detection: ", length(cds))
+    message("-------------------")
+    message("Distribution of read lengths with reads count > min_reads:")
+    print(tab)
+    message("-------------------")
+  }
   top_tx <- percentage_to_ratio(top_tx, cds)
   if (must.be.periodic) {
     periodicity <- windowPerReadLength(cds, tx, footprints,
@@ -239,6 +246,11 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     stop(paste("Library contained no periodic or accepted read-lengths,",
          "check your library. Are you using the correct genome?",
          "Is this Ribo-seq?"))
+  if (verbose) {
+    message("Periodic read lengths:")
+    print(validLengths)
+  }
+
   # find shifts
   if (start) {
     rw <- windowPerReadLength(cds, tx, footprints, pShifted,
@@ -253,11 +265,17 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
     if (verbose) {
       message("-------------------")
       message("Coverage of TIS region per read length before filtering")
-      print(rw[, .(total_counts = unique(frac.score)), by = fraction])
+      print(rw[, .(TIS_region_counts = unique(frac.score)), by = fraction])
       message("-------------------")
       message("Change point analysis (start): ups (upstream window score), downs (downstream window score)")
     }
     rw <- rw[frac.score > min_reads_TIS, ]
+    if (nrow(rw) == 0) {
+        stop(paste("Library contained no periodic or accepted read-lengths,",
+                   "reason: Not enough reads in TIS region.",
+                   "check your library. Are you using the correct genome?",
+                   "Is this Ribo-seq?"))
+    }
     footprints.analysis(rw, heatmap)
     offset <- rw[, .(offsets_start = changePointAnalysis(score, info = unique(fraction),
                                                          verbose = verbose)),
