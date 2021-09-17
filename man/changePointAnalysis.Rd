@@ -25,6 +25,7 @@ from -30 to 29 in p-shifting}
 if tail is not relevant.}
 
 \item{interval}{integer vector , default seq.int(14L, 24L).
+The possible shift locations, default
 Seperation points for upstream and downstream windows.
 That is (+/- 5 from -12) position.}
 

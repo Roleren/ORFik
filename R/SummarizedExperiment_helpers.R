@@ -6,7 +6,12 @@
 #'
 #' If txdb or gtf path is added, it is a rangedSummerizedExperiment
 #' NOTE: If the file called saveName exists, it will then load file,
-#' not remake it!
+#' not remake it!\cr
+#' There are different ways of counting hits on transcripts, ORFik does
+#' it as pure coverage (if a single read aligns to a region with 2 genes, both
+#' gets a count of 1 from that read).
+#' This is the safest way to avoid false negatives
+#' (genes with no assigned hits that actually have true hits).
 #' @param df an ORFik \code{\link{experiment}}
 #' @param saveName a character (default NULL),
 #' if set save experiment to path given. Always saved as .rds.,
@@ -30,6 +35,7 @@
 #' @param weight numeric or character, a column to score overlaps by. Default "score",
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
+#' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file.
 #' @import SummarizedExperiment
 #' @export
 #' @return a \code{\link{SummarizedExperiment}} object or data.table if
@@ -43,30 +49,39 @@
 #' ## FPKM instead of raw counts on whole mrna regions
 #' # makeSummarizedExperimentFromBam(df, type = "fpkm")
 #' ## Make count tables of pshifted libraries over uORFs
-#' #uORFs <- GRangesList("chr1", 1:9, "+)
+#' uorfs <- GRangesList(uorf1 = GRanges("chr23", 17599129:17599156, "-"))
 #' #saveName <- file.path(dirname(df$filepath[1]), "uORFs", "countTable_uORFs")
-#' #makeSummarizedExperimentFromBam(df, , region = uORFs)
+#' #makeSummarizedExperimentFromBam(df, saveName, region = uorfs)
 #' ## To load the uORFs later
-#' # c
+#' # countTable(df, region = "uORFs", count.folder = "uORFs")
 makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             longestPerGene = FALSE,
                                             geneOrTxNames = "tx",
                                             region = "mrna", type = "count",
                                             lib.type = "ofst",
-                                            weight = "score") {
+                                            weight = "score", forceRemake = FALSE) {
+  stopifnot(length(geneOrTxNames) == 1)
+  stopifnot(geneOrTxNames %in% c("tx", "gene"))
+
   if(!is.null(saveName)) {
     if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
-    if (file.exists(saveName)) return(readRDS(saveName))
+    if (file.exists(saveName) & !forceRemake) {
+      message("Loading existing count table, set forceRemake=TRUE if you want to remake")
+      return(readRDS(saveName))
+    }
   }
   validateExperiments(df)
 
   if (is(region, "character")) {
     txdb <- loadTxdb(df)
-    tx <- loadRegion(txdb, region)
+    if (longestPerGene) {
+      longestTxNames <- filterTranscripts(txdb, 0, 1, 0, longestPerGene = TRUE)
+      tx <- loadRegion(txdb, region, names.keep = longestTxNames)
+    } else tx <- loadRegion(txdb, region)
   } else tx <- region
 
   if (geneOrTxNames == "gene") {
-    if (!is(region, "character")) txdb <- loadTxdb(df@txdb)
+    if (!is(region, "character")) txdb <- loadTxdb(df)
     names(tx) <- txNamesToGeneNames(names(tx), txdb)
   }
 
@@ -340,8 +355,9 @@ countTable <- function(df, region = "mrna", type = "count",
     }
   }
   message(paste("Invalid count table:", df))
-  stop("df must be filepath to directory with countTable, the path
-       to the countTable or ORFik experiment with a QC_STATS folder!")
+  stop("Table not found!",
+      "must be either: filepath to directory with defined countTable of region, the full path
+       to the countTable, run ORFikQC to get default countTables!")
 }
 
 #' Make a list of count matrices from experiment
@@ -376,24 +392,25 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
                                            "trailers"),
                                type = "count", lib.type = "ofst",
                                weight = "score",
-                               rel.dir = "QC_STATS",
+                               rel.dir = "QC_STATS", forceRemake = FALSE,
                                BPPARAM = bpparam()) {
 
   countDir <- pasteDir(file.path(out.dir, rel.dir, "countTable_"))
   libs <- bplapply(
     regions,
-    function(region, countDir, df, geneOrTxNames, longestPerGene) {
+    function(region, countDir, df, geneOrTxNames, longestPerGene, forceRemake) {
      message("- Creating read count tables for region:")
      message(region)
      path <- paste0(countDir, region)
      makeSummarizedExperimentFromBam(df, region = region,
-                                     geneOrTxNames = "tx",
-                                     longestPerGene = FALSE,
-                                     saveName = path, lib.type = lib.type)
+                                     geneOrTxNames = geneOrTxNames,
+                                     longestPerGene = longestPerGene,
+                                     saveName = path, lib.type = lib.type,
+                                     forceRemake = forceRemake)
     },
     countDir = countDir, df = df,
     geneOrTxNames = geneOrTxNames,
-    longestPerGene = longestPerGene, BPPARAM = BPPARAM
+    longestPerGene = longestPerGene, forceRemake = forceRemake, BPPARAM = BPPARAM
   )
   names(libs) <- regions
   return(libs)

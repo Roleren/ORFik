@@ -12,7 +12,8 @@ makeSummarizedExperimentFromBam(
   region = "mrna",
   type = "count",
   lib.type = "ofst",
-  weight = "score"
+  weight = "score",
+  forceRemake = FALSE
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ Can also be custom user made folders inside the experiments bam folder.}
 \item{weight}{numeric or character, a column to score overlaps by. Default "score",
 will check for a metacolumn called "score" in libraries. If not found,
 will not use weights.}
+
+\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file.}
 }
 \value{
 a \code{\link{SummarizedExperiment}} object or data.table if
@@ -59,7 +62,12 @@ like HTSeq, to give you count tables per library.
 \details{
 If txdb or gtf path is added, it is a rangedSummerizedExperiment
 NOTE: If the file called saveName exists, it will then load file,
-not remake it!
+not remake it!\cr
+There are different ways of counting hits on transcripts, ORFik does
+it as pure coverage (if a single read aligns to a region with 2 genes, both
+gets a count of 1 from that read).
+This is the safest way to avoid false negatives
+(genes with no assigned hits that actually have true hits).
 }
 \examples{
 ##Make experiment
@@ -70,9 +78,9 @@ df <- ORFik.template.experiment()
 ## FPKM instead of raw counts on whole mrna regions
 # makeSummarizedExperimentFromBam(df, type = "fpkm")
 ## Make count tables of pshifted libraries over uORFs
-#uORFs <- GRangesList("chr1", 1:9, "+)
+uorfs <- GRangesList(uorf1 = GRanges("chr23", 17599129:17599156, "-"))
 #saveName <- file.path(dirname(df$filepath[1]), "uORFs", "countTable_uORFs")
-#makeSummarizedExperimentFromBam(df, , region = uORFs)
+#makeSummarizedExperimentFromBam(df, saveName, region = uorfs)
 ## To load the uORFs later
-# c
+# countTable(df, region = "uORFs", count.folder = "uORFs")
 }

@@ -41,9 +41,8 @@ isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
 
     dt <- data.table(periods,
                      amp, spec = specter$spec)[order(spec, decreasing = TRUE)][1:10,]
+    if (!is.null(info)) message("Read length: ", info)
     message("Top 10 periods from spectrogram, look for period > 2.9 & < 3.1:")
-    if (!is.null(info)) message("Info / Read length: ", info)
-
     print(dt)
   }
   if (strict.fft) {
@@ -74,6 +73,7 @@ isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
 #' @param max.pos integer, default 40L, subset x to go from index 1 to max.pos,
 #'  if tail is not relevant.
 #' @param interval integer vector , default seq.int(14L, 24L).
+#'  The possible shift locations, default
 #'  Seperation points for upstream and downstream windows.
 #'  That is (+/- 5 from -12) position.
 #' @param center.pos integer, default 12. Centering position for likely p-site.
@@ -87,6 +87,7 @@ isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
 changePointAnalysis <- function(x, feature = "start", max.pos = 40L,
                                 interval = seq.int(14L, 24L),
                                 center.pos = 12, info = NULL, verbose = FALSE) {
+  if (length(x) == 0) stop("Length of x is 0")
   if (max.pos > length(x)) stop("Can not subset max.pos > length of x")
   if (!all(interval %in% seq.int(x)))
     stop("interval vector must be subset of x indices!")

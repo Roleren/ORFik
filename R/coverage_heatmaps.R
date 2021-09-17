@@ -287,7 +287,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                         paste0(out, shift, "_", score, plot.ext),
                         paste0(out, score, plot.ext))
 
-          plot <- heatMap_single(region, tx, reads = get(i, envir = envExp(df)), outdir = out,
+          plot <- heatMap_single(region, tx, reads = get(i, envir = envExp(df), mode = "S4"), outdir = out,
                                  shifting = shift, scores = score, upstream = up, downstream = down,
                                  zeroPosition = zero, acceptedLengths = acceptedLengths,
                                  legendPos = legendPos, colors = colors, addFracPlot = addFracPlot,

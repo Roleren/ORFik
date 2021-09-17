@@ -170,10 +170,13 @@ setMethod("nrow",
           }
 )
 
+setGeneric("name", function(x) standardGeneric("name"))
+
 #' Get name of ORFik experiment
 #' @param x an ORFik \code{\link{experiment}}
 #' @return character, name of experiment
-setMethod("names",
+#' @export
+setMethod("name",
           "experiment",
           function(x) {
             x@experiment

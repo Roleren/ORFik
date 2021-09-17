@@ -14,6 +14,7 @@ countTable_regions(
   lib.type = "ofst",
   weight = "score",
   rel.dir = "QC_STATS",
+  forceRemake = FALSE,
   BPPARAM = bpparam()
 )
 }
@@ -52,6 +53,8 @@ will not use weights.}
 
 \item{rel.dir}{relative output directory for out.dir, default:
 "QC_STATS". For pshifted, write "pshifted".}
+
+\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

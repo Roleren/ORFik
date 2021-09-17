@@ -14,6 +14,15 @@ test_that("Experiment class created as intended", {
   expect_equal(ncol(df), 6)
 })
 
+test_that("Experiment slot access works as intended", {
+  # test from example table in orfik
+  expect_equal(df$libtype, c("CAGE", "RFP", "RFP", "RNA" ))
+  expect_equal(df@experiment, "ORFik")
+  expect_equal(df[, "libtype"], c("CAGE", "RFP", "RFP", "RNA" ))
+  expect_equal(df[df$libtype == "CAGE",]$libtype, "CAGE")
+})
+
+
 test_that("output organism correctly", {
   expect_equal(organism(df), "Homo sapiens")
 })
@@ -23,22 +32,18 @@ test_that("Show experiment correctly", {
                    "experiment: ORFik with 3 library types and 4 runs \nTjeldnes et al. \n   libtype stage\n1:    CAGE heart\n2:     RFP heart\n3:     RFP      \n4:     RNA heart")
 })
 
-test_that("Experiment class loaded as intended to custom environment", {
+test_that("Experiment class loaded/removed as intended to custom environment", {
   # load file
   envExp(df) <- new.env()
   outputLibs(df[3,])
   expect_equal(exists("RFP", envir = envExp(df)), TRUE)
   expect_equal(exists("RFP", envir = .GlobalEnv), FALSE)
-})
-
-test_that("remove.experiment works as intended", {
-  # load file
+  # Remove
   remove.experiments(df[3,])
   expect_equal(exists("RFP", envir = envExp(df)), FALSE)
   expect_equal(exists("RFP", envir = .GlobalEnv), FALSE)
   envExp(df) <- .GlobalEnv
 })
-
 
 test_that("Experiment class loaded as intended", {
   # load file
