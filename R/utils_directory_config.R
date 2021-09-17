@@ -54,7 +54,9 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
     message("--------------------------------")
     message("Setting up config file for ORFik")
     message(paste("Saving to: ", file))
-
+    if (!dir.exists(dirname(file))) {
+      dir.create(dirname(file))
+    }
     config.save(file, "~/Bio_data/raw_data", "~/Bio_data/processed_data",
                 "~/Bio_data/references")
   }
