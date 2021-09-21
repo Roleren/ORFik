@@ -33,6 +33,10 @@
 #' Warning: If you assign not default path, you will have a hazzle to load files later.
 #' Much easier to load count tables, statistics, ++ later with default.
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
+#' Note that in pdf format the complex correlation plots become very slow to load!
+#' @param create.ofst logical, default TRUE. Create ".ofst" files from the input
+#' libraries, ofst is much faster to load in R, for later use. Stored
+#' in ./ofst/ folder relative to experiment main folder.
 #' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
 #' @importFrom utils write.csv
@@ -43,15 +47,21 @@
 #' # Run QC
 #' # QCreport(df)
 QCreport <- function(df, out.dir = dirname(df$filepath[1]),
-                     plot.ext = ".pdf", BPPARAM = bpparam()) {
-  # When experiment is ready, everything down from here is automatic
+                     plot.ext = ".pdf", create.ofst = TRUE,
+                     BPPARAM = bpparam()) {
+  # Check input
   validateExperiments(df)
+  stopifnot(plot.ext %in% c(".pdf", ".png"))
+  stopifnot(create.ofst %in% c(TRUE, FALSE))
+
   message("Started ORFik QC report for experiment: ", df@experiment)
   stats_folder <- pasteDir(out.dir, "/QC_STATS/")
   if (!dir.create(stats_folder, recursive = TRUE)) {
     if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
-  convertLibs(df, reassign.when.saving = TRUE)
+  if (create.ofst) {
+    convertLibs(df, reassign.when.saving = TRUE)
+  }
   message("--------------------------")
   message("- Creating read length tables:")
   dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)

@@ -21,7 +21,8 @@ whole mrnas or one of (leaders, cds, trailers)}
 \item{stats_folder}{directory to save, default:
 paste0(dirname(df$filepath[1]), "/QC_STATS/")}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
+Note that in pdf format the complex correlation plots become very slow to load!}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

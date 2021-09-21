@@ -580,7 +580,8 @@ filepath <- function(df, type, basename = FALSE) {
 #' names.
 #' @param output.mode character, default "envir". Output libraries to environment.
 #' Alternative: "list", return as list. "envirlist", output to envir and return
-#' as list.
+#' as list. If output is list format, the list elements are named from:
+#' \code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)
 #' @param envir environment to save to, default
 #' \code{envExp(df)}, which defaults to .GlobalEnv
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
@@ -602,8 +603,14 @@ filepath <- function(df, type, basename = FALSE) {
 #' ## .wig file load, if wiggle files does not exists
 #' ## it will load default
 #' # outputLibs(df, type = "wig")
-#' ## Load libs to new environment (called ORFik)
+#' ## Load as list
+#' outputLibs(df, output.mode = "list")
+#' ## Load libs to new environment (called ORFik in Global)
 #' # outputLibs(df, envir = assign(df@experiment, new.env(parent = .GlobalEnv)))
+#' ## Load to hidden environment given by experiment
+#' # envExp(df) <- new.env()
+#' # outputLibs(df)
+#'
 #' @family ORFik_experiment
 outputLibs <- function(df, chrStyle = NULL, type = "default",
                        param = NULL, strandMode = 0, naming = "minimum",
@@ -632,12 +639,11 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
       message(paste0("Outputting libraries from: ", name(df)))
       paths <- filepath(df, type)
       libs <- bplapply(seq_along(paths),
-                       function(i, paths, df, chrStyle, param, strandMode) {
-        varNames <- bamVarName(df)
+                       function(i, paths, df, chrStyle, param, strandMode, varNames) {
         message(paste(i, ": ", varNames[i]))
         fimport(paths[i], chrStyle, param, strandMode)
       }, BPPARAM = BPPARAM, paths = paths, chrStyle = chrStyle, df = df,
-      param = param, strandMode = strandMode)
+      param = param, strandMode = strandMode, varNames = varNames)
 
       # assign to environment
       if (output.mode %in% c("envir", "envirlist")) {
@@ -646,11 +652,14 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
         }
       }
       if (output.mode %in% c("list", "envirlist")) {
+        names(libs) <- varNames
         all_libs <- c(all_libs, libs)
       }
 
     } else if (output.mode %in% c("list", "envirlist")) {
-      all_libs <- c(all_libs, lapply(varNames, function(x) get(x, envir = envir)))
+      libs <- lapply(varNames, function(x) get(x, envir = envir))
+      names(libs) <- varNames
+      all_libs <- c(all_libs, libs)
     }
   }
   if (!is.null(all_libs)) return(all_libs)

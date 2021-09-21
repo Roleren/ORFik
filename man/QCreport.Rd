@@ -8,6 +8,7 @@ QCreport(
   df,
   out.dir = dirname(df$filepath[1]),
   plot.ext = ".pdf",
+  create.ofst = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -20,7 +21,12 @@ Will make a folder called "QC_STATS" with all results in this directory.
 Warning: If you assign not default path, you will have a hazzle to load files later.
 Much easier to load count tables, statistics, ++ later with default.}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
+Note that in pdf format the complex correlation plots become very slow to load!}
+
+\item{create.ofst}{logical, default TRUE. Create ".ofst" files from the input
+libraries, ofst is much faster to load in R, for later use. Stored
+in ./ofst/ folder relative to experiment main folder.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

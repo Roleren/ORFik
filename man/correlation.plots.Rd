@@ -34,7 +34,8 @@ whole mrnas or one of (leaders, cds, trailers)}
 
 \item{size}{numeric, size of dots, default 0.15.}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
+Note that in pdf format the complex correlation plots become very slow to load!}
 
 \item{complex.correlation.plots}{logical, default TRUE. Add in addition
 to simple correlation plot two computationally heavy dots + correlation plots.

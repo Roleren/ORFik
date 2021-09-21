@@ -68,7 +68,8 @@ names.}
 
 \item{output.mode}{character, default "envir". Output libraries to environment.
 Alternative: "list", return as list. "envirlist", output to envir and return
-as list.}
+as list. If output is list format, the list elements are named from:
+\code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)}
 
 \item{envir}{environment to save to, default
 \code{envExp(df)}, which defaults to .GlobalEnv}
@@ -98,8 +99,14 @@ df <- ORFik.template.experiment()
 ## .wig file load, if wiggle files does not exists
 ## it will load default
 # outputLibs(df, type = "wig")
-## Load libs to new environment (called ORFik)
+## Load as list
+outputLibs(df, output.mode = "list")
+## Load libs to new environment (called ORFik in Global)
 # outputLibs(df, envir = assign(df@experiment, new.env(parent = .GlobalEnv)))
+## Load to hidden environment given by experiment
+# envExp(df) <- new.env()
+# outputLibs(df)
+
 }
 \seealso{
 Other ORFik_experiment: 
