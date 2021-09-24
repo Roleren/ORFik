@@ -7,7 +7,7 @@
 \S4method{organism}{experiment}(object)
 }
 \arguments{
-\item{x}{an ORFik \code{\link{experiment}}}
+\item{object}{an ORFik \code{\link{experiment}}}
 }
 \value{
 character, name of organism

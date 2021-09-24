@@ -170,12 +170,13 @@ setMethod("nrow",
           }
 )
 
-setGeneric("name", function(x) standardGeneric("name"))
-
 #' Get name of ORFik experiment
 #' @param x an ORFik \code{\link{experiment}}
 #' @return character, name of experiment
 #' @export
+setGeneric("name", function(x) standardGeneric("name"))
+
+#' @inherit name
 setMethod("name",
           "experiment",
           function(x) {
@@ -183,15 +184,24 @@ setMethod("name",
           }
 )
 
-setGeneric("envExp", function(x) standardGeneric("envExp"))
-setGeneric("envExp<-", function(x, value) standardGeneric("envExp<-"))
-
 #' Get ORFik experiment environment
 #'
 #' More correctly, get the pointer reference, default is .GlobalEnv
 #' @param x an ORFik \code{\link{experiment}}
 #' @return environment pointer, name of environment: pointer
 #' @export
+setGeneric("envExp", function(x) standardGeneric("envExp"))
+
+#' Set ORFik experiment environment
+#'
+#' More correctly, set the pointer reference, default is .GlobalEnv
+#' @param x an ORFik \code{\link{experiment}}
+#' @param value environment pointer to assign to experiment
+#' @return an ORFik \code{\link{experiment}} with updated environment
+#' @export
+setGeneric("envExp<-", function(x, value) standardGeneric("envExp<-"))
+
+#' @inherit envExp
 setMethod("envExp",
           "experiment",
           function(x) {
@@ -199,12 +209,7 @@ setMethod("envExp",
           }
 )
 
-#' Set ORFik experiment environment
-#'
-#' More correctly, set the pointer reference, default is .GlobalEnv
-#' @param x environment pointer, name of environment: pointer
-#' @return an ORFik \code{\link{experiment}}
-#' @export
+#' @inherit envExp<-
 setMethod("envExp<-",
           "experiment",
           function(x, value) {
@@ -217,7 +222,7 @@ setMethod("envExp<-",
 #' Get ORFik experiment organism
 #'
 #' If not defined directly, checks the txdb / gtf organism information, if existing.
-#' @param x an ORFik \code{\link{experiment}}
+#' @param object an ORFik \code{\link{experiment}}
 #' @return character, name of organism
 #' @family ORFik_experiment
 #' @export

@@ -237,7 +237,7 @@ export.bedoc <- function(object, out) {
 #' df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
 #' ga <- ORFik:::getGAlignments(df)
 #' # export.ofst(ga, file = "path.ofst")
-setGeneric("export.ofst", function(x,...) standardGeneric("export.ofst"))
+setGeneric("export.ofst", function(x, ...) standardGeneric("export.ofst"))
 
 #' @inherit export.ofst
 #' @param file a character, location on disc (full path)
