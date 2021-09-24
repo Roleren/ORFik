@@ -111,7 +111,7 @@ strand, and the least upstream for - strand.
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 names(fiveUTR_ORFs[1:2]) # <- Which ORF
 ```
-## Saving ORFs to disc
+## Saving coordinates of ORFs to disc
 
 We recommend two options for storing ORF ranges:
 
@@ -168,8 +168,8 @@ We will now go through utilities to group, subset and filter on interesting regi
 ## Grouping ORFs
 
 There are 2 main ways of grouping ORFs.
-- Group by ORF
-- Group by transcript
+- Group by ORF (Each group are all exons per ORF)
+- Group by transcript (Each group are all ORFs from transcript)
 
 To do this more easily, you can use the function `groupGRangesBy`.
 
@@ -189,7 +189,7 @@ unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
 test_ranges <- groupGRangesBy(unlisted_ranges, unlisted_ranges$names)
 test_ranges[1:2]
 ```
-Here you see each group is one ORF only.
+Here you see each group is one ORF only (this is the primary grouping)
 
 ## Filtering example
 
@@ -207,7 +207,7 @@ In this example we will filter out all ORFs as following:
 
 Lets use the fiveUTR_ORFs from previous example:
 
-1. Group by ORFs, if ORFs are grouped by transcripts it would make no sense.
+1. Group by ORFs (primary grouping)
 
 ```{r eval = TRUE, echo = TRUE}
   unlisted_ranges <- unlistGrl(fiveUTR_ORFs)
@@ -224,7 +224,7 @@ Lets use the fiveUTR_ORFs from previous example:
   ORFs <- ORFs[numExonsPerGroup(ORFs) > 1]
   length(ORFs)
 ```
-4. Keep only positive ORFs
+4. Keep only + strand ORFs
 ```{r eval = TRUE, echo = TRUE}
   
   ORFs <- ORFs[strandPerGroup(ORFs) == "+"]
@@ -356,7 +356,7 @@ codons. `ORFik` has multiple functions for processing of RiboSeq data.
 Usually you would run detectRibosomeShifts to find shifts in a single function call, 
 but we will here go through a detailed example to better understand processing of RiboSeq data.
 
-Example raw RiboSeq footprints (unshifted):
+Example raw Ribo-Seq footprints (unshifted bam file, Organism: Danio rerio) 
 ```{r eval = TRUE, echo = TRUE}
 # Find path to a bam file
 bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
@@ -369,21 +369,21 @@ table(readWidths(footprints))
 ```
 
 Lets look at how the reads distribute around the CDS per read length:
-For that we need to prepare the transcriptome annotation.
+For that we need to prepare the transcriptome annotation (Organism: Danio rerio).
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
 gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf_file)
-tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
-cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
-trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)
+tx <- loadRegion(txdb, part = "tx")
+cds <- loadRegion(txdb, part = "cds")
+trailers <- loadRegion(txdb, part = "trailers")
 cds[1]
 ```
 
-Note in ORFik you can load all transcript annotation in one line (this is same as above):
+Note in ORFik you can load full transcript annotation in one line (this is same as above):
 ```{r eval = FALSE, echo = TRUE, warning = FALSE, message = FALSE} 
 loadRegions(gtf_file, parts = c("tx", "cds", "trailers"))
 ```
-A note here is that "tx" are all transcripts, if you write "mrna" you will only 
+A note here is that "tx" are all transcripts (mRNA + ncRNA), if you write "mrna" you will only 
 get subset of tx that has a defined cds. 
 
 Restrict footprints to their 5' starts (after shifting it will be a p-site).

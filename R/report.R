@@ -66,9 +66,9 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   message("- Creating read length tables:")
   dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)
   # Get count tables
-  QC_count_tables(df, out.dir, BPPARAM)
+  QC_count_tables(df, out.dir, BPPARAM = BPPARAM)
   # Alignment statistcs
-  finals <- alignmentFeatureStatistics(df, BPPARAM)
+  finals <- alignmentFeatureStatistics(df, BPPARAM = BPPARAM)
   # Do trimming detection
   finals <- trim_detection(df, finals, out.dir)
   # Save file
