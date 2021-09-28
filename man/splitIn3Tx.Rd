@@ -26,7 +26,8 @@ splitIn3Tx(
 
 \item{reads}{GRanges or GAlignment of reads}
 
-\item{windowSize}{an integer (100), size of windows (columns)}
+\item{windowSize}{an integer (100), size of windows (columns). All genes with
+region smaller than this size are filter out for metacoverage.}
 
 \item{fraction}{a character (1), info on reads (which read length,
 or which type (RNA seq)) (row names)}

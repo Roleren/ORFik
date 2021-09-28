@@ -554,16 +554,15 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   if (!is.null(output)) {
     if (type == "heatmap") {
       if (output == "auto") {
-        dir.to.save <- file.path(dirname(df$filepath[1]), "QC_STATS")
-        output <- file.path(dir.to.save, paste0("pshifts_heatmaps", plot.ext))
+        output <- file.path(QCfolder(df), paste0("pshifts_heatmaps", plot.ext))
       }
+      dpi <- ifelse(nrow(df) < 22, 300, 200)
       ggsave(output, res,
              width = 225, height = (length(res) -1)*65,
-             units = "mm", dpi = 300, limitsize = FALSE)
+             units = "mm", dpi = dpi, limitsize = FALSE)
     } else {
       if (output == "auto") {
-        dir.to.save <- file.path(dirname(df$filepath[1]), "QC_STATS")
-        output <- file.path(dir.to.save, paste0("pshifts_barplots", plot.ext))
+        output <- file.path(QCfolder(df), paste0("pshifts_barplots", plot.ext))
       }
       dpi <- ifelse(nrow(df) < 22, 300, 200)
       ggsave(output, res,
@@ -573,6 +572,5 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
     message("Saved pshift plots to location: ",
             output)
   }
-
   return(res)
 }

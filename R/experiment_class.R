@@ -249,3 +249,18 @@ setMethod("organism",
             return(org)
           }
 )
+
+#' Get ORFik experiment QC folder path
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a character path
+#' @export
+setGeneric("QCfolder", function(x, value) standardGeneric("QCfolder"))
+
+#' @inherit QCfolder
+setMethod("QCfolder",
+          "experiment",
+          function(x) {
+            file.path(dirname(x$filepath[1]), "QC_STATS/")
+          }
+)

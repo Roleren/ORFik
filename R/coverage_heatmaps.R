@@ -230,7 +230,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' Coverage heatmap of multiple libraries
 #'
 #' @inheritParams heatMap_single
-#' @param df an ORFik \code{\link{experiment}}
+#' @inheritParams outputLibs
 #' @param type character, default: "ofst". Type of library:
 #' either "default", usually bam format (the one you gave to experiment),
 #' "pshifted" pshifted reads, "ofst", "bed", "bedo" optimized bed, or "wig"
@@ -238,7 +238,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' from ORFik experiment columns
 #' @param plot.together logical (default: FALSE), plot all in 1 plot (if TRUE)
 #' @param shifting a character, default c("5prime", "3prime"), can also be
-#' either or NULL (no shifting of reads)
+#' NULL (no shifting of reads). If NULL, will use first index of 'upstream'
+#' and 'downstream' argument.
 #' @param plot.ext a character, default ".pdf", alternative ".png"
 #' @param upstream 1 or 2 integers, default c(50, 30), how long upstream from 0
 #' should window extend (first index is 5' end extension, second is 3' end extension).
@@ -246,7 +247,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' @param downstream 1 or 2 integers, default c(29, 69), how long upstream from 0
 #' should window extend (first index is 5' end extension, second is 3' end extension).
 #' If only 1 shifting, only 1 value should be given, if two are given will use first.
-#' @param scores character vector, default c("transcriptNormalized", "sum"),
+#' @param scores character vector, default \code{c("transcriptNormalized", "sum")},
 #' either of zscore, transcriptNormalized, sum, mean, median, ..
 #' see ?coverageScorings for info and more alternatives.
 #' @importFrom gridExtra grid.arrange
@@ -257,18 +258,19 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                      zeroPosition = upstream, acceptedLengths = NULL, type = "ofst",
                      legendPos = "right", colors = "default", addFracPlot = TRUE,
                      location = "TIS", shifting = NULL, skip.last = FALSE, plot.ext = ".pdf",
-                     plot.together = TRUE, title = TRUE) {
+                     plot.together = TRUE, title = TRUE, BPPARAM = bpparam()) {
 
 
   up <- upstream; down <- downstream
   dfl <- df
-  if(!is(dfl, "list")) dfl <- list(dfl)
+  if (!is(dfl, "list")) dfl <- list(dfl)
+  if (is.null(shifting)) shifting <- "NULL"
 
   for (df in dfl) {
     heatmapList <- list()
     varNames <- bamVarName(df)
     outputLibs(df, region, type = type)
-    for (i in varNames) { # For each stage
+    for (i in varNames) { # For each lib
       for (score in scores) {
         for (s in seq_along(shifting)) {
           shift <- shifting[s]
@@ -281,8 +283,9 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
           if (length(zeroPosition) > 1) {
             zero <- zeroPosition[s]
           }
+          if (shifting == "NULL") shifting <- NULL
           print(paste(i, shift, score))
-          out <- file.path(outdir, paste0(df@experiment,"_hm_", location, "_",i , "_"))
+          out <- file.path(outdir, paste0(name(df),"_hm_", location, "_",i , "_"))
           out <- ifelse(!is.null(shifting),
                         paste0(out, shift, "_", score, plot.ext),
                         paste0(out, score, plot.ext))
@@ -301,7 +304,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
     if (plot.together) {
       ncols <- max(1, length(shifting))
       final <- gridExtra::grid.arrange(grobs = heatmapList, ncol = ncols)
-      ggsave(file.path(outdir, paste0(df@experiment, "_hm_combined_", location, plot.ext)),
+      ggsave(file.path(outdir, paste0(name(df), "_hm_combined_", location, plot.ext)),
              plot = final, width = 5*ncols, height = ceiling(5.5*(length(heatmapList) / ncols)),
              limitsize = FALSE)
     }
@@ -346,7 +349,7 @@ heatMap_single <- function(region, tx, reads, outdir,
     all_lengths <- sort(unique(readWidths(reads)))
     if (!is.null(acceptedLengths))
       all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
-    acceptedLengths <- all_lengths[-c((length(all_lengths)-0):length(all_lengths))]
+    acceptedLengths <- all_lengths[-length(all_lengths)]
   }
   dt <- windowPerReadLength(region, tx, reads, upstream = upstream, downstream = downstream,
                             zeroPosition = zeroPosition, scoring = scores,

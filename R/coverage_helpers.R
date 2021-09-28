@@ -9,7 +9,8 @@
 #' @param txdb a TxDb object or a path to gtf/gff/db file.
 #' @param reads GRanges or GAlignment of reads
 #' @param splitIn3 a logical(TRUE), split window in 3 (leader, cds, trailer)
-#' @param windowSize an integer (100), size of windows (columns)
+#' @param windowSize an integer (100), size of windows (columns). All genes with
+#' region smaller than this size are filter out for metacoverage.
 #' @param fraction a character (1), info on reads (which read length,
 #' or which type (RNA seq)) (row names)
 #' @inheritParams coveragePerTiling
@@ -28,9 +29,9 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
     # leader > 100 bases, cds > 100 bases, trailer > 100 bases
     txNames <- filterTranscripts(txdb, windowSize, windowSize,
                                  windowSize) # valid transcripts
-    leaders = fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+    leaders <- fiveUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     cds <- cdsBy(txdb, "tx", use.names = TRUE)[txNames]
-    trailers = threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
+    trailers <- threeUTRsByTranscript(txdb, use.names = TRUE)[txNames]
     txCov <- splitIn3Tx(leaders, cds, trailers, reads, windowSize, fraction,
                         weight, is.sorted = TRUE, drop.zero.dt = drop.zero.dt,
                         BPPARAM = BPPARAM)

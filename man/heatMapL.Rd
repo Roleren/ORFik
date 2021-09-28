@@ -23,7 +23,8 @@ heatMapL(
   skip.last = FALSE,
   plot.ext = ".pdf",
   plot.together = TRUE,
-  title = TRUE
+  title = TRUE,
+  BPPARAM = bpparam()
 )
 }
 \arguments{
@@ -40,7 +41,7 @@ ORFik orf names. that is "txName_id"}
 \item{outdir}{a character path to directory to save plot, will be named
 from ORFik experiment columns}
 
-\item{scores}{character vector, default c("transcriptNormalized", "sum"),
+\item{scores}{character vector, default \code{c("transcriptNormalized", "sum")},
 either of zscore, transcriptNormalized, sum, mean, median, ..
 see ?coverageScorings for info and more alternatives.}
 
@@ -77,7 +78,8 @@ fractions per positions}
 Position relative to "start site" or alternative given.}
 
 \item{shifting}{a character, default c("5prime", "3prime"), can also be
-either or NULL (no shifting of reads)}
+NULL (no shifting of reads). If NULL, will use first index of 'upstream'
+and 'downstream' argument.}
 
 \item{skip.last}{skip top(highest) read length, default FALSE}
 
@@ -87,6 +89,10 @@ either or NULL (no shifting of reads)}
 
 \item{title}{a character, default NULL (no title),
 what is the top title of plot?}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam().
+To see number of threads used, do \code{bpparam()$workers}.
+You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 invisible(NULL), plots are saved

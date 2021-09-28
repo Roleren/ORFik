@@ -33,7 +33,7 @@ Translation termination site (3' end of CDS),
 folder within the ORFik experiment data folder for plots. Change if you
 want custom location.}
 
-\item{scores}{character vector, default c("transcriptNormalized", "sum"),
+\item{scores}{character vector, default \code{c("transcriptNormalized", "sum")},
 either of zscore, transcriptNormalized, sum, mean, median, ..
 see ?coverageScorings for info and more alternatives.}
 
@@ -59,7 +59,8 @@ should window extend (first index is 5' end extension, second is 3' end extensio
 If only 1 shifting, only 1 value should be given, if two are given will use first.}
 
 \item{shifting}{a character, default c("5prime", "3prime"), can also be
-either or NULL (no shifting of reads)}
+NULL (no shifting of reads). If NULL, will use first index of 'upstream'
+and 'downstream' argument.}
 
 \item{longestPerGene}{logical (TRUE), return only longest valid transcript
 per gene. NOTE: This is by priority longest cds isoform, if equal then pick

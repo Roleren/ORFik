@@ -22,7 +22,8 @@ windowPerTranscript(
 
 \item{splitIn3}{a logical(TRUE), split window in 3 (leader, cds, trailer)}
 
-\item{windowSize}{an integer (100), size of windows (columns)}
+\item{windowSize}{an integer (100), size of windows (columns). All genes with
+region smaller than this size are filter out for metacoverage.}
 
 \item{fraction}{a character (1), info on reads (which read length,
 or which type (RNA seq)) (row names)}
