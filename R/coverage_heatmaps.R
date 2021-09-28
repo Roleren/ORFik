@@ -168,7 +168,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- loadRegion(txdb, "mrna", names.keep = txNames)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TIS", shifting = shifting,
-             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
+             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
+             plot.ext = plot.ext)
   }
   if ("TSS" %in% region) {
     message("TSS")
@@ -189,7 +190,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- extendLeaders(mrna, minOutsideTXLength)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TSS", shifting = shifting,
-             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
+             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
+             plot.ext = plot.ext)
   }
   if ("TTS" %in% region) {
     message("TTS")
@@ -201,7 +203,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     mrna <- loadRegion(txdb, "mrna", names.keep = txNames)
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TTS", shifting = shifting,
-             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type)
+             skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
+             plot.ext = plot.ext)
   }
   # Transcription End site
   if ("TES" %in% region) {
@@ -222,7 +225,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     heatMapL(center, mrna, df, outdir, scores = scores,
              upstream, downstream, zeroPosition = upstream, addFracPlot = TRUE, location = "TES",
              shifting = shifting, skip.last = FALSE, acceptedLengths = acceptedLengths,
-             type = type)
+             type = type, plot.ext = plot.ext)
   }
   return(invisible(NULL))
 }
