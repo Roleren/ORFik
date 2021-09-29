@@ -558,7 +558,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
       }
       dpi <- ifelse(nrow(df) < 22, 300, 200)
       ggsave(output, res,
-             width = 225, height = (length(res) -1)*65,
+             width = 225, height = (length(res) -1)*85,
              units = "mm", dpi = dpi, limitsize = FALSE)
     } else {
       if (output == "auto") {

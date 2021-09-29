@@ -286,7 +286,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
           if (length(zeroPosition) > 1) {
             zero <- zeroPosition[s]
           }
-          if (shifting == "NULL") shifting <- NULL
+          if (shift == "NULL") shift <- NULL
           print(paste(i, shift, score))
           out <- file.path(outdir, paste0(name(df),"_hm_", location, "_",i , "_"))
           out <- ifelse(!is.null(shifting),

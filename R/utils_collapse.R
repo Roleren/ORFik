@@ -22,7 +22,8 @@
 #' the read.
 #'
 #' @param gr GRanges, GAlignment or GAlignmentPairs object to reduce.
-#' @param method the method to reduce ranges, see info. (5prime defualt)
+#' @param method character, default \code{"5prime"},
+#' the method to reduce ranges, see NOTE for more info.
 #' @param addScoreColumn logical (FALSE), if TRUE, add a score column that
 #'  sums up the hits per unique range. This will make each read unique, so
 #'  that each read is 1 time, and score column gives the number of

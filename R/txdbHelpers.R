@@ -67,7 +67,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     optimizedTranscriptLengths(txdb, create.fst.version = TRUE)
     # Save RDS version of all transcript regions
     message("Creating rds speedup files for transcript regions")
-    parts <- c("tx", "mrna", "leaders", "cds", "trailers")
+    parts <- c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA")
     for (i in parts) {
       saveRDS(loadRegion(txdb, i, by = "tx"),
               file = paste0(base_path, "_", i, ".rds"))
@@ -303,12 +303,20 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
       } else threeUTRsByTranscript(txdb, use.names = TRUE)
     } else if (part %in% c("intron", "introns")) {
       intronsByTranscript(txdb, use.names = TRUE)
-    }  else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
+    }  else if (part %in% c("ncRNA", "ncrna")) {
+      optimized.rds <- paste0(optimized_path, "_", "ncRNA", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else {
+        tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
+        tx[!(names(tx) %in% names(cdsBy(txdb, use.names = TRUE)))]
+      }
+    } else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
       optimized.rds <- paste0(optimized_path, "_", "mrna", ".rds")
       if (optimized & file.exists(optimized.rds)) {
         readRDS(optimized.rds)
       } else exonsBy(txdb, by = "tx", use.names = TRUE)[names(cdsBy(txdb, use.names = TRUE))]
-    } else stop("invalid: must be tx, leader, cds, trailer, introns or mrna")
+    } else stop("invalid: must be tx, leader, cds, trailer, introns, ncRNA or mrna")
 
   if (by == "gene") {
     names(region) <- txNamesToGeneNames(names(region), txdb)
@@ -316,7 +324,7 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
   if (!is.null(names.keep)) { # If subset
     subset <- names(region) %in% names.keep
     if (length(subset) == 0)
-      stop(paste("Found no kept transcripts, for region:", part))
+      stop("Found no kept transcript with given subset of part:", part)
     region <- region[subset]
   }
   if (all(seqlevels(region) %in% seqlevels(txdb))) { # Avoid warnings

@@ -17,7 +17,8 @@ convertToOneBasedRanges(
 \arguments{
 \item{gr}{GRanges, GAlignment or GAlignmentPairs object to reduce.}
 
-\item{method}{the method to reduce ranges, see info. (5prime defualt)}
+\item{method}{character, default \code{"5prime"},
+the method to reduce ranges, see NOTE for more info.}
 
 \item{addScoreColumn}{logical (FALSE), if TRUE, add a score column that
 sums up the hits per unique range. This will make each read unique, so
