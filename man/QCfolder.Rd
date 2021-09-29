@@ -4,7 +4,7 @@
 \alias{QCfolder}
 \title{Get ORFik experiment QC folder path}
 \usage{
-QCfolder(x, value)
+QCfolder(x)
 }
 \arguments{
 \item{x}{an ORFik \code{\link{experiment}}}

@@ -255,7 +255,7 @@ setMethod("organism",
 #' @param x an ORFik \code{\link{experiment}}
 #' @return a character path
 #' @export
-setGeneric("QCfolder", function(x, value) standardGeneric("QCfolder"))
+setGeneric("QCfolder", function(x) standardGeneric("QCfolder"))
 
 #' @inherit QCfolder
 setMethod("QCfolder",

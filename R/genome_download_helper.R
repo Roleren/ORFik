@@ -93,7 +93,7 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
       " and might crash during gff reading step!",
       " Until this is fixed in rtracklayer, check out example",
       " in ?getGenomeAndAnnotation on how to rescue those gffs")
-      gtf <-biomartr:::getGFF(db = db, organism = organism,
+      gtf <-biomartr::getGFF(db = db, organism = organism,
                         path = output.dir, reference = TRUE)
     }
 
