@@ -17,9 +17,9 @@ loadRegion(
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
 it will return it self.}
 
-\item{part}{a character, one of: tx, leader, cds, trailer, intron, mrna
+\item{part}{a character, one of: tx, ncRNA, mrna, leader, cds, trailer, intron,
 NOTE: difference between tx and mrna is that tx are all transcripts, while
-mrna are all transcripts with a cds}
+mrna are all transcripts with a cds, respectivly ncRNA are all tx without a cds.}
 
 \item{names.keep}{a character vector of subset of names to keep. Example:
 loadRegions(txdb, names = "ENST1000005"), will return only that transcript.

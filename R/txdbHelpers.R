@@ -250,9 +250,9 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' @param txdb a TxDb file or a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
 #'  it will return it self.
-#' @param part a character, one of: tx, leader, cds, trailer, intron, mrna
+#' @param part a character, one of: tx, ncRNA, mrna, leader, cds, trailer, intron,
 #' NOTE: difference between tx and mrna is that tx are all transcripts, while
-#' mrna are all transcripts with a cds
+#' mrna are all transcripts with a cds, respectivly ncRNA are all tx without a cds.
 #' @param names.keep a character vector of subset of names to keep. Example:
 #' loadRegions(txdb, names = "ENST1000005"), will return only that transcript.
 #' Remember if you set by to "gene", then this list must be with gene names.
