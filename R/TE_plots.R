@@ -127,7 +127,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
 
   if (height == "auto") height <- 3+length(unique(dt$variable))
   caption <- paste("Filter: RFP >", filter.rfp, " & mRNA >", filter.rna, "(FPKM)")
-  if (nrow(df.rfp) > 1 & nrow(df.rna) == 1)
+  if (unique(dt$variable) == 1)
     caption <- paste(subtitle, "(Single mRNA sample)")
   p.caption <- if (filter.rfp != "") {
     labs(caption = caption)
@@ -194,8 +194,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
 #' ## Collapse replicates:
 #' # te.plot(df.rfp, df.rna, collapse = TRUE)
 te.plot <- function(df.rfp, df.rna,
-                    output.dir = paste0(dirname(df.rfp$filepath[1]),
-                                        "/QC_STATS/"),
+                    output.dir = QCfolder(df.rfp),
                     type = c("default", "between"),
                     filter.rfp = 1, filter.rna = 1,
                     collapse = FALSE,

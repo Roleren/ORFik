@@ -253,7 +253,7 @@ dt[startCodonCoverage > 5,]
 # (Using package that extends ORFik for interactive html plots (RiboCrypt))
 # Will create interactive plot for Ribo-seq and RNA-seq sample: Wild type rep 3
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-devtools::install_github("Miswi/RiboCrypt", dependencies = TRUE)
+devtools::install_github("m-swirski/RiboCrypt", dependencies = TRUE)
 library(RiboCrypt)
 RiboCrypt::multiOmicsPlot_list(cds[1640], cds[1640], reference_sequence = findFa(df.rfp@fafile), reads = list(fimport(filepath(df.rna[6,], "ofst")), fimport(filepath(df.rfp[6,], "pshifted"))), 
                                ylabels = c("RNA", "RFP"), withFrames = c(F, T), frames_type = "columns")

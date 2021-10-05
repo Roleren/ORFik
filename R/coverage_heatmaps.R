@@ -117,11 +117,13 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #'
 #' @inheritParams heatMapL
 #' @inheritParams filterTranscripts
-#' @param region a character, default "TIS", can be any combination of the
-#'  set: c("TSS", "TIS", "TTS", "TES"), which are: Transcription start site
-#'  (5' end of mrna), Translation initation site (5' end of CDS),
-#'  Translation termination site (3' end of CDS),
-#'   Transcription end site (3' end of 3' UTRs)
+#' @param region a character, default "TIS". The centering point for the heatmap
+#' (what is position 0, beween -50 and 50 etc), can be any combination of the
+#'  set: c("TSS", "TIS", "TTS", "TES"), which are:
+#'  - Transcription start site (5' end of mrna)\cr
+#'  - Translation initation site (5' end of CDS)\cr
+#'  - Translation termination site (5' end of 3' UTRs)\cr
+#'  - Transcription end site (3' end of 3' UTRs)\cr
 #' @param outdir a character path, default: "default", saves to:
 #' \code{paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")}, a created
 #' folder within the ORFik experiment data folder for plots. Change if you
