@@ -7,7 +7,7 @@
 te.plot(
   df.rfp,
   df.rna,
-  output.dir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/"),
+  output.dir = QCfolder(df.rfp),
   type = c("default", "between"),
   filter.rfp = 1,
   filter.rna = 1,

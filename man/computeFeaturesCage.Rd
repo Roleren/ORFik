@@ -2,7 +2,7 @@
 % Please edit documentation in R/compute_Features.R
 \name{computeFeaturesCage}
 \alias{computeFeaturesCage}
-\title{Get all possible features in ORFik}
+\title{Get all main features in ORFik}
 \usage{
 computeFeaturesCage(
   grl,

@@ -574,11 +574,11 @@ startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
 #' average of the CDS TIS regions.
 #'
 #' Since this features uses a distance matrix for scoring, values are
-#' distributed like this:
-#' As result there is one value per ORF:
-#' 0.000: means that ORF had no reads
-#' -1.000: means that ORF is identical to average of CDS
-#' 1.000: means that orf is maximum different than average of CDS
+#' distributed like this:\cr
+#' As result there is one value per ORF:\cr
+#' 0.000: means that ORF had no reads\cr
+#' -1.000: means that ORF is identical to average of CDS\cr
+#' 1.000: means that orf is maximum different than average of CDS\cr
 #'
 #' If a score column is defined, it will use it as weights,
 #' see \code{\link{getWeights}}

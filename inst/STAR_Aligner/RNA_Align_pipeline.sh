@@ -51,6 +51,7 @@ OPTIONS:
 	-k	a character, Keep loaded genomes STAR index:
 	    yes (y), no: Remove loaded (n), no shared genome (noShared),
 	    default (n)
+	-K  Keep contaminant aligned bam files. Default: "no", alternative: "yes".
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
 	-h	this help message
@@ -83,9 +84,10 @@ maxCPU=90
 multimap=10
 trim_front=3
 keep="n"
+keepContam="no"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:q:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:K:k:p:S:P:q:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -155,6 +157,10 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:k:p:S:P:q:h" opt; do
 	keep=$OPTARG
 	echo "-k Keep Star Index loaded: $OPTARG"
         ;;
+    K)
+      	keepContam=$OPTARG
+      	echo "-K Keep contamination reads: $OPTARG"
+        ;;
     h)
         usage
         exit
@@ -217,6 +223,13 @@ fi
 
 if [ ! -d $out_dir ]; then
     mkdir -p $out_dir
+fi
+
+contamSAMmode="None"
+contamSAMtype="None"
+if [ $keepContam == "yes" ]; then
+  contamSAMmode="Full"
+  contamSAMtype="BAM Unsorted"
 fi
 
 # 3-7 filtering
@@ -468,8 +481,8 @@ if [ $(doThisStep $resume 'co' $steps) == "yes" ]; then
 	--genomeDir ${contaminants} \
 	--genomeLoad $(keepOrNot $keep)  \
 	--outFileNamePrefix ${out_dir}/contaminants_depletion/contaminants_${ibn}_ \
-	--outSAMtype None \
-	--outSAMmode None \
+	--outSAMtype $contamSAMtype \
+	--outSAMmode $contamSAMmode \
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 90 $maxCPU) \
@@ -500,8 +513,8 @@ if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
 	--genomeDir ${phix} \
 	--genomeLoad $(keepOrNot $keep) \
 	--outFileNamePrefix ${out_dir}/phix_depletion/PhiX_${ibn}_ \
-	--outSAMtype None \
-	--outSAMmode None \
+	--outSAMtype $contamSAMtype \
+	--outSAMmode $contamSAMmode \
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 70 $maxCPU) \
@@ -525,8 +538,8 @@ if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
 	--genomeDir ${rRNA} \
 	--genomeLoad $(keepOrNot $keep)  \
 	--outFileNamePrefix ${out_dir}/rRNA_depletion/rRNA_${ibn}_ \
-	--outSAMtype None \
-	--outSAMmode None \
+	--outSAMtype $contamSAMtype \
+	--outSAMmode $contamSAMmode \
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 90 $maxCPU) \
@@ -549,8 +562,8 @@ if [ $(doThisStep $resume 'nc' $steps) == "yes" ]; then
 	--genomeDir ${ncRNA} \
 	--genomeLoad $(keepOrNot $keep)  \
 	--outFileNamePrefix ${out_dir}/ncRNA_depletion/ncRNA_${ibn}_ \
-	--outSAMtype None \
-	--outSAMmode None \
+	--outSAMtype $contamSAMtype \
+	--outSAMmode $contamSAMmode \
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 80 $maxCPU) \
@@ -573,8 +586,8 @@ if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
 	--genomeDir ${tRNA} \
 	--genomeLoad $(keepOrNot $keep)  \
 	--outFileNamePrefix ${out_dir}/tRNA_depletion/tRNA_${ibn}_ \
-	--outSAMtype None \
-	--outSAMmode None \
+	--outSAMtype $contamSAMtype \
+	--outSAMmode $contamSAMmode \
 	--outReadsUnmapped Fastx \
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 70 $maxCPU) \

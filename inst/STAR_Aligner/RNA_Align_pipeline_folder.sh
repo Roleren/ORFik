@@ -53,6 +53,7 @@ OPTIONS:
 	-i	include subfolders (defualt n, for no), if you want subfolder do y, for yes.
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
+	-K  Keep contaminant aligned bam files. Default: "no", alternative: "yes".
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -83,11 +84,12 @@ multimap=10
 subfolders="n"
 trim_front=3
 paired="no"
-STAR="~/bin/STAR-2.7.0c/source/STAR"
-fastp="~/bin/fastp"
 align_single=""
 cleaning=""
-while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:q:h:" opt; do
+keepContam="no"
+STAR="~/bin/STAR-2.7.0c/source/STAR"
+fastp="~/bin/fastp"
+while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:K:M:S:i:P:I:C:q:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
@@ -165,6 +167,10 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:r:m:M:S:i:P:I:C:q:h:" opt; do
       	align_single=$OPTARG
       	echo "-I align_single location: $OPTARG"
         ;;
+    K)
+      	keepContam=$OPTARG
+      	echo "-K Keep contamination reads: $OPTARG"
+        ;;
     h)
         usage
         exit
@@ -227,7 +233,7 @@ function findPairs()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
     echo "-------------------------------------------"
 	done
 }
@@ -253,7 +259,7 @@ function findPairsSub()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
@@ -301,7 +307,7 @@ do
   		fi
       x=$in_dir/$x
 
-  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -P "$fastp" -S "$STAR"
+  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
   		echo "----------------------------------------------"
   	done
   fi

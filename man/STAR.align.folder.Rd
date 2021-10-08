@@ -24,6 +24,7 @@ STAR.align.folder(
   include.subfolders = "n",
   resume = NULL,
   multiQC = TRUE,
+  keep.contaminants = FALSE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
@@ -151,6 +152,12 @@ step was completed. Resume mode can only run 1 step at the time.}
 \item{multiQC}{logical, default TRUE. Do mutliQC comparison of STAR
 alignment between all the samples. Outputted in aligned/LOGS folder.
 See ?STAR.multiQC}
+
+\item{keep.contaminants}{logical, default FALSE. Create and keep
+contaminant aligning bam files, default is to only keep unaliged fastq reads,
+which will be further processed in "ge" genome alignment step. Useful if you
+want to do further processing on contaminants, like specific coverage of
+specific tRNAs etc.}
 
 \item{script.folder}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you

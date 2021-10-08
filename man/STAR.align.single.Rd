@@ -22,6 +22,7 @@ STAR.align.single(
   max.cpus = min(90, detectCores() - 1),
   wait = TRUE,
   resume = NULL,
+  keep.contaminants = FALSE,
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
     "ORFik")
 )
@@ -136,6 +137,12 @@ have 8 cores it will use 7.}
 the assumed already trimmed and phix depleted data and start at genome alignment,
 useful if something crashed. Like if you specified wrong STAR version, but the trimming
 step was completed. Resume mode can only run 1 step at the time.}
+
+\item{keep.contaminants}{logical, default FALSE. Create and keep
+contaminant aligning bam files, default is to only keep unaliged fastq reads,
+which will be further processed in "ge" genome alignment step. Useful if you
+want to do further processing on contaminants, like specific coverage of
+specific tRNAs etc.}
 
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you
