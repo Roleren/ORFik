@@ -19,7 +19,7 @@ STAR.align.single(
   trim.front = 0,
   max.multimap = 10,
   alignment.type = "Local",
-  max.cpus = min(90, BiocParallel:::bpparam()$workers),
+  max.cpus = min(90, BiocParallel::bpparam()$workers),
   wait = TRUE,
   resume = NULL,
   keep.contaminants = FALSE,

@@ -19,7 +19,7 @@ STAR.align.folder(
   trim.front = 0,
   max.multimap = 10,
   alignment.type = "Local",
-  max.cpus = min(90, BiocParallel:::bpparam()$workers),
+  max.cpus = min(90, BiocParallel::bpparam()$workers),
   wait = TRUE,
   include.subfolders = "n",
   resume = NULL,

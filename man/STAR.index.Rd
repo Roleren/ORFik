@@ -8,7 +8,7 @@ STAR.index(
   arguments,
   output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
   star.path = STAR.install(),
-  max.cpus = min(90, BiocParallel:::bpparam()$workers),
+  max.cpus = min(90, BiocParallel::bpparam()$workers),
   max.ram = 30,
   SAsparse = 1,
   tmpDirStar = "-",
