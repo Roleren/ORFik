@@ -8,7 +8,7 @@ STAR.index(
   arguments,
   output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
   star.path = STAR.install(),
-  max.cpus = min(90, detectCores() - 1),
+  max.cpus = min(90, BiocParallel:::bpparam()$workers),
   max.ram = 30,
   SAsparse = 1,
   tmpDirStar = "-",
@@ -31,9 +31,9 @@ arguments input for this function.}
 if you don't have STAR installed at default location, it will install it there,
 set path to a runnable star if you already have it.}
 
-\item{max.cpus}{integer, default: min(90, detectCores() - 1),
-number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
-have 8 cores it will use 7.}
+\item{max.cpus}{integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
+number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
+have 8 cores it will use 6.}
 
 \item{max.ram}{integer, default 30, in Giga Bytes (GB).
 Maximum amount of RAM allowed for STAR limitGenomeGenerateRAM argument. RULE:

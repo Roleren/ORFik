@@ -18,9 +18,9 @@
 #' @param star.path path to STAR, default: STAR.install(),
 #' if you don't have STAR installed at default location, it will install it there,
 #' set path to a runnable star if you already have it.
-#' @param max.cpus integer, default: min(90, detectCores() - 1),
-#'  number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
-#'  have 8 cores it will use 7.
+#' @param max.cpus integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
+#'  number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
+#'  have 8 cores it will use 6.
 #' @param max.ram integer, default 30, in Giga Bytes (GB).
 #' Maximum amount of RAM allowed for STAR limitGenomeGenerateRAM argument. RULE:
 #' idealy 10x genome size, but do not set too close to machine limit. Default fits
@@ -54,7 +54,8 @@
 #' # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
 #' # STAR.index(arguments, output.dir)
 STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/STAR_index/"),
-                       star.path = STAR.install(), max.cpus = min(90, detectCores() - 1),
+                       star.path = STAR.install(),
+                       max.cpus = min(90, BiocParallel:::bpparam()$workers),
                        max.ram = 30, SAsparse = 1, tmpDirStar = "-",
                        wait = TRUE, remake = FALSE,
                        script = system.file("STAR_Aligner",
@@ -267,7 +268,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               steps = "tr-ge", adapter.sequence = "auto",
                               quality.filtering = FALSE, min.length = 20, mismatches = 3,
                               trim.front = 0, max.multimap = 10,
-                              alignment.type = "Local", max.cpus = min(90, detectCores() - 1),
+                              alignment.type = "Local",
+                              max.cpus = min(90, BiocParallel:::bpparam()$workers),
                               wait = TRUE, include.subfolders = "n", resume = NULL,
                               multiQC = TRUE, keep.contaminants = FALSE,
                               script.folder = system.file("STAR_Aligner",
@@ -351,7 +353,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               quality.filtering = FALSE, min.length = 20,
                               mismatches = 3, trim.front = 0,
                               max.multimap = 10, alignment.type = "Local",
-                              max.cpus = min(90, detectCores() - 1),
+                              max.cpus = min(90, BiocParallel:::bpparam()$workers),
                               wait = TRUE, resume = NULL, keep.contaminants = FALSE,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",

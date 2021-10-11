@@ -19,7 +19,7 @@ STAR.align.single(
   trim.front = 0,
   max.multimap = 10,
   alignment.type = "Local",
-  max.cpus = min(90, detectCores() - 1),
+  max.cpus = min(90, BiocParallel:::bpparam()$workers),
   wait = TRUE,
   resume = NULL,
   keep.contaminants = FALSE,
@@ -121,9 +121,9 @@ genome alignment step. The depletions are allowing for multimapping.}
 \item{alignment.type}{default: "Local": standard local alignment with soft-clipping allowed,
 "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.}
 
-\item{max.cpus}{integer, default: min(90, detectCores() - 1),
-number of threads to use. Default is minimum of 90 and maximum cores - 1. So if you
-have 8 cores it will use 7.}
+\item{max.cpus}{integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
+number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
+have 8 cores it will use 6.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it
