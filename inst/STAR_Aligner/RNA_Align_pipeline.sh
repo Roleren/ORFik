@@ -469,7 +469,7 @@ fi
 #------------------------------------------------------------------------------------------
     #4 (alternative): Remove merged contaminants
     #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastaq
+# get output of everything that did not hit, as fastq
 if [ $(doThisStep $resume 'co' $steps) == "yes" ]; then
 	echo "Contaminant depletion:"
 	if [ ! -d ${out_dir}/contaminants_depletion ]; then
@@ -501,7 +501,7 @@ fi
     #--outFilterMatchNmin minimum length of reads accepted
     #--runThreadN number of threads to use
     #--limitIObufferSize hard drive buffer size (smaller is better when IO is bottle neck)
-# get output of everything that did not hit, as fastaq
+# get output of everything that did not hit, as fastq
 if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
 	echo "PhiX depletion:"
 	if [ ! -d ${out_dir}/phix_depletion ]; then
@@ -519,14 +519,15 @@ if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 70 $maxCPU) \
 	--readFilesCommand $(comp $(inputFile $resume $in_file 'ph' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000
+	--limitIObufferSize 50000000 \
+	--alignIntronMax 1
 fi
 
 
 #------------------------------------------------------------------------------------------
     #5 Remove rRNA
     #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastaq
+# get output of everything that did not hit, as fastq
 if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
 	echo "rRNA depletion:"
 	if [ ! -d ${out_dir}/rRNA_depletion ]; then
@@ -544,13 +545,14 @@ if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 90 $maxCPU) \
 	--readFilesCommand $(comp $(inputFile $resume $in_file 'rR' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000
+	--limitIObufferSize 50000000 \
+	--alignIntronMax 1
 fi
 
  #------------------------------------------------------------------------------------------
     #6 Remove organism specific ncRNA
     #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastaq
+# get output of everything that did not hit, as fastq
 if [ $(doThisStep $resume 'nc' $steps) == "yes" ]; then
 	echo "ncRNA depletion:"
 	if [ ! -d ${out_dir}/ncRNA_depletion ]; then
@@ -574,7 +576,8 @@ fi
 #------------------------------------------------------------------------------------------
     #7 Remove organism specific tRNA
     #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastaq
+# get output of everything that did not hit, as fastq
+# ENCODE tRNA mapping defaults
 if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
 	echo "tRNA depletion"
 	if [ ! -d ${out_dir}/tRNA_depletion ]; then
@@ -592,7 +595,9 @@ if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
 	--outFilterMatchNmin $min_length \
 	--runThreadN $(nCores 70 $maxCPU) \
   --readFilesCommand $(comp $(inputFile $resume $in_file 'tr' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000
+	--limitIObufferSize 50000000 \
+	--alignIntronMax 1 \
+	--outFilterMultimapNmax 20
 fi
 #------------------------------------------------------------------------------------------
     # 8. aligner (STAR)

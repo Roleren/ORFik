@@ -61,7 +61,7 @@ give the output files from that trimmer as input.dir here.}
  \item{ph : }{phix depletion}
  \item{rR : }{rrna depletion}
  \item{nc : }{ncrna depletion}
- \item{tR : }{trna depletion}
+ \item{tR : }{trna depletion (Mature tRNA, so no intron checks done)}
  \item{ge : }{genome alignment}
  \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
  have merged contaminants or not}
