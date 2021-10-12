@@ -261,13 +261,13 @@ fi
 # Check SA index size is valid
 if [[ $tRNA != "" ]]; then
 	echo ""; echo "tRNA index:"
-	SA=6
+	SA=7
 	size=($(wc -m $tRNA))
 	if [ "100000" -gt "$size" ]; then
 		if [ "90000" -gt "$size" ]; then
-			SA=4
-		else
 			SA=5
+		else
+			SA=6
 		fi
 	fi
 
@@ -279,5 +279,6 @@ if [[ $tRNA != "" ]]; then
 	--limitGenomeGenerateRAM $(nCores $maxRAM 10000000000) \
 	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11 \
+	--seedPerWindowNmax 30\
 	--outFileNamePrefix ${out_dir}/tRNA_genomeDir/
 fi
