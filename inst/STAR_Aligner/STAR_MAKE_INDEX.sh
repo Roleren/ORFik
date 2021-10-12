@@ -279,6 +279,5 @@ if [[ $tRNA != "" ]]; then
 	--limitGenomeGenerateRAM $(nCores $maxRAM 10000000000) \
 	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11 \
-	--seedPerWindowNmax 30\
 	--outFileNamePrefix ${out_dir}/tRNA_genomeDir/
 fi

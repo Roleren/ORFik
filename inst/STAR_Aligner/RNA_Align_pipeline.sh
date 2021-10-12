@@ -597,6 +597,7 @@ if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
   --readFilesCommand $(comp $(inputFile $resume $in_file 'tr' ${out_dir} ${ibn})) \
 	--limitIObufferSize 50000000 \
 	--alignIntronMax 1 \
+	--seedPerWindowNmax 20 \
 	--outFilterMultimapNmax 20
 fi
 #------------------------------------------------------------------------------------------
