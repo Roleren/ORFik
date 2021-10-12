@@ -16,7 +16,8 @@ heatMapRegion(
   upstream = c(50, 30),
   downstream = c(29, 69),
   shifting = c("5prime", "3prime"),
-  longestPerGene = FALSE
+  longestPerGene = FALSE,
+  BPPARAM = BiocParallel::SerialParam()
 )
 }
 \arguments{
@@ -68,6 +69,10 @@ and 'downstream' argument.}
 per gene. NOTE: This is by priority longest cds isoform, if equal then pick
 longest total transcript. So if transcript is shorter but cds is longer,
  it will still be the one returned.}
+
+\item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
+Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of
+extra ram (40GB+) for larger human samples!}
 }
 \value{
 invisible(NULL), plots are saved

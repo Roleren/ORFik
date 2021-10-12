@@ -16,9 +16,9 @@ If defined saves plot to that directory with the name "./readLengths.csv".}
 either "default", usually bam format (the one you gave to experiment),
 "pshifted" pshifted reads, "ofst", "bed", "bedo" optimized bed, or "wig"}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}.
-You can also add a time remaining bar, for a more detailed pipeline.}
+\item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
+Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of
+extra ram (40GB+) for larger human samples!}
 }
 \value{
 a data.table object of the the read length data with columns:

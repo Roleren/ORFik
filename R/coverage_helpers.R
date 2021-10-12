@@ -498,7 +498,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 
   score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
   if (score.defined) {
-    coverage <- ORFik:::coverageByTranscriptW(reads, grl, weight = weight)
+    coverage <- coverageByTranscriptW(reads, grl, weight = weight)
   } else coverage <- coverageByTranscript(reads, grl)
 
   if (!keep.names) names(coverage) <- NULL
@@ -672,8 +672,10 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' @param pShifted a logical (TRUE), are Ribo-seq reads p-shifted to size
 #'  1 width reads? If upstream and downstream is set, this argument is
 #'  irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.
-#' @param upstream an integer (5), relative region to get upstream from.
-#' @param downstream an integer (20), relative region to get downstream from
+#' @param upstream an integer (5), relative region to get upstream from. Default:
+#' \code{ifelse(!is.null(tx), ifelse(pShifted, 5, 20), min(ifelse(pShifted, 5, 20), 0))}
+#' @param downstream an integer (20), relative region to get downstream from. Default:
+#' \code{ifelse(pShifted, 20, 5)}
 #' @param acceptedLengths an integer vector (NULL), the read lengths accepted.
 #'  Default NULL, means all lengths accepted.
 #' @param zeroPosition an integer DEFAULT (upstream), what is the center point?
@@ -688,6 +690,8 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' is TRUE and all windows have equal length, it will add back 0 values after transformation.
 #' Sometimes needed for correct plots, if TRUE, will call abort if not all
 #' windows are equal length!
+#' @param windows the GRangesList windows to actually check, default:
+#' \code{startRegion(grl, tx, TRUE, upstream, downstream)}.
 #' @return a data.table with 4 columns: position (in window), score,
 #' fraction (read length). If score is NULL, will also return genes (index of grl).
 #' A note is that if no coverage is found, it returns an empty data.table.
@@ -701,13 +705,15 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' windowPerReadLength(cds, tx, reads, scoring = "sum")
 #' windowPerReadLength(cds, tx, reads, scoring = "transcriptNormalized")
 windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
-                                upstream = if (pShifted) 5 else 20,
-                                downstream = if (pShifted) 20 else 5,
+                                upstream = ifelse(!is.null(tx), ifelse(pShifted, 5, 20),
+                                                  min(ifelse(pShifted, 5, 20), 0)),
+                                downstream = ifelse(pShifted, 20, 5),
                                 acceptedLengths = NULL,
                                 zeroPosition = upstream,
                                 scoring = "transcriptNormalized",
                                 weight = "score", drop.zero.dt = FALSE,
-                                append.zeroes = FALSE) {
+                                append.zeroes = FALSE,
+                                windows = startRegion(grl, tx, TRUE, upstream, downstream)) {
 
   if (is.null(tx)) upstream <- min(upstream, 0)
 
@@ -715,7 +721,6 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
     return(data.table())
   }
   windowSize <- upstream + downstream + 1
-  windows <- startRegion(grl, tx, TRUE, upstream, downstream)
   noHits <- widthPerGroup(windows) < windowSize
   if (all(noHits)) {
     warning("No object in grl had valid window size!")

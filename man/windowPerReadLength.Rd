@@ -9,14 +9,16 @@ windowPerReadLength(
   tx = NULL,
   reads,
   pShifted = TRUE,
-  upstream = if (pShifted) 5 else 20,
-  downstream = if (pShifted) 20 else 5,
+  upstream = ifelse(!is.null(tx), ifelse(pShifted, 5, 20), min(ifelse(pShifted, 5, 20),
+    0)),
+  downstream = ifelse(pShifted, 20, 5),
   acceptedLengths = NULL,
   zeroPosition = upstream,
   scoring = "transcriptNormalized",
   weight = "score",
   drop.zero.dt = FALSE,
-  append.zeroes = FALSE
+  append.zeroes = FALSE,
+  windows = startRegion(grl, tx, TRUE, upstream, downstream)
 )
 }
 \arguments{
@@ -35,9 +37,11 @@ column in 'reads'}
 1 width reads? If upstream and downstream is set, this argument is
 irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.}
 
-\item{upstream}{an integer (5), relative region to get upstream from.}
+\item{upstream}{an integer (5), relative region to get upstream from. Default:
+\code{ifelse(!is.null(tx), ifelse(pShifted, 5, 20), min(ifelse(pShifted, 5, 20), 0))}}
 
-\item{downstream}{an integer (20), relative region to get downstream from}
+\item{downstream}{an integer (20), relative region to get downstream from. Default:
+\code{ifelse(pShifted, 20, 5)}}
 
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}
@@ -69,6 +73,9 @@ Will not change any plots, unless 0 positions are used in some sense.
 is TRUE and all windows have equal length, it will add back 0 values after transformation.
 Sometimes needed for correct plots, if TRUE, will call abort if not all
 windows are equal length!}
+
+\item{windows}{the GRangesList windows to actually check, default:
+\code{startRegion(grl, tx, TRUE, upstream, downstream)}.}
 }
 \value{
 a data.table with 4 columns: position (in window), score,

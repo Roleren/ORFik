@@ -151,7 +151,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
                           acceptedLengths = 21:75, upstream = c(50, 30),
                           downstream = c(29, 69),
                           shifting = c("5prime", "3prime"),
-                          longestPerGene = FALSE) {
+                          longestPerGene = FALSE,
+                          BPPARAM = BiocParallel::SerialParam()) {
 
   if (outdir == "default") outdir <- paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")
   if (!(any(region %in% c("TIS", "TSS", "TTS", "TES"))))
@@ -171,7 +172,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TIS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
-             plot.ext = plot.ext)
+             plot.ext = plot.ext, BPPARAM = BPPARAM)
   }
   if ("TSS" %in% region) {
     message("TSS")
@@ -193,7 +194,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TSS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
-             plot.ext = plot.ext)
+             plot.ext = plot.ext, BPPARAM = BPPARAM)
   }
   if ("TTS" %in% region) {
     message("TTS")
@@ -206,7 +207,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     heatMapL(center, mrna, df, outdir, scores = scores, upstream, downstream,
              addFracPlot = TRUE, location = "TTS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
-             plot.ext = plot.ext)
+             plot.ext = plot.ext, BPPARAM = BPPARAM)
   }
   # Transcription End site
   if ("TES" %in% region) {
@@ -227,7 +228,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
     heatMapL(center, mrna, df, outdir, scores = scores,
              upstream, downstream, zeroPosition = upstream, addFracPlot = TRUE, location = "TES",
              shifting = shifting, skip.last = FALSE, acceptedLengths = acceptedLengths,
-             type = type, plot.ext = plot.ext)
+             type = type, plot.ext = plot.ext, BPPARAM = BPPARAM)
   }
   return(invisible(NULL))
 }
@@ -255,6 +256,9 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
 #' @param scores character vector, default \code{c("transcriptNormalized", "sum")},
 #' either of zscore, transcriptNormalized, sum, mean, median, ..
 #' see ?coverageScorings for info and more alternatives.
+#' @param BPPARAM a core param, default: single thread: \code{BiocParallel::SerialParam()}.
+#'  Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of
+#'  extra ram (40GB+) for larger human samples!
 #' @importFrom gridExtra grid.arrange
 #' @return invisible(NULL), plots are saved
 #' @family heatmaps
@@ -263,7 +267,8 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                      zeroPosition = upstream, acceptedLengths = NULL, type = "ofst",
                      legendPos = "right", colors = "default", addFracPlot = TRUE,
                      location = "TIS", shifting = NULL, skip.last = FALSE, plot.ext = ".pdf",
-                     plot.together = TRUE, title = TRUE, BPPARAM = bpparam()) {
+                     plot.together = TRUE, title = TRUE,
+                     BPPARAM = BiocParallel::SerialParam()) {
 
 
   up <- upstream; down <- downstream
@@ -272,10 +277,12 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
   if (is.null(shifting)) shifting <- "NULL"
 
   for (df in dfl) {
-    heatmapList <- list()
     varNames <- bamVarName(df)
     outputLibs(df, region, type = type)
-    for (i in varNames) { # For each lib
+    heatmapList <- bplapply(varNames,
+             function(i, df, scores, shifting, upstream, downstream, zeroPosition, outdir,
+                      location, plot.ext, acceptedLengths, legendPos, colors, addFracPlot,
+                      skip.last, title) {
       for (score in scores) {
         for (s in seq_along(shifting)) {
           shift <- shifting[s]
@@ -301,10 +308,14 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                                  legendPos = legendPos, colors = colors, addFracPlot = addFracPlot,
                                  location = location, skip.last = skip.last,
                                  title = ifelse(title, paste(i, shift), NULL))
-          heatmapList <- c(heatmapList, list(plot))
+          return(plot)
         }
       }
-    }
+    }, BPPARAM = BPPARAM, df = df, scores = scores, shifting = shifting, upstream = upstream,
+    downstream = downstream, zeroPosition = zeroPosition, outdir = outdir,
+    location = location, plot.ext = plot.ext, acceptedLengths = acceptedLengths, legendPos = legendPos,
+    colors = colors, addFracPlot = addFracPlot,
+    skip.last = skip.last, title = title)
     # Per experiment plot together
     if (plot.together) {
       ncols <- max(1, length(shifting))
@@ -356,9 +367,14 @@ heatMap_single <- function(region, tx, reads, outdir,
       all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
     acceptedLengths <- all_lengths[-length(all_lengths)]
   }
+  drop.zero.dt <- FALSE; append.zeroes <- FALSE
+  if (scores %in% c("sum", "transcriptNormalized")) {
+    drop.zero.dt <- TRUE; append.zeroes <- TRUE
+  }
   dt <- windowPerReadLength(region, tx, reads, upstream = upstream, downstream = downstream,
                             zeroPosition = zeroPosition, scoring = scores,
-                            acceptedLengths = acceptedLengths)
+                            acceptedLengths = acceptedLengths, drop.zero.dt = drop.zero.dt,
+                            append.zeroes = append.zeroes)
 
   plot <- coverageHeatMap(coverage = dt, scoring = scores, addFracPlot = addFracPlot,
                           xlab = paste0("Position relative to ", location), colors = colors,

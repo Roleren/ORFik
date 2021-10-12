@@ -24,7 +24,7 @@ heatMapL(
   plot.ext = ".pdf",
   plot.together = TRUE,
   title = TRUE,
-  BPPARAM = bpparam()
+  BPPARAM = BiocParallel::SerialParam()
 )
 }
 \arguments{
@@ -90,9 +90,9 @@ and 'downstream' argument.}
 \item{title}{a character, default NULL (no title),
 what is the top title of plot?}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}.
-You can also add a time remaining bar, for a more detailed pipeline.}
+\item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
+Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of
+extra ram (40GB+) for larger human samples!}
 }
 \value{
 invisible(NULL), plots are saved

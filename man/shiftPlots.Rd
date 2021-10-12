@@ -36,9 +36,11 @@ A more informative name could be "Ribo-seq zebrafish Chew et al. 2013"}
 1 width reads? If upstream and downstream is set, this argument is
 irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.}
 
-\item{upstream}{an integer (5), relative region to get upstream from.}
+\item{upstream}{an integer (5), relative region to get upstream from. Default:
+\code{ifelse(!is.null(tx), ifelse(pShifted, 5, 20), min(ifelse(pShifted, 5, 20), 0))}}
 
-\item{downstream}{an integer (20), relative region to get downstream from}
+\item{downstream}{an integer (20), relative region to get downstream from. Default:
+\code{ifelse(pShifted, 20, 5)}}
 
 \item{type}{character, default "bar". Plot as faceted bars,
 gives more detailed information of read lengths,
