@@ -95,7 +95,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                 title = title)
         if (!is.null(outdir)) {
           idName <- ifelse(idName == "", "", paste0("_", idName))
-          ggsave(pasteDir(outdir, paste0(name(df.rfp),"_cp_all_", s,
+          ggsave(pasteDir(outdir, paste0(name(df),"_cp_all_", s,
                                          idName, plot.ext)),
                  a,
                  height = 10 + floor(nrow(df) / 5))
