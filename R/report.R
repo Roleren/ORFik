@@ -37,6 +37,10 @@
 #' @param create.ofst logical, default TRUE. Create ".ofst" files from the input
 #' libraries, ofst is much faster to load in R, for later use. Stored
 #' in ./ofst/ folder relative to experiment main folder.
+#' @param complex.correlation.plots logical, default TRUE. Add in addition
+#' to simple correlation plot two computationally heavy dots + correlation plots.
+#' Useful for deeper analysis, but takes longer time to run, especially on low-quality
+#' gpu computers. Set to FALSE to skip these.
 #' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
 #' @importFrom utils write.csv
@@ -48,6 +52,7 @@
 #' # QCreport(df)
 QCreport <- function(df, out.dir = dirname(df$filepath[1]),
                      plot.ext = ".pdf", create.ofst = TRUE,
+                     complex.correlation.plots = TRUE,
                      BPPARAM = bpparam()) {
   # Check input
   validateExperiments(df)
@@ -74,7 +79,9 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   # Save file
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
   # Get plots
-  QCplots(df, "mrna", stats_folder, plot.ext = plot.ext, BPPARAM = BPPARAM)
+  QCplots(df, "mrna", stats_folder, plot.ext = plot.ext,
+          complex.correlation.plots = complex.correlation.plots,
+          BPPARAM = BPPARAM)
 
   message("--------------------------")
   message(paste("Everything done, saved QC to:", stats_folder))
@@ -110,13 +117,16 @@ ORFikQC <- QCreport
 QCplots <- function(df, region = "mrna",
                     stats_folder = paste0(dirname(df$filepath[1]),
                                           "/QC_STATS/"),
-                    plot.ext = ".pdf", BPPARAM) {
+                    plot.ext = ".pdf",
+                    complex.correlation.plots = TRUE,
+                    BPPARAM) {
   message("--------------------------")
   message("Making QC plots:")
   message("- Annotation to NGS libraries plot:")
   QCstats.plot(stats_folder, stats_folder, plot.ext = plot.ext)
 
-  correlation.plots(df, stats_folder, region, plot.ext = plot.ext)
+  correlation.plots(df, stats_folder, region, plot.ext = plot.ext,
+                    complex.correlation.plots = complex.correlation.plots)
   message("- PCA outlier plot:")
   pcaExperiment(df, stats_folder, plot.ext = plot.ext)
   # window coverage over mRNA regions

@@ -111,10 +111,6 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
 #' @param height numeric, default 400 (in mm)
 #' @param width numeric, default 400 (in mm)
 #' @param size numeric, size of dots, default 0.15.
-#' @param complex.correlation.plots logical, default TRUE. Add in addition
-#' to simple correlation plot two computationally heavy dots + correlation plots.
-#' Useful for deeper analysis, but takes longer time to run, especially on low-quality
-#' gpu computers. Set to FALSE to skip these.
 #' @param data_for_pairs a data.table from ORFik::countTable of counts wanted.
 #' Default is fpkm of all mRNA counts over all libraries.
 #' @return invisible(NULL)
@@ -133,7 +129,10 @@ correlation.plots <- function(df, output.dir,
   point_settings <- list(continuous = GGally::wrap("points", alpha = 0.3, size = size),
                          combo = GGally::wrap("dot", alpha = 0.4, size=0.2))
   message("  - raw scaled fpkm (simple)")
-  paired_plot <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2)
+
+  paired_plot <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2,
+                                hjust = 1, layout.exp = floor(1 + (nrow(df)/10)))
+
   ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), paired_plot,
          height = height, width = width, units = 'mm', dpi = 300)
 

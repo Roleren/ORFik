@@ -9,6 +9,7 @@ ORFikQC(
   out.dir = dirname(df$filepath[1]),
   plot.ext = ".pdf",
   create.ofst = TRUE,
+  complex.correlation.plots = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -27,6 +28,11 @@ Note that in pdf format the complex correlation plots become very slow to load!}
 \item{create.ofst}{logical, default TRUE. Create ".ofst" files from the input
 libraries, ofst is much faster to load in R, for later use. Stored
 in ./ofst/ folder relative to experiment main folder.}
+
+\item{complex.correlation.plots}{logical, default TRUE. Add in addition
+to simple correlation plot two computationally heavy dots + correlation plots.
+Useful for deeper analysis, but takes longer time to run, especially on low-quality
+gpu computers. Set to FALSE to skip these.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

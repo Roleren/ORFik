@@ -9,6 +9,7 @@ QCplots(
   region = "mrna",
   stats_folder = paste0(dirname(df$filepath[1]), "/QC_STATS/"),
   plot.ext = ".pdf",
+  complex.correlation.plots = TRUE,
   BPPARAM
 )
 }
@@ -23,6 +24,11 @@ paste0(dirname(df$filepath[1]), "/QC_STATS/")}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
 Note that in pdf format the complex correlation plots become very slow to load!}
+
+\item{complex.correlation.plots}{logical, default TRUE. Add in addition
+to simple correlation plot two computationally heavy dots + correlation plots.
+Useful for deeper analysis, but takes longer time to run, especially on low-quality
+gpu computers. Set to FALSE to skip these.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
