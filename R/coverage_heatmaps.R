@@ -283,6 +283,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
              function(i, df, scores, shifting, upstream, downstream, zeroPosition, outdir,
                       location, plot.ext, acceptedLengths, legendPos, colors, addFracPlot,
                       skip.last, title) {
+     heatmapListIntern <- list()
       for (score in scores) {
         for (s in seq_along(shifting)) {
           shift <- shifting[s]
@@ -298,7 +299,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
           if (shift == "NULL") shift <- NULL
           print(paste(i, shift, score))
           out <- file.path(outdir, paste0(name(df),"_hm_", location, "_",i , "_"))
-          out <- ifelse(!is.null(shifting),
+          out <- ifelse(!is.null(shift),
                         paste0(out, shift, "_", score, plot.ext),
                         paste0(out, score, plot.ext))
 
@@ -308,9 +309,10 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                                  legendPos = legendPos, colors = colors, addFracPlot = addFracPlot,
                                  location = location, skip.last = skip.last,
                                  title = ifelse(title, paste(i, shift), NULL))
-          return(plot)
+          heatmapListIntern <- c(heatmapListIntern, list(plot))
         }
       }
+     return(heatmapListIntern)
     }, BPPARAM = BPPARAM, df = df, scores = scores, shifting = shifting, upstream = upstream,
     downstream = downstream, zeroPosition = zeroPosition, outdir = outdir,
     location = location, plot.ext = plot.ext, acceptedLengths = acceptedLengths, legendPos = legendPos,
@@ -319,7 +321,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
     # Per experiment plot together
     if (plot.together) {
       ncols <- max(1, length(shifting))
-      final <- gridExtra::grid.arrange(grobs = heatmapList, ncol = ncols)
+      final <- gridExtra::grid.arrange(grobs = unlist(heatmapList, recursive = FALSE), ncol = ncols)
       ggsave(file.path(outdir, paste0(name(df), "_hm_combined_", location, plot.ext)),
              plot = final, width = 5*ncols, height = ceiling(5.5*(length(heatmapList) / ncols)),
              limitsize = FALSE)

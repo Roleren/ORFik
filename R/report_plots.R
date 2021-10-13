@@ -171,19 +171,26 @@ correlation.plots <- function(df, output.dir,
 #' @param table data.table, default countTable(df, "cds", type = "fpkm"),
 #' a data.table of counts per column (default normalized fpkm values).
 #' @param title character, default "CDS fpkm (All genes)".
+#' @param color.by.group logical, default TRUE. Colors in PCA plot represent
+#' unique library groups, if FALSE. Color each sample in seperate color
+#' (harder to distinguish for > 10 samples)
 #' @return ggplot or invisible(NULL) if output.dir is defined or < 3 samples
 #' @keywords internal
 pcaExperiment <- function(df, output.dir = NULL,
                           table = countTable(df, "cds", type = "fpkm"),
                           title = "CDS fpkm (All genes)",
-                          plot.ext = ".pdf") {
+                          plot.ext = ".pdf",
+                          color.by.group = TRUE) {
   if (nrow(df) < 3) {
     message("-  Skipping PCA analysis (< 3 samples)")
     return(invisible(NULL))
   }
   pca <- stats::prcomp(table, scale = FALSE)
   dt <- data.table(pca$rotation, keep.rownames = TRUE)
-  dt$sample <- dt$rn
+  if (color.by.group) {
+    dt$sample <- bamVarName(df, skip.replicate = TRUE)
+  } else dt$sample <- dt$rn
+
   if (any(df$rep > 1, na.rm = TRUE)) {
     dt$replicate <- df$rep
     dt$replicate[is.na(dt$replicate)] <- 1

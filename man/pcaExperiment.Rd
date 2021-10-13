@@ -9,7 +9,8 @@ pcaExperiment(
   output.dir = NULL,
   table = countTable(df, "cds", type = "fpkm"),
   title = "CDS fpkm (All genes)",
-  plot.ext = ".pdf"
+  plot.ext = ".pdf",
+  color.by.group = TRUE
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ a data.table of counts per column (default normalized fpkm values).}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
 Note that in pdf format the complex correlation plots become very slow to load!}
+
+\item{color.by.group}{logical, default TRUE. Colors in PCA plot represent
+unique library groups, if FALSE. Color each sample in seperate color
+(harder to distinguish for > 10 samples)}
 }
 \value{
 ggplot or invisible(NULL) if output.dir is defined or < 3 samples

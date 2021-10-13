@@ -385,9 +385,10 @@ shiftFootprintsByExperiment <- function(df,
     if (!all(names(shift.list) %in% rfpFiles))
       stop("shift.list does not contain all files to be shifted!")
   }
+  message(paste("Shifting reads in experiment:", name(df)))
   for (out.form in output_format)
     message(paste("Saving", out.form, "files to:", out.dir))
-  message(paste("Shifting reads in experiment:", df@experiment))
+
 
   txdb <- loadTxdb(df)
   tx <- loadRegion(txdb, part = "mrna")
