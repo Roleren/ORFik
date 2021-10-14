@@ -90,7 +90,6 @@ data.frame(template)[4:8, 6]
 You see from the template, it excludes files with .bai or .fai, .rdata etc, and only using data of NGS libraries, defined by argument (type).
 
 You can also see it tries to guess library types, stages, replicates, condition etc. It will also try to auto-detect paired end bam files.
-
 ## Fixing or updating an experiment
 Since every NGS file in a experiment must be a unique set of information columns (
 there can not be 2 RNA-seq libraries from wildtype that are replicate1 etc), 
@@ -116,6 +115,13 @@ Normally you read experiments saved to disc, if you made only a template, save i
 save.experiment(df, file = "path/to/save/experiment.csv")
 ```
 You can then load the experiment whenever you need it.
+
+## ORFik example experiment
+
+ORFik comes with a example experiment, you can load with:
+```{r eval = FALSE, echo = TRUE}
+ORFik.template.experiment()
+```
 
 # The experiment object
 To see the object, just show it like this:
@@ -218,7 +224,7 @@ If your experiment consists of Ribo-seq, you want to do p-site shifting.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 shiftFootprintsByExperiment(df[df$libtype == "RFP",])
 ```
-P-shifted ribo-seq will automaticly be stored as .bigWwig (track files for IGV/UCSC) and .ofst (ORFik serialized for R) files in a ./pshifted folder, relative to original libraries. 
+P-shifted ribo-seq will automaticly be stored as .ofst (ORFik serialized for R) and .wig (track files for IGV/UCSC) files in a ./pshifted folder, relative to original libraries. 
 
 To validate p-shifting, use shiftPlots. Here is an example from Bazzini et al. 2014 I made.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
@@ -241,6 +247,7 @@ To load p-shifted libraries, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 outputLibs(df[df$libtype == "RFP",], type = "pshifted")
 ```
+There are also more validation options shown in the Ribo-seq pipeline vignette
 
 # Converting bam files to faster formats
 
@@ -259,7 +266,7 @@ This is the fastest format to use, loading time of 10GB Ribo-seq bam file reduce
 convertLibs(df, type = "ofst") # Collapsed
 ```
 
-## bedo: bed ORFik file
+## bedo: bed ORFik file (to be deprecated!)
 From the bam file store these columns as text file:
 seqname, start, end (if not all widths are 1), strand, score (number of identical replicates for that read), size (size of cigar Ms according to reference)
 
@@ -267,7 +274,7 @@ The R object loaded from these files are GRanges, since cigar is not needed.
 
 Loading time of 10GB Ribo-seq bam file reduced to ~ 10 seconds and ~ 100MB size.
 
-## bedoc: bed ORFik file with cigar
+## bedoc: bed ORFik file with cigar (to be deprecated!)
 From the bam file store these columns as text file:
 seqname, cigar, start, strand, score (number of identical replicates for that read)
 
@@ -312,10 +319,15 @@ To see the statistics, you can do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 QCstats(df)
 ```
+
 ### How to see the QC plots:
 The plots are saved in /QC_STATS/ folder relative to the bam files, 
 this folder will contain all plots from the QC, either as pdf or png files
 dependent on what you specify in the QC.
+
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+QCfolder(df)
+```
 
 ## Ribo-seq specific pshifting and QC
 To pshift all ribo-seq files in an experiment, do:
@@ -333,10 +345,11 @@ Usually you want to do some operation on multiple data-sets. If ORFik does not i
 
 ## Looping over all libraries in experiment
 Not all functions in ORFik supports abstraction from single library to the experiment syntax. 
-Here 3 ways to run loops for the data for these cases are shown:
+Here 4 ways to run loops for the data for these cases are shown:
 
-1. if you know you have enough memory to load all data at once
+1. Load all at once (Save to global environment for later use)
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
+library(BiocParallel) # For parallel computation
 outputLibs(df, type = "pshifted") # Output all libraries, fastest way
 libs <- bamVarName(df) # <- here are names of the libs that were outputed
 cds <- loadRegion(df, "cds")
@@ -347,7 +360,19 @@ bplapply(libs, FUN = function(lib, cds) {
 
 ```
 
-2. Not loading data to global environment
+2. Load all at once (Do not save to global environment for later use)
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+ # Output all libraries, fastest way
+cds <- loadRegion(df, "cds")
+# parallel loop
+bplapply(outputLibs(df, type = "pshifted", output.mode = "list"), 
+         FUN = function(lib, cds) { 
+    return(entropy(cds, lib))
+}, cds = cds)
+
+```
+
+3. Loading by file paths
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 files <- filepath(df, type = "pshifted")
 cds <- loadRegion(df, "cds")
@@ -358,7 +383,7 @@ res <- bplapply(files, FUN = function(file, cds) {
 
 ```
 
-3. No parallel evaluation (If you do not have a lot of memory)
+4. No parallel evaluation (If you do not have a lot of memory)
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
 files <- filepath(df, type = "pshifted")
 cds <- loadRegion(df, "cds")

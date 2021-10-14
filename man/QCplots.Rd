@@ -7,7 +7,7 @@
 QCplots(
   df,
   region = "mrna",
-  stats_folder = paste0(dirname(df$filepath[1]), "/QC_STATS/"),
+  stats_folder = QCfolder(df),
   plot.ext = ".pdf",
   complex.correlation.plots = TRUE,
   BPPARAM
@@ -20,7 +20,7 @@ QCplots(
 whole mrnas or one of (leaders, cds, trailers)}
 
 \item{stats_folder}{directory to save, default:
-paste0(dirname(df$filepath[1]), "/QC_STATS/")}
+\code{QCfolder(df)}}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
 Note that in pdf format the complex correlation plots become very slow to load!}

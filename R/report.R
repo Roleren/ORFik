@@ -108,15 +108,14 @@ ORFikQC <- QCreport
 #' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save, default:
-#' paste0(dirname(df$filepath[1]), "/QC_STATS/")
+#' \code{QCfolder(df)}
 #' @return invisible(NULL) (objects stored to disc)
 #' @family QC report
 #' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
 #' @keywords internal
 QCplots <- function(df, region = "mrna",
-                    stats_folder = paste0(dirname(df$filepath[1]),
-                                          "/QC_STATS/"),
+                    stats_folder = QCfolder(df),
                     plot.ext = ".pdf",
                     complex.correlation.plots = TRUE,
                     BPPARAM) {
@@ -168,7 +167,7 @@ QCplots <- function(df, region = "mrna",
   # TODO: Make this safe enough to include for 32GB computers
   # message("  - whole transcripts")
   # transcriptWindow1(df = df, outdir = stats_folder,
-  #                   scores = c("sum", "zscore", "transcriptNormalized"),
+  #                   scores = c("sum", "transcriptNormalized"),
   #                   BPPARAM = BPPARAM)
   return(invisible(NULL))
 }

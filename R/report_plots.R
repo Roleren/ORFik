@@ -105,8 +105,8 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
 #' of raw counts and log2(count + 1) over
 #' selected region in: c("mrna", "leaders", "cds", "trailers")
 #' @inheritParams QCplots
-#' @param output.dir directory to save to, 2 files named: cor_plot.pdf and
-#' cor_plot_log2.pdf
+#' @param output.dir directory to save to, 3 files named: cor_plot,
+#' cor_plot_log2 and cor_plot_simple with either .pdf or .png
 #' @param type which value to use, "fpkm", alternative "counts".
 #' @param height numeric, default 400 (in mm)
 #' @param width numeric, default 400 (in mm)
