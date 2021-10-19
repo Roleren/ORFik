@@ -145,13 +145,13 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' @export
 #' @examples
 #' # 1. Pick directory
-#' dir <- system.file("extdata", "", package = "ORFik")
+#' dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
 #' # 2. Pick an experiment name
 #' exper <- "ORFik"
 #' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' txdb <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
 #' # 4. Pick fasta genome of organism
-#' fa <- system.file("extdata", "genome.fasta", package = "ORFik")
+#' fa <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.fasta", package = "ORFik")
 #' # 5. Set organism (optional)
 #' org <- "Homo sapiens"
 #'
@@ -181,7 +181,7 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
                               txdb = "", fa = "", organism = "",
                               pairedEndBam = FALSE,
                               viewTemplate = FALSE,
-                              types = c("bam", "bed", "wig"),
+                              types = c("bam", "bed", "wig", "ofst"),
                               libtype = "auto", stage = "auto", rep = "auto",
                               condition = "auto", fraction = "auto",
                               author = "") {
@@ -606,7 +606,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' ## Load as list
 #' outputLibs(df, output.mode = "list")
 #' ## Load libs to new environment (called ORFik in Global)
-#' # outputLibs(df, envir = assign(df@experiment, new.env(parent = .GlobalEnv)))
+#' # outputLibs(df, envir = assign(name(df), new.env(parent = .GlobalEnv)))
 #' ## Load to hidden environment given by experiment
 #' # envExp(df) <- new.env()
 #' # outputLibs(df)
