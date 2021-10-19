@@ -102,19 +102,19 @@ test_that("Experiment class correct renaming", {
 test_that("count tables created as intended", {
   # Summairzed Experiment load
   SE <- makeSummarizedExperimentFromBam(df, region = "mrna")
-  expect_equal(assay(SE)[1,3], 860)
+  expect_equal(assay(SE)[1,3], 2734)
   collapsed <- scoreSummarizedExperiment(SE, score = "count", collapse = TRUE)
-  expect_equal(assay(collapsed)[1,2], 768)
+  expect_equal(assay(collapsed)[1,2], 2450)
   expect_warning(collapsed <- scoreSummarizedExperiment(SE, score = "count",
                                                         collapse = "all"))
-  expect_equal(assay(collapsed)[3,1], 2423)
+  expect_equal(assay(collapsed)[3,1], 4614)
 })
 
 test_that("count tables loaded as intended", {
   # Summairzed Experiment load
   #countTable_regions(df, out.dir = "~/Desktop/ORFik/extdata/Homo_sapiens_sample/QC_STATS/")
   table <- countTable(df, "mrna")
-  expect_equal(table[1,3], data.table("ORFik_RFP" = 860))
+  expect_equal(table[1,3], data.table("CAGE_WT_r1" = 860))
   table <- countTable(df[2:3,], "mrna")
   expect_equal(colnames(table), c("CAGE_Mutant_r2", "CAGE_WT_r1"))
 })
@@ -134,7 +134,6 @@ test_that("transcriptWindow plots correctly", {
 })
 
 test_that("QCreport work as intended", {
-  df2 <- ORFik.template.experiment.zf()
-  #expect_warning(QCreport(df2, out.dir = tempdir()))
-  expect_is(df2, "experiment")
+  QCreport(df[9,], out.dir = tempdir())
+  expect(file.exists(file.path(tempdir(), "QC_STATS", "STATS.csv")), TRUE)
 })

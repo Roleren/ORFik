@@ -1,12 +1,10 @@
 context("shift footprints")
 library(ORFik)
-
-gtf <- system.file("extdata", "annotations.gtf",
-        package = "ORFik") ## location of the gtf file
+df <- ORFik.template.experiment.zf()
+gtf <- df@txdb
 suppressWarnings(txdb <-
  GenomicFeatures::makeTxDbFromGFF(gtf))
-riboSeq_file <- system.file("extdata", "ribo-seq.bam",
-                            package = "ORFik")
+riboSeq_file <- filepath(df, "default")
 
 footprints <- GenomicAlignments::readGAlignments(
   riboSeq_file, param = ScanBamParam(flag = scanBamFlag(

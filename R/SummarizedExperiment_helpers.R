@@ -165,7 +165,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
     assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
   } else collapsedAll <- final
 
-  only.one.group <- length(unique(collapsedAll$SAMPLE) == 1) |
+  only.one.group <- (length(unique(collapsedAll$SAMPLE)) == 1) |
     (ncol(collapsedAll) == 1)
   if ((collapse == "all") | only.one.group) {
     dds <- DESeqDataSet(collapsedAll, design = ~ 1)
@@ -175,6 +175,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 
   if (score %in% c("transcriptNormalized", "fpkm", "log2fpkm", "log10fpkm")) {
     fpkmCollapsed <- DESeq2::fpkm(dds, robust = FALSE)
+    fpkmCollapsed[is.nan(fpkmCollapsed)] <- 0
     if (score == "transcriptNormalized") {
       normalization <- matrix(rep(rowSums2(fpkmCollapsed),
                                   ncol(fpkmCollapsed)),

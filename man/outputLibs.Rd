@@ -102,7 +102,7 @@ df <- ORFik.template.experiment()
 ## Load as list
 outputLibs(df, output.mode = "list")
 ## Load libs to new environment (called ORFik in Global)
-# outputLibs(df, envir = assign(df@experiment, new.env(parent = .GlobalEnv)))
+# outputLibs(df, envir = assign(name(df), new.env(parent = .GlobalEnv)))
 ## Load to hidden environment given by experiment
 # envExp(df) <- new.env()
 # outputLibs(df)

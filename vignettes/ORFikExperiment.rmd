@@ -55,11 +55,11 @@ The minimal amount of information you need to make an ORFik experiment is:
 
 ```{r eval = TRUE, echo = TRUE}
 # 1. Pick directory (normally a folder with your aligned bam files)
-NGS.dir <- system.file("extdata", "", package = "ORFik")
+NGS.dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
 # 2. .gff/.gtf location
-txdb <- system.file("extdata", "annotations.gtf", package = "ORFik")
+txdb <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
 # 3. fasta genome location
-fasta <- system.file("extdata", "genome.fasta", package = "ORFik")
+fasta <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.fasta", package = "ORFik")
 # 4. Pick an experiment name
 exper.name <- "ORFik_example_human"
 
@@ -105,7 +105,7 @@ To fix the things it did not find (a condition not specified, etc), there are 3 
 
 Let's update the template to have correct tissue-fraction in one of the samples.
 ```{r eval = TRUE, echo = TRUE}
-template$X5[6] <- "heart_valve" # <- fix non unique row (tissue fraction is heart valve)
+template$X5[5:6] <- "heart_valve" # <- fix non unique row (tissue fraction is heart valve)
 
 df <- read.experiment(template)# read experiment from template
 ```

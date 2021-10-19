@@ -112,8 +112,8 @@ transcriptRanges <- GRanges(seqnames = Rle(rep("1", 4)),
                             strand = Rle(strand(rep("-", 4))))
 
 test_that("findORFsFasta works as intended", {
-  filePath <- system.file("extdata", "genome.fasta",
-                          package = "ORFik")
+  filePath <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta",
+                         package = "ORFik")
 
   test_result <- findORFsFasta(filePath, longestORF = FALSE)
   expect_is(test_result, "GRanges")

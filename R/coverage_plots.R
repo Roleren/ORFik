@@ -167,8 +167,10 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
   if (is.null(cov$fraction)) {
     cov[, fraction := rep("range", nrow(cov))]
   }
-  cov$feature  <- factor(cov$feature, levels = unique(cov$feature),
-                         labels = unique(cov$feature))
+  if (!is(cov$feature, "factor")) {
+    cov$feature  <- factor(cov$feature, levels = unique(cov$feature),
+                           labels = unique(cov$feature))
+  }
   cov$fraction <- factor(cov$fraction, levels = unique(cov$fraction),
                          labels = unique(cov$fraction))
 

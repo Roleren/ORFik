@@ -76,7 +76,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                               windowSize, is.sorted, drop.zero.dt) {
         message(x)
         splitIn3Tx(leaders, cds, trailers,
-                   get(x), fraction = x,
+                   get(x, mode = "S4"), fraction = x,
                    windowSize = windowSize, is.sorted = is.sorted,
                    drop.zero.dt = drop.zero.dt)
       }, leaders = leaders, cds = cds, trailers = trailers,
@@ -88,6 +88,8 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
         coverage <- rnaNormalize(coverage, df, dfr, cds)
         title <- paste0(title, " RNA-normalized")
       }
+      coverage[, feature := factor(feature, levels = c("leaders", "cds", "trailers"),
+                                    ordered = TRUE)]
       a <- bplapply(scores, function(s, coverage, colors, title,
                                             idName, outdir, plot.ext, df) {
         message(s)
