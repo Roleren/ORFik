@@ -76,7 +76,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @export
 #' @family utils
 #' @examples
-#' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 #' readBam(bam_file, "UCSC")
 readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
   if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
@@ -343,7 +343,7 @@ import.ofst <- function(file, strandMode = 0, seqinfo = NULL) {
 #' @export
 #' @family utils
 #' @examples
-#' bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 #' fimport(bam_file)
 #' # Certain chromosome naming
 #' fimport(bam_file, "NCBI")
@@ -432,7 +432,7 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
 #' @export
 #' @examples
 #' # Some fasta genome with existing fasta index in same folder
-#' path <- system.file("extdata", "genome.fasta", package = "ORFik")
+#' path <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
 #' findFa(path)
 #'
 findFa <- function(faFile) {

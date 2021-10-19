@@ -49,6 +49,7 @@ Useful to not spend time on finding the functions to load regions.
 }
 \examples{
 # Load all mrna regions to Global environment
-gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+                        package = "GenomicFeatures")
 loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
 }

@@ -266,7 +266,8 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' @return a GrangesList of region
 #' @export
 #' @examples
-#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                         package = "GenomicFeatures")
 #' loadRegion(gtf, "cds")
 #' loadRegion(gtf, "intron")
 loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
@@ -349,7 +350,8 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
 #' @export
 #' @examples
 #' # Load all mrna regions to Global environment
-#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+#'                         package = "GenomicFeatures")
 #' loadRegions(gtf, parts = c("mrna", "leaders", "cds", "trailers"))
 loadRegions <- function(txdb, parts = c("mrna", "leaders", "cds", "trailers"),
                         extension = "", names.keep = NULL,
@@ -403,7 +405,7 @@ loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
 #' @return character vector of gene names
 #' @export
 #' @examples
-#' gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 #' txdb <- loadTxdb(gtf)
 #' loadRegions(txdb, "cds") # using tx names
 #' txNamesToGeneNames(cds, txdb)
@@ -514,7 +516,7 @@ getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
 #' @return a character vector of valid transcript names
 #' @export
 #' @examples
-#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 #' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
 #' txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
 #'                              minThreeUTR = 1)

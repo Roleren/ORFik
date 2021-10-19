@@ -73,7 +73,7 @@ events for paired end is more rare.\cr
 In the future will use a faster .bam loader for big .bam files in R.
 }
 \examples{
-bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 readBam(bam_file, "UCSC")
 }
 \seealso{

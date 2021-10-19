@@ -136,8 +136,8 @@ Remember that different species might have different default Ribosome
 read lengths, for human, mouse etc, normally around 27:30.
 }
 \examples{
-df <- ORFik.template.experiment()
-df <- df[3,] #lets only p-shift RFP sample at index 3
+df <- ORFik.template.experiment.zf()
+df <- df[1,] #lets only p-shift first RFP sample
 ## Output files as both .ofst and .wig(can be viewed in IGV/UCSC)
 shiftFootprintsByExperiment(df)
 # If you only need in R, do: (then you get no .wig files)
@@ -145,7 +145,7 @@ shiftFootprintsByExperiment(df)
 ## With debug info:
 #shiftFootprintsByExperiment(df, verbose = TRUE)
 ## Re-shift, if you think some are wrong
-## Here we update library 1, third read length to shift 12
+## Here as an example we update library 1, third read length to shift 12
 shift.list <- shifts.load(df)
 shift.list[[1]]$offsets_start[3] <- -12
 #shiftFootprintsByExperiment(df, shift.list = shift.list)

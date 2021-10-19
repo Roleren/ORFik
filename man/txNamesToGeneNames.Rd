@@ -19,7 +19,7 @@ character vector of gene names
 Works for ensembl, UCSC and other standard annotations.
 }
 \examples{
-gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf)
 loadRegions(txdb, "cds") # using tx names
 txNamesToGeneNames(cds, txdb)

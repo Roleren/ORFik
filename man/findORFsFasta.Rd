@@ -65,7 +65,8 @@ Also make sure your fasta file is valid (no hidden spaces etc),
 }
 \examples{
 # location of the example fasta file
-example_genome <- system.file("extdata", "genome.fasta", package = "ORFik")
+example_genome <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta",
+ package = "ORFik")
 orfs <- findORFsFasta(example_genome)
 # To store ORF sequences (you need indexed genome .fai file):
 fa <- FaFile(example_genome)

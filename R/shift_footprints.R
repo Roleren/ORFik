@@ -37,9 +37,9 @@
 #' @examples
 #' ## Basic run
 #' # Transcriptome annotation ->
-#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 #' # Ribo seq data ->
-#' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' riboSeq_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 #' \dontrun{
 #' footprints <- readBam(riboSeq_file)
 #'
@@ -154,9 +154,9 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' @examples
 #' ## Basic run
 #' # Transcriptome annotation ->
-#' gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+#' gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 #' # Ribo seq data ->
-#' riboSeq_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+#' riboSeq_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 #' \dontrun{
 #' footprints <- readBam(riboSeq_file)
 #' ## Using CDS start site as reference point:
@@ -346,8 +346,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @references https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6
 #' @export
 #' @examples
-#' df <- ORFik.template.experiment()
-#' df <- df[3,] #lets only p-shift RFP sample at index 3
+#' df <- ORFik.template.experiment.zf()
+#' df <- df[1,] #lets only p-shift first RFP sample
 #' ## Output files as both .ofst and .wig(can be viewed in IGV/UCSC)
 #' shiftFootprintsByExperiment(df)
 #' # If you only need in R, do: (then you get no .wig files)
@@ -355,7 +355,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' ## With debug info:
 #' #shiftFootprintsByExperiment(df, verbose = TRUE)
 #' ## Re-shift, if you think some are wrong
-#' ## Here we update library 1, third read length to shift 12
+#' ## Here as an example we update library 1, third read length to shift 12
 #' shift.list <- shifts.load(df)
 #' shift.list[[1]]$offsets_start[3] <- -12
 #' #shiftFootprintsByExperiment(df, shift.list = shift.list)
@@ -512,8 +512,8 @@ shiftFootprintsByExperiment <- function(df,
 #' @family pshifting
 #' @export
 #' @examples
-#' df <- ORFik.template.experiment()
-#' df <- df[3,] #lets only p-shift RFP sample at index 3
+#' df <- ORFik.template.experiment.zf()
+#' df <- df[df$libtype == "RFP",][1,] #lets only p-shift first RFP sample
 #' #shiftFootprintsByExperiment(df, output_format = "bedo)
 #' #grob <- shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 #' #plot(grob) #Only plot in RStudio for small amount of files!

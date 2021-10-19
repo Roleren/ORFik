@@ -20,7 +20,7 @@ Will load and import file if necessarry.
 }
 \examples{
 # Some fasta genome with existing fasta index in same folder
-path <- system.file("extdata", "genome.fasta", package = "ORFik")
+path <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
 findFa(path)
 
 }

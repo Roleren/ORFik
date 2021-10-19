@@ -65,7 +65,7 @@ merges forward and reverse stranded objects. You can also just send 1 wig/bigWig
 it will then have "*" as strand.
 }
 \examples{
-bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 fimport(bam_file)
 # Certain chromosome naming
 fimport(bam_file, "NCBI")

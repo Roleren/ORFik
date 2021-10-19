@@ -359,7 +359,7 @@ but we will here go through a detailed example to better understand processing o
 Example raw Ribo-Seq footprints (unshifted bam file, Organism: Danio rerio) 
 ```{r eval = TRUE, echo = TRUE}
 # Find path to a bam file
-bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 footprints <- readBam(bam_file)
 ```
 
@@ -371,7 +371,7 @@ table(readWidths(footprints))
 Lets look at how the reads distribute around the CDS per read length:
 For that we need to prepare the transcriptome annotation (Organism: Danio rerio).
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
-gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf_file)
 tx <- loadRegion(txdb, part = "tx")
 cds <- loadRegion(txdb, part = "cds")
@@ -618,7 +618,7 @@ Load data as shown before and pshift the Ribo-seq:
 # Get the annotation
 txdb <- loadTxdb(gtf_file)
 # Ribo-seq
-bam_file <- system.file("extdata", "ribo-seq.bam", package = "ORFik")
+bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 reads <- readGAlignments(bam_file)
 shiftedReads <- shiftFootprints(reads, detectRibosomeShifts(reads, txdb))  
 ```

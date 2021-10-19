@@ -72,7 +72,7 @@ since 0 means there must exist a column called utr3_len etc.
 Genes with gene_id = NA will be be removed.
 }
 \examples{
-gtf_file <- system.file("extdata", "annotations.gtf", package = "ORFik")
+gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
 txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
                              minThreeUTR = 1)

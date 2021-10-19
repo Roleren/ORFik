@@ -45,7 +45,8 @@ Adds another safety in that seqlevels will be set
 Load as GRangesList if input is not already GRangesList.
 }
 \examples{
-gtf <- system.file("extdata", "annotations.gtf", package = "ORFik")
+gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
+                        package = "GenomicFeatures")
 loadRegion(gtf, "cds")
 loadRegion(gtf, "intron")
 }

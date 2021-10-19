@@ -29,6 +29,6 @@ ORF2 <- GRanges(seqnames = seqName,
                     strand = c("-", "-"))
 ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 # get path to FaFile for sequences
-faFile <- system.file("extdata", "genome.fasta", package = "ORFik")
+faFile <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
 gcContent(ORFs, faFile)
 }

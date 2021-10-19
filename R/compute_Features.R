@@ -79,8 +79,8 @@
 #' @examples
 #' # Here we make an example from scratch
 #' # Usually the ORFs are found in orfik, which makes names for you etc.
-#' gtf <- system.file("extdata", "annotations.gtf",
-#' package = "ORFik") ## location of the gtf file
+#' gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf",
+#'  package = "ORFik") ## location of the gtf file
 #' suppressWarnings(txdb <-
 #'                   GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
 #' # use cds' as ORFs for this example
