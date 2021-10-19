@@ -255,6 +255,7 @@ dt[startCodonCoverage > 5,]
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 devtools::install_github("m-swirski/RiboCrypt", dependencies = TRUE)
 library(RiboCrypt)
+cds <- loadRegion(df.rfp, "cds")
 RiboCrypt::multiOmicsPlot_list(cds[1640], cds[1640], reference_sequence = findFa(df.rfp@fafile), reads = list(fimport(filepath(df.rna[6,], "ofst")), fimport(filepath(df.rfp[6,], "pshifted"))), 
                                ylabels = c("RNA", "RFP"), withFrames = c(F, T), frames_type = "columns")
 

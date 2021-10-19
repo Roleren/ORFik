@@ -50,6 +50,7 @@ bamVarName(df, skip.experiment = TRUE)
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment.zf}()},
 \code{\link{ORFik.template.experiment}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},

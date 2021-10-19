@@ -9,7 +9,7 @@
 #' @keywords internal
 libNames <- function() {
   mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
-                "SSU", "ATAC", "PRPF", "PAS-Seq", "PAL-Seq", "RIP","SHAPE",
+                "SSU", "ATAC", "PRPF", "PAS", "PAL", "RIP","SHAPE",
                 "ChIP", "CLIP", "tRNA", "miRNA", "GRO")
   allNames <-
     list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq", "RNA seq", "RNASEQ",
@@ -28,7 +28,7 @@ libNames <- function() {
          c("40S","SSU"),
          c("ATAC"),
          c("PRPF"),
-         c("PAS-Seq"),
+         c("PAS-Seq", "^PAS_"),
          c("PAL-Seq"),
          c("RIP-Seq", "RIP-seq", "^rip_"),
          c("SHAPE", "Shape "),

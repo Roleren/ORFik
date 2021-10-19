@@ -64,7 +64,7 @@ library(data.table)                   # For fast table operations
 library(BSgenome.Hsapiens.UCSC.hg19)  # Human genome
 ```
 
-After loading libraries, load human genome from `GenomicFeatures`. 
+After loading libraries, load human genome sample annotation from `GenomicFeatures`. 
 ```{r eval = TRUE, echo = TRUE}
 txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite", 
                         package = "GenomicFeatures")

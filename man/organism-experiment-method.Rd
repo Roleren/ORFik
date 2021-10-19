@@ -31,6 +31,7 @@ organism(df)
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment.zf}()},
 \code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},

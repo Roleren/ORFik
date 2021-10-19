@@ -18,7 +18,7 @@ filterCage <- function(cage, filterValue = 1, fiveUTRs = NULL,
   if (filterValue == 0) {
     return(cage)
   }
-  if (is.null(cage$score)) stop("Found no 'score' column in the CageSeq.")
+  if (is.null(cage$score)) stop("Found no 'score' column in the 'cage' input!")
   filteredCage <- cage[cage$score > filterValue, ] #filter on score
 
   if (!is.null(fiveUTRs) & preCleanup) {

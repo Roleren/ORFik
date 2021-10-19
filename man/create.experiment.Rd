@@ -150,6 +150,7 @@ df <- read.experiment(template)
 }
 \seealso{
 Other ORFik_experiment: 
+\code{\link{ORFik.template.experiment.zf}()},
 \code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
 \code{\link{experiment-class}},
