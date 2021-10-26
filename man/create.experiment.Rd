@@ -35,7 +35,8 @@ experiment, and name shown when running \code{\link{list.experiments}}}
 "~/Bio_data/ORFik_experiments/". Set to NULL if you don't want to save
 it to disc.}
 
-\item{txdb}{A path to gff/gtf file used for libraries}
+\item{txdb}{A path to TxDb (prefered) or gff/gtf (not adviced, slower)
+file with transcriptome annotation for the organism.}
 
 \item{fa}{A path to fasta genome/sequences used for libraries, remember the
 file must have a fasta index too.}
@@ -56,7 +57,8 @@ that was aligned.}
 \item{viewTemplate}{run View() on template when finished, default (FALSE).
 Usually gives you a better view of result than using print().}
 
-\item{types}{Default (bam, bed, wig), which types of libraries to allow}
+\item{types}{Default \code{c("bam", "bed", "wig", "ofst")},
+which types of libraries to allow as NGS data.}
 
 \item{libtype}{character, default "auto". Library types,
 must be length 1 or equal length of number of libraries.

@@ -66,7 +66,7 @@ exper.name <- "ORFik_example_human"
 
 list.files(NGS.dir)
 ```
-Experiments are created by all accepted files from a folder (file extension given by type argument, default: bam, bed, wig), so remember to keep your experiment folder clean of other NGS libraries not related to the experiment.
+Experiments are created by all accepted files from a folder (file extension given by type argument, default: bam, bed, wig, ofst), so remember to keep your experiment folder clean of other NGS libraries of these types not related to the experiment.
 
 ```{r eval = TRUE, echo = TRUE}
 # This experiment is intentionally malformed, so we first make only a template:
@@ -145,8 +145,13 @@ filepath(df[df$libtype == "RFP", ], type = "pshifted")[2] # RFP = Ribo-seq, Defa
 ### Loading NGS data to environment
 
 There are 3 ways to load NGS data, the first one is to load data into an environment.
-By default all libraries are loaded into .GlobalEnv (global environment) with names decided by
-columns in experiment, to see what the names will be, do:
+By default all libraries are loaded into .GlobalEnv (global environment), you can check what
+environment it is output to, by running:
+```{r eval = TRUE, echo = TRUE}
+envExp(df) #This will be the environment
+```
+
+The library names are decided by the columns in experiment, to see what the names will be, do:
 ```{r eval = TRUE, echo = TRUE}
 bamVarName(df) #This will be the names:
 ```
@@ -164,11 +169,12 @@ To remove the outputted libraries:
 The second way gives you a list, where the elements are the NGS libraries.
 There are also two ways of loading the list:
 ```{r eval = TRUE, echo = TRUE, warning = FALSE}
-outputLibs(df, output.mode = "envirlist") # Make sure NGS exist in envir, then return as list
+outputLibs(df, output.mode = "envirlist")[1:2] # Save NGS to envir, then return as list
 ```
+
 ```{r eval = TRUE, echo = TRUE, warning = FALSE}
 # Check envir, if it exist, list them and return, if not, only return list
-outputLibs(df, output.mode = "list") 
+outputLibs(df, output.mode = "list")[1:2]
 ```
 
 ### Loading NGS data by fimport
@@ -216,7 +222,7 @@ ORFik supports a myriad of plots for experiments.
 Lets make a plot with coverage over mrna, seperated by 5' UTR, CDS and 3' UTR in one of the 
 ribo-seq libraries from the experiment
 ```{r eval = TRUE, echo = TRUE, warning=FALSE}
-transcriptWindow(leaders, cds, trailers, df[3,])
+transcriptWindow(leaders, cds, trailers, df[9,])
 ```
 
 # P-site shifting experiment
@@ -228,8 +234,8 @@ P-shifted ribo-seq will automaticly be stored as .ofst (ORFik serialized for R) 
 
 To validate p-shifting, use shiftPlots. Here is an example from Bazzini et al. 2014 I made.
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-df.baz <- read.experiment("zf_bazzini14_RFP")
-shiftPlots(df.baz, title = "Ribo-seq, zebrafish, Bazzini et al. 2014", type = "heatmaps")
+df.baz <- read.experiment("zf_bazzini14_RFP") # <- this exp. does not exist for you
+shiftPlots(df.baz, title = "Ribo-seq, zebrafish, Bazzini et al. 2014", type = "heatmap")
 ```
 ![p-site analysis](../inst/images/pshift_bazzini.png)
 

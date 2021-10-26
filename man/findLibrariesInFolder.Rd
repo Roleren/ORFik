@@ -12,7 +12,8 @@ must be a directory with NGS data from your experiment. Will include
 all files of file type specified by "types" argument. So do not mix
 files from other experiments in the same folder!}
 
-\item{types}{Default (bam, bed, wig), which types of libraries to allow}
+\item{types}{Default \code{c("bam", "bed", "wig", "ofst")},
+which types of libraries to allow as NGS data.}
 
 \item{pairedEndBam}{logical FALSE, else TRUE, or a logical list of
 TRUE/FALSE per library you see will be included (run first without and check

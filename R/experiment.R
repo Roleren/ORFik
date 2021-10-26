@@ -98,8 +98,10 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' @param saveDir Directory to save experiment csv file, default:
 #' "~/Bio_data/ORFik_experiments/". Set to NULL if you don't want to save
 #' it to disc.
-#' @param types Default (bam, bed, wig), which types of libraries to allow
-#' @param txdb A path to gff/gtf file used for libraries
+#' @param types Default \code{c("bam", "bed", "wig", "ofst")},
+#' which types of libraries to allow as NGS data.
+#' @param txdb A path to TxDb (prefered) or gff/gtf (not adviced, slower)
+#' file with transcriptome annotation for the organism.
 #' @param fa A path to fasta genome/sequences used for libraries, remember the
 #' file must have a fasta index too.
 #' @param viewTemplate run View() on template when finished, default (FALSE).
