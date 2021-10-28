@@ -458,6 +458,11 @@ getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
   valid <- TRUE
   if (length(genome) == 0) valid <- FALSE
   if (valid) {
+    if (!file.exists(genome)) {
+      genome <- tools::file_path_sans_ext(txdb$conn@dbname)
+      if (!file.exists(genome)) valid <- FALSE
+    }
+
     if (!(file_ext(genome) %in%
           c("gtf", "gff", "gff3", "gff2"))) {
       valid <- FALSE
@@ -468,8 +473,9 @@ getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
     if (stop.error) {
       message("This is error txdb ->")
       message("It should be found by: metadata(txdb)[metadata(txdb)[,1] == 'Data source',]")
+      message("Or here: tools::file_path_sans_ext(txdb$conn@dbname)")
       print(txdb)
-      stop("Your Txdb does not point to a valid gtf/gff (no valid Data source defined)")
+      stop("Your Txdb does not point to a valid gtf/gff")
     } else return(NULL)
   }
   return(genome)
