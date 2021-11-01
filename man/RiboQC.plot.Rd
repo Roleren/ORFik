@@ -41,7 +41,7 @@ To see number of threads used, do \code{bpparam()$workers}.
 You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
-ggplot object as a grid
+the plot object, a grob of ggplot objects of the the data
 }
 \description{
 Combines several statistics from the pshifted reads into a plot:\cr

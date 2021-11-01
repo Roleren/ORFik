@@ -4,7 +4,7 @@
 \alias{QCstats}
 \title{Load ORFik QC Statistics report}
 \usage{
-QCstats(df, path = file.path(dirname(df$filepath[1]), "/QC_STATS/STATS.csv"))
+QCstats(df, path = file.path(QCfolder(df), "STATS.csv"))
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -24,7 +24,7 @@ fastp and STAR log files
 combined with annotation to create relevant statistics.
 }
 \examples{
-df <- ORFik.template.experiment()[3,]
+df <- ORFik.template.experiment()
 ## First make QC report
 # QCreport(df)
 # stats <- QCstats(df)

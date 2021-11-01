@@ -8,7 +8,7 @@
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
-#' @return ggplot object of the the statistics data
+#' @return the plot object, a grob of ggplot objects of the the statistics data
 #' @importFrom data.table melt
 #' @importFrom gridExtra grid.arrange
 #' @export
@@ -20,7 +20,6 @@
 #' # QCstats.plot(df)
 QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
   if (is(stats, "experiment")) {
-    path <- file.path(dirname(stats$filepath[1]), "QC_STATS/")
     stats <- QCstats(stats)
     if (is.null(stats))
       stop("No QC report made for experiment, run ORFik QCreport")
@@ -95,7 +94,7 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
     ggsave(file.path(output.dir, paste0("STATS_plot", plot.ext)), final, width = 13,
            height = 8, dpi = 300)
   }
-  return(gg_STAT)
+  return(final)
 }
 
 #' Correlation plots between all samples
@@ -235,7 +234,7 @@ pcaExperiment <- function(df, output.dir = NULL,
 #' per read length be positioned as "dodge" or "stack" (on top of each other).
 #' @inheritParams QCstats.plot
 #' @inheritParams outputLibs
-#' @return ggplot object as a grid
+#' @return the plot object, a grob of ggplot objects of the the data
 #' @importFrom ggplot2 theme
 #' @export
 #' @examples

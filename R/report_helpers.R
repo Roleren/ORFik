@@ -189,12 +189,11 @@ trim_detection <- function(df, finals, out.dir) {
 #' @return data.table of QC report or NULL if not exists
 #' @export
 #' @examples
-#' df <- ORFik.template.experiment()[3,]
+#' df <- ORFik.template.experiment()
 #' ## First make QC report
 #' # QCreport(df)
 #' # stats <- QCstats(df)
-QCstats <- function(df, path = file.path(dirname(df$filepath[1]),
-                                         "/QC_STATS/STATS.csv")) {
+QCstats <- function(df, path = file.path(QCfolder(df), "STATS.csv")) {
   if (!file.exists(path)) {
     message("No QC report made, run QCreport. Or wrong path given.")
     return(invisible(NULL))

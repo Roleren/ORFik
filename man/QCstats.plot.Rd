@@ -16,7 +16,7 @@ If defined saves plot to that directory with the name "/STATS_plot.pdf".}
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 }
 \value{
-ggplot object of the the statistics data
+the plot object, a grob of ggplot objects of the the statistics data
 }
 \description{
 From post-alignment QC relative to annotation, make a plot for all samples.
