@@ -185,7 +185,7 @@ correlation.plots <- function(df, output.dir,
 #' @examples
 #' df <- ORFik.template.experiment()
 #' # Select only Ribo-seq and RNA-seq
-#' pcaExperiment(df[df$libtype %in% c("RNA", "RFP")])
+#' pcaExperiment(df[df$libtype %in% c("RNA", "RFP"),])
 pcaExperiment <- function(df, output.dir = NULL,
                           table = countTable(df, "cds", type = "fpkm"),
                           title = "PCA analysis by CDS fpkm",

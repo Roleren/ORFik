@@ -424,7 +424,7 @@ removeMetaCols <- function(grl) {
 #' @examples
 #' grl <- GRangesList(GRanges("1", c(1, 3, 5), "+"),
 #'                    GRanges("1", c(19, 21, 23), "+"))
-#' ORFik:::groupings(grl)
+#' ORFik::groupings(grl)
 #'
 groupings <- function(grl){
   if (length(grl) == 0) return(integer())

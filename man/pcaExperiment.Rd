@@ -51,5 +51,5 @@ in the future.
 \examples{
 df <- ORFik.template.experiment()
 # Select only Ribo-seq and RNA-seq
-pcaExperiment(df[df$libtype \%in\% c("RNA", "RFP")])
+pcaExperiment(df[df$libtype \%in\% c("RNA", "RFP"),])
 }

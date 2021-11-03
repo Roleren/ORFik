@@ -35,7 +35,7 @@
 #' #artificial.orfs(cds)
 artificial.orfs <- function(cds, start5 = 1, end5 = 4, start3 = -4, end3 = 0,
                             bin.if.few = TRUE) {
-  #start5 = 1; end5 = 4; start3 = -4; end3 = 0;bin.if.few = TRUE; groupings <- ORFik:::groupings
+  #start5 = 1; end5 = 4; start3 = -4; end3 = 0;bin.if.few = TRUE; groupings <- groupings
   validGRL(class(cds), type = "cds")
   widths <- widthPerGroup(cds)
   names <- names(cds)

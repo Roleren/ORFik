@@ -538,7 +538,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
       } else data.table(count = unlist(NumericList(coverage),
                                        use.names = FALSE))
 
-      count[, genes := ORFik:::groupings(coverage)]
+      count[, genes := ORFik::groupings(coverage)]
       if (length(window_size) != 1) { # different size windows
         count[, position := seq_len(.N), by = genes]
       } else { # all same size
