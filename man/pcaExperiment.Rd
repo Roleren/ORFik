@@ -8,8 +8,10 @@ pcaExperiment(
   df,
   output.dir = NULL,
   table = countTable(df, "cds", type = "fpkm"),
-  title = "CDS fpkm (All genes)",
+  title = "PCA analysis by CDS fpkm",
+  subtitle = paste("Numer of genes/regions:", nrow(table)),
   plot.ext = ".pdf",
+  return.data = FALSE,
   color.by.group = TRUE
 )
 }
@@ -22,17 +24,22 @@ File saved as "PCAplot_(experiment name)(plot.ext)"}
 \item{table}{data.table, default countTable(df, "cds", type = "fpkm"),
 a data.table of counts per column (default normalized fpkm values).}
 
-\item{title}{character, default "CDS fpkm (All genes)".}
+\item{title}{character, default "CDS fpkm".}
+
+\item{subtitle}{character, default: \code{paste("Numer of genes:", nrow(table))}}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
 Note that in pdf format the complex correlation plots become very slow to load!}
+
+\item{return.data}{logical, default FALSE. Return data instead of plot}
 
 \item{color.by.group}{logical, default TRUE. Colors in PCA plot represent
 unique library groups, if FALSE. Color each sample in seperate color
 (harder to distinguish for > 10 samples)}
 }
 \value{
-ggplot or invisible(NULL) if output.dir is defined or < 3 samples
+ggplot or invisible(NULL) if output.dir is defined or < 3 samples.
+Returns data.table with PCA analysis if return.data is TRUE.
 }
 \description{
 Detect outlier libraries with PCA analysis.
@@ -41,4 +48,8 @@ PCA component 2 (y-axis) for each library (colored by library),
 shape by replicate. Will be extended to allow batch correction
 in the future.
 }
-\keyword{internal}
+\examples{
+df <- ORFik.template.experiment()
+# Select only Ribo-seq and RNA-seq
+pcaExperiment(df[df$libtype \%in\% c("RNA", "RFP")])
+}

@@ -28,14 +28,14 @@
 #' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
 #' @param df.rna a \code{\link{experiment}} of RNA-seq
-#' @param design a character vector, default "stage". The columns in the
-#' ORFik experiment that represent the comparison contrasts. Usually found
-#' in "stage", "condition" or "fraction" column.
+#' @param design a character vector, default \code{design(df.rfp, multi.factor = FALSE)}.
+#' The column in the ORFik experiment that represent the comparison contrasts.
+#' Usually is one of either: "stage", "condition" or "fraction" column.
 #' @param output.dir output.dir directory to save plots,
 #' plot will be named "TE_between". If NULL, will not save.
-#' @param RFP_counts a SummarizedExperiment, default:
+#' @param RFP_counts a \code{\link{SummarizedExperiment}}, default:
 #' \code{countTable(df.rfp, "cds", type = "summarized")},
-#' unshifted libraries, all transcripts.
+#' unshifted libraries, all transcript CDSs.
 #' If you have pshifted reads and countTables, do:
 #' \code{countTable(df.rfp, "cds", type = "summarized", count.folder = "pshifted")}
 #' Assign a subset if you don't want to analyze all genes.
@@ -47,8 +47,8 @@
 #' @param batch.effect, logical, default FALSE. If you believe you might have batch effects,
 #' set to TRUE, will use replicate column to represent batch effects.
 #' Batch effect usually means that you have a strong variance between
-#' biological replicates. Check PCA plot on count tables to verify if
-#' you need to set it to TRUE.
+#' biological replicates. Check out \code{\link{pcaExperiment}} and see if replicates
+#' cluster together more than the design factor, to verify if you need to set it to TRUE.
 #' @param pairs list of character pairs, the experiment contrasts. Default:
 #'  \code{combn.pairs(unlist(df.rfp[, design])}
 #' @param complex.categories logical, default FALSE. Seperate into more groups,
@@ -61,9 +61,10 @@
 #' @import DESeq2
 #' @importFrom data.table rbindlist
 #' @examples
-#' ## Simple example
-#' #df.rfp <- read.experiment("Riboseq")
-#' #df.rna <- read.experiment("RNAseq")
+#' ## Simple example (use ORFik template, then split on Ribo and RNA)
+#' df <- ORFik.template.experiment()
+#' df.rfp <- df[df$libtype == "RFP",]
+#' df.rna <- df[df$libtype == "RNA",]
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
 #' ## If you want to use the pshifted libs for analysis:
 #' #dt <- DTEG.analysis(df.rfp, df.rna,
@@ -90,7 +91,7 @@
 DTEG.analysis <- function(df.rfp, df.rna,
                           output.dir = paste0(dirname(df.rfp$filepath[1]),
                                               "/QC_STATS/"),
-                          design = "stage", p.value = 0.05,
+                          design = design(df.rfp, multi.factor = FALSE), p.value = 0.05,
                           RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
                           RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
                           batch.effect = FALSE, pairs = combn.pairs(unlist(df.rfp[, design])),
@@ -99,8 +100,12 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           relative.name = paste0("DTEG_plot", plot.ext), complex.categories = FALSE) {
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
     stop("df.rfp and df.rna must be ORFik experiments!")
+  if (!is(design, "character") | length(design) == 0) {
+    stop("Design must be character of length > 0, don't use formula as input here")
+  }
+  if ("rep" %in% design) stop("Do not use rep in design, use batch.effect argument")
   if (length(unique(unlist(df.rfp[, design]))) == 1)
-    stop("Design column needs at least 2 unique values!")
+    stop("Design column needs at least 2 unique values, to be able to compare anything!")
   if (nrow(df.rfp) < 4)
     stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
   if (p.value > 1 | p.value <= 0)

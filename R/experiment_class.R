@@ -264,3 +264,53 @@ setMethod("QCfolder",
             file.path(dirname(x$filepath[1]), "QC_STATS/")
           }
 )
+
+#' Get experimental design
+#' Find the column/columns that create a separation between samples,
+#' by default skips replicate and choose first that is
+#' from either: libtype, condition, stage and fraction.
+#' @param object an ORFik \code{\link{experiment}}
+#' @param batch.correction.design logical, default FALSE. If true,
+#' add replicate as a second design factor (only if >= 2 replicates exists).
+#' @param as.formula logical, default FALSE. If TRUE, return as formula
+#' @param multi.factor logical, default TRUE If FALSE, return first factor only
+#' (+ rep, if batch.correction.design is true). Order of picking is:
+#' libtype, if not then: stage, if not then: condition, if not then: fraction.
+#' @return a character (name of column) or a formula
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' design(df) # The 2 columns that decides the design here
+#' # If we subset it changes
+#' design(df[df$libtype == "RFP",])
+#' # Only single factor design, it picks first
+#' design(df, multi.factor = FALSE)
+setMethod("design",
+          "experiment",
+          function(object, batch.correction.design = FALSE,
+                   as.formula = FALSE, multi.factor = TRUE) {
+            formula <- colnames(object)
+            formula <- formula[formula %in% c("libtype", "stage", "rep", "condition", "fraction")]
+            if ("rep" %in% formula & !batch.correction.design)
+              formula <- formula[-grep("rep", formula)]
+            dt <- as.data.table(object)[, ..formula]
+
+            dt <- dt[, apply(dt, FUN = function(i)
+                      return(if (length(unique(i)) == 1) {FALSE} else TRUE), MARGIN = 2),
+                     with = FALSE]
+            if (nrow(dt) == 0)
+              stop("Malformed experiment, you need a column that seperates the libraries (> 1 unique value")
+            factors <- colnames(dt)
+
+            if (!multi.factor) {
+              factors <- c(factors[!(factors %in% "rep")][1], factors[factors %in% "rep"][1])
+              factors <- factors[!is.na(factors)]
+            }
+            if (as.formula) {
+              return(as.formula(paste(c("~", paste(factors,
+                                                   collapse = " + ")),
+                                      collapse = " ")))
+            } else return(factors)
+          }
+)
+

@@ -241,7 +241,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' @examples
 #' # Make experiment
 #' ORFik.template.experiment()
-#' # Make QC report to get counts ++
+#' # Make QC report to get counts ++ (not needed for this template)
 #' # ORFikQC(df)
 #'
 #' # Get count Table of mrnas

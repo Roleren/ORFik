@@ -64,7 +64,7 @@ or deseq, the colData will be made from ORFik.experiment information.
 \examples{
 # Make experiment
 ORFik.template.experiment()
-# Make QC report to get counts ++
+# Make QC report to get counts ++ (not needed for this template)
 # ORFikQC(df)
 
 # Get count Table of mrnas

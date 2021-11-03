@@ -8,6 +8,7 @@
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
+#' @param as_gg_list return a list of ggplot objects. For more modification options.
 #' @return the plot object, a grob of ggplot objects of the the statistics data
 #' @importFrom data.table melt
 #' @importFrom gridExtra grid.arrange
@@ -18,8 +19,10 @@
 #' # QCreport(df)
 #' ## Now you can get plot
 #' # QCstats.plot(df)
-QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
+QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf",
+                         as_gg_list = FALSE) {
   if (is(stats, "experiment")) {
+    path <- QCfolder(stats)
     stats <- QCstats(stats)
     if (is.null(stats))
       stop("No QC report made for experiment, run ORFik QCreport")
@@ -94,6 +97,7 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf") {
     ggsave(file.path(output.dir, paste0("STATS_plot", plot.ext)), final, width = 13,
            height = 8, dpi = 300)
   }
+  if (as_gg_list) return(plot_list)
   return(final)
 }
 
@@ -169,16 +173,25 @@ correlation.plots <- function(df, output.dir,
 #' File saved as "PCAplot_(experiment name)(plot.ext)"
 #' @param table data.table, default countTable(df, "cds", type = "fpkm"),
 #' a data.table of counts per column (default normalized fpkm values).
-#' @param title character, default "CDS fpkm (All genes)".
+#' @param title character, default "CDS fpkm".
+#' @param subtitle character, default: \code{paste("Numer of genes:", nrow(table))}
 #' @param color.by.group logical, default TRUE. Colors in PCA plot represent
 #' unique library groups, if FALSE. Color each sample in seperate color
 #' (harder to distinguish for > 10 samples)
-#' @return ggplot or invisible(NULL) if output.dir is defined or < 3 samples
-#' @keywords internal
+#' @param return.data logical, default FALSE. Return data instead of plot
+#' @return ggplot or invisible(NULL) if output.dir is defined or < 3 samples.
+#' Returns data.table with PCA analysis if return.data is TRUE.
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' # Select only Ribo-seq and RNA-seq
+#' pcaExperiment(df[df$libtype %in% c("RNA", "RFP")])
 pcaExperiment <- function(df, output.dir = NULL,
                           table = countTable(df, "cds", type = "fpkm"),
-                          title = "CDS fpkm (All genes)",
+                          title = "PCA analysis by CDS fpkm",
+                          subtitle = paste("Numer of genes/regions:", nrow(table)),
                           plot.ext = ".pdf",
+                          return.data = FALSE,
                           color.by.group = TRUE) {
   if (nrow(df) < 3) {
     message("-  Skipping PCA analysis (< 3 samples)")
@@ -201,7 +214,8 @@ pcaExperiment <- function(df, output.dir = NULL,
     geom_point(aes(shape=replicate, color = sample),
                size = 3, alpha = 0.8) +
     scale_fill_brewer() +
-    ggtitle(title) +
+    ggtitle(title, subtitle) +
+    theme_bw() +
     theme(legend.text=element_text(size=7))
   if(!is.null(output.dir)) {
     if (output.dir == "auto") {
@@ -213,8 +227,10 @@ pcaExperiment <- function(df, output.dir = NULL,
     }
     ggsave(path, plot,
            height = 4 + (nrow(df)*0.1), width = 5 + (nrow(df)*0.1))
+    if (return.data) return(dt)
     return(invisible(NULL))
   }
+  if (return.data) return(dt)
   return(plot)
 }
 

@@ -8,7 +8,7 @@ DTEG.analysis(
   df.rfp,
   df.rna,
   output.dir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/"),
-  design = "stage",
+  design = design(df.rfp, multi.factor = FALSE),
   p.value = 0.05,
   RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
   RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
@@ -31,17 +31,17 @@ DTEG.analysis(
 \item{output.dir}{output.dir directory to save plots,
 plot will be named "TE_between". If NULL, will not save.}
 
-\item{design}{a character vector, default "stage". The columns in the
-ORFik experiment that represent the comparison contrasts. Usually found
-in "stage", "condition" or "fraction" column.}
+\item{design}{a character vector, default \code{design(df.rfp, multi.factor = FALSE)}.
+The column in the ORFik experiment that represent the comparison contrasts.
+Usually is one of either: "stage", "condition" or "fraction" column.}
 
 \item{p.value}{a numeric, default 0.05 in interval (0,1)
 or "" to not show.
 What p-value used for the analysis? Will be shown as a caption.}
 
-\item{RFP_counts}{a SummarizedExperiment, default:
+\item{RFP_counts}{a \code{\link{SummarizedExperiment}}, default:
 \code{countTable(df.rfp, "cds", type = "summarized")},
-unshifted libraries, all transcripts.
+unshifted libraries, all transcript CDSs.
 If you have pshifted reads and countTables, do:
 \code{countTable(df.rfp, "cds", type = "summarized", count.folder = "pshifted")}
 Assign a subset if you don't want to analyze all genes.
@@ -55,8 +55,8 @@ It is recommended to not subset, to give DESeq2 data for variance analysis.}
 \item{batch.effect, }{logical, default FALSE. If you believe you might have batch effects,
 set to TRUE, will use replicate column to represent batch effects.
 Batch effect usually means that you have a strong variance between
-biological replicates. Check PCA plot on count tables to verify if
-you need to set it to TRUE.}
+biological replicates. Check out \code{\link{pcaExperiment}} and see if replicates
+cluster together more than the design factor, to verify if you need to set it to TRUE.}
 
 \item{pairs}{list of character pairs, the experiment contrasts. Default:
 \code{combn.pairs(unlist(df.rfp[, design])}}
@@ -111,9 +111,10 @@ Remember that DESeq by default can not
 do global change analysis, it can only find subsets with changes in LFC!
 }
 \examples{
-## Simple example
-#df.rfp <- read.experiment("Riboseq")
-#df.rna <- read.experiment("RNAseq")
+## Simple example (use ORFik template, then split on Ribo and RNA)
+df <- ORFik.template.experiment()
+df.rfp <- df[df$libtype == "RFP",]
+df.rna <- df[df$libtype == "RNA",]
 #dt <- DTEG.analysis(df.rfp, df.rna)
 ## If you want to use the pshifted libs for analysis:
 #dt <- DTEG.analysis(df.rfp, df.rna,
