@@ -165,7 +165,7 @@ shiftPlots(df.rfp, output = "auto", downstream = 30, type = "heatmap") # Heatmap
 
 # Ribo-seq specific QC
 remove.experiments(df.rfp) # Remove loaded data (it is not pshifted)
-RiboQC.plot(df.rfp, BPPARAM = BiocParallel::SerialParam(progressbar = T))
+RiboQC.plot(df.rfp, BPPARAM = BiocParallel::SerialParam(progressbar = TRUE))
 remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Create heatmaps (Ribo-seq)
@@ -255,6 +255,8 @@ dt[startCodonCoverage > 5,]
 # (Using package that extends ORFik for interactive html plots (RiboCrypt))
 # Will create interactive plot for Ribo-seq and RNA-seq sample: Wild type rep 3
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# This package also available on Bioconductor since Bioc version 3.14
+# BiocManager::install("RiboCrypt")
 devtools::install_github("m-swirski/RiboCrypt", dependencies = TRUE)
 library(RiboCrypt)
 cds <- loadRegion(df.rfp, "cds")

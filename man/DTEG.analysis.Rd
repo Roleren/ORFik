@@ -8,7 +8,7 @@ DTEG.analysis(
   df.rfp,
   df.rna,
   output.dir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/"),
-  design = design(df.rfp, multi.factor = FALSE),
+  design = ORFik::design(df.rfp, multi.factor = FALSE),
   p.value = 0.05,
   RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
   RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
