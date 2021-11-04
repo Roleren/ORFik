@@ -7,7 +7,7 @@
 numExonsPerGroup(grl, keep.names = TRUE)
 }
 \arguments{
-\item{grl}{a GRangesList}
+\item{grl}{a \code{\link{GRangesList}}}
 
 \item{keep.names}{a logical, keep names or not, default: (TRUE)}
 }

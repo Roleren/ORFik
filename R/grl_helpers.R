@@ -346,7 +346,7 @@ lastExonStartPerGroup <- function(grl, keep.names = TRUE) {
 #'
 #' Can also be used generaly to get number of GRanges object
 #'  per GRangesList group
-#' @param grl a GRangesList
+#' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a logical, keep names or not, default: (TRUE)
 #' @return an integer vector of counts
 #' @export
@@ -364,6 +364,29 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
   return(lengths(grl, keep.names))
 }
 
+#' Get flanks per group
+#'
+#' For a GRangesList, get start and end site, return back as GRL.
+#' @param grl a \code{\link{GRangesList}}
+#' @return a GRangesList, 1 GRanges per group with:
+#'  start as minimum start of group and end as maximum per group.
+#' @export
+#' @examples
+#' grl_to_flank <- GRangesList(tx1 = GRanges("1", IRanges(c(1,5), width = 2), "+"),
+#'                      tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
+#' flankPerGroup(grl)
+flankPerGroup <- function(grl) {
+  validGRL(class(grl))
+  dt <- as.data.table(grl)
+  dt$group <- NULL
+  dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
+               strand = strand[1]), by = group_name]
+  rownames(dt) <- dt$group_name
+  dt$group_name <- NULL
+  gr <- GRanges(dt, seqinfo = seqinfo(grl))
+  grl <- groupGRangesBy(gr)
+  return(grl)
+}
 
 #' Safe unlist
 #'
