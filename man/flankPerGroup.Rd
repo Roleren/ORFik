@@ -17,7 +17,7 @@ a GRangesList, 1 GRanges per group with:
 For a GRangesList, get start and end site, return back as GRL.
 }
 \examples{
-grl_to_flank <- GRangesList(tx1 = GRanges("1", IRanges(c(1,5), width = 2), "+"),
-                     tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
+grl <- GRangesList(tx1 = GRanges("1", IRanges(c(1,5), width = 2), "+"),
+                   tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
 flankPerGroup(grl)
 }

@@ -372,8 +372,8 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
 #'  start as minimum start of group and end as maximum per group.
 #' @export
 #' @examples
-#' grl_to_flank <- GRangesList(tx1 = GRanges("1", IRanges(c(1,5), width = 2), "+"),
-#'                      tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
+#' grl <- GRangesList(tx1 = GRanges("1", IRanges(c(1,5), width = 2), "+"),
+#'                    tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
 #' flankPerGroup(grl)
 flankPerGroup <- function(grl) {
   validGRL(class(grl))

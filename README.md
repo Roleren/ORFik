@@ -28,14 +28,14 @@ entropy that are recreated based on scientific publications.
 
 
 #### Installation
-Package is available from bioconductor (3.13, R version >= 4.0.0)
+Package is available from bioconductor (3.14, R version >= 4.0.0)
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
 BiocManager::install("ORFik")
 ```
 
-Development version on bioconductor (3.14, R version >= 4.0.0)
+Development version on bioconductor (3.15, R version >= 4.0.0)
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
@@ -44,8 +44,9 @@ BiocManager::install("ORFik", version = "devel")
 
 Package is also available here on github
 ```r
-library(devtools)
-install_github("Roleren/ORFik")
+if (!requireNamespace("devtools", quietly=TRUE))
+    install.packages("devtools")
+devtools::install_github("Roleren/ORFik")
 ```  
 
 #### More information
@@ -72,7 +73,7 @@ library(ORFik)
 # get a feature-set from predicted orfs
 ?computeFeatures
 
-# read vignette
+# read vignette (tutorials)
 browseVignettes("ORFik")
 ```  
 Please read Bioconductor vignettes for detailed tutorials and examples.
