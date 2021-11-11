@@ -202,17 +202,14 @@ function findPairs()
 {
 	f=($1) && shift
 	myArray=($@)
-	keep="y"
-	i=0
-	echo "${#myArray[@]}"
-	echo $(( ${#myArray[@]} % 2 ))
 
 	if [ $(( ${#myArray[@]} % 2 )) == 1 ]; then
 		echo "folder must have even number of fasta/q files, for paired end run!"
 		exit 1
 	fi
 
-	suffix="_001.fastq.gz"
+  #i=0
+	#suffix="_001.fastq.gz"
         # remove suffix to get matched pairs
 	#for i in "${!myArray[@]}"; do
 
@@ -222,10 +219,13 @@ function findPairs()
 
     	#done
   echo "#############################################"
+  keep="y" # Start with keeping genome loaded
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
-    		echo "running paired end for files: $f/${myArray[x]} and $f/${myArray[x+1]}"
-    		echo "files  $((x + 1)) and $((x + 2)) / $numOfFiles"
+    echo "Paired end mode for files:"
+    echo "Forward: $f/${myArray[x]}"
+    echo "Reverse: $f/${myArray[x+1]}"
+    echo "Files  $((x + 1)) and $((x + 2)) / $numOfFiles"
 		a="$f/${myArray[x]}"
 		b="$f/${myArray[x+1]}"
 		i=$((x + 2))
@@ -241,17 +241,18 @@ function findPairs()
 function findPairsSub()
 {
 	myArray=($@)
-	echo "${#myArray[@]}"
-	echo $(( ${#myArray[@]} % 2 ))
 
 	if [ $(( ${#myArray[@]} % 2 )) == 1 ]; then
-		echo "folder must have even number of fasta/q files, for paired end run!"
+		echo "Folder must have even number of fasta/q files, for paired end run!"
 		exit 1
 	fi
   echo "#############################################"
 	for ((x=0; x<${#myArray[@]}; x = x + 2));
 	do
-    echo "running paired end with subfolders for files:\n ${myArray[x]} and\n ${myArray[x+1]}"
+    echo "Paired end subfolder mode for files:"
+    echo "Forward: ${myArray[x]}"
+    echo "Reverse: ${myArray[x+1]}"
+    echo "Files  $((x + 1)) and $((x + 2)) / $numOfFiles"
 		a="${myArray[x]}"
 		b="${myArray[x+1]}"
 		i=$((x + 2))
@@ -265,20 +266,30 @@ function findPairsSub()
 	done
 }
 # Run per file / pair
-listOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq')
-numOfFiles=$(ls ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq' | wc -l)
-echo "The total number of files are:"
+# Relative path for non subfolder, full for subfolder
+formats='\.fasta\|\.fa\|\.fastq\|\.fq\|\.gz' # Remove .gz!
+if [ $subfolders == "n" ]; then
+  	 listOfFiles=$(ls ${in_dir} | grep ${formats})
+     numOfFiles=$(ls ${in_dir} | grep ${formats} | wc -l)
+  	else
+  	 listOfFiles=$(find ${in_dir} | grep ${formats} | sort)
+     numOfFiles=$(find ${in_dir} | grep ${formats} | sort | wc -l)
+fi
+
+echo "Total number of files are:"
 echo $numOfFiles
 # Check if resume, if true, jump to given step
 declare -i X
 X=1
 if [ "$resume" != "n" ]; then
-   echo "resume"
+   echo "Resume mode"
    X=$(echo "$steps" | grep -b -o $resume | cut -d: -f1)
    X=$(expr 1 + $X)
 fi
 length=${#steps}
 # For each type in tr-co-ge (do one step at a time)
+# This is to keep genome loaded through all samples
+# Also easier to continue on crash if done this way
 while [ $X -lt $length ]
 do
   current=$(expr substr "$steps" $X 2)
@@ -291,21 +302,22 @@ do
   	if [ $subfolders == "n" ]; then
   		findPairs $in_dir $listOfFiles
   	else
-  		findPairsSub $(find ${in_dir} | grep '\.fasta\|\.fa\|\.fastq\|\.fq\|\.gz' | sort)
+  		findPairsSub $listOfFiles
   	fi
-
   else
   	for x in $listOfFiles
   	do
-  		echo "running single end for file: $x"
+  		echo "Single end mode for file: $x"
   		i=$((i + 1))
-  		echo "file  $i / $numOfFiles"
+  		echo "File  $i / $numOfFiles"
 
   		if [[ $i == $numOfFiles ]];then
-  		  echo "last file:"
+  		  echo "Starting last run:"
   			keep="n"
   		fi
-      x=$in_dir/$x
+  		if [ $subfolders == "n" ]; then
+        x=$in_dir/$x
+      fi
 
   		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
   		echo "----------------------------------------------"

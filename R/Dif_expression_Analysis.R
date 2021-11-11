@@ -1,16 +1,140 @@
 #' Run differential TE analysis
 #'
-#' Creates a total of 3 DESeq models (given x is design argument input
-#'  (usually stage or condition) and libraryType is RNA-seq and Ribo-seq):\cr
+#' Expression analysis of 1 dimension, usually between conditions of RNA-seq.\cr
+#' Using the standardized DESeq2 pipeline flow.\cr
+#' Creates a DESeq model (given x is the target.contrast argument)
+#'  (usually 'condition' column)\cr
+#' 1. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
+#'
+#' #' Analysis is done between each possible
+#' combination of levels in the target contrast If target contrast is the condition column,
+#' with factor levels: WT, mut1 and mut2 with 3 replicates each. You get comparison
+#' of WT vs mut1, WT vs mut2 and mut1 vs mut2. \cr
+#' The respective result categories are defined as:
+#' (given a user defined p value, shown here as 0.05):\cr
+#' Significant -  p-value adjusted < 0.05 (p-value cutoff decided by 'p.value argument)\cr
+#' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
+#' Remember that DESeq by default can not
+#' do global change analysis, it can only find subsets with changes in LFC!
+#' @inherit DTEG.analysis
+#' @export
+#' @param df a \code{\link{experiment}} of usually RNA-seq.
+#' @param counts a SummarizedExperiment, default:
+#' countTable(df, "mrna", type = "summarized"), all transcripts.
+#' Assign a subset if you don't want to analyze all genes.
+#' It is recommended to not subset, to give DESeq2 data for variance analysis.
+#' @examples
+#' ## Simple example (use ORFik template, then split on Ribo and RNA)
+#' df <- ORFik.template.experiment()
+#' df.rna <- df[df$libtype == "RNA",]
+#' design(df.rna) # The full experimental design
+#' design(df.rna)[1] # Default target contrast
+#' #dt <- DEG.analysis(df.rna)
+DEG.analysis <- function(df, output.dir = QCfolder(df),
+                         target.contrast = design[1],
+                         design = ORFik::design(df),
+                         p.value = 0.05,
+                         counts = countTable(df, "mrna", type = "summarized"),
+                         batch.effect = TRUE, pairs = combn.pairs(unlist(df[, target.contrast])),
+                         plot.title = "", plot.ext = ".pdf", width = 6,
+                         height = 6, dot.size = 0.4,
+                         relative.name = paste0("DEG_plot", plot.ext)) {
+  message("----------------------")
+  message("Input check:")
+  if (!is(df, "experiment"))
+    stop("df must be ORFik experiments!")
+  if (!is(design, "character") | length(design) == 0) {
+    stop("Design must be character of length > 0, don't use formula as input here")
+  }
+  if (!is(target.contrast, "character") | (length(target.contrast) != 1)){
+    stop("target.contrast must be character of length 1, don't use formula as input here")
+  }
+  if (!(target.contrast %in% design))
+    stop("target.contrast must be a column in the 'design' argument")
+  if ("rep" %in% design) stop("Do not use rep in design, use batch.effect argument")
+  if (length(unique(unlist(df[, target.contrast]))) == 1)
+    stop("target.contrast column needs at least 2 unique values, to be able to compare anything!")
+  if (nrow(df) < 4)
+    stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
+  if (p.value > 1 | p.value <= 0)
+    stop("p.value must be in interval (0,1]")
+  if (!is(counts, "SummarizedExperiment")) stop("counts must be of type SummarizedExperiment")
+
+  # Design
+  be <- ifelse(batch.effect, "replicate + ", "")
+  main.design <- as.formula(paste("~", be, paste(design, collapse = " + ")))
+  message("----------------------")
+  message("Full exp design: ", main.design)
+  message("Target contrast: ", target.contrast)
+  message("----------------------")
+
+  message("Creating DESeq model:")
+  message("----------------------")
+  ddsMat_rna <- DESeqDataSet(se = counts, design = main.design)
+  ddsMat_rna <- DESeq(ddsMat_rna)
+  message("----------------------")
+
+  # Per contrast
+  dt.between <- data.table()
+  #dt.between <- bplapply(pairs[1:2], FUN = function(i, dds.te, ddsMat_ribo, ddsMat_rna, design) {
+  for(i in pairs) {
+    name <- paste("Comparison:", i[1], "vs", i[2])
+    message(name)
+    # Results
+    current.contrast <- c(target.contrast, i[1], i[2])
+    res_rna <- results(ddsMat_rna, contrast = current.contrast)
+    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
+                                          res = res_rna, type = "normal"))
+
+    # The differential regulation groupings (padj is padjusted)
+    expressed <- which(res_rna$padj < p.value)
+
+    n <- rownames(res_rna)
+    Regulation <- rep("No change", nrow(res_rna))
+    Regulation[expressed] <- "Significant" # Old Buffering
+    print(table(Regulation))
+
+
+    dt.between <-
+      rbindlist(list(dt.between,
+                     data.table(contrast = name,
+                                Regulation = Regulation,
+                                id = rownames(ddsMat_rna),
+                                meanCounts = res_rna$baseMean,
+                                LFC = res_rna$log2FoldChange,
+                                padj = res_rna$padj
+                     )))
+  }
+  dt.between[, Regulation :=
+               factor(Regulation,
+                      levels = c("No change", "Significant"),
+                      ordered = TRUE)]
+  # Plot the result
+  message("----------------------")
+  #message("Plotting all results")
+  #plot <- DEG.plot(dt.between, output.dir, p.value, plot.title, width, height,
+  #                  dot.size, relative.name = relative.name)
+  return(dt.between)
+}
+
+#' Run differential TE analysis
+#'
+#' Expression analysis of 2 dimensions, usually Ribo-seq vs RNA-seq.\cr
+#' Using an equal reimplementation of the deltaTE algorithm (see reference).\cr
+#' Creates a total of 3 DESeq models (given x is the target.contrast argument)
+#'  (usually 'condition' column) and libraryType is RNA-seq and Ribo-seq):\cr
 #' 1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)\cr
 #' 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
 #' 3. TE model: design = ~ x + libraryType + libraryType:x
 #' (differences between the x and libraryType groups and the interaction between them)\cr
-#' Using an equal reimplementation of the deltaTE algorithm (see reference).
 #' You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
 #' be over CDS and RNA-seq over mRNAs, per transcript. \cr
 #'
-#' The respective groups are defined as this
+#' Analysis is done between each possible
+#' combination of levels in the target contrast If target contrast is condition column,
+#' with factor levels: WT, mut1 and mut2 with 3 replicates each. You get comparison
+#' of WT vs mut1, WT vs mut2 and mut1 vs mut2. \cr
+#' The respective result categories are defined as:
 #' (given a user defined p value, shown here as 0.05):\cr
 #' 1. Translation -  te.p.adj < 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
 #' 2. mRNA abundance - te.p.adj > 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
@@ -26,12 +150,26 @@
 #' Remember that DESeq by default can not
 #' do global change analysis, it can only find subsets with changes in LFC!
 #' @inheritParams DTEG.plot
-#' @param df.rfp a \code{\link{experiment}} of Ribo-seq or 80S from TCP-seq.
-#' @param df.rna a \code{\link{experiment}} of RNA-seq
-#' @param design a character vector, default \code{design(df.rfp, multi.factor = FALSE)}.
+#' @param df.rfp a \code{\link{experiment}} of usually Ribo-seq or 80S from TCP-seq.
+#' (the numerator of the experiment, usually having a primary role)
+#' @param df.rna a \code{\link{experiment}} of usually RNA-seq.
+#' (the denominator of the experiment, usually having a normalizing function)
+#' @param target.contrast a character vector, default \code{design[1]}.
 #' The column in the ORFik experiment that represent the comparison contrasts.
-#' Usually is one of either: "stage", "condition" or "fraction" column.
-#' @param output.dir output.dir directory to save plots,
+#' By default: the first design factor of the full experimental design.
+#' This is the factor you will do the comparison on. DESeq will normalize
+#' the counts based on the full design, but the log fold change values will
+#' be based on this contrast only. It is usually the 'condition' column.
+#' @param design a character vector, default \code{design(df.rfp)}.
+#' The full experiment design. Which factors have more than 1 level.
+#' Example: stage column are all HEK293, so it can not be a design factor.
+#' The condition column has 2 possible values, WT and mutant, so it is
+#' a factor of the experiment. Replicates column is not part of design,
+#' that is inserted later with setting \code{batch.effect = TRUE}.
+#' Library type 'libtype' column, can also no be part of initial design,
+#' it is always added inside the function, after initial setup.
+#' @param output.dir character, default \code{QCfolder(df.rfp)}.
+#' output.dir directory to save plots,
 #' plot will be named "TE_between". If NULL, will not save.
 #' @param RFP_counts a \code{\link{SummarizedExperiment}}, default:
 #' \code{countTable(df.rfp, "cds", type = "summarized")},
@@ -44,19 +182,20 @@
 #' countTable(df.rna, "mrna", type = "summarized"), all transcripts.
 #' Assign a subset if you don't want to analyze all genes.
 #' It is recommended to not subset, to give DESeq2 data for variance analysis.
-#' @param batch.effect, logical, default FALSE. If you believe you might have batch effects,
-#' set to TRUE, will use replicate column to represent batch effects.
+#' @param batch.effect, logical, default TRUE. Makes replicate column of the experiment
+#' part of the design.\cr
+#' If you believe you might have batch effects, keep as TRUE.
 #' Batch effect usually means that you have a strong variance between
 #' biological replicates. Check out \code{\link{pcaExperiment}} and see if replicates
 #' cluster together more than the design factor, to verify if you need to set it to TRUE.
 #' @param pairs list of character pairs, the experiment contrasts. Default:
-#'  \code{combn.pairs(unlist(df.rfp[, design])}
+#'  \code{combn.pairs(unlist(df.rfp[, target.contrast])}
 #' @param complex.categories logical, default FALSE. Seperate into more groups,
 #' will add Inverse (opposite diagonal of mRNA abundance) and Expression (only significant mRNA-seq)
 #' @references doi: 10.1002/cpmb.108
-#' @return a data.table with 9 columns.
-#' (log fold changes, p.ajust values, group, regulation status and gene id)
-#' @family TE
+#' @return a data.table with columns:
+#' (contrast variable, gene id, regulation status, log fold changes, p.adjust values, mean counts)
+#' @family DifferentialExpression
 #' @export
 #' @import DESeq2
 #' @importFrom data.table rbindlist
@@ -65,6 +204,8 @@
 #' df <- ORFik.template.experiment()
 #' df.rfp <- df[df$libtype == "RFP",]
 #' df.rna <- df[df$libtype == "RNA",]
+#' design(df.rfp) # The experimental design, per libtype
+#' design(df.rfp)[1] # Default target contrast
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
 #' ## If you want to use the pshifted libs for analysis:
 #' #dt <- DTEG.analysis(df.rfp, df.rna,
@@ -89,23 +230,30 @@
 #' #                       type = "summarized", count.folder = "pshifted"),
 #' #                       pairs = pairs)
 DTEG.analysis <- function(df.rfp, df.rna,
-                          output.dir = paste0(dirname(df.rfp$filepath[1]),
-                                              "/QC_STATS/"),
-                          design = ORFik::design(df.rfp, multi.factor = FALSE), p.value = 0.05,
+                          output.dir = QCfolder(df.rfp),
+                          target.contrast = design[1],
+                          design = ORFik::design(df.rfp), p.value = 0.05,
                           RFP_counts = countTable(df.rfp, "cds", type = "summarized"),
                           RNA_counts = countTable(df.rna, "mrna", type = "summarized"),
                           batch.effect = FALSE, pairs = combn.pairs(unlist(df.rfp[, design])),
                           plot.title = "", plot.ext = ".pdf", width = 6,
                           height = 6, dot.size = 0.4,
                           relative.name = paste0("DTEG_plot", plot.ext), complex.categories = FALSE) {
+  message("----------------------")
+  message("Input check:")
   if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
     stop("df.rfp and df.rna must be ORFik experiments!")
   if (!is(design, "character") | length(design) == 0) {
     stop("Design must be character of length > 0, don't use formula as input here")
   }
+  if (!is(target.contrast, "character") | (length(target.contrast) != 1)){
+    stop("target.contrast must be character of length 1, don't use formula as input here")
+  }
+  if (!(target.contrast %in% design))
+    stop("target.contrast must be a column in the 'design' argument")
   if ("rep" %in% design) stop("Do not use rep in design, use batch.effect argument")
-  if (length(unique(unlist(df.rfp[, design]))) == 1)
-    stop("Design column needs at least 2 unique values, to be able to compare anything!")
+  if (length(unique(unlist(df.rfp[, target.contrast]))) == 1)
+    stop("target.contrast column needs at least 2 unique values, to be able to compare anything!")
   if (nrow(df.rfp) < 4)
     stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
   if (p.value > 1 | p.value <= 0)
@@ -116,8 +264,15 @@ DTEG.analysis <- function(df.rfp, df.rna,
 
   # Designs
   be <- ifelse(batch.effect, "replicate + ", "")
-  te.design <- as.formula(paste0("~ libtype + ", be, design, "+ libtype:", design))
-  main.design <- as.formula(paste0("~ ", be, design))
+  te.design <- as.formula(paste0("~ libtype + ", be,
+                                 paste(design, collapse = " + "),
+                                 "+ libtype:", target.contrast))
+  main.design <- as.formula(paste0("~ ", be, paste(design, collapse = " + ")))
+  message("----------------------")
+  message("Full exper. design: ", main.design)
+  message("Interaction design: ", te.design)
+  message("Target -- contrast: ", target.contrast)
+  message("----------------------")
   # TE
   se <- cbind(assay(RFP_counts), assay(RNA_counts))
   colData <- rbind(colData(RFP_counts), colData(RNA_counts))
@@ -151,7 +306,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
     name <- paste("Comparison:", i[1], "vs", i[2])
     message(name)
     # Results
-    current.contrast <- c(design, i[1], i[2])
+    current.contrast <- c(target.contrast, i[1], i[2])
     res_te <- results(dds.te, contrast = current.contrast)
 
     res_ribo <- results(ddsMat_ribo, contrast=current.contrast)
@@ -196,7 +351,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
 
     dt.between <-
       rbindlist(list(dt.between,
-                     data.table(variable = name,
+                     data.table(contrast = name,
                                 Regulation = Regulation,
                                 id = rownames(ddsMat_rna),
                                 rna = res_rna$log2FoldChange,
@@ -204,7 +359,9 @@ DTEG.analysis <- function(df.rfp, df.rna,
                                 te = res_te$log2FoldChange,
                                 rna.padj = res_rna$padj,
                                 rfp.padj = res_ribo$padj,
-                                te.padj = res_te$padj
+                                te.padj = res_te$padj,
+                                rna.meanCounts = res_rna$baseMean,
+                                rfp.meanCounts = res_ribo$baseMean
                      )))
   }
   dt.between[, Regulation :=
@@ -227,12 +384,13 @@ DTEG.analysis <- function(df.rfp, df.rna,
 #' @param filter.rfp numeric, default 1. What is the minimum fpkm value?
 #' @param filter.rna numeric, default 1. What is the minimum fpkm value?
 #' @return a data.table with 6 columns
-#' @family TE
+#' @family DifferentialExpression
 #' @importFrom data.table setkey
 #' @export
 #' @examples
-#' #df.rfp <- read.experiment("Riboseq")
-#' #df.rna <- read.experiment("RNAseq")
+#' df <- ORFik.template.experiment()
+#' df.rfp <- df[df$libtype == "RFP",]
+#' df.rna <- df[df$libtype == "RNA",]
 #' #te.table(df.rfp, df.rna)
 te.table <- function(df.rfp, df.rna,
                      filter.rfp = 1, filter.rna = 1,

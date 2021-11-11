@@ -1,9 +1,105 @@
+#' Plot DEG result
+#'
+#' Plot setup:\cr
+#' X-axis: mean counts
+#' Y-axis: Log2 fold changes
+#' For explanation of plot, see \code{\link{DEG.analysis}}
+#' @inherit DTEG.plot
+#' @param dt a data.table with the results from \code{\link{DEG.analysis}}
+#' @param xlim numeric vector or character preset, default: "bidir.max"
+#' (Equal in both + / - direction, using max value + 0.5 of meanCounts column in dt).
+#' If you want ggplot to decide limit, set to "auto".
+#' For numeric vector, specify min and max x limit: like c(-5, 5)
+#' @param ylim numeric vector or character preset, default: "bidir.max"
+#' (Equal in both + / - direction, using max value + 0.5 of LFC column in dt).
+#' If you want ggplot to decide limit, set to "auto".
+#' For numeric vector, specify min and max y limit: like c(-10, 10)
+#' @param relative.name character, Default: \code{paste0("DEG_plot", plot.ext)}
+#' Relative name of file to be saved in folder specified in output.dir.
+#' Change to .pdf if you want pdf file instead of png.
+#' @family DifferentialExpression
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' df.rna <- df[df$libtype == "RNA",]
+#' #dt <- DEG.analysis(df.rna)
+#' #Default scaling
+#' #DEG.plot.static(dt)
+#' #Manual scaling
+#' #DEG.plot.static(dt, xlim = c(-2, 2), ylim = c(-2, 2))
+DEG.plot.static <- function(dt, output.dir = NULL,
+                      p.value = 0.05,
+                      plot.title = "", plot.ext = ".pdf", width = 6,
+                      height = 6, dot.size = 0.4,
+                      xlim = "auto", ylim = "bidir.max",
+                      relative.name = paste0("DEG_plot", plot.ext)) {
+  if("variable" %in% colnames(dt)) colnames(dt) <- gsub("variable", "contrast", colnames(dt))
+  if (is.character(xlim)) stopifnot(xlim %in% c("bidir.max", "auto"))
+  if (is.character(ylim)) stopifnot(ylim %in% c("bidir.max", "auto"))
+  stopifnot(c("LFC", "meanCounts", "Regulation", "contrast") %in% colnames(dt))
+
+
+  regulation.levels <- c("No change", "Significant")
+  color.values <- c("black", "red")
+  color.values <- color.values[regulation.levels %in% unique(dt$Regulation)]
+  dt[, Regulation :=
+       factor(Regulation,
+              levels = regulation.levels,
+              ordered = TRUE)]
+  setorder(dt, Regulation)
+  p.caption <- if (p.value != "") {
+    labs(caption = paste("P-value <", p.value))
+  } else NULL
+  p.title <- if (plot.title != "") {
+    ggtitle(label = plot.title)
+  } else NULL
+
+  dot.size <- rep(dot.size, nrow(dt))
+  dot.size[dt$Regulation != "No change"] <- dot.size[1]*2
+  plot.between <- ggplot(data = dt,
+                         aes(x = log2(meanCounts), y = LFC, color = Regulation)) +
+    geom_point(alpha = 0.5, size = dot.size) +
+    scale_color_manual(values = color.values) +
+    theme_minimal() +
+    geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +
+    geom_abline(alpha = 0.2, color = "gray67", linetype = "dashed", intercept = 0, slope = 1) +
+    xlab("Mean Counts (log2)") +
+    ylab("Fold change (log2)") +
+    p.title +
+    p.caption +
+    facet_wrap(~ contrast, ncol = 2) +
+    guides(color = guide_legend(override.aes = list(alpha = 0.8, size = 1.3)))
+  if (!all(xlim == "auto")) {
+    if (all(xlim == "bidir.max")) {
+      plot.between <- plot.between + xlim(c(-max(abs(dt$meanCounts)) - 0.5,
+                                            max(abs(dt$meanCounts)) + 0.5))
+    } else {
+      plot.between <- plot.between + xlim(xlim)
+    }
+  }
+  if (!all(ylim == "auto")) {
+    if (all(ylim == "bidir.max")) {
+      plot.between <- plot.between + ylim(c(-max(abs(dt$LFC)) - 0.5,
+                                            max(abs(dt$LFC)) + 0.5))
+    } else {
+      plot.between <- plot.between + ylim(ylim)
+    }
+  }
+
+  plot(plot.between)
+  if (!is.null(output.dir)) {
+    ggsave(file.path(output.dir, relative.name), plot.between,
+           width = width, height = height, dpi = 300)
+  }
+  return(plot.between)
+}
+
 #' Plot DTEG result
 #'
 #' For explanation of plot catagories, see \code{\link{DTEG.analysis}}
 #' @param dt a data.table with the results from \code{\link{DTEG.analysis}}
 #' @param output.dir a character path, default NULL(no save), or a directory
-#' to save to a file will be called "DTEG_plot.pdf"
+#' to save to a file. Relative name of file, specified by 'relative.name' argument.
 #' @param p.value a numeric, default 0.05 in interval (0,1)
 #' or "" to not show.
 #' What p-value used for the analysis? Will be shown as a caption.
@@ -20,17 +116,21 @@
 #' (Equal in both + / - direction, using max value + 0.5 of rfp column in dt).
 #' If you want ggplot to decide limit, set to "auto".
 #' For numeric vector, specify min and max y limit: like c(-10, 10)
-#' @param relative.name character, Default: "DTEG_plot.pdf".
+#' @param relative.name character, Default: \code{paste0("DTEG_plot", plot.ext)}
 #' Relative name of file to be saved in folder specified in output.dir.
 #' Change to .pdf if you want pdf file instead of png.
 #' @return a ggplot object
-#' @family TE
+#' @family DifferentialExpression
 #' @importFrom data.table setorder
 #' @export
 #' @examples
-#' #df.rfp <- read.experiment("Riboseq")
-#' #df.rna <- read.experiment("RNAseq")
+#' df <- ORFik.template.experiment()
+#' df.rfp <- df[df$libtype == "RFP",]
+#' df.rna <- df[df$libtype == "RNA",]
 #' #dt <- DTEG.analysis(df.rfp, df.rna)
+#' #Default scaling
+#' #DTEG.plot(dt)
+#' #Manual scaling
 #' #DTEG.plot(dt, xlim = c(-2, 2), ylim = c(-2, 2))
 DTEG.plot <- function(dt, output.dir = NULL,
                       p.value = 0.05,
@@ -38,9 +138,10 @@ DTEG.plot <- function(dt, output.dir = NULL,
                       height = 6, dot.size = 0.4,
                       xlim = "bidir.max", ylim = "bidir.max",
                       relative.name = paste0("DTEG_plot", plot.ext)) {
+  if("variable" %in% colnames(dt)) colnames(dt) <- gsub("variable", "contrast", colnames(dt))
   if (is.character(xlim)) stopifnot(xlim %in% c("bidir.max", "auto"))
   if (is.character(ylim)) stopifnot(ylim %in% c("bidir.max", "auto"))
-  stopifnot(c("rna", "rfp", "Regulation", "variable") %in% colnames(dt))
+  stopifnot(c("rna", "rfp", "Regulation", "contrast") %in% colnames(dt))
 
 
   regulation.levels <- c("No change", "Buffering", "mRNA abundance", "Expression",
@@ -73,7 +174,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
     ylab("RFP (log2 fold change)") +
     p.title +
     p.caption +
-    facet_wrap(~ variable, ncol = 2) +
+    facet_wrap(~ contrast, ncol = 2) +
     guides(color = guide_legend(override.aes = list(alpha = 0.8, size = 1.3)))
   if (!all(xlim == "auto")) {
     if (all(xlim == "bidir.max")) {
@@ -111,23 +212,26 @@ DTEG.plot <- function(dt, output.dir = NULL,
 #' @param output.dir a character path, default NULL(no save), or a directory
 #' to save to a file will be called "TE_within.pdf"
 #' @param height a numeric, width of plot in inches. Default "auto".
+#' @param xlim numeric vector of length 2. X-axis limits. Default:
+#' \code{c(filter.rna, filter.rna + 2.5)}
 #' @return a ggplot object
-#' @family TE
+#' @family DifferentialExpression
 #' @export
 #' @examples
-#' #df.rfp <- read.experiment("Riboseq")
-#' #df.rna <- read.experiment("RNAseq")
+#' df <- ORFik.template.experiment()
+#' df.rfp <- df[df$libtype == "RFP",]
+#' df.rna <- df[df$libtype == "RNA",]
 #' #dt <- te.table(df.rfp, df.rna)
-#' #te_rna.plot(dt)
+#' #te_rna.plot(dt, filter.rfp = 0, filter.rna = 5, dot.size = 1)
 te_rna.plot <- function(dt, output.dir = NULL,
                         filter.rfp = 1, filter.rna = 1,
                         plot.title = "", plot.ext = ".pdf",
                         width = 6, height = "auto",
-                        dot.size = 0.4) {
+                        dot.size = 0.4, xlim = c(filter.rna, filter.rna + 2.5)) {
 
   if (height == "auto") height <- 3+length(unique(dt$variable))
   caption <- paste("Filter: RFP >", filter.rfp, " & mRNA >", filter.rna, "(FPKM)")
-  if (unique(dt$variable) == 1)
+  if (length(unique(dt$variable)) == 1)
     caption <- paste(subtitle, "(Single mRNA sample)")
   p.caption <- if (filter.rfp != "") {
     labs(caption = caption)
@@ -145,7 +249,7 @@ te_rna.plot <- function(dt, output.dir = NULL,
     p.caption +
     p.title +
     ggtitle(label = plot.title) +
-    xlim(c(filter.rna, filter.rna + 2.5)) +
+    xlim() +
     facet_wrap(~ variable, nrow = 1)
 
   plot(plot)

@@ -78,6 +78,9 @@ minimum 30GB memory on genomes like human, rat, zebrafish etc.\cr
 If for some reason the internal STAR index bash script will not work for you,
 like if you have a very small genome. You can copy the internal index script,
 edit it and give that as the Index script used for this function.
+It is recommended to run through the RStudio local job tab, to give full info
+about the run. The system console will not stall, as can happen in happen in
+normal RStudio console.
 }
 \examples{
 ## Manual way, specify all paths yourself.

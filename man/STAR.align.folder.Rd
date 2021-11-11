@@ -33,10 +33,10 @@ STAR.align.folder(
 }
 \arguments{
 \item{input.dir}{path to fast files to align, the valid input files will be search for from formats:
-fast files (.fasta, .fastq, .fq, or.fa) with or without compression of .gz.
+(".fasta", ".fastq", ".fq", or ".fa") with or without compression of .gz.
 Also either paired end or single end reads. Pairs will automatically be detected from
-similarity of naming, usualy with a .1 and .2 in the end. If files are renamed, where pairs
-are not similarily named, this process will fail to find correct pairs.}
+similarity of naming, separated by something as .1 and .2 in the end. If files are renamed, where pairs
+are not similarily named, this process will fail to find correct pairs!}
 
 \item{output.dir}{directory to save indices, default:
 paste0(dirname(arguments[1]), "/STAR_index/"), where arguments is the
@@ -55,7 +55,8 @@ unix (linux or Mac OS), if not on unix, use your favorite trimmer and
 give the output files from that trimmer as input.dir here.}
 
 \item{paired.end}{a logical: default FALSE, alternative TRUE. If TRUE, will auto detect
-pairs by names. If yes running on a folder:
+pairs by names. Can not be a combination of both TRUE and FALSE!\cr
+If running in folder mode:
 The folder must then contain an even number of files
 and they must be named with the same prefix and sufix of either
  _1 and _2, 1 and 2, etc. If SRR numbers are used, it will start on lowest and
@@ -79,7 +80,7 @@ and they must be named with the same prefix and sufix of either
  If co (merged contaminants) is used, non of the specific contaminants can be specified,
  since they should be a subset of co.\cr
  The step where you align to the genome is usually always included, unless you
- are doing pure contaminant analysis.
+ are doing pure contaminant analysis or only trimming.
  For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
  so when you made the
  STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
@@ -183,7 +184,7 @@ and requires a minimum of 30GB memory on genomes like human, rat, zebrafish etc.
 If for some reason the internal STAR alignment bash script will not work for you,
 like if you want more customization of the STAR/fastp arguments.
 You can copy the internal alignment script,
-edit it and give that as the Index script used for this function.\cr
+edit it and give that as the script used for this function.\cr
 The trimmer used is fastp (the fastest I could find), also works on
 (Linux, Mac and WSL (Windows Subsystem Linux)).
 If you want to use your own trimmer set file1/file2 to the location of

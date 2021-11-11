@@ -8,6 +8,9 @@
 #' If for some reason the internal STAR index bash script will not work for you,
 #' like if you have a very small genome. You can copy the internal index script,
 #' edit it and give that as the Index script used for this function.
+#' It is recommended to run through the RStudio local job tab, to give full info
+#' about the run. The system console will not stall, as can happen in happen in
+#' normal RStudio console.
 #' @param arguments a named character vector containing paths wanted to
 #' use for index creation. They must be named correctly:
 #' names must be a subset of:
@@ -67,7 +70,6 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
             do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
-
   if (!file.exists(script))
     stop("STAR index script not found, check path of script!")
   if (is.null(names(arguments)))
@@ -123,7 +125,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' If for some reason the internal STAR alignment bash script will not work for you,
 #' like if you want more customization of the STAR/fastp arguments.
 #' You can copy the internal alignment script,
-#' edit it and give that as the Index script used for this function.\cr
+#' edit it and give that as the script used for this function.\cr
 #' The trimmer used is fastp (the fastest I could find), also works on
 #' (Linux, Mac and WSL (Windows Subsystem Linux)).
 #' If you want to use your own trimmer set file1/file2 to the location of
@@ -134,10 +136,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' is not advantageous, since, by default, STAR performs local (not end-to-end) alignment,
 #' i.e. it auto-trims." So trimming can be skipped for longer reads.
 #' @param input.dir path to fast files to align, the valid input files will be search for from formats:
-#' fast files (.fasta, .fastq, .fq, or.fa) with or without compression of .gz.
+#' (".fasta", ".fastq", ".fq", or ".fa") with or without compression of .gz.
 #' Also either paired end or single end reads. Pairs will automatically be detected from
-#' similarity of naming, usualy with a .1 and .2 in the end. If files are renamed, where pairs
-#' are not similarily named, this process will fail to find correct pairs.
+#' similarity of naming, separated by something as .1 and .2 in the end. If files are renamed, where pairs
+#' are not similarily named, this process will fail to find correct pairs!
 #' @param index.dir path to STAR index folder. Path returned from ORFik function
 #' STAR.index, when you created the index folders.
 #' @param fastp path to fastp trimmer, default: install.fastp(), if you
@@ -145,7 +147,8 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' unix (linux or Mac OS), if not on unix, use your favorite trimmer and
 #' give the output files from that trimmer as input.dir here.
 #' @param paired.end a logical: default FALSE, alternative TRUE. If TRUE, will auto detect
-#'  pairs by names. If yes running on a folder:
+#'  pairs by names. Can not be a combination of both TRUE and FALSE!\cr
+#'  If running in folder mode:
 #'  The folder must then contain an even number of files
 #'  and they must be named with the same prefix and sufix of either
 #'   _1 and _2, 1 and 2, etc. If SRR numbers are used, it will start on lowest and
@@ -168,7 +171,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  If co (merged contaminants) is used, non of the specific contaminants can be specified,
 #'  since they should be a subset of co.\cr
 #'  The step where you align to the genome is usually always included, unless you
-#'  are doing pure contaminant analysis.
+#'  are doing pure contaminant analysis or only trimming.
 #'  For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
 #'  so when you made the
 #'  STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
@@ -289,6 +292,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   } else if(is.character(paired.end)) {
     if (!(paired.end %in% c("yes", "no"))) stop("Argument 'paired.end' must be yes/no")
   } else stop("Argument 'paired.end' must be logical or character yes/no")
+  stopifnot(alignment.type %in% c("Local", "EndToEnd"))
+  stopifnot(include.subfolders %in% c("y", "n"))
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
@@ -307,9 +312,9 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 keep.contaminants, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
   if (.Platform$OS.type == "unix") {
+    print(paste("Starting time:", Sys.time()))
+    print("Full system call:")
     print(full)
-    message("Starting alignment at time:")
-    print(Sys.time())
     out <- system(command = full, wait = wait)
     out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
     message(out)
@@ -317,8 +322,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
           dir.exists(paste0(output.dir,"/aligned/"))) {
       STAR.allsteps.multiQC(output.dir, steps = steps)
     }
-
-  } else stop("STAR is not supported on windows!")
+  } else stop("For windows OS, run through WSL!")
   return(output.dir)
 }
 
@@ -363,9 +367,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
     stop("STAR single file alignment script not found, check path of script!")
   if (!dir.exists(index.dir))
     stop("STAR index path must be a valid directory called /STAR_index")
-  # TODO, decide to add this in or not.
-  # cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
-  #                         package = "ORFik", mustWork = TRUE)
+  stopifnot(alignment.type %in% c("Local", "EndToEnd"))
 
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
@@ -379,15 +381,14 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                 "-t", trim.front, "-A", alignment.type, "-m", max.cpus,
                 "-M", max.multimap, quality.filtering,
                 keep.contaminants, star.path, fastp)
-  # "-C", cleaning
   if (.Platform$OS.type == "unix") {
+    print(paste("Starting time:", Sys.time()))
+    print("Full system call:")
     print(full)
-    message("Starting alignment at time:")
-    print(Sys.time())
     out <- system(command = full, wait = wait)
     out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
     message(out)
-  } else stop("STAR is not supported on windows!")
+  } else stop("For windows OS, run through WSL!")
   return(output.dir)
 }
 
@@ -468,7 +469,7 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
 #' #install.fastp(folder)
 install.fastp <- function(folder = "~/bin") {
   if (.Platform$OS.type != "unix")
-    stop("fastp does not work on Windows, try RSubread")
+    stop("On windows OS, run through WSL!")
 
   is_linux <- Sys.info()[1] == "Linux" # else it is mac
   url <- ifelse(is_linux, # else it is mac

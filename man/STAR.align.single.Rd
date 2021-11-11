@@ -70,7 +70,7 @@ give the output files from that trimmer as input.dir here.}
  If co (merged contaminants) is used, non of the specific contaminants can be specified,
  since they should be a subset of co.\cr
  The step where you align to the genome is usually always included, unless you
- are doing pure contaminant analysis.
+ are doing pure contaminant analysis or only trimming.
  For Ribo-seq and TCP(RCP-seq) you should do rR (ribosomal RNA depletion),
  so when you made the
  STAR index you need the rRNA step, either use rRNA from .gtf or manual download.
@@ -162,7 +162,7 @@ and requires a minimum of 30GB memory on genomes like human, rat, zebrafish etc.
 If for some reason the internal STAR alignment bash script will not work for you,
 like if you want more customization of the STAR/fastp arguments.
 You can copy the internal alignment script,
-edit it and give that as the Index script used for this function.\cr
+edit it and give that as the script used for this function.\cr
 The trimmer used is fastp (the fastest I could find), also works on
 (Linux, Mac and WSL (Windows Subsystem Linux)).
 If you want to use your own trimmer set file1/file2 to the location of

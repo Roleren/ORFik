@@ -165,9 +165,13 @@ readWig <- function(path, chrStyle = NULL) {
 
     forwardPath <- grep("forward|fwd", path)
     reversePath <- grep("reverse|rev", path)
+    reversePath <- reversePath[!(reversePath %in% forwardPath)]
     if (length(forwardPath) == 1 & length(reversePath) == 1){
       forwardIndex <- forwardPath
       reverseIndex <- reversePath
+    } else {
+      forwardIndex <- 1
+      reverseIndex <- 2
     }
 
     forward <- import.wig(path[forwardIndex])

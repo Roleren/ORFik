@@ -323,7 +323,6 @@ function pathList()
 # 4. ${out_dir} 5. ${ibn} 6. ${in_file_two}
 function inputFile()
 {
-
 	var=$(indexOf "$3" ${stepsArray[@]})
 	if [[ "$var" == "0" ]]; then
 		echo "${2} ${6}"
@@ -331,7 +330,6 @@ function inputFile()
 		ind=$(expr $var - 1)
 		echo $(pathList ${stepsArray[ind]} $4 $5 ${6})
 	fi
-
 }
 
 # Decide to do this step or not, given input
@@ -339,7 +337,6 @@ function inputFile()
 # TODO: fix for $1 == "c", the 1st order else statement
 function doThisStep()
 {
-
   if [ $1 == "n" ]; then
   	if grep -q $2 <<< $3; then
   		echo "yes"
