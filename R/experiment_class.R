@@ -122,7 +122,7 @@ experiment <- setClass("experiment",
                                   author = "character",
                                   expInVarName = "logical",
                                   envir = "environment"),
-                       contains = "DataFrame")
+                       contains = "DFrame")
 
 #' experiment show definition
 #'
