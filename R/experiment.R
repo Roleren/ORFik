@@ -12,6 +12,8 @@
 #' "~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
 #' it to disc. Does not apply if file is not a path, but a data.frame. Also
 #' does not apply if file was given as full path.
+#' @param validate logical, default TRUE. Abort if any library files does not exist.
+#' Do not set this to FALSE, unless you know what you are doing!
 #' @return an ORFik \code{\link{experiment}}
 #' @importFrom utils read.table read.csv2
 #' @export
@@ -31,7 +33,8 @@
 #' # or (identical):
 #' # read.experiment("experiment", in.dir = "path/to/save/")
 #' @family ORFik_experiment
-read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
+read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/",
+                             validate = TRUE) {
   if (is(file, "character")) {
     if (file_ext(file) == "") file <- paste0(file, ".csv")
     if (!file.exists(file)) file <- pasteDir(in.dir, file)
@@ -50,6 +53,8 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
     listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
+  assembly <- ifelse(info[1,5] == "assembly" & !is.na(info[1,6]),
+                info[1,6], "")
   org <- ifelse(info[2,5] == "organism" & !is.na(info[2,6]),
                 info[2,6], "")
   author <- ifelse(info[3,5] == "author" & !is.na(info[3,6]),
@@ -60,10 +65,11 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
                    organism = org, author = author,
+                   assembly = assembly,
                    listData = listData,
                    expInVarName = FALSE,
                    envir = .GlobalEnv)
-  validateExperiments(df)
+  if (validate) validateExperiments(df)
   return(df)
 }
 
@@ -111,6 +117,9 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' If you have a SRA metadata csv file, you can set this argument to
 #' study$ScientificName[1], where study is the SRA metadata for all files
 #' that was aligned.
+#' @param assembly character, default: "" (no assembly set).
+#' The genome assembly name, like GRCh38 etc. Useful to add if you want
+#' detailed metadata of experiment analysis.
 #' @param pairedEndBam logical FALSE, else TRUE, or a logical list of
 #' TRUE/FALSE per library you see will be included (run first without and check
 #' what order the files will come in) 1 paired end file, then two single will
@@ -180,7 +189,7 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/") {
 #' #                               viewTemplate = FALSE)
 #' @family ORFik_experiment
 create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiments/",
-                              txdb = "", fa = "", organism = "",
+                              txdb = "", fa = "", organism = "", assembly = "",
                               pairedEndBam = FALSE,
                               viewTemplate = FALSE,
                               types = c("bam", "bed", "wig", "ofst"),
@@ -223,6 +232,7 @@ create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiment
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
   df[3, seq(2)] <- c("fasta", fa)
+  if (assembly != "") df[1, seq(5, 6)] <- c("assembly", assembly)
   if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
   if (author != "") df[3, seq(5, 6)] <- c("author", author)
   df[is.na(df)] <- ""
@@ -878,6 +888,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' with the word template.
 #' @param dir directory for ORFik experiments: default:
 #' "~/Bio_data/ORFik_experiments/"
+#' @inheritParams read.experiment
 #' @param pattern allowed patterns in experiment file name:
 #' default ("*", all experiments)
 #' @param libtypeExclusive search for experiments with exclusivly this
@@ -907,6 +918,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' #list.experiments(dir = "MY/CUSTOM/PATH)
 list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
                              pattern = "*", libtypeExclusive = NULL,
+                             validate = TRUE,
                              BPPARAM = bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
   if (length(experiments) == 0) { # This will only trigger on CBU server @ UIB
@@ -924,11 +936,11 @@ list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
     stop("No experiments found, have you made any ?")
   }
 
-  info <- bplapply(experiments, function(x, dir) { # Open each experiment in parallell
-    e <- read.experiment(x, dir)
+  info <- bplapply(experiments, function(x, dir, validate) { # Open each experiment in parallell
+    e <- read.experiment(x, dir, validate)
     list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism,
          author = e@author)
-  }, dir = dir)
+  }, dir = dir, validate = validate)
 
   info <- unlist(info, recursive = FALSE)
   libtypes <- info[grep("libtype", names(info))]

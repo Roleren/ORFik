@@ -8,6 +8,7 @@ list.experiments(
   dir = "~/Bio_data/ORFik_experiments/",
   pattern = "*",
   libtypeExclusive = NULL,
+  validate = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -20,6 +21,9 @@ default ("*", all experiments)}
 
 \item{libtypeExclusive}{search for experiments with exclusivly this
 libtype, default (NULL, all)}
+
+\item{validate}{logical, default TRUE. Abort if any library files does not exist.
+Do not set this to FALSE, unless you know what you are doing!}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

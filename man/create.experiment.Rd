@@ -11,6 +11,7 @@ create.experiment(
   txdb = "",
   fa = "",
   organism = "",
+  assembly = "",
   pairedEndBam = FALSE,
   viewTemplate = FALSE,
   types = c("bam", "bed", "wig", "ofst"),
@@ -46,6 +47,10 @@ of organism. Homo sapiens, Danio rerio, Rattus norvegicus etc.
 If you have a SRA metadata csv file, you can set this argument to
 study$ScientificName[1], where study is the SRA metadata for all files
 that was aligned.}
+
+\item{assembly}{character, default: "" (no assembly set).
+The genome assembly name, like GRCh38 etc. Useful to add if you want
+detailed metadata of experiment analysis.}
 
 \item{pairedEndBam}{logical FALSE, else TRUE, or a logical list of
 TRUE/FALSE per library you see will be included (run first without and check
