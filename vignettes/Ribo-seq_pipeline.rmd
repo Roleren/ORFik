@@ -172,11 +172,11 @@ remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Pre-pshifting
 heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "ofst",
-              outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pre-pshift/"))
+              outdir = file.path(QCfolder(df), "heatmaps/pre-pshift/"))
 remove.experiments(df.rfp)
 # After pshifting
 heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
-              outdir = paste0(dirname(df.rfp$filepath[1]), "/QC_STATS/heatmaps/pshifted/"))
+              outdir = file.path(QCfolder(df), "heatmaps/pshifted/"))
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Count table analysis: TE tables

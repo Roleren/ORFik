@@ -15,7 +15,8 @@ If defined saves plot to that directory with the name "/STATS_plot.pdf".}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
-\item{as_gg_list}{return a list of ggplot objects. For more modification options.}
+\item{as_gg_list}{return as a list of ggplot objects instead of as a grob.
+Gives you more modification options.}
 }
 \value{
 the plot object, a grob of ggplot objects of the the statistics data

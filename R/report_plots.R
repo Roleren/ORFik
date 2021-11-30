@@ -8,7 +8,8 @@
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
-#' @param as_gg_list return a list of ggplot objects. For more modification options.
+#' @param as_gg_list return as a list of ggplot objects instead of as a grob.
+#' Gives you more modification options.
 #' @return the plot object, a grob of ggplot objects of the the statistics data
 #' @importFrom data.table melt
 #' @importFrom gridExtra grid.arrange
@@ -258,9 +259,10 @@ pcaExperiment <- function(df, output.dir = NULL,
 #' df <- df[3,] #lets only p-shift RFP sample at index 3
 #' #shiftFootprintsByExperiment(df)
 #' #RiboQC.plot(df)
-RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
+RiboQC.plot <- function(df, output.dir = QCfolder(df),
                         width = 6.6, height = 4.5, plot.ext = ".pdf",
                         type = "pshifted", weight = "score", bar.position = "dodge",
+                        as_gg_list = FALSE,
                         BPPARAM = BiocParallel::SerialParam(progressbar = TRUE)) {
   stats <- QCstats(df)
   stopifnot(bar.position %in% c("stack", "dodge"))
@@ -382,6 +384,7 @@ RiboQC.plot <- function(df, output.dir = file.path(dirname(df$filepath[1]), "QC_
     ggsave(file.path(output.dir, paste0("STATS_plot_Ribo-seq_Check", plot.ext)), final,
            width = width, height = height, dpi = 300)
   }
+  if (as_gg_list) return(plot_list)
   return(final)
 }
 

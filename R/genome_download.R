@@ -184,11 +184,11 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     names(conts) <- c("phix", "ncRNA", "tRNA", "rRNA")
     non_gtf_contaminants <- conts[!(conts %in% c(TRUE, FALSE, ""))]
     gtf_contaminants <- conts[conts == TRUE]
+    total_seqs <- DNAStringSet()
     if (length(gtf_contaminants) > 0) {
       if (is.logical(gtf) | is.logical(genome))
         stop("gtf or genome not specified, so impossible to find gtf contaminants!")
       # Make fasta file of those contaminants
-      total_seqs <- DNAStringSet()
       gtf.imp <- importGtfFromTxdb(gtf)
       txdb <- loadTxdb(paste0(gtf, ".db"))
       tx <- loadRegion(txdb)
