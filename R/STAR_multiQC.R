@@ -207,23 +207,13 @@ trimming.table <- function(trim_folder) {
   trim_mean_length <- data.table()
   lib <- raw_library[1]
   for (lib in raw_library) { # Read json files
-    a <- data.table::fread(lib, nrows = 7, skip = 2, sep = ":", col.names = c("id", "value"))
-    a$value <- as.numeric(gsub(",", "", a$value))
-    a$id <- gsub("\\\t", "", a$id)
-    # Paired end reads
-    b <- data.table::fread(lib, nrows = 7, skip = 13, sep = ":",
-                           col.names = c("id", "value"))
-    if (length(grep("_reads", b$id[1])) == 0) { # Single end reads
-      b <- data.table::fread(lib, nrows = 7, skip = 12, sep = ":",
-                             col.names = c("id", "value"))
-    }
-
-    b$value <- as.numeric(gsub(",", "", b$value))
-    b$id <- gsub("\\\t", "", b$id)
-    raw_reads <- rbind(raw_reads, a$value[1])
-    trim_reads <- rbind(trim_reads, b$value[1])
-    raw_mean_length <- rbind(raw_mean_length, a$value[7])
-    trim_mean_length <- rbind(trim_mean_length, b$value[7])
+    summary <- jsonlite::fromJSON(lib)$summary
+    raw_reads  <- rbind(raw_reads,  summary$before_filtering$total_reads)
+    trim_reads <- rbind(trim_reads, summary$after_filtering$total_reads)
+    raw_mean_length  <- rbind(raw_mean_length,
+                              summary$before_filtering$read1_mean_length)
+    trim_mean_length <- rbind(trim_mean_length,
+                              summary$after_filtering$read1_mean_length)
   }
   raw_data <- cbind(raw_library = basename(raw_library), raw_reads = raw_reads,
                     trim_reads = trim_reads,
