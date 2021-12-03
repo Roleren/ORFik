@@ -6,7 +6,7 @@
 \usage{
 RiboQC.plot(
   df,
-  output.dir = file.path(dirname(df$filepath[1]), "QC_STATS/"),
+  output.dir = QCfolder(df),
   width = 6.6,
   height = 4.5,
   plot.ext = ".pdf",

@@ -193,9 +193,11 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
 #'  raw_mean_length (numeric, raw mean read length),
 #'  trim_mean_length (numeric, trim mean read length).
 #' @export
+#' @importFrom jsonlite fromJSON
 #' @examples
-#' trimed_folder <- "path/to/fastp.json"
-#' #trimming.table(trimed_folder)
+#' # Location of fastp trimmed .json files
+#' trimmed_folder <- "path/to/libraries/trim/"
+#' #trimming.table(trimmed_folder)
 trimming.table <- function(trim_folder) {
 
   raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)

@@ -22,6 +22,7 @@ a data.table with 6 columns, raw_library (names of library),
 From fastp runs in ORFik alignment process
 }
 \examples{
-trimed_folder <- "path/to/fastp.json"
-#trimming.table(trimed_folder)
+# Location of fastp trimmed .json files
+trimmed_folder <- "path/to/libraries/trim/"
+#trimming.table(trimmed_folder)
 }
