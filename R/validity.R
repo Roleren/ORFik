@@ -42,17 +42,14 @@ is.gr_or_grl <- function(class) {
 }
 
 #' Helper function to check for ranged object
-#' @param class the class you want to check if is GRL or GR,
-#'  either a character from class or the object itself.
+#' @param x the object to check is a ranged object.
+#' Either GRangesList, GRanges, IRangesList, IRanges.
 #' @return a boolean
 #' @family validity
 #' @keywords internal
-is.range <- function(class) {
-  if (!is.character(class)) {
-    class <- class(class)
-  }
-  return(is.gr_or_grl(class) | class == "IRanges" |
-           class == "IRangesList")
+is.range <- function(x) {
+  return(is.gr_or_grl(x) | is(x, "IRanges") |
+           is(x, "IRangesList"))
 }
 
 #' Check if all requirements for an ORFik ORF is accepted.

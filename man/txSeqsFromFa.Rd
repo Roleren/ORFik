@@ -26,7 +26,7 @@ For each GRanges object, find the sequence of it from faFile or BSgenome.
 }
 \details{
 A wrapper around \code{\link{extractTranscriptSeqs}} that works for
-ORFik \code{\link{experiment}} input.
+DNAStringSet and ORFik \code{\link{experiment}} input.
 For debug of errors do:
 which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
 This happens usually when the grl contains chromsomes that the fasta

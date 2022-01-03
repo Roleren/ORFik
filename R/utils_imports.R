@@ -451,6 +451,8 @@ findFa <- function(faFile) {
     return(faFile)
   } else if (is(faFile, "experiment")) {
     return(FaFile(faFile@fafile))
+  } else if (is(faFile, "DNAStringSet")) {
+    return(faFile)
   }
   stop("faFile must be FaFile, BSgenome, valid filePath, or ORFik experiment")
 }

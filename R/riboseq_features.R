@@ -648,30 +648,39 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #'
 #' Pseudocode:
 #' assume rff - is reads fraction in specific frame
-#' \preformatted{ORFScore = log(rrf1 + rrf2 + rrf3)}
-#' If rrf2 or rrf3 is bigger than rff1,
+#' \preformatted{ORFScore = log(rff1 + rff2 + rff3)}
+#' If rff2 or rff3 is bigger than rff1,
 #' negate the resulting value.
-#' \preformatted{ORFScore[rrf1Smaller] <- ORFScore[rrf1Smaller] * -1}
+#' \preformatted{ORFScore[rff1Smaller] <- ORFScore[rff1Smaller] * -1}
 #'
 #' As result there is one value per ORF:
-#' Positive values say that the first frame have the most reads,
-#' negative values say that the first frame does not have the most reads.
-#' NOTE: If reads are not of width 1, then a read from 1-4 on range of 1-4,
+#' - Positive values say that the first frame have the most reads,
+#' - zero values means it is uniform:
+#' (ORFscore between -2.5 and 2.5 can be considered close to uniform),
+#' - negative values say that the first frame does not have the most reads.
+#' NOTE non-pshifted reads:
+#' If reads are not of width 1, then a read from 1-4 on range of 1-4,
 #' will get scores frame1 = 2, frame2 = 1, frame3 = 1. What could be logical
 #' is that only the 5' end is important, so that only frame1 = 1,
 #' to get this, you first resize reads to 5'end only.
 #'
-#' NOTES:
+#' General NOTES:
 #' 1. p shifting is not exact, so some functional ORFs will get a
 #' bad ORF score. \cr
 #' 2. If a score column is defined, it will use it as weights, set
 #' to weight = 1L if you don't have weight, and score column is
 #' something else.
+#' 3. If needed a test for significance and critical values,
+#' use chi-squared. There are 3 degrees of freedom (3 frames),
+#' so critical 0.05 (3-1 degrees of freedm = 2), value is: log2(6) = 2.58
 #' see \code{\link{getWeights}}
 #' @references doi: 10.1002/embj.201488411
 #' @inheritParams coveragePerTiling
 #' @inheritParams floss
 #' @inheritParams entropy
+#' @param coverage a data.table from coveragePerTiling of length same as 'grl' argument.
+#' Save time if you have already computed it.
+#' @param stop3 logical, default TRUE. Stop if any input is of width < 3.
 #' @importFrom data.table .SD
 #' @importFrom data.table .N
 #' @family features
@@ -694,15 +703,22 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #' orfScore(grl, RFP)
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score",
-                     overlapGrl = NULL) {
-  if (any(widthPerGroup(grl, FALSE) < 3))
+                     overlapGrl = NULL, coverage = NULL, stop3 = TRUE) {
+  if (stop3 & any(widthPerGroup(grl, FALSE) < 3))
     stop("ORFs with width < 3  not allowed")
 
   hasHits <- hasHits(grl, RFP, overlaps = overlapGrl)
   grl <- grl[hasHits]
 
-  counts <- coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
-                              withFrames = TRUE, weight = weight)
+  counts <- if (!is.null(coverage)) {
+    stopifnot(is(coverage, "data.table"))
+    stopifnot(length(unique((coverage$genes))) == length(hasHits))
+    coverage[genes %in% which(hasHits),]
+  } else {
+    coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
+                      withFrames = TRUE, weight = weight)
+  }
+
   total <- coverageScorings(counts, scoring = "frameSum")
   countsTile1 <- total[frame == 0,]$score
   countsTile2 <- total[frame == 1,]$score
@@ -720,7 +736,7 @@ orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score",
   dfORFs[, frame_two_RP := countsTile3]
 
   ORFscore <- log2(frame1 + frame2 + frame3 + 1)
-  revORFscore <-  which(frame1 < frame2 | frame1 < frame3)
+  revORFscore <-  which(countsTile1 < countsTile2 | countsTile1 < countsTile3)
   ORFscore[revORFscore] <- -1 * ORFscore[revORFscore]
   ORFscore[is.na(ORFscore)] <- 0
   dfORFs$ORFScores <- ORFscore

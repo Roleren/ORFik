@@ -22,8 +22,8 @@
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
-#' @param type a character(default: "bedoc"), load files in experiment
-#' or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
+#' @param type a character(default: "ofst"), load files in experiment
+#' or some precomputed variant, either "ofst", "pshifted" or "default".
 #' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 #' Will load default if bedoc is not found
 #' @param BPPARAM how many cores/threads to use? default: bpparam()

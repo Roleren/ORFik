@@ -63,8 +63,8 @@ targets / nontargets etc. (default: "")}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
-\item{type}{a character(default: "bedoc"), load files in experiment
-or some precomputed variant, either "bedo", "bedoc", "pshifted" or default.
+\item{type}{a character(default: "ofst"), load files in experiment
+or some precomputed variant, either "ofst", "pshifted" or "default".
 These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
 Will load default if bedoc is not found}
 

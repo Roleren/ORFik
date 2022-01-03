@@ -534,8 +534,10 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
     if (!identical(is_plus_ex, !is_minus_ex))
       stop(wmsg("'transcripts' has exons on the * strand. ",
                 "This is not supported at the moment."))
-    uex_cvg <- cvg1[uex]
+    uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
+    uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
     uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+    names(uex_cvg) <- as.character(seqnames(uex))
   }
   uex_cvg[strand(uex) == "-"] <- revElementsF(uex_cvg)[strand(uex) == "-"]
   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
@@ -544,3 +546,79 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
   mcols(ans) <- mcols(transcripts)
   return(ans)
 }
+
+# Testing new version
+# coverageByTranscriptW2 <- function (x, transcripts, ignore.strand = FALSE,
+#                                    weight = 1L) {
+#   if (!is(transcripts, "GRangesList")) {
+#     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
+#                        silent = TRUE)
+#     if (is(transcripts, "try-error"))
+#       stop(wmsg("failed to extract the exon ranges ",
+#                 "from 'transcripts' with ", "exonsBy(transcripts, by=\"tx\", use.names=TRUE)"))
+#   }
+#   if (!isTRUEorFALSE(ignore.strand))
+#     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
+#   seqinfo(x) <- GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
+#                                                                               transcripts)
+#   ex <- unlist(transcripts, use.names = FALSE)
+#   sm <- selfmatch(ex)
+#   is_unique <- sm == seq_along(sm)
+#   uex2ex <- which(is_unique)
+#   uex <- ex[uex2ex]
+#   # Fix GAlignments not allowing mcol weight, remove when they fix it
+#   # in GAlignments definition of coverage.
+#   if ((is(x, "GAlignments") | is(x, "GAlignmentPairs"))
+#       & is.character(weight)) {
+#     if (!(weight %in% colnames(mcols(x))))
+#       stop("weight is character and not mcol of x,",
+#            " check spelling of weight.")
+#     weight <- mcols(x)[, weight]
+#     x <- grglist(x) # convert to grl
+#     weight = weight[groupings(x)] # repeat weight per group
+#   }
+#
+#   if (ignore.strand) {
+#     cvg <- coverage(x, weight = weight)
+#     uex_cvg <- cvg[uex]
+#   }
+#   else {
+#     pluss <- BiocGenerics::`%in%`(strand(x), c("+", "*"))
+#     minus <- BiocGenerics::`%in%`(strand(x), c("-", "*"))
+#     x1 <- x[pluss]
+#     x2 <- x[minus]
+#     if (length(weight) > 1) {
+#       # Add unlist in case of GAlignments
+#       cvg1 <- coverage(x1, weight = weight[as.logical(unlist(pluss))])
+#       cvg2 <- coverage(x2, weight = weight[as.logical(unlist(minus))])
+#     } else {
+#       cvg1 <- coverage(x1, weight = weight)
+#       cvg2 <- coverage(x2, weight = weight)
+#     }
+#
+#     is_plus_ex <- strand(uex) == "+"
+#     is_minus_ex <- strand(uex) == "-"
+#     if (!identical(is_plus_ex, !is_minus_ex))
+#       stop(wmsg("'transcripts' has exons on the * strand. ",
+#                 "This is not supported at the moment."))
+#     # uex_cvg <- cvg1[uex]
+#     # uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+#     uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
+#     uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
+#     uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+#     names(uex_cvg) <- as.character(seqnames(uex))
+#
+#     # uex_irl_pos <- split(ranges(uex[is_plus_ex]), as.character(seqnames(uex[is_plus_ex])))
+#     # uex_irl_neg <- split(ranges(uex[is_minus_ex]), as.character(seqnames(uex[is_minus_ex])))
+#     # uex_irl_pos <- uex_irl_pos[names(cvg1)[names(cvg1) %in% unique(names(uex_irl_pos))]]
+#     # uex_irl_neg <- uex_irl_neg[names(cvg2)[names(cvg2) %in% unique(names(uex_irl_neg))]]
+#     # uex_cvg3_pos <- RleViewsList(rleList = cvg1[names(uex_irl_pos)], rangesList = uex_irl_pos)
+#     # uex_cvg3_neg <- RleViewsList(rleList = cvg1[names(uex_irl_neg)], rangesList = uex_irl_neg)
+#   }
+#   uex_cvg[strand(uex) == "-"] <- ORFik:::revElementsF(uex_cvg)[strand(uex) == "-"]
+#   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
+#   ex_cvg <- uex_cvg[ex2uex]
+#   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
+#   mcols(ans) <- mcols(transcripts)
+#   return(ans)
+# }

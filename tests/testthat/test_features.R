@@ -169,7 +169,7 @@ test_that("orfScore works as intended", {
   scores <- orfScore(grl, RFP7)
   expect_is(scores, "data.table")
   expect_equal(as.numeric(round(scores$ORFScores, 2)),
-               c(-0.33, 0.35, 0.43, 0.00))
+               c(0.33, 0.35, 0.43, 0.00))
 })
 
 test_that("fractionLength works as intended", {

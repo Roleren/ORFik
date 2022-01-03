@@ -4,11 +4,11 @@
 \alias{is.range}
 \title{Helper function to check for ranged object}
 \usage{
-is.range(class)
+is.range(x)
 }
 \arguments{
-\item{class}{the class you want to check if is GRL or GR,
-either a character from class or the object itself.}
+\item{x}{the object to check is a ranged object.
+Either GRangesList, GRanges, IRangesList, IRanges.}
 }
 \value{
 a boolean
