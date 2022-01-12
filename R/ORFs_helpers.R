@@ -437,8 +437,8 @@ stopRegion <- function(grl, tx = NULL, is.sorted = TRUE,
 #' this is not supported by GenomicRanges.
 #' @param grl a \code{\link{GRangesList}}
 #' @param with.tx a boolean, include transcript names,
-#'  if you want unique orfs, so that they dont have multiple
-#'  versions on different isoforms, set it to FALSE.
+#'  if you want unique orfs, so that they dont have duplicates
+#'  from different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
 #' @family ORFHelpers
 #' @keywords internal

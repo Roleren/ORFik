@@ -222,7 +222,7 @@ ORFik supports a myriad of plots for experiments.
 Lets make a plot with coverage over mrna, seperated by 5' UTR, CDS and 3' UTR in one of the 
 ribo-seq libraries from the experiment
 ```{r eval = TRUE, echo = TRUE, warning=FALSE}
-transcriptWindow(leaders, cds, trailers, df[9,])
+transcriptWindow(leaders, cds, trailers, df[9,], BPPARAM = BiocParallel::SerialParam())
 ```
 
 # P-site shifting experiment
@@ -348,6 +348,18 @@ RiboQC.plot(df)
 
 # Using the ORFik experiment system in your script
 Usually you want to do some operation on multiple data-sets. If ORFik does not include a premade function for what you want, you can make it yourself. If your data is in the format of an ORFik experiment, this operation is simple.
+
+## Note for windows users
+Windows multicore support is very weak. It means it usually has a high overhead for starting
+multithreaded process (data is copied, not referenced usually).
+To make sure everything will flow, it is best to set default multicore setting to
+single core.
+
+To do this do: 
+```{r eval = FALSE, echo = TRUE, warning=FALSE}
+  BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
+```
+The rule is, the more data that needs to be copied, the slower windows is compared to Unix systems.
 
 ## Looping over all libraries in experiment
 Not all functions in ORFik supports abstraction from single library to the experiment syntax. 

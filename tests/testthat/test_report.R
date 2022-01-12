@@ -47,7 +47,7 @@ test_that("Experiment class loaded/removed as intended to custom environment", {
 
 test_that("Experiment class loaded as intended", {
   # load file
-  outputLibs(df)
+  outputLibs(df, BPPARAM = BiocParallel::SerialParam())
   expect_equal(exists("CAGE_WT_r1"), TRUE)
 })
 
@@ -130,10 +130,12 @@ test_that("transcriptWindow plots correctly", {
   expect(exists("leaders", mode = "S4"), TRUE)
   expect(exists("cds", mode = "S4"), TRUE)
   expect(exists("trailers", mode = "S4"), TRUE)
-  transcriptWindow(leaders, get("cds", mode = "S4"), trailers, df[3,])
+  expect_warning(transcriptWindow(leaders, get("cds", mode = "S4"), trailers, df[3,],
+                                  BPPARAM = BiocParallel::SerialParam()))
+
 })
 
 test_that("QCreport work as intended", {
-  QCreport(df[9,], out.dir = tempdir())
+  QCreport(df[9,], out.dir = tempdir(), BPPARAM = BiocParallel::SerialParam())
   expect(file.exists(file.path(tempdir(), "QC_STATS", "STATS.csv")), TRUE)
 })

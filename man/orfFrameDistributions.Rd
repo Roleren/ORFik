@@ -38,7 +38,7 @@ where frame 0 is not the best frame over the entire cds)
 }
 \examples{
 df <- ORFik.template.experiment()[3,]
-dt <- orfFrameDistributions(df)
+dt <- orfFrameDistributions(df, BPPARAM = BiocParallel::SerialParam())
 ## Check that frame 0 is best frame for all
 all(dt[frame == 0,]$best_frame)
 }

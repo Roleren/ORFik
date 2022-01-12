@@ -1,6 +1,9 @@
 ORFik: R package for discovery of novel genes.
 ==============================================================================
-![**Published Article:** https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-021-04254-w](inst/images/ORFik_map.png)
+
+<a href="http://www.bioconductor.org/packages/release/bioc/html/ORFik.html#since"><img border="0" src="http://www.bioconductor.org/shields/years-in-bioc/ORFik.svg" title="Time since release."></a> <a href="http://bioconductor.org/packages/stats/bioc/ORFik.html"><img border="0" src="http://www.bioconductor.org/shields/downloads/ORFik.svg" title="Downloads over last 6 full months (all, unique IPs)."></a> <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-021-04254-w"><img border="0" src="https://img.shields.io/badge/published-BMC-blue.svg" title="Published in BMC bioinformatics"></a>
+
+![](inst/images/ORFik_map.png)
 
 This package is published, but still under heavy development to include more features.
 
