@@ -83,7 +83,8 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' @param is.sorted logical (TRUE), grl is presorted
 #' (negative coordinates are decreasing). Set to FALSE if they are not,
 #' else output will most likely be wrong!
-#' @return a GRangesList grouped by original group, tiled to 1
+#' @return a GRangesList grouped by original group, tiled to 1. Groups with identical names
+#' will be merged.
 #' @importFrom S4Vectors DataFrame
 #' @export
 #' @family ExtendGenomicRanges
