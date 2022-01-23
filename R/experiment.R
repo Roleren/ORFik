@@ -818,7 +818,7 @@ simpleLibs <- convertLibs
 #' # Read as direct fst data.table
 #' #read_fst(file.path(tempdir(), "all.ofst"))
 #' # Collapse replicates
-#' #mergeLibs(df2, tempdir(), mode = "all", type = "default")
+#' #mergeLibs(df2, tempdir(), mode = "rep", type = "default")
 mergeLibs <- function(df, out_dir = file.path(dirname(df$filepath[1]), "ofst_merged"), mode = "all",
                       type = "ofst", keep_all_scores = TRUE) {
   stopifnot(mode %in% c("all", "rep"))

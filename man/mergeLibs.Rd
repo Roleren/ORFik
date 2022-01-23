@@ -51,5 +51,5 @@ df2 <- df2[df2$libtype == "RFP",]
 # Read as direct fst data.table
 #read_fst(file.path(tempdir(), "all.ofst"))
 # Collapse replicates
-#mergeLibs(df2, tempdir(), mode = "all", type = "default")
+#mergeLibs(df2, tempdir(), mode = "rep", type = "default")
 }
