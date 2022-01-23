@@ -581,12 +581,12 @@ filepath <- function(df, type, basename = FALSE) {
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams fimport
 #' @param type a character(default: "default"), load files in experiment
-#' or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+#' or some precomputed variant, either "ofst" or "pshifted".
 #' These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 #' Can also be custom user made folders inside the experiments bam folder.
 #' It acts in a recursive manner with priority: If you state "pshifted",
 #' but it does not exist, it checks "ofst". If no .ofst files, it uses
-#' "default", which always exists.
+#' "default", which always must exists.
 #' @param naming a character (default: "minimum"). Name files as minimum
 #' information needed to make all files unique. Set to "full" to get full
 #' names.
@@ -596,6 +596,7 @@ filepath <- function(df, type, basename = FALSE) {
 #' \code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)
 #' @param envir environment to save to, default
 #' \code{envExp(df)}, which defaults to .GlobalEnv
+#' @param verbose logical, default TRUE, message about library output status.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
@@ -627,7 +628,8 @@ filepath <- function(df, type, basename = FALSE) {
 outputLibs <- function(df, chrStyle = NULL, type = "default",
                        param = NULL, strandMode = 0, naming = "minimum",
                        output.mode = "envir",
-                       envir = envExp(df), BPPARAM = bpparam()) {
+                       envir = envExp(df), verbose = TRUE,
+                       BPPARAM = bpparam()) {
   stopifnot(naming %in% c("minimum", "full"))
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   dfl <- df
@@ -648,14 +650,15 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     }
     # Par apply
     if (!all(loaded)) {
-      message(paste0("Outputting libraries from: ", name(df)))
+      if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       paths <- filepath(df, type)
       libs <- bplapply(seq_along(paths),
-                       function(i, paths, df, chrStyle, param, strandMode, varNames) {
-        message(paste(i, ": ", varNames[i]))
+                       function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
+        if (verbose) message(paste(i, ": ", varNames[i]))
         fimport(paths[i], chrStyle, param, strandMode)
-      }, BPPARAM = BPPARAM, paths = paths, chrStyle = chrStyle, df = df,
-      param = param, strandMode = strandMode, varNames = varNames)
+      }, paths = paths, chrStyle = chrStyle, df = df,
+      param = param, strandMode = strandMode, varNames = varNames,
+      verbose = verbose, BPPARAM = BPPARAM)
 
       # assign to environment
       if (output.mode %in% c("envir", "envirlist")) {
@@ -791,7 +794,52 @@ convertLibs <- function(df,
 #' @export
 simpleLibs <- convertLibs
 
-
+#' Merge and save libraries of experiment
+#'
+#' Aggregate count of reads (from the "score" column) by making a merged library.
+#' Only allowed for .ofst files!
+#' @inheritParams outputLibs
+#' @inheritParams ofst_merge
+#' @param out_dir Ouput directory, default \code{file.path(dirname(df$filepath[1]), "ofst_merged")},
+#' saved as "all.ofst" in this folder if mode is "all". Use a folder called pshifted_merged, for
+#' default Ribo-seq ofst files.
+#' @param mode character, default "all". Merge all or "rep" for collapsing replicates only.
+#' lib
+#' @return NULL, files saved to disc. A data.table with a score column that now contains the sum
+#' of scores per merge setting.
+#' @export
+#' @examples
+#' df2 <- ORFik.template.experiment()
+#' df2 <- df2[df2$libtype == "RFP",]
+#' # Merge all
+#' #mergeLibs(df2, tempdir(), mode = "all", type = "default")
+#' # Read as GRanges with mcols
+#' #fimport(file.path(tempdir(), "all.ofst"))
+#' # Read as direct fst data.table
+#' #read_fst(file.path(tempdir(), "all.ofst"))
+#' # Collapse replicates
+#' #mergeLibs(df2, tempdir(), mode = "all", type = "default")
+mergeLibs <- function(df, out_dir = file.path(dirname(df$filepath[1]), "ofst_merged"), mode = "all",
+                      type = "ofst", keep_all_scores = TRUE) {
+  stopifnot(mode %in% c("all", "rep"))
+  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  lib_names_full <- bamVarName(df, skip.libtype = FALSE)
+  lib_names <- bamVarName(df, skip.libtype = FALSE, skip.replicate = TRUE)
+  if (mode == "rep") {
+    libs <- lapply(unique(lib_names), function(x) grep(x, lib_names))
+    names(libs) <- unique(lib_names)
+  } else {
+    libs <- list(all = seq(nrow(df)))
+  }
+  filepaths <- filepath(df, type)
+  for (name in names(libs)) {
+    specific_paths <- filepaths[libs[[name]]]
+    specific_names <- lib_names_full[libs[[name]]]
+    save_path <- file.path(out_dir, paste0(name, ".ofst"))
+    write_fst(ofst_merge(specific_paths, specific_names, keep_all_scores), save_path)
+  }
+  return(invisible(NULL))
+}
 #' Remove ORFik experiment libraries load in R
 #'
 #' Variable names defined by df, in envir defined

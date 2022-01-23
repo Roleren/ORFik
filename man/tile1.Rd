@@ -21,7 +21,8 @@ and meta data.(This make the list very big, for > 100K groups)}
 else output will most likely be wrong!}
 }
 \value{
-a GRangesList grouped by original group, tiled to 1
+a GRangesList grouped by original group, tiled to 1. Groups with identical names
+will be merged.
 }
 \description{
 Will tile a GRangesList into single bp resolution, each group of the list

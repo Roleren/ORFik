@@ -13,6 +13,7 @@ outputLibs(
   naming = "minimum",
   output.mode = "envir",
   envir = envExp(df),
+  verbose = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -27,12 +28,12 @@ Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+or some precomputed variant, either "ofst" or "pshifted".
 These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 Can also be custom user made folders inside the experiments bam folder.
 It acts in a recursive manner with priority: If you state "pshifted",
 but it does not exist, it checks "ofst". If no .ofst files, it uses
-"default", which always exists.}
+"default", which always must exists.}
 
 \item{param}{\code{NULL} or a \link[Rsamtools]{ScanBamParam} object.
     Like for \code{\link[Rsamtools]{scanBam}}, this influences what fields
@@ -73,6 +74,8 @@ as list. If output is list format, the list elements are named from:
 
 \item{envir}{environment to save to, default
 \code{envExp(df)}, which defaults to .GlobalEnv}
+
+\item{verbose}{logical, default TRUE, message about library output status.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

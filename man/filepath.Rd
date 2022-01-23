@@ -10,12 +10,12 @@ filepath(df, type, basename = FALSE)
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+or some precomputed variant, either "ofst" or "pshifted".
 These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
 Can also be custom user made folders inside the experiments bam folder.
 It acts in a recursive manner with priority: If you state "pshifted",
 but it does not exist, it checks "ofst". If no .ofst files, it uses
-"default", which always exists.}
+"default", which always must exists.}
 
 \item{basename}{logical, default (FALSE).
 Get relative paths instead of full. Only use for inspection!}

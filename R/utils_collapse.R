@@ -119,6 +119,43 @@ collapse.by.scores <- function(x) {
   return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE, seqinfo = seqinfo(x)))
 }
 
+#' Merge multiple ofst file
+#'
+#' Collapses and sums the score column of each ofst file
+#' It is required that each file is of same ofst type.
+#' That is if one file has cigar information, all must have it.
+#' @param file_paths Full path to .ofst files wanted to merge
+#' @param lib_names the name to give the resulting score columns
+#' @param keep_all_scores logical, default TRUE, keep all library scores in the merged file. These
+#' score columns are named the libraries full name from \code{bamVarName(df)}.
+#' @param sort logical, default TRUE. Sort the ranges. Will make the file smaller and
+#' faster to load, but some additional merging time is added.
+#' @return a data.table of merged result, it is merged on all columns except "score".
+#' The returned file will contain the scores of each file + the aggregate sum score.
+ofst_merge <- function(file_paths,
+                       lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
+                       keep_all_scores = TRUE, sort = TRUE) {
+  # Check valid matching files
+  meta <- table(unlist(lapply(file_paths, function(x) data.table(fst::metadata_fst(x)$columnNames))))
+  stopifnot(all(meta == length(file_paths)))
+
+  dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
+  merge_keys <- colnames(dt_list[[1]])
+  merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
+  for (x in seq_along(dt_list)) setnames(dt_list[[x]], "score", lib_names[x])
+
+  mergeDTs <- function(dt_list, by = NULL, sort = TRUE) {
+    Reduce(
+      function(...) {
+        merge.data.table(..., by = by, all = TRUE, sort = sort)
+      }, dt_list)
+  }
+  dt <- mergeDTs(dt_list, by = merge_keys, sort = sort)
+  dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
+  if (!keep_all_scores) dt[, (lib_names):= NULL]
+  return(dt)
+}
+
 #' Collapse duplicated reads
 #'
 #' For every GRanges, GAlignments read, with the same:
