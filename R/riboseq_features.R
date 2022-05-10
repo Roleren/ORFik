@@ -704,17 +704,19 @@ initiationScore <- function(grl, cds, tx, reads, pShifted = TRUE,
 #'
 orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score",
                      overlapGrl = NULL, coverage = NULL, stop3 = TRUE) {
-  if (stop3 & any(widthPerGroup(grl, FALSE) < 3))
+  widths <- widthPerGroup(grl, FALSE)
+  valid <- widths > 2
+  if (stop3 & any(!valid))
     stop("ORFs with width < 3  not allowed")
-
-  hasHits <- hasHits(grl, RFP, overlaps = overlapGrl)
-  grl <- grl[hasHits]
 
   counts <- if (!is.null(coverage)) {
     stopifnot(is(coverage, "data.table"))
-    stopifnot(length(unique((coverage$genes))) == length(hasHits))
+    hasHits <- valid
+    stopifnot(length(unique((coverage$genes))) == sum(widths > 0))
     coverage[genes %in% which(hasHits),]
   } else {
+    hasHits <- valid & hasHits(grl, RFP, overlaps = overlapGrl)
+    grl <- grl[hasHits]
     coveragePerTiling(grl, RFP, is.sorted, as.data.table = TRUE,
                       withFrames = TRUE, weight = weight)
   }
