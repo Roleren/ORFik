@@ -14,7 +14,8 @@ correlation.plots(
   size = 0.15,
   plot.ext = ".pdf",
   complex.correlation.plots = TRUE,
-  data_for_pairs = countTable(df, region, type = type)
+  data_for_pairs = countTable(df, region, type = type),
+  as_gg_list = FALSE
 )
 }
 \arguments{
@@ -46,7 +47,7 @@ gpu computers. Set to FALSE to skip these.}
 Default is fpkm of all mRNA counts over all libraries.}
 }
 \value{
-invisible(NULL)
+invisible(NULL) / if as_gg_list is TRUE, return a list of raw plots.
 }
 \description{
 Get 3 correlation plots (1 simple (correlation colors), 2 complex with

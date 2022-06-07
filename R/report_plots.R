@@ -117,13 +117,14 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf",
 #' @param size numeric, size of dots, default 0.15.
 #' @param data_for_pairs a data.table from ORFik::countTable of counts wanted.
 #' Default is fpkm of all mRNA counts over all libraries.
-#' @return invisible(NULL)
+#' @return invisible(NULL) / if as_gg_list is TRUE, return a list of raw plots.
 #' @importFrom GGally wrap
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
                               height = 400, width = 400, size = 0.15, plot.ext = ".pdf",
                               complex.correlation.plots = TRUE,
-                              data_for_pairs = countTable(df, region, type = type)) {
+                              data_for_pairs = countTable(df, region, type = type),
+                              as_gg_list = FALSE) {
   message("- Correlation plots")
   if (nrow(df) == 1) { # Avoid error from ggplot2 backend
     message("-  Skipping correlation plots (only 1 sample)")
@@ -134,30 +135,32 @@ correlation.plots <- function(df, output.dir,
                          combo = GGally::wrap("dot", alpha = 0.4, size=0.2))
 
   message("  - raw scaled fpkm (simple)")
-  paired_plot <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2,
+  cor_plot1 <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2,
                                 hjust = 1, layout.exp = floor(1 + (nrow(df)/10)))
-  ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), paired_plot,
+  ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), cor_plot1,
          height = height, width = width, units = 'mm', dpi = 300)
-
+  plot_list <- list(cor_plot1)
   if (complex.correlation.plots) {
     if (nrow(df) > 30) { # Avoid error from ggplot2 backend
       message("ORFik only supports complex correlation plots for up to 30 libraries in experiment!")
       return(invisible(NULL))
     }
     message("  - raw scaled fpkm (complex)")
-    paired_plot <- ggpairs(as.data.frame(data_for_pairs),
+    cor_plot2 <- ggpairs(as.data.frame(data_for_pairs),
                            columns = 1:ncol(data_for_pairs),
                            lower = point_settings)
-    ggsave(pasteDir(output.dir, paste0("cor_plot", plot.ext)), paired_plot,
+    ggsave(pasteDir(output.dir, paste0("cor_plot", plot.ext)), cor_plot2,
            height = height, width = width, units = 'mm', dpi = 300)
     message("  - log2 scaled fpkm (complex)")
-    paired_plot <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
+    cor_plot3 <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
                            columns = 1:ncol(data_for_pairs),
                            lower = point_settings)
-    ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), paired_plot,
+    ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), cor_plot3,
            height = height, width = width, units = 'mm', dpi = 300)
+    plot_list <- list(cor_plot1, cor_plot2, cor_plot3)
   }
 
+  if (as_gg_list) return(plot_list)
   return(invisible(NULL))
 }
 
