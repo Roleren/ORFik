@@ -309,7 +309,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
     current.contrast <- c(target.contrast, i[1], i[2])
     res_te <- results(dds.te, contrast = current.contrast)
 
-    res_ribo <- results(ddsMat_ribo, contrast=current.contrast)
+    res_ribo <- results(ddsMat_ribo, contrast = current.contrast)
     suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast,
                                            res=res_ribo, type = "normal"))
 

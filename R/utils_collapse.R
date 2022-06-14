@@ -132,6 +132,7 @@ collapse.by.scores <- function(x) {
 #' faster to load, but some additional merging time is added.
 #' @return a data.table of merged result, it is merged on all columns except "score".
 #' The returned file will contain the scores of each file + the aggregate sum score.
+#' @importFrom data.table setnames
 ofst_merge <- function(file_paths,
                        lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
                        keep_all_scores = TRUE, sort = TRUE) {
