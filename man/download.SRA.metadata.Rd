@@ -49,7 +49,9 @@ Given a experiment identifier, query information from different locations of SRA
 to get a complete metadata table of the experiment. It first finds Runinfo for each
 library, then sample info,
 if pubmed id is not found searches for that and searches for author through pubmed.
-A common problem is that the project is not linked to an article, you will not then
+}
+\details{
+A common problem is that the project is not linked to an article, you will then not
 get a pubmed id.
 }
 \examples{

@@ -108,10 +108,14 @@ Creates a total of 3 DESeq models (given x is the target.contrast argument)
 2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
 3. TE model: design = ~ x + libraryType + libraryType:x
 (differences between the x and libraryType groups and the interaction between them)\cr
-You need at least 2 groups and 2 replicates per group. The Ribo-seq counts will
-be over CDS and RNA-seq over mRNAs, per transcript. \cr
+You need at least 2 groups and 2 replicates per group. By default, the Ribo-seq counts will
+be over CDS and RNA-seq counts over whole mRNAs, per transcript. \cr
 }
 \details{
+Log fold changes and p-values are created from a Walds test on the comparison contrast described bellow.
+The RNA-seq and Ribo-seq LFC values are shrunken using DESeq2::lfcShrink(type = "normal"). Note
+that the TE LFC values are not shrunken (as following specifications from deltaTE paper)\cr\cr
+
 Analysis is done between each possible
 combination of levels in the target contrast If target contrast is condition column,
 with factor levels: WT, mut1 and mut2 with 3 replicates each. You get comparison
@@ -122,8 +126,8 @@ The respective result categories are defined as:
 2. mRNA abundance - te.p.adj > 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
 3. Buffering - te.p.adj < 0.05 & rfp.p.adj > 0.05 & rna.p.adj > 0.05\cr\cr
 
-Buffering also adds some close group which are split up if you set
-complex.categories = TRUE (You will then get in addition)
+Buffering will be broken down into sub-categories if you set
+complex.categories = TRUE
 See Figure 1 in the reference article for a clear definition of the groups!\cr
 If you do not need isoform variants, subset to longest isoform per gene
 either before or in the returned object (See examples).

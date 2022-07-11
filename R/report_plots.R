@@ -107,7 +107,10 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf",
 #' Get 3 correlation plots (1 simple (correlation colors), 2 complex with
 #' correlation value + dot plots of per gene )
 #' of raw counts and log2(count + 1) over
-#' selected region in: c("mrna", "leaders", "cds", "trailers")
+#' selected region in: c("mrna", "leaders", "cds", "trailers")\cr\cr
+#' Note on correlation: Pearson correlation, using pairwise observations
+#' to fill in NA values for the covariance matrix.
+#' @inheritParams GGally::ggcorr
 #' @inheritParams QCplots
 #' @param output.dir directory to save to, 3 files named: cor_plot,
 #' cor_plot_log2 and cor_plot_simple with either .pdf or .png
@@ -124,7 +127,7 @@ correlation.plots <- function(df, output.dir,
                               height = 400, width = 400, size = 0.15, plot.ext = ".pdf",
                               complex.correlation.plots = TRUE,
                               data_for_pairs = countTable(df, region, type = type),
-                              as_gg_list = FALSE) {
+                              as_gg_list = FALSE, label_size = 4) {
   message("- Correlation plots")
   if (nrow(df) == 1) { # Avoid error from ggplot2 backend
     message("-  Skipping correlation plots (only 1 sample)")
@@ -136,7 +139,8 @@ correlation.plots <- function(df, output.dir,
 
   message("  - raw scaled fpkm (simple)")
   cor_plot1 <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2,
-                                hjust = 1, layout.exp = floor(1 + (nrow(df)/10)))
+                              hjust = 1, layout.exp = floor(1 + (nrow(df)/10)),
+                              label_size = label_size)
   ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), cor_plot1,
          height = height, width = width, units = 'mm', dpi = 300)
   plot_list <- list(cor_plot1)

@@ -15,7 +15,8 @@ correlation.plots(
   plot.ext = ".pdf",
   complex.correlation.plots = TRUE,
   data_for_pairs = countTable(df, region, type = type),
-  as_gg_list = FALSE
+  as_gg_list = FALSE,
+  label_size = 4
 )
 }
 \arguments{
@@ -45,6 +46,9 @@ gpu computers. Set to FALSE to skip these.}
 
 \item{data_for_pairs}{a data.table from ORFik::countTable of counts wanted.
 Default is fpkm of all mRNA counts over all libraries.}
+
+\item{label_size}{the size of the correlation coefficients.
+Defaults to \code{4}.}
 }
 \value{
 invisible(NULL) / if as_gg_list is TRUE, return a list of raw plots.
@@ -53,5 +57,7 @@ invisible(NULL) / if as_gg_list is TRUE, return a list of raw plots.
 Get 3 correlation plots (1 simple (correlation colors), 2 complex with
 correlation value + dot plots of per gene )
 of raw counts and log2(count + 1) over
-selected region in: c("mrna", "leaders", "cds", "trailers")
+selected region in: c("mrna", "leaders", "cds", "trailers")\cr\cr
+Note on correlation: Pearson correlation, using pairwise observations
+to fill in NA values for the covariance matrix.
 }

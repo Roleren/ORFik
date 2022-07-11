@@ -199,7 +199,8 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' to get a complete metadata table of the experiment. It first finds Runinfo for each
 #' library, then sample info,
 #' if pubmed id is not found searches for that and searches for author through pubmed.
-#' A common problem is that the project is not linked to an article, you will not then
+#'
+#' A common problem is that the project is not linked to an article, you will then not
 #' get a pubmed id.
 #' @param SRP a string, a study ID as either the PRJ, SRP, ERP, DRPor GSE of the study,
 #' examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
@@ -280,8 +281,8 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
     if (length(SRP) > 1) stop("Found multiple non identical SRPs for GSE:", SRP)
     message(paste("Found SRP, will continue using:", SRP))
   }
-  # Download runinfo
-  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term="
+  # Download runinfo from Trace / SRA server
+  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?term="
   url <- paste0(url, SRP)
   download.file(url, destfile)
   file <- fread(destfile)
@@ -306,7 +307,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
   file <- file[, -c("AssemblyName", "ReleaseDate", "LoadDate",
                     "download_path", "RunHash", "ReadHash", "Consent")]
   # Download xml and add more data
-  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=xml&term="
+  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/exp?term="
   url <- paste0(url, SRP)
   a <- xml2::read_xml(url)
   a <- xml2::as_list(a)
