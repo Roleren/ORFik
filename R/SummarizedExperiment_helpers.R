@@ -330,7 +330,7 @@ countTable <- function(df, region = "mrna", type = "count",
         colData(res)$replicate <- as.factor(df.temp$rep)
       }
       # Give important sanity check info:
-      is_ribo <- any(c("RFP", "RPF", "LSU","80S") %in% colData(res)$libtype, na.rm = T)
+      is_ribo <- any(c("RFP", "RPF", "LSU","80S") %in% colData(res)$libtype, na.rm = TRUE)
       if(count.folder != "pshifted" & is_ribo)
         message("Loading default 80S counts, update count.folder to pshifted if wanted?")
 
