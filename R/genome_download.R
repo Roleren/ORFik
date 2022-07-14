@@ -31,18 +31,20 @@
 #' @param genome logical, default: TRUE, download genome of organism
 #' specified in "organism" argument. If FALSE, check if the downloaded
 #' file already exist. If you want to use a custom gtf from you hard drive,
-#' set GTF = FALSE,
-#' and assign: \cr annotation <- getGenomeAndAnnotation(genome = FALSE)\cr
-#' annotation["genome"] = "path/to/genome.fasta".\cr
-#' Will download the primary assembly for ensembl
+#' set \code{GTF = FALSE},
+#' and assign: \cr \code{annotation <- getGenomeAndAnnotation(genome = FALSE)}\cr
+#' \code{annotation["genome"] = "path/to/genome.fasta"}.\cr
+#' Will download the primary assembly from Ensembl.
 #' @param merge_contaminants logical, default TRUE. Will merge
 #' the contaminants specified into one fasta file, this considerably
-#' saves space and is much quicker to align with STAR than each contamint
+#' saves space and is much quicker to align with STAR than each contaminant
 #' on it's own. If no contaminants are specified, this is ignored.
-#' @param phix logical, default FALSE, download phix sequence to filter
-#'  out with. Phix is used as a contaminant genome.
-#' Only use if illumina sequencing. Phix is used in Illumina sequencers for
-#' sequencing quality control. Genome is: refseq, Escherichia virus phiX174
+#' @param phix logical, default FALSE, download phiX sequence to filter
+#'  out Illumina control reads. ORFik defines Phix as a contaminant genome.
+#' Phix is used in Illumina sequencers for sequencing quality control.
+#' Genome is: refseq, Escherichia phage phiX174.
+#' If sequencing facility created fastq files with the command \code{bcl2fastq},
+#' then there should be very few phix reads left in the fastq files recieved.
 #' @param ncRNA logical or character, default FALSE (not used, no download),
 #' ncRNA is used as a contaminant genome.
 #' If TRUE, will try to find ncRNA sequences from the gtf file, usually represented as
@@ -81,12 +83,11 @@
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
 #' @param assembly_type a character string specifying from which assembly type
 #' the genome shall be retrieved from (ensembl only, else this argument is ignored):
-#' Default is
-#' \code{assembly_type = "primary_assembly")}.
-#' This will give you all no copies of any chromosomes.
+#' Default is \code{assembly_type = "primary_assembly")}.
+#' This will give you no haplotypes (copies of the same chromosome with small variations).
 #' As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 #' \code{assembly_type = "toplevel")}.
-#' This will give you all multi-chromosomes (copies of the same chromosome with small variations).
+#' This will give you all haplotypes.
 #' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
 #' @param optimize logical, default FALSE. Create a folder
 #' within the folder of the gtf, that includes optimized objects

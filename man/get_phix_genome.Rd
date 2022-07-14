@@ -7,10 +7,12 @@
 get_phix_genome(phix, output.dir, gunzip)
 }
 \arguments{
-\item{phix}{logical, default FALSE, download phix sequence to filter
- out with. Phix is used as a contaminant genome.
-Only use if illumina sequencing. Phix is used in Illumina sequencers for
-sequencing quality control. Genome is: refseq, Escherichia virus phiX174}
+\item{phix}{logical, default FALSE, download phiX sequence to filter
+ out Illumina control reads. ORFik defines Phix as a contaminant genome.
+Phix is used in Illumina sequencers for sequencing quality control.
+Genome is: refseq, Escherichia phage phiX174.
+If sequencing facility created fastq files with the command \code{bcl2fastq},
+then there should be very few phix reads left in the fastq files recieved.}
 
 \item{output.dir}{directory to save downloaded data}
 

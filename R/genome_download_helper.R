@@ -156,12 +156,12 @@ get_phix_genome <- function(phix, output.dir, gunzip) {
       tryCatch(download.file(phix.url, destfile = phix,
                     method = "wget", extra = "--passive-ftp"),
                error = function(e, phix.url) {
-                 phix.url <- "https://ftp.ncbi.nlm.nih.gov/genomes/refseq/viral/Escherichia_virus_phiX174/all_assembly_versions/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_genomic.fna.gz"
+                 phix.url <- "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/819/615/GCF_000819615.1_ViralProj14015/GCF_000819615.1_ViralProj14015_genomic.fna.gz"
                  download.file(phix.url, destfile = phix,
                                method = "wget")
                })
     } else {
-      phix <- biomartr::getGenome(db = "refseq", "Escherichia virus phiX174",
+      phix <- biomartr::getGenome(db = "refseq", "Escherichia phage phiX174",
                                   path = output.dir, gunzip = FALSE)
     }
     if (gunzip) # unzip phix file

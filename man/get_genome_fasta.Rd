@@ -10,10 +10,10 @@ get_genome_fasta(genome, output.dir, organism, assembly_type, db, gunzip)
 \item{genome}{logical, default: TRUE, download genome of organism
 specified in "organism" argument. If FALSE, check if the downloaded
 file already exist. If you want to use a custom gtf from you hard drive,
-set GTF = FALSE,
-and assign: \cr annotation <- getGenomeAndAnnotation(genome = FALSE)\cr
-annotation["genome"] = "path/to/genome.fasta".\cr
-Will download the primary assembly for ensembl}
+set \code{GTF = FALSE},
+and assign: \cr \code{annotation <- getGenomeAndAnnotation(genome = FALSE)}\cr
+\code{annotation["genome"] = "path/to/genome.fasta"}.\cr
+Will download the primary assembly from Ensembl.}
 
 \item{output.dir}{directory to save downloaded data}
 
@@ -23,12 +23,11 @@ for full list of supported organisms.}
 
 \item{assembly_type}{a character string specifying from which assembly type
 the genome shall be retrieved from (ensembl only, else this argument is ignored):
-Default is
-\code{assembly_type = "primary_assembly")}.
-This will give you all no copies of any chromosomes.
+Default is \code{assembly_type = "primary_assembly")}.
+This will give you no haplotypes (copies of the same chromosome with small variations).
 As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
 \code{assembly_type = "toplevel")}.
-This will give you all multi-chromosomes (copies of the same chromosome with small variations).
+This will give you all haplotypes.
 As an example the toplevel fasta genome in human is over 70 GB uncompressed.}
 
 \item{db}{database to use for genome and GTF,
