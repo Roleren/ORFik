@@ -36,8 +36,7 @@ whole mrnas or one of (leaders, cds, trailers)}
 
 \item{size}{numeric, size of dots, default 0.15.}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
-Note that in pdf format the complex correlation plots become very slow to load!}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{complex.correlation.plots}{logical, default TRUE. Add in addition
 to simple correlation plot two computationally heavy dots + correlation plots.
@@ -46,6 +45,9 @@ gpu computers. Set to FALSE to skip these.}
 
 \item{data_for_pairs}{a data.table from ORFik::countTable of counts wanted.
 Default is fpkm of all mRNA counts over all libraries.}
+
+\item{as_gg_list}{logical, default FALSE. Return as a list of ggplot objects
+instead of as a grob. Gives you the ability to modify plots more directly.}
 
 \item{label_size}{the size of the correlation coefficients.
 Defaults to \code{4}.}

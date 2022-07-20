@@ -7,7 +7,7 @@
 create.experiment(
   dir,
   exper,
-  saveDir = "~/Bio_data/ORFik_experiments/",
+  saveDir = ORFik::config()["exp"],
   txdb = "",
   fa = "",
   organism = "",
@@ -33,8 +33,8 @@ files from other experiments in the same folder!}
 experiment, and name shown when running \code{\link{list.experiments}}}
 
 \item{saveDir}{Directory to save experiment csv file, default:
-"~/Bio_data/ORFik_experiments/". Set to NULL if you don't want to save
-it to disc.}
+\code{ORFik::config()["exp"]}, which has default: "~/Bio_data/ORFik_experiments/".
+Set to NULL if you don't want to save it to disc.}
 
 \item{txdb}{A path to TxDb (prefered) or gff/gtf (not adviced, slower)
 file with transcriptome annotation for the organism.}

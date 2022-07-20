@@ -35,10 +35,10 @@ config.exper <- function(experiment, assembly, type,
 #' Read directory config for ORFik experiments
 #'
 #' Defines a folder for:
-#' 1. fastq files (raw_data)\cr
+#' 1. fastq files (raw data)\cr
 #' 2. bam files (processed data)\cr
-#' 3. references (organism annotation and STAR index)
-#'
+#' 3. references (organism annotation and STAR index)\cr
+#' 4. exp (Location to store and load all \code{\link{experiment}} .csv files)
 #' Update or use another config using \code{config.save()} function.
 #' @param file file of config for ORFik, default: "~/Bio_data/ORFik_config.csv"
 #' @return a named character vector of length 3
@@ -50,6 +50,7 @@ config.exper <- function(experiment, assembly, type,
 #' config_location <- "/media/Bio_data/ORFik_config.csv"
 #' #config(config_location)
 config <- function(file = "~/Bio_data/ORFik_config.csv") {
+  default.exp.path <- "~/Bio_data/ORFik_experiments/"
   if(!file.exists(file)) {
     message("--------------------------------")
     message("Setting up config file for ORFik")
@@ -58,10 +59,16 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
       dir.create(dirname(file))
     }
     config.save(file, "~/Bio_data/raw_data", "~/Bio_data/processed_data",
-                "~/Bio_data/references")
+                "~/Bio_data/references", default.exp.path)
   }
   dt <- data.table::fread(file, header = TRUE)
-  if (nrow(dt) != 3) stop("config files must have exactly 3 rows!")
+  stopifnot(colnames(dt) == c("type", "directory"))
+  old_config_format <- nrow(dt) == 3
+  if (old_config_format) {
+    dt <- rbind(dt, data.table(type = "exp", directory = default.exp.path))
+    config.save(file, dt$directory[1], dt$directory[2],
+                dt$directory[3], dt$directory[4])
+  }
 
   res <- dt$directory
   names(res) <- dt$type
@@ -79,17 +86,21 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
 #'  default: config()["bam"]
 #' @param reference.dir directory where ORFik puts reference file directories,
 #'  default: config()["ref"]
+#' @param exp.dir directory where ORFik puts experiment csv files,
+#' default: "~/Bio_data/ORFik_experiments/", which is retrieved with
+#' \code{config()["exp"]}
 #' @return invisible(NULL), file saved to disc
 #' @export
 #' @examples
-#' ## Save at another config location (not adviced!)
+#' ## Save at another config location
 #' config_location <- "/media/Bio_data/ORFik_config.csv"
 #' #config.save(config_location, "/media/Bio_data/raw_data/",
 #' # "/media/Bio_data/processed_data", /media/Bio_data/references/)
 config.save <- function(file = "~/Bio_data/ORFik_config.csv",
-                        fastq.dir, bam.dir, reference.dir) {
-  conf <- data.frame(type = c("fastq", "bam", "ref"),
-                     directory = c(fastq.dir, bam.dir, reference.dir))
+                        fastq.dir, bam.dir, reference.dir,
+                        exp.dir = "~/Bio_data/ORFik_experiments/") {
+  conf <- data.frame(type = c("fastq", "bam", "ref", "exp"),
+                     directory = c(fastq.dir, bam.dir, reference.dir, exp.dir))
   data.table::fwrite(conf, file, col.names = TRUE)
   return(invisible(NULL))
 }

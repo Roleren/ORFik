@@ -9,9 +9,10 @@
 #' , or a template data.frame from \code{\link{create.experiment}}. Can
 #' also be full path to file, then in.dir argument is ignored.
 #' @param in.dir Directory to load experiment csv file from, default:
-#' "~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
-#' it to disc. Does not apply if file is not a path, but a data.frame. Also
-#' does not apply if file was given as full path.
+#' \code{ORFik::config()["exp"]}, which has default "~/Bio_data/ORFik_experiments/"\cr
+#' Set to NULL if you don't want to save it to disc.
+#' Does not apply if file argument is not a path (can also be a data.frame).
+#' Also does not apply if file argument was given as full path.
 #' @param validate logical, default TRUE. Abort if any library files does not exist.
 #' Do not set this to FALSE, unless you know what you are doing!
 #' @return an ORFik \code{\link{experiment}}
@@ -33,7 +34,7 @@
 #' # or (identical):
 #' # read.experiment("experiment", in.dir = "path/to/save/")
 #' @family ORFik_experiment
-read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/",
+read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                              validate = TRUE) {
   if (is(file, "character")) {
     if (file_ext(file) == "") file <- paste0(file, ".csv")
@@ -102,8 +103,8 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/",
 #' @param exper Short name of experiment. Will be name used to load
 #' experiment, and name shown when running \code{\link{list.experiments}}
 #' @param saveDir Directory to save experiment csv file, default:
-#' "~/Bio_data/ORFik_experiments/". Set to NULL if you don't want to save
-#' it to disc.
+#' \code{ORFik::config()["exp"]}, which has default: "~/Bio_data/ORFik_experiments/".
+#' Set to NULL if you don't want to save it to disc.
 #' @param types Default \code{c("bam", "bed", "wig", "ofst")},
 #' which types of libraries to allow as NGS data.
 #' @param txdb A path to TxDb (prefered) or gff/gtf (not adviced, slower)
@@ -188,7 +189,7 @@ read.experiment <-  function(file, in.dir = "~/Bio_data/ORFik_experiments/",
 #' #                               fa = fa, organism = org,
 #' #                               viewTemplate = FALSE)
 #' @family ORFik_experiment
-create.experiment <- function(dir, exper, saveDir = "~/Bio_data/ORFik_experiments/",
+create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
                               txdb = "", fa = "", organism = "", assembly = "",
                               pairedEndBam = FALSE,
                               viewTemplate = FALSE,
@@ -935,6 +936,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' Will only search .csv extension, also exclude any experiment
 #' with the word template.
 #' @param dir directory for ORFik experiments: default:
+#' ORFik::config()["exp"], which by default is:
 #' "~/Bio_data/ORFik_experiments/"
 #' @inheritParams read.experiment
 #' @param pattern allowed patterns in experiment file name:
@@ -964,7 +966,7 @@ findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
 #' #list.experiments(pattern = "subset")
 #' ## For non default directory experiments
 #' #list.experiments(dir = "MY/CUSTOM/PATH)
-list.experiments <- function(dir =  "~/Bio_data/ORFik_experiments/",
+list.experiments <- function(dir =  ORFik::config()["exp"],
                              pattern = "*", libtypeExclusive = NULL,
                              validate = TRUE,
                              BPPARAM = bpparam()) {

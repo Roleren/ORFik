@@ -14,11 +14,10 @@ a named character vector of length 3
 }
 \description{
 Defines a folder for:
-1. fastq files (raw_data)\cr
+1. fastq files (raw data)\cr
 2. bam files (processed data)\cr
-3. references (organism annotation and STAR index)
-}
-\details{
+3. references (organism annotation and STAR index)\cr
+4. exp (Location to store and load all \code{\link{experiment}} .csv files)
 Update or use another config using \code{config.save()} function.
 }
 \examples{

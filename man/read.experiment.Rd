@@ -4,11 +4,7 @@
 \alias{read.experiment}
 \title{Read ORFik \code{\link{experiment}}}
 \usage{
-read.experiment(
-  file,
-  in.dir = "~/Bio_data/ORFik_experiments/",
-  validate = TRUE
-)
+read.experiment(file, in.dir = ORFik::config()["exp"], validate = TRUE)
 }
 \arguments{
 \item{file}{relative path to a ORFik experiment. That is a .csv file following
@@ -17,9 +13,10 @@ ORFik experiment style ("," as seperator).
 also be full path to file, then in.dir argument is ignored.}
 
 \item{in.dir}{Directory to load experiment csv file from, default:
-"~/Bio_data/ORFik_experiments/" \cr Set to NULL if you don't want to save
-it to disc. Does not apply if file is not a path, but a data.frame. Also
-does not apply if file was given as full path.}
+\code{ORFik::config()["exp"]}, which has default "~/Bio_data/ORFik_experiments/"\cr
+Set to NULL if you don't want to save it to disc.
+Does not apply if file argument is not a path (can also be a data.frame).
+Also does not apply if file argument was given as full path.}
 
 \item{validate}{logical, default TRUE. Abort if any library files does not exist.
 Do not set this to FALSE, unless you know what you are doing!}

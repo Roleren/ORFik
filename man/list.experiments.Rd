@@ -5,7 +5,7 @@
 \title{List current experiment available}
 \usage{
 list.experiments(
-  dir = "~/Bio_data/ORFik_experiments/",
+  dir = ORFik::config()["exp"],
   pattern = "*",
   libtypeExclusive = NULL,
   validate = TRUE,
@@ -14,6 +14,7 @@ list.experiments(
 }
 \arguments{
 \item{dir}{directory for ORFik experiments: default:
+ORFik::config()["exp"], which by default is:
 "~/Bio_data/ORFik_experiments/"}
 
 \item{pattern}{allowed patterns in experiment file name:

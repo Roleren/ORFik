@@ -8,8 +8,8 @@
 #' @param output.dir NULL or character path, default: NULL, plot not saved to disc.
 #' If defined saves plot to that directory with the name "/STATS_plot.pdf".
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
-#' @param as_gg_list return as a list of ggplot objects instead of as a grob.
-#' Gives you more modification options.
+#' @param as_gg_list logical, default FALSE. Return as a list of ggplot objects
+#'  instead of as a grob. Gives you the ability to modify plots more directly.
 #' @return the plot object, a grob of ggplot objects of the the statistics data
 #' @importFrom data.table melt
 #' @importFrom gridExtra grid.arrange
@@ -111,6 +111,7 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf",
 #' Note on correlation: Pearson correlation, using pairwise observations
 #' to fill in NA values for the covariance matrix.
 #' @inheritParams GGally::ggcorr
+#' @inheritParams QCstats.plot
 #' @inheritParams QCplots
 #' @param output.dir directory to save to, 3 files named: cor_plot,
 #' cor_plot_log2 and cor_plot_simple with either .pdf or .png

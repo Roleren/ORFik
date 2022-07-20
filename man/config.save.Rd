@@ -8,7 +8,8 @@ config.save(
   file = "~/Bio_data/ORFik_config.csv",
   fastq.dir,
   bam.dir,
-  reference.dir
+  reference.dir,
+  exp.dir = "~/Bio_data/ORFik_experiments/"
 )
 }
 \arguments{
@@ -22,6 +23,10 @@ default: config()["bam"]}
 
 \item{reference.dir}{directory where ORFik puts reference file directories,
 default: config()["ref"]}
+
+\item{exp.dir}{directory where ORFik puts experiment csv files,
+default: "~/Bio_data/ORFik_experiments/", which is retrieved with
+\code{config()["exp"]}}
 }
 \value{
 invisible(NULL), file saved to disc
@@ -31,7 +36,7 @@ Defines a folder for fastq files (raw_data), bam files (processed data) and
 references (organism annotation and STAR index)
 }
 \examples{
-## Save at another config location (not adviced!)
+## Save at another config location
 config_location <- "/media/Bio_data/ORFik_config.csv"
 #config.save(config_location, "/media/Bio_data/raw_data/",
 # "/media/Bio_data/processed_data", /media/Bio_data/references/)

@@ -37,8 +37,8 @@ warning if not pshifted might crash if too many read lengths!}
 \item{bar.position}{character, default "dodge". Should Ribo-seq frames
 per read length be positioned as "dodge" or "stack" (on top of each other).}
 
-\item{as_gg_list}{return as a list of ggplot objects instead of as a grob.
-Gives you more modification options.}
+\item{as_gg_list}{logical, default FALSE. Return as a list of ggplot objects
+instead of as a grob. Gives you the ability to modify plots more directly.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
