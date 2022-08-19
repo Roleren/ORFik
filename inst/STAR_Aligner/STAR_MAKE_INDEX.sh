@@ -196,13 +196,19 @@ function nCores()
 # genome (--sjdbOverhang 72, 76-3(trim) - 1)
 if [[ ${genome} != "" ]]; then
 	echo ""; echo "Main genome index:"
+	include_gtf_or_not="--sjdbGTFfile ${genomeGTF}"
+	sjdbOverhang_to_use="--sjdbOverhang 72"
+	if [[ ${genomeGTF} == "" ]]; then
+    include_gtf_or_not=""
+    sjdbOverhang_to_use=""
+	fi
 	eval $STAR \
 	--runMode genomeGenerate \
 	--genomeFastaFiles ${genome} \
-	--sjdbGTFfile ${genomeGTF} \
+	${include_gtf_or_not} \
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \
-	--sjdbOverhang 72 \
+	${sjdbOverhang_to_use} \
 	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
 	--genomeSAsparseD $SAsparse \
 	--outFileNamePrefix ${mainGenomeOut} \

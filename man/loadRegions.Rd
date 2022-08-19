@@ -31,7 +31,7 @@ Remember if you set by to "gene", then this list must be with gene names.}
 
 \item{by}{a character, default "tx" Either "tx" or "gene". What names to
 output region by, the transcript name "tx" or gene names "gene".
-NOTE: this is note the same as cdsBy(txdb, by = "gene"), cdsBy would then
+NOTE: this is not the same as cdsBy(txdb, by = "gene"), cdsBy would then
 only give 1 cds per Gene, loadRegion gives all isoforms, but with gene names.}
 
 \item{skip.optimized}{logical, default FALSE. If TRUE, will not search for optimized

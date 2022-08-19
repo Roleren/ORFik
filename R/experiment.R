@@ -37,6 +37,8 @@
 read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                              validate = TRUE) {
   if (is(file, "character")) {
+    if (length(file) != 1) stop("Experiment name must be single string!")
+    if (file == "") stop("Experiment name is empty: ''")
     if (file_ext(file) == "") file <- paste0(file, ".csv")
     if (!file.exists(file)) file <- pasteDir(in.dir, file)
     if (!file.exists(file)) { # This will only trigger on CBU server @ UIB
@@ -44,7 +46,6 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
       if (file.exists(pasteDir(cbu.path, basename(file))))
         file <- pasteDir(cbu.path, basename(file))
     }
-
 
     info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
     listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",

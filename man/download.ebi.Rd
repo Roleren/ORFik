@@ -18,7 +18,9 @@ a data.frame with SRA metadata information including the SRR numbers in a column
 "Run" or "SRR". Can be SRR, ERR or DRR numbers.
 If only SRR numbers can not rename, since no additional information is given.}
 
-\item{outdir}{a string, default: cbu server}
+\item{outdir}{directory to store runs,
+files are named by default (rename = TRUE) by information from SRA metadata table,
+if (rename = FALSE) named according to SRR numbers.}
 
 \item{rename}{logical or character, default TRUE (Auto guess new names). False: Skip
 renaming. A character vector of equal size as files wanted can also be given.

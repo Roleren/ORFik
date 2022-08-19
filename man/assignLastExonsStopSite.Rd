@@ -24,7 +24,7 @@ below position 1 on chromosome. Since circular genomes can have negative coordin
 the same GRangesList with new stop sites
 }
 \description{
-Per group in GRangesList, assign the most upstream site.
+Per group in GRangesList, assign the most downstream site.
 }
 \details{
 make sure your grl is sorted, since stop of "-" strand objects

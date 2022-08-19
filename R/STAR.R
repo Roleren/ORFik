@@ -211,6 +211,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' Ignored if tr (trim) is not one of the arguments in "steps"
 #' @param alignment.type default: "Local": standard local alignment with soft-clipping allowed,
 #' "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.
+#' @param allow.introns logical, default TRUE. Allow large gaps of N in reads
+#' during genome alignment, if FALSE:
+#' sets --alignIntronMax to 1 (no introns). NOTE: You will still get some spliced reads
+#' if you assigned a gtf at the index step.
 #' @param include.subfolders "n" (no), do recursive search downwards for fast files if "y".
 #' @param resume default: NULL, continue from step, lets say steps are "tr-ph-ge":
 #'  (trim, phix depletion, genome alignment) and resume is "ge", you will then use
@@ -271,7 +275,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               steps = "tr-ge", adapter.sequence = "auto",
                               quality.filtering = FALSE, min.length = 20, mismatches = 3,
                               trim.front = 0, max.multimap = 10,
-                              alignment.type = "Local",
+                              alignment.type = "Local", allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, include.subfolders = "n", resume = NULL,
                               multiQC = TRUE, keep.contaminants = FALSE,
@@ -293,6 +297,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
     if (!(paired.end %in% c("yes", "no"))) stop("Argument 'paired.end' must be yes/no")
   } else stop("Argument 'paired.end' must be logical or character yes/no")
   stopifnot(alignment.type %in% c("Local", "EndToEnd"))
+  stopifnot(is.logical(allow.introns))
   stopifnot(include.subfolders %in% c("y", "n"))
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
@@ -308,7 +313,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-M", max.multimap, quality.filtering,
-                "-A", alignment.type, "-m", max.cpus, "-i", include.subfolders,
+                "-A", alignment.type, "-B", allow.introns,"-m", max.cpus, "-i", include.subfolders,
                 keep.contaminants, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
   if (.Platform$OS.type == "unix") {
@@ -357,6 +362,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               quality.filtering = FALSE, min.length = 20,
                               mismatches = 3, trim.front = 0,
                               max.multimap = 10, alignment.type = "Local",
+                              allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, resume = NULL, keep.contaminants = FALSE,
                               script.single = system.file("STAR_Aligner",
@@ -368,6 +374,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   if (!dir.exists(index.dir))
     stop("STAR index path must be a valid directory called /STAR_index")
   stopifnot(alignment.type %in% c("Local", "EndToEnd"))
+  stopifnot(is.logical(allow.introns))
 
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))

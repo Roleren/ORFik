@@ -51,7 +51,7 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
 
 #' Reassign the stop positions of the last exons per group
 #'
-#' Per group in GRangesList, assign the most upstream site.
+#' Per group in GRangesList, assign the most downstream site.
 #'
 #' make sure your grl is sorted, since stop of "-" strand objects
 #' should be the min start in group, use ORFik:::sortPerGroup(grl) to get

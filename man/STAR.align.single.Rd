@@ -19,6 +19,7 @@ STAR.align.single(
   trim.front = 0,
   max.multimap = 10,
   alignment.type = "Local",
+  allow.introns = TRUE,
   max.cpus = min(90, BiocParallel::bpparam()$workers),
   wait = TRUE,
   resume = NULL,
@@ -120,6 +121,11 @@ genome alignment step. The depletions are allowing for multimapping.}
 
 \item{alignment.type}{default: "Local": standard local alignment with soft-clipping allowed,
 "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.}
+
+\item{allow.introns}{logical, default TRUE. Allow large gaps of N in reads
+during genome alignment, if FALSE:
+sets --alignIntronMax to 1 (no introns). NOTE: You will still get some spliced reads
+if you assigned a gtf at the index step.}
 
 \item{max.cpus}{integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
 number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you

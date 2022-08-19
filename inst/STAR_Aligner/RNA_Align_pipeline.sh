@@ -36,7 +36,7 @@ OPTIONS:
 	-t	trim front (default 3) How many bases to pre trim reads 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
-
+  -B Allow introns (default yes (1), else no (0))
 	Path arguments:
 	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-P      path to fastp (trimmer) (default: ~/bin/fastp)
@@ -78,6 +78,7 @@ allSteps="tr-ge"
 steps=$allSteps
 resume="n"
 alignment="Local"
+allow_introns=0
 adapter="auto"
 quality_filtering="disable"
 maxCPU=90
@@ -87,7 +88,7 @@ keep="n"
 keepContam="no"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:K:k:p:S:P:q:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -132,6 +133,10 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:r:m:M:K:k:p:S:P:q:h" opt; do
     A)
         alignment=$OPTARG
         echo "-A alignment type: $OPTARG"
+        ;;
+    B)
+        allow_introns=$OPTARG
+        echo "-B allow_introns: $OPTARG"
         ;;
     r)
 	resume=$OPTARG
@@ -608,6 +613,7 @@ if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	if [ ! -d ${out_dir}/aligned ]; then
         mkdir ${out_dir}/aligned
   fi
+  ((allow_introns ^= 1)) # XOR to flip, since STAR 0 is allow introns
 
 	eval $STAR \
 	--readFilesIn $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn} ${in_file_two}) \
@@ -621,6 +627,7 @@ if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	--limitBAMsortRAM 30000000000 \
 	--readFilesCommand $(comp $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn})) \
 	--alignEndsType $alignment \
+	--alignIntronMax $allow_introns \
 	--outFilterMultimapNmax $multimap \
 	--outFilterMismatchNmax $mismatches
 fi

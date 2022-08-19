@@ -93,11 +93,11 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   for (i in seq(length(varNames))) { # For each sample
     print(varNames[i])
     if (is.character(weight) & length(weight) == 1) {
-      if (!(weight %in% colnames(mcols(get(varNames[i])))))
+      if (!(weight %in% colnames(mcols(get(varNames[i], envir = envExp(df))))))
         weight <- NULL
     }
 
-    co <- countOverlapsW(tx, get(varNames[i]), weight = weight)
+    co <- countOverlapsW(tx, get(varNames[i], envir = envExp(df)), weight = weight)
     rawCounts[, (paste0("V",i)) := co]
   }
   mat <- as.matrix(rawCounts);colnames(mat) <- NULL
