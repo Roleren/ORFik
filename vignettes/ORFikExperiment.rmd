@@ -20,7 +20,7 @@ NGS libraries are becoming more and more numerous. As a bioinformatician / biolo
 
 Another problem is also that annotations like gff and fasta files combined with the NGS data, must be separately loaded. Making it possible to use wrong annotation for the NGS data.
 
-So to summarize, the ORFik experiment API abstracts what could be done with 1 NGS library and a corresponding organism annotation to the level of multiple libraries and the comparison between them, standardizing ploting, comparisons, loading libraries and many much more.
+So to summarize, the ORFik experiment API abstracts what could be done with 1 NGS library and a corresponding organism annotation to the level of multiple libraries and the comparison between them, standardizing ploting, comparisons, loading libraries and much more.
 
 ## What is an ORFik experiment?
 It is an object that simplify and error correct your NGS workflow, creating a single R object that stores and controls all results relevant to a specific experiment. It contains following important parts:

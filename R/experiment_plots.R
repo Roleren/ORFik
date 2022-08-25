@@ -76,7 +76,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                                               windowSize, is.sorted, drop.zero.dt) {
         message(x)
         splitIn3Tx(leaders, cds, trailers,
-                   get(x, mode = "S4"), fraction = x,
+                   get(x, mode = "S4", envir = envExp(df)), fraction = x,
                    windowSize = windowSize, is.sorted = is.sorted,
                    drop.zero.dt = drop.zero.dt)
       }, leaders = leaders, cds = cds, trailers = trailers,
@@ -100,6 +100,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
           ggsave(pasteDir(outdir, paste0(name(df),"_cp_all_", s,
                                          idName, plot.ext)),
                  a,
+                 width = 6,
                  height = 10 + floor(nrow(df) / 5))
         }
         return(a)
@@ -174,7 +175,8 @@ transcriptWindow1 <- function(df, outdir = NULL,
 
     coverage <- bplapply(varNames, function(x, df, windowSize, drop.zero.dt) {
       message(x)
-      windowPerTranscript(df, reads = get(x), splitIn3 = FALSE, fraction = x,
+      windowPerTranscript(df, reads = get(x, mode = "S4", envir = envExp(df)),
+                          splitIn3 = FALSE, fraction = x,
                           windowSize = windowSize, drop.zero.dt = drop.zero.dt)
     }, df = df, windowSize = windowSize, drop.zero.dt = drop.zero.dt,
     BPPARAM = BPPARAM)
@@ -193,6 +195,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
         idName <- ifelse(idName == "", "", paste0("_", idName))
         ggsave(pasteDir(outdir, paste0(df@experiment,"_cp_tx_all_", s,
                                        idName, plot.ext)), a,
+               width = 6,
                height = 10)
       }
     }

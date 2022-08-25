@@ -188,7 +188,7 @@ It should be noted that Bioconductor BSGenome packages are not currently support
 They might be supported in the future and can already be used for all other parts of ORFik. 
 
 ## Annotation without defined UTRs
-If you do not have defined UTRs an your annotation, this will give you considerable less quality results (no results using leaders can be created). So optimial is always to
+If you do not have defined UTRs in your annotation, this will give you considerable less quality results (no results using leaders can be created). So optimial is always to
 find an annotation with UTRs. If that is not possible ORFik contains two ways to create 5' UTR annotation, 
 3' UTR annotation will be included soon.
 
@@ -247,7 +247,7 @@ ORFik uses the fastp for trimming reads, this also only works on unix (Linux or 
 Most Illumina sequencing contains 3' adapters. This is because let's say you sequence 100 bases, but the actual RNA read is only 28 nt long, you still need 72 bases as fillers, to not screw up that all should be 100 bases long.
 The great thing with fastp is that it has auto detection and removal of adapters, if you check out the resulting files you will see fastp has auto removed the Illumina adapters. In rare cases some libraries are have a double set of adapters, or low quality adapters, in those cases run fastqc (or another 3' adapter analyzer) to see what it missed. 
 
-The final rule is that for Ribo-seq, your trimmed reads should be no longer than 55 nt, else STAR (using the default local alignment) will not be able to find the 28nt of the read that align (STAR must by default align ~ 50% of the read). For RNA-seq
+The final rule is that for Ribo-seq, your trimmed reads should be no longer than 55 nt, else STAR (using the default local alignment) will not be able to find the 28nt of the read that align (STAR must by default align ~ 50% of the read). For RNA-seq,
 adapter trimming is not really that crucial, as local alignment will find the hit anyway.
 
 ### Aligning the data

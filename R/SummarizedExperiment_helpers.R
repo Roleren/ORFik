@@ -36,6 +36,7 @@
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
 #' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file.
+#' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
 #' @export
 #' @return a \code{\link{SummarizedExperiment}} object or data.table if
@@ -59,7 +60,8 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             geneOrTxNames = "tx",
                                             region = "mrna", type = "count",
                                             lib.type = "ofst",
-                                            weight = "score", forceRemake = FALSE) {
+                                            weight = "score", forceRemake = FALSE,
+                                            BPPARAM = BiocParallel::SerialParam()) {
   stopifnot(length(geneOrTxNames) == 1)
   stopifnot(geneOrTxNames %in% c("tx", "gene"))
 
@@ -86,7 +88,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   }
 
   varNames <- bamVarName(df)
-  outputLibs(df, chrStyle = tx, type = lib.type)
+  outputLibs(df, chrStyle = tx, type = lib.type, BPPARAM = BPPARAM)
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
                                  nrow = length(tx)))

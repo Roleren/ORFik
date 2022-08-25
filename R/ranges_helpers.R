@@ -635,6 +635,7 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   names(g) <- indices
   region <- pmapFromTranscriptF(g, tx, TRUE)
   names(region) <- names(gr)
+  seqinfo(region) <- seqinfo(gr)
   return(region)
 }
 

@@ -13,7 +13,8 @@ makeSummarizedExperimentFromBam(
   type = "count",
   lib.type = "ofst",
   weight = "score",
-  forceRemake = FALSE
+  forceRemake = FALSE,
+  BPPARAM = BiocParallel::SerialParam()
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ will check for a metacolumn called "score" in libraries. If not found,
 will not use weights.}
 
 \item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file.}
+
+\item{BPPARAM}{how many cores/threads to use? default: BiocParallel::SerialParam()}
 }
 \value{
 a \code{\link{SummarizedExperiment}} object or data.table if
