@@ -421,6 +421,35 @@ txNamesToGeneNames <- function(txNames, txdb) {
   return(as.character(g$gene_id)[match])
 }
 
+#' Get gene symbols from Ensembl gene ids
+#'
+#' If your organism is not in this list of supported
+#' organisms, manually assign the input arguments
+#'
+#' Will check for already existing table of all genes, and use that instead
+#' of redownloading every time.
+#' @return data.table with 2 columns gene_id and gene_symbol named after
+#' attribute, sorted in order of gene_ids input.
+geneToSymbol <- function(df, organism_name = organism(df),
+                         gene_ids = filterTranscripts(df, by = "gene"),
+                         org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl"),
+                         ensembl = useEnsembl("ensembl",dataset=org.dataset),
+                         attribute = c("Homo sapiens" = "hgnc_symbol",
+                                       "Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]) {
+  message("- Symbols extracted from:")
+  message("Organism: ", organism_name)
+  message("Dataset: ", org.dataset)
+  message("Attribute: ", attribute)
+  gene_id <- as.data.table(getBM(attributes=c("ensembl_gene_id", attribute),
+                                 filters = 'ensembl_gene_id',
+                                 values = gene_ids,
+                                 mart = ensembl))
+  gene_id <- gene_id[chmatch(gene_ids, gene_id$ensembl_gene_id),]
+  gene_id[]
+  if (anyNA(gene_id[,2])) warning("Some gene symbols was not found!")
+  return(gene_id)
+}
+
 #' Import the GTF / GFF that made the txdb
 #' @inheritParams getGtfPathFromTxdb
 #' @param txdb a TxDb, path to txdb / gff or ORFik experiment object

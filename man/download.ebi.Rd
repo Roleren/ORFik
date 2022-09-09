@@ -9,6 +9,7 @@ download.ebi(
   outdir,
   rename = TRUE,
   ebiDLMethod = "auto",
+  timeout = 1000,
   BPPARAM = bpparam()
 )
 }
@@ -36,6 +37,10 @@ to something more meaningful.}
 to use in download.file when using ebi ftp download. Sometimes "curl"
 is might not work (the default auto usually), in those cases use wget.
 See "method" argument of ?download.file, for more info.}
+
+\item{timeout}{1000, how many seconds before killing download if
+still active? Will overwrite global option until R session is closed.
+Increase value if you are on a very slow connection.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}
