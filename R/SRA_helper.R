@@ -288,6 +288,10 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
   url <- paste0(url, SRP)
   download.file(url, destfile)
   file <- fread(destfile)
+  if (nrow(file) == 0) {
+    warning("Experiment not found on SRA, are you sure it is public?")
+    return(file)
+  }
 
   msg <- paste("Found Runs with 0 reads (spots) in metadata, will not be able
               to download the run/s:", file[spots == 0,]$Run)

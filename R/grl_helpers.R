@@ -510,7 +510,7 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
     x <- grglist(x) # convert to grl
     weight = weight[groupings(x)] # repeat weight per group
   }
-
+  # Get coverage
   if (ignore.strand) {
     cvg <- coverage(x, weight = weight)
     uex_cvg <- cvg[uex]
@@ -528,7 +528,6 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
       cvg1 <- coverage(x1, weight = weight)
       cvg2 <- coverage(x2, weight = weight)
     }
-
     is_plus_ex <- strand(uex) == "+"
     is_minus_ex <- strand(uex) == "-"
     if (!identical(is_plus_ex, !is_minus_ex))
@@ -547,6 +546,60 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
   return(ans)
 }
 
+#' coverageByTranscript with coverage input
+#'
+#' Extends the function with direct genome coverage input,
+#' see \code{\link{coverageByTranscript}} for original function.
+#' @param x a list of simpleRleList, must have defined and correct
+#' seqlengths in its SeqInfo object.
+#' @param transcripts \code{\link{GRangesList}}
+#' @param ignore.strand a logical (default: FALSE)
+#' @importFrom S4Vectors wmsg isTRUEorFALSE
+#' @return Integer Rle of coverage, 1 per transcript
+coverageByTranscriptC <- function (x, transcripts, ignore.strand = length(x) == 1) {
+  stopifnot(is(x, "list"))
+  stopifnot(is(x[[1]], "SimpleRleList"))
+  stopifnot(all(!anyNA(seqlengths(x[[1]]))))
+  if (!is(transcripts, "GRangesList")) {
+    transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
+                       silent = TRUE)
+    if (is(transcripts, "try-error"))
+      stop(wmsg("failed to extract the exon ranges ",
+                "from 'transcripts' with ", "exonsBy(transcripts, by=\"tx\", use.names=TRUE)"))
+  }
+  if (!isTRUEorFALSE(ignore.strand))
+    stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
+  cvg1 <- x[[1]]
+  if (length(x) == 2) cvg2 <- x[[2]]
+
+  ex <- unlist(transcripts, use.names = FALSE)
+  sm <- selfmatch(ex)
+  is_unique <- sm == seq_along(sm)
+  uex2ex <- which(is_unique)
+  uex <- ex[uex2ex]
+
+  # Get coverage
+  if (ignore.strand) {
+    uex_cvg <- cvg1[uex]
+  }
+  else {
+    is_plus_ex <- strand(uex) == "+"
+    is_minus_ex <- strand(uex) == "-"
+    if (!identical(is_plus_ex, !is_minus_ex))
+      stop(wmsg("'transcripts' has exons on the * strand. ",
+                "This is not supported at the moment."))
+    uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
+    uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
+    uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+    names(uex_cvg) <- as.character(seqnames(uex))
+  }
+  uex_cvg[strand(uex) == "-"] <- ORFik:::revElementsF(uex_cvg)[strand(uex) == "-"]
+  ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
+  ex_cvg <- uex_cvg[ex2uex]
+  ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
+  mcols(ans) <- mcols(transcripts)
+  return(ans)
+}
 # Testing new version
 # coverageByTranscriptW2 <- function (x, transcripts, ignore.strand = FALSE,
 #                                    weight = 1L) {
