@@ -28,8 +28,7 @@ STAR.align.folder(
   keep.contaminants = FALSE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
-  script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
-    "ORFik")
+  script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
 )
 }
 \arguments{

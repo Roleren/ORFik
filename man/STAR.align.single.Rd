@@ -24,8 +24,7 @@ STAR.align.single(
   wait = TRUE,
   resume = NULL,
   keep.contaminants = FALSE,
-  script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package =
-    "ORFik")
+  script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
 )
 }
 \arguments{

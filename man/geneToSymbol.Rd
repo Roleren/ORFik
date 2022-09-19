@@ -10,10 +10,29 @@ geneToSymbol(
   gene_ids = filterTranscripts(df, by = "gene"),
   org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement =
     "", organism_name), "_gene_ensembl"),
-  ensembl = useEnsembl("ensembl", dataset = org.dataset),
-  attribute = c(`Homo sapiens` = "hgnc_symbol", `Mus musculus` = "mgi_symbol", `Rattus
-    norvegicus` = "mgi_symbol")[organism_name]
+  ensembl = biomaRt::useEnsembl("ensembl", dataset = org.dataset),
+  attribute = c(`Homo sapiens` = "hgnc_symbol", `Mus musculus` = "mgi_symbol",
+    `Rattus norvegicus` = "mgi_symbol")[organism_name]
 )
+}
+\arguments{
+\item{df}{an ORFik \code{\link{experiment}}. Can be set to NULL if gene_ids and organism
+is defined manually.}
+
+\item{organism_name}{default, \code{organism(df)}.
+Scientific name of organism, like ("Homo sapiens"),
+remember capital letter for first name only!}
+
+\item{gene_ids}{default, \code{filterTranscripts(df, by = "gene")}.
+Ensembl gene IDs to search for}
+
+\item{org.dataset}{default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
+the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl}
+
+\item{ensembl}{default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.}
+
+\item{attribute}{default, \code{c("Homo sapiens" = "hgnc_symbol","Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]}.
+The attributes to search for: Normally hgnc symbol for human, and mgi symbol for mouse and rat.}
 }
 \value{
 data.table with 2 columns gene_id and gene_symbol named after
@@ -25,5 +44,14 @@ organisms, manually assign the input arguments
 }
 \details{
 Will check for already existing table of all genes, and use that instead
-of redownloading every time.
+of re-downloading every time.
+}
+\examples{
+## Without ORFik experiment input
+gene_id_ATF4 <- "ENSG00000128272"
+#geneToSymbol(NULL, organism_name = "Homo sapiens", gene_ids = gene_id_ATF4)
+
+## All genes from Organism using ORFik experiment
+# df <- read.experiment("some_experiment)
+# geneToSymbol(df)
 }

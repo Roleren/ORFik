@@ -427,20 +427,41 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' organisms, manually assign the input arguments
 #'
 #' Will check for already existing table of all genes, and use that instead
-#' of redownloading every time.
+#' of re-downloading every time.
+#' @param df an ORFik \code{\link{experiment}}. Can be set to NULL if gene_ids and organism
+#' is defined manually.
+#' @param organism_name default, \code{organism(df)}.
+#' Scientific name of organism, like ("Homo sapiens"),
+#' remember capital letter for first name only!
+#' @param gene_ids default, \code{filterTranscripts(df, by = "gene")}.
+#'  Ensembl gene IDs to search for
+#' @param org.dataset default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
+#' the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl
+#' @param ensembl default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.
+#' @param attribute default, \code{c("Homo sapiens" = "hgnc_symbol","Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]}.
+#' The attributes to search for: Normally hgnc symbol for human, and mgi symbol for mouse and rat.
 #' @return data.table with 2 columns gene_id and gene_symbol named after
 #' attribute, sorted in order of gene_ids input.
+#' @export
+#' @examples
+#' ## Without ORFik experiment input
+#' gene_id_ATF4 <- "ENSG00000128272"
+#' #geneToSymbol(NULL, organism_name = "Homo sapiens", gene_ids = gene_id_ATF4)
+#'
+#' ## All genes from Organism using ORFik experiment
+#' # df <- read.experiment("some_experiment)
+#' # geneToSymbol(df)
 geneToSymbol <- function(df, organism_name = organism(df),
                          gene_ids = filterTranscripts(df, by = "gene"),
                          org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl"),
-                         ensembl = useEnsembl("ensembl",dataset=org.dataset),
+                         ensembl = biomaRt::useEnsembl("ensembl",dataset=org.dataset),
                          attribute = c("Homo sapiens" = "hgnc_symbol",
                                        "Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]) {
   message("- Symbols extracted from:")
   message("Organism: ", organism_name)
   message("Dataset: ", org.dataset)
   message("Attribute: ", attribute)
-  gene_id <- as.data.table(getBM(attributes=c("ensembl_gene_id", attribute),
+  gene_id <- as.data.table(biomaRt::getBM(attributes=c("ensembl_gene_id", attribute),
                                  filters = 'ensembl_gene_id',
                                  values = gene_ids,
                                  mart = ensembl))

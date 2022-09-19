@@ -12,7 +12,9 @@ shiftFootprintsByExperiment(
   top_tx = 10L,
   minFiveUTR = 30L,
   minCDS = 150L,
-  minThreeUTR = if (stop) {     30 } else NULL,
+  minThreeUTR = if (stop) {
+     30
+ } else NULL,
   firstN = 150L,
   min_reads = 1000,
   min_reads_TIS = 50,

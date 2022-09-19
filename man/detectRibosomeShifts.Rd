@@ -12,7 +12,9 @@ detectRibosomeShifts(
   top_tx = 10L,
   minFiveUTR = 30L,
   minCDS = 150L,
-  minThreeUTR = if (stop) {     30 } else NULL,
+  minThreeUTR = if (stop) {
+     30
+ } else NULL,
   txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
   firstN = 150L,
   tx = NULL,
