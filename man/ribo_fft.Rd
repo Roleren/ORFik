@@ -16,6 +16,10 @@ length of argument mrna, and all must have length > arugment firstN.}
 \item{mrna}{a \code{\link{GRangesList}} of full mRNA ranges match the cds
 argument.}
 
+\item{read_lengths}{integer vector, default: 26:34,
+which read length to check for. Will exclude all read_lengths that
+does not exist for footprints.}
+
 \item{firstN}{(integer) Represents how many bases of the transcripts
 downstream of start codons to use for initial estimation of the
 periodicity.}

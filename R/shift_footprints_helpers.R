@@ -188,6 +188,9 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 #' length of argument mrna, and all must have length > arugment firstN.
 #' @param mrna a \code{\link{GRangesList}} of full mRNA ranges match the cds
 #'  argument.
+#' @param read_lengths integer vector, default: 26:34,
+#'  which read length to check for. Will exclude all read_lengths that
+#'  does not exist for footprints.
 #' @return a data.table with read_length, amplitude and periods
 #' @export
 #' @examples
