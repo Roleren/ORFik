@@ -176,6 +176,84 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
   return(invisible(NULL))
 }
 
+#' Get periodogram data per read length
+#'
+#' A data.table of periods and amplitudes, great to detect
+#' ribosomal read lengths. Uses 5' end of reads to detect periodicity.
+#' Works both before and after p-shifting. Plot results with ribo_fft_plot.
+#' @inheritParams detectRibosomeShifts
+#' @param footprints Ribosome footprints in either \code{\link{GAlignments}} or
+#' \code{\link{GRanges}}
+#' @param cds a \code{\link{GRangesList}} of coding sequences. Length must match
+#' length of argument mrna, and all must have length > arugment firstN.
+#' @param mrna a \code{\link{GRangesList}} of full mRNA ranges match the cds
+#'  argument.
+#' @return a data.table with read_length, amplitude and periods
+#' @export
+#' @examples
+#' ## Note, this sample data is not intended to be strongly periodic.
+#' ## Real data should have a cleaner peak for x = 3 (periodicity)
+#' # Load sample data
+#' df <- ORFik.template.experiment()
+#' # Load annotation
+#' loadRegions(df, c("mrna", "cds"), names.keep = filterTranscripts(df))
+#' # Select a riboseq library
+#' df <- df[df$libtype == "RFP", ]
+#' footprints <- fimport(filepath(df[1,], "default"))
+#' fft_dt <-ribo_fft(footprints, cds, mrna)
+#' ribo_fft_plot(fft_dt)
+ribo_fft <- function(footprints, cds, mrna, read_lengths = 26:34, firstN = 150) {
+  stopifnot(all(names(cds) == names(mrna)))
+  stopifnot(any(widthPerGroup(cds, F) < firstN))
+  # 5' ends only, to detect periodicity
+  footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
+                                        addScoreColumn = TRUE,
+                                        along.reference = TRUE)
+
+  # Get a fixed size coverage window
+  cov <- windowPerReadLength(cds, mrna, footprints,
+                             pShifted = FALSE, upstream = 0,
+                             downstream = firstN - 1,
+                             zeroPosition = 0, scoring = "transcriptNormalized",
+                             acceptedLengths = read_lengths,
+                             drop.zero.dt = TRUE, append.zeroes = TRUE)
+  # Draw spectrogram of FFT
+  fft_dt<- data.table()
+  read_lengths <- read_lengths[read_lengths %in% readWidths(footprints)]
+  for (i in read_lengths) {
+    spec <- spec.pgram(x = cov[fraction == i,]$score, plot = F)
+    fft_dt <- rbindlist(list(fft_dt, data.table(read_length = i, amplitude = spec$spec, periods = 1 / spec$freq)))
+  }
+  fft_dt[]
+  return(fft_dt)
+}
+
+#' Get periodogram plot per read length
+#' @param fft_dt a data.table with read_length, amplitude and periods
+#' @param period_window x axis limits, default c(0,6)
+#' @return a ggplot, geom_line plot facet by read length.
+#' @export
+#' @examples
+#' ## Note, this sample data is not intended to be strongly periodic.
+#' ## Real data should have a cleaner peak for x = 3 (periodicity)
+#' # Load sample data
+#' df <- ORFik.template.experiment()
+#' # Load annotation
+#' loadRegions(df, c("mrna", "cds"), names.keep = filterTranscripts(df))
+#' # Select a riboseq library
+#' df <- df[df$libtype == "RFP", ]
+#' footprints <- fimport(filepath(df[1,], "default"))
+#' fft_dt <-ribo_fft(footprints, cds, mrna)
+#' ribo_fft_plot(fft_dt)
+ribo_fft_plot <- function(fft_dt, period_window = c(0, 6)) {
+  stopifnot(is(fft_dt, "data.table"))
+  ggplot(fft_dt, aes(x = periods, y = amplitude)) +
+    geom_line() +
+    facet_wrap( ~ read_length, scales = "free") +
+    scale_x_continuous(limits = period_window, breaks = c(1,3,5)) +
+    theme_classic()
+}
+
 #' Load the shifts from experiment
 #'
 #' When you p-shift using the function shiftFootprintsByExperiment,
