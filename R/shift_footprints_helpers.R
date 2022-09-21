@@ -204,7 +204,7 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 #' ribo_fft_plot(fft_dt)
 ribo_fft <- function(footprints, cds, mrna, read_lengths = 26:34, firstN = 150) {
   stopifnot(all(names(cds) == names(mrna)))
-  stopifnot(any(widthPerGroup(cds, F) < firstN))
+  stopifnot(all(widthPerGroup(cds, FALSE) >= firstN))
   # 5' ends only, to detect periodicity
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
                                         addScoreColumn = TRUE,
@@ -221,7 +221,7 @@ ribo_fft <- function(footprints, cds, mrna, read_lengths = 26:34, firstN = 150) 
   fft_dt<- data.table()
   read_lengths <- read_lengths[read_lengths %in% readWidths(footprints)]
   for (i in read_lengths) {
-    spec <- spec.pgram(x = cov[fraction == i,]$score, plot = F)
+    spec <- spec.pgram(x = cov[fraction == i,]$score, plot = FALSE)
     fft_dt <- rbindlist(list(fft_dt, data.table(read_length = i, amplitude = spec$spec, periods = 1 / spec$freq)))
   }
   fft_dt[]
