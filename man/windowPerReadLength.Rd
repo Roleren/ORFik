@@ -29,9 +29,10 @@ with usually either leaders, cds', 3' utrs or ORFs}
 names of tx must contain all grl names. The names of grl can also be the
 ORFik orf names. that is "txName_id"}
 
-\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+precomputed coverage as RleList or a covRle (one for each strand) of
 RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'}
+column in 'reads'.}
 
 \item{pShifted}{a logical (TRUE), are Ribo-seq reads p-shifted to size
 1 width reads? If upstream and downstream is set, this argument is

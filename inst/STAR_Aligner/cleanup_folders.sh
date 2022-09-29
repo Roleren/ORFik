@@ -16,13 +16,8 @@ if [ ! -d ${out_dir} ]; then
         exit 1
 fi
 
-if [ ! -d "${out_dir}/aligned" ]; then
-        echo "${out_dir}/aligned does not exist!"
-        exit 1
-fi
 
 # clean up
-
 # temp files
 
 # Logs to seperate folder

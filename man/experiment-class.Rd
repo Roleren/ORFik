@@ -124,6 +124,7 @@ Other ORFik_experiment:
 \code{\link{ORFik.template.experiment.zf}()},
 \code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
+\code{\link{covRle-class}},
 \code{\link{create.experiment}()},
 \code{\link{filepath}()},
 \code{\link{libraryTypes}()},

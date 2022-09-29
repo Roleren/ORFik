@@ -32,6 +32,7 @@ Other utils:
 \code{\link{convertToOneBasedRanges}()},
 \code{\link{export.bed12}()},
 \code{\link{export.bigWig}()},
+\code{\link{export.fstwig}()},
 \code{\link{export.wiggle}()},
 \code{\link{fimport}()},
 \code{\link{findFa}()},

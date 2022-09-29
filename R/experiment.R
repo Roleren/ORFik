@@ -546,6 +546,15 @@ filepath <- function(df, type, basename = FALSE) {
         }
       } else type <- "ofst"
     }
+    if (type %in% "cov") {
+      out.dir <- paste0(dirname(df$filepath[1]), "/cov_RLE/")
+      input <- paste0(out.dir,
+                      remove.file_ext(x,
+                                      basename = TRUE)
+                      , ".covrds")
+      if (!file.exists(input)) stop("File did not exist,",
+                                    "did you create RLEs yet?")
+    }
 
     if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
       out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
@@ -654,13 +663,24 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
     if (!all(loaded)) {
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       paths <- filepath(df, type)
-      libs <- bplapply(seq_along(paths),
+      if (is(BPPARAM, "SerialParam")) {
+        libs <- lapply(seq_along(paths),
                        function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
-        if (verbose) message(paste(i, ": ", varNames[i]))
-        fimport(paths[i], chrStyle, param, strandMode)
-      }, paths = paths, chrStyle = chrStyle, df = df,
-      param = param, strandMode = strandMode, varNames = varNames,
-      verbose = verbose, BPPARAM = BPPARAM)
+                           if (verbose) message(paste(i, ": ", varNames[i]))
+                           fimport(paths[i], chrStyle, param, strandMode)
+                         }, paths = paths, chrStyle = chrStyle, df = df,
+                         param = param, strandMode = strandMode, varNames = varNames,
+                         verbose = verbose)
+      } else {
+        libs <- bplapply(seq_along(paths),
+                         function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
+                           if (verbose) message(paste(i, ": ", varNames[i]))
+                           fimport(paths[i], chrStyle, param, strandMode)
+                         }, paths = paths, chrStyle = chrStyle, df = df,
+                         param = param, strandMode = strandMode, varNames = varNames,
+                         verbose = verbose, BPPARAM = BPPARAM)
+      }
+
 
       # assign to environment
       if (output.mode %in% c("envir", "envirlist")) {
@@ -842,6 +862,40 @@ mergeLibs <- function(df, out_dir = file.path(dirname(df$filepath[1]), "ofst_mer
   }
   return(invisible(NULL))
 }
+
+#' Convert libraries to coverage RLEs
+#'
+#' Saved in folder "cov_RLE" relative to default libraries of experiment
+#' @inheritParams outputLibs
+#' @param in_files paths to input files, default pshifted files:
+#' \code{filepath(df, "pshifted")} in ofst format
+#' @param seqinfo SeqInfo object, default \code{seqinfo(findFa(df))}
+#' @param weight integer, numeric or single length character. Default "score".
+#' Use score column in loaded in_files.
+#' @param split.by.strand logical, default TRUE, split into forward and reverse
+#' strand RleList inside covRle object.
+#' @return invisible(NULL), files saved to disc
+convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
+                              split.by.strand = TRUE,
+                              seq_info = seqinfo(df), weight = "score") {
+  if (length(in_files) != nrow(df))
+    stop("'df' and 'in_files must have equal size!")
+  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  cov_dir <- file.path(dirname(df$filepath[1]), "cov_RLE")
+  out_filepaths <- file.path(cov_dir, lib_names)
+  dir.create(cov_dir, showWarnings = FALSE)
+  message("-- Converting to Coverage RleList")
+  for (i in seq_along(out_filepaths)) {
+    message("- Library:", i)
+    out_file <- out_filepaths[i]
+    in_file <- in_files[i]
+    export.cov(x = fimport(in_file), file = out_file,
+               split.by.strand = split.by.strand,
+               seqinfo = seq_info, weight = weight)
+  }
+  return(invisible(NULL))
+}
+
 #' Remove ORFik experiment libraries load in R
 #'
 #' Variable names defined by df, in envir defined

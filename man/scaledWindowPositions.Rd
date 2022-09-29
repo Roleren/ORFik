@@ -17,9 +17,10 @@ scaledWindowPositions(
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+precomputed coverage as RleList or a covRle (one for each strand) of
 RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'}
+column in 'reads'.}
 
 \item{scaleTo}{an integer (100), if windows have different size,
 a meta window can not directly be created, since a meta window must

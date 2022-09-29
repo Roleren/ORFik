@@ -550,16 +550,16 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
 #'
 #' Extends the function with direct genome coverage input,
 #' see \code{\link{coverageByTranscript}} for original function.
-#' @param x a list of simpleRleList, must have defined and correct
+#' @param x a covRle (one RleList for each strand in object),
+#'  must have defined and correct
 #' seqlengths in its SeqInfo object.
 #' @param transcripts \code{\link{GRangesList}}
-#' @param ignore.strand a logical (default: FALSE)
-#' @importFrom S4Vectors wmsg isTRUEorFALSE
+#' @param ignore.strand a logical (default: length(x) == 1)
+#' @importFrom S4Vectors wmsg isTRUEorFALSE List
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptC <- function (x, transcripts, ignore.strand = length(x) == 1) {
-  stopifnot(is(x, "list"))
-  stopifnot(is(x[[1]], "SimpleRleList"))
-  stopifnot(all(!anyNA(seqlengths(x[[1]]))))
+  stopifnot(is(x, "covRle"))
+  stopifnot(all(!anyNA(seqlengths(f(x)))))
   if (!is(transcripts, "GRangesList")) {
     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
                        silent = TRUE)
@@ -569,8 +569,8 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = length(x) == 
   }
   if (!isTRUEorFALSE(ignore.strand))
     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
-  cvg1 <- x[[1]]
-  if (length(x) == 2) cvg2 <- x[[2]]
+  cvg1 <- f(x)
+  if (strandMode(x)) cvg2 <- r(x)
 
   ex <- unlist(transcripts, use.names = FALSE)
   sm <- selfmatch(ex)
@@ -600,6 +600,7 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = length(x) == 
   mcols(ans) <- mcols(transcripts)
   return(ans)
 }
+
 # Testing new version
 # coverageByTranscriptW2 <- function (x, transcripts, ignore.strand = FALSE,
 #                                    weight = 1L) {

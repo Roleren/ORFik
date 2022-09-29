@@ -7,12 +7,13 @@
 coverageByTranscriptC(x, transcripts, ignore.strand = length(x) == 1)
 }
 \arguments{
-\item{x}{a list of simpleRleList, must have defined and correct
+\item{x}{a covRle (one RleList for each strand in object),
+ must have defined and correct
 seqlengths in its SeqInfo object.}
 
 \item{transcripts}{\code{\link{GRangesList}}}
 
-\item{ignore.strand}{a logical (default: FALSE)}
+\item{ignore.strand}{a logical (default: length(x) == 1)}
 }
 \value{
 Integer Rle of coverage, 1 per transcript

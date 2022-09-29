@@ -266,6 +266,30 @@ setMethod("QCfolder",
           }
 )
 
+#' Seqlevels ORFik experiment
+#' Extracted from fasta genome index
+#' @param x an ORFik \code{\link{experiment}}
+#' @return integer vector with names
+#' @export
+setMethod("seqlevels",
+          "experiment",
+          function(x) {
+            seqlevels(findFa(df@fafile))
+          }
+)
+
+#' Seqinfo ORFik experiment
+#' Extracted from fasta genome index
+#' @param x an ORFik \code{\link{experiment}}
+#' @return integer vector with names
+#' @export
+setMethod("seqinfo",
+          "experiment",
+          function(x) {
+            seqinfo(findFa(df@fafile))
+          }
+)
+
 #' Get experimental design
 #' Find the column/columns that create a separation between samples,
 #' by default skips replicate and choose first that is

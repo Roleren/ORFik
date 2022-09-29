@@ -19,9 +19,10 @@ coveragePerTiling(
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+precomputed coverage as RleList or a covRle (one for each strand) of
 RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'}
+column in 'reads'.}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}

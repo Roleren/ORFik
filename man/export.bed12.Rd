@@ -35,6 +35,7 @@ Other utils:
 \code{\link{bedToGR}()},
 \code{\link{convertToOneBasedRanges}()},
 \code{\link{export.bigWig}()},
+\code{\link{export.fstwig}()},
 \code{\link{export.wiggle}()},
 \code{\link{fimport}()},
 \code{\link{findFa}()},

@@ -134,9 +134,6 @@ correlation.plots <- function(df, output.dir,
     message("-  Skipping correlation plots (only 1 sample)")
     return(invisible(NULL))
   }
-  # Settings for points
-  point_settings <- list(continuous = GGally::wrap("points", alpha = 0.3, size = size),
-                         combo = GGally::wrap("dot", alpha = 0.4, size=0.2))
 
   message("  - raw scaled fpkm (simple)")
   cor_plot1 <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2,
@@ -146,6 +143,10 @@ correlation.plots <- function(df, output.dir,
          height = height, width = width, units = 'mm', dpi = 300)
   plot_list <- list(cor_plot1)
   if (complex.correlation.plots) {
+    # Settings for points
+    point_settings <- list(continuous = GGally::wrap("points", alpha = 0.3, size = size),
+                           combo = GGally::wrap("dot", alpha = 0.4, size=0.2))
+
     if (nrow(df) > 30) { # Avoid error from ggplot2 backend
       message("ORFik only supports complex correlation plots for up to 30 libraries in experiment!")
       return(invisible(NULL))

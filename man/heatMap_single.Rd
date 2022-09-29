@@ -33,9 +33,10 @@ This is the region that will be mapped in heatmap}
 names of tx must contain all grl names. The names of grl can also be the
 ORFik orf names. that is "txName_id"}
 
-\item{reads}{a \code{\link{GAlignments}} or \code{\link{GRanges}} object of
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+precomputed coverage as RleList or a covRle (one for each strand) of
 RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'}
+column in 'reads'.}
 
 \item{outdir}{a character path to save file as: not just directory,
 but full name.}
