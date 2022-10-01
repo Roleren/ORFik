@@ -226,6 +226,42 @@ readBigWig <- function(path, chrStyle = NULL) {
   return(matchSeqStyle(c(forward, reverse), chrStyle))
 }
 
+#' Import region from fastwig
+#'
+#' @param gr a GRanges object of exons
+#' @param dir prefix to filepath for file strand and chromosome will be added
+#' @param id id to column type, not used currently!
+#' @param readlength integer / character vector, default "all". Or a subset
+#' of readlengths.
+#' @return a data.table with columns specified by readlengths
+#' @export
+import.fstwig <- function(gr, dir, id = "", readlengths = "all") {
+  gr <- as.data.table(gr)
+  strand <- ifelse(gr$strand[1] == "+", "forward", "reverse")
+  if (id == "") {id <- NULL}
+  file <- paste(dir, "_chr_", as.character(gr$seqnames[1]), "_", strand, ".fstwig", sep = "")
+  reads <- fst(file)
+  cols <- colnames(reads)
+  if (all(readlengths == "all")) {
+    #cols <- cols[grep(id, cols)]
+  } else {
+    colids <- as.character(readlengths)
+    #colids <- paste(id, readlengths, sep = "_")
+    cols <- colids[colids %in% cols]
+    if (length(cols) == 0) stop("Select columns does not exist in fstwig file!")
+  }
+  cov <-  if (length(cols) == 1) {
+    mapply(function(x,y) as.data.table(reads[x : y ,cols]), x = gr$start, y = gr$end, SIMPLIFY = FALSE)
+  } else {mapply(function(x,y) reads[x : y ,cols], x = gr$start, y = gr$end, SIMPLIFY = FALSE)}
+
+  cov <- rbindlist(cov)
+  if (length(cols) == 1) {
+    colnames(cov) <- cols
+  }
+  return(cov)
+}
+
+
 #' Load GRanges object from .bedo
 #'
 #' .bedo is .bed ORFik, an optimized bed format for coverage reads with read lengths

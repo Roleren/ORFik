@@ -184,58 +184,69 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
   if ((is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments"))) {
     if (!is(x, "GRanges")) x <- GRanges(x)
     strands <- as.character(strand(x))
+    strandBool <- strandBool(x)
     strand_mode <- ifelse(all(strands == "*"), "single", "double")
     # Get coverage
     if (by.readlength) {
       readlengths <- readWidths(x)
     } else readlengths <- rep.int(1, length(x))
-
-    x_b <- x_p <- x_m <- data.table(group = rep.int(seq.int(length(seqlengths(x))), as.integer(seqlengths(x))))
-    for (length in unique(readlengths)) {
+    unique_lengths <- sort(unique(readlengths))
+    x_b <- x_p <- x_m <- list()
+    for (length in unique_lengths) {
       if (strand_mode == "single") { # b = both strands
-        x_b <- cbind(x_b, as.data.table(coverage(x[readlengths == length], weight = "score"))$value)
+        x_b <- c(x_b, coverage(x[readlengths == length], weight = "score"))
       } else { # p = pluss strand, m = minus strand
         hits <- which(readlengths == length)
-        x_p <- cbind(x_p, as.data.table(coverage(x[hits][strandBool(x[hits])], weight = "score"))$value)
-        x_m <- cbind(x_m, as.data.table(coverage(x[!strandBool(x[hits])], weight = "score"))$value)
+        x_p <- c(x_p, coverage(x[hits][strandBool[hits]], weight = "score"))
+        x_m <- c(x_m, coverage(x[hits][!strandBool[hits]], weight = "score"))
       }
     }
-    if (by.readlength) {
-      colnames(x_p)[seq(3, ncol(x_p))] <- as.character(unique(readlengths))
-      colnames(x_m)[seq(3, ncol(x_m))] <- as.character(unique(readlengths))
+
+    if (strand_mode != "single") { # Add check for readlength
+      names(x_p) <- names(x_m) <- unique_lengths
     } else {
-
+      names(x_b) <-  unique_lengths
     }
 
-  } else if (is(x, "list")) {
-    if (length(x) == 2) {
-      if (is(x[1], "RleList") & is(x[2], "RleList")) {
-        x_p <- as.data.table(x[1])
-        x_m <- as.data.table(x[2])
-        strand_mode <- "double"
-      }
+  } else if (is(x, "covRle")) {
+    if (strandMode(x)) {
+      x_p <- f(x)
+      x_m <- r(x)
+      strand_mode <- "double"
     }
   } else if (is(x, "RleList")) {
-    x_b <- as.data.table(x)
+    x_b <- x
     strand_mode <- "single"
-  } else stop("x must be GRanges, GAlignments, GAlignmentPairs, RleList or list of RleList of length 2")
+  } else stop("x must be GRanges, GAlignments, GAlignmentPairs, RleList or covRle")
+  chrs <- seqlevels(x)
+  if (by.readlength) {
+    for (chr in chrs[1:2]) {
+      if (strand_mode == "single") {
+        stop("Not implemented")
+      } else {
+        if (by.readlength) {
+          lengths_to_use <- as.character(unique_lengths)[1:2]
+          dtt_p <- data.table()
+          dtt_m <- data.table()
+          for(length in lengths_to_use) {
+            dtt_p <-cbind(dtt_p, data.table(unlist(IntegerList(x_p[[length]][chr]))))
+            dtt_m <-cbind(dtt_m, data.table(unlist(IntegerList(x_m[[length]][chr]))))
+          }
+          colnames(dtt_p) <- colnames(dtt_m) <- lengths_to_use
+          dt <- list(dtt_p, dtt_m)
+        } else {
+          dt <- list(data.table(unlist(IntegerList(x_p[chr]))), data.table(unlist(IntegerList(x_m[chr]))))
+        }
 
-  if (by.chromosome) {
-    chrs <- seq.int(length(seqlevels(x)))
-
-    for (chr in chrs) {
-      dt <- if (strand_mode == "single") {
-        x_b[group == chr,-c(1,2)]
-      } else list(p = x_p[group == chr,-c(1,2)], m = x_m[group == chr,-c(1,2)])
+      }
       file_chr <- paste0(file, "_", chr)
-      save.fstwig(dt, file_chr, compress = compress)
+      ORFik:::save.fstwig(dt, file_chr, compress = compress)
+      rm(dt)
     }
   } else {
-    dt <- if (strand_mode == "single") {
-      x_b
-    } else list(p = x_p, m = x_m)
-    save.fstwig(dt, file, compress = compress)
+    stop("Not implemented")
   }
+
   return(invisible(NULL))
 }
 

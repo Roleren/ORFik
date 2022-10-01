@@ -497,24 +497,35 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!is.null(fraction)) stopifnot(length(fraction) == 1)
   if (!is.sorted) grl <- sortPerGroup(grl)
 
-  if (is(reads, "covRle") | is(reads, "RleList")) {
-    coverage <- coverageByTranscriptC(reads, grl, ignore.strand = FALSE)
+  if (is(reads, "character")) {
+    stop("Not implemented")
+    chrs <- seqnamesPerGroup(grl, FALSE)
+    chr_groups <- unique(chrs)
+    for (chr in chr_groups) {
+      import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE))
+    }
+
   } else {
-    score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
-    if (score.defined) {
-      coverage <- coverageByTranscriptW(reads, grl, weight = weight)
-    } else coverage <- coverageByTranscript(reads, grl)
+    if (is(reads, "covRle") | is(reads, "RleList")) {
+      coverage <- coverageByTranscriptC(reads, grl, ignore.strand = FALSE)
+    } else {
+      score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
+      if (score.defined) {
+        coverage <- coverageByTranscriptW(reads, grl, weight = weight)
+      } else coverage <- coverageByTranscript(reads, grl)
+    }
+
+
+    if (!keep.names) names(coverage) <- NULL
+
+    if (as.data.table) {
+      return(coverage_to_dt(coverage, keep.names = keep.names,
+                            withFrames = withFrames, weight = weight,
+                            drop.zero.dt = drop.zero.dt, fraction = fraction))
+    }
+    if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
   }
 
-
-  if (!keep.names) names(coverage) <- NULL
-
-  if (as.data.table) {
-    return(coverage_to_dt(coverage, keep.names = keep.names,
-                          withFrames = withFrames, weight = weight,
-                          drop.zero.dt = drop.zero.dt, fraction = fraction))
-  }
-  if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
   return(coverage)
 }
 
