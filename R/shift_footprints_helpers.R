@@ -199,14 +199,13 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 #' # Load sample data
 #' df <- ORFik.template.experiment()
 #' # Load annotation
-#' loadRegions(df, c("mrna", "cds"), names.keep = filterTranscripts(df))
+#' loadRegions(df, "cds", names.keep = filterTranscripts(df))
 #' # Select a riboseq library
 #' df <- df[df$libtype == "RFP", ]
 #' footprints <- fimport(filepath(df[1,], "default"))
-#' fft_dt <-ribo_fft(footprints, cds, mrna)
+#' fft_dt <-ribo_fft(footprints, cds)
 #' ribo_fft_plot(fft_dt)
-ribo_fft <- function(footprints, cds, mrna, read_lengths = 26:34, firstN = 150) {
-  stopifnot(all(names(cds) == names(mrna)))
+ribo_fft <- function(footprints, cds, read_lengths = 26:34, firstN = 150) {
   stopifnot(all(widthPerGroup(cds, FALSE) >= firstN))
   # 5' ends only, to detect periodicity
   footprints <- convertToOneBasedRanges(footprints, addSizeColumn = TRUE,
@@ -214,7 +213,7 @@ ribo_fft <- function(footprints, cds, mrna, read_lengths = 26:34, firstN = 150) 
                                         along.reference = TRUE)
 
   # Get a fixed size coverage window
-  cov <- windowPerReadLength(cds, mrna, footprints,
+  cov <- windowPerReadLength(cds, cds, footprints,
                              pShifted = FALSE, upstream = 0,
                              downstream = firstN - 1,
                              zeroPosition = 0, scoring = "transcriptNormalized",

@@ -501,9 +501,14 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
     stop("Not implemented")
     chrs <- seqnamesPerGroup(grl, FALSE)
     chr_groups <- unique(chrs)
+    if (all(is.null(fraction))) fraction <- "all"
     for (chr in chr_groups) {
-      import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE))
+      coverage <- import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE),
+                                readlengths = fraction)
     }
+    coverage[, genes := ORFik::groupings(coverage)]
+    coverage[, position := seq_len(.N), by = genes]
+    if (withFrames) coverage[, frame := (position - 1) %% 3]
 
   } else {
     if (is(reads, "covRle") | is(reads, "RleList")) {
@@ -767,8 +772,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   all_lengths <- sort(unique(rWidth))
   if (!is.null(acceptedLengths))
     all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
-  dt <- data.table()
 
+  dt <- data.table()
   for(l in all_lengths) {
     dt <- rbindlist(list(dt, metaWindow(
       x = reads[rWidth == l], windows = windows, scoring = scoring,

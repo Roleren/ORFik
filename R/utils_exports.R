@@ -183,6 +183,7 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
 
   if ((is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments"))) {
     if (!is(x, "GRanges")) x <- GRanges(x)
+    message("-- Creating covRle object from GRanges")
     strands <- as.character(strand(x))
     strandBool <- strandBool(x)
     strand_mode <- ifelse(all(strands == "*"), "single", "double")
@@ -192,7 +193,9 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
     } else readlengths <- rep.int(1, length(x))
     unique_lengths <- sort(unique(readlengths))
     x_b <- x_p <- x_m <- list()
+    message("- Read length:")
     for (length in unique_lengths) {
+      message(length)
       if (strand_mode == "single") { # b = both strands
         x_b <- c(x_b, coverage(x[readlengths == length], weight = "score"))
       } else { # p = pluss strand, m = minus strand
@@ -219,16 +222,21 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
     strand_mode <- "single"
   } else stop("x must be GRanges, GAlignments, GAlignmentPairs, RleList or covRle")
   chrs <- seqlevels(x)
+  if (!dir.exists(dirname(file))) dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
   if (by.readlength) {
-    for (chr in chrs[1:2]) {
+    message("- Output fstwig for chr:")
+    for (chr in chrs) {
+      message(chr)
       if (strand_mode == "single") {
         stop("Not implemented")
       } else {
         if (by.readlength) {
-          lengths_to_use <- as.character(unique_lengths)[1:2]
+          lengths_to_use <- as.character(sort(unique_lengths))
           dtt_p <- data.table()
           dtt_m <- data.table()
+          message("- Inserting column for read length:")
           for(length in lengths_to_use) {
+            message("", length)
             dtt_p <-cbind(dtt_p, data.table(unlist(IntegerList(x_p[[length]][chr]))))
             dtt_m <-cbind(dtt_m, data.table(unlist(IntegerList(x_m[[length]][chr]))))
           }
