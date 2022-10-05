@@ -110,6 +110,9 @@ export.wiggle <- function(x, file) {
 #' Will be converted to 5' end position of original range. If score column
 #' does not exist, will group ranges and give replicates as score column.
 #' @param file a character path to valid output file name
+#' @param is_pre_collapsed logical, default FALSE. Save some time, if you
+#' know identical positions have been collapsed already with collapse.by.scores
+#' function.
 #' @return invisible(NULL) (File is saved as 2 .bigWig files)
 #' @importFrom rtracklayer export.bw
 #' @export
@@ -117,24 +120,24 @@ export.wiggle <- function(x, file) {
 #' @examples
 #' x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
 #' # export.bigWig(x, "output/path/rna.bigWig")
-export.bigWig <- function(x, file) {
+export.bigWig <- function(x, file, is_pre_collapsed = FALSE) {
   if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
     stop("x must be GRanges, GAlignments or GAlignmentPairs")
   if (!is(x, "GRanges")) x <- GRanges(x)
 
-  x <- resize(x, width = 1, fix = "start")
+  if (!all(width(reads) == 1)) x <- resize(x, width = 1, fix = "start")
   if (!("score" %in% colnames(mcols(x)))) {
     x <- convertToOneBasedRanges(x, method = "None",
                                  addScoreColumn = TRUE,
                                  addSizeColumn = FALSE)
   } else { # merge reads by sum of existing scores
-    x <- collapse.by.scores(x)
+    if (!is_pre_collapsed) x <- collapse.by.scores(x)
   }
   strands <- as.character(strand(x))
   if (all(strands == "*")) {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     file <- paste0(file, ".bigWig")
-    export.wig(x, file)
+    export.bw(x, file)
   } else {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     forward_file <- paste0(file, "_forward.bigWig")
@@ -171,11 +174,12 @@ export.bigWig <- function(x, file) {
 #' seqlengths(x) <- 5
 #' df <- read.experiment("human_all_merged_l50")
 #' reads <- fimport(filepath(df[1,], "default"))
-#' seqlevels(reads) <- seqlevels(findFa(df))
-#' seqinfo(reads) <- seqinfo(findFa(df))
+#' seqlevels(reads) <- seqlevels(df)
+#' seqinfo(reads) <- seqinfo(df)
 #' debug(export.fstwig)
 #' export.fstwig(x, "~/Desktop/ribo")
-#' export.fstwig(reads, "/media/roler/S/data/Bio_data/ribo")
+#' export.fstwig(reads, file.path(dirname(df$filepath[1]), "fstwig",
+#'   ORFik:::remove.file_ext(filepath(df, "default"), basename = TRUE)))
 export.fstwig <- function(x, file, by.readlength = TRUE,
                           by.chromosome = TRUE, compress = 50) {
   if (length(x) == 0) stop("length of x is 0, no values to export!")
