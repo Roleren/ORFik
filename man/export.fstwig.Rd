@@ -42,11 +42,12 @@ x$score <- c(5,1,2,5,1,6)
 seqlengths(x) <- 5
 df <- read.experiment("human_all_merged_l50")
 reads <- fimport(filepath(df[1,], "default"))
-seqlevels(reads) <- seqlevels(findFa(df))
-seqinfo(reads) <- seqinfo(findFa(df))
+seqlevels(reads) <- seqlevels(df)
+seqinfo(reads) <- seqinfo(df)
 debug(export.fstwig)
 export.fstwig(x, "~/Desktop/ribo")
-export.fstwig(reads, "/media/roler/S/data/Bio_data/ribo")
+export.fstwig(reads, file.path(dirname(df$filepath[1]), "fstwig",
+  ORFik:::remove.file_ext(filepath(df, "default"), basename = TRUE)))
 }
 \references{
 "TODO"

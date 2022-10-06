@@ -262,7 +262,22 @@ setGeneric("QCfolder", function(x) standardGeneric("QCfolder"))
 setMethod("QCfolder",
           "experiment",
           function(x) {
-            file.path(dirname(x$filepath[1]), "QC_STATS/")
+            file.path(libFolder(df), "QC_STATS/")
+          }
+)
+
+#' Get ORFik experiment library folder
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a character path
+#' @export
+setGeneric("libFolder", function(x) standardGeneric("libFolder"))
+
+#' @inherit libFolder
+setMethod("libFolder",
+          "experiment",
+          function(x) {
+            dirname(x$filepath[1])
           }
 )
 

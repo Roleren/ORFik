@@ -863,39 +863,6 @@ mergeLibs <- function(df, out_dir = file.path(dirname(df$filepath[1]), "ofst_mer
   return(invisible(NULL))
 }
 
-#' Convert libraries to coverage RLEs
-#'
-#' Saved in folder "cov_RLE" relative to default libraries of experiment
-#' @inheritParams outputLibs
-#' @param in_files paths to input files, default pshifted files:
-#' \code{filepath(df, "pshifted")} in ofst format
-#' @param seqinfo SeqInfo object, default \code{seqinfo(findFa(df))}
-#' @param weight integer, numeric or single length character. Default "score".
-#' Use score column in loaded in_files.
-#' @param split.by.strand logical, default TRUE, split into forward and reverse
-#' strand RleList inside covRle object.
-#' @return invisible(NULL), files saved to disc
-convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
-                              split.by.strand = TRUE,
-                              seq_info = seqinfo(df), weight = "score") {
-  if (length(in_files) != nrow(df))
-    stop("'df' and 'in_files must have equal size!")
-  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
-  cov_dir <- file.path(dirname(df$filepath[1]), "cov_RLE")
-  out_filepaths <- file.path(cov_dir, lib_names)
-  dir.create(cov_dir, showWarnings = FALSE)
-  message("-- Converting to Coverage RleList")
-  for (i in seq_along(out_filepaths)) {
-    message("- Library:", i)
-    out_file <- out_filepaths[i]
-    in_file <- in_files[i]
-    export.cov(x = fimport(in_file), file = out_file,
-               split.by.strand = split.by.strand,
-               seqinfo = seq_info, weight = weight)
-  }
-  return(invisible(NULL))
-}
-
 #' Remove ORFik experiment libraries load in R
 #'
 #' Variable names defined by df, in envir defined

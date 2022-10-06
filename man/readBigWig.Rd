@@ -4,7 +4,7 @@
 \alias{readBigWig}
 \title{Custom bigWig reader}
 \usage{
-readBigWig(path, chrStyle = NULL)
+readBigWig(path, chrStyle = NULL, as = "GRanges")
 }
 \arguments{
 \item{path}{a character path to two .bigWig files, or a data.table
@@ -16,6 +16,15 @@ or a \code{\link{seqlevelsStyle}}
 called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
+
+\item{as}{Specifies the class of the return object. Default is
+    \code{GRanges}, which has one range per range in the file, and a
+    score column holding the value for each range. For
+    \code{NumericList}, one numeric vector is returned for each range in
+    the \code{selection} argument. For \code{RleList}, there is one
+    \code{Rle} per sequence, and that \code{Rle} spans the entire
+    sequence.
+  }
 }
 \value{
 a \code{\link{GRanges}} object of the file/s

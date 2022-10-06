@@ -479,10 +479,13 @@ revElementsF <- function(x) {
 #' that gives number of times a read was found.
 #' GRanges("chr1", 1, "+", score = 5), would mean score column tells
 #' that this alignment was found 5 times.
+#' @param seqinfo.x.is.correct logical, default FALSE. If you know x, has
+#' correct seqinfo, then you can save some computation time by setting this to
+#' TRUE.
 #' @importFrom S4Vectors wmsg isTRUEorFALSE
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
-                                    weight = 1L) {
+                                    weight = 1L, seqinfo.x.is.correct = FALSE) {
   if (!is(transcripts, "GRangesList")) {
     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
                        silent = TRUE)
@@ -492,8 +495,10 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
   }
   if (!isTRUEorFALSE(ignore.strand))
     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
-  seqinfo(x) <- GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
+  if (!seqinfo.x.is.correct) {
+    seqinfo(x) <- GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
                                                                               transcripts)
+  }
   ex <- unlist(transcripts, use.names = FALSE)
   sm <- selfmatch(ex)
   is_unique <- sm == seq_along(sm)

@@ -4,7 +4,7 @@
 \alias{export.bigWig}
 \title{Export as bigWig format}
 \usage{
-export.bigWig(x, file)
+export.bigWig(x, file, is_pre_collapsed = FALSE)
 }
 \arguments{
 \item{x}{A GRangesList, GAlignment GAlignmentPairs with score column.
@@ -12,6 +12,10 @@ Will be converted to 5' end position of original range. If score column
 does not exist, will group ranges and give replicates as score column.}
 
 \item{file}{a character path to valid output file name}
+
+\item{is_pre_collapsed}{logical, default FALSE. Save some time, if you
+know identical positions have been collapsed already with collapse.by.scores
+function.}
 }
 \value{
 invisible(NULL) (File is saved as 2 .bigWig files)

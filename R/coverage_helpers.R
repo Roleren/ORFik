@@ -435,7 +435,9 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
 #' precomputed coverage as RleList or a covRle (one for each strand) of
 #' RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-#' column in 'reads'.
+#' column in 'reads'. Can also be random access paths to bigWig or fstwig file.
+#' Do not use random access for more than a few genes, then loading the entire files
+#' is usually better.
 #' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @param keep.names logical (TRUE), keep names or not. If as.data.table is TRUE,
@@ -498,15 +500,31 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!is.sorted) grl <- sortPerGroup(grl)
 
   if (is(reads, "character")) {
-    stop("Not implemented")
-    chrs <- seqnamesPerGroup(grl, FALSE)
-    chr_groups <- unique(chrs)
     if (all(is.null(fraction))) fraction <- "all"
-    for (chr in chr_groups) {
-      coverage <- import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE),
-                                readlengths = fraction)
+    file_ext <- tools::file_ext(reads)
+    if (all(file_ext == "bigWig")) {
+      rl <- ranges(grl)
+      names(rl) <- seqnamesPerGroup(grl, FALSE)
+      strands <- strandPerGroup(grl, FALSE)
+      coverage <- NumericList()
+      for (strand in unique(strands)) {
+        coverage <- c(coverage, import.bw(reads[ifelse(strand == "+", 1,2)], as = "NumericList",
+                              which = rl[strands == strand]))
+      }
+      groupings <- ORFik::groupings(coverage)
+      coverage <- data.table(count = unlist(coverage, use.names = FALSE))
+      coverage[, genes := groupings]
+    } else if (all(file_ext == "fstwig") | TRUE) {
+      chrs <- seqnamesPerGroup(grl, FALSE)
+      chr_groups <- unique(chrs)
+      for (chr in chr_groups) {
+        coverage <- import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE),
+                                  dir = reads,
+                                  readlengths = fraction)
+      }
+      coverage[, genes := rep(seq(length(grl)), each = widthPerGroup(grl, FALSE))]
     }
-    coverage[, genes := ORFik::groupings(coverage)]
+
     coverage[, position := seq_len(.N), by = genes]
     if (withFrames) coverage[, frame := (position - 1) %% 3]
 
@@ -516,10 +534,11 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
     } else {
       score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
       if (score.defined) {
-        coverage <- coverageByTranscriptW(reads, grl, weight = weight)
+        seqinfo.is.correct <- identical(seqlengths(reads), seqlengths(grl)) & !anyNA(seqlengths(grl))
+        coverage <- coverageByTranscriptW(reads, grl, weight = weight,
+                                          seqinfo.x.is.correct = seqinfo.is.correct)
       } else coverage <- coverageByTranscript(reads, grl)
     }
-
 
     if (!keep.names) names(coverage) <- NULL
 

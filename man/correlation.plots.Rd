@@ -16,14 +16,15 @@ correlation.plots(
   complex.correlation.plots = TRUE,
   data_for_pairs = countTable(df, region, type = type),
   as_gg_list = FALSE,
-  label_size = 4
+  text_size = 4,
+  method = c("pearson", "spearman")[1]
 )
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{output.dir}{directory to save to, 3 files named: cor_plot,
-cor_plot_log2 and cor_plot_simple with either .pdf or .png}
+\item{output.dir}{directory to save to, named : cor_plot,
+cor_plot_log2 and/or cor_plot_simple with either .pdf or .png}
 
 \item{region}{a character (default: mrna), make raw count matrices of
 whole mrnas or one of (leaders, cds, trailers)}
@@ -34,7 +35,7 @@ whole mrnas or one of (leaders, cds, trailers)}
 
 \item{width}{numeric, default 400 (in mm)}
 
-\item{size}{numeric, size of dots, default 0.15.}
+\item{size}{numeric, size of dots, default 0.15. Deprecated.}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
@@ -49,16 +50,15 @@ Default is fpkm of all mRNA counts over all libraries.}
 \item{as_gg_list}{logical, default FALSE. Return as a list of ggplot objects
 instead of as a grob. Gives you the ability to modify plots more directly.}
 
-\item{label_size}{the size of the correlation coefficients.
-Defaults to \code{4}.}
+\item{text_size}{size of correlation numbers}
+
+\item{method}{c("pearson", "spearman")[1]}
 }
 \value{
 invisible(NULL) / if as_gg_list is TRUE, return a list of raw plots.
 }
 \description{
-Get 3 correlation plots (1 simple (correlation colors), 2 complex with
-correlation value + dot plots of per gene )
-of raw counts and log2(count + 1) over
+Get correlation plot of raw counts and/or log2(count + 1) over
 selected region in: c("mrna", "leaders", "cds", "trailers")\cr\cr
 Note on correlation: Pearson correlation, using pairwise observations
 to fill in NA values for the covariance matrix.

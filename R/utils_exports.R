@@ -109,6 +109,7 @@ export.wiggle <- function(x, file) {
 #' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
 #' Will be converted to 5' end position of original range. If score column
 #' does not exist, will group ranges and give replicates as score column.
+#' Since bigWig needs a score column to represent counts!
 #' @param file a character path to valid output file name
 #' @param is_pre_collapsed logical, default FALSE. Save some time, if you
 #' know identical positions have been collapsed already with collapse.by.scores
@@ -120,12 +121,15 @@ export.wiggle <- function(x, file) {
 #' @examples
 #' x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
 #' # export.bigWig(x, "output/path/rna.bigWig")
-export.bigWig <- function(x, file, is_pre_collapsed = FALSE) {
+export.bigWig <- function(x, file, split.by.strand = TRUE,
+                          is_pre_collapsed = FALSE, seq_info = seqinfo(x)) {
+  if(anyNA(seqlengths(seq_info))) stop("seqinfo of x must be defined and have defined seqlengths!")
   if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
     stop("x must be GRanges, GAlignments or GAlignmentPairs")
-  if (!is(x, "GRanges")) x <- GRanges(x)
+  if (!is(x, "GRanges")) { x <- GRanges(x, seqinfo = seq_info)
+  } else {seqlevels(x) <- seqlevels(seq_info); seqinfo(x) <- seq_info}
 
-  if (!all(width(reads) == 1)) x <- resize(x, width = 1, fix = "start")
+  if (!all(width(x) == 1)) x <- resize(x, width = 1, fix = "start")
   if (!("score" %in% colnames(mcols(x)))) {
     x <- convertToOneBasedRanges(x, method = "None",
                                  addScoreColumn = TRUE,
@@ -134,7 +138,7 @@ export.bigWig <- function(x, file, is_pre_collapsed = FALSE) {
     if (!is_pre_collapsed) x <- collapse.by.scores(x)
   }
   strands <- as.character(strand(x))
-  if (all(strands == "*")) {
+  if (all(strands == "*") | !split.by.strand) {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     file <- paste0(file, ".bigWig")
     export.bw(x, file)
@@ -182,6 +186,7 @@ export.bigWig <- function(x, file, is_pre_collapsed = FALSE) {
 #'   ORFik:::remove.file_ext(filepath(df, "default"), basename = TRUE)))
 export.fstwig <- function(x, file, by.readlength = TRUE,
                           by.chromosome = TRUE, compress = 50) {
+  # TODO: Implement split.by.strand argument!
   if (length(x) == 0) stop("length of x is 0, no values to export!")
   if (anyNA(seqlengths(x))) stop("Define seqlength to make sure tails are correct")
 
@@ -197,9 +202,9 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
     } else readlengths <- rep.int(1, length(x))
     unique_lengths <- sort(unique(readlengths))
     x_b <- x_p <- x_m <- list()
-    message("- Read length:")
+    message("- Read length: ", appendLF = FALSE)
     for (length in unique_lengths) {
-      message(length)
+      message(", ", length, appendLF = FALSE)
       if (strand_mode == "single") { # b = both strands
         x_b <- c(x_b, coverage(x[readlengths == length], weight = "score"))
       } else { # p = pluss strand, m = minus strand
@@ -238,9 +243,9 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
           lengths_to_use <- as.character(sort(unique_lengths))
           dtt_p <- data.table()
           dtt_m <- data.table()
-          message("- Inserting column for read length:")
+          message("- Inserting column for read length:", appendLF = FALSE)
           for(length in lengths_to_use) {
-            message("", length)
+            message(", ", length, appendLF = FALSE)
             dtt_p <-cbind(dtt_p, data.table(unlist(IntegerList(x_p[[length]][chr]))))
             dtt_m <-cbind(dtt_m, data.table(unlist(IntegerList(x_m[[length]][chr]))))
           }

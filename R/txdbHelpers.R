@@ -443,6 +443,8 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' @return data.table with 2 columns gene_id and gene_symbol named after
 #' attribute, sorted in order of gene_ids input.
 #' @export
+#' @importFrom biomaRt useEnsembl
+#' @importFrom biomaRt getBM
 #' @examples
 #' ## Without ORFik experiment input
 #' gene_id_ATF4 <- "ENSG00000128272"
@@ -457,22 +459,19 @@ geneToSymbol <- function(df, organism_name = organism(df),
                          ensembl = biomaRt::useEnsembl("ensembl",dataset=org.dataset),
                          attribute = c("Homo sapiens" = "hgnc_symbol",
                                        "Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]) {
-  if (requireNamespace("biomaRt", quietly = TRUE)) {
-    message("- Symbols extracted from:")
-    message("Organism: ", organism_name)
-    message("Dataset: ", org.dataset)
-    message("Attribute: ", attribute)
-    gene_id <- as.data.table(biomaRt::getBM(attributes=c("ensembl_gene_id", attribute),
-                                            filters = 'ensembl_gene_id',
-                                            values = gene_ids,
-                                            mart = ensembl))
-    gene_id <- gene_id[chmatch(gene_ids, gene_id$ensembl_gene_id),]
-    gene_id[]
-    if (anyNA(gene_id[,2])) warning("Some gene symbols was not found!")
-    return(gene_id)
-  }
-  message("Install 'biomaRt' to use this function")
-  return(data.table())
+
+  message("- Symbols extracted from:")
+  message("Organism: ", organism_name)
+  message("Dataset: ", org.dataset)
+  message("Attribute: ", attribute)
+  gene_id <- as.data.table(biomaRt::getBM(attributes=c("ensembl_gene_id", attribute),
+                                          filters = 'ensembl_gene_id',
+                                          values = gene_ids,
+                                          mart = ensembl))
+  gene_id <- gene_id[chmatch(gene_ids, gene_id$ensembl_gene_id),]
+  gene_id[]
+  if (anyNA(gene_id[,2])) warning("Some gene symbols was not found!")
+  return(gene_id)
 }
 
 #' Import the GTF / GFF that made the txdb

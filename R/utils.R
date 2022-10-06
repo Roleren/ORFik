@@ -219,9 +219,12 @@ remove.file_ext <- function(path, basename = FALSE) {
 #' To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 #' @param range a ranged object, (GRanges, GAlignment etc)
 #' @param chrStyle a GRanges object, TxDb, FaFile,
-#' or a \code{\link{seqlevelsStyle}}
-#' (Default: NULL) to get seqlevelsStyle from. Is chromosome 1
-#' called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+#' , a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+#' (Default: NULL) to get seqlevelsStyle from. In addition if it
+#' is a Seqinfo object, seqinfo will be updated.
+#' Example of seqlevelsStyle update:
+#' Is chromosome 1 called chr1 or 1,
+#'  is mitocondrial chromosome called MT or chrM etc.
 #' Will use 1st seqlevel-style if more are present.
 #' Like: c("NCBI", "UCSC") -> pick "NCBI"
 #' @return a GAlignment/GRanges object depending on input.
@@ -238,9 +241,13 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
     if (is.character(chrStyle)) {
       seqlevelsStyle(range) <- chrStyle[1]
     } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
-               is(chrStyle, "FaFile")) {
+               is(chrStyle, "FaFile") | is(chrStyle, "Seqinfo")) {
       seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
     } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
+  }
+  if (is(chrStyle, "Seqinfo")) {
+    seqlevels(range) <- seqlevels(chrStyle)
+    seqinfo(range) <- chrStyle
   }
   return(range)
 }

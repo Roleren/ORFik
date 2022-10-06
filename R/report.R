@@ -111,7 +111,6 @@ ORFikQC <- QCreport
 #' \code{QCfolder(df)}
 #' @return invisible(NULL) (objects stored to disc)
 #' @family QC report
-#' @importFrom GGally ggpairs
 #' @importFrom AnnotationDbi metadata
 #' @keywords internal
 QCplots <- function(df, region = "mrna",

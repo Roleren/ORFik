@@ -104,70 +104,124 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf",
 
 #' Correlation plots between all samples
 #'
-#' Get 3 correlation plots (1 simple (correlation colors), 2 complex with
-#' correlation value + dot plots of per gene )
-#' of raw counts and log2(count + 1) over
+#' Get correlation plot of raw counts and/or log2(count + 1) over
 #' selected region in: c("mrna", "leaders", "cds", "trailers")\cr\cr
 #' Note on correlation: Pearson correlation, using pairwise observations
 #' to fill in NA values for the covariance matrix.
-#' @inheritParams GGally::ggcorr
 #' @inheritParams QCstats.plot
 #' @inheritParams QCplots
-#' @param output.dir directory to save to, 3 files named: cor_plot,
-#' cor_plot_log2 and cor_plot_simple with either .pdf or .png
+#' @inheritParams cor_table
+#' @inheritParams cor_plot
+#' @param output.dir directory to save to, named : cor_plot,
+#' cor_plot_log2 and/or cor_plot_simple with either .pdf or .png
 #' @param type which value to use, "fpkm", alternative "counts".
 #' @param height numeric, default 400 (in mm)
 #' @param width numeric, default 400 (in mm)
-#' @param size numeric, size of dots, default 0.15.
+#' @param size numeric, size of dots, default 0.15. Deprecated.
 #' @param data_for_pairs a data.table from ORFik::countTable of counts wanted.
 #' Default is fpkm of all mRNA counts over all libraries.
 #' @return invisible(NULL) / if as_gg_list is TRUE, return a list of raw plots.
-#' @importFrom GGally wrap
 correlation.plots <- function(df, output.dir,
                               region = "mrna", type = "fpkm",
                               height = 400, width = 400, size = 0.15, plot.ext = ".pdf",
                               complex.correlation.plots = TRUE,
                               data_for_pairs = countTable(df, region, type = type),
-                              as_gg_list = FALSE, label_size = 4) {
+                              as_gg_list = FALSE, text_size = 4,
+                              method = c("pearson", "spearman")[1]) {
   message("- Correlation plots")
   if (nrow(df) == 1) { # Avoid error from ggplot2 backend
     message("-  Skipping correlation plots (only 1 sample)")
     return(invisible(NULL))
   }
-
   message("  - raw scaled fpkm (simple)")
-  cor_plot1 <- GGally::ggcorr(as.data.frame(data_for_pairs), label = TRUE, label_round = 2,
-                              hjust = 1, layout.exp = floor(1 + (nrow(df)/10)),
-                              label_size = label_size)
-  ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), cor_plot1,
-         height = height, width = width, units = 'mm', dpi = 300)
-  plot_list <- list(cor_plot1)
-  if (complex.correlation.plots) {
-    # Settings for points
-    point_settings <- list(continuous = GGally::wrap("points", alpha = 0.3, size = size),
-                           combo = GGally::wrap("dot", alpha = 0.4, size=0.2))
-
-    if (nrow(df) > 30) { # Avoid error from ggplot2 backend
-      message("ORFik only supports complex correlation plots for up to 30 libraries in experiment!")
-      return(invisible(NULL))
-    }
-    message("  - raw scaled fpkm (complex)")
-    cor_plot2 <- ggpairs(as.data.frame(data_for_pairs),
-                           columns = 1:ncol(data_for_pairs),
-                           lower = point_settings)
-    ggsave(pasteDir(output.dir, paste0("cor_plot", plot.ext)), cor_plot2,
+  dt_cor <- cor_table(as.data.table(data_for_pairs), method = method)
+  cor_plot1 <- cor_plot(dt_cor, text_size = text_size,
+                        label_name = paste0(method, "\ncorrelation"))
+  if (!is.null(output.dir)) {
+    ggsave(pasteDir(output.dir, paste0("cor_plot_simple", plot.ext)), cor_plot1,
            height = height, width = width, units = 'mm', dpi = 300)
-    message("  - log2 scaled fpkm (complex)")
-    cor_plot3 <- ggpairs(as.data.frame(log2(data_for_pairs + 1)),
-                           columns = 1:ncol(data_for_pairs),
-                           lower = point_settings)
-    ggsave(pasteDir(output.dir, paste0("cor_plot_log2", plot.ext)), cor_plot3,
-           height = height, width = width, units = 'mm', dpi = 300)
-    plot_list <- list(cor_plot1, cor_plot2, cor_plot3)
   }
+  plot_list <- list(cor_plot1)
+  if (complex.correlation.plots) warning("Complex correlation plots are for now deprecated!")
 
   if (as_gg_list) return(plot_list)
   return(invisible(NULL))
+}
+
+#' Get correlation between columns
+#' @param dt a data.table
+#' @param method c("pearson", "spearman")[1]
+#' @param upper_triangle logical, default TRUE. Make lower triangle values NA.
+#' @param decimals numeric, default 2. How many decimals for correlation
+#' @param melt logical, default TRUE.
+#' @param na.rm.melt logical, default TRUE. Remove NA values from melted table.
+#' @return a data.table with 3 columns, Var1, Var2 and Cor
+cor_table <- function(dt, method = c("pearson", "spearman")[1],
+                      upper_triangle = TRUE, decimals = 2, melt = TRUE,
+                      na.rm.melt = TRUE) {
+  stopifnot(is(dt, "data.table"))
+  cor <- round(cor(dt, method = method), decimals)
+  # Get lower triangle of the correlation matrix
+  get_lower_tri<-function(cormat){
+    cormat[upper.tri(cormat)] <- NA
+    return(cormat)
+  }
+  # Get upper triangle of the correlation matrix
+  get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+  }
+  if (upper_triangle) cor <- get_upper_tri(cor)
+  if (melt) cor <- reshape2::melt(cor, value.name = "Cor", na.rm = na.rm.melt)
+
+  return(as.data.table(cor))
+}
+
+#' Get correlation between columns
+#' @param dt_cor a data.table, with column Cor
+#' @param col colors c(low = "blue", high = "red", mid = "white", na.value = "white")
+#' @param limit default (-1, 1), defined by:
+#'  \code{c(ifelse(min(dt_cor$Cor, na.rm = TRUE) < 0, -1, 0), 1)}
+#' @param midpoint midpoint of correlation values in label coloring.
+#' @param legend.position default c(0.4, 0.7), other: "top", "right",..
+#' @param text_size size of correlation numbers
+#' @param legend.direction default "horizontal", or "vertical"
+#' @return a ggplot (heatmap)
+cor_plot <- function(dt_cor, col = c(low = "blue", high = "red", mid = "white", na.value = "white"),
+                     limit = c(ifelse(min(dt_cor$Cor, na.rm = TRUE) < 0, -1, 0), 1),
+                     midpoint = mean(limit), label_name = "Pearson\nCorrelation",
+                     text_size = 4, legend.position = c(0.4, 0.7),
+                     legend.direction = "horizontal") {
+  stopifnot(is(dt_cor, "data.table"))
+  if (!all(c("low", "high", "mid", "na.value") %in% names(col)))
+    stop("'col' must have names low, high, mid and na.value")
+
+  ggheatmap <- ggplot(dt_cor, aes(Var2, Var1, fill = Cor)) +
+    geom_tile(color = "white") +
+    scale_fill_gradient2(low = col["low"], high = col["high"], mid = col["mid"], na.value = col["na.value"],
+                         midpoint = midpoint, limit = limit, space = "Lab",
+                         name = label_name) +
+    theme_minimal()+ # minimal theme
+    theme(axis.text.x = element_blank()) +
+    coord_fixed()
+
+  wh <- if (legend.direction == "horizontal") {c(7,1)} else c(1,7)
+  # Add text boxes
+  ggheatmap <- ggheatmap +
+    geom_text(aes(Var2, Var1, label = Cor), color = "black", size = text_size) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.justification = c(1, 0),
+      legend.position = legend.position,
+      legend.direction = legend.direction)+
+    guides(fill = guide_colorbar(barwidth = wh[1], barheight = wh[2],
+                                 title.position = "top", title.hjust = 0.5))
+  return(ggheatmap)
 }
 
 #' Simple PCA analysis
