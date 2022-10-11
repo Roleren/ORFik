@@ -553,7 +553,17 @@ filepath <- function(df, type, basename = FALSE) {
                                       basename = TRUE)
                       , ".covrds")
       if (!file.exists(input)) stop("File did not exist,",
-                                    "did you create RLEs yet?")
+                                    "did you create covRle yet?")
+    }
+
+    if (type %in% "covl") {
+      out.dir <- paste0(dirname(df$filepath[1]), "/cov_RLE_List/")
+      input <- paste0(out.dir,
+                      remove.file_ext(x,
+                                      basename = TRUE)
+                      , ".covrds")
+      if (!file.exists(input)) stop("File did not exist,",
+                                    "did you create covRleList yet?")
     }
 
     if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
@@ -1012,7 +1022,7 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
     e <- read.experiment(x, dir, validate)
     list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism,
          author = e@author)
-  }, dir = dir, validate = validate)
+  }, dir = dir, validate = validate, BPPARAM = BPPARAM)
 
   info <- unlist(info, recursive = FALSE)
   libtypes <- info[grep("libtype", names(info))]

@@ -21,9 +21,12 @@ outputLibs(
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-or a \code{\link{seqlevelsStyle}}
-(Default: NULL) to get seqlevelsStyle from. Is chromosome 1
-called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+(Default: NULL) to get seqlevelsStyle from. In addition if it
+is a Seqinfo object, seqinfo will be updated.
+Example of seqlevelsStyle update:
+Is chromosome 1 called chr1 or 1,
+ is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
@@ -116,7 +119,6 @@ Other ORFik_experiment:
 \code{\link{ORFik.template.experiment.zf}()},
 \code{\link{ORFik.template.experiment}()},
 \code{\link{bamVarName}()},
-\code{\link{covRle-class}},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},
 \code{\link{filepath}()},

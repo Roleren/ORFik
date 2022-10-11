@@ -12,6 +12,19 @@ footprintsBad <- GRanges()
 footprintsMiss <- GRanges("1", IRanges(500, width = 1), "+")
 footprintsMiss$size <- 29
 
+ga1 <- GAlignments(seqnames = c("1"), pos = as.integer(22), cigar = "1M1S",
+                   strand = factor(c("+"), levels = c("+", "-", "*")))
+ga2 <- GAlignments(seqnames = c("2"), pos = as.integer(170), cigar = "1M1S",
+                   strand = factor(c("-"), levels = c("+", "-", "*")))
+ga <- suppressWarnings(c(ga1, ga2))
+
+test_that("coveragePerTiling: Input checks", {
+  rle <- coveragePerTiling(grl, footprintsGood)
+  expect_equal(as.integer(sum(runValue(rle))), c(10, 7))
+  rle <- coveragePerTiling(grl, ga)
+  expect_equal(as.integer(sum(runValue(rle))), c(1, 0))
+})
+
 test_that("coverageScorings works as intended", {
   # no reads hit
   coverage <- coveragePerTiling(grl, footprintsGood, is.sorted = TRUE,

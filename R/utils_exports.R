@@ -287,18 +287,35 @@ save.fstwig <- function(x, file, compress = 50) {
 export.cov <- function(x, file, seqinfo, split.by.strand = TRUE,
                        weight = "score") {
   stopifnot(is(seqinfo, "Seqinfo"))
-  if (!is(x, "RleList") & !is(x, "covRle")) {
+  if (!is(x, "covRle") & !is(x, "RleList")) {
     seqlevels(x) <- seqlevels(seqinfo)
     seqinfo(x) <- seqinfo
-    if (split.by.strand) {
-      x_p <- coverage(x[strandBool(x)], weight = weight)
-      x_m <- coverage(x[!strandBool(x)], weight = weight)
-      seqinfo(x_p) <- seqinfo
-      seqinfo(x_m) <- seqinfo
-      x <- covRle(x_p, x_m)
-    } else x <- covRle(coverage(x, weight = weight))
+    x <- covRleFromGR(x, weight = weight, ignore.strand = !split.by.strand)
   }
   seqinfo(x) <- seqinfo
+  file <- paste0(gsub("\\.covrds", "", file, ignore.case = TRUE), ".covrds")
+  saveRDS(x, file = file)
+}
+
+export.covlist <- function(x, file, seqinfo, split.by.strand = TRUE,
+                       weight = "score", verbose = TRUE) {
+  stopifnot(is(seqinfo, "Seqinfo"))
+  if (!is(x, "covRleList")) {
+    seqlevels(x) <- seqlevels(seqinfo)
+    seqinfo(x) <- seqinfo
+
+    all_readl_lengths <- readWidths(x)
+    read_lengths <- sort(unique(all_readl_lengths))
+    if (verbose) message("Readlength:", appendLF = FALSE)
+    list <- list()
+    for (i in read_lengths) {
+      if (verbose) message(", ", i, appendLF = FALSE)
+      list <- c(list, covRleFromGR(x[all_readl_lengths == i],
+                                   weight = weight,
+                                   ignore.strand = !split.by.strand))
+    }
+    x <- covRleList(list, fraction = read_lengths)
+  }
   file <- paste0(gsub("\\.covrds", "", file, ignore.case = TRUE), ".covrds")
   saveRDS(x, file = file)
 }

@@ -4,7 +4,7 @@
 \alias{coverageByTranscriptC}
 \title{coverageByTranscript with coverage input}
 \usage{
-coverageByTranscriptC(x, transcripts, ignore.strand = length(x) == 1)
+coverageByTranscriptC(x, transcripts, ignore.strand = !strandMode(x))
 }
 \arguments{
 \item{x}{a covRle (one RleList for each strand in object),

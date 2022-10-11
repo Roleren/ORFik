@@ -10,9 +10,11 @@ codonSumsPerGroup(grl, reads, weight = "score", is.sorted = FALSE)
 \item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
 \item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
-precomputed coverage as RleList or a covRle (one for each strand) of
-RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'.}
+precomputed coverage as \code{\link{covRle}} (one for each strand) of
+RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
+column in 'reads'. Can also be random access paths to bigWig or fstwig file.
+Do not use random access for more than a few genes, then loading the entire files
+is usually better.}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),

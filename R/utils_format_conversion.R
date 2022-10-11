@@ -1,6 +1,7 @@
-#' Convert libraries to coverage RLEs
+#' Convert libraries to covRle
 #'
-#' Saved in folder "cov_RLE" relative to default libraries of experiment
+#' Saved by default in folder "cov_RLE" relative to default
+#' libraries of experiment
 #' @inheritParams outputLibs
 #' @param in_files paths to input files, default pshifted files:
 #' \code{filepath(df, "pshifted")} in ofst format
@@ -21,7 +22,7 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
   lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
   out_filepaths <- file.path(out_dir, lib_names)
   dir.create(out_dir, showWarnings = FALSE)
-  if (verbose) message("-- Converting to Coverage RleList")
+  if (verbose) message("-- Converting to covRle objects")
   if (verbose) message("Output to dir: ", out_dir)
   for (i in seq_along(out_filepaths)) {
     if (verbose) message("- Library: ", i)
@@ -48,6 +49,53 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
                  split.by.strand = split.by.strand,
                  seqinfo = seq_info, weight = weight)
     }
+  }
+  if (verbose) message("Done")
+  return(invisible(NULL))
+}
+
+#' Convert libraries to covRleList objects
+#'
+#' Useful to store reads separated by readlength, for much faster
+#' coverage calculation.
+#' Saved by default in folder "cov_RLE_List" relative to default
+#' libraries of experiment
+#' @inheritParams convert_to_covRle
+#' @param out_dir_merged character vector of paths, default:
+#'  \code{file.path(libFolder(df), "cov_RLE")}.
+#'  Paths to merged output files, Set to NULL to skip making merged covRle.
+#' @return invisible(NULL), files saved to disc
+convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
+                              out_dir = file.path(libFolder(df), "cov_RLE_List"),
+                              out_dir_merged = file.path(libFolder(df), "cov_RLE"),
+                              split.by.strand = TRUE,
+                              seq_info = seqinfo(df), weight = "score",
+                              verbose = TRUE) {
+  if (length(in_files) != nrow(df))
+    stop("'df' and 'in_files must have equal size!")
+  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  out_filepaths <- file.path(out_dir, lib_names)
+  out_filepaths_merged <- file.path(out_dir_merged, lib_names)
+  dir.create(out_dir, showWarnings = FALSE)
+  if (!is.null(out_dir_merged)) dir.create(out_dir_merged, showWarnings = FALSE)
+  if (verbose) message("-- Converting to covRleList objects")
+  if (verbose) message("Output to dir: ", out_dir)
+  for (i in seq_along(out_filepaths)) {
+    if (verbose) message("- Library: ", lib_names[i])
+    out_file <- out_filepaths[i]
+    in_file <- in_files[i]
+    x <- fimport(in_file)
+    export.covlist(x, file = out_file,
+                   split.by.strand = split.by.strand,
+                   seqinfo = seq_info, weight = weight, verbose = verbose)
+
+    if (!is.null(out_dir_merged)) {
+      if (verbose) message(", All readlengths merged")
+      export.cov(x = x, file = out_filepaths_merged[i],
+                 split.by.strand = split.by.strand,
+                 seqinfo = seq_info, weight = weight)
+    }
+
   }
   if (verbose) message("Done")
   return(invisible(NULL))
@@ -124,11 +172,8 @@ convert_to_fstWig <- function(df, in_files =  filepath(df, "pshifted"),
     out_file <- out_filepaths[i]
     in_file <- in_files[i]
     export.fstwig(x = fimport(in_file, chrStyle = seq_info), file = out_file,
-                  by.readlength = split.by.readlength,
-                  seqinfo = seq_info)
+                  by.readlength = split.by.readlength)
   }
   if (verbose) message("Done")
   return(invisible(NULL))
 }
-
-RiboCrypt::multiOmicsPlot_ORFikExp

@@ -4,12 +4,19 @@
 \alias{export.bigWig}
 \title{Export as bigWig format}
 \usage{
-export.bigWig(x, file, is_pre_collapsed = FALSE)
+export.bigWig(
+  x,
+  file,
+  split.by.strand = TRUE,
+  is_pre_collapsed = FALSE,
+  seq_info = seqinfo(x)
+)
 }
 \arguments{
 \item{x}{A GRangesList, GAlignment GAlignmentPairs with score column.
 Will be converted to 5' end position of original range. If score column
-does not exist, will group ranges and give replicates as score column.}
+does not exist, will group ranges and give replicates as score column.
+Since bigWig needs a score column to represent counts!}
 
 \item{file}{a character path to valid output file name}
 

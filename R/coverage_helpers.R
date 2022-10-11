@@ -433,8 +433,8 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' is not wanted.
 #' @param grl a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.
 #' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
-#' precomputed coverage as RleList or a covRle (one for each strand) of
-#' RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
+#' precomputed coverage as \code{\link{covRle}} (one for each strand) of
+#' RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
 #' column in 'reads'. Can also be random access paths to bigWig or fstwig file.
 #' Do not use random access for more than a few genes, then loading the entire files
 #' is usually better.
@@ -530,7 +530,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
 
   } else {
     if (is(reads, "covRle") | is(reads, "RleList")) {
-      coverage <- coverageByTranscriptC(reads, grl, ignore.strand = FALSE)
+      coverage <- coverageByTranscriptC(reads, grl)
     } else {
       score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
       if (score.defined) {
@@ -692,12 +692,15 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
   if (!is.null(acceptedLengths))
     all_lengths <- all_lengths[all_lengths %in% acceptedLengths]
   if (exclude.zero.cov.grl) {
-    grl <- grl[hasHits(grl, reads)]
+    if (!is(reads, "covRleList")) {
+      grl <- grl[hasHits(grl, reads)]
+    } else message("NOTE: exclude.zero.cov.grl not implemented for covRleList yet, ignoring it.")
   }
 
   dt <- bplapply(all_lengths, function(l, grl, reads, weight, rWidth,
                                        scoring, withFrames, drop.zero.dt) {
-    d <- coveragePerTiling(grl, reads[rWidth == l],
+    d <- coveragePerTiling(grl, reads = if (!is(reads, "covRleList")) {reads[rWidth == l]}
+                                           else  reads@list[[as.character(l)]],
                            as.data.table = TRUE, withFrames = withFrames,
                            weight = weight, is.sorted = TRUE,
                            drop.zero.dt = drop.zero.dt)
@@ -726,6 +729,13 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' are of all of valid length!
 #' @inheritParams startRegion
 #' @inheritParams coveragePerTiling
+#' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+#' precomputed coverage as \code{\link{covRleList}}
+#' (where names of covRle objects are readlengths) of
+#' RiboSeq, RnaSeq etc. \cr Weigths for scoring is default the 'score'
+#' column in 'reads'. Can also be random access paths to bigWig or fstwig file.
+#' Do not use random access for more than a few genes, then loading the entire files
+#' is usually better.
 #' @param pShifted a logical (TRUE), are Ribo-seq reads p-shifted to size
 #'  1 width reads? If upstream and downstream is set, this argument is
 #'  irrelevant. So set to FALSE if this is not p-shifted Ribo-seq.
@@ -795,7 +805,8 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   dt <- data.table()
   for(l in all_lengths) {
     dt <- rbindlist(list(dt, metaWindow(
-      x = reads[rWidth == l], windows = windows, scoring = scoring,
+      x = if (!is(reads, "covRleList")) {reads[rWidth == l]} else  reads@list[[as.character(l)]],
+      windows = windows, scoring = scoring,
       zeroPosition =  zeroPosition, forceUniqueEven = FALSE, fraction = l,
       weight = weight,
       drop.zero.dt = drop.zero.dt, append.zeroes = append.zeroes)))

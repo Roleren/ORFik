@@ -121,7 +121,11 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
         readWidth <- reads$size
       }
     }
-  } else {
+  } else if (is(reads, "covRleList")) {
+    readWidth <- as.integer(names(reads@list))
+    if (!all(is.finite(readWidth))) stop("If covRleList is input, names of list must be readlengths!")
+    if (max(table(readWidth)) > 1) stop("If covRleList is input, no duplicated readlengths allowed!")
+    } else {
     # Now the cigar of paired end reads are merged together
     # Is this the smartest way ?
     cigar <- if (is(reads, "GAlignmentPairs")) {

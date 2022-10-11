@@ -10,9 +10,12 @@ matchSeqStyle(range, chrStyle = NULL)
 \item{range}{a ranged object, (GRanges, GAlignment etc)}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-or a \code{\link{seqlevelsStyle}}
-(Default: NULL) to get seqlevelsStyle from. Is chromosome 1
-called chr1 or 1, is mitocondrial chromosome called MT or chrM etc.
+, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+(Default: NULL) to get seqlevelsStyle from. In addition if it
+is a Seqinfo object, seqinfo will be updated.
+Example of seqlevelsStyle update:
+Is chromosome 1 called chr1 or 1,
+ is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }

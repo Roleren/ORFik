@@ -21,9 +21,12 @@ regionPerReadLength(
 with usually either leaders, cds', 3' utrs or ORFs}
 
 \item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
-precomputed coverage as RleList or a covRle (one for each strand) of
-RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'.}
+precomputed coverage as \code{\link{covRleList}}
+(where names of covRle objects are readlengths) of
+RiboSeq, RnaSeq etc. \cr Weigths for scoring is default the 'score'
+column in 'reads'. Can also be random access paths to bigWig or fstwig file.
+Do not use random access for more than a few genes, then loading the entire files
+is usually better.}
 
 \item{acceptedLengths}{an integer vector (NULL), the read lengths accepted.
 Default NULL, means all lengths accepted.}

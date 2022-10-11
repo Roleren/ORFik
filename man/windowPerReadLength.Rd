@@ -30,9 +30,12 @@ names of tx must contain all grl names. The names of grl can also be the
 ORFik orf names. that is "txName_id"}
 
 \item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
-precomputed coverage as RleList or a covRle (one for each strand) of
-RiboSeq, RnaSeq etc. Weigths for scoring is default the 'score'
-column in 'reads'.}
+precomputed coverage as \code{\link{covRleList}}
+(where names of covRle objects are readlengths) of
+RiboSeq, RnaSeq etc. \cr Weigths for scoring is default the 'score'
+column in 'reads'. Can also be random access paths to bigWig or fstwig file.
+Do not use random access for more than a few genes, then loading the entire files
+is usually better.}
 
 \item{pShifted}{a logical (TRUE), are Ribo-seq reads p-shifted to size
 1 width reads? If upstream and downstream is set, this argument is
