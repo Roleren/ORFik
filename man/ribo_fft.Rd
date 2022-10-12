@@ -20,9 +20,6 @@ does not exist for footprints.}
 \item{firstN}{(integer) Represents how many bases of the transcripts
 downstream of start codons to use for initial estimation of the
 periodicity.}
-
-\item{mrna}{a \code{\link{GRangesList}} of full mRNA ranges match the cds
-argument.}
 }
 \value{
 a data.table with read_length, amplitude and periods

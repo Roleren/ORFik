@@ -7,7 +7,7 @@
 convert_to_fstWig(
   df,
   in_files = filepath(df, "pshifted"),
-  out_dir = file.path(libFolder(df), "bigwig"),
+  out_dir = file.path(libFolder(df), "fstwig"),
   split.by.strand = TRUE,
   split.by.readlength = FALSE,
   seq_info = seqinfo(df),
@@ -22,11 +22,25 @@ convert_to_fstWig(
 \item{in_files}{paths to input files, default pshifted files:
 \code{filepath(df, "pshifted")} in ofst format}
 
+\item{out_dir}{paths to output files, default
+\code{file.path(libFolder(df), "bigwig")}.}
+
 \item{split.by.strand}{logical, default TRUE, split into forward and reverse
 strand RleList inside covRle object.}
 
+\item{split.by.readlength}{logical, default FALSE, split into files
+for each readlength, defined by readWidths(x) for each file.}
+
+\item{seq_info}{SeqInfo object, default \code{seqinfo(findFa(df))}}
+
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}
+
+\item{is_pre_collapsed}{logical, default FALSE. Have you already
+collapsed reads with collapse.by.scores,
+so each positions is only in 1 GRanges object with
+a score column per readlength?
+Set to TRUE, only if you are sure, will give a speedup.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 }

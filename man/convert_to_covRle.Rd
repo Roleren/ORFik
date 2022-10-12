@@ -21,15 +21,21 @@ convert_to_covRle(
 \item{in_files}{paths to input files, default pshifted files:
 \code{filepath(df, "pshifted")} in ofst format}
 
+\item{out_dir}{paths to output files, default
+\code{file.path(libFolder(df), "cov_RLE")}.}
+
 \item{split.by.strand}{logical, default TRUE, split into forward and reverse
 strand RleList inside covRle object.}
+
+\item{split.by.readlength}{logical, default FALSE, split into files
+for each readlength, defined by readWidths(x) for each file.}
+
+\item{seq_info}{SeqInfo object, default \code{seqinfo(findFa(df))}}
 
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
-
-\item{seqinfo}{SeqInfo object, default \code{seqinfo(findFa(df))}}
 }
 \value{
 invisible(NULL), files saved to disc

@@ -11,6 +11,9 @@ covRle(forward, reverse = RleList())
 
 \item{reverse}{a RleList with defined seqinfo for reverse strand counts}
 }
+\value{
+a covRle object
+}
 \description{
 Coverage Rlelist for both strands
 }

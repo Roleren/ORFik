@@ -237,7 +237,7 @@ readBigWig <- function(path, chrStyle = NULL, as = "GRanges") {
 #' @param gr a GRanges object of exons
 #' @param dir prefix to filepath for file strand and chromosome will be added
 #' @param id id to column type, not used currently!
-#' @param readlength integer / character vector, default "all". Or a subset
+#' @param readlengths integer / character vector, default "all". Or a subset
 #' of readlengths.
 #' @return a data.table with columns specified by readlengths
 #' @export

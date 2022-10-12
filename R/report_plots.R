@@ -156,6 +156,7 @@ correlation.plots <- function(df, output.dir,
 #' @param melt logical, default TRUE.
 #' @param na.rm.melt logical, default TRUE. Remove NA values from melted table.
 #' @return a data.table with 3 columns, Var1, Var2 and Cor
+#' @importFrom data.table melt.data.table setcolorder
 cor_table <- function(dt, method = c("pearson", "spearman")[1],
                       upper_triangle = TRUE, decimals = 2, melt = TRUE,
                       na.rm.melt = TRUE) {
@@ -172,7 +173,15 @@ cor_table <- function(dt, method = c("pearson", "spearman")[1],
     return(cormat)
   }
   if (upper_triangle) cor <- get_upper_tri(cor)
-  if (melt) cor <- reshape2::melt(cor, value.name = "Cor", na.rm = na.rm.melt)
+  if (melt) {
+    cor <- suppressWarnings(data.table::melt.data.table(as.data.table(cor),
+                                       value.name = "Cor",
+                                       variable.name = "Var2", na.rm = FALSE))
+
+    cor[, Var1 := rep(unique(Var2), times = length(unique(Var2)))]
+    data.table::setcolorder(cor, neworder = c(3,1,2))
+    if (na.rm.melt) cor <- cor[!is.na(Cor),]
+  }
 
   return(as.data.table(cor))
 }
@@ -183,6 +192,8 @@ cor_table <- function(dt, method = c("pearson", "spearman")[1],
 #' @param limit default (-1, 1), defined by:
 #'  \code{c(ifelse(min(dt_cor$Cor, na.rm = TRUE) < 0, -1, 0), 1)}
 #' @param midpoint midpoint of correlation values in label coloring.
+#' @param label_name name of correlation method, default
+#' \code{"Pearson Correlation"} with newline after Pearson.
 #' @param legend.position default c(0.4, 0.7), other: "top", "right",..
 #' @param text_size size of correlation numbers
 #' @param legend.direction default "horizontal", or "vertical"

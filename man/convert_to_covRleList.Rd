@@ -21,12 +21,17 @@ convert_to_covRleList(
 \item{in_files}{paths to input files, default pshifted files:
 \code{filepath(df, "pshifted")} in ofst format}
 
+\item{out_dir}{paths to output files, default
+\code{file.path(libFolder(df), "cov_RLE_List")}.}
+
 \item{out_dir_merged}{character vector of paths, default:
 \code{file.path(libFolder(df), "cov_RLE")}.
 Paths to merged output files, Set to NULL to skip making merged covRle.}
 
 \item{split.by.strand}{logical, default TRUE, split into forward and reverse
 strand RleList inside covRle object.}
+
+\item{seq_info}{SeqInfo object, default \code{seqinfo(findFa(df))}}
 
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}

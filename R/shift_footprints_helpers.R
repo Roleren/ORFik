@@ -186,8 +186,6 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 #' \code{\link{GRanges}}
 #' @param cds a \code{\link{GRangesList}} of coding sequences. Length must match
 #' length of argument mrna, and all must have length > arugment firstN.
-#' @param mrna a \code{\link{GRangesList}} of full mRNA ranges match the cds
-#'  argument.
 #' @param read_lengths integer vector, default: 26:34,
 #'  which read length to check for. Will exclude all read_lengths that
 #'  does not exist for footprints.
@@ -241,11 +239,11 @@ ribo_fft <- function(footprints, cds, read_lengths = 26:34, firstN = 150) {
 #' # Load sample data
 #' df <- ORFik.template.experiment()
 #' # Load annotation
-#' loadRegions(df, c("mrna", "cds"), names.keep = filterTranscripts(df))
+#' cds <- loadRegion(df, "cds", names.keep = filterTranscripts(df))
 #' # Select a riboseq library
 #' df <- df[df$libtype == "RFP", ]
 #' footprints <- fimport(filepath(df[1,], "default"))
-#' fft_dt <-ribo_fft(footprints, cds, mrna)
+#' fft_dt <-ribo_fft(footprints, cds)
 #' ribo_fft_plot(fft_dt)
 ribo_fft_plot <- function(fft_dt, period_window = c(0, 6)) {
   stopifnot(is(fft_dt, "data.table"))

@@ -25,6 +25,9 @@ cor_plot(
 
 \item{midpoint}{midpoint of correlation values in label coloring.}
 
+\item{label_name}{name of correlation method, default
+\code{"Pearson Correlation"} with newline after Pearson.}
+
 \item{text_size}{size of correlation numbers}
 
 \item{legend.position}{default c(0.4, 0.7), other: "top", "right",..}

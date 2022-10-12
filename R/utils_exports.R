@@ -107,13 +107,19 @@ export.wiggle <- function(x, file) {
 #'
 #' @references https://genome.ucsc.edu/goldenPath/help/bigWig.html
 #' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
-#' Will be converted to 5' end position of original range. If score column
-#' does not exist, will group ranges and give replicates as score column.
-#' Since bigWig needs a score column to represent counts!
+#'  Will be converted to 5' end position of original range. If score column
+#'  does not exist, will group ranges and give replicates as score column.
+#'  Since bigWig needs a score column to represent counts!
 #' @param file a character path to valid output file name
-#' @param is_pre_collapsed logical, default FALSE. Save some time, if you
-#' know identical positions have been collapsed already with collapse.by.scores
-#' function.
+#' @param is_pre_collapsed logical, default FALSE. Have you already
+#'  collapsed reads with collapse.by.scores,
+#'  so each positions is only in 1 GRanges object with
+#'  a score column per readlength?
+#'  Set to TRUE, only if you are sure, will give a speedup.
+#' @param split.by.strand logical, default TRUE. Split bigWig into 2 files,
+#'  one for each strand.
+#' @param seq_info a Seqinfo object, default seqinfo(x).
+#'  Must have non NA seqlengths defined!
 #' @return invisible(NULL) (File is saved as 2 .bigWig files)
 #' @importFrom rtracklayer export.bw
 #' @export
@@ -176,14 +182,7 @@ export.bigWig <- function(x, file, split.by.strand = TRUE,
 #' x$size <- rep(c(28, 29), length.out = length(x))
 #' x$score <- c(5,1,2,5,1,6)
 #' seqlengths(x) <- 5
-#' df <- read.experiment("human_all_merged_l50")
-#' reads <- fimport(filepath(df[1,], "default"))
-#' seqlevels(reads) <- seqlevels(df)
-#' seqinfo(reads) <- seqinfo(df)
-#' debug(export.fstwig)
-#' export.fstwig(x, "~/Desktop/ribo")
-#' export.fstwig(reads, file.path(dirname(df$filepath[1]), "fstwig",
-#'   ORFik:::remove.file_ext(filepath(df, "default"), basename = TRUE)))
+#' # export.fstwig(x, "~/Desktop/ribo")
 export.fstwig <- function(x, file, by.readlength = TRUE,
                           by.chromosome = TRUE, compress = 50) {
   # TODO: Implement split.by.strand argument!

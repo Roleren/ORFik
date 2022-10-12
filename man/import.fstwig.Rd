@@ -13,7 +13,7 @@ import.fstwig(gr, dir, id = "", readlengths = "all")
 
 \item{id}{id to column type, not used currently!}
 
-\item{readlength}{integer / character vector, default "all". Or a subset
+\item{readlengths}{integer / character vector, default "all". Or a subset
 of readlengths.}
 }
 \value{

@@ -40,14 +40,7 @@ x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
 x$size <- rep(c(28, 29), length.out = length(x))
 x$score <- c(5,1,2,5,1,6)
 seqlengths(x) <- 5
-df <- read.experiment("human_all_merged_l50")
-reads <- fimport(filepath(df[1,], "default"))
-seqlevels(reads) <- seqlevels(df)
-seqinfo(reads) <- seqinfo(df)
-debug(export.fstwig)
-export.fstwig(x, "~/Desktop/ribo")
-export.fstwig(reads, file.path(dirname(df$filepath[1]), "fstwig",
-  ORFik:::remove.file_ext(filepath(df, "default"), basename = TRUE)))
+# export.fstwig(x, "~/Desktop/ribo")
 }
 \references{
 "TODO"

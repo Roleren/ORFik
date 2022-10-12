@@ -23,10 +23,10 @@ Get periodogram plot per read length
 # Load sample data
 df <- ORFik.template.experiment()
 # Load annotation
-loadRegions(df, c("mrna", "cds"), names.keep = filterTranscripts(df))
+cds <- loadRegion(df, "cds", names.keep = filterTranscripts(df))
 # Select a riboseq library
 df <- df[df$libtype == "RFP", ]
 footprints <- fimport(filepath(df[1,], "default"))
-fft_dt <-ribo_fft(footprints, cds, mrna)
+fft_dt <-ribo_fft(footprints, cds)
 ribo_fft_plot(fft_dt)
 }

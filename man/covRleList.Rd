@@ -9,10 +9,11 @@ covRleList(list, fraction = names(list))
 \arguments{
 \item{list}{a list of covRle objects of equal length and lengths}
 
-\item{fraction}{names to elements of list, can be integers, as readlengths
-etc.}
-
-\item{reverse}{a RleList with defined seqinfo for reverse strand counts}
+\item{fraction}{character, default \code{names(list)}.
+Names to elements of list, can be integers, as readlengths etc.}
+}
+\value{
+a covRleList object
 }
 \description{
 Coverage Rlelist for both strands

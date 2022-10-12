@@ -31,6 +31,7 @@ Depends:
 Imports:
   AnnotationDbi (>= 1.45.0),
   Biostrings (>= 2.51.1),
+  biomaRt,
   biomartr,
   BiocGenerics (>= 0.29.1),
   BiocParallel (>= 1.19.0),
@@ -58,7 +59,6 @@ Imports:
   xml2 (>= 1.2.0)
 RoxygenNote: 7.2.1
 Suggests:
-  biomaRt,
   testthat,
   rmarkdown,
   knitr,

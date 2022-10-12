@@ -4,12 +4,16 @@
 #' libraries of experiment
 #' @inheritParams outputLibs
 #' @param in_files paths to input files, default pshifted files:
-#' \code{filepath(df, "pshifted")} in ofst format
-#' @param seqinfo SeqInfo object, default \code{seqinfo(findFa(df))}
-#' @param weight integer, numeric or single length character. Default "score".
-#' Use score column in loaded in_files.
+#'  \code{filepath(df, "pshifted")} in ofst format
+#' @param out_dir paths to output files, default
+#'  \code{file.path(libFolder(df), "cov_RLE")}.
 #' @param split.by.strand logical, default TRUE, split into forward and reverse
 #' strand RleList inside covRle object.
+#' @param split.by.readlength logical, default FALSE, split into files
+#' for each readlength, defined by readWidths(x) for each file.
+#' @param seq_info SeqInfo object, default \code{seqinfo(findFa(df))}
+#' @param weight integer, numeric or single length character. Default "score".
+#' Use score column in loaded in_files.
 #' @return invisible(NULL), files saved to disc
 convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir = file.path(libFolder(df), "cov_RLE"),
@@ -61,6 +65,8 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
 #' Saved by default in folder "cov_RLE_List" relative to default
 #' libraries of experiment
 #' @inheritParams convert_to_covRle
+#' @param out_dir paths to output files, default
+#' \code{file.path(libFolder(df), "cov_RLE_List")}.
 #' @param out_dir_merged character vector of paths, default:
 #'  \code{file.path(libFolder(df), "cov_RLE")}.
 #'  Paths to merged output files, Set to NULL to skip making merged covRle.
@@ -104,6 +110,9 @@ convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
 #' Convert to BigWig
 #'
 #' @inheritParams convert_to_covRle
+#' @inheritParams export.bigWig
+#' @param out_dir paths to output files, default
+#'  \code{file.path(libFolder(df), "bigwig")}.
 #' @return invisible(NULL), files saved to disc
 convert_to_bigWig <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir = file.path(libFolder(df), "bigwig"),
@@ -152,10 +161,12 @@ convert_to_bigWig <- function(df, in_files =  filepath(df, "pshifted"),
 #'
 #' Will split files by chromosome for faster loading for now.
 #' This feature might change in the future!
-#' @inheritParams convert_to_covRle
+#' @inheritParams convert_to_bigWig
+#' @param out_dir paths to output files, default
+#'  \code{file.path(libFolder(df), "bigwig")}.
 #' @return invisible(NULL), files saved to disc
 convert_to_fstWig <- function(df, in_files =  filepath(df, "pshifted"),
-                              out_dir = file.path(libFolder(df), "bigwig"),
+                              out_dir = file.path(libFolder(df), "fstwig"),
                               split.by.strand = TRUE,
                               split.by.readlength = FALSE,
                               seq_info = seqinfo(df), weight = "score",

@@ -15,8 +15,6 @@ to call convertToOneBasedRanges on GAlignment object to speed it up.}
 Can also be a manually assigned meta column like 'score2' etc.}
 
 \item{ignore.strand}{logical, default FALSE.}
-
-\item{seq_info}{Seqinfo object, default seqinfo(x)}
 }
 \value{
 covRle object

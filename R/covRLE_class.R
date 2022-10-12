@@ -46,6 +46,7 @@ setClass("covRleList",
 #'
 #' @param forward a RleList with defined seqinfo for forward strand counts
 #' @param reverse a RleList with defined seqinfo for reverse strand counts
+#' @return a covRle object
 #' @export
 #' @family covRLE
 #' @examples
@@ -64,9 +65,9 @@ covRle <- function(forward, reverse = RleList()) {
 #' Coverage Rlelist for both strands
 #'
 #' @param list a list of covRle objects of equal length and lengths
-#' @param reverse a RleList with defined seqinfo for reverse strand counts
-#' @param fraction names to elements of list, can be integers, as readlengths
-#' etc.
+#' @param fraction character, default \code{names(list)}.
+#' Names to elements of list, can be integers, as readlengths etc.
+#' @return a covRleList object
 #' @export
 #' @family covRLE
 #' @examples
@@ -94,7 +95,12 @@ covRleList <- function(list, fraction = names(list)) {
 }
 
 
+#' covRle show definition
+#'
+#' Show a simplified version of the covRle
+#' @param object a\code{\link{covRle}}
 #' @export
+#' @return print state of covRle
 setMethod("show", "covRle",
           function(object) {
             if (length(object) == 0) {
@@ -111,7 +117,12 @@ setMethod("show", "covRle",
           }
 )
 
+#' covRleList show definition
+#'
+#' Show a simplified version of the covRleList.
+#' @param object a\code{\link{covRleList}}
 #' @export
+#' @return print state of covRleList
 setMethod("show", "covRleList",
           function(object) {
             if (length(object) == 0) {
@@ -295,7 +306,6 @@ setMethod("length",
 #' @param x a GRanges, GAlignment or GAlignmentPairs object.
 #' Note that coverage calculation for GAlignment is slower, so usually best
 #' to call convertToOneBasedRanges on GAlignment object to speed it up.
-#' @param seq_info Seqinfo object, default seqinfo(x)
 #' @param weight default "AUTO", pick 'score' column if exist, else all are 1L.
 #' Can also be a manually assigned meta column like 'score2' etc.
 #' @param ignore.strand logical, default FALSE.

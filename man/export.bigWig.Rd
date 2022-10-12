@@ -20,9 +20,17 @@ Since bigWig needs a score column to represent counts!}
 
 \item{file}{a character path to valid output file name}
 
-\item{is_pre_collapsed}{logical, default FALSE. Save some time, if you
-know identical positions have been collapsed already with collapse.by.scores
-function.}
+\item{split.by.strand}{logical, default TRUE. Split bigWig into 2 files,
+one for each strand.}
+
+\item{is_pre_collapsed}{logical, default FALSE. Have you already
+collapsed reads with collapse.by.scores,
+so each positions is only in 1 GRanges object with
+a score column per readlength?
+Set to TRUE, only if you are sure, will give a speedup.}
+
+\item{seq_info}{a Seqinfo object, default seqinfo(x).
+Must have non NA seqlengths defined!}
 }
 \value{
 invisible(NULL) (File is saved as 2 .bigWig files)

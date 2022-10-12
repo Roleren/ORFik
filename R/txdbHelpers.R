@@ -443,8 +443,7 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' @return data.table with 2 columns gene_id and gene_symbol named after
 #' attribute, sorted in order of gene_ids input.
 #' @export
-#' @importFrom biomaRt useEnsembl
-#' @importFrom biomaRt getBM
+#' @importFrom biomaRt useEnsembl getBM
 #' @examples
 #' ## Without ORFik experiment input
 #' gene_id_ATF4 <- "ENSG00000128272"
