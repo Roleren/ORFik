@@ -240,6 +240,7 @@ readBigWig <- function(path, chrStyle = NULL, as = "GRanges") {
 #' @param readlengths integer / character vector, default "all". Or a subset
 #' of readlengths.
 #' @return a data.table with columns specified by readlengths
+#' @importFrom fst fst
 #' @export
 import.fstwig <- function(gr, dir, id = "", readlengths = "all") {
 
