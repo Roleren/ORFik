@@ -4,7 +4,12 @@
 \alias{read.experiment}
 \title{Read ORFik \code{\link{experiment}}}
 \usage{
-read.experiment(file, in.dir = ORFik::config()["exp"], validate = TRUE)
+read.experiment(
+  file,
+  in.dir = ORFik::config()["exp"],
+  validate = TRUE,
+  output.env = .GlobalEnv
+)
 }
 \arguments{
 \item{file}{relative path to a ORFik experiment. That is a .csv file following
@@ -20,6 +25,10 @@ Also does not apply if file argument was given as full path.}
 
 \item{validate}{logical, default TRUE. Abort if any library files does not exist.
 Do not set this to FALSE, unless you know what you are doing!}
+
+\item{output.env}{an environment, default .GlobalEnv. Which environment
+should ORFik output libraries to (if this is done),
+can be updated later with \code{envExp(df) <- new.env()}.}
 }
 \value{
 an ORFik \code{\link{experiment}}

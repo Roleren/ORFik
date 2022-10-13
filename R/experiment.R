@@ -15,6 +15,9 @@
 #' Also does not apply if file argument was given as full path.
 #' @param validate logical, default TRUE. Abort if any library files does not exist.
 #' Do not set this to FALSE, unless you know what you are doing!
+#' @param output.env an environment, default .GlobalEnv. Which environment
+#' should ORFik output libraries to (if this is done),
+#' can be updated later with \code{envExp(df) <- new.env()}.
 #' @return an ORFik \code{\link{experiment}}
 #' @importFrom utils read.table read.csv2
 #' @export
@@ -35,7 +38,8 @@
 #' # read.experiment("experiment", in.dir = "path/to/save/")
 #' @family ORFik_experiment
 read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
-                             validate = TRUE) {
+                             validate = TRUE, output.env = .GlobalEnv) {
+  stopifnot(is.environment(output.env))
   if (is(file, "character")) {
     if (length(file) != 1) stop("Experiment name must be single string!")
     if (file == "") stop("Experiment name is empty: ''")
@@ -70,7 +74,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                    assembly = assembly,
                    listData = listData,
                    expInVarName = FALSE,
-                   envir = .GlobalEnv)
+                   envir = output.env)
   if (validate) validateExperiments(df)
   return(df)
 }
