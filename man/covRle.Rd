@@ -4,7 +4,7 @@
 \alias{covRle}
 \title{Coverage Rlelist for both strands}
 \usage{
-covRle(forward, reverse = RleList())
+covRle(forward = RleList(), reverse = RleList())
 }
 \arguments{
 \item{forward}{a RleList with defined seqinfo for forward strand counts}
@@ -18,7 +18,10 @@ a covRle object
 Coverage Rlelist for both strands
 }
 \examples{
+covRle()
 covRle(RleList(), RleList())
+chr_rle <- RleList(chr1 = Rle(c(1,2,3), c(1,2,3)))
+covRle(chr_rle, chr_rle)
 }
 \seealso{
 Other covRLE: 

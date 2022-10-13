@@ -7,7 +7,7 @@
 covRleList(list, fraction = names(list))
 }
 \arguments{
-\item{list}{a list of covRle objects of equal length and lengths}
+\item{list}{a list or List of covRle objects of equal length and lengths}
 
 \item{fraction}{character, default \code{names(list)}.
 Names to elements of list, can be integers, as readlengths etc.}
@@ -19,8 +19,7 @@ a covRleList object
 Coverage Rlelist for both strands
 }
 \examples{
-covRle <- covRle(RleList(), RleList())
-covRleList(list(covRle))
+covRleList(List(covRle()))
 }
 \seealso{
 Other covRLE: 

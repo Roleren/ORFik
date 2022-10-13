@@ -29,14 +29,14 @@ setClass("covRle",
 #' @export
 #' @family covRLE
 setClass("covRleList",
-         contains="list",
+         contains=c("List"),
          representation(
-           list="list",          # of length N, no names
+           list="List",
            strandMode="integer",
            fraction="character"
          ),
          prototype(
-           list=list(),
+           list=List(),
            strandMode=integer(),
            fraction=character()
          )
@@ -50,8 +50,11 @@ setClass("covRleList",
 #' @export
 #' @family covRLE
 #' @examples
+#' covRle()
 #' covRle(RleList(), RleList())
-covRle <- function(forward, reverse = RleList()) {
+#' chr_rle <- RleList(chr1 = Rle(c(1,2,3), c(1,2,3)))
+#' covRle(chr_rle, chr_rle)
+covRle <- function(forward = RleList(), reverse = RleList()) {
   strandMode <- ifelse(length(reverse) > 0, 1L, 0L)
   if (strandMode) {
     if (length(forward) != length(reverse))
@@ -64,15 +67,14 @@ covRle <- function(forward, reverse = RleList()) {
 
 #' Coverage Rlelist for both strands
 #'
-#' @param list a list of covRle objects of equal length and lengths
+#' @param list a list or List of covRle objects of equal length and lengths
 #' @param fraction character, default \code{names(list)}.
 #' Names to elements of list, can be integers, as readlengths etc.
 #' @return a covRleList object
 #' @export
 #' @family covRLE
 #' @examples
-#' covRle <- covRle(RleList(), RleList())
-#' covRleList(list(covRle))
+#' covRleList(List(covRle()))
 covRleList <- function(list, fraction = names(list)) {
   if (is.null(fraction)) {
     fraction <- rep("NA", length(list))
@@ -91,9 +93,8 @@ covRleList <- function(list, fraction = names(list)) {
   if (length(list) > 1) {
     stopifnot(all(unlist(lapply(list, function(x) is(x, "covRle")))))
   }
-  new("covRleList", list = list, strandMode = strandMode, fraction = fraction)
+  new("covRleList", list = List(list), strandMode = strandMode, fraction = fraction)
 }
-
 
 #' covRle show definition
 #'
@@ -126,18 +127,24 @@ setMethod("show", "covRle",
 setMethod("show", "covRleList",
           function(object) {
             if (length(object) == 0) {
-              cat(paste0("CovRleList object with 0 covRle objects"))
+              cat(paste0("CovRleList object with 0 covRle objects\n"))
             } else {
-              if (strandMode(object)) {
-                cat(paste0("CovRleList object with ", length(object), " covRle objects (Stranded)\n"))
+              if (is.na(strandMode(object))) {
+                cat(paste0("CovRleList object with ", length(object)),
+                " covRle objects\n")
+              } else if (strandMode(object)) {
+                  cat(paste0("CovRleList object with ", length(object),
+                             " covRle objects (Stranded)\n"))
               } else {
-                cat(paste0("CovRleList object with ", length(object), " covRle objects (Unstranded)\n"))
+                  cat(paste0("CovRleList object with ", length(object),
+                             " covRle objects (Unstranded)\n"))
               }
               if (length(object@list) > 3) {
-                print(head(object@list))
+                print(head(as.list(object@list)))
                 cat("...\n")
-                cat(paste0("<", length(object@list) - 3," more covRle elements>\n"))
-              } else print(object@list)
+                cat(paste0("<", length(object@list) - 3,
+                           " more covRle elements>\n"))
+              } else print(as.list(object@list))
             }
           }
 )
