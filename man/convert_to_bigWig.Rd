@@ -50,3 +50,11 @@ invisible(NULL), files saved to disc
 \description{
 Convert to BigWig
 }
+\examples{
+df <- ORFik.template.experiment()[10,]
+## Usually do default folder, here we use tmpdir
+folder_to_save <- file.path(tempdir(), "bigwig")
+convert_to_bigWig(df, out_dir = folder_to_save)
+fimport(file.path(folder_to_save, c("RFP_Mutant_rep2_forward.bigWig",
+ "RFP_Mutant_rep2_reverse.bigWig")))
+}

@@ -539,7 +539,6 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                                           seqinfo.x.is.correct = seqinfo.is.correct)
       } else coverage <- coverageByTranscript(reads, grl)
     }
-
     if (!keep.names) names(coverage) <- NULL
 
     if (as.data.table) {

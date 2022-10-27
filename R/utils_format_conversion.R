@@ -15,6 +15,13 @@
 #' @param weight integer, numeric or single length character. Default "score".
 #' Use score column in loaded in_files.
 #' @return invisible(NULL), files saved to disc
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[10,]
+#' ## Usually do default folder, here we use tmpdir
+#' folder_to_save <- file.path(tempdir(), "cov_RLE")
+#' convert_to_covRle(df, out_dir = folder_to_save)
+#' fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
 convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir = file.path(libFolder(df), "cov_RLE"),
                               split.by.strand = TRUE,
@@ -29,7 +36,7 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
   if (verbose) message("-- Converting to covRle objects")
   if (verbose) message("Output to dir: ", out_dir)
   for (i in seq_along(out_filepaths)) {
-    if (verbose) message("- Library: ", i)
+    if (verbose) message("- Library: ", lib_names[i])
     out_file <- out_filepaths[i]
     in_file <- in_files[i]
     if (split.by.readlength) {
@@ -71,6 +78,15 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
 #'  \code{file.path(libFolder(df), "cov_RLE")}.
 #'  Paths to merged output files, Set to NULL to skip making merged covRle.
 #' @return invisible(NULL), files saved to disc
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[10,]
+#' ## Usually do default folder, here we use tmpdir
+#' folder_to_save <- file.path(tempdir(), "cov_RLE_List")
+#' folder_to_save_merged <- file.path(tempdir(), "cov_RLE")
+#' ORFik:::convert_to_covRleList(df, out_dir = folder_to_save,
+#' out_dir_merged = folder_to_save_merged)
+#' fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
 convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir = file.path(libFolder(df), "cov_RLE_List"),
                               out_dir_merged = file.path(libFolder(df), "cov_RLE"),
@@ -114,6 +130,14 @@ convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
 #' @param out_dir paths to output files, default
 #'  \code{file.path(libFolder(df), "bigwig")}.
 #' @return invisible(NULL), files saved to disc
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[10,]
+#' ## Usually do default folder, here we use tmpdir
+#' folder_to_save <- file.path(tempdir(), "bigwig")
+#' convert_to_bigWig(df, out_dir = folder_to_save)
+#' fimport(file.path(folder_to_save, c("RFP_Mutant_rep2_forward.bigWig",
+#'  "RFP_Mutant_rep2_reverse.bigWig")))
 convert_to_bigWig <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir = file.path(libFolder(df), "bigwig"),
                               split.by.strand = TRUE,

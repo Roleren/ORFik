@@ -156,6 +156,13 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #' Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.
 #' @param author character, default "". Main author of experiment,
 #' usually last name is enough. When printing will state "author et al" in info.
+#' @param files character vector or data.table of library paths in dir.
+#' Default: \code{findLibrariesInFolder(dir, types, pairedEndBam)}.
+#' Do not touch unless you want to do some subsetting, it will automatically
+#' remove files that are not of file format defined by 'type' argument.
+#' Note that sorting on number that: 10 is before 2, so 1, 2, 10, is sorted as:
+#' 1, 10, 2. If you want to fix this, you could update this argument with:
+#' ORFik:::findLibrariesInFolder()[1,3,2] to get order back to 1,2,10 etc.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View
@@ -201,11 +208,11 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
                               types = c("bam", "bed", "wig", "ofst"),
                               libtype = "auto", stage = "auto", rep = "auto",
                               condition = "auto", fraction = "auto",
-                              author = "") {
-  notDir <- !all(dir.exists(dir))
-  if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a existing directory!"))
-  file_dt <- findLibrariesInFolder(dir, types, pairedEndBam)
-
+                              author = "",
+                              files = findLibrariesInFolder(dir, types, pairedEndBam)) {
+  if (!(is(files, "character") | is(files, "data.table")))
+      stop("'files' must be of class character or data.table")
+  file_dt <- files
   if (is(file_dt, "data.table")) { # If paired data
     files <- file_dt$forward
     df <- data.frame(matrix(ncol = 7, nrow = length(files) + 4))
@@ -907,6 +914,9 @@ remove.experiments <- function(df, envir = envExp(df)) {
 #' With 2 extra column (logical), is it wig pairs, and paired bam files.
 #' @keywords internal
 findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
+  notDir <- !all(dir.exists(dir))
+  if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a existing directory!"))
+
   regex <- paste("\\.", types, collapse = "|", sep = "")
   # Find files in multiple dirs in correct order
   files <- unlist(lapply(dir,

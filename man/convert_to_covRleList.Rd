@@ -47,3 +47,12 @@ coverage calculation.
 Saved by default in folder "cov_RLE_List" relative to default
 libraries of experiment
 }
+\examples{
+df <- ORFik.template.experiment()[10,]
+## Usually do default folder, here we use tmpdir
+folder_to_save <- file.path(tempdir(), "cov_RLE_List")
+folder_to_save_merged <- file.path(tempdir(), "cov_RLE")
+ORFik:::convert_to_covRleList(df, out_dir = folder_to_save,
+out_dir_merged = folder_to_save_merged)
+fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
+}

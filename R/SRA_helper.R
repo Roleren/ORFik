@@ -257,11 +257,12 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
   abstract_destfile <- paste0(outdir, "/abstract_", SRP, ".csv")
 
   if (file.exists(destfile)) {
-    message(paste("Existing metadata file found in dir:", outdir, " ,will not download"))
+    message(paste("Existing metadata file found in dir:", outdir, ",will not download"))
     if (abstract %in% c("print", "printsave")) { # Print abstract if wanted
       if (file.exists(abstract_destfile)) {
-        print("Study abstract:")
-        print(read.table(abstract_destfile, header = TRUE)$abstract)
+        cat("Study Abstract:\n")
+        cat(read.table(abstract_destfile, header = TRUE)$abstract, "\n")
+        cat("------------------\n")
       }
     }
     return(fread(destfile))

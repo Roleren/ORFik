@@ -6,7 +6,7 @@
 \usage{
 shiftFootprintsByExperiment(
   df,
-  out.dir = pasteDir(dirname(df$filepath[1]), "/pshifted/"),
+  out.dir = pasteDir(libFolder(df), "/pshifted/"),
   start = TRUE,
   stop = FALSE,
   top_tx = 10L,
@@ -34,8 +34,8 @@ shiftFootprintsByExperiment(
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{out.dir}{output directory for files,
-default: dirname(df$filepath[1]), making a /pshifted
-folder at that location}
+default: pasteDir(libFolder(df), "/pshifted/"),
+making a /pshifted folder inside default bam file location}
 
 \item{start}{(logical) Whether to include predictions based on the start
 codons. Default TRUE.}
@@ -73,7 +73,11 @@ TIS region to be considered for periodicity.}
 is strongest between 27:32.}
 
 \item{output_format}{default c("ofst", "wig"), use export.ofst or
-wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.
+wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.\cr
+Options are: c("ofst", "bigWig", "wig", "bed", "bedo")
+For future coverage per nucleotide, we advice to do here ofst and bigWig
+for other genome browsers,
+then call \code{\link{convert_to_covRleList}} to get much faster R objects.\cr
 The wig format version can be used in IGV, the score column is counts of that
 read with that read length, the cigar reference width is lost,
 ofst is much faster to save and load in R, and retain cigar reference width,
@@ -151,6 +155,8 @@ shiftFootprintsByExperiment(df)
 shift.list <- shifts.load(df)
 shift.list[[1]]$offsets_start[3] <- -12
 #shiftFootprintsByExperiment(df, shift.list = shift.list)
+## For additional speedup in R for nucleotide coverage (coveragePerTiling etc)
+
 }
 \references{
 https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4912-6

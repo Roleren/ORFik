@@ -42,6 +42,7 @@ test_that("covRLE fails when it should", {
   seqlengths(gr_bad) <- NA
   expect_error(covRleFromGR(gr_bad))
   expect_error(covRle(f(covRle_both), r(covRle_both)[[1]]))
+  expect_error(covRle(1))
 })
 
 test_that("covRLE works in coveragePerTiling", {

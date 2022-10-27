@@ -319,10 +319,14 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @inheritParams detectRibosomeShifts
 #' @param df an ORFik \code{\link{experiment}}
 #' @param out.dir output directory for files,
-#' default: dirname(df$filepath[1]), making a /pshifted
-#' folder at that location
+#' default: pasteDir(libFolder(df), "/pshifted/"),
+#' making a /pshifted folder inside default bam file location
 #' @param output_format default c("ofst", "wig"), use export.ofst or
-#' wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.
+#' wiggle format (wig) using \code{\link{export.wiggle}} ? Default is both.\cr
+#' Options are: c("ofst", "bigWig", "wig", "bed", "bedo")
+#' For future coverage per nucleotide, we advice to do here ofst and bigWig
+#' for other genome browsers,
+#' then call \code{\link{convert_to_covRleList}} to get much faster R objects.\cr
 #' The wig format version can be used in IGV, the score column is counts of that
 #' read with that read length, the cigar reference width is lost,
 #' ofst is much faster to save and load in R, and retain cigar reference width,
@@ -359,9 +363,10 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' shift.list <- shifts.load(df)
 #' shift.list[[1]]$offsets_start[3] <- -12
 #' #shiftFootprintsByExperiment(df, shift.list = shift.list)
+#' ## For additional speedup in R for nucleotide coverage (coveragePerTiling etc)
+#'
 shiftFootprintsByExperiment <- function(df,
-                                        out.dir = pasteDir(dirname(
-                                          df$filepath[1]), "/pshifted/"),
+                                        out.dir = pasteDir(libFolder(df), "/pshifted/"),
                                         start = TRUE, stop = FALSE,
                                         top_tx = 10L, minFiveUTR = 30L,
                                         minCDS = 150L,
@@ -379,7 +384,7 @@ shiftFootprintsByExperiment <- function(df,
   dir.create(path, showWarnings = FALSE, recursive = TRUE)
   if (!dir.exists(path)) stop(paste("out.dir", out.dir, "does not exist!"))
   if (!any(c("bed", "bedo", "wig", "ofst", "bigWig") %in% output_format))
-    stop("output_format allowed: bed, bedo, wig, bigWig or ofst")
+    stop("output_format allowed: ofst, covRleList, wig, bigWig, bed, bedo")
   rfpFiles <- filepath(df, "ofst") # If ofst file not present, uses bam file
   if (!is.null(shift.list)) {
     if (!all(names(shift.list) %in% rfpFiles))
@@ -443,7 +448,7 @@ shiftFootprintsByExperiment <- function(df,
     }
     if ("bigWig" %in% output_format) {
       if (anyNA(seqlengths(shifted))) {
-        seqinfo(shifted) <- seqinfo(findFa(df))[seqlevels(shifted),]
+        seqinfo(shifted) <- seqinfo(df)[seqlevels(shifted),]
       }
       if (anyNA(seqlengths(shifted))) {
         seqinfo(shifted) <- seqinfo(loadTxdb(df))[seqlevels(shifted),]

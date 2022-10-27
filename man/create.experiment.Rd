@@ -20,7 +20,8 @@ create.experiment(
   rep = "auto",
   condition = "auto",
   fraction = "auto",
-  author = ""
+  author = "",
+  files = findLibrariesInFolder(dir, types, pairedEndBam)
 )
 }
 \arguments{
@@ -94,6 +95,14 @@ Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.}
 
 \item{author}{character, default "". Main author of experiment,
 usually last name is enough. When printing will state "author et al" in info.}
+
+\item{files}{character vector or data.table of library paths in dir.
+Default: \code{findLibrariesInFolder(dir, types, pairedEndBam)}.
+Do not touch unless you want to do some subsetting, it will automatically
+remove files that are not of file format defined by 'type' argument.
+Note that sorting on number that: 10 is before 2, so 1, 2, 10, is sorted as:
+1, 10, 2. If you want to fix this, you could update this argument with:
+ORFik:::findLibrariesInFolder()[1,3,2] to get order back to 1,2,10 etc.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,
