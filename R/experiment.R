@@ -529,26 +529,18 @@ filepath <- function(df, type, basename = FALSE) {
     i <- which(df$filepath == x)
     input <- NULL
     if (type == "pshifted") {
-      out.dir <- paste0(dirname(df$filepath[1]), "/pshifted/")
+      out.dir <- paste0(dirname(x), "/pshifted/")
       if (dir.exists(out.dir)) {
-        input <- paste0(out.dir,
-                        remove.file_ext(x,
-                                        basename = TRUE)
+        input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
                         , "_pshifted.ofst")
         if (!file.exists(input)) { # if not ofst
-          input <- paste0(out.dir,
-                          remove.file_ext(x,
-                                          basename = TRUE)
+          input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
                           , "_pshifted.bigWig")
           if (!file.exists(input)) { # if not bigWig
-            input <- paste0(out.dir,
-                            remove.file_ext(x,
-                                            basename = TRUE)
+            input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
                             , "_pshifted.wig")
             if (!file.exists(input)) { # if not wig
-              input <- paste0(out.dir,
-                              remove.file_ext(x,
-                                              basename = TRUE)
+              input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
                               , "_pshifted.bed")
               if (!file.exists(input))
                 type <- "ofst"
@@ -558,32 +550,23 @@ filepath <- function(df, type, basename = FALSE) {
       } else type <- "ofst"
     }
     if (type %in% "cov") {
-      out.dir <- paste0(dirname(df$filepath[1]), "/cov_RLE/")
-      input <- paste0(out.dir,
-                      remove.file_ext(x,
-                                      basename = TRUE)
-                      , ".covrds")
+      out.dir <- paste0(dirname(x), "/cov_RLE/")
+      input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), ".covrds")
       if (!file.exists(input)) stop("File did not exist,",
                                     "did you create covRle yet?")
     }
 
     if (type %in% "covl") {
-      out.dir <- paste0(dirname(df$filepath[1]), "/cov_RLE_List/")
-      input <- paste0(out.dir,
-                      remove.file_ext(x,
-                                      basename = TRUE)
-                      , ".covrds")
+      out.dir <- paste0(dirname(x), "/cov_RLE_List/")
+      input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), ".covrds")
       if (!file.exists(input)) stop("File did not exist,",
                                     "did you create covRleList yet?")
     }
 
     if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
-      out.dir <- paste0(dirname(df$filepath[1]), "/",type,"/")
+      out.dir <- paste0(dirname(x), "/",type,"/")
       if (dir.exists(out.dir)) {
-        input <- paste0(out.dir,
-                        remove.file_ext(x,
-                                        basename = TRUE)
-                        , ".", type)
+        input <- paste0(out.dir, remove.file_ext(x,basename = TRUE), ".", type)
         if (!file.exists(input)) type <- "default"
       } else type <- "default"
     }
@@ -862,7 +845,7 @@ simpleLibs <- convertLibs
 #' #read_fst(file.path(tempdir(), "all.ofst"))
 #' # Collapse replicates
 #' #mergeLibs(df2, tempdir(), mode = "rep", type = "default")
-mergeLibs <- function(df, out_dir = file.path(dirname(df$filepath[1]), "ofst_merged"), mode = "all",
+mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mode = "all",
                       type = "ofst", keep_all_scores = TRUE) {
   stopifnot(mode %in% c("all", "rep"))
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)

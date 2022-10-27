@@ -6,7 +6,7 @@
 \usage{
 mergeLibs(
   df,
-  out_dir = file.path(dirname(df$filepath[1]), "ofst_merged"),
+  out_dir = file.path(libFolder(df), "ofst_merged"),
   mode = "all",
   type = "ofst",
   keep_all_scores = TRUE

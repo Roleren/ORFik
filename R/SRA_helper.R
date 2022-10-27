@@ -261,7 +261,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
     if (abstract %in% c("print", "printsave")) { # Print abstract if wanted
       if (file.exists(abstract_destfile)) {
         cat("Study Abstract:\n")
-        cat(read.table(abstract_destfile, header = TRUE)$abstract, "\n")
+        cat(read.table(abstract_destfile, header = TRUE)$abstract, " \n")
         cat("------------------\n")
       }
     }
@@ -361,8 +361,9 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
     if (!is.null(EXP_SAMPLE) && !is.null(EXP_SAMPLE$STUDY$DESCRIPTOR$STUDY_ABSTRACT[[1]])) {
       abstract_text <- EXP_SAMPLE$STUDY$DESCRIPTOR$STUDY_ABSTRACT[[1]]
       if (abstract %in% c("print", "printsave")) {
-        print("Study abstract:")
-        print(abstract_text)
+        cat("Study Abstract:\n")
+        cat(abstract_text, " \n")
+        cat("------------------\n")
       }
       if (abstract %in% c("save", "printsave")) {
         fwrite(data.table(abstract = abstract_text), abstract_destfile)
