@@ -109,9 +109,13 @@ stopDefinition <- function(transl_table) {
 #' seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
 #' search regions and faFile is a \code{\link{FaFile}}.
 #' @param startCodon (character vector) Possible START codons to search for.
-#' Check \code{\link{startDefinition}} for helper function.
+#' Check \code{\link{startDefinition}} for helper function. Note that it is
+#' case sensitive, so "atg" would give 0 hits for a sequence with only capital
+#' "ATG" ORFs.
 #' @param stopCodon (character vector) Possible STOP codons to search for.
-#' Check \code{\link{stopDefinition}} for helper function.
+#' Check \code{\link{stopDefinition}} for helper function. Note that it is
+#' case sensitive, so "tga" would give 0 hits for a sequence with only capital
+#' "TGA" ORFs.
 #' @param longestORF (logical) Default TRUE. Keep only the longest ORF per
 #' unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest
 #' per transcript! You can also use function
@@ -162,6 +166,7 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
     stop("Fasta sequences had length 0 or is NULL")
   if (is.character(seqs) & substr(seqs[1], 1, 1) %in%
       c("a", "t", "c", "g", "n")) {
+    message("Forcing Start and stop codons to lower case!")
     startCodon <- tolower(startCodon)
     stopCodon <- tolower(stopCodon)
   }

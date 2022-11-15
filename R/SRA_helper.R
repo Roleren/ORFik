@@ -249,7 +249,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
 #' ## Originally on ENA (RCP-seq data)
 #' # download.SRA.metadata("ERP116106")
 #' ## Originally on GEO (GSE) (save to directory to keep info with fastq files)
-#' # download.SRA.metadata("GSE61011", "/path/to/fastq.folder/")
+#' # download.SRA.metadata("GSE61011")
 download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE,
                                   auto.detect = FALSE, abstract = "printsave") {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
@@ -261,33 +261,15 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
     if (abstract %in% c("print", "printsave")) { # Print abstract if wanted
       if (file.exists(abstract_destfile)) {
         cat("Study Abstract:\n")
-        cat(read.table(abstract_destfile, header = TRUE)$abstract, " \n")
+        cat(readLines(abstract_destfile)[-1], " \n")
         cat("------------------\n")
       }
     }
     return(fread(destfile))
   }
   is_GSE <- length(grep("GSE", x = SRP)) == 1
-  if (is_GSE) { # Find SRP from GSE
-    message("GSE inserted, trying to find SRP from the GSE")
-    url <- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
-    url <- paste0(url, SRP, "&form=text")
-    # Get GSE info
-    a <- fread(url, sep = "!", header = FALSE, col.names = c("row.info", "info"))
-    # Now find SRP from GSE
-    SRP_line <- grepl("Series_relation = ", a$info)
-    if (length(SRP_line) == 0) stop("GSE does not have a recorded Bioproject or SRP; check that it is correct!")
-    b <- a[SRP_line,]$info
-    d <- b[grepl("=SRP", b)]
-    if (length(d) == 0) {
-      d <- b[grepl("= BioProject:", b)]
-      SRP <- gsub(".*/", replacement = "", d)
-    } else SRP <- gsub(".*term=", replacement = "", d)
-    if (length(d) == 0) stop("GSE does not have a recorded Bioproject or SRP; check that it is correct!")
-    SRP <- unique(SRP)
-    if (length(SRP) > 1) stop("Found multiple non identical SRPs for GSE:", SRP)
-    message(paste("Found SRP, will continue using:", SRP))
-  }
+  # Convert GSE to SRP
+  if (is_GSE) SRP <- SRP_from_GSE(SRP)
   # Download runinfo from Trace / SRA server
   url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?term="
   url <- paste0(url, SRP)
@@ -312,11 +294,65 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
     warning(paste("No valid runs found from experiment:", SRP))
     return(file)
   }
-  # Remove unwanted columns, and search for more info
+  # Remove unwanted columns
   file[, MONTH := substr(ReleaseDate, 6, 7)]
   file[, YEAR := gsub("-.*", "", ReleaseDate)]
   file <- file[, -c("AssemblyName", "ReleaseDate", "LoadDate",
                     "download_path", "RunHash", "ReadHash", "Consent")]
+
+  file <- sample_info_append_SRA(file, SRP, abstract_destfile, abstract)
+
+  # Create ORFik guess columns from metadata:
+  if (auto.detect) {
+    file$LIBRARYTYPE <- findFromPath(file$sample_title,
+                                     libNames(), "auto")
+    if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library strategy
+      file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LIBRARYTYPE <-
+        findFromPath(file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LibraryStrategy,
+                     libNames(), "auto")
+    }
+    if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library name
+      file[LIBRARYTYPE == "",]$LIBRARYTYPE <-
+        findFromPath(file[LIBRARYTYPE == "",]$LibraryName,
+                     libNames(), "auto")
+    }
+
+    file$REPLICATE <- findFromPath(file$sample_title,
+                                   repNames(), "auto")
+    stages <- rbind(stageNames(), tissueNames(), cellLineNames())
+    file$STAGE <- findFromPath(file$sample_title, stages, "auto")
+    file$CONDITION <- findFromPath(file$sample_title,
+                                   conditionNames(), "auto")
+    file$INHIBITOR <- findFromPath(file$sample_title,
+                                   inhibitorNames(), "auto")
+  }
+  fwrite(file, destfile)
+  return(file)
+}
+
+SRP_from_GSE <- function(SRP) {
+  message("GSE inserted, trying to find SRP from the GSE")
+  url <- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
+  url <- paste0(url, SRP, "&form=text")
+  # Get GSE info
+  a <- fread(url, sep = "!", header = FALSE, col.names = c("row.info", "info"))
+  # Now find SRP from GSE
+  SRP_line <- grepl("Series_relation = ", a$info)
+  if (length(SRP_line) == 0) stop("GSE does not have a recorded Bioproject or SRP; check that it is correct!")
+  b <- a[SRP_line,]$info
+  d <- b[grepl("=SRP", b)]
+  if (length(d) == 0) {
+    d <- b[grepl("= BioProject:", b)]
+    SRP <- gsub(".*/", replacement = "", d)
+  } else SRP <- gsub(".*term=", replacement = "", d)
+  if (length(d) == 0) stop("GSE does not have a recorded Bioproject or SRP; check that it is correct!")
+  SRP <- unique(SRP)
+  if (length(SRP) > 1) stop("Found multiple non identical SRPs for GSE:", SRP)
+  message(paste("Found SRP, will continue using:", SRP))
+  return(SRP)
+}
+
+sample_info_append_SRA <- function(file, SRP, abstract_destfile, abstract) {
   # Download xml and add more data
   url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/exp?term="
   url <- paste0(url, SRP)
@@ -324,8 +360,11 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
   a <- xml2::as_list(a)
 
   dt <- data.table()
-  for(i in seq_along(a$EXPERIMENT_PACKAGE_SET)) { # Per sample in study
-    EXP_SAMPLE <- a$EXPERIMENT_PACKAGE_SET[i]$EXPERIMENT_PACKAGE
+  is_EXP_SET <- !is.null(a$EXPERIMENT_PACKAGE_SET)
+  EXP <- if(is_EXP_SET) {a$EXPERIMENT_PACKAGE_SET} else a
+
+  for(i in seq_along(EXP)) { # Per sample in study
+    EXP_SAMPLE <- EXP[i]$EXPERIMENT_PACKAGE
     # Get Sample title
     xml.TITLE <- unlist(EXP_SAMPLE$SAMPLE$TITLE)
     xml.AUTHOR <- unlist(EXP_SAMPLE$Organization$Contact$Name$Last)
@@ -344,6 +383,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
         }
       }
     }
+    # Add title and author information
     xml.TITLE <- ifelse(is.null(xml.TITLE), "", xml.TITLE)
     xml.AUTHOR <- ifelse(is.null(xml.AUTHOR), "",
                          ifelse(xml.AUTHOR %in% c("Curators", "GEO"), "", xml.AUTHOR))
@@ -390,33 +430,6 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
       }
     }
   }
-
-
-  # Create ORFik guess columns from metadata:
-  if (auto.detect) {
-    file$LIBRARYTYPE <- findFromPath(file$sample_title,
-                                     libNames(), "auto")
-    if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library strategy
-      file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LIBRARYTYPE <-
-        findFromPath(file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LibraryStrategy,
-                     libNames(), "auto")
-    }
-    if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library name
-      file[LIBRARYTYPE == "",]$LIBRARYTYPE <-
-        findFromPath(file[LIBRARYTYPE == "",]$LibraryName,
-                     libNames(), "auto")
-    }
-
-    file$REPLICATE <- findFromPath(file$sample_title,
-                                   repNames(), "auto")
-    stages <- rbind(stageNames(), tissueNames(), cellLineNames())
-    file$STAGE <- findFromPath(file$sample_title, stages, "auto")
-    file$CONDITION <- findFromPath(file$sample_title,
-                                   conditionNames(), "auto")
-    file$INHIBITOR <- findFromPath(file$sample_title,
-                                   inhibitorNames(), "auto")
-  }
-  fwrite(file, destfile)
   return(file)
 }
 

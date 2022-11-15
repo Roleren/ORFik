@@ -63,7 +63,7 @@ download.SRA.metadata("SRP226389")
 ## Originally on ENA (RCP-seq data)
 # download.SRA.metadata("ERP116106")
 ## Originally on GEO (GSE) (save to directory to keep info with fastq files)
-# download.SRA.metadata("GSE61011", "/path/to/fastq.folder/")
+# download.SRA.metadata("GSE61011")
 }
 \references{
 doi: 10.1093/nar/gkq1019
