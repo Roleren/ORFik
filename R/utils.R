@@ -197,21 +197,20 @@ findNGSPairs <- function(paths, f = c("forward", "fwd"),
 #' @return character path without file extension
 #' @keywords internal
 remove.file_ext <- function(path, basename = FALSE) {
+  fext <- file_ext(path)
+  compressions <- c("gzip", "gz", "bgz", "zip")
+  areCompressed <- fext %in% compressions
+  regex <- paste0("*\\.",fext,"$")
+  if (any(areCompressed)) {
+    ext <- file_ext(file_path_sans_ext(path[areCompressed], compression = FALSE))
+    regex[areCompressed] <- paste0("*\\.",ext,"\\.", fext[areCompressed],"$")
+  }
   out <- c()
-  for (p in path) {
-    fext <- file_ext(path)
-    compressions <- c("gzip", "gz", "bgz", "zip")
-    areCompressed <- fext %in% compressions
-    if (areCompressed) {
-      ext <- file_ext(file_path_sans_ext(path, compression = FALSE))
-      regex <- paste0("*\\.",ext,"\\.", fext,"$")
-    } else {
-      regex <- paste0("*\\.",fext,"$")
-    }
-    new <- gsub(pattern = regex, "", path)
+  for (p in seq_along(path)) {
+    new <- gsub(pattern = regex[p], "", path[p])
     out <- c(out, new)
   }
-  return(ifelse(basename, basename(out), out))
+  return(if(basename){basename(out)}else out)
 }
 
 #' A wrapper for seqlevelsStyle
