@@ -301,7 +301,7 @@ setMethod("seqlevels",
 setMethod("seqinfo",
           "experiment",
           function(x) {
-            seqinfo(findFa(df@fafile))
+            seqinfo(findFa(x@fafile))
           }
 )
 
