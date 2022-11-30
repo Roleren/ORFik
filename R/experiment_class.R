@@ -262,7 +262,7 @@ setGeneric("QCfolder", function(x) standardGeneric("QCfolder"))
 setMethod("QCfolder",
           "experiment",
           function(x) {
-            file.path(libFolder(df), "QC_STATS/")
+            file.path(libFolder(x), "QC_STATS/")
           }
 )
 
