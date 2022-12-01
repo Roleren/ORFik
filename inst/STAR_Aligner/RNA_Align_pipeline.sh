@@ -54,6 +54,8 @@ OPTIONS:
 	-K  Keep contaminant aligned bam files. Default: "no", alternative: "yes".
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
+	-u  Keep unaligned reads from genome alignment step.
+	      Default "None" (no), alternative: "Fastx""
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -86,9 +88,10 @@ multimap=10
 trim_front=3
 keep="n"
 keepContam="no"
+keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:u:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -139,32 +142,36 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:h" opt; do
         echo "-B allow_introns: $OPTARG"
         ;;
     r)
-	resume=$OPTARG
-	echo "-r resume (r or new n): $OPTARG"
+	      resume=$OPTARG
+	      echo "-r resume (r or new n): $OPTARG"
         ;;
     m)
-	maxCPU=$OPTARG
-	echo "-m maxCPU: $OPTARG"
+      	maxCPU=$OPTARG
+      	echo "-m maxCPU: $OPTARG"
         ;;
     M)
-	multimap=$OPTARG
-	echo "-M max multimap: $OPTARG"
+      	multimap=$OPTARG
+      	echo "-M max multimap: $OPTARG"
         ;;
     S)
-	STAR=$OPTARG
-	echo "-S STAR location: $OPTARG"
+      	STAR=$OPTARG
+      	echo "-S STAR location: $OPTARG"
         ;;
     P)
-	fastp=$OPTARG
-	echo "-P fastp location: $OPTARG"
+      	fastp=$OPTARG
+      	echo "-P fastp location: $OPTARG"
         ;;
     k)
-	keep=$OPTARG
-	echo "-k Keep Star Index loaded: $OPTARG"
+      	keep=$OPTARG
+      	echo "-k Keep Star Index loaded: $OPTARG"
         ;;
     K)
       	keepContam=$OPTARG
       	echo "-K Keep contamination reads: $OPTARG"
+        ;;
+    u)
+      	keep_unmapped_genome=$OPTARG
+      	echo "-u Keep unmapped genome reads: $OPTARG"
         ;;
     h)
         usage
@@ -620,6 +627,7 @@ if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	--genomeDir ${usedGenome} \
 	--outFileNamePrefix ${out_dir}/aligned/${ibn}_ \
 	--outSAMtype BAM SortedByCoordinate \
+	--outReadsUnmapped $keep_unmapped_genome \
 	--runThreadN $(nCores 80 $maxCPU) \
 	--genomeLoad $(keepOrNot $keep)  \
 	--limitIObufferSize 50000000 \

@@ -238,6 +238,10 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' which will be further processed in "ge" genome alignment step. Useful if you
 #' want to do further processing on contaminants, like specific coverage of
 #' specific tRNAs etc.
+#' @param keep.unaligned.genome logical, default FALSE. Create and keep
+#' reads that did not align at the genome alignment step,
+#' default is to only keep the aliged bam file. Useful if you
+#' want to do further processing on plasmids/custom sequences.
 #' @inheritParams STAR.index
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
@@ -279,6 +283,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, include.subfolders = "n", resume = NULL,
                               multiQC = TRUE, keep.contaminants = FALSE,
+                              keep.unaligned.genome = FALSE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -307,6 +312,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
   quality.filtering <- ifelse(quality.filtering, "-q default", "")
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
+  keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
 
   full <- paste(script.folder, "-f", input.dir, "-o", output.dir,
                 "-p", paired.end,
@@ -314,7 +320,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-M", max.multimap, quality.filtering,
                 "-A", alignment.type, "-B", allow.introns,"-m", max.cpus, "-i", include.subfolders,
-                keep.contaminants, star.path, fastp, "-I",script.single,
+                keep.contaminants, keep.unaligned.genome, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
   if (.Platform$OS.type == "unix") {
     print(paste("Starting time:", Sys.time()))
@@ -365,6 +371,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, resume = NULL, keep.contaminants = FALSE,
+                              keep.unaligned.genome = FALSE,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
                                                    package = "ORFik")
@@ -382,12 +389,14 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
   quality.filtering <- ifelse(quality.filtering, "-q default", "")
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
+  keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
   full <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-A", alignment.type, "-m", max.cpus,
                 "-M", max.multimap, quality.filtering,
-                keep.contaminants, star.path, fastp)
+                keep.contaminants, keep.unaligned.genome,
+                star.path, fastp)
   if (.Platform$OS.type == "unix") {
     print(paste("Starting time:", Sys.time()))
     print("Full system call:")
