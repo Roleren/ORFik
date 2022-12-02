@@ -85,29 +85,32 @@ collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collaps
   for (f in seq_along(files)) {
     file <- files[f]
     message("File ", f, "/", length(files), ":  ", file)
-    seqs <- readDNAStringSet(file, format = format[f],
-                             use.names = FALSE)
-    # Fast collapser using data.table
-    replicates <- data.table(seqs = as.character(seqs))
-    # Much faster with 1 core actually, strange..
-    old_threads <- data.table::getDTthreads()
-    data.table::setDTthreads(1)
-    replicates <- replicates[, .N, by = seqs][order(N, decreasing = TRUE),]
-    data.table::setDTthreads(old_threads)
-    if (header.out.format == "fastx") {
-      headers <- paste0(seq.int(nrow(replicates)), "-", replicates$N)
-    } else if (header.out.format == "ribotoolkit") {
-      headers <- paste0("seq", seq.int(nrow(replicates)), "_x", replicates$N)
-    } else stop("format must be 'fastx' or 'ribotoolkit'")
-    new_seqs <- replicates$seqs
-    names(new_seqs) <- headers
     fasta_name <- gsub(pattern = "\\.fastq$", replacement = ".fasta",
                        basename(file))
     new_file_name <- paste0(prefix, fasta_name,
                             ifelse(compress, ".gz", ""))
-    writeXStringSet(DNAStringSet(new_seqs, use.names = TRUE),
+    writeXStringSet(collapse.fastq.internal(
+              readDNAStringSet(file, format = format[f], use.names = FALSE), header.out.format),
                     file.path(outdir, new_file_name),
                     compress = compress, format = "fasta")
   }
   return(invisible(NULL))
+}
+
+collapse.fastq.internal <- function(seqs, header.out.format = "ribotoolkit") {
+  # Fast collapser using data.table
+  replicates <- data.table(seqs = as.character(seqs))
+  # Much faster with 1 core actually, strange..
+  old_threads <- data.table::getDTthreads()
+  data.table::setDTthreads(1)
+  replicates <- replicates[, .N, by = seqs][order(N, decreasing = TRUE),]
+  data.table::setDTthreads(old_threads)
+  if (header.out.format == "fastx") {
+    headers <- paste0(seq.int(nrow(replicates)), "-", replicates$N)
+  } else if (header.out.format == "ribotoolkit") {
+    headers <- paste0("seq", seq.int(nrow(replicates)), "_x", replicates$N)
+  } else stop("format must be 'fastx' or 'ribotoolkit'")
+  new_seqs <- replicates$seqs
+  names(new_seqs) <- headers
+  return(DNAStringSet(new_seqs, use.names = TRUE))
 }
