@@ -81,7 +81,8 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' @inheritParams makeTxdbFromGenome
 #' @keywords internal
 get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
-                           gunzip, genome, optimize = FALSE) {
+                           gunzip, genome, optimize = FALSE,
+                           pseudo_5UTRS_if_needed = NULL) {
   if (GTF != FALSE) { # gtf of organism
     if (db == "ensembl") {
       gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
@@ -99,7 +100,7 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
 
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
-    makeTxdbFromGenome(gtf, genome, organism, optimize)
+    makeTxdbFromGenome(gtf, genome, organism, optimize, pseudo_5UTRS_if_needed)
   } else { # check if it already exists
     gtf <- grep(pattern = organism,
                 x = list.files(output.dir, full.names = TRUE),

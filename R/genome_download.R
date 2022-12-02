@@ -89,12 +89,7 @@
 #' \code{assembly_type = "toplevel")}.
 #' This will give you all haplotypes.
 #' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-#' @param optimize logical, default FALSE. Create a folder
-#' within the folder of the gtf, that includes optimized objects
-#' to speed up loading of annotation regions from up to 15 seconds
-#' on human genome down to 0.1 second. ORFik will then load these optimized
-#' objects instead. Currently optimizes filterTranscript() and
-#' loadRegion().
+#' @inheritParams makeTxdbFromGenome
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
 #' @importFrom R.utils gunzip
@@ -112,6 +107,9 @@
 #'
 #' ## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
 #' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
+#' ## Download and add pseudo 5' UTRs
+#' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
+#' pseudo_5UTRS_if_needed = 100)
 #' ## Get Danio rerio genome and gtf (create txdb for R)
 #' #getGenomeAndAnnotation("Danio rerio", tempdir())
 #'
@@ -132,16 +130,16 @@
 #' annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
 #'  "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
 #' names(annotation) <- c("gtf", "genome")
-#' # Make the txdb (for faster R use)
+#' # Then make the txdb (for faster R use)
 #' # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
-#'
 getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    GTF = TRUE, genome = TRUE,
                                    merge_contaminants = TRUE, phix = FALSE,
                                    ncRNA = FALSE, tRNA = FALSE, rRNA = FALSE,
                                    gunzip = TRUE, remake = FALSE,
                                    assembly_type = "primary_assembly",
-                                   optimize = FALSE) {
+                                   optimize = FALSE,
+                                   pseudo_5UTRS_if_needed = NULL) {
   # Pre checks
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
@@ -177,7 +175,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
   gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
-                        gunzip, genome, optimize = optimize)
+                        gunzip, genome, optimize = optimize,
+                        pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:

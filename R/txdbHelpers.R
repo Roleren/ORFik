@@ -21,14 +21,22 @@
 #' objects instead. Currently optimizes filterTranscript() function and
 #' loadRegion() function for 5' UTRs, 3' UTRs, CDS,
 #'  mRNA (all transcript with CDS) and tx (all transcripts).
-#' @return NULL, Txdb saved to disc named paste0(gtf, ".db")
+#' @param pseudo_5UTRS_if_needed integer, default NULL. If defined > 0,
+#' will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
+#' a leader.
+#' @param return logical, default FALSE. If TRUE, return TXDB object, else NULL.
+#' @return NULL,  Txdb saved to disc named paste0(gtf, ".db").
+#' Set 'return' argument to TRUE, to get txdb back
 #' @export
 #' @examples
 #' gtf <- "/path/to/local/annotation.gtf"
 #' genome <- "/path/to/local/genome.fasta"
 #' #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
+#' ## Add pseudo UTRs if needed (< 30% of cds have a defined 5'UTR)
 makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
-                               optimize = FALSE) {
+                               optimize = FALSE,
+                               pseudo_5UTRS_if_needed = NULL,
+                               return = FALSE) {
   message("Making txdb of GTF")
   organismCapital <- paste0(toupper(substr(organism, 1, 1)),
                             substr(organism, 2, nchar(organism)))
@@ -55,8 +63,27 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
   }
 
+  pseudo5 <- pseudo_5UTRS_if_needed
+  if (!is.null(pseudo5)) {
+    if (pseudo5 > 0 & is.numeric(pseudo5)) {
+      message("---- Adding Pseudo 5' UTRs")
+      leaders <- loadRegion(txdb, "leaders")
+      cds <- loadRegion(txdb, "cds")
+      percentage <- round((length(leaders) / length(cds))*100, 1)
+      message("- Total leaders: ", length(leaders))
+      message("- Leader length statistics:")
+      print(summary(widthPerGroup(leaders, FALSE)))
+      message("- Percentage of CDS' with leaders: ", percentage, "%")
+      if (percentage < 30) {
+        message("- Adding pseudo")
+        txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = pseudo5)
+      }
+    } else warning("Malformed 'pseudo_5UTRS_if_needed', ignoring it")
+  }
+
   txdb_file <- paste0(gtf, ".db")
   AnnotationDbi::saveDb(txdb, txdb_file)
+  message("--------------------------")
   message("Txdb stored at: ", txdb_file)
 
   if (optimize) {
@@ -73,6 +100,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
               file = paste0(base_path, "_", i, ".rds"))
     }
   }
+  if (return) return(txdb)
   return(invisible(NULL))
 }
 

@@ -44,6 +44,9 @@ annotation["gtf"] = "path/to/gtf.gtf"
 
 ## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
+## Download and add pseudo 5' UTRs
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
+pseudo_5UTRS_if_needed = 100)
 ## Get Danio rerio genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Danio rerio", tempdir())
 
@@ -64,9 +67,8 @@ output.dir <- "/Bio_data/references/zebrafish"
 annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
  "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
 names(annotation) <- c("gtf", "genome")
-# Make the txdb (for faster R use)
+# Then make the txdb (for faster R use)
 # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
-
 }
 \seealso{
 Other STAR: 

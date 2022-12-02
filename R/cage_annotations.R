@@ -370,6 +370,7 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
 
   cds01 <- cds[!(names(cds) %in% names(fiveUTRs))]
   if (length(cds01) == 0) {
+    message("- All mRNA have 5' leader, nothing to be done")
     return(txdb)
   }
 
