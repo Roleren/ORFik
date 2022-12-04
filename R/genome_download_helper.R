@@ -82,7 +82,8 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' @keywords internal
 get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
                            gunzip, genome, optimize = FALSE,
-                           pseudo_5UTRS_if_needed = NULL) {
+                           pseudo_5UTRS_if_needed = NULL,
+                           remove_annotation_outliers = TRUE) {
   if (GTF != FALSE) { # gtf of organism
     if (db == "ensembl") {
       gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
@@ -95,7 +96,9 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
       " Until this is fixed in rtracklayer, check out example",
       " in ?getGenomeAndAnnotation on how to rescue those gffs")
       gtf <-biomartr::getGFF(db = db, organism = organism,
-                        path = output.dir, reference = TRUE)
+                        path = output.dir, reference = TRUE,
+                        remove_annotation_outliers =
+                          remove_annotation_outliers)
     }
 
     if (gunzip) # unzip gtf file

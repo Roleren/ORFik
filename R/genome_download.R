@@ -89,6 +89,12 @@
 #' \code{assembly_type = "toplevel")}.
 #' This will give you all haplotypes.
 #' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
+#' @param remove_annotation_outliers logical, default TRUE. Only for refseq.
+#'  shall outlier lines be removed from the input annotation_file?
+#'  If yes, then the initial annotation_file will be overwritten and
+#'  the removed outlier lines will be stored at tempdir for further
+#'  exploration. Among others Aridopsis refseq contains malformed lines,
+#'  where this is needed
 #' @inheritParams makeTxdbFromGenome
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
@@ -109,7 +115,7 @@
 #' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
 #' ## Download and add pseudo 5' UTRs
 #' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
-#' pseudo_5UTRS_if_needed = 100)
+#' #  pseudo_5UTRS_if_needed = 100)
 #' ## Get Danio rerio genome and gtf (create txdb for R)
 #' #getGenomeAndAnnotation("Danio rerio", tempdir())
 #'
@@ -139,7 +145,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    gunzip = TRUE, remake = FALSE,
                                    assembly_type = "primary_assembly",
                                    optimize = FALSE,
-                                   pseudo_5UTRS_if_needed = NULL) {
+                                   pseudo_5UTRS_if_needed = NULL,
+                                   remove_annotation_outliers = TRUE) {
   # Pre checks
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
@@ -176,7 +183,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                              assembly_type, db, gunzip)
   gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
                         gunzip, genome, optimize = optimize,
-                        pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed)
+                        pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
+                        remove_annotation_outliers = remove_annotation_outliers)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:

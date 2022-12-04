@@ -46,7 +46,7 @@ annotation["gtf"] = "path/to/gtf.gtf"
 #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
 ## Download and add pseudo 5' UTRs
 #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
-pseudo_5UTRS_if_needed = 100)
+#  pseudo_5UTRS_if_needed = 100)
 ## Get Danio rerio genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Danio rerio", tempdir())
 

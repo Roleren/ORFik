@@ -19,7 +19,8 @@ getGenomeAndAnnotation(
   remake = FALSE,
   assembly_type = "primary_assembly",
   optimize = FALSE,
-  pseudo_5UTRS_if_needed = NULL
+  pseudo_5UTRS_if_needed = NULL,
+  remove_annotation_outliers = TRUE
 )
 }
 \arguments{
@@ -123,6 +124,13 @@ loadRegion() function for 5' UTRs, 3' UTRs, CDS,
 \item{pseudo_5UTRS_if_needed}{integer, default NULL. If defined > 0,
 will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
 a leader.}
+
+\item{remove_annotation_outliers}{logical, default TRUE. Only for refseq.
+shall outlier lines be removed from the input annotation_file?
+If yes, then the initial annotation_file will be overwritten and
+the removed outlier lines will be stored at tempdir for further
+exploration. Among others Aridopsis refseq contains malformed lines,
+where this is needed}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,
@@ -151,7 +159,7 @@ annotation["gtf"] = "path/to/gtf.gtf"
 #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
 ## Download and add pseudo 5' UTRs
 #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
-pseudo_5UTRS_if_needed = 100)
+#  pseudo_5UTRS_if_needed = 100)
 ## Get Danio rerio genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Danio rerio", tempdir())
 

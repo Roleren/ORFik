@@ -304,27 +304,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
 
   # Create ORFik guess columns from metadata:
   if (auto.detect) {
-    file$LIBRARYTYPE <- findFromPath(file$sample_title,
-                                     libNames(), "auto")
-    if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library strategy
-      file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LIBRARYTYPE <-
-        findFromPath(file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LibraryStrategy,
-                     libNames(), "auto")
-    }
-    if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library name
-      file[LIBRARYTYPE == "",]$LIBRARYTYPE <-
-        findFromPath(file[LIBRARYTYPE == "",]$LibraryName,
-                     libNames(), "auto")
-    }
-
-    file$REPLICATE <- findFromPath(file$sample_title,
-                                   repNames(), "auto")
-    stages <- rbind(stageNames(), tissueNames(), cellLineNames())
-    file$STAGE <- findFromPath(file$sample_title, stages, "auto")
-    file$CONDITION <- findFromPath(file$sample_title,
-                                   conditionNames(), "auto")
-    file$INHIBITOR <- findFromPath(file$sample_title,
-                                   inhibitorNames(), "auto")
+    file <- metadata.autnaming(file)
   }
   fwrite(file, destfile)
   return(file)
@@ -525,6 +505,39 @@ rename.SRA.files <- function(files, new_names) {
   }
   names(new_names) <- basename(files)
   return(new_names)
+}
+
+#' Guess SRA metadata columns
+#' @param file a data.table of SRA metadata
+#' @return a data.table of SRA metadata with additional columns:
+#'       LIBRARYTYPE, REPLICATE, STAGE, CONDITION, INHIBITOR
+metadata.autnaming <- function(file) {
+  ## Library type
+  # First test sample_title
+  file$LIBRARYTYPE <- findFromPath(file$sample_title,
+                                   libNames(), "auto")
+  # Test LIBRARYTYPE
+  if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library strategy
+    file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LIBRARYTYPE <-
+      findFromPath(file[LIBRARYTYPE == "" & !(LibraryStrategy %in%  c("RNA-Seq", "OTHER")),]$LibraryStrategy,
+                   libNames(), "auto")
+  }
+  # Test LIBRARYNAME
+  if (any(file$LIBRARYTYPE %in% c(""))){ # Check if valid library name
+    file[LIBRARYTYPE == "",]$LIBRARYTYPE <-
+      findFromPath(file[LIBRARYTYPE == "",]$LibraryName,
+                   libNames(), "auto")
+  }
+  # The other columns
+  file$REPLICATE <- findFromPath(file$sample_title,
+                                 repNames(), "auto")
+  stages <- rbind(stageNames(), tissueNames(), cellLineNames())
+  file$STAGE <- findFromPath(file$sample_title, stages, "auto")
+  file$CONDITION <- findFromPath(file$sample_title,
+                                 conditionNames(), "auto")
+  file$INHIBITOR <- findFromPath(file$sample_title,
+                                 inhibitorNames(), "auto")
+  return(file)
 }
 
 #' Faster download of fastq files
