@@ -6,3 +6,4 @@ src/*.o
 src/*.so
 src/*.dll
 ORFik.Rproj
+tests/testthat/Rplots.pdf
