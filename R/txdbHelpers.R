@@ -21,6 +21,10 @@
 #' objects instead. Currently optimizes filterTranscript() function and
 #' loadRegion() function for 5' UTRs, 3' UTRs, CDS,
 #'  mRNA (all transcript with CDS) and tx (all transcripts).
+#' @param gene_symbols logical default FALSE. If TRUE, will download
+#' and store all gene symbols for all transcripts (coding and noncoding)-
+#' In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
+#' hgcn for human, mouse symbols for mouse and rat, more to be added.
 #' @param pseudo_5UTRS_if_needed integer, default NULL. If defined > 0,
 #' will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
 #' a leader.
@@ -34,7 +38,7 @@
 #' #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
 #' ## Add pseudo UTRs if needed (< 30% of cds have a defined 5'UTR)
 makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
-                               optimize = FALSE,
+                               optimize = FALSE, gene_symbols = FALSE,
                                pseudo_5UTRS_if_needed = NULL,
                                return = FALSE) {
   message("Making txdb of GTF")
@@ -99,6 +103,11 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
       saveRDS(loadRegion(txdb, i, by = "tx"),
               file = paste0(base_path, "_", i, ".rds"))
     }
+  }
+  if (gene_symbols) {
+    symbols <- geneToSymbol(txdb, include_tx_ids = TRUE)
+    path <- file.path(dirname(gtf), "gene_symbol_tx_table.fst")
+    if (nrow(symbols > 0)) fst::write_fst(symbols, path)
   }
   if (return) return(txdb)
   return(invisible(NULL))
@@ -455,21 +464,32 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' organisms, manually assign the input arguments
 #'
 #' Will check for already existing table of all genes, and use that instead
-#' of re-downloading every time.
-#' @param df an ORFik \code{\link{experiment}}. Can be set to NULL if gene_ids and organism
-#' is defined manually.
+#' of re-downloading every time (If you input valid experiment or txdb
+#' and have run \code{\link{makeTxdbFromGenome}}
+#' with symbols = TRUE, you have a file called gene_symbol_tx_table.fst) will
+#' load instantly. If df = NULL, it can still search cache to load a bit slower.
+#' @param df an ORFik \code{\link{experiment}} or TxDb object with defined organism slot.
+#' If set will look for file at path of txdb / experiment reference path named:
+#'
+#' Can be set to NULL if gene_ids and organism is defined manually.
 #' @param organism_name default, \code{organism(df)}.
 #' Scientific name of organism, like ("Homo sapiens"),
 #' remember capital letter for first name only!
-#' @param gene_ids default, \code{filterTranscripts(df, by = "gene")}.
-#'  Ensembl gene IDs to search for
+#' @param gene_ids default, \code{filterTranscripts(df, by = "gene", 0, 0, 0)}.
+#'  Ensembl gene IDs to search for (default all transcripts coding and noncoding)
+#'  To only get coding do: filterTranscripts(df, by = "gene", 0, 0, 0)
 #' @param org.dataset default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
 #' the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl
 #' @param ensembl default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.
 #' @param attribute default, \code{c("Homo sapiens" = "hgnc_symbol","Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]}.
 #' The attributes to search for: Normally hgnc symbol for human, and mgi symbol for mouse and rat.
-#' @return data.table with 2 columns gene_id and gene_symbol named after
-#' attribute, sorted in order of gene_ids input.
+#' @param include_tx_ids logical, default FALSE, also match tx ids, which then returns as the 3rd column.
+#' Only allowed when 'df' is defined.
+#' @param force logical FALSE, if TRUE will not look for existing file made through \code{\link{makeTxdbFromGenome}}
+#' corresponding to this txdb / ORFik experiment stored with name "gene_symbol_tx_table.fst".
+#' @param verbose logical TRUE, if FALSE, do not output messages.
+#' @return data.table with 2 or 3 columns gene_id, gene_symbol and tx_id named after
+#' attribute, sorted in order of gene_ids input (returns 3 columns if include_tx_ids is TRUE)
 #' @export
 #' @importFrom biomaRt useEnsembl getBM
 #' @examples
@@ -481,23 +501,48 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' # df <- read.experiment("some_experiment)
 #' # geneToSymbol(df)
 geneToSymbol <- function(df, organism_name = organism(df),
-                         gene_ids = filterTranscripts(df, by = "gene"),
+                         gene_ids = filterTranscripts(df, by = "gene", 0, 0, 0),
                          org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl"),
                          ensembl = biomaRt::useEnsembl("ensembl",dataset=org.dataset),
                          attribute = c("Homo sapiens" = "hgnc_symbol",
-                                       "Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]) {
-
-  message("- Symbols extracted from:")
-  message("Organism: ", organism_name)
-  message("Dataset: ", org.dataset)
-  message("Attribute: ", attribute)
-  gene_id <- as.data.table(biomaRt::getBM(attributes=c("ensembl_gene_id", attribute),
+                                       "Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name],
+                         include_tx_ids = FALSE, force = FALSE, verbose = TRUE) {
+  if (anyNA(attribute)) {
+    warning("You inserted a species not supported at the moment,
+            skipping download of symbols")
+    return(data.table())
+  }
+  if (!is.null(df)) {
+    file <- ifelse(is(df, "experiment"), df@txdb, getGtfPathFromTxdb(df))
+    file <- file.path(dirname(file), "gene_symbol_tx_table.fst")
+    if (file.exists(file)) {
+      if (verbose) message("Loading pre-existing symbols from file")
+      return(as.data.table(fst::read_fst(file)))
+    }
+  }
+  if (verbose) message("- Symbols extracted from:")
+  if (verbose) message("Organism: ", organism_name)
+  if (verbose) message("Dataset: ", org.dataset)
+  if (verbose) message("Attribute: ", attribute)
+  other_attributes <- "ensembl_gene_id"
+  #if (include_tx_ids) other_attributes <- c(other_attributes, "ensembl_transcript_id")
+  gene_id <- as.data.table(biomaRt::getBM(attributes=c(other_attributes, attribute),
                                           filters = 'ensembl_gene_id',
                                           values = gene_ids,
                                           mart = ensembl))
   gene_id <- gene_id[chmatch(gene_ids, gene_id$ensembl_gene_id),]
+  which_na <- is.na(gene_id$ensembl_gene_id)
+  gene_id[which_na, ensembl_gene_id := gene_ids[which_na]]
+  if (anyNA(gene_id[,2])) {
+    if (verbose) message("Symbol detection rate: ", (1 - sum(is.na(gene_id[,2]))/nrow(gene_id))*100, " %")
+  } else if (verbose) message("Found symbol for all genes")
+  if (include_tx_ids) {
+    if (is.null(df)) stop("'df' can not be NULL when 'include_tx_ids' is TRUE")
+    tx_ids <- optimizedTranscriptLengths(df, TRUE, TRUE)[,2:3]
+    colnames(tx_ids) <- paste0("ensembl_", colnames(tx_ids))
+    gene_id <- merge.data.table(gene_id, tx_ids, by = "ensembl_gene_id", all_x = TRUE)
+  }
   gene_id[]
-  if (anyNA(gene_id[,2])) warning("Some gene symbols was not found!")
   return(gene_id)
 }
 

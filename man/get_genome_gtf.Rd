@@ -13,6 +13,7 @@ get_genome_gtf(
   gunzip,
   genome,
   optimize = FALSE,
+  gene_symbols = FALSE,
   pseudo_5UTRS_if_needed = NULL,
   remove_annotation_outliers = TRUE
 )
@@ -62,6 +63,11 @@ on human genome down to 0.1 second. ORFik will then load these optimized
 objects instead. Currently optimizes filterTranscript() function and
 loadRegion() function for 5' UTRs, 3' UTRs, CDS,
  mRNA (all transcript with CDS) and tx (all transcripts).}
+
+\item{gene_symbols}{logical default FALSE. If TRUE, will download
+and store all gene symbols for all transcripts (coding and noncoding)-
+In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
+hgcn for human, mouse symbols for mouse and rat, more to be added.}
 
 \item{pseudo_5UTRS_if_needed}{integer, default NULL. If defined > 0,
 will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have

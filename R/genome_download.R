@@ -101,9 +101,7 @@
 #' @importFrom R.utils gunzip
 #' @importFrom utils download.file
 #' @importFrom AnnotationDbi saveDb
-#' @importFrom Biostrings DNAStringSet
-#' @importFrom Biostrings writeXStringSet
-#' @importFrom Biostrings readDNAStringSet
+#' @importFrom Biostrings DNAStringSet writeXStringSet readDNAStringSet
 #' @return a named character vector of path to genomes and gtf downloaded,
 #'  and additional contaminants if used. If merge_contaminants is TRUE, will not
 #'  give individual fasta files to contaminants, but only the merged one.
@@ -145,6 +143,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    gunzip = TRUE, remake = FALSE,
                                    assembly_type = "primary_assembly",
                                    optimize = FALSE,
+                                   gene_symbols = FALSE,
                                    pseudo_5UTRS_if_needed = NULL,
                                    remove_annotation_outliers = TRUE) {
   # Pre checks
@@ -183,6 +182,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                              assembly_type, db, gunzip)
   gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
                         gunzip, genome, optimize = optimize,
+                        gene_symbols = gene_symbols,
                         pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
                         remove_annotation_outliers = remove_annotation_outliers)
 

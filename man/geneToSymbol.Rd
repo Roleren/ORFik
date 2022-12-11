@@ -7,24 +7,30 @@
 geneToSymbol(
   df,
   organism_name = organism(df),
-  gene_ids = filterTranscripts(df, by = "gene"),
+  gene_ids = filterTranscripts(df, by = "gene", 0, 0, 0),
   org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement =
     "", organism_name), "_gene_ensembl"),
   ensembl = biomaRt::useEnsembl("ensembl", dataset = org.dataset),
   attribute = c(`Homo sapiens` = "hgnc_symbol", `Mus musculus` = "mgi_symbol",
-    `Rattus norvegicus` = "mgi_symbol")[organism_name]
+    `Rattus norvegicus` = "mgi_symbol")[organism_name],
+  include_tx_ids = FALSE,
+  force = FALSE,
+  verbose = TRUE
 )
 }
 \arguments{
-\item{df}{an ORFik \code{\link{experiment}}. Can be set to NULL if gene_ids and organism
-is defined manually.}
+\item{df}{an ORFik \code{\link{experiment}} or TxDb object with defined organism slot.
+If set will look for file at path of txdb / experiment reference path named:
+
+Can be set to NULL if gene_ids and organism is defined manually.}
 
 \item{organism_name}{default, \code{organism(df)}.
 Scientific name of organism, like ("Homo sapiens"),
 remember capital letter for first name only!}
 
-\item{gene_ids}{default, \code{filterTranscripts(df, by = "gene")}.
-Ensembl gene IDs to search for}
+\item{gene_ids}{default, \code{filterTranscripts(df, by = "gene", 0, 0, 0)}.
+Ensembl gene IDs to search for (default all transcripts coding and noncoding)
+To only get coding do: filterTranscripts(df, by = "gene", 0, 0, 0)}
 
 \item{org.dataset}{default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
 the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl}
@@ -33,10 +39,18 @@ the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapi
 
 \item{attribute}{default, \code{c("Homo sapiens" = "hgnc_symbol","Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]}.
 The attributes to search for: Normally hgnc symbol for human, and mgi symbol for mouse and rat.}
+
+\item{include_tx_ids}{logical, default FALSE, also match tx ids, which then returns as the 3rd column.
+Only allowed when 'df' is defined.}
+
+\item{force}{logical FALSE, if TRUE will not look for existing file made through \code{\link{makeTxdbFromGenome}}
+corresponding to this txdb / ORFik experiment stored with name "gene_symbol_tx_table.fst".}
+
+\item{verbose}{logical TRUE, if FALSE, do not output messages.}
 }
 \value{
-data.table with 2 columns gene_id and gene_symbol named after
-attribute, sorted in order of gene_ids input.
+data.table with 2 or 3 columns gene_id, gene_symbol and tx_id named after
+attribute, sorted in order of gene_ids input (returns 3 columns if include_tx_ids is TRUE)
 }
 \description{
 If your organism is not in this list of supported
@@ -44,7 +58,10 @@ organisms, manually assign the input arguments
 }
 \details{
 Will check for already existing table of all genes, and use that instead
-of re-downloading every time.
+of re-downloading every time (If you input valid experiment or txdb
+and have run \code{\link{makeTxdbFromGenome}}
+with symbols = TRUE, you have a file called gene_symbol_tx_table.fst) will
+load instantly. If df = NULL, it can still search cache to load a bit slower.
 }
 \examples{
 ## Without ORFik experiment input
