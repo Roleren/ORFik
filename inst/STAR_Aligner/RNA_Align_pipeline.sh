@@ -200,7 +200,7 @@ if [ -z "$out_dir" ]; then
 	exit 1
 fi
 
-if [ ! -z "$in_file"]; then
+if [ ! -z "$in_file" ]; then
 	if [ ! -f "$in_file" ]; then
 	    echo "input file f does not name existing file!"
 	    exit 1
