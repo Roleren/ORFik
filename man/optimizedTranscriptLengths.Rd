@@ -2,7 +2,7 @@
 % Please edit documentation in R/txdbHelpers.R
 \name{optimizedTranscriptLengths}
 \alias{optimizedTranscriptLengths}
-\title{Load length of all transcripts}
+\title{Load length and names of all transcripts}
 \usage{
 optimizedTranscriptLengths(
   txdb,
@@ -45,4 +45,8 @@ default load time of lengths is ~ 15 seconds, if ORFik fst
 optimized lengths object has been made, load that file instead:
 load time reduced to ~ 0.1 second.
 }
-\keyword{internal}
+\examples{
+dt <- optimizedTranscriptLengths(ORFik.template.experiment())
+dt
+dt[cds_len > 0,] # All mRNA
+}

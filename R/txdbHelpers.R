@@ -711,7 +711,7 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE) {
   return(paste0(base_path, "_", creation.time))
 }
 
-#' Load length of all transcripts
+#' Load length and names of all transcripts
 #'
 #' A speedup wrapper around \code{\link{transcriptLengths}},
 #' default load time of lengths is ~ 15 seconds, if ORFik fst
@@ -727,7 +727,11 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE) {
 #' @importFrom data.table setDT
 #' @importFrom fst read_fst
 #' @importFrom fst write_fst
-#' @keywords internal
+#' @export
+#' @examples
+#' dt <- optimizedTranscriptLengths(ORFik.template.experiment())
+#' dt
+#' dt[cds_len > 0,] # All mRNA
 optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
                                        with.utr3_len = TRUE,
                                        create.fst.version = FALSE) {
