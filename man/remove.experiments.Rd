@@ -10,7 +10,8 @@ remove.experiments(df, envir = envExp(df))
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{envir}{environment to save to, default
-\code{envExp(df)}, which defaults to .GlobalEnv}
+\code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
+\code{envExp(df) <- new.env()} etc.}
 }
 \value{
 NULL (objects removed from envir specified)

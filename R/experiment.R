@@ -610,7 +610,8 @@ filepath <- function(df, type, basename = FALSE) {
 #' as list. If output is list format, the list elements are named from:
 #' \code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)
 #' @param envir environment to save to, default
-#' \code{envExp(df)}, which defaults to .GlobalEnv
+#' \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
+#' \code{envExp(df) <- new.env()} etc.
 #' @param verbose logical, default TRUE, message about library output status.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
@@ -757,7 +758,7 @@ convertLibs <- function(df,
                        must.overlap = NULL, method = "None",
                        type = "ofst",
                        reassign.when.saving = FALSE,
-                       envir = .GlobalEnv,
+                       envir = envExp(df),
                        BPPARAM = bpparam()) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig", "bigWig")))
     stop("type must be either ofst, bedo or bedoc")

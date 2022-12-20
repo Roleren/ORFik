@@ -19,7 +19,7 @@ libNames <- function() {
          c("RFP", "RPF", "ribo-seq", "ribo-Seq", "Ribo-seq", "Ribo-Seq", "Ribo_seq",
            "riboseq", "Riboseq", "RiboSeq", "Ribosome", "ribosome", "Profiling","profiling", "Ribo\\.prof",
            "Footprint", "ribo_profile", "footprint", "^Ribo_", "^ribo_", "^Ribo ","^ribo_", "_ribo_", "_Ribo_",
-           "_ribo$", "_Ribo$", "\\.ribo",
+           "_ribo$", "_Ribo$", "\\.ribo", "^Rib\\.prof",
            "^RP ", " RP ", "_RP_", "^FP_", "^fp_", "_fp_","RP$", "rp$",
            "_rp_", "\\.rp\\.", "_RF", "RIBOSEQ"),
          c("QTI"),
@@ -59,38 +59,43 @@ stageNames <- function(zebrafish.stages = FALSE) {
   if (zebrafish.stages) {
     mainName <- c("unfertilized", "fertilized",
                   "2to4Cell", "4Cell", "8Cell", "64Cell", "256Cell", "512Cell",
-                  "1KCell", "High", "Oblong", "Sphere", "Dome", "epiboly","Shield", "Bud",
+                  "1KCell", "High", "Oblong", "Sphere", "Dome", "epiboly","Shield",
+                  "7hpf", "8hpf", "9hpf", "Bud",
                   "Somite", "24hpf", "prim6", "prim10", "prim12",  "prim20",
                   "2dpf", "3dpf", "4dpf", "5dpf", "6dpf", "10dpf", "21dpf",
                   "24dpf")
   } else {
     mainName <- c("0h", "10min",
                   "40min", "1h", "1h15min", "2h", "2h30min", "2h45min",
-                  "3h", "3h20min", "3h40min", "4h", "4h20min", "5h","6h", "10h",
+                  "3h", "3h20min", "3h40min", "4h", "4h20min",
+                  "5h","6h", "7h","8h","9h","10h",
                   "12h", "24h", "25h", "27h", "28h",  "33h",
                   "2d", "3d", "4d", "5d", "6d", "10d", "21d",
                   "24d")
   }
 
   allNames <-
-    list(c("unfertilized", "Unfertilized", "_0h", "_00h", "0hpf", "^0h_"),
+    list(c("unfertilized", "Unfertilized", "_0h", "_00h", "0hpf", "^0h_", " 0 h ", " 0h ", "0hrs"),
          c("_fertilized", "_Fertilized"),
          c("2to4Cell", "2to4cell", "2to4_cell", "2-4cell", "2-4Cell", "2-4_cell"),
-         c("4cell", "4Cell", "4_cell", "_1h", "_01h", "1hpf", "^1h_"),
+         c("4cell", "4Cell", "4_cell", "_1h", "_01h", "1hpf", "^1h_", " 1 h ", " 1h "),
          c("8cell", "8Cell", "8_cell"),
-         c("64cell", "64Cell", "64-cell", "64_cell", "64_Cell", "_2h", "_02h", "2hpf", "^2h_"),
+         c("64cell", "64Cell", "64-cell", "64_cell", "64_Cell", "_2h", "_02h", "2hpf", "^2h_", " 2 h ", " 2h ", "2hrs"),
          c("256cell", "256Cell", "256_cell", "256_Cell"),
          c("512cell", "512Cell", "512_cell"),
-         c("1Kcell", "1KCell", "1K_cell", "_3h", "_03h", "3hpf", "^3h_"),
+         c("1Kcell", "1KCell", "1K_cell", "_3h", "_03h", "3hpf", "^3h_", " 3 h ", " 3h ", "3hrs"),
          c("High"),
          c("Oblong", "oblong"),
-         c("Sphere", "sphere", "_4h", "_04h","4hpf", "^4h_"),
+         c("Sphere", "sphere", "_4h", "_04h","4hpf", "^4h_", " 4 h ", " 4h ", "4hrs"),
          c("Dome", "dome"),
-         c("epiboly", "_5h", "_05h","5hpf", "^5_"),
-         c("Shield", "shield", "_6h", "_06h", "6hpf", "^6h_"),
-         c("Bud", "bud", "_10h", "10hpf", "^10h_"),
-         c("Somite", "somite", "_12h", "12hpf", "^12h_"),
-         c("24hpf", "_24h", "1dfp", "^24h_", " 24h "),
+         c("epiboly", "_5h", "_05h","5hpf", "^5_", " 5 h ", " 5h ", "5hrs"),
+         c("Shield", "shield", "_6h", "_06h", "6hpf", "^6h_", " 6 h ", " 6h ", "6hrs"),
+         c("_7h", "_07h", "7hpf", "^7h_", " 7 h ", " 7h ", "7hrs"),
+         c("_8h", "_08h", "8hpf", "^8h_", " 8 h ", " 8h ", "8hrs"),
+         c("_9h", "_09h", "9hpf", "^9h_", " 9 h ", " 9h ", "9hrs"),
+         c("Bud", "bud", "_10h", "10hpf", "^10h_", " 10 h ", " 10h ", "10hrs"),
+         c("Somite", "somite", "_12h", "12hpf", "^12h_", " 12 h ", " 12h ", "12hrs"),
+         c("24hpf", "_24h", "1dfp", "^24h_", " 24h ", " 24 h ", " 24h ", "24hrs"),
          c("prim6", "prim_6", "25hpf", "_25h", "^25h_"),
          c("prim10", "prim_10", "27hpf", "_27h", "^27h_"),
          c("prim12", "prim_12", "28hpf", "_28h", "^28h_"),
@@ -226,12 +231,12 @@ cellLineNames <- function(convertToTissue = FALSE) {
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
-    list(c("rep1", " rep 1 ", "Rep1", "rep-1","replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$", "_01$"),
-         c("rep2", " rep 2 ", "Rep2", "rep-2","replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$", "_02$"),
-         c("rep3", " rep 3 ", "Rep3", "rep-3","replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$", "_03$"),
-         c("rep4", " rep 4 ", "Rep4", "rep-4","replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$", "_04$"),
-         c("rep5", " rep 5 ", "Rep5", "rep-5","replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$", "_05$"),
-         c("rep6", " rep 6 ", "Rep6", "rep-6","replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$", "_06$")
+    list(c("rep1", " rep 1 ", "Rep1", "rep-1","replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$", "_01$", " A$"),
+         c("rep2", " rep 2 ", "Rep2", "rep-2","replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$", "_02$", " B$"),
+         c("rep3", " rep 3 ", "Rep3", "rep-3","replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$", "_03$", " C$"),
+         c("rep4", " rep 4 ", "Rep4", "rep-4","replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$", "_04$", " D$"),
+         c("rep5", " rep 5 ", "Rep5", "rep-5","replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$", "_05$", " E$"),
+         c("rep6", " rep 6 ", "Rep6", "rep-6","replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$", "_06$", " F$")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
@@ -271,7 +276,7 @@ batchNames <- function() {
 conditionNames <- function() {
   mainName <- c("WT", "MZ", "4Ei",
                 "Mutant", "cas9", "NMDA", "DHPG", "KD",
-                "KO", "DKO", "high", "low")
+                "KO", "DKO", "OE", "high", "low")
   allNames <-
     list(c("WT", "wt", "wild_type", "Wild_type", "wild-type",
            "untreated", "control", "Control", "CTRL", "Ctrl","Basal", "_mock_",
@@ -283,8 +288,9 @@ conditionNames <- function() {
          c("NMDA"),
          c("DHPG"),
          c("knockdown", "Knockdown", "_kd_", " KD ", "-KD ", "_KD_"),
-         c("knockout", "Knockout", " KO ", "-KO ", "_KO_", "-KO-"),
+         c("knockout", "Knockout", " KO ", "-KO ", "_KO_", "-KO-", "_ko_"),
          c("double knockout", " DKO ", "_DKO_"),
+         c("_OE_", "_oe_", "_OE$", "_oe$"),
          c("high", "\\+"),
          c("low")
     )
@@ -306,7 +312,7 @@ inhibitorNames <- function() {
     list(c("chloramphenicol", "Chloramphenicol"),
          c("cycloheximide", "Cycloheximide", "chx", "CHX"),
          c("harringtonin", "Harringtonin", "_har_", "_harr_", "_harr$", "_Harr$"),
-         c("frozen", "freeze", "freezing"),
+         c("frozen", "freeze", "freezing", "noCHX", "nochx", "no drug"),
          c("lactimidomycin", "Lactimidomycin", "ltm", "_LTM$"),
          c("Puromycin","puromycin", "_puro_")
     )
@@ -323,15 +329,18 @@ inhibitorNames <- function() {
 #' of the main name in second column as a list.
 #' @keywords internal
 fractionNames <- function() {
-  mainName <- c("cyto","mito", "nuc","dmso", "thaps", "auxin", "silvestrol")
+  mainName <- c("cyto", "ER", "mito", "nuc","dmso", "thaps",
+                "auxin", "silvestrol", "fasting")
   allNames <-
-    list(c("cyto"),
+    list(c("cyto", "Cyto"),
+         c("ER"),
          c("mito"),
          c("_nuc_", "nuclear"),
          c("DMSO", "dmso"),
          c("Thapsigargin", "thapsigargin"),
          c("auxin"),
-         c("silvestrol")
+         c("silvestrol"),
+         c("fasting")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

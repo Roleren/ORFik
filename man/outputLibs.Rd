@@ -76,7 +76,8 @@ as list. If output is list format, the list elements are named from:
 \code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)}
 
 \item{envir}{environment to save to, default
-\code{envExp(df)}, which defaults to .GlobalEnv}
+\code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
+\code{envExp(df) <- new.env()} etc.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 
