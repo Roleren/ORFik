@@ -95,6 +95,9 @@
 #'  the removed outlier lines will be stored at tempdir for further
 #'  exploration. Among others Aridopsis refseq contains malformed lines,
 #'  where this is needed
+#' @param notify_load_existing logical, default TRUE. If annotation exists,
+#' print a small message notifying the user it is not redownloading. Set to
+#' FALSE, if this is not wanted
 #' @inheritParams makeTxdbFromGenome
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
@@ -145,12 +148,13 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    optimize = FALSE,
                                    gene_symbols = FALSE,
                                    pseudo_5UTRS_if_needed = NULL,
-                                   remove_annotation_outliers = TRUE) {
+                                   remove_annotation_outliers = TRUE,
+                                   notify_load_existing = TRUE) {
   # Pre checks
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
-    message("Loading premade Genome files,
-            do remake = TRUE if you want to run again")
+    if (notify_load_existing) message("Loading premade Genome files,
+                                       do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
   if (!(assembly_type %in% c("toplevel", "primary_assembly")))
