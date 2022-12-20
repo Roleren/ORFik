@@ -100,7 +100,7 @@ stageNames <- function(zebrafish.stages = FALSE) {
          c("prim10", "prim_10", "27hpf", "_27h", "^27h_"),
          c("prim12", "prim_12", "28hpf", "_28h", "^28h_"),
          c("prim20", "prim_20", "33hpf", "_33h", "^33h_"),
-         c("2dpf", "_48h", "_48hpf", "^48h_", " 48h "),
+         c("2dpf", "_48h", "_48hpf", "^48h_", " 48 h ", " 48h "),
          c("3dpf", " 72h "),
          "4dpf", "5dpf", "6dpf", "10dpf", "21dpf", "24dpf"
          )
@@ -231,12 +231,12 @@ cellLineNames <- function(convertToTissue = FALSE) {
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
-    list(c("rep1", " rep 1 ", "Rep1", "rep-1","replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$", "_01$", " A$"),
-         c("rep2", " rep 2 ", "Rep2", "rep-2","replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$", "_02$", " B$"),
-         c("rep3", " rep 3 ", "Rep3", "rep-3","replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$", "_03$", " C$"),
-         c("rep4", " rep 4 ", "Rep4", "rep-4","replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$", "_04$", " D$"),
-         c("rep5", " rep 5 ", "Rep5", "rep-5","replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$", "_05$", " E$"),
-         c("rep6", " rep 6 ", "Rep6", "rep-6","replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$", "_06$", " F$")
+    list(c("rep1", " rep 1 ", "Rep1", "rep-1","rep\\.1","replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$", "_01$", " A$"),
+         c("rep2", " rep 2 ", "Rep2", "rep-2","rep\\.2","replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$", "_02$", " B$"),
+         c("rep3", " rep 3 ", "Rep3", "rep-3","rep\\.3","replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$", "_03$", " C$"),
+         c("rep4", " rep 4 ", "Rep4", "rep-4","rep\\.4","replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$", "_04$", " D$"),
+         c("rep5", " rep 5 ", "Rep5", "rep-5","rep\\.5","replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$", "_05$", " E$"),
+         c("rep6", " rep 6 ", "Rep6", "rep-6","rep\\.6","replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$", "_06$", " F$")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
