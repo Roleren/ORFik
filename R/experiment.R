@@ -653,7 +653,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
   all_libs <- NULL
   for (df in dfl) {
     validateExperiments(df)
-    varNames <- name_decider(naming)
+    varNames <- name_decider(df, naming)
 
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage
