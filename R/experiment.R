@@ -706,7 +706,7 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
   return(invisible(NULL))
 }
 
-name_decider <- function(naming) {
+name_decider <- function(df, naming) {
   stopifnot(naming %in% c("minimum", "full", "fullexp"))
   varNames <-
     if (naming == "minimum") {
