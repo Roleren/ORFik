@@ -21,7 +21,8 @@ getGenomeAndAnnotation(
   optimize = FALSE,
   gene_symbols = FALSE,
   pseudo_5UTRS_if_needed = NULL,
-  remove_annotation_outliers = TRUE
+  remove_annotation_outliers = TRUE,
+  notify_load_existing = TRUE
 )
 }
 \arguments{
@@ -137,6 +138,11 @@ If yes, then the initial annotation_file will be overwritten and
 the removed outlier lines will be stored at tempdir for further
 exploration. Among others Aridopsis refseq contains malformed lines,
 where this is needed}
+
+\item{notify_load_existing}{logical, default TRUE. If annotation exists
+(defined as: locally (a file called outputs.rds) exists in outputdir),
+print a small message notifying the user it is not redownloading. Set to
+FALSE, if this is not wanted}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,

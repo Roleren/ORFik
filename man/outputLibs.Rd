@@ -68,7 +68,8 @@ transcripts in opposite directions.}
 
 \item{naming}{a character (default: "minimum"). Name files as minimum
 information needed to make all files unique. Set to "full" to get full
-names.}
+names. Set to "fullexp", to get full name with experiment name as prefix,
+the last one guarantees uniqueness.}
 
 \item{output.mode}{character, default "envir". Output libraries to environment.
 Alternative: "list", return as list. "envirlist", output to envir and return

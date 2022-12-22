@@ -604,7 +604,8 @@ filepath <- function(df, type, basename = FALSE) {
 #' "default", which always must exists.
 #' @param naming a character (default: "minimum"). Name files as minimum
 #' information needed to make all files unique. Set to "full" to get full
-#' names.
+#' names. Set to "fullexp", to get full name with experiment name as prefix,
+#' the last one guarantees uniqueness.
 #' @param output.mode character, default "envir". Output libraries to environment.
 #' Alternative: "list", return as list. "envirlist", output to envir and return
 #' as list. If output is list format, the list elements are named from:
@@ -646,16 +647,13 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
                        output.mode = "envir",
                        envir = envExp(df), verbose = TRUE,
                        BPPARAM = bpparam()) {
-  stopifnot(naming %in% c("minimum", "full"))
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   all_libs <- NULL
   for (df in dfl) {
     validateExperiments(df)
-    if (naming == "minimum") {
-      varNames <- bamVarName(df)
-    } else varNames <- bamVarName(df, FALSE, FALSE, FALSE, FALSE)
+    varNames <- name_decider(naming)
 
     loaded <- c()
     for (i in 1:nrow(df)) { # For each stage
@@ -706,6 +704,18 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
   }
   if (!is.null(all_libs)) return(all_libs)
   return(invisible(NULL))
+}
+
+name_decider <- function(naming) {
+  stopifnot(naming %in% c("minimum", "full", "fullexp"))
+  varNames <-
+    if (naming == "minimum") {
+       bamVarName(df)
+    } else if (naming == "full") {
+      bamVarName(df, FALSE, FALSE, FALSE, FALSE)
+    } else bamVarName(df, FALSE, FALSE, FALSE, FALSE, FALSE)
+
+  return(varNames)
 }
 
 #' Converted format of NGS libraries
