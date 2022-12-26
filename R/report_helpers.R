@@ -61,9 +61,9 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
   trailers <- loadRegion(txdb, "trailers")
   introns <- loadRegion(txdb, "introns")
   libs <- bamVarName(df)
-  finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs) {
+  finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs, env) {
     message(s)
-    lib <- get(s)
+    lib <- get(s, envir = env)
     # Raw stats
     aligned_reads <- ifelse(!is.null(mcols(lib)$score),
                             sum(mcols(lib)$score), length(lib))
@@ -121,7 +121,7 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
     }
     return(res_final)
   }, sCo = sCo, tx = tx, gff.df = gff.df,
-  libs = libs, BPPARAM = BPPARAM)
+  libs = libs, env = envExp(df), BPPARAM = BPPARAM)
 
   return(rbindlist(finals))
 }
@@ -224,7 +224,9 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
   outputLibs(df, type = type, BPPARAM = BPPARAM)
   dt_read_lengths <- data.table(); sample_id <- 1
   for(lib in bamVarName(df)) {
-    dt_read_lengths <- rbind(dt_read_lengths, data.table(sample = lib, sample_id, table(readWidths(get(lib)))))
+    dt_read_lengths <- rbind(dt_read_lengths,
+                             data.table(sample = lib, sample_id,
+                              table(readWidths(get(lib, envir = envExp(df))))))
     sample_id <- sample_id + 1
   }
 
@@ -265,14 +267,14 @@ orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
   libs <- bamVarName(df)
 
   # Frame distribution over all
-  frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
-    total <- regionPerReadLength(cds, get(lib, mode = "S4"),
+  frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight, env) {
+    total <- regionPerReadLength(cds, get(lib, mode = "S4", envir = env),
                                  withFrames = TRUE, scoring = "frameSumPerL",
                                  weight = weight, drop.zero.dt = TRUE)
     total[, length := fraction]
     #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
     total[, fraction := rep(lib, nrow(total))]
-  }, cds = cds, weight = weight, BPPARAM = BPPARAM)
+  }, cds = cds, weight = weight, env = envExp(df),BPPARAM = BPPARAM)
   frame_sum_per <- rbindlist(frame_sum_per1)
 
   frame_sum_per$frame <- as.factor(frame_sum_per$frame)

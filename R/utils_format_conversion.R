@@ -1,3 +1,45 @@
+#' Convert libraries to ofst
+#'
+#' Saved by default in folder "ofst" relative to default
+#' libraries of experiment.
+#' Speeds up loading of full files compared to bam by large margins.
+#'
+#' If you want to keep bam files loaded or faster conversion if
+#' you already have them loaded, use ORFik::convertLibs instead
+#' @inheritParams outputLibs
+#' @param in_files paths to input files, default:
+#'  \code{filepath(df, "default")} with bam format files.
+#' @param out_dir paths to output files, default
+#'  \code{file.path(libFolder(df), "cov_RLE")}.
+#' @return invisible(NULL), files saved to disc
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment.zf()
+#' ## Usually do default folder, here we use tmpdir
+#' folder_to_save <- file.path(tempdir(), "ofst")
+#' convert_bam_to_ofst(df, out_dir = folder_to_save)
+#' fimport(file.path(folder_to_save, "ribo-seq.ofst"))
+convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
+                            out_dir = file.path(libFolder(df), "ofst"),
+                            verbose = TRUE, strandMode = rep(0, length(in_files))) {
+  if (length(in_files) != nrow(df))
+    stop("'df' and 'in_files must have equal size!")
+  stopifnot(all(is(s, "numeric")))
+  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  out_filepaths <- file.path(out_dir, paste0(lib_names, ".ofst"))
+  dir.create(out_dir, showWarnings = FALSE)
+  if (verbose) message("-- Converting bam to ofst")
+  if (verbose) message("Output to dir: ", out_dir)
+  for (i in seq_along(out_filepaths)) {
+    if (verbose) message("- Library: ", lib_names[i])
+    out_file <- out_filepaths[i]
+    in_file <- in_files[i]
+    export.ofst(readBam(in_file, strandMode = strandMode[i]), out_file)
+  }
+  if (verbose) message("Done")
+  return(invisible(NULL))
+}
+
 #' Convert libraries to covRle
 #'
 #' Saved by default in folder "cov_RLE" relative to default
