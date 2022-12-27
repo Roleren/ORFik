@@ -840,8 +840,8 @@ simpleLibs <- convertLibs
 #' @param out_dir Ouput directory, default \code{file.path(dirname(df$filepath[1]), "ofst_merged")},
 #' saved as "all.ofst" in this folder if mode is "all". Use a folder called pshifted_merged, for
 #' default Ribo-seq ofst files.
-#' @param mode character, default "all". Merge all or "rep" for collapsing replicates only.
-#' lib
+#' @param mode character, default "all". Merge all or "rep" for collapsing replicates only, or
+#' "lib" for collapsing all per library type.
 #' @return NULL, files saved to disc. A data.table with a score column that now contains the sum
 #' of scores per merge setting.
 #' @export
@@ -856,13 +856,20 @@ simpleLibs <- convertLibs
 #' #read_fst(file.path(tempdir(), "all.ofst"))
 #' # Collapse replicates
 #' #mergeLibs(df2, tempdir(), mode = "rep", type = "default")
+#' # Collapse by lib types
+#' #mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mode = "all",
                       type = "ofst", keep_all_scores = TRUE) {
-  stopifnot(mode %in% c("all", "rep"))
+  stopifnot(mode %in% c("all", "rep", "lib"))
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   lib_names_full <- bamVarName(df, skip.libtype = FALSE)
-  lib_names <- bamVarName(df, skip.libtype = FALSE, skip.replicate = TRUE)
+
   if (mode == "rep") {
+    lib_names <- bamVarName(df, skip.libtype = FALSE, skip.replicate = TRUE)
+    libs <- lapply(unique(lib_names), function(x) grep(x, lib_names))
+    names(libs) <- unique(lib_names)
+  } else if (mode == "lib") {
+    lib_names <- bamVarName(df, TRUE, TRUE, TRUE, TRUE, TRUE)
     libs <- lapply(unique(lib_names), function(x) grep(x, lib_names))
     names(libs) <- unique(lib_names)
   } else {

@@ -19,8 +19,8 @@ mergeLibs(
 saved as "all.ofst" in this folder if mode is "all". Use a folder called pshifted_merged, for
 default Ribo-seq ofst files.}
 
-\item{mode}{character, default "all". Merge all or "rep" for collapsing replicates only.
-lib}
+\item{mode}{character, default "all". Merge all or "rep" for collapsing replicates only, or
+"lib" for collapsing all per library type.}
 
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, either "ofst" or "pshifted".
@@ -52,4 +52,6 @@ df2 <- df2[df2$libtype == "RFP",]
 #read_fst(file.path(tempdir(), "all.ofst"))
 # Collapse replicates
 #mergeLibs(df2, tempdir(), mode = "rep", type = "default")
+# Collapse by lib types
+#mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 }
