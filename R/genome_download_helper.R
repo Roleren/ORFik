@@ -68,7 +68,6 @@ get_genome_fasta <- function(genome, output.dir, organism,
       } else if (length(genome) == 0) genome <- FALSE
     }
   }
-
   return(genome)
 }
 
@@ -106,20 +105,25 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     makeTxdbFromGenome(gtf, genome, organism, optimize, gene_symbols,
                        pseudo_5UTRS_if_needed)
-  } else { # check if it already exists
-    gtf <- grep(pattern = organism,
-                x = list.files(output.dir, full.names = TRUE),
-                value = TRUE)
-    if (db == "ensembl") {
-      gtf <- grep(pattern = "\\.gtf", x = gtf, value = TRUE)
-    } else gtf <- grep(pattern = "\\.gff", x = gtf, value = TRUE)
+  } else { # Try to auto detect, else set to FALSE
+    gtf <- auto_detect_gtf_in_dir(organism, output.dir, db)
+  }
+  return(gtf)
+}
 
-    gtf <- grep(pattern = "\\.db", x = gtf, value = TRUE, invert = TRUE)
-    if (length(gtf) != 1) {
-      warning("Found multiple candidates for pre downloaded gtf,
+auto_detect_gtf_in_dir <- function(organism, output.dir, db) {
+  gtf <- grep(pattern = organism,
+              x = list.files(output.dir, full.names = TRUE),
+              value = TRUE)
+  if (db == "ensembl") {
+    gtf <- grep(pattern = "\\.gtf|\\.gff3", x = gtf, value = TRUE)
+  } else gtf <- grep(pattern = "\\.gff", x = gtf, value = TRUE)
+
+  gtf <- grep(pattern = "\\.db$", x = gtf, value = TRUE, invert = TRUE)
+  if (length(gtf) != 1) {
+    warning("Found multiple candidates for pre downloaded gtf,
               setting to FALSE!")
-      gtf <- FALSE
-    }
+    gtf <- FALSE
   }
   return(gtf)
 }
@@ -202,4 +206,20 @@ get_silva_rRNA <- function(output.dir) {
   download.file(silva.lsu.url, destfile = silva, mode = "a")
 
   return(silva)
+}
+
+get_rRNA <- function(rRNA) {
+  if (!(rRNA %in% c("", FALSE, TRUE, "silva"))) {
+    if (!file.exists(rRNA)) stop(paste("local rRNA file is specified, but does not exist:",
+                                       rRNA))
+  } else if (rRNA == "silva") rRNA <- get_silva_rRNA()
+  return(rRNA)
+}
+
+get_tRNA <- function(tRNA) {
+  if (!(tRNA %in% c("", FALSE, TRUE))) {
+    if (!file.exists(tRNA)) stop(paste("local tRNA file is specified, but does not exist:",
+                                       tRNA))
+  }
+  return(tRNA)
 }

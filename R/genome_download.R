@@ -169,19 +169,10 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     organism <- gsub("_", " ", organism)
   }
   ## Go through all contaminants:
-  if (!(tRNA %in% c("", FALSE, TRUE))) {
-    if (!file.exists(tRNA)) stop(paste("local tRNA file is specified, but does not exist:",
-                                       tRNA))
-  }
-  if (!(rRNA %in% c("", FALSE, TRUE, "silva"))) {
-
-    if (!file.exists(rRNA)) stop(paste("local rRNA file is specified, but does not exist:",
-                                       tRNA))
-  } else if (rRNA == "silva") rRNA <- get_silva_rRNA()
-
+  tRNA <- get_tRNA(tRNA)
+  rRNA <- get_rRNA(rRNA)
   phix <- get_phix_genome(phix, output.dir, gunzip)
   ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
-
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
