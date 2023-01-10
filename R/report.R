@@ -162,11 +162,5 @@ QCplots <- function(df, region = "mrna",
                    scores = c("sum", "transcriptNormalized"),
                    is.sorted = TRUE, plot.ext = plot.ext,
                    BPPARAM = BPPARAM)
-  # Plot all transcripts as 1 region
-  # TODO: Make this safe enough to include for 32GB computers
-  # message("  - whole transcripts")
-  # transcriptWindow1(df = df, outdir = stats_folder,
-  #                   scores = c("sum", "transcriptNormalized"),
-  #                   BPPARAM = BPPARAM)
   return(invisible(NULL))
 }
