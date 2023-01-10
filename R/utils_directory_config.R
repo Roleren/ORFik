@@ -119,7 +119,11 @@ config.save <- function(file = "~/Bio_data/ORFik_config.csv",
 #'  - logical (does it have a gtf)\cr
 #'  - logical (does it have a fasta genome)\cr
 #'  - logical (does it have a STAR index)\cr
-#'  - logical (does it have protein structure predictions of ORFs from alphafold etc)
+#'  - logical (only displayed if some are TRUE, does it have protein structure
+#'   predictions of ORFs from alphafold etc, in folder called
+#'   'protein_structure_predictions')\cr
+#'  - logical (only displayed if some are TRUE, does it have gene symbol fst file
+#'    from bioMart etc, in file called 'gene_symbol_tx_table.fst')
 #' @export
 #' @examples
 #' ## Run with default config path
@@ -153,6 +157,8 @@ list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
   availableGenomes[, STAR_index := file.exists(indices)]
   protein_structures <- file.path(candidates, "protein_structure_predictions")
   if (any(file.exists(protein_structures))) availableGenomes[, protein_structures := file.exists(protein_structures)]
+  gene_symbols <- file.path(candidates, "gene_symbol_tx_table.fst")
+  if (any(file.exists(gene_symbols))) availableGenomes[, gene_symbols := file.exists(gene_symbols)]
   availableGenomes[]
   return(availableGenomes)
 }
