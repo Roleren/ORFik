@@ -305,6 +305,28 @@ setMethod("seqinfo",
           }
 )
 
+#' Get ORFik experiment QC folder path
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a data.table with gene id, gene symbols and tx ids (3 columns)
+#' @export
+setGeneric("symbols", function(x) standardGeneric("symbols"))
+
+#' @inherit QCfolder
+setMethod("symbols",
+          "experiment",
+          function(x) {
+            cand_path <- file.path(dirname(x@txdb), "gene_symbol_tx_table.fst")
+            if (file.exists(cand_path)) {
+              return(as.data.table(read_fst(cand_path)))
+            } else {
+              message("Gene symbols not created, run ",
+              "ORFik:::makeTxdbFromGenome(gene_symbols = TRUE)")
+              return(data.table())
+            }
+          }
+)
+
 #' Get experimental design
 #' Find the column/columns that create a separation between samples,
 #' by default skips replicate and choose first that is
