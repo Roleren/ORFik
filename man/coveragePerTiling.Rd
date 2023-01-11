@@ -24,7 +24,7 @@ precomputed coverage as \code{\link{covRle}} (one for each strand) of
 RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
 column in 'reads'. Can also be random access paths to bigWig or fstwig file.
 Do not use random access for more than a few genes, then loading the entire files
-is usually better.}
+is usually better. File streaming is still in beta, so use with care!}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}

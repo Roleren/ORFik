@@ -107,7 +107,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
   if (gene_symbols) {
     symbols <- geneToSymbol(txdb, include_tx_ids = TRUE)
     path <- file.path(dirname(gtf), "gene_symbol_tx_table.fst")
-    if (nrow(symbols > 0)) fst::write_fst(symbols, path)
+    if (nrow(symbols) > 0) fst::write_fst(symbols, path)
   }
   if (return) return(txdb)
   return(invisible(NULL))

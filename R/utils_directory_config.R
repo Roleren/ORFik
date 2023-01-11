@@ -130,7 +130,7 @@ config.save <- function(file = "~/Bio_data/ORFik_config.csv",
 #' #list.genomes()
 #' ## Run with custom config path
 #' list.genomes(tempdir())
-#' Get the path to fasta genome of first organism in list
+#' ## Get the path to fasta genome of first organism in list
 #' #readRDS(file.path(config()["ref"], list.genomes()$name, "outputs.rds")[1])["genome"]
 list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
   candidates <- list.dirs(reference.folder, recursive = FALSE)
