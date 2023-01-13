@@ -24,7 +24,7 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
                             verbose = TRUE, strandMode = rep(0, length(in_files))) {
   if (length(in_files) != nrow(df))
     stop("'df' and 'in_files must have equal size!")
-  stopifnot(all(is(s, "numeric")))
+  stopifnot(all(is(strandMode, "numeric")))
   lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
   out_filepaths <- file.path(out_dir, paste0(lib_names, ".ofst"))
   dir.create(out_dir, showWarnings = FALSE)
