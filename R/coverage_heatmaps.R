@@ -138,7 +138,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' @export
 #' @examples
 #' # Toy example, will not give logical output, but shows how it works
-#' df <- ORFik.template.experiment()[3,] # Only third library
+#' df <- ORFik.template.experiment()[9:10,] # Only third library
 #' #heatMapRegion(df, "TIS", outdir = "default")
 #' #
 #' # Do also TSS, add cage for specific TSS
@@ -155,6 +155,7 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
                           shifting = c("5prime", "3prime"),
                           longestPerGene = TRUE, colors = "default",
                           scale_x = 5.5, scale_y = 15.5,
+                          gradient.max = "default",
                           BPPARAM = BiocParallel::SerialParam()) {
 
   if (outdir == "default") outdir <- file.path(QCfolder(df), "heatmaps/")
@@ -176,7 +177,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
              addFracPlot = TRUE, location = "TIS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
              plot.ext = plot.ext, colors = colors,
-             scale_x = scale_x, scale_y = scale_y, BPPARAM = BPPARAM)
+             scale_x = scale_x, scale_y = scale_y,
+             gradient.max = gradient.max, BPPARAM = BPPARAM)
   }
   if ("TSS" %in% region) {
     message("TSS")
@@ -199,7 +201,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
              addFracPlot = TRUE, location = "TSS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
              plot.ext = plot.ext, colors = colors,
-             scale_x = scale_x, scale_y = scale_y, BPPARAM = BPPARAM)
+             scale_x = scale_x, scale_y = scale_y,
+             gradient.max = gradient.max, BPPARAM = BPPARAM)
   }
   if ("TTS" %in% region) {
     message("TTS")
@@ -213,7 +216,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
              addFracPlot = TRUE, location = "TTS", shifting = shifting,
              skip.last = FALSE, acceptedLengths = acceptedLengths, type = type,
              plot.ext = plot.ext, colors = colors,
-             scale_x = scale_x, scale_y = scale_y, BPPARAM = BPPARAM)
+             scale_x = scale_x, scale_y = scale_y,
+             gradient.max = gradient.max, BPPARAM = BPPARAM)
   }
   # Transcription End site
   if ("TES" %in% region) {
@@ -235,7 +239,8 @@ heatMapRegion <- function(df, region = "TIS", outdir = "default",
              upstream, downstream, zeroPosition = upstream, addFracPlot = TRUE, location = "TES",
              shifting = shifting, skip.last = FALSE, acceptedLengths = acceptedLengths,
              type = type, plot.ext = plot.ext,
-             scale_x = scale_x, scale_y = scale_y, BPPARAM = BPPARAM)
+             scale_x = scale_x, scale_y = scale_y,
+             gradient.max = gradient.max, BPPARAM = BPPARAM)
   }
   return(invisible(NULL))
 }
@@ -279,7 +284,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                      legendPos = "right", colors = "default", addFracPlot = TRUE,
                      location = "TIS", shifting = NULL, skip.last = FALSE, plot.ext = ".pdf",
                      plot.together = TRUE, title = TRUE,
-                     scale_x = 5.5, scale_y = 15.5,
+                     scale_x = 5.5, scale_y = 15.5, gradient.max = "default",
                      BPPARAM = BiocParallel::SerialParam()) {
   up <- upstream; down <- downstream
   dfl <- df
@@ -318,7 +323,8 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
                                  zeroPosition = zero, acceptedLengths = acceptedLengths,
                                  legendPos = legendPos, colors = colors, addFracPlot = addFracPlot,
                                  location = location, skip.last = skip.last,
-                                 title = ifelse(title, paste(i, shift), NULL))
+                                 title = ifelse(title, paste(i, shift), NULL),
+                                 gradient.max = gradient.max)
           heatmapListIntern <- c(heatmapListIntern, list(plot))
         }
       }
@@ -361,6 +367,10 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
 #' returns plot instead.
 #' @param outdir a character path to save file as: not just directory,
 #' but full name.
+#' @param gradient.max numeric or character, default: "default", which is:
+#' \code{max(coverage$score)}. If you want all plots to use same reference point
+#' for max scaling, then first detect this point, look at max in plot etc,
+#' and use that value, to get all plots to have same max point.
 #' @return ggplot2 grob (default), data.table (if returnCoverage is TRUE)
 #' @importFrom gridExtra grid.arrange
 #' @family heatmaps
@@ -369,7 +379,7 @@ heatMap_single <- function(region, tx, reads, outdir,
                            scores = "sum", upstream, downstream,  zeroPosition = upstream,
                            returnCoverage = FALSE, acceptedLengths = NULL, legendPos = "right",
                            colors = "default", addFracPlot = TRUE, location = "start site", shifting = NULL,
-                           skip.last = FALSE, title = NULL) {
+                           skip.last = FALSE, title = NULL, gradient.max = "default") {
   if (length(scores) != 1) stop("scores must exactly only 1 score type")
   if (!is.null(shifting)) {
     reads <- convertToOneBasedRanges(reads, method = shifting, addSizeColumn = TRUE)
@@ -388,10 +398,11 @@ heatMap_single <- function(region, tx, reads, outdir,
                             zeroPosition = zeroPosition, scoring = scores,
                             acceptedLengths = acceptedLengths, drop.zero.dt = drop.zero.dt,
                             append.zeroes = append.zeroes)
-
+  if (gradient.max == "default") gradient.max <-  max(coverage$score)
   plot <- coverageHeatMap(coverage = dt, scoring = scores, addFracPlot = addFracPlot,
                           xlab = paste0("Position relative to ", location), colors = colors,
-                          legendPos = legendPos, title = title)
+                          legendPos = legendPos, title = title,
+                          gradient.max = gradient.max)
 
   ggsave(filename = outdir, plot = plot, width = 350, height = 180,
          units = "mm", dpi = 300, limitsize = FALSE)
