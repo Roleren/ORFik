@@ -9,7 +9,8 @@ download.SRA.metadata(
   outdir = tempdir(),
   remove.invalid = TRUE,
   auto.detect = FALSE,
-  abstract = "printsave"
+  abstract = "printsave",
+  force = FALSE
 )
 }
 \arguments{
@@ -39,6 +40,10 @@ Alternatives: "print", Only print first time downloaded,
 will not be able to print later.\cr
 save" save it, no print\cr
 "no" skip download of abstract}
+
+\item{force}{logical, default FALSE. If TRUE, will redownload
+all files needed even though they exists. Useuful if you wanted
+auto.detection, but already downloaded without it.}
 }
 \value{
 a data.table of the metadata, 1 row per sample,
