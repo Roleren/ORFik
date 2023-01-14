@@ -50,6 +50,9 @@ get_bioproject_candidates <- function(term = "Ribosome Profiling human", RetMax 
 #' will not be able to print later.\cr
 #' save" save it, no print\cr
 #' "no" skip download of abstract
+#' @param force logical, default FALSE. If TRUE, will redownload
+#' all files needed even though they exists. Useuful if you wanted
+#' auto.detection, but already downloaded without it.
 #' @return a data.table of the metadata, 1 row per sample,
 #'  SRR run number defined in Run column.
 #' @importFrom utils download.file
@@ -71,12 +74,13 @@ get_bioproject_candidates <- function(term = "Ribosome Profiling human", RetMax 
 #' ## Originally on GEO (GSE) (save to directory to keep info with fastq files)
 #' # download.SRA.metadata("GSE61011")
 download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE,
-                                  auto.detect = FALSE, abstract = "printsave") {
+                                  auto.detect = FALSE, abstract = "printsave",
+                                  force = FALSE) {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   destfile <- paste0(outdir, "/SraRunInfo_", SRP, ".csv")
   abstract_destfile <- paste0(outdir, "/abstract_", SRP, ".csv")
 
-  if (file.exists(destfile)) {
+  if (file.exists(destfile) & !force) {
     message(paste("Existing metadata file found in dir:", outdir, ",will not download"))
     if (abstract %in% c("print", "printsave")) { # Print abstract if wanted
       if (file.exists(abstract_destfile)) {
@@ -91,10 +95,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
   # Convert GSE to SRP
   if (is_GSE) SRP <- SRP_from_GSE(SRP)
   # Download runinfo from Trace / SRA server
-  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?term="
-  url <- paste0(url, SRP)
-  download.file(url, destfile)
-  file <- fread(destfile)
+  file <- study_runinfo_download(SRP, destfile)
   if (nrow(file) == 0) {
     warning("Experiment not found on SRA, are you sure it is public?")
     return(file)
@@ -154,10 +155,7 @@ SRP_from_GSE <- function(SRP) {
 
 sample_info_append_SRA <- function(file, SRP, abstract_destfile, abstract) {
   # Download xml and add more data
-  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/exp?term="
-  url <- paste0(url, SRP)
-  a <- xml2::read_xml(url)
-  a <- xml2::as_list(a)
+  a <- sample_info_download(SRP)
 
   dt <- data.table()
   is_EXP_SET <- !is.null(a$EXPERIMENT_PACKAGE_SET)
@@ -231,6 +229,26 @@ sample_info_append_SRA <- function(file, SRP, abstract_destfile, abstract) {
     }
   }
   return(file)
+}
+
+study_runinfo_download <- function(SRP, destfile) {
+  url <- "https://trace.ncbi.nlm.nih.gov/Traces/sra-db-be/runinfo?term="
+  url <- paste0(url, SRP)
+  download.file(url, destfile)
+  return(fread(destfile))
+}
+
+sample_info_download <- function(SRP) {
+  # Trace db is dead, now we have to get ids first, then get samples
+  url_prefix <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&term="
+  url_suffix <- "&retmax=2000&retmode=xml"
+  url <- paste0(url_prefix, SRP, url_suffix)
+  ids_xml <- xml2::as_list(xml2::read_xml(url))
+  ids <- unlist(ids_xml$eSearchResult$IdList, use.names = FALSE)
+  url_prefix <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&id="
+  url_suffix <- "&rettype=fasta&retmode=xml"
+  url <- paste0(url_prefix, paste(ids, collapse = ","), url_suffix)
+  return(xml2::as_list(xml2::read_xml(url)))
 }
 
 #' Guess SRA metadata columns
