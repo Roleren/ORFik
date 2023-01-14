@@ -70,7 +70,7 @@ If QNAMES of the aligned reads are from collapsed fasta files
 (ORFik, ribotoolkit or fastx)), the
 bam file will contain a meta column called "score" with the counts
 of duplicates per read. Only works for single end reads, as perfect duplication
-events for paired end is more rare.\cr
+events for paired end is more rare and therefor not supported!.\cr
 }
 \details{
 In the future will use a faster .bam loader for big .bam files in R.

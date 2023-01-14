@@ -24,6 +24,16 @@ covRle_ga <- covRleFromGR(ga)
 covRleList_both <- covRleList(list(covRle_both, covRle_both), fraction = c(28,29))
 covRleList_pluss <- covRleList(list(covRle_pluss, covRle_pluss), fraction = c(28,29))
 
+# For missing seqlevels tests
+ORF <- GRanges("1", IRanges(start = c(1, 10, 20),
+                              end = c(5, 15, 25)), "+")
+ORF2 <- GRanges("2", IRanges(start = c(1, 10, 20),
+                            end = c(5, 15, 25)), "+")
+grl <- GRangesList(tx1 = ORF, tx2 = ORF2)
+RFP <- GRanges("1", IRanges(25, 25), "+")
+seqlengths(RFP) <- 100
+cov <- covRleFromGR(RFP)
+
 test_that("covRLE is created properly", {
   expect_is(covRle_pluss, "covRle")
   expect_is(covRle_both, "covRle")
@@ -43,6 +53,7 @@ test_that("covRLE fails when it should", {
   expect_error(covRleFromGR(gr_bad))
   expect_error(covRle(f(covRle_both), r(covRle_both)[[1]]))
   expect_error(covRle(1))
+  expect_error(coveragePerTiling(grl, cov))
 })
 
 test_that("covRLE works in coveragePerTiling", {

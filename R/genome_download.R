@@ -89,20 +89,23 @@
 #' \code{assembly_type = "toplevel")}.
 #' This will give you all haplotypes.
 #' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
-#' @param optimize logical, default FALSE. Create a folder
-#' within the folder of the gtf, that includes optimized objects
-#' to speed up loading of annotation regions from up to 15 seconds
-#' on human genome down to 0.1 second. ORFik will then load these optimized
-#' objects instead. Currently optimizes filterTranscript() and
-#' loadRegion().
+#' @param remove_annotation_outliers logical, default TRUE. Only for refseq.
+#'  shall outlier lines be removed from the input annotation_file?
+#'  If yes, then the initial annotation_file will be overwritten and
+#'  the removed outlier lines will be stored at tempdir for further
+#'  exploration. Among others Aridopsis refseq contains malformed lines,
+#'  where this is needed
+#' @param notify_load_existing logical, default TRUE. If annotation exists
+#' (defined as: locally (a file called outputs.rds) exists in outputdir),
+#' print a small message notifying the user it is not redownloading. Set to
+#' FALSE, if this is not wanted
+#' @inheritParams makeTxdbFromGenome
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
 #' @importFrom R.utils gunzip
 #' @importFrom utils download.file
 #' @importFrom AnnotationDbi saveDb
-#' @importFrom Biostrings DNAStringSet
-#' @importFrom Biostrings writeXStringSet
-#' @importFrom Biostrings readDNAStringSet
+#' @importFrom Biostrings DNAStringSet writeXStringSet readDNAStringSet
 #' @return a named character vector of path to genomes and gtf downloaded,
 #'  and additional contaminants if used. If merge_contaminants is TRUE, will not
 #'  give individual fasta files to contaminants, but only the merged one.
@@ -112,6 +115,9 @@
 #'
 #' ## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
 #' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
+#' ## Download and add pseudo 5' UTRs
+#' #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
+#' #  pseudo_5UTRS_if_needed = 100)
 #' ## Get Danio rerio genome and gtf (create txdb for R)
 #' #getGenomeAndAnnotation("Danio rerio", tempdir())
 #'
@@ -132,21 +138,24 @@
 #' annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
 #'  "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
 #' names(annotation) <- c("gtf", "genome")
-#' # Make the txdb (for faster R use)
+#' # Then make the txdb (for faster R use)
 #' # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
-#'
 getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    GTF = TRUE, genome = TRUE,
                                    merge_contaminants = TRUE, phix = FALSE,
                                    ncRNA = FALSE, tRNA = FALSE, rRNA = FALSE,
                                    gunzip = TRUE, remake = FALSE,
                                    assembly_type = "primary_assembly",
-                                   optimize = FALSE) {
+                                   optimize = FALSE,
+                                   gene_symbols = FALSE,
+                                   pseudo_5UTRS_if_needed = NULL,
+                                   remove_annotation_outliers = TRUE,
+                                   notify_load_existing = TRUE) {
   # Pre checks
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
-    message("Loading premade Genome files,
-            do remake = TRUE if you want to run again")
+    if (notify_load_existing) message("Loading premade Genome files,
+                                       do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
   if (!(assembly_type %in% c("toplevel", "primary_assembly")))
@@ -160,24 +169,18 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
     organism <- gsub("_", " ", organism)
   }
   ## Go through all contaminants:
-  if (!(tRNA %in% c("", FALSE, TRUE))) {
-    if (!file.exists(tRNA)) stop(paste("local tRNA file is specified, but does not exist:",
-                                       tRNA))
-  }
-  if (!(rRNA %in% c("", FALSE, TRUE, "silva"))) {
-
-    if (!file.exists(rRNA)) stop(paste("local rRNA file is specified, but does not exist:",
-                                       tRNA))
-  } else if (rRNA == "silva") rRNA <- get_silva_rRNA()
-
+  tRNA <- get_tRNA(tRNA)
+  rRNA <- get_rRNA(rRNA)
   phix <- get_phix_genome(phix, output.dir, gunzip)
   ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
-
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
   gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
-                        gunzip, genome, optimize = optimize)
+                        gunzip, genome, optimize = optimize,
+                        gene_symbols = gene_symbols,
+                        pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
+                        remove_annotation_outliers = remove_annotation_outliers)
 
   if (any_contaminants) {
     # Find which contaminants to find from gtf:

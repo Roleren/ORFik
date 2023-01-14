@@ -527,6 +527,7 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
   }
   if (!isTRUEorFALSE(ignore.strand))
     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
+
   # Create hash table of unique exons as uex
   ex <- unlist(transcripts, use.names = FALSE)
   sm <- selfmatch(ex)

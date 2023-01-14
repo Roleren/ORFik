@@ -24,6 +24,9 @@ heatMapL(
   plot.ext = ".pdf",
   plot.together = TRUE,
   title = TRUE,
+  scale_x = 5.5,
+  scale_y = 15.5,
+  gradient.max = "default",
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -89,6 +92,17 @@ and 'downstream' argument.}
 
 \item{title}{a character, default NULL (no title),
 what is the top title of plot?}
+
+\item{scale_x}{numeric, how should the width of the single plots be scaled,
+bigger the number, the bigger the plot}
+
+\item{scale_y}{numeric, how should the height of the plots be scaled,
+bigger the number, the bigger the plot}
+
+\item{gradient.max}{numeric or character, default: "default", which is:
+\code{max(coverage$score)}. If you want all plots to use same reference point
+for max scaling, then first detect this point, look at max in plot etc,
+and use that value, to get all plots to have same max point.}
 
 \item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
 Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of

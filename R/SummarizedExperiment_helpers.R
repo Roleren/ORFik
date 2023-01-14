@@ -283,54 +283,10 @@ countTable <- function(df, region = "mrna", type = "count",
       # Subset to samples wanted
       if (!is.null(df.temp)) {
         if ((ncol(res) != nrow(df.temp))) {
-          subset <- if (sum(colnames(res) %in% bamVarName(df.temp, FALSE)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, FALSE)
-          } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, skip.experiment = FALSE)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
-          } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp)
-          } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)
-          } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, TRUE, FALSE, FALSE)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, FALSE)
-          } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE)
-          } else if (sum(colnames(res) %in%
-                         bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
-            colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)
-          } else stop("No valid names for count tables found from experiment")
-          res <- res[, subset]
+          res <- subset_count_table(res, df.temp)
         }
       }
-      # Add all sample columns if not existing and it is possible
-      if (is.null(colData(res)$stage)) {
-        if (length(unique(df.temp$stage)) > 1) {
-          colData(res)$stage <- as.factor(df.temp$stage)
-          if (anyNA(colData(res)$stage))
-            colData(res)$stage[is.na(colData(res)$stage)] <- ""
-        }
-        if ((length(unique(df.temp$libtype)) > 0) & (type != "deseq")) {
-          colData(res)$libtype <- as.factor(df.temp$libtype)
-          if (anyNA(colData(res)$libtype))
-            colData(res)$libtype[is.na(colData(res)$libtype)] <- ""
-        }
-        if (length(unique(df.temp$condition)) > 1) {
-          colData(res)$condition <- as.factor(df.temp$condition)
-          if (anyNA(colData(res)$condition))
-            colData(res)$condition[is.na(colData(res)$condition)] <- ""
-        }
-        if (length(unique(df.temp$fraction)) > 1) {
-          colData(res)$fraction <- as.factor(df.temp$fraction)
-          if (anyNA(colData(res)$fraction))
-            colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
-        }
-        colData(res)$replicate <- as.factor(df.temp$rep)
-      }
+      res <- metadata_count_table(res, df.temp, type)
       # Give important sanity check info:
       is_ribo <- any(c("RFP", "RPF", "LSU","80S") %in% colData(res)$libtype, na.rm = TRUE)
       if(count.folder != "pshifted" & is_ribo)
@@ -421,4 +377,60 @@ countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
   )
   names(libs) <- regions
   return(libs)
+}
+
+subset_count_table <- function(res, df.temp) {
+  subset <- if (sum(colnames(res) %in% bamVarName(df.temp, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp, FALSE, skip.experiment = FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp, TRUE, FALSE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, FALSE)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)
+  } else if (sum(colnames(res) %in%
+                  bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)
+  } else stop("No valid names for count tables found from experiment")
+  return(res[, subset])
+}
+
+metadata_count_table <- function(res, df.temp, type) {
+  # Add all sample columns if not existing and it is possible
+  if (is.null(colData(res)$stage)) {
+    if (length(unique(df.temp$stage)) > 1) {
+      colData(res)$stage <- as.factor(df.temp$stage)
+      if (anyNA(colData(res)$stage))
+        colData(res)$stage[is.na(colData(res)$stage)] <- ""
+    }
+    if ((length(unique(df.temp$libtype)) > 0) & (type != "deseq")) {
+      colData(res)$libtype <- as.factor(df.temp$libtype)
+      if (anyNA(colData(res)$libtype))
+        colData(res)$libtype[is.na(colData(res)$libtype)] <- ""
+    }
+    if (length(unique(df.temp$condition)) > 1) {
+      colData(res)$condition <- as.factor(df.temp$condition)
+      if (anyNA(colData(res)$condition))
+        colData(res)$condition[is.na(colData(res)$condition)] <- ""
+    }
+    if (length(unique(df.temp$fraction)) > 1) {
+      colData(res)$fraction <- as.factor(df.temp$fraction)
+      if (anyNA(colData(res)$fraction))
+        colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
+    }
+    colData(res)$replicate <- as.factor(df.temp$rep)
+  }
+  return(res)
 }

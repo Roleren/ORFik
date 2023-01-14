@@ -262,7 +262,7 @@ setGeneric("QCfolder", function(x) standardGeneric("QCfolder"))
 setMethod("QCfolder",
           "experiment",
           function(x) {
-            file.path(libFolder(df), "QC_STATS/")
+            file.path(libFolder(x), "QC_STATS/")
           }
 )
 
@@ -301,7 +301,29 @@ setMethod("seqlevels",
 setMethod("seqinfo",
           "experiment",
           function(x) {
-            seqinfo(findFa(df@fafile))
+            seqinfo(findFa(x@fafile))
+          }
+)
+
+#' Get ORFik experiment QC folder path
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a data.table with gene id, gene symbols and tx ids (3 columns)
+#' @export
+setGeneric("symbols", function(x) standardGeneric("symbols"))
+
+#' @inherit QCfolder
+setMethod("symbols",
+          "experiment",
+          function(x) {
+            cand_path <- file.path(dirname(x@txdb), "gene_symbol_tx_table.fst")
+            if (file.exists(cand_path)) {
+              return(as.data.table(read_fst(cand_path)))
+            } else {
+              message("Gene symbols not created, run ",
+              "ORFik:::makeTxdbFromGenome(gene_symbols = TRUE)")
+              return(data.table())
+            }
           }
 )
 

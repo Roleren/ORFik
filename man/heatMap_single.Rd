@@ -21,7 +21,8 @@ heatMap_single(
   location = "start site",
   shifting = NULL,
   skip.last = FALSE,
-  title = NULL
+  title = NULL,
+  gradient.max = "default"
 )
 }
 \arguments{
@@ -82,6 +83,11 @@ either of c("5prime", "3prime")}
 
 \item{title}{a character, default NULL (no title),
 what is the top title of plot?}
+
+\item{gradient.max}{numeric or character, default: "default", which is:
+\code{max(coverage$score)}. If you want all plots to use same reference point
+for max scaling, then first detect this point, look at max in plot etc,
+and use that value, to get all plots to have same max point.}
 }
 \value{
 ggplot2 grob (default), data.table (if returnCoverage is TRUE)

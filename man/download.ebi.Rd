@@ -57,6 +57,7 @@ But does not support subsetting or custom settings of files!
 Other sra: 
 \code{\link{download.SRA.metadata}()},
 \code{\link{download.SRA}()},
+\code{\link{get_bioproject_candidates}()},
 \code{\link{install.sratoolkit}()},
 \code{\link{rename.SRA.files}()}
 }

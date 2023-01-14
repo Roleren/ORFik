@@ -54,6 +54,8 @@ OPTIONS:
 	-K  Keep contaminant aligned bam files. Default: "no", alternative: "yes".
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
+	-u  Keep unaligned reads from genome alignment step.
+	      Default "None" (no), alternative: "Fastx""
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -86,9 +88,10 @@ multimap=10
 trim_front=3
 keep="n"
 keepContam="no"
+keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:u:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -139,32 +142,36 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:h" opt; do
         echo "-B allow_introns: $OPTARG"
         ;;
     r)
-	resume=$OPTARG
-	echo "-r resume (r or new n): $OPTARG"
+	      resume=$OPTARG
+	      echo "-r resume (r or new n): $OPTARG"
         ;;
     m)
-	maxCPU=$OPTARG
-	echo "-m maxCPU: $OPTARG"
+      	maxCPU=$OPTARG
+      	echo "-m maxCPU: $OPTARG"
         ;;
     M)
-	multimap=$OPTARG
-	echo "-M max multimap: $OPTARG"
+      	multimap=$OPTARG
+      	echo "-M max multimap: $OPTARG"
         ;;
     S)
-	STAR=$OPTARG
-	echo "-S STAR location: $OPTARG"
+      	STAR=$OPTARG
+      	echo "-S STAR location: $OPTARG"
         ;;
     P)
-	fastp=$OPTARG
-	echo "-P fastp location: $OPTARG"
+      	fastp=$OPTARG
+      	echo "-P fastp location: $OPTARG"
         ;;
     k)
-	keep=$OPTARG
-	echo "-k Keep Star Index loaded: $OPTARG"
+      	keep=$OPTARG
+      	echo "-k Keep Star Index loaded: $OPTARG"
         ;;
     K)
       	keepContam=$OPTARG
       	echo "-K Keep contamination reads: $OPTARG"
+        ;;
+    u)
+      	keep_unmapped_genome=$OPTARG
+      	echo "-u Keep unmapped genome reads: $OPTARG"
         ;;
     h)
         usage
@@ -188,18 +195,18 @@ IFS="-" read -a stepsArray <<< $steps
 export stepsArray
 
 
-if [ -z $out_dir ]; then
+if [ -z "$out_dir" ]; then
 	echo "Error, out directory (-o) must be speficied!"
 	exit 1
 fi
 
-if [ ! -z $in_file ]; then
-	if [ ! -f $in_file ]; then
+if [ ! -z "$in_file" ]; then
+	if [ ! -f "$in_file" ]; then
 	    echo "input file f does not name existing file!"
 	    exit 1
 	fi
 
-	if [[ ! $in_file =~ .*\.(fasta|fa|fastq|gz|fq) ]]; then
+	if [[ ! "$in_file" =~ .*\.(fasta|fa|fastq|gz|fq) ]]; then
 	    echo "Invalid input file type: $in_file"
 	    echo "Must be either fasta, fa, fastq, fq or gz"
 	    exit 1
@@ -209,9 +216,9 @@ else
 	exit 1
 fi
 
-if [ ! -z $in_file_two ]; then
+if [ ! -z "$in_file_two" ]; then
 
-	if [ ! -f $in_file_two ]; then
+	if [ ! -f "$in_file_two" ]; then
 	    echo "Error input file 2 :F does not name existing file!"
 	    exit 1
 	fi
@@ -226,7 +233,7 @@ fi
 
 # 1. mkdir
 
-if [ ! -d $out_dir ]; then
+if [ ! -d "$out_dir" ]; then
     mkdir -p $out_dir
 fi
 
@@ -244,7 +251,7 @@ rRNA=$gen_dir/rRNA_genomeDir
 ncRNA=$gen_dir/ncRNA_genomeDir
 tRNA=$gen_dir/tRNA_genomeDir
 usedGenome=$gen_dir/genomeDir
-if [ ! -d $usedGenome ]; then
+if [ ! -d "$usedGenome" ]; then
       if [ $steps == "tr" ]; then
         echo "Running trim only mode"
       else
@@ -395,7 +402,7 @@ function keepOrNot()
 #  ${out_dir} ${ibn} ${in_file_two}
 function trimPaired()
 {
-	if [ ! -z $3 ]; then
+	if [ ! -z "$3" ]; then
 		echo "${1}/trim/trimmed2_${2}.fastq"
 	else
 		echo ""
@@ -451,6 +458,10 @@ if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
 	echo trimming
 	if [ ! -d ${out_dir}/trim ]; then
         mkdir ${out_dir}/trim
+        if [ ! -d ${out_dir}/trim ]; then
+          echo "Error: could not create trim dir, do you have access to disc?"
+          exit 1
+        fi
   fi
 
 	eval $fastp \
@@ -620,6 +631,7 @@ if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
 	--genomeDir ${usedGenome} \
 	--outFileNamePrefix ${out_dir}/aligned/${ibn}_ \
 	--outSAMtype BAM SortedByCoordinate \
+	--outReadsUnmapped $keep_unmapped_genome \
 	--runThreadN $(nCores 80 $maxCPU) \
 	--genomeLoad $(keepOrNot $keep)  \
 	--limitIObufferSize 50000000 \

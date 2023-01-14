@@ -55,6 +55,8 @@ OPTIONS:
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
 	-K  Keep contaminant aligned bam files. Default: "no", alternative: "yes".
+	-u  Keep unaligned reads from genome alignment step.
+	      Default "None" (no), alternative: "Fastx""
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -89,9 +91,10 @@ paired="no"
 align_single=""
 cleaning=""
 keepContam="no"
+keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:o:p:l:T:g:s:a:t:A:B:r:m:K:M:S:i:P:I:C:q:h:" opt; do
+while getopts ":f:o:p:l:T:g:s:a:t:A:B:r:m:K:M:S:i:P:I:C:q:u:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
@@ -177,6 +180,10 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:B:r:m:K:M:S:i:P:I:C:q:h:" opt; do
       	keepContam=$OPTARG
       	echo "-K Keep contamination reads: $OPTARG"
         ;;
+    u)
+      	keep_unmapped_genome=$OPTARG
+      	echo "-u Keep unmapped genome reads: $OPTARG"
+        ;;
     h)
         usage
         exit
@@ -239,7 +246,7 @@ function findPairs()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
     echo "-------------------------------------------"
 	done
 }
@@ -266,7 +273,7 @@ function findPairsSub()
 			keep="n"
 		fi
 
-		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
+		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
 		echo "-------------------------------------------"
 
 	done
@@ -325,7 +332,7 @@ do
         x=$in_dir/$x
       fi
 
-  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -P "$fastp" -S "$STAR"
+  		eval $align_single -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
   		echo "----------------------------------------------"
   	done
   fi

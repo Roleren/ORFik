@@ -108,19 +108,30 @@ config.save <- function(file = "~/Bio_data/ORFik_config.csv",
 #' List genomes created with ORFik
 #'
 #' Given the reference.folder, list all valid references.
+#' An ORFik genome is defined as a folder with a file called output.rds
+#' that is a named R vector with names gtf and genome, where the values
+#' are character paths to those files inside that folder. This makes sure
+#' that this reference was made by ORFik and not some other program.
 #' @param reference.folder character path, default:
 #' \code{ORFik::config()["ref"]}.
-#' @return a data.table with 4 columns:\cr
+#' @return a data.table with 5 columns:\cr
 #'  - character (name of folder)\cr
-#'  - logical (does it have a gtf)
-#'  - logical (does it have a fasta genome)
-#'  - logical (does it have a STAR index)
+#'  - logical (does it have a gtf)\cr
+#'  - logical (does it have a fasta genome)\cr
+#'  - logical (does it have a STAR index)\cr
+#'  - logical (only displayed if some are TRUE, does it have protein structure
+#'   predictions of ORFs from alphafold etc, in folder called
+#'   'protein_structure_predictions')\cr
+#'  - logical (only displayed if some are TRUE, does it have gene symbol fst file
+#'    from bioMart etc, in file called 'gene_symbol_tx_table.fst')
 #' @export
 #' @examples
 #' ## Run with default config path
 #' #list.genomes()
 #' ## Run with custom config path
 #' list.genomes(tempdir())
+#' ## Get the path to fasta genome of first organism in list
+#' #readRDS(file.path(config()["ref"], list.genomes()$name, "outputs.rds")[1])["genome"]
 list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
   candidates <- list.dirs(reference.folder, recursive = FALSE)
   outputs <- file.path(list.dirs(reference.folder, recursive = FALSE), "outputs.rds")
@@ -144,6 +155,10 @@ list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
   }
   indices <- file.path(candidates, "STAR_index")
   availableGenomes[, STAR_index := file.exists(indices)]
+  protein_structures <- file.path(candidates, "protein_structure_predictions")
+  if (any(file.exists(protein_structures))) availableGenomes[, protein_structures := file.exists(protein_structures)]
+  gene_symbols <- file.path(candidates, "gene_symbol_tx_table.fst")
+  if (any(file.exists(gene_symbols))) availableGenomes[, gene_symbols := file.exists(gene_symbols)]
   availableGenomes[]
   return(availableGenomes)
 }

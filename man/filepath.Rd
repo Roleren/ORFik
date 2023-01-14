@@ -10,12 +10,21 @@ filepath(df, type, basename = FALSE)
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "ofst" or "pshifted".
-These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+or some precomputed variant, like "ofst" or "pshifted".
+These are made with ORFik:::convertLibs(),
+shiftFootprintsByExperiment(), etc.
 Can also be custom user made folders inside the experiments bam folder.
 It acts in a recursive manner with priority: If you state "pshifted",
 but it does not exist, it checks "ofst". If no .ofst files, it uses
-"default", which always must exists.}
+"default", which always must exists.\cr Presets are (folder is relative
+to default lib folder, some types fall back to other formats if folder does not exist):\cr
+- "default": load the original files for experiment, usually bam.\cr
+- "ofst": loads ofst files from the ofst folder, relative to lib folder (falls back to default)\cr
+- "pshifted": loads ofst, wig or bigwig from pshifted folder (falls back to ofst, then default)\cr
+- "cov": Load covRle objects from cov_RLE folder (fail if not found)\cr
+- "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
+- "bed": Load bed files, from bed folder (falls back to default)\cr
+- Other formats must be loaded directly with fimport}
 
 \item{basename}{logical, default (FALSE).
 Get relative paths instead of full. Only use for inspection!}

@@ -61,9 +61,9 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
   trailers <- loadRegion(txdb, "trailers")
   introns <- loadRegion(txdb, "introns")
   libs <- bamVarName(df)
-  finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs) {
+  finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs, env) {
     message(s)
-    lib <- get(s)
+    lib <- get(s, envir = env)
     # Raw stats
     aligned_reads <- ifelse(!is.null(mcols(lib)$score),
                             sum(mcols(lib)$score), length(lib))
@@ -121,7 +121,7 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
     }
     return(res_final)
   }, sCo = sCo, tx = tx, gff.df = gff.df,
-  libs = libs, BPPARAM = BPPARAM)
+  libs = libs, env = envExp(df), BPPARAM = BPPARAM)
 
   return(rbindlist(finals))
 }
@@ -133,46 +133,52 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
 #' @param finals a data.table with current output from QCreport
 #' @return a data.table of the update finals object with trim info
 #' @keywords internal
-trim_detection <- function(df, finals, out.dir) {
-  # Update raw reads to real number
-  # Needs a folder called trim
+trim_detection <- function (df, finals, out.dir) {
   trim_folder <- file.path(out.dir, "..", "trim/")
   if (dir.exists(trim_folder)) {
     message("Create raw read counts")
-
     raw_data <- trimming.table(trim_folder)
-    # Verify rows have equal order as experiment
-    order <- unlist(lapply(X = raw_data$raw_library,
-                           function(p) grep(pattern = p, x = df$filepath, fixed = TRUE)))
-    order <- unique(order)
-    notMatch <-
-      !all(seq(nrow(df)) %in% order) | length(seq(nrow(df))) != length(order)
-    if (length(order) != nrow(raw_data)) {
-      message(paste("ORFik experiment has", nrow(df), "libraries"))
-      message(paste("Trim folder had", nrow(raw_data), "libraries"))
-      print(paste(c("Matches in the order:", order), collapse = " "))
-      print(raw_data)
-      print("Input file paths:")
-      print(df$filepath)
-      message("unexpected behavior, did you delete or merge any files?",
-           "else report this bug on ORFik issues page!")
-      message("Could not find raw read counts of data, setting to NA")
+    matches <- unlist(lapply(
+      X = df$filepath, function(x) {
+        match <- sapply(raw_data$raw_library,
+                        function(p) grep(pattern = p, x, fixed = TRUE))
+        if (isEmpty(match)) NA else names(unlist(match))[1]
+      }))
+    matches <- match(matches, raw_data$raw_library)
 
-    } else if (notMatch) { # did not match all
-      message("Could not find raw read count of your data, setting to NA")
-    } else {
-      class(finals$Raw_reads) <- "numeric"
-      class(finals$Trimmed_reads) <- "numeric"
-      finals[order,]$Raw_reads <- raw_data$raw_reads
-      finals[order,]$Trimmed_reads <- raw_data$trim_reads
-      finals$percentage_aligned_raw = round(100* (finals$Aligned_reads /
-                                         finals$Raw_reads), 4)
+    if (nrow(finals) < nrow(raw_data)) {
+      message("A subset of raw data will be used.")
     }
+    if (any(is.na(matches))) {
+      message("Could not find raw read count for some data, setting to NA.")
+      trim_detection_message(df, raw_data, finals, matches)
+    }
+    raw_data <- raw_data[matches, ]
+    class(finals$Raw_reads) <- "numeric"
+    class(finals$Trimmed_reads) <- "numeric"
+    finals$Raw_reads <- raw_data$raw_reads
+    finals$Trimmed_reads <- raw_data$trim_reads
+    finals$percentage_aligned_raw = round(100 * (finals$Aligned_reads/finals$Raw_reads), 4)
   } else {
     message("Could not find raw read counts of data, setting to NA")
     message(paste0("No folder called:", trim_folder))
   }
   return(finals)
+}
+
+trim_detection_message <- function(df, raw_data, finals, order) {
+  message(paste("Alignment folder had", nrow(finals), "libraries"))
+  message(paste("ORFik experiment has", nrow(df), "libraries"))
+  message(paste("Trim folder had", nrow(raw_data), "libraries"))
+  print(paste(c("Matches in the order:", order), collapse = " "))
+  print("Trim data:")
+  print(raw_data)
+  print("ORFik experiment paths:")
+  print(df$filepath)
+  message("unexpected behavior, did you delete or merge any files?",
+          "else report this bug on ORFik issues page!")
+  message("Could not find raw read counts of data, setting to NA")
+  return(invisible(NULL))
 }
 
 #' Load ORFik QC Statistics report
@@ -224,7 +230,9 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
   outputLibs(df, type = type, BPPARAM = BPPARAM)
   dt_read_lengths <- data.table(); sample_id <- 1
   for(lib in bamVarName(df)) {
-    dt_read_lengths <- rbind(dt_read_lengths, data.table(sample = lib, sample_id, table(readWidths(get(lib)))))
+    dt_read_lengths <- rbind(dt_read_lengths,
+                             data.table(sample = lib, sample_id,
+                              table(readWidths(get(lib, envir = envExp(df))))))
     sample_id <- sample_id + 1
   }
 
@@ -265,14 +273,14 @@ orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
   libs <- bamVarName(df)
 
   # Frame distribution over all
-  frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight) {
-    total <- regionPerReadLength(cds, get(lib, mode = "S4"),
+  frame_sum_per1 <- bplapply(libs, FUN = function(lib, cds, weight, env) {
+    total <- regionPerReadLength(cds, get(lib, mode = "S4", envir = env),
                                  withFrames = TRUE, scoring = "frameSumPerL",
                                  weight = weight, drop.zero.dt = TRUE)
     total[, length := fraction]
     #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
     total[, fraction := rep(lib, nrow(total))]
-  }, cds = cds, weight = weight, BPPARAM = BPPARAM)
+  }, cds = cds, weight = weight, env = envExp(df),BPPARAM = BPPARAM)
   frame_sum_per <- rbindlist(frame_sum_per1)
 
   frame_sum_per$frame <- as.factor(frame_sum_per$frame)

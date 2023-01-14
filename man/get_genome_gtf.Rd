@@ -12,7 +12,10 @@ get_genome_gtf(
   db,
   gunzip,
   genome,
-  optimize = FALSE
+  optimize = FALSE,
+  gene_symbols = FALSE,
+  pseudo_5UTRS_if_needed = NULL,
+  remove_annotation_outliers = TRUE
 )
 }
 \arguments{
@@ -57,8 +60,25 @@ and correct seqlengths. If value is NULL or FALSE, it will be ignored.}
 within the folder of the gtf, that includes optimized objects
 to speed up loading of annotation regions from up to 15 seconds
 on human genome down to 0.1 second. ORFik will then load these optimized
-objects instead. Currently optimizes filterTranscript() and
-loadRegion().}
+objects instead. Currently optimizes filterTranscript() function and
+loadRegion() function for 5' UTRs, 3' UTRs, CDS,
+ mRNA (all transcript with CDS) and tx (all transcripts).}
+
+\item{gene_symbols}{logical default FALSE. If TRUE, will download
+and store all gene symbols for all transcripts (coding and noncoding)-
+In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
+hgcn for human, mouse symbols for mouse and rat, more to be added.}
+
+\item{pseudo_5UTRS_if_needed}{integer, default NULL. If defined > 0,
+will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
+a leader.}
+
+\item{remove_annotation_outliers}{logical, default TRUE. Only for refseq.
+shall outlier lines be removed from the input annotation_file?
+If yes, then the initial annotation_file will be overwritten and
+the removed outlier lines will be stored at tempdir for further
+exploration. Among others Aridopsis refseq contains malformed lines,
+where this is needed}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,
@@ -85,6 +105,9 @@ annotation["gtf"] = "path/to/gtf.gtf"
 
 ## Get Saccharomyces cerevisiae genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel")
+## Download and add pseudo 5' UTRs
+#getGenomeAndAnnotation("Saccharomyces cerevisiae", tempdir(), assembly_type = "toplevel",
+#  pseudo_5UTRS_if_needed = 100)
 ## Get Danio rerio genome and gtf (create txdb for R)
 #getGenomeAndAnnotation("Danio rerio", tempdir())
 
@@ -105,9 +128,8 @@ output.dir <- "/Bio_data/references/zebrafish"
 annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
  "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
 names(annotation) <- c("gtf", "genome")
-# Make the txdb (for faster R use)
+# Then make the txdb (for faster R use)
 # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
-
 }
 \seealso{
 Other STAR: 

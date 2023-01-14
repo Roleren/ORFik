@@ -24,6 +24,7 @@ STAR.align.single(
   wait = TRUE,
   resume = NULL,
   keep.contaminants = FALSE,
+  keep.unaligned.genome = FALSE,
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
 )
 }
@@ -148,6 +149,11 @@ contaminant aligning bam files, default is to only keep unaliged fastq reads,
 which will be further processed in "ge" genome alignment step. Useful if you
 want to do further processing on contaminants, like specific coverage of
 specific tRNAs etc.}
+
+\item{keep.unaligned.genome}{logical, default FALSE. Create and keep
+reads that did not align at the genome alignment step,
+default is to only keep the aliged bam file. Useful if you
+want to do further processing on plasmids/custom sequences.}
 
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you

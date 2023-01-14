@@ -16,7 +16,11 @@ heatMapRegion(
   upstream = c(50, 30),
   downstream = c(29, 69),
   shifting = c("5prime", "3prime"),
-  longestPerGene = FALSE,
+  longestPerGene = TRUE,
+  colors = "default",
+  scale_x = 5.5,
+  scale_y = 15.5,
+  gradient.max = "default",
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -32,7 +36,7 @@ heatMapRegion(
  - Transcription end site (3' end of 3' UTRs)\cr}
 
 \item{outdir}{a character path, default: "default", saves to:
-\code{paste0(dirname(df$filepath[1]), "/QC_STATS/heatmaps/")}, a created
+\code{file.path(QCfolder(df), "heatmaps/")}, a created
 folder within the ORFik experiment data folder for plots. Change if you
 want custom location.}
 
@@ -65,10 +69,23 @@ If only 1 shifting, only 1 value should be given, if two are given will use firs
 NULL (no shifting of reads). If NULL, will use first index of 'upstream'
 and 'downstream' argument.}
 
-\item{longestPerGene}{logical (TRUE), return only longest valid transcript
-per gene. NOTE: This is by priority longest cds isoform, if equal then pick
-longest total transcript. So if transcript is shorter but cds is longer,
- it will still be the one returned.}
+\item{longestPerGene}{logical, default TRUE. Use only longest transcript
+isoform per gene. This will speed up your computation.}
+
+\item{colors}{character vector, default: "default", this gives you:
+c("white", "yellow2", "yellow3", "lightblue", "blue", "navy"),
+do "high" for more high contrasts, or specify your own colors.}
+
+\item{scale_x}{numeric, how should the width of the single plots be scaled,
+bigger the number, the bigger the plot}
+
+\item{scale_y}{numeric, how should the height of the plots be scaled,
+bigger the number, the bigger the plot}
+
+\item{gradient.max}{numeric or character, default: "default", which is:
+\code{max(coverage$score)}. If you want all plots to use same reference point
+for max scaling, then first detect this point, look at max in plot etc,
+and use that value, to get all plots to have same max point.}
 
 \item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
 Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of
@@ -84,7 +101,7 @@ Input CAGE file if you use TSS and want improved 5' annotation.
 }
 \examples{
 # Toy example, will not give logical output, but shows how it works
-df <- ORFik.template.experiment()[3,] # Only third library
+df <- ORFik.template.experiment()[9:10,] # Only third library
 #heatMapRegion(df, "TIS", outdir = "default")
 #
 # Do also TSS, add cage for specific TSS

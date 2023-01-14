@@ -108,7 +108,7 @@ checkRNA <- function(class){
             "also ribosomeReleaseScore will also be not normalized best ",
             "way possible.")
   } else {
-    if (class != "GAlignments" & class != "GRanges") {
+    if (class != "GAlignmentPairs" & class != "GAlignments" & class != "GRanges") {
       stop("RNA must be either GAlignments or GRanges")
     }
   }

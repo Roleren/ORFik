@@ -19,16 +19,25 @@ mergeLibs(
 saved as "all.ofst" in this folder if mode is "all". Use a folder called pshifted_merged, for
 default Ribo-seq ofst files.}
 
-\item{mode}{character, default "all". Merge all or "rep" for collapsing replicates only.
-lib}
+\item{mode}{character, default "all". Merge all or "rep" for collapsing replicates only, or
+"lib" for collapsing all per library type.}
 
 \item{type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "ofst" or "pshifted".
-These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
+or some precomputed variant, like "ofst" or "pshifted".
+These are made with ORFik:::convertLibs(),
+shiftFootprintsByExperiment(), etc.
 Can also be custom user made folders inside the experiments bam folder.
 It acts in a recursive manner with priority: If you state "pshifted",
 but it does not exist, it checks "ofst". If no .ofst files, it uses
-"default", which always must exists.}
+"default", which always must exists.\cr Presets are (folder is relative
+to default lib folder, some types fall back to other formats if folder does not exist):\cr
+- "default": load the original files for experiment, usually bam.\cr
+- "ofst": loads ofst files from the ofst folder, relative to lib folder (falls back to default)\cr
+- "pshifted": loads ofst, wig or bigwig from pshifted folder (falls back to ofst, then default)\cr
+- "cov": Load covRle objects from cov_RLE folder (fail if not found)\cr
+- "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
+- "bed": Load bed files, from bed folder (falls back to default)\cr
+- Other formats must be loaded directly with fimport}
 
 \item{keep_all_scores}{logical, default TRUE, keep all library scores in the merged file. These
 score columns are named the libraries full name from \code{bamVarName(df)}.}
@@ -52,4 +61,6 @@ df2 <- df2[df2$libtype == "RFP",]
 #read_fst(file.path(tempdir(), "all.ofst"))
 # Collapse replicates
 #mergeLibs(df2, tempdir(), mode = "rep", type = "default")
+# Collapse by lib types
+#mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 }

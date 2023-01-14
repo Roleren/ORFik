@@ -27,10 +27,14 @@ fiveUTR annotation. Usually loaded from the genome of an organism with
 fa = ORFik:::findFa("path/to/fasta/genome")}
 
 \item{startCodon}{(character vector) Possible START codons to search for.
-Check \code{\link{startDefinition}} for helper function.}
+Check \code{\link{startDefinition}} for helper function. Note that it is
+case sensitive, so "atg" would give 0 hits for a sequence with only capital
+"ATG" ORFs.}
 
 \item{stopCodon}{(character vector) Possible STOP codons to search for.
-Check \code{\link{stopDefinition}} for helper function.}
+Check \code{\link{stopDefinition}} for helper function. Note that it is
+case sensitive, so "tga" would give 0 hits for a sequence with only capital
+"TGA" ORFs.}
 
 \item{longestORF}{(logical) Default TRUE. Keep only the longest ORF per
 unique stopcodon: (seqname, strand, stopcodon) combination, Note: Not longest

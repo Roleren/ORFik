@@ -437,7 +437,7 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
 #' column in 'reads'. Can also be random access paths to bigWig or fstwig file.
 #' Do not use random access for more than a few genes, then loading the entire files
-#' is usually better.
+#' is usually better. File streaming is still in beta, so use with care!
 #' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @param keep.names logical (TRUE), keep names or not. If as.data.table is TRUE,
@@ -500,34 +500,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!is.sorted) grl <- sortPerGroup(grl)
 
   if (is(reads, "character")) {
-    if (all(is.null(fraction))) fraction <- "all"
-    file_ext <- tools::file_ext(reads)
-    if (all(file_ext == "bigWig")) {
-      rl <- ranges(grl)
-      names(rl) <- seqnamesPerGroup(grl, FALSE)
-      strands <- strandPerGroup(grl, FALSE)
-      coverage <- NumericList()
-      for (strand in unique(strands)) {
-        coverage <- c(coverage, import.bw(reads[ifelse(strand == "+", 1,2)], as = "NumericList",
-                              which = rl[strands == strand]))
-      }
-      groupings <- ORFik::groupings(coverage)
-      coverage <- data.table(count = unlist(coverage, use.names = FALSE))
-      coverage[, genes := groupings]
-    } else if (all(file_ext == "fstwig") | TRUE) {
-      chrs <- seqnamesPerGroup(grl, FALSE)
-      chr_groups <- unique(chrs)
-      for (chr in chr_groups) {
-        coverage <- import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE),
-                                  dir = reads,
-                                  readlengths = fraction)
-      }
-      coverage[, genes := rep(seq(length(grl)), each = widthPerGroup(grl, FALSE))]
-    }
-
-    coverage[, position := seq_len(.N), by = genes]
-    if (withFrames) coverage[, frame := (position - 1) %% 3]
-
+    coverage <- coverage_random_access_file(reads, grl)
   } else {
     if (is(reads, "covRle") | is(reads, "RleList")) {
       coverage <- coverageByTranscriptC(reads, grl)
@@ -548,7 +521,37 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
     }
     if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
   }
+  return(coverage)
+}
 
+coverage_random_access_file <- function(reads, grl, withFrames) {
+  if (all(is.null(fraction))) fraction <- "all"
+  file_ext <- tools::file_ext(reads)
+  if (all(file_ext == "bigWig")) {
+    rl <- ranges(grl)
+    names(rl) <- seqnamesPerGroup(grl, FALSE)
+    strands <- strandPerGroup(grl, FALSE)
+    coverage <- NumericList()
+    for (strand in unique(strands)) {
+      coverage <- c(coverage, import.bw(reads[ifelse(strand == "+", 1,2)], as = "NumericList",
+                                        which = rl[strands == strand]))
+    }
+    groupings <- ORFik::groupings(coverage)
+    coverage <- data.table(count = unlist(coverage, use.names = FALSE))
+    coverage[, genes := groupings]
+  } else if (all(file_ext == "fstwig") | TRUE) {
+    chrs <- seqnamesPerGroup(grl, FALSE)
+    chr_groups <- unique(chrs)
+    for (chr in chr_groups) {
+      coverage <- import.fstwig(unlist(grl[chrs == chr_groups], use.names = FALSE),
+                                dir = reads,
+                                readlengths = fraction)
+    }
+    coverage[, genes := rep(seq(length(grl)), each = widthPerGroup(grl, FALSE))]
+  }
+
+  coverage[, position := seq_len(.N), by = genes]
+  if (withFrames) coverage[, frame := (position - 1) %% 3]
   return(coverage)
 }
 

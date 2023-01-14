@@ -4,7 +4,15 @@
 \alias{makeTxdbFromGenome}
 \title{Make txdb from genome}
 \usage{
-makeTxdbFromGenome(gtf, genome = NULL, organism, optimize = FALSE)
+makeTxdbFromGenome(
+  gtf,
+  genome = NULL,
+  organism,
+  optimize = FALSE,
+  gene_symbols = FALSE,
+  pseudo_5UTRS_if_needed = NULL,
+  return = FALSE
+)
 }
 \arguments{
 \item{gtf}{path to gtf file}
@@ -24,9 +32,21 @@ on human genome down to 0.1 second. ORFik will then load these optimized
 objects instead. Currently optimizes filterTranscript() function and
 loadRegion() function for 5' UTRs, 3' UTRs, CDS,
  mRNA (all transcript with CDS) and tx (all transcripts).}
+
+\item{gene_symbols}{logical default FALSE. If TRUE, will download
+and store all gene symbols for all transcripts (coding and noncoding)-
+In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
+hgcn for human, mouse symbols for mouse and rat, more to be added.}
+
+\item{pseudo_5UTRS_if_needed}{integer, default NULL. If defined > 0,
+will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
+a leader.}
+
+\item{return}{logical, default FALSE. If TRUE, return TXDB object, else NULL.}
 }
 \value{
-NULL, Txdb saved to disc named paste0(gtf, ".db")
+NULL,  Txdb saved to disc named paste0(gtf, ".db").
+Set 'return' argument to TRUE, to get txdb back
 }
 \description{
 Make a Txdb with defined seqlevels and
@@ -40,4 +60,5 @@ set the seqlengths.
 gtf <- "/path/to/local/annotation.gtf"
 genome <- "/path/to/local/genome.fasta"
 #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
+## Add pseudo UTRs if needed (< 30\% of cds have a defined 5'UTR)
 }
