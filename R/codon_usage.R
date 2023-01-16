@@ -15,7 +15,7 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
                                                    value.name = "score"))
   } else {
     stopifnot("score" %in% colnames(codon_sums))
-    codon_sums[, variable := "lib1"]
+    codon_sums[, variable := "library 1"]
   }
   codon_sums[, genes := rep(genes, length.out = .N)]
   we_must_collapse <- input.dt.length != output.seq.length
@@ -58,6 +58,8 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
   seq_scores[, mean_txNorm_percentage := mean_txNorm_prob*100]
   seq_scores[, alpha := dirichlet_params(mean_txNorm_prob, sqrt(var_txNorm)),
              by = variable]
+  seq_scores[, relative_to_max_score := (mean_txNorm_percentage /
+                  max(mean_txNorm_percentage)*100), by = variable]
   if (is.null(seqs.order.table)) {
     setorderv(seq_scores, c("variable","mean_txNorm_percentage"), order = c(1,-1))
   } else {
@@ -86,13 +88,15 @@ dirichlet_params <- function(p.mean, sigma) {
   return(alpha)
 }
 
-codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscripts(df)),
-                            mrna = loadRegion(df, "mrna", names(cds)),
-                            filter_cds_mod3 = TRUE, filter_table = assay(countTable(df, type = "summarized")[names(cds)]),
-                            fa = df@fafile, min_counts_cds_filter = 1e4,
-                            with_A_sites = TRUE) {
+codon_usage <- function(reads, cds,
+                        mrna, faFile,
+                        filter_table, filter_cds_mod3 = TRUE,
+                        min_counts_cds_filter = 1e4,
+                        with_A_sites = TRUE, code = GENETIC_CODE) {
   stopifnot(is(filter_table, "matrix"))
   stopifnot(length(cds) == nrow(filter_table))
+  stopifnot(with_A_sites == TRUE)
+  stopifnot(filter_cds_mod3 == TRUE)
   message("-- Codon usage analysis")
   message("- Starting with ", length(cds), " CDS sequences")
   # Filter CDSs
@@ -103,21 +107,22 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
   }
   cds_filtered <- cds_filtered[filter_table[,1][names(cds_filtered)] > min_counts_cds_filter]
   message("- ", length(cds_filtered), " after filtering by counts filter")
+  if (length(cds_filtered) == 0) stop("Filter is too strict, set a lower filter!")
   # Create merged A and P site ranges
   cds_with_A_site <- windowPerGroup(startSites(cds_filtered, T, T, T), mrna,
-                downstream = widthPerGroup(cds_filtered, F) - 1, upstream = 3)
+                                    downstream = widthPerGroup(cds_filtered, F) - 1, upstream = 3)
   # Get coverage
   if (is.list(reads)) {
     dt_samp <- lapply(reads, function(lib) {
       coveragePerTiling(cds_with_A_site, reads = lib,
-                                   is.sorted = TRUE, as.data.table = T)[,1]
+                        is.sorted = TRUE, as.data.table = T)[,1][[1]]
     })
     dt_samp <- setDT(dt_samp)
   } else {
     dt_samp <- coveragePerTiling(cds_with_A_site, reads = reads,
                                  is.sorted = TRUE, as.data.table = T)[,1]
+    colnames(dt_samp) <- "score"
   }
-  colnames(dt_samp) <- "score"
   ## Make P and A site tables
   cds_lengths <- widthPerGroup(cds_filtered, FALSE)
   cds_with_A_lengths <- cds_lengths + 3
@@ -135,17 +140,132 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
   stopifnot(nrow(dt_all_real_A) == sum(cds_lengths))
 
   # Get sequences and translate
-  seqs <- translate(txSeqsFromFa(cds_filtered, df))
-  seqs <- unlist(strsplit(as.character(unlist(seqs, use.names = FALSE)),
-                          split = ""))
+  #browser()
+  seqs <- orf_coding_table(cds_filtered, faFile, code)
+  seqs[, merged := paste0(AA, ":", codon)]
   # Calc Codon usage
   genes_pos_index <- rep.int(seq_along(cds_filtered), times = cds_lengths)
   ifelse(filter_cds_mod3, "fast", "exact")
-  codon <- seq_usage(dt_all_real, seqs, genes_pos_index)
-  codon_Asite <- seq_usage(dt_all_real_A, seqs, genes_pos_index,
-                                seqs.order.table = as.character(codon$seqs))
-  return(rbindlist(list(codon[, type := as.factor("P")],
+  codon_Psite <- seq_usage(dt_all_real, seqs$merged, genes_pos_index)
+  codon_Asite <- seq_usage(dt_all_real_A, seqs$merged, genes_pos_index,
+                seqs.order.table = unique(as.character(codon_Psite$seqs)))
+  return(rbindlist(list(codon_Psite[, type := as.factor("P")],
                         codon_Asite[, type := as.factor("A")])))
+}
+
+GENETIC_CODE_ORFik <- function(code = Biostrings::GENETIC_CODE,
+                               as.dt = FALSE, with.charge = FALSE,
+                               init_as_hash = TRUE) {
+  x <- Biostrings::GENETIC_CODE
+  stops <- names(x)[x == "*"]
+  x_stop <- x[(names(x) %in% stops)]
+  start_codons <- if(init_as_hash) {c("###" = "#")} else NULL
+  x <- c(start_codons, x[!(names(x) %in% stops)], x_stop)
+  if (as.dt) x <- data.table(AA = x, codon = names(x))
+  return(x)
+}
+
+orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE) {
+  seqs_nt <- txSeqsFromFa(grl, faFile, is.sorted = TRUE)
+  seqs_AA <- translate(seqs_nt, genetic.code = code)
+  subseq(seqs_AA, 1, 1) <- "#"
+  seqs_AA <- unlist(strsplit(as.character(unlist(seqs_AA, use.names = FALSE)),
+                  split = ""))
+  seqs_nt <- unlist(seqs_nt)
+  seqs_codon <- substring(seqs_nt,
+                          seq(1, nchar(seqs_nt)-2, by = 3),
+                          seq(3, nchar(seqs_nt), by = 3))
+  return(data.table(AA = as.factor(seqs_AA), codon = as.factor(seqs_codon)))
+}
+
+#' Codon analysis for ORFik experiment
+#'
+#' Per AA / codon, analyse the coverage, get a multitude of features.
+#' For both A sites and P-sites (Input reads must be P-sites for now)
+#' This function takes inspiration from the codonDT package, and among
+#' others returns the negative binomial estimtes, but in addition many
+#' other features.
+#' @inheritParams outputLibs
+#' @inheritParams txSeqsFromFa
+#' @param reads either a single library (GRanges, GAlignment, GAlignmentPairs),
+#' or a list of libraries returned from \code{outputLibs(df, )} with p-sites.
+#' @param cds a GRangesList, the coding sequences, default:
+#' \code{loadRegion(df, "cds", filterTranscripts(df))}, longest isoform
+#' per gene.
+#' @param mrna a GRangesList, the full mRNA sequences (matching by names
+#' the cds sequences), default:
+#' \code{loadRegion(df, "mrna", names(cds))}.
+#' @param filter_cds_mod3 logical, default TRUE. Remove all ORFs that are not
+#' mod3, this speeds up the computation a lot, and usually removes malformed
+#' ORFs you would not want anyway.
+#' @param filter_table an numeric(integer) matrix, where rownames are the
+#' names of the full set of mRNA transcripts. This will be subsetted to the
+#' cds subset you use. Then CDSs are filtered from this table by the
+#' 'min_counts_cds_filter' argument.
+#' @param min_counts_cds_filter numeric, default 1e4. Minimum number of counts
+#' from the 'filter_table'  argument.
+#' @param with_A_sites logical, default TRUE. Not used yet, will also return
+#' A site scores.
+#' @return a data.table of rows per codon / AA. The columns are:
+#' seq: name of codon / AA
+#' And many features returned.
+#' @importFrom data.table frollsum setorderv
+#' @family codon
+#' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
+#' ## For single library
+#' res <- codon_usage_exp(df, fimport(filepath(df[1,], "pshifted")),
+#'                  min_counts_cds_filter = 10)
+#' ## For multiple libs
+#' res2 <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
+#'                  min_counts_cds_filter = 10)
+codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscripts(df)),
+                            mrna = loadRegion(df, "mrna", names(cds)),
+                            filter_cds_mod3 = TRUE, filter_table = assay(countTable(df, type = "summarized")[names(cds)]),
+                            faFile = df@fafile,
+                            min_counts_cds_filter = max(min(quantile(filter_table, 0.50), 100), 100),
+                            with_A_sites = TRUE, code = GENETIC_CODE) {
+  codon_usage(reads = reads, cds = cds,
+              mrna = mrna,
+              filter_cds_mod3 = filter_cds_mod3, filter_table = filter_table,
+              faFile = faFile, min_counts_cds_filter = min_counts_cds_filter,
+              with_A_sites = with_A_sites)
+}
+
+#' Plot codon_usage
+#'
+#' @param res a data.table of output from a codon_usage function
+#' @param score_column numeric, default: res$relative_to_max_score.
+#'  Which parameter to use as score column.
+#' @param ylab character vector, names for libraries to show on Y axis
+#' @param legend.position character, default "none", do not display legend.
+#' @param coord_flip logical, default TRUE. Flip so that seqs are y coordinates
+#' @return a ggplot object
+#' @family codon
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
+#' ## For multiple libs
+#' res2 <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
+#'                  min_counts_cds_filter = 10)
+#' codon_usage_plot(res2)
+codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
+                             ylab = "Ribo-seq library",
+                             legend.position = "none", coord_flip = TRUE) {
+  if (is.null(score_column)) stop("score_column can not be NULL!")
+  plot <- ggplot(res, aes(seqs, type, fill = score_column)) +
+    geom_tile(color = "white") +
+    scale_fill_gradient2(low = "blue", high = "orange", mid = "white",
+                         midpoint = 0, limit = c(0,100), space = "Lab",
+                         name="Rel. Cov.") +
+    theme_classic()+ # minimal theme
+    theme(legend.position=legend.position) +
+    ylab(ylab)
+  if (length(unique(res$variable)) > 1)
+    plot <- plot + facet_wrap(res$variable, ncol = 4)
+  if (coord_flip) plot + coord_flip()
 }
 
 # library(ORFik); library(data.table); library(ggplot2)
@@ -153,12 +273,3 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 # reads <- fimport(filepath(df, "cov"))
 # res <- codon_usage_exp(df, reads)
 #
-# ggplot(res, aes(seqs, type, fill = relative_to_max_score)) +
-#   geom_tile(color = "white")+
-#   scale_fill_gradient2(low = "blue", high = "orange", mid = "white",
-#                        midpoint = 0, limit = c(0,100), space = "Lab",
-#                        name="Rel. Cov.") +
-#   theme_classic()+ # minimal theme
-#   theme(legend.position="none") +
-#   ylab("Ribo-seq library");
-

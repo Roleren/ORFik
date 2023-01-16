@@ -83,7 +83,8 @@ bigger the number, the bigger the plot}
 bigger the number, the bigger the plot}
 
 \item{gradient.max}{numeric or character, default: "default", which is:
-\code{max(coverage$score)}. If you want all plots to use same reference point
+\code{max(coverage$score)}, the max coverage over all readlengths.
+ If you want all plots to use same reference point
 for max scaling, then first detect this point, look at max in plot etc,
 and use that value, to get all plots to have same max point.}
 
@@ -101,7 +102,7 @@ Input CAGE file if you use TSS and want improved 5' annotation.
 }
 \examples{
 # Toy example, will not give logical output, but shows how it works
-df <- ORFik.template.experiment()[9:10,] # Only third library
+df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
 #heatMapRegion(df, "TIS", outdir = "default")
 #
 # Do also TSS, add cage for specific TSS

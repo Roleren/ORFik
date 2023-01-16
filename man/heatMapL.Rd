@@ -100,7 +100,8 @@ bigger the number, the bigger the plot}
 bigger the number, the bigger the plot}
 
 \item{gradient.max}{numeric or character, default: "default", which is:
-\code{max(coverage$score)}. If you want all plots to use same reference point
+\code{max(coverage$score)}, the max coverage over all readlengths.
+ If you want all plots to use same reference point
 for max scaling, then first detect this point, look at max in plot etc,
 and use that value, to get all plots to have same max point.}
 

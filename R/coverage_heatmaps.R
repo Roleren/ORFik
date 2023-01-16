@@ -138,7 +138,7 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' @export
 #' @examples
 #' # Toy example, will not give logical output, but shows how it works
-#' df <- ORFik.template.experiment()[9:10,] # Only third library
+#' df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
 #' #heatMapRegion(df, "TIS", outdir = "default")
 #' #
 #' # Do also TSS, add cage for specific TSS
@@ -368,7 +368,8 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
 #' @param outdir a character path to save file as: not just directory,
 #' but full name.
 #' @param gradient.max numeric or character, default: "default", which is:
-#' \code{max(coverage$score)}. If you want all plots to use same reference point
+#' \code{max(coverage$score)}, the max coverage over all readlengths.
+#'  If you want all plots to use same reference point
 #' for max scaling, then first detect this point, look at max in plot etc,
 #' and use that value, to get all plots to have same max point.
 #' @return ggplot2 grob (default), data.table (if returnCoverage is TRUE)
@@ -398,7 +399,7 @@ heatMap_single <- function(region, tx, reads, outdir,
                             zeroPosition = zeroPosition, scoring = scores,
                             acceptedLengths = acceptedLengths, drop.zero.dt = drop.zero.dt,
                             append.zeroes = append.zeroes)
-  if (gradient.max == "default") gradient.max <-  max(coverage$score)
+  if (gradient.max == "default") gradient.max <-  max(dt$score)
   plot <- coverageHeatMap(coverage = dt, scoring = scores, addFracPlot = addFracPlot,
                           xlab = paste0("Position relative to ", location), colors = colors,
                           legendPos = legendPos, title = title,
