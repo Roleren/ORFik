@@ -12,7 +12,7 @@ codon_usage_exp(
   filter_cds_mod3 = TRUE,
   filter_table = assay(countTable(df, type = "summarized")[names(cds)]),
   faFile = df@fafile,
-  min_counts_cds_filter = max(min(quantile(filter_table, 0.5), 100), 100),
+  min_counts_cds_filter = max(min(quantile(filter_table, 0.5), 1000), 1000),
   with_A_sites = TRUE,
   code = GENETIC_CODE
 )
@@ -44,22 +44,39 @@ cds subset you use. Then CDSs are filtered from this table by the
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 
-\item{min_counts_cds_filter}{numeric, default 1e4. Minimum number of counts
-from the 'filter_table'  argument.}
+\item{min_counts_cds_filter}{numeric, default:
+\code{max(min(quantile(filter_table, 0.50), 100), 100)}.
+ Minimum number of counts from the 'filter_table'  argument.}
 
 \item{with_A_sites}{logical, default TRUE. Not used yet, will also return
 A site scores.}
 }
 \value{
-a data.table of rows per codon / AA. The columns are:
-seq: name of codon / AA
-And many features returned.
+a data.table of rows per codon / AA. All values are given
+per library, per site (A or P), sorted by the mean_txNorm_percentage column
+of the first library in the set, the columns are:
+\itemize{
+ \item{variable (character)}{Library name}
+ \item{seq (character)}{Amino acid:codon}
+ \item{sum (integer)}{total counts per seq}
+ \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
+ \item{var (numeric)}{variance of total counts per seq}
+ \item{N (integer)}{total valid }
+ \item{...}
+ \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
+           variance of probability of
+           in 1 value, the lower the value, the higher the variance, mean
+           is decided by the relative value between samples)}
+ \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
+ \item{relative_to_max_score (integer)}{Percentage use of codon}
+ \item{type (factor(character))}{Either "P" or "A"}
+}
 }
 \description{
 Per AA / codon, analyse the coverage, get a multitude of features.
 For both A sites and P-sites (Input reads must be P-sites for now)
-This function takes inspiration from the codonDT package, and among
-others returns the negative binomial estimtes, but in addition many
+This function takes inspiration from the codonDT paper, and among
+others returns the negative binomial estimates, but in addition many
 other features.
 }
 \examples{

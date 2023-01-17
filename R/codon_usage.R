@@ -71,7 +71,43 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
   return(seq_scores)
 }
 
-# dirichlet MOM estimater
+coverage_A_and_P <- function(cds_filtered, mrna, reads,
+                             cds_lengths = widthPerGroup(cds_filtered, FALSE)) {
+  # Create merged A and P site ranges
+  cds_with_A_site <- windowPerGroup(startSites(cds_filtered, TRUE, TRUE, TRUE),
+                                    mrna,
+                                    downstream = cds_lengths - 1,
+                                    upstream = 3)
+  # Get coverage
+  if (is.list(reads)) {
+    dt_samp <- lapply(reads, function(lib) {
+      coveragePerTiling(cds_with_A_site, reads = lib,
+                        is.sorted = TRUE, as.data.table = T)[,1][[1]]
+    })
+    dt_samp <- setDT(dt_samp)
+  } else {
+    dt_samp <- coveragePerTiling(cds_with_A_site, reads = reads,
+                                 is.sorted = TRUE, as.data.table = TRUE)[,1]
+    colnames(dt_samp) <- "score"
+  }
+  ## Make P and A site tables
+  cds_with_A_lengths <- cds_lengths + 3
+  stopifnot(sum(cds_with_A_lengths) == nrow(dt_samp))
+  gene_split_sites_general <- cumsum(cds_with_A_lengths)
+  # P sites
+  gene_split_sites <- c(0, gene_split_sites_general[-length(gene_split_sites_general)])
+  a_start_codons <- sort(unlist(lapply(c(1,2,3), function(x) x + gene_split_sites)))
+  dt_all_real <- dt_samp[-a_start_codons,]
+  stopifnot(nrow(dt_all_real) == sum(cds_lengths))
+  # A sites
+  gene_split_sites <- gene_split_sites_general
+  p_stop_codons <- sort(unlist(lapply(c(1,2,3), function(x) gene_split_sites - x)))
+  dt_all_real_A <- dt_samp[-p_stop_codons,]
+  stopifnot(nrow(dt_all_real_A) == sum(cds_lengths))
+  return(list(A = dt_all_real_A, P = dt_all_real))
+}
+
+# dirichlet MOM estimator
 dirichlet_params <- function(p.mean, sigma) {
   n.params <- length(p.mean)
   if(n.params != length(sigma)){
@@ -88,16 +124,9 @@ dirichlet_params <- function(p.mean, sigma) {
   return(alpha)
 }
 
-codon_usage <- function(reads, cds,
-                        mrna, faFile,
-                        filter_table, filter_cds_mod3 = TRUE,
-                        min_counts_cds_filter = 1e4,
-                        with_A_sites = TRUE, code = GENETIC_CODE) {
-  stopifnot(is(filter_table, "matrix"))
-  stopifnot(length(cds) == nrow(filter_table))
-  stopifnot(with_A_sites == TRUE)
-  stopifnot(filter_cds_mod3 == TRUE)
-  message("-- Codon usage analysis")
+filter_CDS_by_counts <- function(cds, filter_table,
+                                 min_counts_cds_filter = 1000,
+                                 filter_cds_mod3 = TRUE) {
   message("- Starting with ", length(cds), " CDS sequences")
   # Filter CDSs
   if (filter_cds_mod3) {
@@ -108,36 +137,25 @@ codon_usage <- function(reads, cds,
   cds_filtered <- cds_filtered[filter_table[,1][names(cds_filtered)] > min_counts_cds_filter]
   message("- ", length(cds_filtered), " after filtering by counts filter")
   if (length(cds_filtered) == 0) stop("Filter is too strict, set a lower filter!")
-  # Create merged A and P site ranges
-  cds_with_A_site <- windowPerGroup(startSites(cds_filtered, T, T, T), mrna,
-                                    downstream = widthPerGroup(cds_filtered, F) - 1, upstream = 3)
-  # Get coverage
-  if (is.list(reads)) {
-    dt_samp <- lapply(reads, function(lib) {
-      coveragePerTiling(cds_with_A_site, reads = lib,
-                        is.sorted = TRUE, as.data.table = T)[,1][[1]]
-    })
-    dt_samp <- setDT(dt_samp)
-  } else {
-    dt_samp <- coveragePerTiling(cds_with_A_site, reads = reads,
-                                 is.sorted = TRUE, as.data.table = T)[,1]
-    colnames(dt_samp) <- "score"
-  }
-  ## Make P and A site tables
+  return(cds_filtered)
+}
+
+codon_usage <- function(reads, cds,
+                        mrna, faFile,
+                        filter_table, filter_cds_mod3 = TRUE,
+                        min_counts_cds_filter = 1000,
+                        with_A_sites = TRUE, code = GENETIC_CODE) {
+  stopifnot(is(filter_table, "matrix"))
+  stopifnot(length(cds) == nrow(filter_table))
+  stopifnot(with_A_sites == TRUE)
+  stopifnot(filter_cds_mod3 == TRUE)
+  message("-- Codon usage analysis")
+  cds_filtered <- filter_CDS_by_counts(cds, filter_table,
+                       min_counts_cds_filter, filter_cds_mod3)
+
+  # Get coverage for A sites and P sites
   cds_lengths <- widthPerGroup(cds_filtered, FALSE)
-  cds_with_A_lengths <- cds_lengths + 3
-  stopifnot(sum(cds_with_A_lengths) == nrow(dt_samp))
-  gene_split_sites_general <- cumsum(cds_with_A_lengths)
-  # P sites
-  gene_split_sites <- c(0, gene_split_sites_general[-length(gene_split_sites_general)])
-  a_start_codons <- sort(unlist(lapply(c(1,2,3), function(x) x + gene_split_sites)))
-  dt_all_real <- dt_samp[-a_start_codons,]
-  stopifnot(nrow(dt_all_real) == sum(cds_lengths))
-  # A sites
-  gene_split_sites <- gene_split_sites_general
-  p_stop_codons <- sort(unlist(lapply(c(1,2,3), function(x) gene_split_sites - x)))
-  dt_all_real_A <- dt_samp[-p_stop_codons,]
-  stopifnot(nrow(dt_all_real_A) == sum(cds_lengths))
+  coverage_list <- coverage_A_and_P(cds_filtered, mrna, reads, cds_lengths)
 
   # Get sequences and translate
   #browser()
@@ -146,23 +164,11 @@ codon_usage <- function(reads, cds,
   # Calc Codon usage
   genes_pos_index <- rep.int(seq_along(cds_filtered), times = cds_lengths)
   ifelse(filter_cds_mod3, "fast", "exact")
-  codon_Psite <- seq_usage(dt_all_real, seqs$merged, genes_pos_index)
-  codon_Asite <- seq_usage(dt_all_real_A, seqs$merged, genes_pos_index,
+  codon_Psite <- seq_usage(coverage_list[["P"]], seqs$merged, genes_pos_index)
+  codon_Asite <- seq_usage(coverage_list[["A"]], seqs$merged, genes_pos_index,
                 seqs.order.table = unique(as.character(codon_Psite$seqs)))
   return(rbindlist(list(codon_Psite[, type := as.factor("P")],
                         codon_Asite[, type := as.factor("A")])))
-}
-
-GENETIC_CODE_ORFik <- function(code = Biostrings::GENETIC_CODE,
-                               as.dt = FALSE, with.charge = FALSE,
-                               init_as_hash = TRUE) {
-  x <- Biostrings::GENETIC_CODE
-  stops <- names(x)[x == "*"]
-  x_stop <- x[(names(x) %in% stops)]
-  start_codons <- if(init_as_hash) {c("###" = "#")} else NULL
-  x <- c(start_codons, x[!(names(x) %in% stops)], x_stop)
-  if (as.dt) x <- data.table(AA = x, codon = names(x))
-  return(x)
 }
 
 orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE) {
@@ -182,8 +188,8 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #'
 #' Per AA / codon, analyse the coverage, get a multitude of features.
 #' For both A sites and P-sites (Input reads must be P-sites for now)
-#' This function takes inspiration from the codonDT package, and among
-#' others returns the negative binomial estimtes, but in addition many
+#' This function takes inspiration from the codonDT paper, and among
+#' others returns the negative binomial estimates, but in addition many
 #' other features.
 #' @inheritParams outputLibs
 #' @inheritParams txSeqsFromFa
@@ -202,13 +208,31 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' names of the full set of mRNA transcripts. This will be subsetted to the
 #' cds subset you use. Then CDSs are filtered from this table by the
 #' 'min_counts_cds_filter' argument.
-#' @param min_counts_cds_filter numeric, default 1e4. Minimum number of counts
-#' from the 'filter_table'  argument.
+#' @param min_counts_cds_filter numeric, default:
+#'  \code{max(min(quantile(filter_table, 0.50), 100), 100)}.
+#'   Minimum number of counts from the 'filter_table'  argument.
 #' @param with_A_sites logical, default TRUE. Not used yet, will also return
 #' A site scores.
-#' @return a data.table of rows per codon / AA. The columns are:
-#' seq: name of codon / AA
-#' And many features returned.
+#' @return a data.table of rows per codon / AA. All values are given
+#' per library, per site (A or P), sorted by the mean_txNorm_percentage column
+#' of the first library in the set, the columns are:
+#' \itemize{
+#'  \item{variable (character)}{Library name}
+#'  \item{seq (character)}{Amino acid:codon}
+#'  \item{sum (integer)}{total counts per seq}
+#'  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
+#'  \item{var (numeric)}{variance of total counts per seq}
+#'  \item{N (integer)}{total valid }
+#'  \item{...}
+#'  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
+#'            variance of probability of
+#'            in 1 value, the lower the value, the higher the variance, mean
+#'            is decided by the relative value between samples)}
+#'  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
+#'  \item{relative_to_max_score (integer)}{Percentage use of codon}
+#'  \item{type (factor(character))}{Either "P" or "A"}
+#' }
+#'
 #' @importFrom data.table frollsum setorderv
 #' @family codon
 #' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/
@@ -225,7 +249,7 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
                             mrna = loadRegion(df, "mrna", names(cds)),
                             filter_cds_mod3 = TRUE, filter_table = assay(countTable(df, type = "summarized")[names(cds)]),
                             faFile = df@fafile,
-                            min_counts_cds_filter = max(min(quantile(filter_table, 0.50), 100), 100),
+                            min_counts_cds_filter = max(min(quantile(filter_table, 0.50), 1000), 1000),
                             with_A_sites = TRUE, code = GENETIC_CODE) {
   codon_usage(reads = reads, cds = cds,
               mrna = mrna,
@@ -261,12 +285,16 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
                          midpoint = 0, limit = c(0,100), space = "Lab",
                          name="Rel. Cov.") +
     theme_classic()+ # minimal theme
-    theme(legend.position=legend.position) +
+    theme(legend.position=legend.position,
+          axis.text.y = element_text(family = "monospace")) +
     ylab(ylab)
   if (length(unique(res$variable)) > 1)
     plot <- plot + facet_wrap(res$variable, ncol = 4)
-  if (coord_flip) plot + coord_flip()
+  if (coord_flip) plot <- plot + coord_flip()
+  return(plot)
 }
+
+
 
 # library(ORFik); library(data.table); library(ggplot2)
 # df <- read.experiment("human_all_merged_l50")

@@ -659,7 +659,6 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
                               stopOnEmpty = TRUE,
                               by = "tx", create.fst.version = FALSE) {
   if (!(by %in% c("tx", "gene"))) stop("by must be either tx or gene!")
-  txdb <- loadTxdb(txdb)
   five <- !is.null(minFiveUTR)
   three <- !is.null(minThreeUTR)
 
@@ -671,14 +670,13 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
              ifelse(three, utr3_len >= minThreeUTR, TRUE), ]
 
   gene_id <- cds_len <- NULL
-  tx <- data.frame(tx)
-  tx <- tx[order(tx$gene_id, -rank(tx$cds_len), -rank(tx$tx_len)), ]
+  data.table::setorderv(tx, c("gene_id", "cds_len", "tx_len"), c(1,-1,-1))
   # can't be used due to crashes of R, no errors reported...
   # data.table::setorder(tx, gene_id, -cds_len, -tx_len)
   if (longestPerGene) {
-    tx <- tx[!duplicated(tx$gene_id), ]
+    tx <- tx[!duplicated(gene_id), ]
   }
-  tx <- tx[!is.na(tx$gene_id), ]
+  tx <- tx[!is.na(gene_id), ]
 
   if (stopOnEmpty & length(tx$tx_name) == 0)
     stop("No transcript has leaders and trailers of specified minFiveUTR",
