@@ -228,6 +228,38 @@ ribo_fft <- function(footprints, cds, read_lengths = 26:34, firstN = 150) {
   return(fft_dt)
 }
 
+pshifts_export <- function(shifted, name, df) {
+  if ("bedo" %in% output_format) {
+    export.bedo(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                        addSizeColumn = TRUE),
+                paste0(name, "_pshifted.bedo"))
+  }
+  if ("ofst" %in% output_format) {
+    export.ofst(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                        addSizeColumn = TRUE),
+                paste0(name, "_pshifted.ofst"))
+  }
+  if ("bed" %in% output_format) {
+    export.bed(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
+                                       addSizeColumn = FALSE),
+               paste0(name, "_pshifted.bed"))
+  }
+  if ("wig" %in% output_format) {
+    export.wiggle(shifted, paste0(name, "_pshifted.wig"))
+  }
+  if ("bigWig" %in% output_format) {
+    if (anyNA(seqlengths(shifted))) {
+      seqinfo(shifted) <- seqinfo(df)[seqlevels(shifted),]
+    }
+    if (anyNA(seqlengths(shifted))) {
+      seqinfo(shifted) <- seqinfo(loadTxdb(df))[seqlevels(shifted),]
+    }
+    if (!anyNA(seqlengths(shifted))) {
+      export.bigWig(shifted, paste0(name, "_pshifted.bigWig"))
+    } else warning("Could not export bigWig, reads does not have defined seqlengths!")
+  }
+}
+
 #' Get periodogram plot per read length
 #' @param fft_dt a data.table with read_length, amplitude and periods
 #' @param period_window x axis limits, default c(0,6)

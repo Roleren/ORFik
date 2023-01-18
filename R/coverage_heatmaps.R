@@ -77,9 +77,9 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
   coverage$fraction <- factor(coverage$fraction,
                               levels = unique(coverage$fraction),
                               labels = unique(coverage$fraction))
-  if (colors == "default") {
+  if (colors[1] == "default") {
     colors = c("white", "yellow2", "yellow3", "lightblue", "blue", "navy")
-  } else if (colors == "high") {
+  } else if (colors[1] == "high") {
     colors <- c("white", "yellow2", "yellow3", "lightblue", "blue", "blue",
                 "blue", "navy", "black")
   }
