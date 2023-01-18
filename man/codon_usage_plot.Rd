@@ -39,6 +39,7 @@ codon_usage_plot(res2)
 }
 \seealso{
 Other codon: 
-\code{\link{codon_usage_exp}()}
+\code{\link{codon_usage_exp}()},
+\code{\link{codon_usage}()}
 }
 \concept{codon}

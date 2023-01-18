@@ -10,11 +10,13 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
     stop("Size of 'seqs' must be nrow(dt) / output.seq.length")
   codon_sums <- copy(dt)
   n.samples <- ncol(dt)
-  if (n.samples > 1) {
+  has_names <- !all(colnames(codon_sums) %in% c("score", "count"))
+  if (n.samples > 1 | has_names) {
     codon_sums <- suppressWarnings(melt.data.table(codon_sums,
                                                    value.name = "score"))
   } else {
-    stopifnot("score" %in% colnames(codon_sums))
+    stopifnot(is(codon_sums[[1]], "numeric") | is(codon_sums[[1]], "integer"))
+    if (colnames(codon_sums) == "count") colnames(codon_sums) <- "score"
     codon_sums[, variable := "library 1"]
   }
   codon_sums[, genes := rep(genes, length.out = .N)]
@@ -140,10 +142,29 @@ filter_CDS_by_counts <- function(cds, filter_table,
   return(cds_filtered)
 }
 
+#' @inherit codon_usage_exp
+#' @title Codon usage
+#' @param cds a GRangesList
+#' @param mrna a GRangesList
+#' @param faFile a FaFile from genome
+#' @param filter_table a matrix / vector of length equal to cds
+#' @family codon
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
+#'
+#' ## For single library
+#' reads <- fimport(filepath(df[1,], "pshifted"))
+#' cds <- loadRegion(df, "cds", filterTranscripts(df))
+#' mrna <- loadRegion(df, "mrna", names(cds))
+#' filter_table <- assay(countTable(df, type = "summarized")[names(cds)])
+#' faFile <- findFa(df@fafile)
+#' res <- codon_usage(reads, cds, mrna, faFile = faFile,
+#'              filter_table = filter_table, min_counts_cds_filter = 10)
 codon_usage <- function(reads, cds,
                         mrna, faFile,
                         filter_table, filter_cds_mod3 = TRUE,
-                        min_counts_cds_filter = 1000,
+                        min_counts_cds_filter = max(min(quantile(filter_table, 0.50), 1000), 1000),
                         with_A_sites = TRUE, code = GENETIC_CODE) {
   stopifnot(is(filter_table, "matrix"))
   stopifnot(length(cds) == nrow(filter_table))
@@ -158,12 +179,10 @@ codon_usage <- function(reads, cds,
   coverage_list <- coverage_A_and_P(cds_filtered, mrna, reads, cds_lengths)
 
   # Get sequences and translate
-  #browser()
   seqs <- orf_coding_table(cds_filtered, faFile, code)
   seqs[, merged := paste0(AA, ":", codon)]
   # Calc Codon usage
   genes_pos_index <- rep.int(seq_along(cds_filtered), times = cds_lengths)
-  ifelse(filter_cds_mod3, "fast", "exact")
   codon_Psite <- seq_usage(coverage_list[["P"]], seqs$merged, genes_pos_index)
   codon_Asite <- seq_usage(coverage_list[["A"]], seqs$merged, genes_pos_index,
                 seqs.order.table = unique(as.character(codon_Psite$seqs)))
@@ -194,7 +213,8 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' @inheritParams outputLibs
 #' @inheritParams txSeqsFromFa
 #' @param reads either a single library (GRanges, GAlignment, GAlignmentPairs),
-#' or a list of libraries returned from \code{outputLibs(df, )} with p-sites.
+#' or a list of libraries returned from \code{outputLibs(df)} with p-sites.
+#' If list, the list must have names coresponding to the library names.
 #' @param cds a GRangesList, the coding sequences, default:
 #' \code{loadRegion(df, "cds", filterTranscripts(df))}, longest isoform
 #' per gene.

@@ -133,19 +133,18 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
 #' @param finals a data.table with current output from QCreport
 #' @return a data.table of the update finals object with trim info
 #' @keywords internal
-trim_detection <- function (df, finals, out.dir) {
-  trim_folder <- file.path(out.dir, "..", "trim/")
-  if (dir.exists(trim_folder)) {
-    message("Create raw read counts")
-    raw_data <- trimming.table(trim_folder)
-    matches <- unlist(lapply(
-      X = df$filepath, function(x) {
-        match <- sapply(raw_data$raw_library,
-                        function(p) grep(pattern = p, x, fixed = TRUE))
-        if (isEmpty(match)) NA else names(unlist(match))[1]
-      }))
-    matches <- match(matches, raw_data$raw_library)
 
+trim_detection <- function (df, finals) {
+  out.dirs <- unique(dirname(df$filepath))
+  trim_folders <- file.path(out.dirs, "..", "trim/")
+  if (all(dir.exists(trim_folders))) {
+    message("Create raw read counts")
+    raw_data <- rbindlist(lapply(trim_folders, trimming.table))
+    matches <- unlist(lapply(X = df$filepath, function(x) {
+      match <- sapply(raw_data$raw_library, function(p) grep(pattern = p, x, fixed = TRUE))
+      if (isEmpty(match)) NA else names(unlist(match))[1]
+    }))
+    matches <- match(matches, raw_data$raw_library)
     if (nrow(finals) < nrow(raw_data)) {
       message("A subset of raw data will be used.")
     }
@@ -158,7 +157,8 @@ trim_detection <- function (df, finals, out.dir) {
     class(finals$Trimmed_reads) <- "numeric"
     finals$Raw_reads <- raw_data$raw_reads
     finals$Trimmed_reads <- raw_data$trim_reads
-    finals$percentage_aligned_raw = round(100 * (finals$Aligned_reads/finals$Raw_reads), 4)
+    finals$percentage_aligned_raw = round(100 * (finals$Aligned_reads/finals$Raw_reads),
+                                          4)
   } else {
     message("Could not find raw read counts of data, setting to NA")
     message(paste0("No folder called:", trim_folder))
