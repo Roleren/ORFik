@@ -151,6 +151,13 @@ percentage_to_ratio <- function(top_tx, cds, minimum.cds = 1000) {
   return(top_tx)
 }
 
+# Shift cigar and map back to corrected GRanges.
+shift_narrow <- function(footprints, shiftsAll) {
+  is_pos <- strandBool(footprints)
+  shiftsAll[!is_pos] <- -shiftsAll[!is_pos]
+  qnarrow(narrow(footprints), shiftsAll, shiftsAll)
+}
+
 #' Pre shifting plot analysis
 #'
 #' For internal use only!

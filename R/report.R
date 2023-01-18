@@ -28,7 +28,7 @@
 #' \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/}
 #' @inheritParams outputLibs
 #' @param out.dir optional output directory, default:
-#' \code{dirname(df$filepath[1])}.
+#' \code{libFolder(df)}.
 #' Will make a folder called "QC_STATS" with all results in this directory.
 #' Warning: If you assign not default path, you will have a hazzle to load files later.
 #' Much easier to load count tables, statistics, ++ later with default.
@@ -50,7 +50,7 @@
 #' df <- ORFik.template.experiment()
 #' # Run QC
 #' # QCreport(df)
-QCreport <- function(df, out.dir = dirname(df$filepath[1]),
+QCreport <- function(df, out.dir = libFolder(df),
                      plot.ext = ".pdf", create.ofst = TRUE,
                      complex.correlation.plots = TRUE,
                      BPPARAM = bpparam()) {
@@ -75,7 +75,7 @@ QCreport <- function(df, out.dir = dirname(df$filepath[1]),
   # Alignment statistcs
   finals <- alignmentFeatureStatistics(df, BPPARAM = BPPARAM)
   # Do trimming detection
-  finals <- trim_detection(df, finals, out.dir)
+  finals <- trim_detection(df, finals)
   # Save file
   write.csv(finals, file = pasteDir(stats_folder, "STATS.csv"))
   # Get plots

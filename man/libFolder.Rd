@@ -4,10 +4,12 @@
 \alias{libFolder}
 \title{Get ORFik experiment library folder}
 \usage{
-libFolder(x)
+libFolder(x, mode = "first")
 }
 \arguments{
 \item{x}{an ORFik \code{\link{experiment}}}
+
+\item{mode}{character, default "first". Alternatives: "unique", "all".}
 }
 \value{
 a character path

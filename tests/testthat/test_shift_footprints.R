@@ -54,3 +54,21 @@ test_that("ribosome shifting works as intended for gapped reads", {
   expect_equal(start(shift24), c(162017, 336444))
 })
 
+test_that("ribosome shifting works as intended for all types", {
+  footprints <- GAlignments(seqnames = Rle(factor(rep(c("1", "2"), 5))),
+                    pos = c(rep(3L, 4), rep(1L, 6)),
+                    cigar = c("2S20M", "20M2S", "2S18M2S", "2S18M2S", "22M", "22M",
+                              "10M10N10M", "10M10N10M", "10M2D10M","10M2D10M"),
+                    strand = Rle(factor(rep(c("+", "-"), 5), levels = c("+", "-", "*"))))
+
+  shift12 <- shiftFootprints(footprints,
+    data.frame(fraction = c(18, 20, 22), offsets_start = -c(12,12,12)), FALSE)
+  shift5 <- shiftFootprints(footprints,
+    data.frame(fraction = c(18, 20, 22), offsets_start = -c(5,5,5)), FALSE)
+  expect_equal(start(shift12), c(15,10,15,8,13,10,23,8,15,8))
+  expect_equal(start(shift5), c(8,17,8,15,6,17,6,25,6,17))
+})
+
+
+
+

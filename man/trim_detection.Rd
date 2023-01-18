@@ -4,12 +4,16 @@
 \alias{trim_detection}
 \title{Add trimming info to QC report}
 \usage{
-trim_detection(df, finals)
+trim_detection(df, finals, alignment_folder = libFolder(df, "unique"))
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{finals}{a data.table with current output from QCreport}
+
+\item{alignment_folder}{character, default: \code{libFolder(df, "unique")}.
+All unique folders. trim_folders should then be relative as:
+file.path(alignment_folder, "..", "trim/")}
 }
 \value{
 a data.table of the update finals object with trim info

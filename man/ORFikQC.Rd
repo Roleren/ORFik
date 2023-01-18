@@ -6,7 +6,7 @@
 \usage{
 ORFikQC(
   df,
-  out.dir = dirname(df$filepath[1]),
+  out.dir = libFolder(df),
   plot.ext = ".pdf",
   create.ofst = TRUE,
   complex.correlation.plots = TRUE,
@@ -17,7 +17,7 @@ ORFikQC(
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{out.dir}{optional output directory, default:
-\code{dirname(df$filepath[1])}.
+\code{libFolder(df)}.
 Will make a folder called "QC_STATS" with all results in this directory.
 Warning: If you assign not default path, you will have a hazzle to load files later.
 Much easier to load count tables, statistics, ++ later with default.}

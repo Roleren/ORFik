@@ -15,7 +15,11 @@
 #' TRUE. This will give you a score column with how many duplicated reads there
 #' were in the specified region.
 #'
-#' NOTE: For special case of GAlignmentPairs, 5prime will only use left (first)
+#' NOTE: Note: For cigar based ranges (GAlignments),
+#' the 5' end is the first non clipped base (neither soft clipped or hard clipped
+#' from 5'). This is following the default
+#' of bioconductor.
+#' For special case of GAlignmentPairs, 5prime will only use left (first)
 #' 5' end and read and 3prime will use only right (last) 3' end of read
 #' in pair. tileAll and middle can possibly find poinst that are not in the
 #' reads since: lets say pair is 1-5 and 10-15, middle is 7, which is not in

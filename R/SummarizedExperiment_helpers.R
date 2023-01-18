@@ -267,11 +267,10 @@ countTable <- function(df, region = "mrna", type = "count",
   if (is(df, "experiment")) {
     if (nrow(df) == 0) stop("df experiment has 0 rows (samples)!")
     df.temp <- df
-    dir = dirname(df$filepath[1])
-    if (count.folder == "default") {
-      count.folder <- "QC_STATS"
-    }
-    df <- paste0(dir, "/", count.folder)
+    df <-
+      if (count.folder == "default") {
+        QCfolder(df)
+      } else paste0(libFolder(df), "/", count.folder)
   }
   if (is(df, "character")) {
     if (dir.exists(df)) {
@@ -348,7 +347,7 @@ countTable <- function(df, region = "mrna", type = "count",
 #' # countTable_regions(df)
 #' ## Pshifted reads (first create pshiftead libs)
 #' # countTable_regions(df, lib.type = "pshifted", rel.dir = "pshifted")
-countTable_regions <- function(df, out.dir = dirname(df$filepath[1]),
+countTable_regions <- function(df, out.dir = libFolder(df),
                                longestPerGene = FALSE,
                                geneOrTxNames = "tx",
                                regions = c("mrna", "leaders", "cds",

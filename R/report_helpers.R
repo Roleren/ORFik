@@ -131,12 +131,14 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
 #' Only works if alignment was done using ORFik with STAR.
 #' @inheritParams QCreport
 #' @param finals a data.table with current output from QCreport
+#' @param alignment_folder character, default: \code{libFolder(df, "unique")}.
+#' All unique folders. trim_folders should then be relative as:
+#' file.path(alignment_folder, "..", "trim/")
 #' @return a data.table of the update finals object with trim info
 #' @keywords internal
-
-trim_detection <- function (df, finals) {
-  out.dirs <- unique(dirname(df$filepath))
-  trim_folders <- file.path(out.dirs, "..", "trim/")
+trim_detection <- function (df, finals,
+                            alignment_folder = libFolder(df, "unique")) {
+  trim_folders <- file.path(alignment_folder, "..", "trim/")
   if (all(dir.exists(trim_folders))) {
     message("Create raw read counts")
     raw_data <- rbindlist(lapply(trim_folders, trimming.table))

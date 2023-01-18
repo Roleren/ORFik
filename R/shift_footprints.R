@@ -53,6 +53,8 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
   if (nrow(shifts) == 0) stop("No shifts found in data.frame")
   if (is.null(shifts$fraction) | is.null(shifts$offsets_start))
     stop("Either fraction (read lengths) or offsets_start (shifts by nt) column in shifts is not set!")
+  if (is.null(shifts$offsets_start))
+    stop("Offset must be negative (-12, not 12, etc)!")
 
   selected_lengths <- shifts$fraction
   selected_shifts <- shifts$offsets_start
@@ -64,11 +66,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
   shiftsAll <- -selected_shifts[match(lengthsAll,
                           selected_lengths)] + 1
 
-  # Shift cigar and map back to corrected GRanges.
-  is_pos <- strandBool(footprints)
-
-  shiftsAll[!is_pos] <- -shiftsAll[!is_pos]
-  shifted <- qnarrow(footprints, shiftsAll, shiftsAll)
+  shifted <- shift_narrow(footprints, shiftsAll)
   shifted <- resize(GRanges(shifted), width = 1)
   shifted$size <- lengthsAll
 

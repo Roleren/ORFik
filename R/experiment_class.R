@@ -269,15 +269,24 @@ setMethod("QCfolder",
 #' Get ORFik experiment library folder
 #'
 #' @param x an ORFik \code{\link{experiment}}
+#' @param mode character, default "first". Alternatives: "unique", "all".
 #' @return a character path
 #' @export
-setGeneric("libFolder", function(x) standardGeneric("libFolder"))
+setGeneric("libFolder", function(x, mode = "first") standardGeneric("libFolder"))
 
 #' @inherit libFolder
 setMethod("libFolder",
           "experiment",
-          function(x) {
-            dirname(x$filepath[1])
+          function(x, mode = "first") {
+            path <-
+            if (mode == "first") {
+              dirname(x$filepath[1])
+            } else if (mode == "unique") {
+              unique(dirname(x$filepath))
+            } else if (mode == "all") {
+              dirname(x$filepath)
+            } else stop("argument 'mode', must be either first, unique or all")
+            return(path)
           }
 )
 
