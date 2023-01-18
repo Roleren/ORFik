@@ -4,10 +4,10 @@
 #' the specified lengths. Reads that do not conform to the specified lengths
 #' are filtered out and rejected. Reads are resized to single base in 5' end
 #' fashion, treated as p site.
-#' This function takes account for junctions in cigars of the reads. Length of
-#' the footprint is saved in size' parameter of GRanges output. Footprints are
-#' also sorted according to their genomic position, ready to be saved as a
-#' ofst, bed or wig file.
+#' This function takes account for junctions and soft clips in cigars of the
+#' reads. Length of the footprint is saved in size' parameter of GRanges output.
+#' Footprints are also sorted according to their genomic position,
+#' ready to be saved as a ofst, covRle, bed or wig file.
 #'
 #' The two columns in the shift data.frame/data.table argument are:\cr
 #' - fraction Numeric vector of lengths of footprints you select
@@ -53,7 +53,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
   if (nrow(shifts) == 0) stop("No shifts found in data.frame")
   if (is.null(shifts$fraction) | is.null(shifts$offsets_start))
     stop("Either fraction (read lengths) or offsets_start (shifts by nt) column in shifts is not set!")
-  if (is.null(shifts$offsets_start))
+  if (any(shifts$offsets_start > 0))
     stop("Offset must be negative (-12, not 12, etc)!")
 
   selected_lengths <- shifts$fraction
@@ -425,7 +425,7 @@ shiftFootprintsByExperiment <- function(df,
 
     shifted <- shiftFootprints(rfp, shifts)
     name <- paste0(path, remove.file_ext(file, basename = TRUE))
-    pshifts_export(shifted, name, df)
+    pshifts_export(shifted, name, df, output_format)
     return(shifts)
   }, path = path, df = df, start = start, stop = stop,
      top_tx = top_tx, minFiveUTR = minFiveUTR,

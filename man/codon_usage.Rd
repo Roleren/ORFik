@@ -39,6 +39,9 @@ ORFs you would not want anyway.}
 
 \item{with_A_sites}{logical, default TRUE. Not used yet, will also return
 A site scores.}
+
+\item{code}{a named character vector of size 64. Default: GENETIC_CODE.
+Change if organism does not use the standard code.}
 }
 \value{
 a data.table of rows per codon / AA. All values are given
@@ -50,7 +53,7 @@ of the first library in the set, the columns are:
  \item{sum (integer)}{total counts per seq}
  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
  \item{var (numeric)}{variance of total counts per seq}
- \item{N (integer)}{total valid }
+ \item{N (integer)}{total number of codons of that type}
  \item{...}
  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
            variance of probability of

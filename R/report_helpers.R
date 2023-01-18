@@ -163,7 +163,7 @@ trim_detection <- function (df, finals,
                                           4)
   } else {
     message("Could not find raw read counts of data, setting to NA")
-    message(paste0("No folder called:", trim_folder))
+    message(paste0("No folder called:", trim_folders))
   }
   return(finals)
 }

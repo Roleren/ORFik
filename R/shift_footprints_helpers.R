@@ -235,7 +235,7 @@ ribo_fft <- function(footprints, cds, read_lengths = 26:34, firstN = 150) {
   return(fft_dt)
 }
 
-pshifts_export <- function(shifted, name, df) {
+pshifts_export <- function(shifted, name, df, output_format) {
   if ("bedo" %in% output_format) {
     export.bedo(convertToOneBasedRanges(shifted, addScoreColumn = TRUE,
                                         addSizeColumn = TRUE),

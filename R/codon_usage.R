@@ -24,7 +24,8 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
   if (we_must_collapse) {
     codon_sums[, codon_sum := frollsum(x = score, n = output.seq.length, align = "left")]
     # Keep only first per seq group
-    codon_sums <- codon_sums[rep(c(T, rep(FALSE, output.seq.length - 1)), length.out = .N),]
+    codon_sums <- codon_sums[rep(c(TRUE, rep(FALSE, output.seq.length - 1)),
+                                 length.out = .N),]
   }
 
   codon_sums[, seqs := rep(seqs, length.out = .N)]
@@ -84,7 +85,7 @@ coverage_A_and_P <- function(cds_filtered, mrna, reads,
   if (is.list(reads)) {
     dt_samp <- lapply(reads, function(lib) {
       coveragePerTiling(cds_with_A_site, reads = lib,
-                        is.sorted = TRUE, as.data.table = T)[,1][[1]]
+                        is.sorted = TRUE, as.data.table = TRUE)[,1][[1]]
     })
     dt_samp <- setDT(dt_samp)
   } else {
@@ -182,6 +183,7 @@ codon_usage <- function(reads, cds,
   seqs <- orf_coding_table(cds_filtered, faFile, code)
   seqs[, merged := paste0(AA, ":", codon)]
   # Calc Codon usage
+  type <- NULL # avoid bioccheck error
   genes_pos_index <- rep.int(seq_along(cds_filtered), times = cds_lengths)
   codon_Psite <- seq_usage(coverage_list[["P"]], seqs$merged, genes_pos_index)
   codon_Asite <- seq_usage(coverage_list[["A"]], seqs$merged, genes_pos_index,
@@ -233,6 +235,8 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #'   Minimum number of counts from the 'filter_table'  argument.
 #' @param with_A_sites logical, default TRUE. Not used yet, will also return
 #' A site scores.
+#' @param code a named character vector of size 64. Default: GENETIC_CODE.
+#' Change if organism does not use the standard code.
 #' @return a data.table of rows per codon / AA. All values are given
 #' per library, per site (A or P), sorted by the mean_txNorm_percentage column
 #' of the first library in the set, the columns are:
@@ -242,7 +246,7 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #'  \item{sum (integer)}{total counts per seq}
 #'  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
 #'  \item{var (numeric)}{variance of total counts per seq}
-#'  \item{N (integer)}{total valid }
+#'  \item{N (integer)}{total number of codons of that type}
 #'  \item{...}
 #'  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
 #'            variance of probability of
@@ -254,6 +258,7 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' }
 #'
 #' @importFrom data.table frollsum setorderv
+#' @importFrom Biostrings GENETIC_CODE translate subseq
 #' @family codon
 #' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/
 #' @export
@@ -299,6 +304,7 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
                              ylab = "Ribo-seq library",
                              legend.position = "none", coord_flip = TRUE) {
   if (is.null(score_column)) stop("score_column can not be NULL!")
+  type <- NULL # avoid bioccheck error
   plot <- ggplot(res, aes(seqs, type, fill = score_column)) +
     geom_tile(color = "white") +
     scale_fill_gradient2(low = "blue", high = "orange", mid = "white",

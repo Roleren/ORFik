@@ -29,10 +29,10 @@ Function shifts footprints (GRanges) using specified offsets for every of
 the specified lengths. Reads that do not conform to the specified lengths
 are filtered out and rejected. Reads are resized to single base in 5' end
 fashion, treated as p site.
-This function takes account for junctions in cigars of the reads. Length of
-the footprint is saved in size' parameter of GRanges output. Footprints are
-also sorted according to their genomic position, ready to be saved as a
-ofst, bed or wig file.
+This function takes account for junctions and soft clips in cigars of the
+reads. Length of the footprint is saved in size' parameter of GRanges output.
+Footprints are also sorted according to their genomic position,
+ready to be saved as a ofst, covRle, bed or wig file.
 }
 \details{
 The two columns in the shift data.frame/data.table argument are:\cr
