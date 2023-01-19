@@ -217,8 +217,11 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' it will return you ofst files, if they do not exist, then
 #' default filepaths without warning. \cr
 #'
-#' For pshifted libraries, it will load ".bedo"
-#' prioritized over ".bed", if there exists both file types for the same file.
+#' For pshifted libraries, if "pshifted" is specified as type: if
+#'  if multiple formats exist it will use a priority:
+#'  ofst -> bigwig -> wig -> bed. For formats outside default, all files
+#' must be stored in the directory of the first file:
+#' \code{base_folder <- libFolder(df)}
 #' @inheritParams outputLibs
 #' @param basename logical, default (FALSE).
 #' Get relative paths instead of full. Only use for inspection!
@@ -230,19 +233,21 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' @examples
 #' df <- ORFik.template.experiment()
 #' filepath(df, "default")
-#' # If you have bedo files, see simpleLibs():
-#' # filepath(df, "bedo")
-#' # If you have pshifted files, see shiftFootprintsByExperiment():
-#' # filepath(df, "pshifted")
+#' # Subset
+#' filepath(df[9,], "default")
+#' # Other format path
+#' filepath(df[9,], "ofst")
+#' ## If you have pshifted files, see shiftFootprintsByExperiment()
+#' filepath(df[9,], "pshifted") # <- falls back to ofst
 filepath <- function(df, type, basename = FALSE) {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
   stopifnot(length(type) == 1)
-
+  base_folder <- libFolder(df)
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
     input <- NULL
     if (type == "pshifted") {
-      out.dir <- paste0(dirname(x), "/pshifted/")
+      out.dir <- paste0(base_folder, "/pshifted/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
                         , "_pshifted.ofst")
@@ -263,21 +268,21 @@ filepath <- function(df, type, basename = FALSE) {
       } else type <- "ofst"
     }
     if (type %in% "cov") {
-      out.dir <- paste0(dirname(x), "/cov_RLE/")
+      out.dir <- paste0(base_folder, "/cov_RLE/")
       input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), ".covrds")
       if (!file.exists(input)) stop("File did not exist,",
                                     "did you create covRle yet?")
     }
 
     if (type %in% "covl") {
-      out.dir <- paste0(dirname(x), "/cov_RLE_List/")
+      out.dir <- paste0(base_folder, "/cov_RLE_List/")
       input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), ".covrds")
       if (!file.exists(input)) stop("File did not exist,",
                                     "did you create covRleList yet?")
     }
 
     if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
-      out.dir <- paste0(dirname(x), "/",type,"/")
+      out.dir <- paste0(base_folder, "/",type,"/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir, remove.file_ext(x,basename = TRUE), ".", type)
         if (!file.exists(input)) type <- "default"

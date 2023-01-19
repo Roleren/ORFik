@@ -258,7 +258,7 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' }
 #'
 #' @importFrom data.table frollsum setorderv
-#' @importFrom Biostrings GENETIC_CODE translate subseq
+#' @importFrom Biostrings GENETIC_CODE translate subseq `subseq<-`
 #' @family codon
 #' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/
 #' @export

@@ -39,16 +39,21 @@ it will return you ofst files, if they do not exist, then
 default filepaths without warning. \cr
 }
 \details{
-For pshifted libraries, it will load ".bedo"
-prioritized over ".bed", if there exists both file types for the same file.
+For pshifted libraries, if "pshifted" is specified as type: if
+ if multiple formats exist it will use a priority:
+ ofst -> bigwig -> wig -> bed. For formats outside default, all files
+must be stored in the directory of the first file:
+\code{base_folder <- libFolder(df)}
 }
 \examples{
 df <- ORFik.template.experiment()
 filepath(df, "default")
-# If you have bedo files, see simpleLibs():
-# filepath(df, "bedo")
-# If you have pshifted files, see shiftFootprintsByExperiment():
-# filepath(df, "pshifted")
+# Subset
+filepath(df[9,], "default")
+# Other format path
+filepath(df[9,], "ofst")
+## If you have pshifted files, see shiftFootprintsByExperiment()
+filepath(df[9,], "pshifted") # <- falls back to ofst
 }
 \seealso{
 Other ORFik_experiment: 
