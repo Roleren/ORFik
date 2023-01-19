@@ -6,7 +6,7 @@
 \usage{
 simpleLibs(
   df,
-  out.dir = dirname(df$filepath[1]),
+  out.dir = libFolder(df),
   addScoreColumn = TRUE,
   addSizeColumn = TRUE,
   must.overlap = NULL,
@@ -20,8 +20,7 @@ simpleLibs(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{out.dir}{optional output directory, default:
-dirname(df$filepath[1]),
+\item{out.dir}{optional output directory, default: libFolder(df),
 if it is NULL, it will just reassign R objects to simplified libraries.
 Will then create a final folder specfied as: paste0(out.dir, "/", type, "/").
 Here the files will be saved in format given by the type argument.}
