@@ -209,7 +209,7 @@ readBigWig <- function(path, chrStyle = NULL, as = "GRanges") {
 
     forwardPath <- grep("forward|fwd", path)
     reversePath <- grep("reverse|rev", path)
-    if (length(forwardPath) == 1 & length(reversePath) == 1){
+    if (length(forwardPath) == 1 & length(reversePath) == 1) {
       forwardIndex <- forwardPath
       reverseIndex <- reversePath
     }

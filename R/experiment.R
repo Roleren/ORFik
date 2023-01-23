@@ -281,6 +281,14 @@ filepath <- function(df, type, basename = FALSE) {
                                     "did you create covRleList yet?")
     }
 
+    if (type %in% "bigwig") {
+      out.dir <- paste0(base_folder, "/bigwig/")
+      input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), c("_forward.bigWig", "_reverse.bigWig"))
+      if (!all(file.exists(input))) stop("File did not exist,",
+                                    "did you create bigwig yet?",
+                         " (only supports naming _forward.bigWig etc for now)")
+    }
+
     if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
       out.dir <- paste0(base_folder, "/",type,"/")
       if (dir.exists(out.dir)) {

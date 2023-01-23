@@ -500,7 +500,7 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!is.sorted) grl <- sortPerGroup(grl)
 
   if (is(reads, "character")) {
-    coverage <- coverage_random_access_file(reads, grl)
+    coverage <- coverage_random_access_file(reads, grl, withFrames, fraction)
   } else {
     if (is(reads, "covRle") | is(reads, "RleList")) {
       coverage <- coverageByTranscriptC(reads, grl)
@@ -524,21 +524,37 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   return(coverage)
 }
 
-coverage_random_access_file <- function(reads, grl, withFrames) {
+coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL) {
   if (all(is.null(fraction))) fraction <- "all"
   file_ext <- tools::file_ext(reads)
-  if (all(file_ext == "bigWig")) {
+  if (all(file_ext %in% c("bigWig", "bw", "bigWig"))) {
+    if (length(grl) > 1) stop("bigwig random access only supported for single gene for now!")
     rl <- ranges(grl)
     names(rl) <- seqnamesPerGroup(grl, FALSE)
     strands <- strandPerGroup(grl, FALSE)
     coverage <- NumericList()
     for (strand in unique(strands)) {
-      coverage <- c(coverage, import.bw(reads[ifelse(strand == "+", 1,2)], as = "NumericList",
-                                        which = rl[strands == strand]))
+      strand_now <- ifelse(strand == "+", 1,2)
+      if (strand_now == 2) {
+        temp_cov <- import.bw(reads[strand_now], as = "NumericList",
+                              which = rl[strands == strand])
+        temp_cov2 <- rev(temp_cov)
+        temp_cov2 <- relist(rev(unlist(temp_cov2)), skeleton = temp_cov)
+      } else {
+        temp_cov2 <- import.bw(reads[strand_now], as = "NumericList",
+                              which = rl[strands == strand])
+      }
+      coverage <- c(coverage, temp_cov2)
     }
-    groupings <- ORFik::groupings(coverage)
-    coverage <- data.table(count = unlist(coverage, use.names = FALSE))
-    coverage[, genes := groupings]
+    # # Order back the strands
+    # if (length(grl) > 1) {
+    #   names(coverage) <- ORFik::groupings(grl)
+    #   coverage[]
+    # }
+    # To data.table
+    coverage <- data.table(count = as.integer(unlist(coverage, use.names = FALSE)))
+    coverage[, genes := rep.int(1L, nrow(coverage))]
+
   } else if (all(file_ext == "fstwig") | TRUE) {
     chrs <- seqnamesPerGroup(grl, FALSE)
     chr_groups <- unique(chrs)
