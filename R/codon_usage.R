@@ -291,6 +291,9 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 #' @param ylab character vector, names for libraries to show on Y axis
 #' @param legend.position character, default "none", do not display legend.
 #' @param coord_flip logical, default TRUE. Flip so that seqs are y coordinates
+#' @param limit numeric, 2 values for plot color limits. Default:
+#' c(0, max(score_column))
+#' @param midpoint numeric, default: limit/2. midpoint of color limit.
 #' @return a ggplot object
 #' @family codon
 #' @export
@@ -302,13 +305,16 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 #' codon_usage_plot(res2)
 codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
                              ylab = "Ribo-seq library",
-                             legend.position = "none", coord_flip = TRUE) {
+                             legend.position = "none", coord_flip = TRUE,
+                             limit = c(0, max(score_column)),
+                             midpoint = limit/2) {
   if (is.null(score_column)) stop("score_column can not be NULL!")
   type <- NULL # avoid bioccheck error
+
   plot <- ggplot(res, aes(seqs, type, fill = score_column)) +
     geom_tile(color = "white") +
     scale_fill_gradient2(low = "blue", high = "orange", mid = "white",
-                         midpoint = 0, limit = c(0,100), space = "Lab",
+                         midpoint = midpoint, limit = limit, space = "Lab",
                          name="Rel. Cov.") +
     theme_classic()+ # minimal theme
     theme(legend.position=legend.position,

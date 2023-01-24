@@ -9,7 +9,9 @@ codon_usage_plot(
   score_column = res$relative_to_max_score,
   ylab = "Ribo-seq library",
   legend.position = "none",
-  coord_flip = TRUE
+  coord_flip = TRUE,
+  limit = c(0, max(score_column)),
+  midpoint = limit/2
 )
 }
 \arguments{
@@ -23,6 +25,11 @@ Which parameter to use as score column.}
 \item{legend.position}{character, default "none", do not display legend.}
 
 \item{coord_flip}{logical, default TRUE. Flip so that seqs are y coordinates}
+
+\item{limit}{numeric, 2 values for plot color limits. Default:
+c(0, max(score_column))}
+
+\item{midpoint}{numeric, default: limit/2. midpoint of color limit.}
 }
 \value{
 a ggplot object
