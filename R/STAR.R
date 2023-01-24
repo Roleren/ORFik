@@ -42,6 +42,10 @@
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
+#' @param notify_load_existing logical, default TRUE. If annotation exists
+#' (defined as: locally (a file called outputs.rds) exists in outputdir),
+#' print a small message notifying the user it is not redownloading. Set to
+#' FALSE, if this is not wanted
 #' @inheritParams base::system
 #' @return output.dir, can be used as as input for STAR.align..
 #' @family STAR
@@ -63,11 +67,12 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
                        wait = TRUE, remake = FALSE,
                        script = system.file("STAR_Aligner",
                                             "STAR_MAKE_INDEX.sh",
-                                            package = "ORFik")) {
+                                            package = "ORFik"),
+                       notify_load_existing = TRUE) {
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
-    message("Loading premade index files,
-            do remake = TRUE if you want to run again")
+    if (notify_load_existing) message("Loading premade index files, ",
+                                 "do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
   if (!file.exists(script))

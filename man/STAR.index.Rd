@@ -14,7 +14,8 @@ STAR.index(
   tmpDirStar = "-",
   wait = TRUE,
   remake = FALSE,
-  script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik")
+  script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik"),
+  notify_load_existing = TRUE
 )
 }
 \arguments{
@@ -64,6 +65,11 @@ considerable speedup!}
 \item{script}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you
 need special alignments.}
+
+\item{notify_load_existing}{logical, default TRUE. If annotation exists
+(defined as: locally (a file called outputs.rds) exists in outputdir),
+print a small message notifying the user it is not redownloading. Set to
+FALSE, if this is not wanted}
 }
 \value{
 output.dir, can be used as as input for STAR.align..

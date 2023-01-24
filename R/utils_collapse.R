@@ -159,7 +159,7 @@ ofst_merge <- function(file_paths,
     dt <- mergeDTs(dt_list, by = merge_keys, sort = sort)
     dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
   } else {
-    dt <- collapseDuplicatedReads(rbindlist(dt_list))
+    dt <- collapseDuplicatedReads(rbindlist(dt_list), addSizeColumn = TRUE)
     merge_keys <- colnames(dt)
     merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
     if (sort) setorderv(dt, merge_keys)
@@ -276,19 +276,17 @@ setMethod("collapseDuplicatedReads", "data.table",
             stopifnot(all(required_columns %in% colnames(x)))
             if (addSizeColumn) {
               if (!("size" %in% colnames(x)))
-                stop("addSizeColumn is TRUE, and no size column found!")
+                warning("addSizeColumn is TRUE, and no size column found!")
             }
 
             if (reuse.score.column & ("score" %in% colnames(x))) { # reuse
-              if (addSizeColumn) {
-                x[, size := mcols(x)$size]
+              if (addSizeColumn & ("size" %in% colnames(x))) {
                 x <- x[, .(score = sum(score)), .(seqnames, start, strand, size)]
               } else {
                 x <- x[, .(score = sum(score)), .(seqnames, start, strand)]
               }
             } else { # Do not reuse or "score" does not exist
-              if (addSizeColumn) {
-                x[, size := mcols(x)$size]
+              if (addSizeColumn & ("size" %in% colnames(x))) {
                 x <- x[, .(score = .N), .(seqnames, start, strand, size)]
               } else {
                 x <- x[, .(score = .N), .(seqnames, start, strand)]
