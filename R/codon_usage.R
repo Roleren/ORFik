@@ -290,7 +290,6 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 #'  Which parameter to use as score column.
 #' @param ylab character vector, names for libraries to show on Y axis
 #' @param legend.position character, default "none", do not display legend.
-#' @param coord_flip logical, default TRUE. Flip so that seqs are y coordinates
 #' @param limit numeric, 2 values for plot color limits. Default:
 #' c(0, max(score_column))
 #' @param midpoint numeric, default: limit/2. midpoint of color limit.
@@ -302,27 +301,29 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 #' ## For multiple libs
 #' res2 <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
 #'                  min_counts_cds_filter = 10)
-#' codon_usage_plot(res2)
+#' # codon_usage_plot(res2, monospace_font = TRUE) # This gives check error
+#' codon_usage_plot(res2, monospace_font = FALSE) # monospace font looks better
 codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
                              ylab = "Ribo-seq library",
-                             legend.position = "none", coord_flip = TRUE,
+                             legend.position = "none",
                              limit = c(0, max(score_column)),
-                             midpoint = limit/2) {
+                             midpoint = limit/2, monospace_font = TRUE) {
   if (is.null(score_column)) stop("score_column can not be NULL!")
   type <- NULL # avoid bioccheck error
-
-  plot <- ggplot(res, aes(seqs, type, fill = score_column)) +
+  font <- element_text()
+  if (monospace_font)  font <- element_text(family = "monospace")
+  plot <- ggplot(res, aes(type, seqs, fill = score_column)) +
     geom_tile(color = "white") +
     scale_fill_gradient2(low = "blue", high = "orange", mid = "white",
                          midpoint = midpoint, limit = limit, space = "Lab",
                          name="Rel. Cov.") +
     theme_classic()+ # minimal theme
     theme(legend.position=legend.position,
-          axis.text.y = element_text(family = "monospace")) +
+          axis.text.y = font) +
     ylab(ylab)
+
   if (length(unique(res$variable)) > 1)
     plot <- plot + facet_wrap(res$variable, ncol = 4)
-  if (coord_flip) plot <- plot + coord_flip()
   return(plot)
 }
 

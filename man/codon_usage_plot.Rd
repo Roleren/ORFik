@@ -9,9 +9,9 @@ codon_usage_plot(
   score_column = res$relative_to_max_score,
   ylab = "Ribo-seq library",
   legend.position = "none",
-  coord_flip = TRUE,
   limit = c(0, max(score_column)),
-  midpoint = limit/2
+  midpoint = limit/2,
+  monospace_font = TRUE
 )
 }
 \arguments{
@@ -23,8 +23,6 @@ Which parameter to use as score column.}
 \item{ylab}{character vector, names for libraries to show on Y axis}
 
 \item{legend.position}{character, default "none", do not display legend.}
-
-\item{coord_flip}{logical, default TRUE. Flip so that seqs are y coordinates}
 
 \item{limit}{numeric, 2 values for plot color limits. Default:
 c(0, max(score_column))}
@@ -42,7 +40,8 @@ df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
 ## For multiple libs
 res2 <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
                  min_counts_cds_filter = 10)
-codon_usage_plot(res2)
+# codon_usage_plot(res2, monospace_font = TRUE) # This gives check error
+codon_usage_plot(res2, monospace_font = FALSE) # monospace font looks better
 }
 \seealso{
 Other codon: 
