@@ -145,9 +145,9 @@ ofst_merge <- function(file_paths,
   stopifnot(all(meta == length(file_paths)))
 
   dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
-  merge_keys <- colnames(dt_list[[1]])
-  merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
   if (keep_all_scores) {
+    merge_keys <- colnames(dt_list[[1]])
+    merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
     for (x in seq_along(dt_list)) setnames(dt_list[[x]], "score", lib_names[x])
 
     mergeDTs <- function(dt_list, by = NULL, sort = TRUE) {
@@ -160,6 +160,8 @@ ofst_merge <- function(file_paths,
     dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
   } else {
     dt <- collapseDuplicatedReads(rbindlist(dt_list))
+    merge_keys <- colnames(dt[[1]])
+    merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
     if (sort) setorderv(dt, merge_keys)
   }
   return(dt)
@@ -279,20 +281,20 @@ setMethod("collapseDuplicatedReads", "data.table",
 
             if (reuse.score.column & ("score" %in% colnames(x))) { # reuse
               if (addSizeColumn) {
-                dt[, size := mcols(x)$size]
-                dt <- dt[, .(score = sum(score)), .(seqnames, start, strand, size)]
+                x[, size := mcols(x)$size]
+                x <- x[, .(score = sum(score)), .(seqnames, start, strand, size)]
               } else {
-                dt <- dt[, .(score = sum(score)), .(seqnames, start, strand)]
+                x <- x[, .(score = sum(score)), .(seqnames, start, strand)]
               }
             } else { # Do not reuse or "score" does not exist
               if (addSizeColumn) {
-                dt[, size := mcols(x)$size]
-                dt <- dt[, .(score = .N), .(seqnames, start, strand, size)]
+                x[, size := mcols(x)$size]
+                x <- x[, .(score = .N), .(seqnames, start, strand, size)]
               } else {
-                dt <- dt[, .(score = .N), .(seqnames, start, strand)]
+                x <- x[, .(score = .N), .(seqnames, start, strand)]
               }
             }
-            if (!addScoreColumn) dt$score <- NULL
+            if (!addScoreColumn) x$score <- NULL
             # TODO change makeGRangesFromDataFrame to internal fast function
-            return(dt)
+            return(x)
           })

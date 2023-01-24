@@ -26,17 +26,23 @@ bedToGR <- function(x, skip.name = TRUE) {
 
 #' Internal GRanges loader from fst data.frame
 #' @param df a data.frame with columns minimum 4 columns:
-#' seqnames, start, strand and width.\cr
+#' seqnames, start, strand\cr
+#' Additional specific columns are:\cr
+#' - width (if not set, width is set to 1 for all reads)\cr
 #' Additional columns will be assigned as meta columns
 #' @inheritParams import.ofst
 #' @return GRanges object
 #' @importFrom S4Vectors new2
 #' @keywords internal
 getGRanges <- function(df, seqinfo = NULL) {
-  if (!all(c("seqnames", "start", "width", "strand") %in% colnames(df)))
+  if (!all(c("seqnames", "start", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
+
+  widths <- if ("width" %in% colnames(df)) {
+    df$width
+  } else rep.int(1L, nrow(df))
   ranges <- new2("IRanges", start = df$start,
-                 width = df$width,
+                 width = widths,
                  NAMES = df$NAMES,
                  elementMetadata = NULL,
                  check = FALSE)
@@ -47,13 +53,15 @@ getGRanges <- function(df, seqinfo = NULL) {
     stopifnot(is(seqinfo, "Seqinfo"))
   } else seqinfo <- Seqinfo(levels(df$seqnames))
   df$NAMES <- NULL
-  if (ncol(df) == 4){
+  mcols_hits <- !(colnames(df) %in% c("seqnames", "start", "strand", "width"))
+  has_mcols <- any(mcols_hits)
+  if (!has_mcols){
     mcols <- NULL
   } else {
-    mcols <- df[,5:ncol(df)]
-    if (ncol(df) == 5) {
+    mcols <- df[,which(mcols_hits)]
+    if (sum(mcols_hits) == 1) {
       mcols <- data.frame(mcols)
-      names(mcols) <- names(df)[5]
+      names(mcols) <- names(df)[mcols_hits]
     }
   }
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
@@ -64,7 +72,7 @@ getGRanges <- function(df, seqinfo = NULL) {
 
 #' Internal GAlignments loader from fst data.frame
 #' @param df a data.frame with columns minimum 4 columns:
-#' seqnames, start ("pos" in final GA object), strand and width.\cr
+#' seqnames, start ("pos" in final GA object), cigar and strand.\cr
 #' Additional columns will be assigned as meta columns
 #' @inheritParams import.ofst
 #' @return GAlignments object

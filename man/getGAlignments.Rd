@@ -8,7 +8,7 @@ getGAlignments(df, seqinfo = NULL)
 }
 \arguments{
 \item{df}{a data.frame with columns minimum 4 columns:
-seqnames, start ("pos" in final GA object), strand and width.\cr
+seqnames, start ("pos" in final GA object), cigar and strand.\cr
 Additional columns will be assigned as meta columns}
 
 \item{seqinfo}{Seqinfo object, defaul NULL (created from ranges).
