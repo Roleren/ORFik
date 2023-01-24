@@ -147,17 +147,21 @@ ofst_merge <- function(file_paths,
   dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
   merge_keys <- colnames(dt_list[[1]])
   merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
-  for (x in seq_along(dt_list)) setnames(dt_list[[x]], "score", lib_names[x])
+  if (keep_all_scores) {
+    for (x in seq_along(dt_list)) setnames(dt_list[[x]], "score", lib_names[x])
 
-  mergeDTs <- function(dt_list, by = NULL, sort = TRUE) {
-    Reduce(
-      function(...) {
-        merge.data.table(..., by = by, all = TRUE, sort = sort)
-      }, dt_list)
+    mergeDTs <- function(dt_list, by = NULL, sort = TRUE) {
+      Reduce(
+        function(...) {
+          merge.data.table(..., by = by, all = TRUE, sort = sort)
+        }, dt_list)
+    }
+    dt <- mergeDTs(dt_list, by = merge_keys, sort = sort)
+    dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
+  } else {
+    dt <- collapseDuplicatedReads(rbindlist(dt_list))
+    if (sort) setorderv(dt, merge_keys)
   }
-  dt <- mergeDTs(dt_list, by = merge_keys, sort = sort)
-  dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
-  if (!keep_all_scores) dt[, (lib_names):= NULL]
   return(dt)
 }
 
@@ -175,7 +179,7 @@ ofst_merge <- function(file_paths,
 #' @examples
 #' gr <- rep(GRanges("chr1", 1:10,"+"), 2)
 #' collapseDuplicatedReads(gr)
-setGeneric("collapseDuplicatedReads", function(x,...) standardGeneric("collapseDuplicatedReads"))
+setGeneric("collapseDuplicatedReads", function(x, ...) standardGeneric("collapseDuplicatedReads"))
 
 #' @inherit collapseDuplicatedReads
 #' @param addScoreColumn = TRUE, if FALSE,
@@ -257,4 +261,38 @@ setMethod("collapseDuplicatedReads", "GAlignmentPairs",
                                         cigar1, cigar2, strand)]
             if (!addScoreColumn) dt$score <- NULL
             return(getGAlignmentsPairs(dt))
+          })
+
+#' @inherit collapseDuplicatedReads
+#' @param addScoreColumn = TRUE, if FALSE,
+#' only collapse and not keep score column of counts for collapsed reads.
+#' @inheritParams convertToOneBasedRanges
+setMethod("collapseDuplicatedReads", "data.table",
+          function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
+                   reuse.score.column = TRUE) {
+            required_columns <- c("seqnames", "start", "strand", "score")
+            stopifnot(all(required_columns %in% colnames(x)))
+            if (addSizeColumn) {
+              if (!("size" %in% colnames(x)))
+                stop("addSizeColumn is TRUE, and no size column found!")
+            }
+
+            if (reuse.score.column & ("score" %in% colnames(x))) { # reuse
+              if (addSizeColumn) {
+                dt[, size := mcols(x)$size]
+                dt <- dt[, .(score = sum(score)), .(seqnames, start, strand, size)]
+              } else {
+                dt <- dt[, .(score = sum(score)), .(seqnames, start, strand)]
+              }
+            } else { # Do not reuse or "score" does not exist
+              if (addSizeColumn) {
+                dt[, size := mcols(x)$size]
+                dt <- dt[, .(score = .N), .(seqnames, start, strand, size)]
+              } else {
+                dt <- dt[, .(score = .N), .(seqnames, start, strand)]
+              }
+            }
+            if (!addScoreColumn) dt$score <- NULL
+            # TODO change makeGRangesFromDataFrame to internal fast function
+            return(dt)
           })
