@@ -41,7 +41,7 @@ Other contributors:
   \item Michal Swirski \email{michal.swirski@uw.edu.pl} [contributor]
   \item Katarzyna Chyzynska \email{katchyz@gmail.com} [contributor, data contributor]
   \item Yamila Torres Cleuren \email{yamilatorrescleuren@gmail.com} [contributor, thesis advisor]
-  \item Evind Valen \email{eivind.valen@gmail.com} [thesis advisor, funder]
+  \item Eivind Valen \email{eivind.valen@gmail.com} [thesis advisor, funder]
 }
 
 }

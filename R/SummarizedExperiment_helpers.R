@@ -402,6 +402,12 @@ subset_count_table <- function(res, df.temp) {
   } else if (sum(colnames(res) %in%
                   bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
     colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)
+  } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, FALSE, TRUE, TRUE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE, TRUE, TRUE, FALSE)
+  } else if (sum(colnames(res) %in%
+                 bamVarName(df.temp, FALSE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
+    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, TRUE, FALSE)
   } else stop("No valid names for count tables found from experiment")
   return(res[, subset])
 }

@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.19.4
+Version: 1.19.5
 Encoding: UTF-8
 Authors@R: c(
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "cre", "dtc")),
@@ -9,7 +9,7 @@ Authors@R: c(
   person(given = "Michal", family = "Swirski", email = "michal.swirski@uw.edu.pl", role = c("ctb")),
   person(given = "Katarzyna", family = "Chyzynska", email = "katchyz@gmail.com", role = c("ctb", "dtc")),
   person(given = "Yamila", family = "Torres Cleuren", email = "yamilatorrescleuren@gmail.com", role = c("ctb", "ths")),
-  person(given = "Evind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")))
+  person(given = "Eivind", family = "Valen", email = "eivind.valen@gmail.com", role = c("ths", "fnd")))
 Description: R package for analysis of transcript and translation features through manipulation of sequence data
   and NGS data like Ribo-Seq, RNA-Seq, TCP-Seq and CAGE. It is generalized in the sense that any transcript region
   can be analysed, as the name hints to it was made with investigation of ribosomal patterns over 
