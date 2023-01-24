@@ -160,7 +160,7 @@ ofst_merge <- function(file_paths,
     dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
   } else {
     dt <- collapseDuplicatedReads(rbindlist(dt_list))
-    merge_keys <- colnames(dt[[1]])
+    merge_keys <- colnames(dt)
     merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
     if (sort) setorderv(dt, merge_keys)
   }
