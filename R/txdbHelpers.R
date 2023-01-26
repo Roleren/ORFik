@@ -515,7 +515,7 @@ geneToSymbol <- function(df, organism_name = organism(df),
   if (!is.null(df)) {
     file <- ifelse(is(df, "experiment"), df@txdb, getGtfPathFromTxdb(df))
     file <- file.path(dirname(file), "gene_symbol_tx_table.fst")
-    if (file.exists(file)) {
+    if (file.exists(file) & !force) {
       if (verbose) message("Loading pre-existing symbols from file")
       return(as.data.table(fst::read_fst(file)))
     }
