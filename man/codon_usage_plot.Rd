@@ -28,6 +28,10 @@ Which parameter to use as score column.}
 c(0, max(score_column))}
 
 \item{midpoint}{numeric, default: limit/2. midpoint of color limit.}
+
+\item{monospace_font}{logical, default TRUE. Use monospace font, this
+does not work on systems (require specific font packages), set to
+FALSE if it crashes for you.}
 }
 \value{
 a ggplot object

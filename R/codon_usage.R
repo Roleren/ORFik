@@ -293,6 +293,9 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 #' @param limit numeric, 2 values for plot color limits. Default:
 #' c(0, max(score_column))
 #' @param midpoint numeric, default: limit/2. midpoint of color limit.
+#' @param monospace_font logical, default TRUE. Use monospace font, this
+#' does not work on systems (require specific font packages), set to
+#' FALSE if it crashes for you.
 #' @return a ggplot object
 #' @family codon
 #' @export
