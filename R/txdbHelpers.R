@@ -481,8 +481,9 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' @param org.dataset default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
 #' the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl
 #' @param ensembl default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.
-#' @param attribute default, \code{c("Homo sapiens" = "hgnc_symbol","Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]}.
-#' The attributes to search for: Normally hgnc symbol for human, and mgi symbol for mouse and rat.
+#' @param attribute default, "external_gene_name", the biomaRt column
+#' for the primary symbol names. These are always from specific database, like
+#' hgnc symbol for human, and mgi symbol for mouse and rat, sgd for yeast etc.
 #' @param include_tx_ids logical, default FALSE, also match tx ids, which then returns as the 3rd column.
 #' Only allowed when 'df' is defined.
 #' @param force logical FALSE, if TRUE will not look for existing file made through \code{\link{makeTxdbFromGenome}}
@@ -504,8 +505,7 @@ geneToSymbol <- function(df, organism_name = organism(df),
                          gene_ids = filterTranscripts(df, by = "gene", 0, 0, 0),
                          org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl"),
                          ensembl = biomaRt::useEnsembl("ensembl",dataset=org.dataset),
-                         attribute = c("Homo sapiens" = "hgnc_symbol",
-                                       "Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name],
+                         attribute = "external_gene_name",
                          include_tx_ids = FALSE, force = FALSE, verbose = TRUE) {
   if (anyNA(attribute)) {
     warning("You inserted a species not supported at the moment,
