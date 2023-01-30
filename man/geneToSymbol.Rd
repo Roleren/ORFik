@@ -11,8 +11,7 @@ geneToSymbol(
   org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement =
     "", organism_name), "_gene_ensembl"),
   ensembl = biomaRt::useEnsembl("ensembl", dataset = org.dataset),
-  attribute = c(`Homo sapiens` = "hgnc_symbol", `Mus musculus` = "mgi_symbol",
-    `Rattus norvegicus` = "mgi_symbol")[organism_name],
+  attribute = "external_gene_name",
   include_tx_ids = FALSE,
   force = FALSE,
   verbose = TRUE
@@ -37,8 +36,9 @@ the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapi
 
 \item{ensembl}{default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.}
 
-\item{attribute}{default, \code{c("Homo sapiens" = "hgnc_symbol","Mus musculus" = "mgi_symbol", "Rattus norvegicus" = "mgi_symbol")[organism_name]}.
-The attributes to search for: Normally hgnc symbol for human, and mgi symbol for mouse and rat.}
+\item{attribute}{default, "external_gene_name", the biomaRt column
+for the primary symbol names. These are always from specific database, like
+hgnc symbol for human, and mgi symbol for mouse and rat, sgd for yeast etc.}
 
 \item{include_tx_ids}{logical, default FALSE, also match tx ids, which then returns as the 3rd column.
 Only allowed when 'df' is defined.}
