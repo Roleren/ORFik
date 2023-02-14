@@ -47,7 +47,7 @@ auto.detection, but already downloaded without it.}
 }
 \value{
 a data.table of the metadata, 1 row per sample,
- SRR run number defined in Run column.
+ SRR run number defined in 'Run' column.
 }
 \description{
 Given a experiment identifier, query information from different locations of SRA
@@ -58,6 +58,11 @@ if pubmed id is not found searches for that and searches for author through pubm
 \details{
 A common problem is that the project is not linked to an article, you will then not
 get a pubmed id.
+
+The algorithm works like this:\cr
+If GEO identifier, find the SRP.\cr
+Then search Entrez for project and get sample identifier.\cr
+From that extract the run information and collect into a final table.\cr
 }
 \examples{
 ## Originally on SRA
@@ -69,6 +74,8 @@ download.SRA.metadata("SRP226389")
 # download.SRA.metadata("ERP116106")
 ## Originally on GEO (GSE) (save to directory to keep info with fastq files)
 # download.SRA.metadata("GSE61011")
+## Bioproject ID
+# download.SRA.metadata("PRJNA231536")
 }
 \references{
 doi: 10.1093/nar/gkq1019

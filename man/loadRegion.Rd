@@ -45,8 +45,15 @@ Adds another safety in that seqlevels will be set
 Load as GRangesList if input is not already GRangesList.
 }
 \examples{
+# GTF file is slow, but possible to use
 gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                         package = "GenomicFeatures")
 loadRegion(gtf, "cds")
 loadRegion(gtf, "intron")
+# txdb is faster (but not optimal)
+df <- ORFik.template.experiment()
+txdb <- df@txdb
+loadRegion(txdb, "leaders")
+# Optimal is ORFik experiment
+loadRegion(df, "mrna")
 }

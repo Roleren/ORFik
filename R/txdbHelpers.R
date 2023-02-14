@@ -303,10 +303,17 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' @return a GrangesList of region
 #' @export
 #' @examples
+#' # GTF file is slow, but possible to use
 #' gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'                         package = "GenomicFeatures")
 #' loadRegion(gtf, "cds")
 #' loadRegion(gtf, "intron")
+#' # txdb is faster (but not optimal)
+#' df <- ORFik.template.experiment()
+#' txdb <- df@txdb
+#' loadRegion(txdb, "leaders")
+#' # Optimal is ORFik experiment
+#' loadRegion(df, "mrna")
 loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
                        skip.optimized = FALSE) {
   if (is.grl(txdb)) return(txdb)
@@ -354,13 +361,22 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
       if (optimized & file.exists(optimized.rds)) {
         readRDS(optimized.rds)
       } else exonsBy(txdb, by = "tx", use.names = TRUE)[names(cdsBy(txdb, use.names = TRUE))]
-    } else stop("invalid: must be tx, leader, cds, trailer, introns, ncRNA or mrna")
+    } else if (part %in% c("uorf", "uorfs")) {
+      optimized.rds <- paste0(optimized_path, "_", "uorfs", ".rds")
+      if (optimized & file.exists(optimized.rds)) {
+        readRDS(optimized.rds)
+      } else stop("uORFs must always exist before calling this function, see ?findUORFs_exp")
+    } else stop("invalid: must be tx, leader, cds, trailer, introns, ncRNA, uorf or mrna")
 
   if (by == "gene") {
     names(region) <- txNamesToGeneNames(names(region), txdb)
   }
   if (!is.null(names.keep)) { # If subset
-    subset <- names(region) %in% names.keep
+    subset <-
+    if (part %in% c("uorf", "uorfs")) {
+      txNames(region) %in% names.keep
+    } else names(region) %in% names.keep
+
     if (length(subset) == 0)
       stop("Found no kept transcript with given subset of part:", part)
     region <- region[subset]

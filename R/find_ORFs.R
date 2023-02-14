@@ -374,3 +374,41 @@ findUORFs <- function(fiveUTRs, fa, startCodon = startDefinition(1),
   if(!is.null(cds)) uorfs <- filterUORFs(uorfs, cds)
   return(uorfs)
 }
+
+#' @inherit findUORFs
+#' @param df a txdb or \code{\link{experiment}}
+#' @param overlappingCDS logical, default FALSE. Include uORFs that overlap CDS.
+#' @param save_optimized logical, default FALSE. If TRUE, save in the optimized
+#' folder for the experiment. You must have made this directory before running
+#' this function (call makeTxdbFromGenome first if not).
+#' @examples
+#' df <- ORFik.template.experiment()
+#' # Without cds overlapping, no 5' leader extension
+#' findUORFs_exp(df, extension = 0)
+#' # Without cds overlapping, extends 5' leaders by 1000 (good for yeast etc)
+#' findUORFs_exp(df)
+#' # Include cds overlapping uorfs
+#' findUORFs_exp(df, overlappingCDS = TRUE)
+findUORFs_exp <- function(df, startCodon = startDefinition(1),
+                          stopCodon = stopDefinition(1), longestORF = TRUE,
+                          minimumLength = 0, overlappingCDS = FALSE,
+                          cage = NULL, extension = 1000, filterValue = 1,
+                          restrictUpstreamToTx = FALSE, removeUnused = FALSE,
+                          save_optimized = FALSE) {
+  txdb <- loadTxdb(df)
+  cds <- NULL
+  if (overlappingCDS) cds <- loadRegion(txdb, "leaders")
+  uorfs <-
+    findUORFs(loadRegion(txdb, "leaders"), findFa(df),
+              startCodon = startCodon,
+              stopCodon = stopCodon, longestORF = longestORF,
+              minimumLength = minimumLength, cds = ,
+              cage = cage, extension = extension, filterValue = filterValue,
+              restrictUpstreamToTx = restrictUpstreamToTx,
+              removeUnused = removeUnused)
+  if (save_optimized) {
+    optimized_path <- optimized_txdb_path(txdb, stop.error = TRUE)
+    saveRDS(uorfs, paste0(optimized_path, "_", "uorfs", ".rds"))
+  }
+  return(uorfs)
+}
