@@ -245,12 +245,17 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
   #   seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs)
   # }
   if (!is.null(chrStyle)) {
-    if (is.character(chrStyle)) {
-      seqlevelsStyle(range) <- chrStyle[1]
-    } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
-               is(chrStyle, "FaFile") | is(chrStyle, "Seqinfo")) {
-      seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
-    } else stop("chrStyle must be valid GRanges object, or a valid chr style!")
+    valid_seq_style <- try(seqlevelsStyle(a), silent = T)
+    valid_seq_style <- !is(valid_seq_style, "try-error")
+    if (valid_seq_style) {
+      if (is.character(chrStyle)) {
+        seqlevelsStyle(range) <- chrStyle[1]
+      } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
+                 is(chrStyle, "FaFile") | is(chrStyle, "Seqinfo")) {
+        seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
+      } else stop("chrStyle must be valid GRanges object,",
+                  "or a valid chr style!")
+    }
   }
   if (is(chrStyle, "Seqinfo")) {
     seqlevels(range) <- seqlevels(chrStyle)
