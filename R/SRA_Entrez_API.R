@@ -58,13 +58,13 @@ sample_info_single <- function(EXP_SAMPLE) {
     RUN <- EXP_SAMPLE$RUN_SET[j]$RUN
     xml.RUN <- unlist(RUN$IDENTIFIERS$PRIMARY_ID)
     spots <- as.integer(attr(RUN, "total_spots"))
-    total_bases <- as.numeric(attr(RUN, "total_bases"))
+    bases <- as.numeric(attr(RUN, "total_bases"))
     # spots_with_mates <- 0
     avgLength <- as.integer(attr(RUN$Statistics$Read, "average"))
     size_MB <- floor(as.numeric(attr(RUN, "size"))/1024^2)
     Experiment <- EXP_SAMPLE$EXPERIMENT$IDENTIFIERS$PRIMARY_ID[[1]]
     # if (length(xml.RUN) == 0) xml.RUN <- ""
-    dt_run <- data.table(Run = xml.RUN, spots, total_bases,
+    dt_run <- data.table(Run = xml.RUN, spots, bases,
                          avgLength, size_MB, Experiment)
     dt_run_all <- rbind(dt_run_all, dt_run)
   }
