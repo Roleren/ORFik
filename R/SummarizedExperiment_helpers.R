@@ -379,36 +379,41 @@ countTable_regions <- function(df, out.dir = libFolder(df),
 }
 
 subset_count_table <- function(res, df.temp) {
-  subset <- if (sum(colnames(res) %in% bamVarName(df.temp, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp, FALSE, skip.experiment = FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp, TRUE, FALSE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, FALSE)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)
-  } else if (sum(colnames(res) %in%
-                  bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)
-  } else if (sum(colnames(res) %in%
+  subset <- df.temp$index
+  if (length(subset) > ncol(res)) {
+    # Fall back to old method, useful if you made some edits and forgot to
+    # update count table
+    subset <- if (sum(colnames(res) %in% bamVarName(df.temp, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, FALSE, skip.experiment = FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, FALSE, skip.experiment = FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, FALSE, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, FALSE, FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, TRUE, FALSE, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, FALSE, FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, TRUE, FALSE, TRUE, FALSE)
+    } else if (sum(colnames(res) %in%
                    bamVarName(df.temp, FALSE, TRUE, TRUE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE, TRUE, TRUE, FALSE)
-  } else if (sum(colnames(res) %in%
-                 bamVarName(df.temp, FALSE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
-    colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, TRUE, FALSE)
-  } else stop("No valid names for count tables found from experiment")
+      colnames(res) %in% bamVarName(df.temp, FALSE, TRUE, TRUE, FALSE)
+    } else if (sum(colnames(res) %in%
+                   bamVarName(df.temp, FALSE, FALSE, TRUE, FALSE)) == nrow(df.temp)) {
+      colnames(res) %in% bamVarName(df.temp, FALSE, FALSE, TRUE, FALSE)
+    } else stop("No valid names for count tables found from experiment")
+  }
   return(res[, subset])
 }
 

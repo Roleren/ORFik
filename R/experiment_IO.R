@@ -59,6 +59,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
     listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
   } else stop("file must be either character or data.frame template")
+  listData <- cbind(listData, index = as.integer(seq.int(nrow(listData))))
   assembly <- ifelse(info[1,5] == "assembly" & !is.na(info[1,6]),
                      info[1,6], "")
   org <- ifelse(info[2,5] == "organism" & !is.na(info[2,6]),

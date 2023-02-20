@@ -146,7 +146,7 @@ setMethod("show",
 
             obj <- as.data.table(as(object@listData, Class = "DataFrame"))
             if (nrow(obj) > 0) {
-              obj <- obj[,-"filepath"]
+              obj <- obj[,-c("filepath", "index")]
               if (!is.null(obj$reverse)) obj <- obj[,-"reverse"]
               skip <- c()
               for (i in 2:ncol(obj)) {
