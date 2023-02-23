@@ -111,7 +111,8 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   if (!is.null(df$stage)) colData$stage <- as.factor(df$stage)
   if (!is.null(df$libtype)) colData$libtype <- as.factor(df$libtype)
   if (!is.null(df$condition)) colData$condition <- as.factor(df$condition)
-  if (!is.null(df$fraction)) colData$fraction <- as.factor(df$fraction)
+  if (!is.null(df$fraction))
+    colData$fraction <- as.factor(as.character(df$fraction))
 
   res <- SummarizedExperiment(assays=list(counts=mat), rowRanges=tx,
                               colData=colData)
@@ -436,7 +437,7 @@ metadata_count_table <- function(res, df.temp, type) {
         colData(res)$condition[is.na(colData(res)$condition)] <- ""
     }
     if (length(unique(df.temp$fraction)) > 1) {
-      colData(res)$fraction <- as.factor(df.temp$fraction)
+      colData(res)$fraction <- as.factor(as.character(df.temp$fraction))
       if (anyNA(colData(res)$fraction))
         colData(res)$fraction[is.na(colData(res)$fraction)] <- ""
     }
