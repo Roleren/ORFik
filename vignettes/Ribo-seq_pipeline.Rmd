@@ -16,10 +16,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introduction
 
-Welcome to the `ORFik` package. 
+Welcome to the `ORFik` package.
 `ORFik` is an R package for analysis of transcript and translation features through manipulation of sequence data and NGS data.
 
-This vignette will preview a simple Ribo-seq pipeline using ORFik. It is important you read all the other vignettes before this one, since functions will not be explained here in detail. 
+This vignette will preview a simple Ribo-seq pipeline using ORFik. It is important you read all the other vignettes before this one, since functions will not be explained here in detail.
 
 # Pipeline
 This pipeline will shows steps needed to analyse Ribo-seq from Alexaki et al, 2020
@@ -100,7 +100,7 @@ annotation <- getGenomeAndAnnotation(
 # Remove max.ram = 20 and SAsparse = 2, if you have more than 64GB ram
 index <- STAR.index(annotation, wait = TRUE, max.ram = 20, SAsparse = 2)
 
-# Show all annotations you have made with ORFik so far 
+# Show all annotations you have made with ORFik so far
 list.genomes()
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Alignment (with depletion of phix, rRNA, ncRNA and tRNAs) & (with MultiQC of final STAR alignment)
@@ -140,7 +140,7 @@ create.experiment(file.path(conf["bam RNA-seq"], "aligned/"),
                   condition = rep(c("CO", "WT"), each = 3))
 
 library(ORFik)
-# Show the experiments you have made with ORFik so far 
+# Show the experiments you have made with ORFik so far
 list.experiments()
 df.rfp <- read.experiment("Alexaki_Human_Ribo-seq")
 df.rna <- read.experiment("Alexaki_Human_RNA-seq")
@@ -158,7 +158,7 @@ ORFikQC(df.rna)
 # From ORFikQC it looks like 20, 21, 27 and 28 are candidates for Ribosomal footprints
 shiftFootprintsByExperiment(df.rfp, accepted.lengths = c(20:21, 27:28))
 # Now check if you are happy with shifts, these libraries have some interesting
-# periodicity for read length 20 and 27, 
+# periodicity for read length 20 and 27,
 # it has identical amount of reads in frame 0 and 1, not optimal for ORF detection.
 shiftPlots(df.rfp, output = "auto", downstream = 30) # Barplots, better details
 shiftPlots(df.rfp, output = "auto", downstream = 30, type = "heatmap") # Heatmaps, better overview
@@ -172,11 +172,11 @@ remove.experiments(df.rfp)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Pre-pshifting
 heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "ofst",
-              outdir = file.path(QCfolder(df), "heatmaps/pre-pshift/"))
+              outdir = file.path(QCfolder(df.rfp), "heatmaps/pre-pshift/"))
 remove.experiments(df.rfp)
 # After pshifting
 heatMapRegion(df.rfp, region = c("TIS", "TTS"), shifting = "5prime", type = "pshifted",
-              outdir = file.path(QCfolder(df), "heatmaps/pshifted/"))
+              outdir = file.path(QCfolder(df.rfp), "heatmaps/pshifted/"))
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Count table analysis: TE tables
@@ -214,7 +214,7 @@ gene_names <- txNamesToGeneNames(significant_genes$id, df.rfp)
 significant_genes[which(gene_names == "ENSG00000101981"),] # By mRNA abundance
 # If you downloaded the full libraries, do this to use pshifted libraries instead.
 # Not a valid result for pshifted libraries using subset
-res <- DTEG.analysis(df.rfp, df.rna, design = "condition", 
+res <- DTEG.analysis(df.rfp, df.rna, design = "condition",
                      RFP_counts = countTable(df.rfp, region = "cds", type = "summarized",
                                              count.folder = "pshifted"))
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
@@ -260,7 +260,7 @@ dt[startCodonCoverage > 5,]
 devtools::install_github("m-swirski/RiboCrypt", dependencies = TRUE)
 library(RiboCrypt)
 cds <- loadRegion(df.rfp, "cds")
-RiboCrypt::multiOmicsPlot_list(cds[1640], cds[1640], reference_sequence = findFa(df.rfp@fafile), reads = list(fimport(filepath(df.rna[6,], "ofst")), fimport(filepath(df.rfp[6,], "pshifted"))), 
+RiboCrypt::multiOmicsPlot_list(cds[1640], cds[1640], reference_sequence = findFa(df.rfp@fafile), reads = list(fimport(filepath(df.rna[6,], "ofst")), fimport(filepath(df.rfp[6,], "pshifted"))),
                                ylabels = c("RNA", "RFP"), withFrames = c(F, T), frames_type = "columns")
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
