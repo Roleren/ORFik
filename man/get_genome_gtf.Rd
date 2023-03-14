@@ -13,6 +13,7 @@ get_genome_gtf(
   gunzip,
   genome,
   optimize = FALSE,
+  uniprot_id = FALSE,
   gene_symbols = FALSE,
   pseudo_5UTRS_if_needed = NULL,
   remove_annotation_outliers = TRUE

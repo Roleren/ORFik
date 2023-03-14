@@ -10,6 +10,7 @@ makeTxdbFromGenome(
   organism,
   optimize = FALSE,
   gene_symbols = FALSE,
+  uniprot_id = FALSE,
   pseudo_5UTRS_if_needed = NULL,
   return = FALSE
 )

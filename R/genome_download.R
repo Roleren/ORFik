@@ -148,6 +148,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    assembly_type = "primary_assembly",
                                    optimize = FALSE,
                                    gene_symbols = FALSE,
+                                   uniprot_id = FALSE,
                                    pseudo_5UTRS_if_needed = NULL,
                                    remove_annotation_outliers = TRUE,
                                    notify_load_existing = TRUE) {
@@ -178,6 +179,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                              assembly_type, db, gunzip)
   gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
                         gunzip, genome, optimize = optimize,
+                        uniprot_id = uniprot_id,
                         gene_symbols = gene_symbols,
                         pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
                         remove_annotation_outliers = remove_annotation_outliers)

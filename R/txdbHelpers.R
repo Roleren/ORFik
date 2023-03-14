@@ -39,6 +39,7 @@
 #' ## Add pseudo UTRs if needed (< 30% of cds have a defined 5'UTR)
 makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
                                optimize = FALSE, gene_symbols = FALSE,
+                               uniprot_id = FALSE,
                                pseudo_5UTRS_if_needed = NULL,
                                return = FALSE) {
   message("Making txdb of GTF")
@@ -105,7 +106,8 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     }
   }
   if (gene_symbols) {
-    symbols <- geneToSymbol(txdb, include_tx_ids = TRUE)
+    symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
+                            uniprot_id = uniprot_id)
     path <- file.path(dirname(gtf), "gene_symbol_tx_table.fst")
     if (nrow(symbols) > 0) fst::write_fst(symbols, path)
   }
@@ -477,8 +479,12 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' Get gene symbols from Ensembl gene ids
 #'
 #' If your organism is not in this list of supported
-#' organisms, manually assign the input arguments
-#'
+#' organisms, manually assign the input arguments.
+#' There are 2 main fetch modes:\cr
+#' By gene ids (Single accession per gene)\cr
+#' By tx ids (Multiple accessions per gene)\cr
+#' Run the mode you need depending on your required attributes.
+#' \cr\cr
 #' Will check for already existing table of all genes, and use that instead
 #' of re-downloading every time (If you input valid experiment or txdb
 #' and have run \code{\link{makeTxdbFromGenome}}
@@ -486,43 +492,63 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' load instantly. If df = NULL, it can still search cache to load a bit slower.
 #' @param df an ORFik \code{\link{experiment}} or TxDb object with defined organism slot.
 #' If set will look for file at path of txdb / experiment reference path named:
-#'
+#' 'gene_symbol_tx_table.fst' relative to the txdb/genome directory.
 #' Can be set to NULL if gene_ids and organism is defined manually.
 #' @param organism_name default, \code{organism(df)}.
 #' Scientific name of organism, like ("Homo sapiens"),
 #' remember capital letter for first name only!
 #' @param gene_ids default, \code{filterTranscripts(df, by = "gene", 0, 0, 0)}.
 #'  Ensembl gene IDs to search for (default all transcripts coding and noncoding)
-#'  To only get coding do: filterTranscripts(df, by = "gene", 0, 0, 0)
+#'  To only get coding do: filterTranscripts(df, by = "gene", 0, 1, 0)
 #' @param org.dataset default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
 #' the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl
 #' @param ensembl default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.
-#' @param attribute default, "external_gene_name", the biomaRt column
-#' for the primary symbol names. These are always from specific database, like
+#' @param attribute default, "external_gene_name", the biomaRt column / columns
+#' default(primary gene symbol names). These are always from specific database, like
 #' hgnc symbol for human, and mgi symbol for mouse and rat, sgd for yeast etc.
 #' @param include_tx_ids logical, default FALSE, also match tx ids, which then returns as the 3rd column.
-#' Only allowed when 'df' is defined.
+#' Only allowed when 'df' is defined. If
+#' @param uniprot_id logical, default FALSE. Include uniprotsptrembl and/or uniprotswissprot.
+#' If include_tx_ids you will get per isoform if available, else you get canonical uniprot id
+#' per gene. If both uniprotsptrembl and uniprotswissprot exists, it will make a merged
+#' uniprot id column with rule: if id exists in uniprotswissprot, keep.
+#' If not, use uniprotsptrembl column id.
 #' @param force logical FALSE, if TRUE will not look for existing file made through \code{\link{makeTxdbFromGenome}}
 #' corresponding to this txdb / ORFik experiment stored with name "gene_symbol_tx_table.fst".
 #' @param verbose logical TRUE, if FALSE, do not output messages.
-#' @return data.table with 2 or 3 columns gene_id, gene_symbol and tx_id named after
-#' attribute, sorted in order of gene_ids input (returns 3 columns if include_tx_ids is TRUE)
+#' @return data.table with 2, 3 or 4 columns: gene_id, gene_symbol, tx_id and uniprot_id named after
+#' attribute, sorted in order of gene_ids input.
+#' (example: returns 3 columns if include_tx_ids is TRUE),
+#' and more if additional columns are specified in 'attribute' argument.
 #' @export
-#' @importFrom biomaRt useEnsembl getBM
+#' @importFrom biomaRt useEnsembl getBM searchAttributes
 #' @examples
 #' ## Without ORFik experiment input
 #' gene_id_ATF4 <- "ENSG00000128272"
 #' #geneToSymbol(NULL, organism_name = "Homo sapiens", gene_ids = gene_id_ATF4)
+#' # With uniprot canonical isoform id:
+#' #geneToSymbol(NULL, organism_name = "Homo sapiens", gene_ids = gene_id_ATF4, uniprot_id = TRUE)
 #'
 #' ## All genes from Organism using ORFik experiment
 #' # df <- read.experiment("some_experiment)
 #' # geneToSymbol(df)
+#'
 geneToSymbol <- function(df, organism_name = organism(df),
                          gene_ids = filterTranscripts(df, by = "gene", 0, 0, 0),
                          org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl"),
                          ensembl = biomaRt::useEnsembl("ensembl",dataset=org.dataset),
                          attribute = "external_gene_name",
-                         include_tx_ids = FALSE, force = FALSE, verbose = TRUE) {
+                         include_tx_ids = FALSE, uniprot_id = FALSE,
+                         force = FALSE, verbose = TRUE) {
+  include_uniprot_id <- uniprot_id
+  need_to_fetch_tx_ids <- include_tx_ids &
+    (!all(attribute == "external_gene_name") | include_uniprot_id)
+
+  need_annotation_file <- need_to_fetch_tx_ids |
+    (include_tx_ids & !need_to_fetch_tx_ids)
+  if (need_annotation_file) {
+    if (is.null(df)) stop("'df' can not be NULL when 'include_tx_ids' is TRUE")
+  }
   if (anyNA(attribute)) {
     warning("You inserted a species not supported at the moment,
             skipping download of symbols")
@@ -540,23 +566,89 @@ geneToSymbol <- function(df, organism_name = organism(df),
   if (verbose) message("Organism: ", organism_name)
   if (verbose) message("Dataset: ", org.dataset)
   if (verbose) message("Attribute: ", attribute)
+
+  # Find correct uniprot column
+
+  if (include_uniprot_id) {
+    if (verbose) message("Uniprot id: ", appendLF = FALSE)
+    all_attributes <- biomaRt::searchAttributes(ensembl, "uniprot")
+    uni_match <- all_attributes$name[grep("uniprot", all_attributes$name)]
+    uni_id <- c()
+    if ("uniprotswissprot" %in% uni_match) {
+      uni_id <- "uniprotswissprot"
+    }
+    if ("uniprotsptrembl" %in% uni_match) {
+      uni_id <- c(uni_id, "uniprotsptrembl")
+    }
+    if (is.null(uni_id)) stop("This organism does not have uniprot ids, debug this function
+                to see all attributes available!")
+    if (verbose) message(paste(uni_id, collapse = " "))
+  }
+
+  # Only fetch tx ids if some biomaRt column depends on them, else just load
+
+  value_ids <- gene_ids
+  filter_column_id <- 'ensembl_gene_id'
   other_attributes <- "ensembl_gene_id"
-  #if (include_tx_ids) other_attributes <- c(other_attributes, "ensembl_transcript_id")
-  gene_id <- as.data.table(biomaRt::getBM(attributes=c(other_attributes, attribute),
-                                          filters = 'ensembl_gene_id',
-                                          values = gene_ids,
-                                          mart = ensembl))
-  gene_id <- gene_id[chmatch(gene_ids, gene_id$ensembl_gene_id),]
-  which_na <- is.na(gene_id$ensembl_gene_id)
-  gene_id[which_na, ensembl_gene_id := gene_ids[which_na]]
-  if (anyNA(gene_id[,2])) {
-    if (verbose) message("Symbol detection rate: ", (1 - sum(is.na(gene_id[,2]))/nrow(gene_id))*100, " %")
-  } else if (verbose) message("Found symbol for all genes")
-  if (include_tx_ids) {
-    if (is.null(df)) stop("'df' can not be NULL when 'include_tx_ids' is TRUE")
+  all_attr_to_get <- c(other_attributes, attribute)
+  if (need_to_fetch_tx_ids) {
+    filter_column_id <- 'ensembl_transcript_id'
     tx_ids <- optimizedTranscriptLengths(df, TRUE, TRUE)[,2:3]
+    gene_subset <- tx_ids[gene_id %in% gene_ids,]
+    value_ids <- gene_subset$tx_name
+    gene_ids <- gene_subset$gene_id
+    all_attr_to_get <- c(all_attr_to_get, "ensembl_transcript_id")
+  }
+  if (include_uniprot_id) all_attr_to_get <- c(all_attr_to_get, uni_id)
+  # Call to biomaRt
+  if (verbose) message("- Calling biomaRt:")
+  gene_id <- as.data.table(biomaRt::getBM(attributes=all_attr_to_get,
+                                          filters = filter_column_id,
+                                          values = value_ids,
+                                          mart = ensembl))
+  # Filtering
+  gene_id <- gene_id[chmatch(value_ids,
+                             gene_id[, filter_column_id, with = FALSE][[1]]),]
+  which_na <- is.na(gene_id[, filter_column_id, with = FALSE][[1]])
+  gene_id[which_na, ensembl_gene_id := gene_ids[which_na]]
+  if (need_to_fetch_tx_ids) {
+    unique_symbol <- gene_id[!which_na,  unique(external_gene_name),
+                             by = ensembl_gene_id]
+
+    gene_id[which_na, external_gene_name := unique_symbol[chmatch(gene_ids[which_na], ensembl_gene_id)]$V1]
+    gene_id[which_na, ensembl_transcript_id := value_ids[which_na]]
+    colnames(gene_id)[colnames(gene_id) == "ensembl_transcript_id"] <-
+      "ensembl_tx_name"
+  }
+
+
+  if ("external_gene_name" %in% all_attr_to_get) {
+    if (anyNA(gene_id[,"external_gene_name"])) {
+      if (verbose) message("Symbol detection rate: ",
+       (1 - sum(is.na(gene_id[,"external_gene_name"]))/nrow(gene_id))*100, " %")
+    } else if (verbose) message("Found symbol for all genes")
+  }
+
+
+  if (include_uniprot_id) {
+    colnames(gene_id)[ncol(gene_id)] <- "uniprot_id"
+    if (length(uni_id) == 2) {
+      gene_id[uniprotswissprot != "", uniprot_id := uniprotswissprot]
+      gene_id[, uniprotswissprot := NULL]
+    }
+
+    if (anyNA(gene_id[,"uniprot_id"])) {
+      if (verbose) message("Uniprot id detection rate: ",
+             (1 - sum(is.na(gene_id[,"uniprot_id"]))/nrow(gene_id))*100, " %")
+    } else if (verbose) message("Found Uniprot id for all genes")
+  }
+
+  if (include_tx_ids & !need_to_fetch_tx_ids) {
+    if (!exists("tx_ids")) {
+      tx_ids <- optimizedTranscriptLengths(df, TRUE, TRUE)[,2:3]
+    }
     colnames(tx_ids) <- paste0("ensembl_", colnames(tx_ids))
-    gene_id <- merge.data.table(gene_id, tx_ids, by = "ensembl_gene_id", all_x = TRUE)
+    gene_id <- merge.data.table(gene_id, tx_ids, by = filter_column_id, all_x = TRUE)
   }
   gene_id[]
   return(gene_id)

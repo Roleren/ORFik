@@ -81,6 +81,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' @keywords internal
 get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
                            gunzip, genome, optimize = FALSE,
+                           uniprot_id = FALSE,
                            gene_symbols = FALSE,
                            pseudo_5UTRS_if_needed = NULL,
                            remove_annotation_outliers = TRUE) {
@@ -103,7 +104,7 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
     if (gunzip) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     makeTxdbFromGenome(gtf, genome, organism, optimize, gene_symbols,
-                       pseudo_5UTRS_if_needed)
+                       uniprot_id, pseudo_5UTRS_if_needed)
   } else { # Try to auto detect, else set to FALSE
     gtf <- auto_detect_gtf_in_dir(organism, output.dir, db)
   }

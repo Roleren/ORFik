@@ -20,6 +20,7 @@ getGenomeAndAnnotation(
   assembly_type = "primary_assembly",
   optimize = FALSE,
   gene_symbols = FALSE,
+  uniprot_id = FALSE,
   pseudo_5UTRS_if_needed = NULL,
   remove_annotation_outliers = TRUE,
   notify_load_existing = TRUE

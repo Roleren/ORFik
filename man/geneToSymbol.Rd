@@ -13,6 +13,7 @@ geneToSymbol(
   ensembl = biomaRt::useEnsembl("ensembl", dataset = org.dataset),
   attribute = "external_gene_name",
   include_tx_ids = FALSE,
+  uniprot_id = FALSE,
   force = FALSE,
   verbose = TRUE
 )
@@ -20,7 +21,7 @@ geneToSymbol(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}} or TxDb object with defined organism slot.
 If set will look for file at path of txdb / experiment reference path named:
-
+'gene_symbol_tx_table.fst' relative to the txdb/genome directory.
 Can be set to NULL if gene_ids and organism is defined manually.}
 
 \item{organism_name}{default, \code{organism(df)}.
@@ -29,19 +30,25 @@ remember capital letter for first name only!}
 
 \item{gene_ids}{default, \code{filterTranscripts(df, by = "gene", 0, 0, 0)}.
 Ensembl gene IDs to search for (default all transcripts coding and noncoding)
-To only get coding do: filterTranscripts(df, by = "gene", 0, 0, 0)}
+To only get coding do: filterTranscripts(df, by = "gene", 0, 1, 0)}
 
 \item{org.dataset}{default, \code{paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl")}
 the ensembl dataset to use. For Homo sapiens, this converts to default as: hsapiens_gene_ensembl}
 
 \item{ensembl}{default, \code{useEnsembl("ensembl",dataset=org.dataset)} .The mart connection.}
 
-\item{attribute}{default, "external_gene_name", the biomaRt column
-for the primary symbol names. These are always from specific database, like
+\item{attribute}{default, "external_gene_name", the biomaRt column / columns
+default(primary gene symbol names). These are always from specific database, like
 hgnc symbol for human, and mgi symbol for mouse and rat, sgd for yeast etc.}
 
 \item{include_tx_ids}{logical, default FALSE, also match tx ids, which then returns as the 3rd column.
-Only allowed when 'df' is defined.}
+Only allowed when 'df' is defined. If}
+
+\item{uniprot_id}{logical, default FALSE. Include uniprotsptrembl and/or uniprotswissprot.
+If include_tx_ids you will get per isoform if available, else you get canonical uniprot id
+per gene. If both uniprotsptrembl and uniprotswissprot exists, it will make a merged
+uniprot id column with rule: if id exists in uniprotswissprot, keep.
+If not, use uniprotsptrembl column id.}
 
 \item{force}{logical FALSE, if TRUE will not look for existing file made through \code{\link{makeTxdbFromGenome}}
 corresponding to this txdb / ORFik experiment stored with name "gene_symbol_tx_table.fst".}
@@ -49,14 +56,19 @@ corresponding to this txdb / ORFik experiment stored with name "gene_symbol_tx_t
 \item{verbose}{logical TRUE, if FALSE, do not output messages.}
 }
 \value{
-data.table with 2 or 3 columns gene_id, gene_symbol and tx_id named after
-attribute, sorted in order of gene_ids input (returns 3 columns if include_tx_ids is TRUE)
+data.table with 2, 3 or 4 columns: gene_id, gene_symbol, tx_id and uniprot_id named after
+attribute, sorted in order of gene_ids input.
+(example: returns 3 columns if include_tx_ids is TRUE),
+and more if additional columns are specified in 'attribute' argument.
 }
 \description{
 If your organism is not in this list of supported
-organisms, manually assign the input arguments
-}
-\details{
+organisms, manually assign the input arguments.
+There are 2 main fetch modes:\cr
+By gene ids (Single accession per gene)\cr
+By tx ids (Multiple accessions per gene)\cr
+Run the mode you need depending on your required attributes.
+\cr\cr
 Will check for already existing table of all genes, and use that instead
 of re-downloading every time (If you input valid experiment or txdb
 and have run \code{\link{makeTxdbFromGenome}}
@@ -67,8 +79,11 @@ load instantly. If df = NULL, it can still search cache to load a bit slower.
 ## Without ORFik experiment input
 gene_id_ATF4 <- "ENSG00000128272"
 #geneToSymbol(NULL, organism_name = "Homo sapiens", gene_ids = gene_id_ATF4)
+# With uniprot canonical isoform id:
+#geneToSymbol(NULL, organism_name = "Homo sapiens", gene_ids = gene_id_ATF4, uniprot_id = TRUE)
 
 ## All genes from Organism using ORFik experiment
 # df <- read.experiment("some_experiment)
 # geneToSymbol(df)
+
 }
