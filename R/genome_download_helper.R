@@ -2,9 +2,8 @@
 #' @keywords internal
 get_genome_fasta <- function(genome, output.dir, organism,
                              assembly_type, db, gunzip) {
-  if (genome != FALSE) { # fasta genome of organism
-
-    if (is.logical(genome)) {
+  if (genome != FALSE) { # If not auto detect
+    if (is.logical(genome)) { # Then download
       message("- Download genome (fasta)")
       if (db == "ensembl") {
         message(paste("Starting", assembly_type, "genome retrieval of",
@@ -44,7 +43,8 @@ get_genome_fasta <- function(genome, output.dir, organism,
         genome  <- biomartr::getGenome(db = db, organism,
                                        path = output.dir, gunzip = gunzip)
       }
-    } else if (is.character(genome)) {
+    } else if (is.character(genome)) { # Use hard drive file
+      message("- Using pre-existing genome (fasta)")
       stopifnot(file.exists(genome))
       is_compressed <- tools::file_ext(genome) == "gz"
       if (is_compressed) genome <- R.utils::gunzip(genome, overwrite = TRUE)
@@ -53,7 +53,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
     if (any(genome == "Not available")) stop("Could not find genome, check spelling!")
     message("Making .fai index of genome")
     indexFa(genome)
-    message("Genome download and fasta indexing complete")
+    message("Genome fetch and fasta indexing complete")
   } else { # check if it already exists
     genome <- grep(pattern = organism,
                    x = list.files(output.dir, full.names = TRUE),
@@ -112,10 +112,10 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
                                remove_annotation_outliers = remove_annotation_outliers)
       }
     } else if (is.character(GTF)) { # File already exists
+      message("- Using pre-existing annotation (gtf/gff3)")
       gtf <- GTF # It already exists
       stopifnot(file.exists(gtf))
       is_compressed <- tools::file_ext(gtf) == "gz"
-      if (is_compressed) gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     }
 
     if (is_compressed) # unzip gtf file
