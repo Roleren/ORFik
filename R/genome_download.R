@@ -155,8 +155,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   # Pre checks
   finished.file <- paste0(output.dir, "/outputs.rds")
   if (file.exists(finished.file) & !remake) {
-    if (notify_load_existing) message("Loading premade Genome files,
-                                       do remake = TRUE if you want to run again")
+    if (notify_load_existing) message("Loading premade Genome files,",
+                                  " do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
   if (!(assembly_type %in% c("toplevel", "primary_assembly")))

@@ -3,43 +3,51 @@
 get_genome_fasta <- function(genome, output.dir, organism,
                              assembly_type, db, gunzip) {
   if (genome != FALSE) { # fasta genome of organism
-    if (db == "ensembl") {
-      message(paste("Starting", assembly_type, "genome retrieval of",
-                    organism, "from ensembl: "))
-      genome <- tryCatch(biomartr:::getENSEMBL.Seq(organism, type = "dna",
-                                                   release = NULL,
-                                                   id.type = assembly_type,
-                                                   path = output.dir)[1],
-                         error = function(e) {
-                           return(e)
-                         }
-      )
-      if (inherits(genome, "error")) {
-        if (genome$message[1] == "Given file does not exist") {
-        message("Could not find assembly_type: ", assembly_type)
-        assembly_types_cand <- c("toplevel", "primary_assembly")
-        assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
-        message("Switching to search for assembly_type: ", assembly_type)
-        genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
-                                            release = NULL,
-                                            id.type = assembly_type,
-                                            path = output.dir)[1]
-        } else stop(genome)
-      }
 
-      if (is.logical(genome)) {
-        if (genome == FALSE) {
-          message("Remember some small genome organisms like yeast,",
-                  " does not have primary assemblies, ",
-                  "then change assembly_type to toplevel and/or use:",
-                  " db = refseq.")
+    if (is.logical(genome)) {
+      message("- Download genome (fasta)")
+      if (db == "ensembl") {
+        message(paste("Starting", assembly_type, "genome retrieval of",
+                      organism, "from ensembl: "))
+        genome <- tryCatch(biomartr:::getENSEMBL.Seq(organism, type = "dna",
+                                                     release = NULL,
+                                                     id.type = assembly_type,
+                                                     path = output.dir)[1],
+                           error = function(e) {
+                             return(e)
+                           }
+        )
+        if (inherits(genome, "error")) {
+          if (genome$message[1] == "Given file does not exist") {
+          message("Could not find assembly_type: ", assembly_type)
+          assembly_types_cand <- c("toplevel", "primary_assembly")
+          assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
+          message("Switching to search for assembly_type: ", assembly_type)
+          genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
+                                              release = NULL,
+                                              id.type = assembly_type,
+                                              path = output.dir)[1]
+          } else stop(genome)
         }
+
+        if (is.logical(genome)) {
+          if (genome == FALSE) {
+            message("Remember some small genome organisms like yeast,",
+                    " does not have primary assemblies, ",
+                    "then change assembly_type to toplevel and/or use:",
+                    " db = refseq.")
+          }
+        }
+        if (gunzip) # unzip gtf file
+          genome <- R.utils::gunzip(genome, overwrite = TRUE)
+      } else {
+        genome  <- biomartr::getGenome(db = db, organism,
+                                       path = output.dir, gunzip = gunzip)
       }
-      if (gunzip) # unzip gtf file
-        genome <- R.utils::gunzip(genome, overwrite = TRUE)
-    } else {
-      genome  <- biomartr::getGenome(db = db, organism,
-                                     path = output.dir, gunzip = gunzip)
+    } else if (is.character(genome)) {
+      stopifnot(file.exists(genome))
+      is_compressed <- tools::file_ext(genome) == "gz"
+      if (is_compressed) genome <- R.utils::gunzip(genome, overwrite = TRUE)
     }
 
     if (any(genome == "Not available")) stop("Could not find genome, check spelling!")
@@ -85,23 +93,32 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
                            gene_symbols = FALSE,
                            pseudo_5UTRS_if_needed = NULL,
                            remove_annotation_outliers = TRUE) {
-  if (GTF != FALSE) { # gtf of organism
-    if (db == "ensembl") {
-      gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
-                                       type = "dna",
-                                       id.type = assembly_type,
-                                       path = output.dir)
-    } else {
-      message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
-      " and might crash during gff reading step!",
-      " Until this is fixed in rtracklayer, check out example",
-      " in ?getGenomeAndAnnotation on how to rescue those gffs")
-      gtf <-biomartr::getGFF(db = db, organism = organism,
-                      path = output.dir, reference = TRUE,
-                      remove_annotation_outliers = remove_annotation_outliers)
+  if (GTF != FALSE) { # If GTF should be processed
+    if (is.logical(GTF)) { # If download
+      message("- Download annotation (gtf/gff3)")
+      is_compressed <- gunzip
+      if (db == "ensembl") {
+        gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
+                                         type = "dna",
+                                         id.type = assembly_type,
+                                         path = output.dir)
+      } else {
+        message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
+                " and might crash during gff reading step!",
+                " Until this is fixed in rtracklayer, check out example",
+                " in ?getGenomeAndAnnotation on how to rescue those gffs")
+        gtf <-biomartr::getGFF(db = db, organism = organism,
+                               path = output.dir, reference = TRUE,
+                               remove_annotation_outliers = remove_annotation_outliers)
+      }
+    } else if (is.character(GTF)) { # File already exists
+      gtf <- GTF # It already exists
+      stopifnot(file.exists(gtf))
+      is_compressed <- tools::file_ext(gtf) == "gz"
+      if (is_compressed) gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     }
 
-    if (gunzip) # unzip gtf file
+    if (is_compressed) # unzip gtf file
       gtf <- R.utils::gunzip(gtf, overwrite = TRUE)
     makeTxdbFromGenome(gtf, genome, organism, optimize, gene_symbols,
                        uniprot_id, pseudo_5UTRS_if_needed)
