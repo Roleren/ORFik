@@ -17,7 +17,8 @@ character vector of IDs
 \description{
 The default query of Ribosome Profiling human, will result in internal
 entrez search of:
-Ribosome[All Fields] AND Profiling[All Fields] AND ("Homo sapiens"[Organism] OR human[All Fields])
+Ribosome[All Fields] AND Profiling[All Fields] AND ("Homo sapiens"[Organism]
+OR human[All Fields])
 }
 \examples{
 term <- "Ribosome Profiling Saccharomyces cerevisiae"

@@ -100,22 +100,54 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
 #' Ribosome[All Fields] AND Profiling[All Fields] AND ("Homo sapiens"[Organism]
 #' OR human[All Fields])
 #' @param term character, default "Ribosome Profiling human"
+#' @param as_accession logical, default TRUE. Get bioproject accessions:
+#' PRJNA, PRJEB, PRJDB values, or IDs (FALSE), numbers only. Accessions
+#' are usually the thing needed for most tools.
+#' @param add_study_title logical, default FALSE. If TRUE, return as data table
+#' with 2 columns: id: ID or accessions. title: The title of the study.
 #' @param RetMax integer, default 10000. How many IDs to return maximum
-#' @return character vector of IDs
+#' @return character vector of Accessions or IDs. If add_study_title is TRUE,
+#' returns a data.table.
 #' @export
 #' @references https://www.ncbi.nlm.nih.gov/books/NBK25501/
 #' @family sra
 #' @examples
 #' term <- "Ribosome Profiling Saccharomyces cerevisiae"
 #' # get_bioproject_candidates(term)
-get_bioproject_candidates <- function(term = "Ribosome Profiling human", RetMax = 10000) {
+get_bioproject_candidates <- function(term = "Ribosome Profiling human",
+                                      as_accession = TRUE,
+                                      add_study_title = FALSE,
+                                      RetMax = 10000) {
   base_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
   esearch_base_url <- "esearch.fcgi?db=bioproject"
   fixed_term <- gsub(" ", "+", term)
   search <- paste0("&retmode=xml&RetMax=", RetMax, "&term=", fixed_term)
   url <- paste0(base_url, esearch_base_url, search)
+  message("- Retrieving IDs")
   hits <- xml2::read_xml(url)
   hits <- unlist(xml2::as_list(hits)$eSearchResult$IdList, use.names = FALSE)
+  message("done")
+
+  needs_esummary <- (as_accession | add_study_title) & length(hits) > 0
+  if (needs_esummary) {
+    message("- Retrieving Accessions from IDs")
+    esummary_base_url <- "esummary.fcgi?db=bioproject&id="
+    ids <- paste(hits, collapse = ",")
+    url <- paste0(base_url, esummary_base_url, ids)
+    hits <- xml2::read_xml(url)
+    xml_list <- xml2::as_list(hits)
+
+    if (as_accession) {
+      hits <- unlist(lapply(xml_list$eSummaryResult$DocumentSummarySet,
+                            function(x) x$Project_Acc[[1]]), use.names = FALSE)
+    }
+    if (add_study_title) {
+      titles <- unlist(lapply(xml_list$eSummaryResult$DocumentSummarySet,
+                              function(x) x$Project_Title[[1]]), use.names = FALSE)
+      hits <- data.table(id = hits, title = titles)
+    }
+    message("done")
+  }
   return(hits)
 }
 
