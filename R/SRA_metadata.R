@@ -99,7 +99,10 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
 #' entrez search of:
 #' Ribosome[All Fields] AND Profiling[All Fields] AND ("Homo sapiens"[Organism]
 #' OR human[All Fields])
-#' @param term character, default "Ribosome Profiling human"
+#' @param term character, default "Ribosome Profiling human".
+#' A space is translated into AND, that means "Ribosome AND Profiling AND human",
+#' will give same as above. To do OR operation, do:
+#' "Ribosome OR profiling OR human".
 #' @param as_accession logical, default TRUE. Get bioproject accessions:
 #' PRJNA, PRJEB, PRJDB values, or IDs (FALSE), numbers only. Accessions
 #' are usually the thing needed for most tools.

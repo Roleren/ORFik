@@ -12,7 +12,10 @@ get_bioproject_candidates(
 )
 }
 \arguments{
-\item{term}{character, default "Ribosome Profiling human"}
+\item{term}{character, default "Ribosome Profiling human".
+A space is translated into AND, that means "Ribosome AND Profiling AND human",
+will give same as above. To do OR operation, do:
+"Ribosome OR profiling OR human".}
 
 \item{as_accession}{logical, default TRUE. Get bioproject accessions:
 PRJNA, PRJEB, PRJDB values, or IDs (FALSE), numbers only. Accessions
