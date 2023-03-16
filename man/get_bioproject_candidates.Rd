@@ -4,15 +4,28 @@
 \alias{get_bioproject_candidates}
 \title{Query eutils for bioproject IDs}
 \usage{
-get_bioproject_candidates(term = "Ribosome Profiling human", RetMax = 10000)
+get_bioproject_candidates(
+  term = "Ribosome Profiling human",
+  as_accession = TRUE,
+  add_study_title = FALSE,
+  RetMax = 10000
+)
 }
 \arguments{
 \item{term}{character, default "Ribosome Profiling human"}
 
+\item{as_accession}{logical, default TRUE. Get bioproject accessions:
+PRJNA, PRJEB, PRJDB values, or IDs (FALSE), numbers only. Accessions
+are usually the thing needed for most tools.}
+
+\item{add_study_title}{logical, default FALSE. If TRUE, return as data table
+with 2 columns: id: ID or accessions. title: The title of the study.}
+
 \item{RetMax}{integer, default 10000. How many IDs to return maximum}
 }
 \value{
-character vector of IDs
+character vector of Accessions or IDs. If add_study_title is TRUE,
+returns a data.table.
 }
 \description{
 The default query of Ribosome Profiling human, will result in internal
