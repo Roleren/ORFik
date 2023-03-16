@@ -16,8 +16,11 @@ get_genome_fasta <- function(genome, output.dir, organism,
                              return(e)
                            }
         )
-        if (inherits(genome, "error")) {
-          if (genome$message[1] == "Given file does not exist") {
+        if (inherits(genome, "error") | is.logical(genome)) {
+          swap_assembly_type <- is.logical(genome)
+          if (!swap_assembly_type)
+            swap_assembly_type <- genome$message[1] == "Given file does not exist"
+          if (swap_assembly_type) {
           message("Could not find assembly_type: ", assembly_type)
           assembly_types_cand <- c("toplevel", "primary_assembly")
           assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]

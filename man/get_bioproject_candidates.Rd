@@ -15,7 +15,9 @@ get_bioproject_candidates(term = "Ribosome Profiling human", RetMax = 10000)
 character vector of IDs
 }
 \description{
-Query eutils for bioproject IDs
+The default query of Ribosome Profiling human, will result in internal
+entrez search of:
+Ribosome[All Fields] AND Profiling[All Fields] AND ("Homo sapiens"[Organism] OR human[All Fields])
 }
 \examples{
 term <- "Ribosome Profiling Saccharomyces cerevisiae"
