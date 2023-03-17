@@ -135,20 +135,27 @@ get_bioproject_candidates <- function(term = "Ribosome Profiling human",
   if (needs_esummary) {
     message("- Retrieving Accessions from IDs")
     esummary_base_url <- "esummary.fcgi?db=bioproject&id="
-    ids <- paste(hits, collapse = ",")
-    url <- paste0(base_url, esummary_base_url, ids)
-    hits <- xml2::read_xml(url)
-    xml_list <- xml2::as_list(hits)
+    # Max 500 ids per call
+    ids_list <- split(hits, ceiling(seq_along(hits)/ 500))
+    hits <- if(add_study_title) {data.table()} else c()
+    for (ids_subset in ids_list) {
+      ids <- paste(ids_subset, collapse = ",")
+      url <- paste0(base_url, esummary_base_url, ids)
+      temp_hits <- xml2::read_xml(url)
+      xml_list <- xml2::as_list(temp_hits)
 
-    if (as_accession) {
-      hits <- unlist(lapply(xml_list$eSummaryResult$DocumentSummarySet,
-                            function(x) x$Project_Acc[[1]]), use.names = FALSE)
-    }
-    if (add_study_title) {
-      titles <- unlist(lapply(xml_list$eSummaryResult$DocumentSummarySet,
-                              function(x) x$Project_Title[[1]]), use.names = FALSE)
-      hits <- data.table(id = hits, title = titles)
-    }
+      if (as_accession) {
+        temp_hits <- unlist(lapply(xml_list$eSummaryResult$DocumentSummarySet,
+                              function(x) x$Project_Acc[[1]]), use.names = FALSE)
+      }
+      if (add_study_title) {
+        titles <- unlist(lapply(xml_list$eSummaryResult$DocumentSummarySet,
+                                function(x) x$Project_Title[[1]]), use.names = FALSE)
+        temp_hits <- data.table(id = temp_hits, title = titles)
+        hits <- rbindlist(list(hits, temp_hits))
+      } else hits <- c(hits, temp_hits)
+    } # Max ids per time is 500
+
     message("done")
   }
   return(hits)
