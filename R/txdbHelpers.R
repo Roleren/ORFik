@@ -60,9 +60,16 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
                                              chrominfo = fa.seqinfo)
-    if (seqlevelsStyle(txdb)[1] != seqlevelsStyle(fa)[1]) {
-      seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
-    }
+    browser()
+
+    supported_species <- try(seqlevelsStyle(txdb)[1], silent = TRUE)
+    if (!is(supported_species, "try-error")) {
+      if (seqlevelsStyle(txdb)[1] != seqlevelsStyle(fa)[1]) {
+        seqlevelsStyle(txdb) <- seqlevelsStyle(fa)[1]
+      }
+    } else message("Species not supported by seqlevelsStyle,",
+                   "skipping safety test!")
+
 
   } else {
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
