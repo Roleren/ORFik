@@ -60,7 +60,6 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
     txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
                                              chrominfo = fa.seqinfo)
-    browser()
 
     supported_species <- try(seqlevelsStyle(txdb)[1], silent = TRUE)
     if (!is(supported_species, "try-error")) {
