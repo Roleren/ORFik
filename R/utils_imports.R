@@ -206,7 +206,8 @@ readBigWig <- function(path, chrStyle = NULL, as = "GRanges") {
   if (is(path, "character")) {
     if (length(path) != 2) stop("readWig must have 2 wig files,
                               one forward strand and one reverse!")
-
+    forwardIndex <- 1
+    reverseIndex <- 2
     forwardPath <- grep("forward|fwd", path)
     reversePath <- grep("reverse|rev", path)
     if (length(forwardPath) == 1 & length(reversePath) == 1) {
