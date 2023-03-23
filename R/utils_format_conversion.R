@@ -7,6 +7,8 @@
 #' If you want to keep bam files loaded or faster conversion if
 #' you already have them loaded, use ORFik::convertLibs instead
 #' @inheritParams outputLibs
+#' @param df an ORFik \code{\link{experiment}}, or NULL is allowed if
+#' both in_files and out_dir is specified manually.
 #' @param in_files paths to input files, default:
 #'  \code{filepath(df, "default")} with bam format files.
 #' @param out_dir paths to output files, default
@@ -22,10 +24,13 @@
 convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
                             out_dir = file.path(libFolder(df), "ofst"),
                             verbose = TRUE, strandMode = rep(0, length(in_files))) {
-  if (length(in_files) != nrow(df))
-    stop("'df' and 'in_files must have equal size!")
   stopifnot(all(is(strandMode, "numeric")))
-  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  if (!is.null(df)) {
+    stopifnot(is(df, "experiment"))
+    if (length(in_files) != nrow(df))
+      stop("'df' and 'in_files must have equal size!")
+  }
+  lib_names <- remove.file_ext(basename(in_files))
   out_filepaths <- file.path(out_dir, paste0(lib_names, ".ofst"))
   dir.create(out_dir, showWarnings = FALSE)
   if (verbose) message("-- Converting bam to ofst")
@@ -44,7 +49,7 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
 #'
 #' Saved by default in folder "cov_RLE" relative to default
 #' libraries of experiment
-#' @inheritParams outputLibs
+#' @inheritParams convert_bam_to_ofst
 #' @param in_files paths to input files, default pshifted files:
 #'  \code{filepath(df, "pshifted")} in ofst format
 #' @param out_dir paths to output files, default
@@ -70,9 +75,12 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
                               split.by.readlength = FALSE,
                               seq_info = seqinfo(df), weight = "score",
                               verbose = TRUE) {
-  if (length(in_files) != nrow(df))
-    stop("'df' and 'in_files must have equal size!")
-  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  if (!is.null(df)) {
+    stopifnot(is(df, "experiment"))
+    if (length(in_files) != nrow(df))
+      stop("'df' and 'in_files must have equal size!")
+  }
+  lib_names <- remove.file_ext(basename(in_files))
   out_filepaths <- file.path(out_dir, lib_names)
   dir.create(out_dir, showWarnings = FALSE)
   if (verbose) message("-- Converting to covRle objects")
@@ -135,9 +143,12 @@ convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
                               split.by.strand = TRUE,
                               seq_info = seqinfo(df), weight = "score",
                               verbose = TRUE) {
-  if (length(in_files) != nrow(df))
-    stop("'df' and 'in_files must have equal size!")
-  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  if (!is.null(df)) {
+    stopifnot(is(df, "experiment"))
+    if (length(in_files) != nrow(df))
+      stop("'df' and 'in_files must have equal size!")
+  }
+  lib_names <- remove.file_ext(basename(in_files))
   out_filepaths <- file.path(out_dir, lib_names)
   out_filepaths_merged <- file.path(out_dir_merged, lib_names)
   dir.create(out_dir, showWarnings = FALSE)
@@ -186,9 +197,12 @@ convert_to_bigWig <- function(df, in_files =  filepath(df, "pshifted"),
                               split.by.readlength = FALSE,
                               seq_info = seqinfo(df), weight = "score",
                               is_pre_collapsed = FALSE, verbose = TRUE) {
-  if (length(in_files) != nrow(df))
-    stop("'df' and 'in_files must have equal size!")
-  lib_names <- remove.file_ext(filepath(df, "default", basename = TRUE))
+  if (!is.null(df)) {
+    stopifnot(is(df, "experiment"))
+    if (length(in_files) != nrow(df))
+      stop("'df' and 'in_files must have equal size!")
+  }
+  lib_names <- remove.file_ext(basename(in_files))
   out_filepaths <- file.path(out_dir, lib_names)
   dir.create(out_dir, showWarnings = FALSE)
   if (verbose) message("-- Converting to BigWig")

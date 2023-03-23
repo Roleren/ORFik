@@ -25,6 +25,9 @@
 #' and store all gene symbols for all transcripts (coding and noncoding)-
 #' In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
 #' hgcn for human, mouse symbols for mouse and rat, more to be added.
+#' @param uniprot_id logical default FALSE.  If TRUE, will download
+#' and store all uniprot id for all transcripts (coding and noncoding)-
+#' In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
 #' @param pseudo_5UTRS_if_needed integer, default NULL. If defined > 0,
 #' will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
 #' a leader.

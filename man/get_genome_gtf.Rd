@@ -65,6 +65,10 @@ objects instead. Currently optimizes filterTranscript() function and
 loadRegion() function for 5' UTRs, 3' UTRs, CDS,
  mRNA (all transcript with CDS) and tx (all transcripts).}
 
+\item{uniprot_id}{logical default FALSE.  If TRUE, will download
+and store all uniprot id for all transcripts (coding and noncoding)-
+In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.}
+
 \item{gene_symbols}{logical default FALSE. If TRUE, will download
 and store all gene symbols for all transcripts (coding and noncoding)-
 In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.

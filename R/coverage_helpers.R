@@ -568,6 +568,7 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
 
   coverage[, position := seq_len(.N), by = genes]
   if (withFrames) coverage[, frame := (position - 1) %% 3]
+  coverage[]
   return(coverage)
 }
 

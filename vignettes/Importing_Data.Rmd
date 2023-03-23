@@ -1,0 +1,262 @@
+---
+title: "Importing data"
+author: "Haakon Tjeldnes & Kornel Labun"
+date: "`r BiocStyle::doc_date()`"
+package: "`r pkg_ver('ORFik')`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Importing data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+  Welcome to the introduction of data management with ORFik experiment. This vignette will walk you through which data and how you import and export with ORFik, focusing on NGS library import and annotation.
+`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq, RCP-seq, TCP-seq, Chip-seq and Cage data, we advice you to read ORFikOverview vignette, before starting this one.
+
+## Motivation
+There exists a myriad of formats in bioinformatics, ORFik focuses on NGS data anlysis and therefor
+supports many functions to import that data. We will here learn how to use ORFik
+effectivly in importing data (how to convert to the format you should use).
+That is the format with optimal information content relative to load speed.
+
+# Importing Sequencing reads
+
+Sequencing reads starts with fastq files. In the Annotation & Alignment vignette
+we walk through how to acquire (download usually) and 
+map these reads into bam files. We here presume
+that this is done and you have the bam files.
+
+ORFik currently supports these formats:
+
+- bam
+- wig
+- bigwig
+- bed5
+- bed12
+- ofst (ORFik fst format, very fast version of bam, bed or wig)
+
+All these formats can be imported using the function `fimport`
+
+ORFik also supports bam files that are collapsed, the number of duplicates
+is stored in the header information per read. This is a very effective speed
+up for short read sequencing like Ribo-seq. bigwig etc, internally supports
+collapsing since it uses a 'score' column. 
+
+## Loading files (general)
+
+We advice you always to create an ORFik experiment of your data, 
+to make it simpler to code (see Data management vignette). 
+
+But here we will show you how to do direct import of files. 
+To load a file, usually it is sufficient to use fimport.
+
+### Bam files
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# Use bam file that exists in ORFik package
+bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
+footprints <- fimport(bam_file)
+# This is identical to:
+footprints <- readBam(bam_file)
+```
+
+Bam files are very cumbersome to read, so we should only do this once, and then
+convert to something faster (described bellow)
+
+### Other formats
+Other formats are loaded in the same way
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# Use bam file that exists in ORFik package
+ofst_file <- system.file("extdata/Danio_rerio_sample/ofst", "ribo-seq.ofst", package = "ORFik")
+footprints <- fimport(ofst_file)
+# This is identical to:
+footprints <- import.ofst(ofst_file)
+```
+
+## Exporting to new formats 
+Since bam files are cumbersome to load, how to convert and export depends if you have
+the files loaded already or not
+
+### Files are not preload into R
+There are several converters in ORFik, here are some examples:
+
+#### BAM to OFST (keep cigar information)
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+ofst_out_dir <- file.path(tempdir(), "ofst/")
+convert_bam_to_ofst(NULL, bam_file, ofst_out_dir)
+# Find the file again
+ofst_file <- list.files(ofst_out_dir, full.names = TRUE)[1]
+# Load it
+fimport(ofst_file)
+```
+#### BAM to bigwig (do not keep cigar information or read lengths)
+
+Bigwig is a bit special, in that it is very fast (and good compression), 
+but to make it failsafe we need the information about size for all chromosomes.
+Bioconductor functions are very picky about correct chromosome sizes of GRanges
+objects etc.
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+bigwig_out_dir <- file.path(tempdir(), "bigwig/")
+convert_to_bigWig(NULL, bam_file, bigwig_out_dir, 
+                  seq_info = seqinfo(BamFile(bam_file)))
+# Find the file again
+bigwig_file <- list.files(bigwig_out_dir, full.names = TRUE) 
+# You see we have 2 files here, 1 for forward strand, 1 for reverse
+# Load it
+fimport(bigwig_file)
+```
+### Files are preload into R
+For preloaded files it is better to just convert it there and then, and not
+convert through the filepath, because then you have just loaded the file twice.
+
+For details, see ?convertLibs and ?convertToOneBasedRanges()
+
+## Random access
+
+The really cool thing with bigwig is that it has very fast random access.
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+bigwig_file <- list.files(bigwig_out_dir, full.names = TRUE) 
+# Let us access a location without loading the full file.
+random_point <- GRangesList(GRanges("chr24", 22711508, "-"))
+# Getting raw vector (Then you need to know which strand it is on:)
+bigwig_for_random_point <- bigwig_file[2] # the reverse strand file
+rtracklayer::import.bw(bigwig_for_random_point, as = "NumericList",
+                              which = random_point[[1]])
+# 4 reads were there
+```
+
+ORFik also has an automatic wrapper to transcript coordinates: As data.table 
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+
+dt <- coveragePerTiling(random_point, bigwig_file)
+dt # Position is 1, because it is relative to first
+```
+
+
+
+# Importing Annotation
+
+Annotation consists of 2 primary files:
+
+- The full genome sequence (fasta genome + index, 2 individual files)
+- The gtf (The location of genes on the genome etc.)
+
+If you don't have the annotation yet on your hard drive, 
+to get these two files for your organism, ORFik supports a direct downloader of
+annotation from ENSEMBL/refseq, for yeast it would look like this:
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+library(ORFik)
+organism <- "Saccharomyces cerevisiae" # Baker's yeast
+output_dir <- tempdir() # Let's just store it to temp
+annotation <- getGenomeAndAnnotation(
+                    organism = organism,
+                    output.dir = output_dir,
+                    assembly_type = "toplevel"
+                    )
+genome <- annotation["genome"]
+gtf <- annotation["gtf"]
+```
+
+The gtf is a very slow format and ORFik will almost never use this directly.
+We therefor use a much faster format called TxDb (transcript database)
+The nice thing with using getGenomeAndAnnotation is that it will do a lot of 
+important fixes for you related to import. It will make the fasta index and 
+txdb, and a lot more optimizations that for large species like human make
+import time go from minutes to less than a second. 
+
+If you don't want to use getGenomeAndAnnotation, you can do it for your own annotation 
+like this:
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# Index fasta genome
+indexFa(genome)
+# Make TxDb object for large speedup:
+txdb <- makeTxdbFromGenome(gtf, genome, organism, optimize = TRUE, return = TRUE)
+```
+The txdb is saved in the same as gtf with a ".db" extension.
+
+## Loading Genome index (fasta index)
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# Access a FaFile
+fa <- findFa(genome)
+# Get chromosome information
+seqinfo(findFa(genome))
+# Load a 10 first bases from chromosome 1
+txSeqsFromFa(GRangesList(GRanges("I", 1:10, "+")), fa, TRUE)
+# Load a 10 first bases from chromosome 1 and 2.
+txSeqsFromFa(GRangesList(GRanges("I", 1:10, "+"), GRanges("II", 1:10, "+")), fa, TRUE)
+```
+## Loading Gene annotation (Txdb)
+
+ORFik makes it very easy to load specific regions from a txdb. 
+We already have the txdb loaded, but let us load it again 
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  txdb_path <- paste0(gtf, ".db")
+  txdb <- loadTxdb(txdb_path)
+```
+
+### Loading Transcript regions
+
+Lets get these regions of the transcripts:
+
+- All transcripts
+- All mRNAs (all transcripts with CDS)
+- Leaders (5' UTRs)
+- CDS (Coding sequences, main ORFs)
+- Trailers (3' UTRs)
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  loadRegion(txdb, "tx")
+  loadRegion(txdb, "mrna")
+  loadRegion(txdb, "leaders")
+  loadRegion(txdb, "cds")
+  loadRegion(txdb, "trailers")
+```
+
+These are output as GRangesList, which are list elements of GRanges 
+(1 list elements per transcript, which can contain multiple GRanges).
+If the gene region is not spliced, it has only 1 GRanges object.
+
+### Loading Transcript regions (filtering)
+
+Your annotations contains many transcripts, the 2022 human GTFs usually contain
+around 200K transcripts, at least half of these are from non coding transcripts (they have no CDS).
+So how to filter out what you do not need?
+
+### Loading Transcript regions (filtering by length requirements)
+Let's say you only want mRNAs, which have these properties:
+- Leaders >= 1nt
+- CDS >= 150nt
+- Trailers >= 0nt
+
+We can in ORFik get this with:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  tx_to_keep <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 150, minThreeUTR = 0)
+  loadRegion(txdb, "mrna")
+```
+But what if you do this?
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  filterTranscripts(txdb, minFiveUTR = 10, minCDS = 150, minThreeUTR = 0)
+```
+
+You see the SacCer3 Yeast gtf does not have any defined leaders at size 10, because
+the annotation is incomplete. Luckily ORFik supports creating pseudo 5' UTRs.
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  txdb <- makeTxdbFromGenome(gtf, genome, organism, optimize = TRUE, return = TRUE, 
+                             pseudo_5UTRS_if_needed = 100)
+  filterTranscripts(txdb, minFiveUTR = 10, minCDS = 150, minThreeUTR = 0)[1:3]
+```
+Great, This now worked. For detailed access of single points like start sites or regions,
+see the 'working with transcripts vignette'.
+
+### Loading Transcript regions (filtering by canonical isoform)
+To get canonical mRNA isoform (primary isoform defined e.g. by Ensembl)
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  filterTranscripts(txdb, minFiveUTR = 0, minCDS = 1, minThreeUTR = 0, 
+                    longestPerGene = TRUE)
+```
+
+You here get all canonical isoform mRNAs (cds exists since minCDS >= 1)

@@ -1,0 +1,156 @@
+---
+title: "Working with transcripts"
+author: "Haakon Tjeldnes & Kornel Labun"
+date: "`r BiocStyle::doc_date()`"
+package: "`r pkg_ver('ORFik')`"
+output: BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{Working with transcripts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+Welcome to the introduction to working with transcripts in ORFik. This vignette will walk you through how
+to find and manipulate the sections of transcript you want. And how to calculate coverage over these regions.
+`ORFik` is an R package containing various functions for analysis of RiboSeq, RNASeq, RCP-seq, TCP-seq, Chip-seq and Cage data, we advice you to read Importing data vignette, before starting this one.
+
+## Motivation
+Working with all the specific regions of transcripts can be hard. The standard Bioconductor
+packages GenomicRanges and GenomicFeatures does not solve most of these problems, so
+ORFik extends this ecosystem with what we call TranscriptRanges and TranscriptFeatures.
+We will here learn how to use ORFik
+effectively getting the transcript regions we want and compute coverage over those regions etc.
+
+# Getting data
+Let us use the same data we used in the importing data vignette.
+```{r eval = TRUE, echo = FALSE, message = FALSE}
+library(ORFik)
+```
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+library(ORFik)
+organism <- "Saccharomyces cerevisiae" # Baker's yeast
+output_dir <- tempdir() # Let's just store it to temp
+# If you already downloaded, it will not redownload, but reuse those files.
+annotation <- getGenomeAndAnnotation(
+                    organism = organism,
+                    output.dir = output_dir,
+                    assembly_type = "toplevel"
+                    )
+genome <- annotation["genome"]
+gtf <- annotation["gtf"]
+txdb_path <- paste0(gtf, ".db")
+txdb <- loadTxdb(txdb_path)
+```
+
+# Loading Transcript region (single point locations)
+
+Let us get these regions:
+
+- Transcription start sites (TSS, start of leaders)
+- Translation start sites (TIS, start of CDSs)
+- Translation termination sites (TTS, end of CDSs)
+- Transcription end sites (TES, end of mRNA)
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+## TSS
+startSites(loadRegion(txdb, "leaders"), asGR = TRUE, is.sorted = TRUE)
+# Equal to:
+startSites(loadRegion(txdb, "mrna"), asGR = TRUE, is.sorted = TRUE)
+## TIS
+startSites(loadRegion(txdb, "cds"), asGR = TRUE, is.sorted = TRUE)
+## TTS
+stopSites(loadRegion(txdb, "cds"), asGR = TRUE, is.sorted = TRUE)
+## TES
+stopSites(loadRegion(txdb, "mrna"), asGR = TRUE, is.sorted = TRUE)
+```
+# Loading Transcript region (window locations)
+What if we want a window around that region point?
+Then we also need might the mrna region information,
+to map to transcript coordinates and get area around that point
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+mrna <- loadRegion(txdb, "mrna")
+## TSS
+startRegion(loadRegion(txdb, "mrna"), upstream = 30, downstream = 30, is.sorted = TRUE)
+## TIS
+startRegion(loadRegion(txdb, "cds"), mrna, upstream = 30, downstream = 30, is.sorted = TRUE)
+## TTS
+stopRegion(loadRegion(txdb, "cds"), mrna, upstream = 30, downstream = 30, is.sorted = TRUE)
+## TES
+stopRegion(loadRegion(txdb, "mrna"), upstream = 30, downstream = 30, is.sorted = TRUE)
+```
+# Extending transcript into genomic flanks
+You might notice that since we are doing transcript coordinates, it will not actually extend 30 upstream
+from TSS, because there is no transcript there.
+
+To extend into the genomic region do:
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# TSS genomic extension
+extendLeaders(startRegion(mrna[1], upstream = -1, downstream = 30, is.sorted = TRUE), 30)
+# TES genomic extension
+extendTrailers(stopRegion(mrna[1], upstream = 30, downstream = 0, is.sorted = TRUE), 30)
+```
+
+# Coverage over transcript regions
+
+So how could we now get the coverage per nt in the TIS region of a cds?
+
+## Loading NGS data
+We first need some NGS data, so let us now use the ORFik experiment included in the package:
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+df <- ORFik.template.experiment()
+df
+```
+There are 4 CAGE libraries, 4 PAS (Poly-A seq) libraries, 4 Ribo-seq libraries and
+4 RNA-seq libraries.
+Let's load the first Ribo-seq library in this artificial study
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+df <- df[9,]
+df
+```
+
+Load the Ribo-seq
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+ribo <- fimport(filepath(df, "default"))
+```
+
+## Total counts per region/window
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+TIS_window <- startRegion(loadRegion(df, "cds"), loadRegion(df, "mrna"), 
+                is.sorted = TRUE, upstream = 20, downstream = 20)
+```
+
+
+Now let's get the total counts per window
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+
+countOverlapsW(TIS_window, ribo, weight = "score")
+# This is shorter version (You do not need TIS_window defined first) ->
+startRegionCoverage(loadRegion(df, "cds"), ribo, loadRegion(df, "mrna"), 
+                    is.sorted = TRUE, upstream = 20, downstream = 20)
+```
+You see the first gene had 33 reads in the 20-20 window around TIS
+
+## Per nucleotide in region/window
+But what if you want the coverage per nucleotide in that window?
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# TIS region coverage
+coveragePerTiling(TIS_window, ribo)[1:3]
+```
+For plotting it is best to use the data.table return:
+
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+# TIS region coverage
+dt <- coveragePerTiling(TIS_window, ribo, as.data.table = TRUE)
+head(dt)
+```
+Let's plot the coverage for fun, now we want frame information too:
+
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+# TIS region coverage
+dt <- coveragePerTiling(TIS_window, ribo, as.data.table = TRUE, withFrames = TRUE)
+# Rescale 0 to position 21
+dt[, position := position - 21]
+pSitePlot(dt)
+```

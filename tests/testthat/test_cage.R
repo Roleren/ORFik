@@ -55,6 +55,8 @@ cage <- GRanges(seqnames = c("1","1","2","2","3","3"),
 extended <- GRanges("1", IRanges(c(32671236, 32671236-4, 32671236-6),
                                     width = 1), "+", score = c(1, 5, 5))
 cage <- c(cage, extended)
+if (seqlevels(fiveUTRs)[1] == "chr1")
+  seqlevels(cage) <- paste0("chr", seqlevels(cage))
 
 test_that("filterCage filters correctly", {
 

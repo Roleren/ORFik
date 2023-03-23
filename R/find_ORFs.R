@@ -381,6 +381,7 @@ findUORFs <- function(fiveUTRs, fa, startCodon = startDefinition(1),
 #' @param save_optimized logical, default FALSE. If TRUE, save in the optimized
 #' folder for the experiment. You must have made this directory before running
 #' this function (call makeTxdbFromGenome first if not).
+#' @export
 #' @examples
 #' df <- ORFik.template.experiment()
 #' # Without cds overlapping, no 5' leader extension

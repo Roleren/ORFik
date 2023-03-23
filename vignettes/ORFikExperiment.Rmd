@@ -128,17 +128,28 @@ To see the object, just show it like this:
 ```{r eval = TRUE, echo = TRUE}
 df
 ```
-You see here that file paths are hidden, you can access them  like this:
 
-
+## Accessing library file paths
+When you print the experiment object, 
+you see here that file paths are hidden, you can access them  like this:
 ```{r eval = TRUE, echo = TRUE}
 filepath(df, type = "default")
 ```
+
+ORFik has an extensive syntax for file type variants for your libraries: example is
+you have both bam, bigwig and ofst files of the same library, used for different purposes.
+
 If you have varying version of libraries, like p-shifted, bam, simplified wig files, you can get
 file paths to different version with this function, like this:
 ```{r eval = TRUE, echo = TRUE}
 filepath(df[df$libtype == "RFP", ], type = "pshifted")[2] # RFP = Ribo-seq, Default location for pshifted reads
 ```
+
+The filepath function uses a reductive search, so that if you specify type = "bigwig", and
+you do not have those files, it will point you to the lower level file "ofst". If you don't have
+those either, it goes to the default file (usually bam format).
+This ensure you will at least load something, it just depends how fast those files are.
+It also makes it easy to scale up and generalize you scripts to new experiments.
 
 ## Loading data from experiment
 

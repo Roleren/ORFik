@@ -16,7 +16,8 @@ convert_to_covRle(
 )
 }
 \arguments{
-\item{df}{an ORFik \code{\link{experiment}}}
+\item{df}{an ORFik \code{\link{experiment}}, or NULL is allowed if
+both in_files and out_dir is specified manually.}
 
 \item{in_files}{paths to input files, default pshifted files:
 \code{filepath(df, "pshifted")} in ofst format}

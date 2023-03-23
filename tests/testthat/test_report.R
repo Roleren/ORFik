@@ -11,7 +11,7 @@ test_that("Experiment class created as intended", {
 
 test_that("Experiment class created as intended", {
   # test from example table in orfik
-  expect_equal(ncol(df), 6)
+  expect_equal(ncol(df), 7)
 })
 
 test_that("Experiment slot access works as intended", {
