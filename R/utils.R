@@ -245,7 +245,7 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
   #   seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs)
   # }
   if (!is.null(chrStyle)) {
-    valid_seq_style <- try(seqlevelsStyle(a), silent = T)
+    valid_seq_style <- try(seqlevelsStyle(a), silent = TRUE)
     valid_seq_style <- !is(valid_seq_style, "try-error")
     if (valid_seq_style) {
       if (is.character(chrStyle)) {

@@ -53,8 +53,9 @@ But here we will show you how to do direct import of files.
 To load a file, usually it is sufficient to use fimport.
 
 ### Bam files
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 # Use bam file that exists in ORFik package
+library(ORFik)
 bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 footprints <- fimport(bam_file)
 # This is identical to:
@@ -66,7 +67,7 @@ convert to something faster (described bellow)
 
 ### Other formats
 Other formats are loaded in the same way
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 # Use bam file that exists in ORFik package
 ofst_file <- system.file("extdata/Danio_rerio_sample/ofst", "ribo-seq.ofst", package = "ORFik")
 footprints <- fimport(ofst_file)
@@ -82,7 +83,7 @@ the files loaded already or not
 There are several converters in ORFik, here are some examples:
 
 #### BAM to OFST (keep cigar information)
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 ofst_out_dir <- file.path(tempdir(), "ofst/")
 convert_bam_to_ofst(NULL, bam_file, ofst_out_dir)
 # Find the file again
@@ -96,7 +97,7 @@ Bigwig is a bit special, in that it is very fast (and good compression),
 but to make it failsafe we need the information about size for all chromosomes.
 Bioconductor functions are very picky about correct chromosome sizes of GRanges
 objects etc.
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 bigwig_out_dir <- file.path(tempdir(), "bigwig/")
 convert_to_bigWig(NULL, bam_file, bigwig_out_dir, 
                   seq_info = seqinfo(BamFile(bam_file)))
@@ -115,7 +116,7 @@ For details, see ?convertLibs and ?convertToOneBasedRanges()
 ## Random access
 
 The really cool thing with bigwig is that it has very fast random access.
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 bigwig_file <- list.files(bigwig_out_dir, full.names = TRUE) 
 # Let us access a location without loading the full file.
 random_point <- GRangesList(GRanges("chr24", 22711508, "-"))
@@ -127,7 +128,7 @@ rtracklayer::import.bw(bigwig_for_random_point, as = "NumericList",
 ```
 
 ORFik also has an automatic wrapper to transcript coordinates: As data.table 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 
 dt <- coveragePerTiling(random_point, bigwig_file)
 dt # Position is 1, because it is relative to first
@@ -146,10 +147,12 @@ If you don't have the annotation yet on your hard drive,
 to get these two files for your organism, ORFik supports a direct downloader of
 annotation from ENSEMBL/refseq, for yeast it would look like this:
 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 library(ORFik)
 organism <- "Saccharomyces cerevisiae" # Baker's yeast
-output_dir <- tempdir() # Let's just store it to temp
+output_dir <- tempdir() 
+# This is where you should usually store you annotation references ->
+# file.path(ORFik::config()["ref"], gsub(" ", "_", organism))
 annotation <- getGenomeAndAnnotation(
                     organism = organism,
                     output.dir = output_dir,
@@ -169,7 +172,7 @@ import time go from minutes to less than a second.
 If you don't want to use getGenomeAndAnnotation, you can do it for your own annotation 
 like this:
 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 # Index fasta genome
 indexFa(genome)
 # Make TxDb object for large speedup:
@@ -179,7 +182,7 @@ The txdb is saved in the same as gtf with a ".db" extension.
 
 ## Loading Genome index (fasta index)
 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
 # Access a FaFile
 fa <- findFa(genome)
 # Get chromosome information
@@ -193,7 +196,7 @@ txSeqsFromFa(GRangesList(GRanges("I", 1:10, "+"), GRanges("II", 1:10, "+")), fa,
 
 ORFik makes it very easy to load specific regions from a txdb. 
 We already have the txdb loaded, but let us load it again 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
   txdb_path <- paste0(gtf, ".db")
   txdb <- loadTxdb(txdb_path)
 ```
@@ -207,7 +210,7 @@ Lets get these regions of the transcripts:
 - Leaders (5' UTRs)
 - CDS (Coding sequences, main ORFs)
 - Trailers (3' UTRs)
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
   loadRegion(txdb, "tx")
   loadRegion(txdb, "mrna")
   loadRegion(txdb, "leaders")
@@ -232,18 +235,18 @@ Let's say you only want mRNAs, which have these properties:
 - Trailers >= 0nt
 
 We can in ORFik get this with:
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
   tx_to_keep <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 150, minThreeUTR = 0)
   loadRegion(txdb, "mrna")
 ```
 But what if you do this?
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
   filterTranscripts(txdb, minFiveUTR = 10, minCDS = 150, minThreeUTR = 0)
 ```
 
 You see the SacCer3 Yeast gtf does not have any defined leaders at size 10, because
 the annotation is incomplete. Luckily ORFik supports creating pseudo 5' UTRs.
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
   txdb <- makeTxdbFromGenome(gtf, genome, organism, optimize = TRUE, return = TRUE, 
                              pseudo_5UTRS_if_needed = 100)
   filterTranscripts(txdb, minFiveUTR = 10, minCDS = 150, minThreeUTR = 0)[1:3]
@@ -254,7 +257,7 @@ see the 'working with transcripts vignette'.
 ### Loading Transcript regions (filtering by canonical isoform)
 To get canonical mRNA isoform (primary isoform defined e.g. by Ensembl)
 
-```{r eval = FALSE, echo = TRUE, message = FALSE}
+```{r eval = TRUE, echo = TRUE, message = FALSE}
   filterTranscripts(txdb, minFiveUTR = 0, minCDS = 1, minThreeUTR = 0, 
                     longestPerGene = TRUE)
 ```
