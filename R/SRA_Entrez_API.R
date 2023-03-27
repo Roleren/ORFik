@@ -21,7 +21,8 @@ SRP_from_GSE <- function(SRP) {
 }
 
 
-sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract) {
+sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
+                                   remove.invalid) {
   # Download xml and add more data
   xml <- sample_info_download(SRP)
 
@@ -47,7 +48,7 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract) {
   dt <- add_author(dt)
   # Save abstract
   abstract_save(EXP_SAMPLE, abstract, abstract_destfile)
-  return(filter_empty_runs(dt))
+  return(filter_empty_runs(dt, remove.invalid))
 }
 
 sample_info_single <- function(EXP_SAMPLE) {
@@ -57,6 +58,7 @@ sample_info_single <- function(EXP_SAMPLE) {
   for (j in seq_along(EXP_SAMPLE$RUN_SET)) {
     RUN <- EXP_SAMPLE$RUN_SET[j]$RUN
     xml.RUN <- unlist(RUN$IDENTIFIERS$PRIMARY_ID)
+
     spots <- as.integer(attr(RUN, "total_spots"))
     bases <- as.numeric(attr(RUN, "total_bases"))
     # spots_with_mates <- 0
@@ -71,8 +73,10 @@ sample_info_single <- function(EXP_SAMPLE) {
   # Sample info (only 1 row per sample)
   # Library
   lib_design <- EXP_SAMPLE$EXPERIMENT$DESIGN$LIBRARY_DESCRIPTOR
-  LibraryName <- lib_design$LIBRARY_NAME[[1]]
-  if (is.null(LibraryName)) LibraryName <- NA
+  if (length(lib_design$LIBRARY_NAME) == 0) {
+    LibraryName <- NA
+  } else LibraryName <- lib_design$LIBRARY_NAME[[1]]
+
   LibraryStrategy <- lib_design$LIBRARY_STRATEGY[[1]]
   LibrarySelection <- lib_design$LIBRARY_SELECTION[[1]]
   LibrarySource <- lib_design$LIBRARY_SOURCE
@@ -205,7 +209,7 @@ add_author <- function(file) {
   return(file)
 }
 
-filter_empty_runs <- function(dt) {
+filter_empty_runs <- function(dt, remove.invalid = TRUE) {
   # Filter
   if (nrow(dt) == 0) {
     warning("Experiment not found on SRA, are you sure it is public?")
@@ -214,10 +218,11 @@ filter_empty_runs <- function(dt) {
 
   msg <- paste("Found Runs with 0 reads (spots) in metadata, will not be able
               to download the run/s:", dt[spots == 0,]$Run)
+  dt[is.na(spots), spots := 0]
   if (any(dt$spots == 0)) {
     warning(msg)
     if (remove.invalid) {
-      warning("Removing invalid Runs from final metadata list")
+      message("Removing invalid Runs from final metadata list")
       dt <- dt[spots > 0,]
     }
   }

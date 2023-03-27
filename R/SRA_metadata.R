@@ -83,7 +83,8 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
   if (is_GSE) SRP <- SRP_from_GSE(SRP)
 
 
-  file <- sample_info_append_SRA(SRP, destfile, abstract_destfile, abstract)
+  file <- sample_info_append_SRA(SRP, destfile, abstract_destfile, abstract,
+                                 remove.invalid)
 
   # Create ORFik guess columns from metadata:
   if (auto.detect) {

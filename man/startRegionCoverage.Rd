@@ -53,6 +53,19 @@ start site.
 If tx is null, then upstream will be force to 0 and downstream to
 a maximum of grl width. Since there is no reference for splicing.
 }
+\examples{
+ORF <- GRanges(seqnames = "1",
+               ranges = IRanges(21, 40),
+               strand = "+")
+names(ORF) <- c("tx1")
+grl <- GRangesList(tx1 = ORF)
+tx <- extendLeaders(grl, 20)
+# 1 width p-shifted reads
+reads <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+                            width = 1), "+")
+score(reads) <- 28 # original width
+startRegionCoverage(grl, reads, tx)
+}
 \seealso{
 Other features: 
 \code{\link{computeFeaturesCage}()},

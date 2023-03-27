@@ -562,6 +562,19 @@ ribosomeStallingScore <- function(grl, RFP, weight = 1L, overlapGrl = NULL) {
 #' @inheritParams getWeights
 #' @family features
 #' @return a numeric vector of counts
+#' @export
+#' @examples
+#' ORF <- GRanges(seqnames = "1",
+#'                ranges = IRanges(21, 40),
+#'                strand = "+")
+#' names(ORF) <- c("tx1")
+#' grl <- GRangesList(tx1 = ORF)
+#' tx <- extendLeaders(grl, 20)
+#' # 1 width p-shifted reads
+#' reads <- GRanges("1", IRanges(c(21, 23, 50, 50, 50, 53, 53, 56, 59),
+#'                             width = 1), "+")
+#' score(reads) <- 28 # original width
+#' startRegionCoverage(grl, reads, tx)
 startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
                                 upstream = 2L, downstream = 2L, weight = 1L) {
   region <- startRegion(grl, tx, is.sorted, upstream, downstream)

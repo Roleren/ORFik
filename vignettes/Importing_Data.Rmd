@@ -240,7 +240,8 @@ We can in ORFik get this with:
   loadRegion(txdb, "mrna")
 ```
 But what if you do this?
-```{r eval = TRUE, echo = TRUE, message = FALSE}
+```{r eval = FALSE, echo = TRUE, message = FALSE}
+  # This fails!
   filterTranscripts(txdb, minFiveUTR = 10, minCDS = 150, minThreeUTR = 0)
 ```
 
