@@ -128,6 +128,9 @@
 #' ## Optimize for ORFik (speed up for large annotations like human or zebrafish)
 #' #getGenomeAndAnnotation("Danio rerio", tempdir(), optimize = TRUE)
 #'
+#' # Drosophila melanogaster (toplevel exists only)
+#' #getGenomeAndAnnotation("drosophila melanogaster", output.dir = file.path(config["ref"],
+#' # "Drosophila_melanogaster_BDGP6"), assembly_type = "toplevel")
 #' ## How to save malformed refseq gffs:
 #' ## First run function and let it crash:
 #' #annotation <- getGenomeAndAnnotation(organism = "Arabidopsis thaliana", output.dir = "~/Desktop/test_plant/",
