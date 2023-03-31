@@ -377,6 +377,12 @@ findUORFs <- function(fiveUTRs, fa, startCodon = startDefinition(1),
 
 #' @inherit findUORFs
 #' @param df a txdb or \code{\link{experiment}}
+#' @param faFile FaFile of genome, default findFa(df). Default only works for
+#' ORFik experiments, if TxDb, input manually like: findFa(genome_path)
+#' @param leaders GRangesList, default: loadRegion(txdb, "leaders").
+#' If you do not have any good leader annotation, a hack is to use
+#' \code{ORFik:::groupGRangesBy(startSites(loadRegion(txdb, "cds"),
+#'  asGR = TRUE, keep.names = TRUE, is.sorted = TRUE))}
 #' @param overlappingCDS logical, default FALSE. Include uORFs that overlap CDS.
 #' @param save_optimized logical, default FALSE. If TRUE, save in the optimized
 #' folder for the experiment. You must have made this directory before running
@@ -390,7 +396,9 @@ findUORFs <- function(fiveUTRs, fa, startCodon = startDefinition(1),
 #' findUORFs_exp(df)
 #' # Include cds overlapping uorfs
 #' findUORFs_exp(df, overlappingCDS = TRUE)
-findUORFs_exp <- function(df, startCodon = startDefinition(1),
+findUORFs_exp <- function(df, faFile = findFa(df),
+                          leaders = loadRegion(txdb, "leaders"),
+                          startCodon = startDefinition(1),
                           stopCodon = stopDefinition(1), longestORF = TRUE,
                           minimumLength = 0, overlappingCDS = FALSE,
                           cage = NULL, extension = 1000, filterValue = 1,
@@ -398,12 +406,14 @@ findUORFs_exp <- function(df, startCodon = startDefinition(1),
                           save_optimized = FALSE) {
   txdb <- loadTxdb(df)
   cds <- NULL
-  if (overlappingCDS) cds <- loadRegion(txdb, "leaders")
+  if (overlappingCDS) {
+    cds <- loadRegion(txdb, "cds")
+  }
   uorfs <-
-    findUORFs(loadRegion(txdb, "leaders"), findFa(df),
+    findUORFs(leaders, faFile,
               startCodon = startCodon,
               stopCodon = stopCodon, longestORF = longestORF,
-              minimumLength = minimumLength, cds = ,
+              minimumLength = minimumLength, cds = cds,
               cage = cage, extension = extension, filterValue = filterValue,
               restrictUpstreamToTx = restrictUpstreamToTx,
               removeUnused = removeUnused)

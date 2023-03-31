@@ -6,6 +6,8 @@
 \usage{
 findUORFs_exp(
   df,
+  faFile = findFa(df),
+  leaders = loadRegion(txdb, "leaders"),
   startCodon = startDefinition(1),
   stopCodon = stopDefinition(1),
   longestORF = TRUE,
@@ -21,6 +23,14 @@ findUORFs_exp(
 }
 \arguments{
 \item{df}{a txdb or \code{\link{experiment}}}
+
+\item{faFile}{FaFile of genome, default findFa(df). Default only works for
+ORFik experiments, if TxDb, input manually like: findFa(genome_path)}
+
+\item{leaders}{GRangesList, default: loadRegion(txdb, "leaders").
+If you do not have any good leader annotation, a hack is to use
+\code{ORFik:::groupGRangesBy(startSites(loadRegion(txdb, "cds"),
+ asGR = TRUE, keep.names = TRUE, is.sorted = TRUE))}}
 
 \item{startCodon}{(character vector) Possible START codons to search for.
 Check \code{\link{startDefinition}} for helper function. Note that it is

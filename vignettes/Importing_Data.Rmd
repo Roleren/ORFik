@@ -211,11 +211,11 @@ Lets get these regions of the transcripts:
 - CDS (Coding sequences, main ORFs)
 - Trailers (3' UTRs)
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
-  loadRegion(txdb, "tx")
-  loadRegion(txdb, "mrna")
-  loadRegion(txdb, "leaders")
-  loadRegion(txdb, "cds")
-  loadRegion(txdb, "trailers")
+  loadRegion(txdb, "tx")[1]
+  loadRegion(txdb, "mrna")[1]
+  loadRegion(txdb, "leaders")[1]
+  loadRegion(txdb, "cds")[1]
+  loadRegion(txdb, "trailers")[1]
 ```
 
 These are output as GRangesList, which are list elements of GRanges 
@@ -260,7 +260,16 @@ To get canonical mRNA isoform (primary isoform defined e.g. by Ensembl)
 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
   filterTranscripts(txdb, minFiveUTR = 0, minCDS = 1, minThreeUTR = 0, 
-                    longestPerGene = TRUE)
+                    longestPerGene = TRUE)[1:3]
 ```
 
 You here get all canonical isoform mRNAs (cds exists since minCDS >= 1)
+
+### Loading uORF annotation
+You can also add in a uORF annotation defined by ORFik, like this:
+Here we needed the pseudo leaders (5' UTRs), because the yeast SacCer3 genome 
+has no proper leader definitions. 
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+  findUORFs_exp(txdb, findFa(genome), startCodon = "ATG|CTG", save_optimized = TRUE)
+  loadRegion(txdb, "uorfs")
+```
