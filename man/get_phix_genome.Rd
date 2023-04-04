@@ -29,9 +29,12 @@ This function automatically downloads (if files not already exists)
 genomes and contaminants specified for genome alignment.
 Will create a R transcript database (TxDb object) from the annotation. \cr
 It will also index the genome for you\cr
+By default, upon completion, the function will store
+a file called \code{file.path(output.dir, "outputs.rds")} with
+the output paths of your completed genome/annotation downloads.
 If you misspelled something or crashed, delete wrong files and
 run again.\cr
-Do remake = TRUE, to do it all over again.
+Do remake = TRUE, to do it all over again.\cr
 }
 \details{
 If you want custom genome or gtf from you hard drive, assign it

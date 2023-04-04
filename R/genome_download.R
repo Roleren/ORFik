@@ -4,9 +4,12 @@
 #' genomes and contaminants specified for genome alignment.
 #' Will create a R transcript database (TxDb object) from the annotation. \cr
 #' It will also index the genome for you\cr
+#' By default, upon completion, the function will store
+#' a file called \code{file.path(output.dir, "outputs.rds")} with
+#' the output paths of your completed genome/annotation downloads.
 #' If you misspelled something or crashed, delete wrong files and
 #' run again.\cr
-#' Do remake = TRUE, to do it all over again.
+#' Do remake = TRUE, to do it all over again.\cr
 #'
 #' If you want custom genome or gtf from you hard drive, assign it
 #' after you run this function, like this:\cr
@@ -156,7 +159,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    remove_annotation_outliers = TRUE,
                                    notify_load_existing = TRUE) {
   # Pre checks
-  finished.file <- paste0(output.dir, "/outputs.rds")
+  finished.file <- file.path(output.dir, "outputs.rds")
   if (file.exists(finished.file) & !remake) {
     if (notify_load_existing) message("Loading premade Genome files,",
                                   " do remake = TRUE if you want to run again")
