@@ -72,6 +72,7 @@ df.rna <- df[df$libtype == "RNA",]
 }
 \seealso{
 Other DifferentialExpression: 
+\code{\link{DEG_model}()},
 \code{\link{DTEG.analysis}()},
 \code{\link{DTEG.plot}()},
 \code{\link{te.table}()},

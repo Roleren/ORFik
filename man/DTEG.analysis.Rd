@@ -173,6 +173,7 @@ doi: 10.1002/cpmb.108
 \seealso{
 Other DifferentialExpression: 
 \code{\link{DEG.plot.static}()},
+\code{\link{DEG_model}()},
 \code{\link{DTEG.plot}()},
 \code{\link{te.table}()},
 \code{\link{te_rna.plot}()}

@@ -17,104 +17,31 @@
 #' Remember that DESeq by default can not
 #' do global change analysis, it can only find subsets with changes in LFC!
 #' @inherit DTEG.analysis
-#' @export
-#' @param df a \code{\link{experiment}} of usually RNA-seq.
+#' @param df an \code{\link{experiment}} of usually RNA-seq.
 #' @param counts a SummarizedExperiment, default:
 #' countTable(df, "mrna", type = "summarized"), all transcripts.
 #' Assign a subset if you don't want to analyze all genes.
 #' It is recommended to not subset, to give DESeq2 data for variance analysis.
+#' @return a data.table with columns:
+#' (contrast variable, gene id, regulation status, log fold changes, p.adjust values, mean counts)
+#' @export
 #' @examples
-#' ## Simple example (use ORFik template, then split on Ribo and RNA)
+#' ## Simple example (use ORFik template, then use only RNA-seq)
 #' df <- ORFik.template.experiment()
 #' df.rna <- df[df$libtype == "RNA",]
 #' design(df.rna) # The full experimental design
 #' design(df.rna)[1] # Default target contrast
 #' #dt <- DEG.analysis(df.rna)
-DEG.analysis <- function(df, output.dir = QCfolder(df),
-                         target.contrast = design[1],
-                         design = ORFik::design(df),
-                         p.value = 0.05,
+DEG.analysis <- function(df, target.contrast = design[1],
+                         design = ORFik::design(df), p.value = 0.05,
                          counts = countTable(df, "mrna", type = "summarized"),
-                         batch.effect = TRUE, pairs = combn.pairs(unlist(df[, target.contrast])),
-                         plot.title = "", plot.ext = ".pdf", width = 6,
-                         height = 6, dot.size = 0.4,
-                         relative.name = paste0("DEG_plot", plot.ext)) {
-  message("----------------------")
-  message("Input check:")
-  if (!is(df, "experiment"))
-    stop("df must be ORFik experiments!")
-  if (!is(design, "character") | length(design) == 0) {
-    stop("Design must be character of length > 0, don't use formula as input here")
-  }
-  if (!is(target.contrast, "character") | (length(target.contrast) != 1)){
-    stop("target.contrast must be character of length 1, don't use formula as input here")
-  }
-  if (!(target.contrast %in% design))
-    stop("target.contrast must be a column in the 'design' argument")
-  if ("rep" %in% design) stop("Do not use rep in design, use batch.effect argument")
-  if (length(unique(unlist(df[, target.contrast]))) == 1)
-    stop("target.contrast column needs at least 2 unique values, to be able to compare anything!")
-  if (nrow(df) < 4)
-    stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
-  if (p.value > 1 | p.value <= 0)
-    stop("p.value must be in interval (0,1]")
-  if (!is(counts, "SummarizedExperiment")) stop("counts must be of type SummarizedExperiment")
-
-  # Design
-  be <- ifelse(batch.effect, "replicate + ", "")
-  main.design <- as.formula(paste("~", be, paste(design, collapse = " + ")))
-  message("----------------------")
-  message("Full exp design: ", main.design)
-  message("Target contrast: ", target.contrast)
-  message("----------------------")
-
-  message("Creating DESeq model:")
-  message("----------------------")
-  ddsMat_rna <- DESeqDataSet(se = counts, design = main.design)
-  ddsMat_rna <- DESeq(ddsMat_rna)
-  message("----------------------")
-
-  # Per contrast
-  dt.between <- data.table()
-  #dt.between <- bplapply(pairs[1:2], FUN = function(i, dds.te, ddsMat_ribo, ddsMat_rna, design) {
-  for(i in pairs) {
-    name <- paste("Comparison:", i[1], "vs", i[2])
-    message(name)
-    # Results
-    current.contrast <- c(target.contrast, i[1], i[2])
-    res_rna <- results(ddsMat_rna, contrast = current.contrast)
-    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
-                                          res = res_rna, type = "normal"))
-
-    # The differential regulation groupings (padj is padjusted)
-    expressed <- which(res_rna$padj < p.value)
-
-    n <- rownames(res_rna)
-    Regulation <- rep("No change", nrow(res_rna))
-    Regulation[expressed] <- "Significant" # Old Buffering
-    print(table(Regulation))
-
-
-    dt.between <-
-      rbindlist(list(dt.between,
-                     data.table(contrast = name,
-                                Regulation = Regulation,
-                                id = rownames(ddsMat_rna),
-                                meanCounts = res_rna$baseMean,
-                                LFC = res_rna$log2FoldChange,
-                                padj = res_rna$padj
-                     )))
-  }
-  dt.between[, Regulation :=
-               factor(Regulation,
-                      levels = c("No change", "Significant"),
-                      ordered = TRUE)]
-  # Plot the result
-  message("----------------------")
-  #message("Plotting all results")
-  #plot <- DEG.plot(dt.between, output.dir, p.value, plot.title, width, height,
-  #                  dot.size, relative.name = relative.name)
-  return(dt.between)
+                         batch.effect = TRUE,
+                         pairs = combn.pairs(unlist(df[, target.contrast]))) {
+  # Get DESeq model
+  ddsMat_rna <- DEG_model(df, target.contrast, design, p.value,
+                          counts, batch.effect)
+  # Do result analysis: per contrast selected
+  return(DEG_model_results(ddsMat_rna, target.contrast, pairs, p.value))
 }
 
 #' Run differential TE analysis
@@ -242,29 +169,11 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           batch.effect = FALSE, pairs = combn.pairs(unlist(df.rfp[, design])),
                           plot.title = "", plot.ext = ".pdf", width = 6,
                           height = 6, dot.size = 0.4,
-                          relative.name = paste0("DTEG_plot", plot.ext), complex.categories = FALSE) {
-  message("----------------------")
-  message("Input check:")
-  if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
-    stop("df.rfp and df.rna must be ORFik experiments!")
-  if (!is(design, "character") | length(design) == 0) {
-    stop("Design must be character of length > 0, don't use formula as input here")
-  }
-  if (!is(target.contrast, "character") | (length(target.contrast) != 1)){
-    stop("target.contrast must be character of length 1, don't use formula as input here")
-  }
-  if (!(target.contrast %in% design))
-    stop("target.contrast must be a column in the 'design' argument")
-  if ("rep" %in% design) stop("Do not use rep in design, use batch.effect argument")
-  if (length(unique(unlist(df.rfp[, target.contrast]))) == 1)
-    stop("target.contrast column needs at least 2 unique values, to be able to compare anything!")
-  if (nrow(df.rfp) < 4)
-    stop("Experiment needs at least 4 rows, with minimum 2 per design group!")
-  if (p.value > 1 | p.value <= 0)
-    stop("p.value must be in interval (0,1]")
-  if (!is(RFP_counts, "SummarizedExperiment") |
-      !is(RNA_counts, "SummarizedExperiment")) stop("counts must be of type SummarizedExperiment")
-  if (nrow(RFP_counts) != nrow(RNA_counts)) stop("counts must have equall number of rows!")
+                          relative.name = paste0("DTEG_plot", plot.ext),
+                          complex.categories = FALSE) {
+  # Input validation
+  DTEG_input_validation(df.rfp, df.rna, RFP_counts, RNA_counts, design,
+                        target.contrast, p.value)
 
   # Designs
   be <- ifelse(batch.effect, "replicate + ", "")
@@ -277,106 +186,33 @@ DTEG.analysis <- function(df.rfp, df.rna,
   message("Interaction design: ", te.design)
   message("Target -- contrast: ", target.contrast)
   message("----------------------")
-  # TE
+  # TE count table (cbind of both)
   se <- cbind(assay(RFP_counts), assay(RNA_counts))
   colData <- rbind(colData(RFP_counts), colData(RNA_counts))
   combined_se <- SummarizedExperiment(list(counts = se),
                                       rowRanges = rowRanges(RFP_counts),
                                       colData = colData)
-  #combined_se <- combined_se[rowMeans(assay(combined_se)) > 1,]
-  message("----------------------"); message("Model 1/3: TE")
+  ## DESeq models (total: 3)
+  # TE
   message("----------------------")
-  combined_DESEQ <- DESeqDataSet(combined_se, design = te.design)
-  dds.te <- DESeq2::DESeq(combined_DESEQ)
-  resultsNames(dds.te)
+  ddsMat_te <- DEG_DESeq(combined_se, te.design, "Model 1/3: TE")
 
   # Ribo
-  message("----------------------"); message("Model 2/3: Ribo-seq")
-  message("----------------------")
-  ddsMat_ribo <- DESeqDataSet(se = RFP_counts, design = main.design)
-  ddsMat_ribo <- DESeq(ddsMat_ribo)
+  ddsMat_ribo <- DEG_DESeq(RFP_counts, main.design, "Model 2/3: Ribo-seq")
 
   # RNA
-  message("----------------------"); message("Model 3/3: RNA-seq")
-  message("----------------------")
-  ddsMat_rna <- DESeqDataSet(se = RNA_counts, design = main.design)
-  ddsMat_rna <- DESeq(ddsMat_rna)
-  message("----------------------")
+  ddsMat_rna <- DEG_DESeq(RNA_counts, main.design, "Model 3/3: RNA-seq")
 
-  # Per contrast
-  dt.between <- data.table()
-  #dt.between <- bplapply(pairs[1:2], FUN = function(i, dds.te, ddsMat_ribo, ddsMat_rna, design) {
-  for(i in pairs) {
-    name <- paste("Comparison:", i[1], "vs", i[2])
-    message(name)
-    # Results
-    current.contrast <- c(target.contrast, i[1], i[2])
-    res_te <- results(dds.te, contrast = current.contrast)
+  # Do result analysis: per contrast selected
+  dt <- DTEG_model_results(ddsMat_rna, ddsMat_ribo, ddsMat_te,
+                           target.contrast, pairs, p.value = 0.05,
+                           complex.categories)
 
-    res_ribo <- results(ddsMat_ribo, contrast = current.contrast)
-    suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast,
-                                           res=res_ribo, type = "normal"))
-
-    res_rna <- results(ddsMat_rna, contrast = current.contrast)
-    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
-                                          res = res_rna, type = "normal"))
-
-    # The differential regulation groupings (padj is padjusted)
-    both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
-    ## The 4 classes of genes
-    # Forwarded are non significant in TE, diagonal line
-    forwarded <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj < p.value & res_rna$padj < p.value)]
-    # These two are the X and Y axis
-    exclusive.translation <- rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj > p.value)]
-    exclusive.expression <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj > p.value & res_rna$padj < p.value)]
-    # These are the remaining groups
-    intensified <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] > 0)]] # Called mRNA abundance
-    inverse <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] < 0)]]
-    buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)])
-    # buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)],
-    #               buffered)
-
-    n <- rownames(res_te)
-    Regulation <- rep("No change", nrow(res_te))
-    Regulation[n %in% forwarded] <- "Forwarded" # Old Buffering
-    Regulation[n %in% buffered] <- "Buffering"
-    Regulation[n %in% inverse] <- "Inverse"
-    Regulation[n %in% exclusive.translation] <- "Translation"
-    Regulation[n %in% exclusive.expression] <- "Expression"
-    Regulation[n %in% intensified] <- "mRNA abundance"
-
-    if (!complex.categories) {
-      Regulation[n %in% exclusive.expression] <- "Buffering"
-      Regulation[n %in% inverse] <- "Buffering"
-      Regulation[n %in% forwarded] <- "Buffering"
-    }
-    print(table(Regulation))
-
-
-    dt.between <-
-      rbindlist(list(dt.between,
-                     data.table(contrast = name,
-                                Regulation = Regulation,
-                                id = rownames(ddsMat_rna),
-                                rna = res_rna$log2FoldChange,
-                                rfp = res_ribo$log2FoldChange,
-                                te = res_te$log2FoldChange,
-                                rna.padj = res_rna$padj,
-                                rfp.padj = res_ribo$padj,
-                                te.padj = res_te$padj,
-                                rna.meanCounts = res_rna$baseMean,
-                                rfp.meanCounts = res_ribo$baseMean
-                     )))
-  }
-  dt.between[, Regulation :=
-               factor(Regulation,
-                      levels = c("No change", "Translation", "Buffering", "mRNA abundance", "Expression", "Forwarded", "Inverse"),
-                      ordered = TRUE)]
   # Plot the result
   message("----------------------"); message("Plotting all results")
-  plot <- DTEG.plot(dt.between, output.dir, p.value, plot.title, width, height,
+  plot <- DTEG.plot(dt, output.dir, p.value, plot.title, width, height,
                     dot.size, relative.name = relative.name)
-  return(dt.between)
+  return(dt)
 }
 
 #' Create a TE table

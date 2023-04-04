@@ -3,6 +3,8 @@
 export("envExp<-")
 export(DEG.analysis)
 export(DEG.plot.static)
+export(DEG_model)
+export(DEG_model_results)
 export(DTEG.analysis)
 export(DTEG.plot)
 export(ORFik.template.experiment)

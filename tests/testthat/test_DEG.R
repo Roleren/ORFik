@@ -6,7 +6,7 @@ df.rna <- df[df$libtype == "RNA",]
 df.rfp <- df[df$libtype == "RFP",]
 
 test_that("DEG analysis works", {
-  dt <- suppressWarnings(DEG.analysis(df.rna, output.dir = NULL))
+  dt <- suppressWarnings(DEG.analysis(df.rna))
   expect_is(dt, "data.table")
   expect_equal(nrow(dt), 6)
   expect_equal(unique(as.character(dt$Regulation)), "No change")
