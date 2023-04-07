@@ -360,6 +360,10 @@ filepath_errors <- function(format) {
 #' - "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
 #' - "bed": Load bed files, from bed folder (falls back to default)\cr
 #' - Other formats must be loaded directly with fimport
+#' @param paths character vector, the filpaths to use,
+#' default \code{filepath(df, type)}. Change type argument if not correct.
+#' If that is not enough, then you can also update this argument.
+#' But be careful about using this directly.
 #' @param naming a character (default: "minimum"). Name files as minimum
 #' information needed to make all files unique. Set to "full" to get full
 #' names. Set to "fullexp", to get full name with experiment name as prefix,
@@ -372,6 +376,9 @@ filepath_errors <- function(format) {
 #' \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
 #' \code{envExp(df) <- new.env()} etc.
 #' @param verbose logical, default TRUE, message about library output status.
+#' @param force logical, default FALSE. If TRUE, reload files even if
+#' matching named variables are found in environment. A simple way to make
+#' sure correct libraries are always loaded.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
@@ -400,10 +407,10 @@ filepath_errors <- function(format) {
 #' # outputLibs(df)
 #'
 #' @family ORFik_experiment
-outputLibs <- function(df, chrStyle = NULL, type = "default",
+outputLibs <- function(df, type = "default", paths = filepath(df, type),
                        param = NULL, strandMode = 0, naming = "minimum",
-                       output.mode = "envir",
-                       envir = envExp(df), verbose = TRUE,
+                       output.mode = "envir", chrStyle = NULL,
+                       envir = envExp(df), verbose = TRUE, force = TRUE,
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   dfl <- df
@@ -421,9 +428,8 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
       } else loaded <- append(loaded, FALSE)
     }
     # Par apply
-    if (!all(loaded)) {
+    if (!all(loaded) | force) {
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
-      paths <- filepath(df, type)
       if (is(BPPARAM, "SerialParam")) {
         libs <- lapply(seq_along(paths),
                        function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
@@ -441,7 +447,6 @@ outputLibs <- function(df, chrStyle = NULL, type = "default",
                          param = param, strandMode = strandMode, varNames = varNames,
                          verbose = verbose, BPPARAM = BPPARAM)
       }
-
 
       # assign to environment
       if (output.mode %in% c("envir", "envirlist")) {

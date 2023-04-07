@@ -6,29 +6,21 @@
 \usage{
 outputLibs(
   df,
-  chrStyle = NULL,
   type = "default",
+  paths = filepath(df, type),
   param = NULL,
   strandMode = 0,
   naming = "minimum",
   output.mode = "envir",
+  chrStyle = NULL,
   envir = envExp(df),
   verbose = TRUE,
+  force = TRUE,
   BPPARAM = bpparam()
 )
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
-
-\item{chrStyle}{a GRanges object, TxDb, FaFile,
-, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
-(Default: NULL) to get seqlevelsStyle from. In addition if it
-is a Seqinfo object, seqinfo will be updated.
-Example of seqlevelsStyle update:
-Is chromosome 1 called chr1 or 1,
- is mitocondrial chromosome called MT or chrM etc.
-Will use 1st seqlevel-style if more are present.
-Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, like "ofst" or "pshifted".
@@ -46,6 +38,11 @@ to default lib folder, some types fall back to other formats if folder does not 
 - "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
 - "bed": Load bed files, from bed folder (falls back to default)\cr
 - Other formats must be loaded directly with fimport}
+
+\item{paths}{character vector, the filpaths to use,
+default \code{filepath(df, type)}. Change type argument if not correct.
+If that is not enough, then you can also update this argument.
+But be careful about using this directly.}
 
 \item{param}{\code{NULL} or a \link[Rsamtools]{ScanBamParam} object.
     Like for \code{\link[Rsamtools]{scanBam}}, this influences what fields
@@ -85,11 +82,25 @@ Alternative: "list", return as list. "envirlist", output to envir and return
 as list. If output is list format, the list elements are named from:
 \code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)}
 
+\item{chrStyle}{a GRanges object, TxDb, FaFile,
+, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+(Default: NULL) to get seqlevelsStyle from. In addition if it
+is a Seqinfo object, seqinfo will be updated.
+Example of seqlevelsStyle update:
+Is chromosome 1 called chr1 or 1,
+ is mitocondrial chromosome called MT or chrM etc.
+Will use 1st seqlevel-style if more are present.
+Like: c("NCBI", "UCSC") -> pick "NCBI"}
+
 \item{envir}{environment to save to, default
 \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
 \code{envExp(df) <- new.env()} etc.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
+
+\item{force}{logical, default FALSE. If TRUE, reload files even if
+matching named variables are found in environment. A simple way to make
+sure correct libraries are always loaded.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
