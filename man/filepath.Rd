@@ -4,7 +4,13 @@
 \alias{filepath}
 \title{Get filepaths to ORFik experiment}
 \usage{
-filepath(df, type, basename = FALSE)
+filepath(
+  df,
+  type,
+  basename = FALSE,
+  fallback = type \%in\% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
+  suffix_stem = "AUTO"
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -28,15 +34,23 @@ to default lib folder, some types fall back to other formats if folder does not 
 
 \item{basename}{logical, default (FALSE).
 Get relative paths instead of full. Only use for inspection!}
+
+\item{fallback}{logical, default: type %in% c("pshifted", "bed", "ofst", "bedoc", "bedo").
+If TRUE, will use type fallback, see above for info.}
+
+\item{suffix_stem}{character, default "AUTO". Which is "" for all except
+type = "pshifted". Then it is "_pshifted" appended to end of names before
+format. Can be vector, then it searches suffixes in priority: so if you insert
+ c("_pshifted", ""), it will look for suffix _pshifted, then the empty suffix.}
 }
 \value{
 a character vector of paths, or a list of character with 2 paths per,
 if paired libraries exists
 }
 \description{
-If other type than "default" is given and that type is not found,
-it will return you ofst files, if they do not exist, then
-default filepaths without warning. \cr
+If other type than "default" is given and that type is not found
+(and 'fallback' is TRUE), it will return you ofst files, if they do not exist,
+then default filepaths without warning. \cr
 }
 \details{
 For pshifted libraries, if "pshifted" is specified as type: if

@@ -213,9 +213,9 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 
 #' Get filepaths to ORFik experiment
 #'
-#' If other type than "default" is given and that type is not found,
-#' it will return you ofst files, if they do not exist, then
-#' default filepaths without warning. \cr
+#' If other type than "default" is given and that type is not found
+#' (and 'fallback' is TRUE), it will return you ofst files, if they do not exist,
+#' then default filepaths without warning. \cr
 #'
 #' For pshifted libraries, if "pshifted" is specified as type: if
 #'  if multiple formats exist it will use a priority:
@@ -225,6 +225,12 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' @inheritParams outputLibs
 #' @param basename logical, default (FALSE).
 #' Get relative paths instead of full. Only use for inspection!
+#' @param fallback logical, default: type %in% c("pshifted", "bed", "ofst", "bedoc", "bedo").
+#'  If TRUE, will use type fallback, see above for info.
+#' @param suffix_stem character, default "AUTO". Which is "" for all except
+#' type = "pshifted". Then it is "_pshifted" appended to end of names before
+#' format. Can be vector, then it searches suffixes in priority: so if you insert
+#'  c("_pshifted", ""), it will look for suffix _pshifted, then the empty suffix.
 #' @return a character vector of paths, or a list of character with 2 paths per,
 #' if paired libraries exists
 #' @importFrom BiocGenerics basename
@@ -239,57 +245,62 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' filepath(df[9,], "ofst")
 #' ## If you have pshifted files, see shiftFootprintsByExperiment()
 #' filepath(df[9,], "pshifted") # <- falls back to ofst
-filepath <- function(df, type, basename = FALSE) {
+filepath <- function(df, type, basename = FALSE,
+                     fallback = type %in% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
+                     suffix_stem = "AUTO") {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
   stopifnot(length(type) == 1)
+  rel_folder <- c(cov = "cov_RLE/", covl = "cov_RLE_List/", bigwig = "bigwig/",
+                  pshifted = "pshifted/")
   base_folder <- libFolder(df)
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
+    name_stem <- remove.file_ext(x, basename = TRUE)
+    found_valid_file <- FALSE
     input <- NULL
     if (type == "pshifted") {
-      out.dir <- paste0(base_folder, "/pshifted/")
-      if (dir.exists(out.dir)) {
-        input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
-                        , "_pshifted.ofst")
-        if (!file.exists(input)) { # if not ofst
-          input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
-                          , "_pshifted.bigWig")
-          if (!file.exists(input)) { # if not bigWig
-            input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
-                            , "_pshifted.wig")
-            if (!file.exists(input)) { # if not wig
-              input <- paste0(out.dir, remove.file_ext(x, basename = TRUE)
-                              , "_pshifted.bed")
-              if (!file.exists(input))
-                type <- "ofst"
-            }
+      if (all(suffix_stem == "AUTO")) suffix_stem <- "_pshifted"
+      out.dir.type <- file.path(base_folder, rel_folder["pshifted"])
+      type_dir_exists <- dir.exists(out.dir.type)
+      if (type_dir_exists) {
+        formats <- paste0(".", c("ofst", "bigWig", "wig", "bed"))
+        for (suf_stem in suffix_stem) {
+          input_stem <- paste0(out.dir.type, name_stem, suf_stem)
+          for (format in formats) {
+            input <-  paste0(input_stem, format)
+            found_valid_file <- file.exists(input)
+            if (found_valid_file) break
           }
         }
-      } else type <- "ofst"
-    }
-    if (type %in% "cov") {
-      out.dir <- paste0(base_folder, "/cov_RLE/")
-      input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), ".covrds")
-      if (!file.exists(input)) stop("File did not exist,",
-                                    "did you create covRle yet?")
+      }
+      # If not hit, fall back to default ofst files
+      if (!found_valid_file) {
+        if (fallback) {
+          type <- "ofst"
+        } else stop(filepath_errors(type))
+    }} else if (all(suffix_stem == "AUTO")) suffix_stem <- ""
+
+
+    ext <- c(cov = ".covrds", covl = ".covrds", bigwig = ".bigWig")
+    paired_files <- list(bigwig = c("_forward", "_reverse"))
+    if (type %in% c("cov", "covl", "bigwig")) {
+      t <- type
+      out.dir.type <- file.path(base_folder, rel_folder[t])
+      paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
+      for (suf_stem in suffix_stem) {
+        input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ext[t])
+        found_valid_file <- all(file.exists(input))
+        if (found_valid_file) break
+      }
+
+      if (!found_valid_file) {
+        if (fallback) {
+          type <- "ofst"
+        } else stop(filepath_errors(t))
+      }
     }
 
-    if (type %in% "covl") {
-      out.dir <- paste0(base_folder, "/cov_RLE_List/")
-      input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), ".covrds")
-      if (!file.exists(input)) stop("File did not exist,",
-                                    "did you create covRleList yet?")
-    }
-
-    if (type %in% "bigwig") {
-      out.dir <- paste0(base_folder, "/bigwig/")
-      input <- paste0(out.dir, remove.file_ext(x, basename = TRUE), c("_forward.bigWig", "_reverse.bigWig"))
-      if (!all(file.exists(input))) stop("File did not exist,",
-                                    "did you create bigwig yet?",
-                         " (only supports naming _forward.bigWig etc for now)")
-    }
-
-    if (type %in% c("bedoc", "bedo", "bed", "ofst")) {
+    if (type %in% c("bed", "ofst", "bedoc", "bedo")) {
       out.dir <- paste0(base_folder, "/",type,"/")
       if (dir.exists(out.dir)) {
         input <- paste0(out.dir, remove.file_ext(x,basename = TRUE), ".", type)
@@ -311,6 +322,18 @@ filepath <- function(df, type, basename = FALSE) {
     paths <- unlist(paths)
   }
   return(paths)
+}
+
+filepath_errors <- function(format) {
+  stopifnot(is(format, "character"))
+  stem <- "File did not exist,"
+  candidates <- c(cov = paste(stem, "did you create covRle yet?"),
+                  covl = paste(stem, "did you create covRleList yet?"),
+                  bigwig = paste(stem, "did you create bigwig yet?",
+                    " (only supports naming _forward.bigWig etc for now)"),
+                  pshifted = paste(stem, "did you create pshifted files yet?"))
+  stopifnot(format %in% names(candidates))
+  return(candidates[format])
 }
 
 #' Output NGS libraries to R as variables
