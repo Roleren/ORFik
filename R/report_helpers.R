@@ -7,7 +7,7 @@
 #' @keywords internal
 QC_count_tables <- function(df, out.dir, type = "ofst",
                             BPPARAM = bpparam()) {
-  outputLibs(df, findFa(df), type = type, BPPARAM = BPPARAM)
+  outputLibs(df, chrStyle = findFa(df), type = type, BPPARAM = BPPARAM)
   # TODO: test if needed
   suppressMessages(convertLibs(df, NULL)) # Speedup by reducing unwanted information
 
@@ -38,7 +38,7 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
   # TODO: Check if there is a way to get this from txdb directly
   txdb <- loadTxdb(df)
   fa <- findFa(df)
-  outputLibs(df, fa, type = type, BPPARAM = BPPARAM)
+  outputLibs(df, chrStyle = fa, type = type, BPPARAM = BPPARAM)
   gff.df <- importGtfFromTxdb(txdb, stop.error = FALSE)
   if (is.null(gff.df)) warnings("No biotypes defined in GTF,",
                                 " skiping biotype analysis!")

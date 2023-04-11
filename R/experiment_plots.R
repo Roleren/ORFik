@@ -53,7 +53,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
     varNames <- bamVarName(df)
-    outputLibs(df, leaders, type = type)
+    outputLibs(df, chrStyle = leaders, type = type)
     coverage <- data.table()
     if (!allTogether) {
       stop("fix!")

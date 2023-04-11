@@ -127,7 +127,7 @@ rtracklayer::import.bw(bigwig_for_random_point, as = "NumericList",
 # 4 reads were there
 ```
 
-ORFik also has an automatic wrapper to transcript coordinates: As data.table 
+ORFik also has an automatic wrapper for spliced transcript coordinates: As data.table 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 
 dt <- coveragePerTiling(random_point, bigwig_file)
@@ -215,7 +215,7 @@ Lets get these regions of the transcripts:
   loadRegion(txdb, "mrna")[1]
   loadRegion(txdb, "leaders")[1]
   loadRegion(txdb, "cds")[1]
-  loadRegion(txdb, "trailers")[1]
+  loadRegion(txdb, "trailers")
 ```
 
 These are output as GRangesList, which are list elements of GRanges 

@@ -413,6 +413,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
                        envir = envExp(df), verbose = TRUE, force = TRUE,
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
+  stopifnot(is.character(type))
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   all_libs <- NULL
