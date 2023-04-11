@@ -88,8 +88,8 @@ DEG_model <- function(df,
 #' design(df.rna) # The full experimental design
 #' target.contrast <- design(df.rna)[1] # Default target contrast
 #' #ddsMat_rna <- DEG_model(df.rna, target.contrast)
-#' pairs <- combn.pairs(unlist(df[, target.contrast]))
-#' DEG_model_results(ddsMat_rna, target.contrast, pairs)
+#' #pairs <- combn.pairs(unlist(df[, target.contrast]))
+#' #dt <- DEG_model_results(ddsMat_rna, target.contrast, pairs)
 DEG_model_results <- function(ddsMat_rna, target.contrast, pairs,
                               p.value = 0.05) {
   # Do result analysis: per contrast selected

@@ -36,6 +36,6 @@ df.rna <- df[df$libtype == "RNA",]
 design(df.rna) # The full experimental design
 target.contrast <- design(df.rna)[1] # Default target contrast
 #ddsMat_rna <- DEG_model(df.rna, target.contrast)
-pairs <- combn.pairs(unlist(df[, target.contrast]))
-DEG_model_results(ddsMat_rna, target.contrast, pairs)
+#pairs <- combn.pairs(unlist(df[, target.contrast]))
+#dt <- DEG_model_results(ddsMat_rna, target.contrast, pairs)
 }
