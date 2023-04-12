@@ -79,7 +79,7 @@ reads <- fimport(filepath(df[1,], "pshifted"))
 cds <- loadRegion(df, "cds", filterTranscripts(df))
 mrna <- loadRegion(df, "mrna", names(cds))
 filter_table <- assay(countTable(df, type = "summarized")[names(cds)])
-faFile <- findFa(df@fafile)
+faFile <- findFa(df)
 res <- codon_usage(reads, cds, mrna, faFile = faFile,
              filter_table = filter_table, min_counts_cds_filter = 10)
 }

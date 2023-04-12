@@ -48,12 +48,13 @@ Load as GRangesList if input is not already GRangesList.
 # GTF file is slow, but possible to use
 gtf <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                         package = "GenomicFeatures")
-loadRegion(gtf, "cds")
-loadRegion(gtf, "intron")
-# txdb is faster (but not optimal)
+txdb <- loadTxdb(gtf)
+loadRegion(txdb, "cds")
+loadRegion(txdb, "intron")
+# Use txdb from experiment
 df <- ORFik.template.experiment()
-txdb <- df@txdb
+txdb <- loadTxdb(df)
 loadRegion(txdb, "leaders")
-# Optimal is ORFik experiment
+# Use ORFik experiment directly
 loadRegion(df, "mrna")
 }
