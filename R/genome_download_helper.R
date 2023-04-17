@@ -228,11 +228,11 @@ get_silva_rRNA <- function(output.dir) {
   return(silva)
 }
 
-get_rRNA <- function(rRNA) {
+get_rRNA <- function(rRNA, output.dir) {
   if (!(rRNA %in% c("", FALSE, TRUE, "silva"))) {
     if (!file.exists(rRNA)) stop(paste("local rRNA file is specified, but does not exist:",
                                        rRNA))
-  } else if (rRNA == "silva") rRNA <- get_silva_rRNA()
+  } else if (rRNA == "silva") rRNA <- get_silva_rRNA(output.dir)
   return(rRNA)
 }
 
@@ -242,4 +242,70 @@ get_tRNA <- function(tRNA) {
                                        tRNA))
   }
   return(tRNA)
+}
+
+contaminants_download <- function(tRNA, rRNA, phix, ncRNA, output.dir,
+                                  organism, gunzip) {
+  tRNA <- get_tRNA(tRNA)
+  rRNA <- get_rRNA(rRNA, output.dir)
+  phix <- get_phix_genome(phix, output.dir, gunzip)
+  ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
+  conts <- as.character(c(phix, ncRNA, tRNA, rRNA))
+  names(conts) <- c("phix", "ncRNA", "tRNA", "rRNA")
+  return(conts)
+}
+
+contaminants_processing <- function(conts, gtf, genome,
+                                   merge_contaminants, output.dir) {
+  # If any defined contaminants
+  any_contaminants <- any(!(conts %in% c("", FALSE)))
+  if (any_contaminants) {
+    message("- Processing contaminants")
+    # Find which contaminants to find from gtf:
+    non_gtf_contaminants <- conts[!(conts %in% c(TRUE, FALSE, ""))]
+    gtf_contaminants <- conts[conts == TRUE]
+    total_seqs <- DNAStringSet()
+    if (length(gtf_contaminants) > 0) {
+      if (is.logical(gtf) | is.logical(genome))
+        stop("gtf or genome not specified, so impossible to find gtf contaminants!")
+      # Make fasta file of those contaminants
+      gtf.imp <- importGtfFromTxdb(gtf)
+      txdb <- loadTxdb(paste0(gtf, ".db"))
+      tx <- loadRegion(txdb)
+      # Loop through the gtf contaminants
+      for (t in names(gtf_contaminants)) {
+        valids <- gtf.imp[grep(x = gtf.imp$transcript_biotype, pattern = t)]
+        if (length(gtf.imp) == 0) {
+          warning(paste("Found no transcripts in gtf of type:", t))
+          next
+        }
+        valid_tx <- tx[unique(valids$transcript_id)]
+        seqs <- txSeqsFromFa(valid_tx, genome, TRUE, TRUE)
+        path.cont <- paste0(output.dir, "/", t, ".fasta")
+        writeXStringSet(seqs, path.cont)
+        total_seqs <- c(total_seqs, seqs)
+        gtf_contaminants[t] <- conts[t] <- path.cont
+      }
+    }
+  }
+
+  if (merge_contaminants & any_contaminants) {
+    message("Merging contaminant genomes:")
+    for (cont in non_gtf_contaminants)
+      total_seqs <- c(total_seqs, readDNAStringSet(cont))
+
+    all_contaminants <- paste(c(names(non_gtf_contaminants),
+                                names(gtf_contaminants)), collapse = "_")
+    all_cont <- paste0("merged_contaminants_", all_contaminants, ".fasta")
+    all_cont <- file.path(output.dir, all_cont)
+    writeXStringSet(total_seqs, filepath = all_cont)
+
+    output <- c(gtf, genome, all_cont)
+    names(output) <- c("gtf", "genome", "contaminants")
+  } else {
+    output <- c(gtf, genome, conts)
+    names(output) <- c("gtf", "genome", names(conts))
+  }
+  output <- output[!(output %in% c("", "TRUE","FALSE"))]
+  return(output)
 }

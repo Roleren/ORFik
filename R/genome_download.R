@@ -2,8 +2,6 @@
 #'
 #' This function automatically downloads (if files not already exists)
 #' genomes and contaminants specified for genome alignment.
-#' Will create a R transcript database (TxDb object) from the annotation. \cr
-#' It will also index the genome for you\cr
 #' By default, upon completion, the function will store
 #' a file called \code{file.path(output.dir, "outputs.rds")} with
 #' the output paths of your completed genome/annotation downloads.
@@ -11,11 +9,17 @@
 #' run again.\cr
 #' Do remake = TRUE, to do it all over again.\cr
 #'
-#' If you want custom genome or gtf from you hard drive, assign it
-#' after you run this function, like this:\cr
-#' annotation <- getGenomeAndAnnotation(GTF = FALSE, genome = FALSE)\cr
-#' annotation["genome"] = "path/to/genome.fasta"\cr
-#' annotation["gtf"] = "path/to/gtf.gtf"
+#' Some files that are made after download:\cr
+#' - A fasta index for the genome\cr
+#' - A TxDb to speed up GTF/GFF reading\cr
+#' - Seperat of merged contaminant files\cr
+#' Files that can be made:\cr
+#' - Gene symbols (hgnc, etc)\cr
+#' - Uniprot ids (For name of protein structures)\cr
+#' If you want custom genome or gtf from you hard drive, assign existing
+#' paths like this: \cr
+#' annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
+#' genome = "path/to/genome.fasta")\cr
 #' @param organism scientific name of organism, Homo sapiens,
 #' Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
 #' for full list of supported organisms.
@@ -49,12 +53,12 @@
 #' If sequencing facility created fastq files with the command \code{bcl2fastq},
 #' then there should be very few phix reads left in the fastq files recieved.
 #' @param ncRNA logical or character, default FALSE (not used, no download),
-#' ncRNA is used as a contaminant genome.
+#' if TRUE or defned path, ncRNA is used as a contaminant reference.
 #' If TRUE, will try to find ncRNA sequences from the gtf file, usually represented as
 #' lncRNA (long noncoding RNA's). Will let you know if no ncRNA sequences were found in
 #' gtf.\cr If not found try character input:\cr
-#' Alternatives: "auto" or manual assign like "human".
-#' If "auto" will try to find ncRNA file on NONCODE from organism,
+#' Alternatives; "auto":
+#' Will try to find ncRNA file on NONCODE from organism,
 #' Homo sapiens -> human etc. "auto" will not work for all,
 #' then you must specify the name used by
 #' NONCODE, go to the link below and find it.
@@ -73,7 +77,7 @@
 #' your wanted mtRNA at: http://gtrnadb.ucsc.edu/, or run trna-scan on
 #' you genome.
 #' @param rRNA logical or character, default FALSE (not used, no download),
-#' rRNA is used as a contaminant genome.
+#' rRNA is used as a contaminant reference
 #' If TRUE, will try to find rRNA sequences from the gtf file, usually represented as
 #' rRNA (ribosomal RNA's). Will let you know if no rRNA sequences were found in
 #' gtf. If not found you can try character input:\cr If "silva" will download silva SSU & LSU
@@ -152,8 +156,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    ncRNA = FALSE, tRNA = FALSE, rRNA = FALSE,
                                    gunzip = TRUE, remake = FALSE,
                                    assembly_type = "primary_assembly",
-                                   optimize = FALSE,
-                                   gene_symbols = FALSE,
+                                   optimize = FALSE, gene_symbols = FALSE,
                                    uniprot_id = FALSE,
                                    pseudo_5UTRS_if_needed = NULL,
                                    remove_annotation_outliers = TRUE,
@@ -167,19 +170,16 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   }
   if (!(assembly_type %in% c("toplevel", "primary_assembly")))
     stop("Please select one the available assembly types: \ntoplevel, primary_assembly")
-  conts <- as.character(c(phix, ncRNA, tRNA, rRNA))
-  any_contaminants <- any(!(conts %in% c("", FALSE)))
-  # Start process
   dir.create(output.dir, recursive = TRUE)
+
+  # Start process
   organism <- gsub(" ", "_", organism)
   if (db == "refseq") {
     organism <- gsub("_", " ", organism)
   }
-  ## Go through all contaminants:
-  tRNA <- get_tRNA(tRNA)
-  rRNA <- get_rRNA(rRNA)
-  phix <- get_phix_genome(phix, output.dir, gunzip)
-  ncRNA <- get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
+  ## Download all contaminants wanted:
+  conts <- contaminants_download(tRNA, rRNA, phix, ncRNA, output.dir, organism,
+                                 gunzip)
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism,
                              assembly_type, db, gunzip)
@@ -189,59 +189,11 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                         gene_symbols = gene_symbols,
                         pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
                         remove_annotation_outliers = remove_annotation_outliers)
+  output <- contaminants_processing(conts, gtf, genome, merge_contaminants,
+                                    output.dir)
 
-  if (any_contaminants) {
-    # Find which contaminants to find from gtf:
-    conts <- as.character(c(phix, ncRNA, tRNA, rRNA))
-    names(conts) <- c("phix", "ncRNA", "tRNA", "rRNA")
-    non_gtf_contaminants <- conts[!(conts %in% c(TRUE, FALSE, ""))]
-    gtf_contaminants <- conts[conts == TRUE]
-    total_seqs <- DNAStringSet()
-    if (length(gtf_contaminants) > 0) {
-      if (is.logical(gtf) | is.logical(genome))
-        stop("gtf or genome not specified, so impossible to find gtf contaminants!")
-      # Make fasta file of those contaminants
-      gtf.imp <- importGtfFromTxdb(gtf)
-      txdb <- loadTxdb(paste0(gtf, ".db"))
-      tx <- loadRegion(txdb)
-      # Loop through the gtf contaminants
-      for (t in names(gtf_contaminants)) {
-        valids <- gtf.imp[grep(x = gtf.imp$transcript_biotype, pattern = t)]
-        if (length(gtf.imp) == 0) {
-          warning(paste("Found no transcripts in gtf of type:", t))
-          next
-        }
-        valid_tx <- tx[unique(valids$transcript_id)]
-        seqs <- txSeqsFromFa(valid_tx, genome, TRUE, TRUE)
-        path.cont <- paste0(output.dir, "/", t, ".fasta")
-        writeXStringSet(seqs, path.cont)
-        total_seqs <- c(total_seqs, seqs)
-        gtf_contaminants[t] <- path.cont
-      }
-    }
-  }
-
-  if (merge_contaminants & any_contaminants) {
-    message("Merging contaminant genomes:")
-    for (cont in non_gtf_contaminants)
-      total_seqs <- c(total_seqs, readDNAStringSet(cont))
-
-    all_contaminants <- paste(c(names(non_gtf_contaminants),
-                                names(gtf_contaminants)), collapse = "_")
-
-    all_cont <- paste0(output.dir, "/", "merged_contaminants_", all_contaminants, ".fasta")
-    writeXStringSet(total_seqs, filepath = all_cont)
-    output <- c(gtf, genome, all_cont)
-    names(output) <- c("gtf", "genome", "contaminants")
-  } else {
-    output <- c(gtf, genome, phix, ncRNA, tRNA, rRNA)
-    names(output) <- c("gtf", "genome", "phix", "ncRNA", "tRNA", "rRNA")
-  }
-  output <- output[!(output %in% c("", "TRUE","FALSE"))]
   message("All data downloaded and ready at:")
   message(output.dir)
-
-
   saveRDS(object = output, finished.file)
   return(output)
 }

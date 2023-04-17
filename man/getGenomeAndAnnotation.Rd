@@ -67,12 +67,12 @@ If sequencing facility created fastq files with the command \code{bcl2fastq},
 then there should be very few phix reads left in the fastq files recieved.}
 
 \item{ncRNA}{logical or character, default FALSE (not used, no download),
-ncRNA is used as a contaminant genome.
+if TRUE or defned path, ncRNA is used as a contaminant reference.
 If TRUE, will try to find ncRNA sequences from the gtf file, usually represented as
 lncRNA (long noncoding RNA's). Will let you know if no ncRNA sequences were found in
 gtf.\cr If not found try character input:\cr
-Alternatives: "auto" or manual assign like "human".
-If "auto" will try to find ncRNA file on NONCODE from organism,
+Alternatives; "auto":
+Will try to find ncRNA file on NONCODE from organism,
 Homo sapiens -> human etc. "auto" will not work for all,
 then you must specify the name used by
 NONCODE, go to the link below and find it.
@@ -93,7 +93,7 @@ your wanted mtRNA at: http://gtrnadb.ucsc.edu/, or run trna-scan on
 you genome.}
 
 \item{rRNA}{logical or character, default FALSE (not used, no download),
-rRNA is used as a contaminant genome.
+rRNA is used as a contaminant reference
 If TRUE, will try to find rRNA sequences from the gtf file, usually represented as
 rRNA (ribosomal RNA's). Will let you know if no rRNA sequences were found in
 gtf. If not found you can try character input:\cr If "silva" will download silva SSU & LSU
@@ -157,8 +157,6 @@ a named character vector of path to genomes and gtf downloaded,
 \description{
 This function automatically downloads (if files not already exists)
 genomes and contaminants specified for genome alignment.
-Will create a R transcript database (TxDb object) from the annotation. \cr
-It will also index the genome for you\cr
 By default, upon completion, the function will store
 a file called \code{file.path(output.dir, "outputs.rds")} with
 the output paths of your completed genome/annotation downloads.
@@ -167,11 +165,17 @@ run again.\cr
 Do remake = TRUE, to do it all over again.\cr
 }
 \details{
-If you want custom genome or gtf from you hard drive, assign it
-after you run this function, like this:\cr
-annotation <- getGenomeAndAnnotation(GTF = FALSE, genome = FALSE)\cr
-annotation["genome"] = "path/to/genome.fasta"\cr
-annotation["gtf"] = "path/to/gtf.gtf"
+Some files that are made after download:\cr
+- A fasta index for the genome\cr
+- A TxDb to speed up GTF/GFF reading\cr
+- Seperat of merged contaminant files\cr
+Files that can be made:\cr
+- Gene symbols (hgnc, etc)\cr
+- Uniprot ids (For name of protein structures)\cr
+If you want custom genome or gtf from you hard drive, assign existing
+paths like this: \cr
+annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
+genome = "path/to/genome.fasta")\cr
 }
 \examples{
 

@@ -28,7 +28,7 @@ Let us use the same data we used in the importing data vignette.
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 library(ORFik)
 organism <- "Saccharomyces cerevisiae" # Baker's yeast
-output_dir <- tempdir() # Let's just store it to temp
+output_dir <- tempdir(TRUE) # Let's just store it to temp
 # If you already downloaded, it will not redownload, but reuse those files.
 annotation <- getGenomeAndAnnotation(
                     organism = organism,
