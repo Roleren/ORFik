@@ -162,6 +162,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    remove_annotation_outliers = TRUE,
                                    notify_load_existing = TRUE) {
   # Pre checks
+  stopifnot(is(organism, "character"))
+  stopifnot(is(output.dir, "character"))
   finished.file <- file.path(output.dir, "outputs.rds")
   if (file.exists(finished.file) & !remake) {
     if (notify_load_existing) message("Loading premade Genome files,",
