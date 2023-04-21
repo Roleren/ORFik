@@ -25,7 +25,12 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
                                    remove.invalid) {
   # Download xml and add more data
   xml <- sample_info_download(SRP)
-
+  sample_xml <- xmlParse(xml)
+  sample_dt <- getNodeSet(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")  %>% lapply(xmlToDataFrame) %>% lapply(function(x) as.data.frame(t(x))) %>% lapply(function(x) {colnames(x) <- x[1,]; return(x[2,])}) %>% rbindlist()
+  to_keep <- sample_dt %>% apply(2, function(x) !all(x == "NA"))
+  sample_dt <- sample_dt[, ..to_keep]
+  
+  xml <- xml2::as_list(xml)
   dt <- data.table()
   is_EXP_SET <- !is.null(xml$EXPERIMENT_PACKAGE_SET)
   EXP <- if(is_EXP_SET) {xml$EXPERIMENT_PACKAGE_SET} else xml
@@ -47,6 +52,7 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
 
   dt <- add_author(dt)
   # Save abstract
+  dt <- cbind(dt, sample_dt)
   abstract_save(EXP_SAMPLE, abstract, abstract_destfile)
   return(filter_empty_runs(dt, remove.invalid))
 }
@@ -163,7 +169,7 @@ sample_info_download <- function(SRP) {
   url <- paste0(url_prefix, paste(ids, collapse = ","), url_suffix)
   message("Downloading metadata from:")
   message(url)
-  return(xml2::as_list(xml2::read_xml(url)))
+  return(xml2::read_xml(url))
 }
 
 abstract_save <- function(EXP_SAMPLE, abstract, abstract_destfile) {
