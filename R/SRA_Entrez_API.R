@@ -25,8 +25,8 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
                                    remove.invalid) {
   # Download xml and add more data
   xml <- sample_info_download(SRP)
-  sample_xml <- xmlParse(xml)
-  sample_dt <- getNodeSet(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")  %>% lapply(xmlToDataFrame) %>% lapply(function(x) as.data.frame(t(x))) %>% lapply(function(x) {colnames(x) <- x[1,]; return(x[2,])}) %>% rbindlist()
+  sample_xml <- XML::xmlParse(xml)
+  sample_dt <- XML::getNodeSet(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")  %>% lapply(XML::xmlToDataFrame) %>% lapply(function(x) as.data.frame(t(x))) %>% lapply(function(x) {colnames(x) <- x[1,]; return(x[2,])}) %>% rbindlist()
   to_keep <- sample_dt %>% apply(2, function(x) !all(x == "NA"))
   sample_dt <- sample_dt[, ..to_keep]
   
