@@ -293,7 +293,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
 
   for (df in dfl) {
     varNames <- bamVarName(df)
-    outputLibs(df, region, type = type)
+    outputLibs(df, chrStyle = region, type = type)
     heatmapList <- bplapply(varNames,
              function(i, df, scores, shifting, upstream, downstream, zeroPosition, outdir,
                       location, plot.ext, acceptedLengths, legendPos, colors, addFracPlot,
