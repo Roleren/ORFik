@@ -269,7 +269,7 @@ seqlevelsStyleTest <- function(x) {
 
 seqlevelsStyleSafe <- function(x) {
   res <- seqlevelsStyleTest(x)
-  if (!is(valid_seq_style, "try-error")) return(res)
+  if (!is(res, "try-error")) return(res)
   return(NULL)
 }
 
