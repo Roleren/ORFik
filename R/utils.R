@@ -245,9 +245,8 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
   #   seqlevelsStyle(cage) <- seqlevelsStyle(fiveUTRs)
   # }
   if (!is.null(chrStyle)) {
-    valid_seq_style <- try(seqlevelsStyle(a), silent = TRUE)
-    valid_seq_style <- !is(valid_seq_style, "try-error")
-    if (valid_seq_style) {
+    valid_seq_style <- seqlevelsStyleSafe(range)
+    if (!is.null(valid_seq_style)) {
       if (is.character(chrStyle)) {
         seqlevelsStyle(range) <- chrStyle[1]
       } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
@@ -262,6 +261,16 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
     seqinfo(range) <- chrStyle
   }
   return(range)
+}
+
+seqlevelsStyleTest <- function(x) {
+  try(seqlevelsStyle(x), silent = TRUE)
+}
+
+seqlevelsStyleSafe <- function(x) {
+  res <- seqlevelsStyleTest(x)
+  if (!is(valid_seq_style, "try-error")) return(res)
+  return(NULL)
 }
 
 #' Find optimized subset of valid reads

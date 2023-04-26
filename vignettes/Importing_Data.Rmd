@@ -76,8 +76,9 @@ footprints <- import.ofst(ofst_file)
 ```
 
 ## Exporting to new formats 
-Since bam files are cumbersome to load, how to convert and export depends if you have
-the files loaded already or not
+Since bam files are cumbersome to load, we should convert files to more optimized formats.
+Which formats to convert and export to,
+depends on if you have the files loaded already or not.
 
 ### Files are not preload into R
 There are several converters in ORFik, here are some examples:
@@ -150,9 +151,9 @@ annotation from ENSEMBL/refseq, for yeast it would look like this:
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 library(ORFik)
 organism <- "Saccharomyces cerevisiae" # Baker's yeast
-output_dir <- tempdir(TRUE) 
 # This is where you should usually store you annotation references ->
-# file.path(ORFik::config()["ref"], gsub(" ", "_", organism))
+output_dir <- file.path(ORFik::config()["ref"], gsub(" ", "_", organism))
+
 annotation <- getGenomeAndAnnotation(
                     organism = organism,
                     output.dir = output_dir,
@@ -192,6 +193,7 @@ txSeqsFromFa(GRangesList(GRanges("I", 1:10, "+")), fa, TRUE)
 # Load a 10 first bases from chromosome 1 and 2.
 txSeqsFromFa(GRangesList(GRanges("I", 1:10, "+"), GRanges("II", 1:10, "+")), fa, TRUE)
 ```
+
 ## Loading Gene annotation (Txdb)
 
 ORFik makes it very easy to load specific regions from a txdb. 
@@ -271,5 +273,5 @@ Here we needed the pseudo leaders (5' UTRs), because the yeast SacCer3 genome
 has no proper leader definitions. 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
   findUORFs_exp(txdb, findFa(genome), startCodon = "ATG|CTG", save_optimized = TRUE)
-  loadRegion(txdb, "uorfs")
+  loadRegion(txdb, "uorfs") # For later use, output like this
 ```
