@@ -142,7 +142,11 @@ ofst_merge <- function(file_paths,
                        keep_all_scores = TRUE, sort = TRUE) {
   # Check valid matching files
   meta <- table(unlist(lapply(file_paths, function(x) data.table(fst::metadata_fst(x)$columnNames))))
-  stopifnot(all(meta == length(file_paths)))
+  if (!all(meta == length(file_paths))) {
+    print(meta)
+    stop("Some libraries had columns not in others! ",
+         "It is only allowed to merge ofst files with equal set of columns!")
+  }
 
   dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
   if (keep_all_scores) {

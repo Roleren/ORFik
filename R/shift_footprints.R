@@ -506,7 +506,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   txNames <- filterTranscripts(txdb, upstream, downstream + 1, 0)
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
-  style <- seqlevelsStyle(cds)
+  style <- seqlevelsStyleSafe(cds)
   plots <- bplapply(seq(nrow(df)),
                     function(x, cds, mrna, style, paths, df, upstream,
                              downstream, type) {

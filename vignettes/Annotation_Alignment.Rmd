@@ -1,5 +1,5 @@
 ---
-title: "ORFik_Annotation_Alignment"
+title: "Annotation & Alignment"
 author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
