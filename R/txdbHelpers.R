@@ -543,6 +543,11 @@ txNamesToGeneNames <- function(txNames, txdb) {
 #' # df <- read.experiment("some_experiment)
 #' # geneToSymbol(df)
 #'
+#' ## Non vertebrate species (the ones not in ensembl, but in ensemblGenomes mart)
+#' #txdb_ylipolytica <- loadTxdb("txdb_path")
+#' #dt2 <- geneToSymbol(txdb_ylipolytica, include_tx_ids = TRUE,
+#' #   ensembl = useEnsemblGenomes(biomart = "fungi_mart", dataset = "ylipolytica_eg_gene"))
+#'
 geneToSymbol <- function(df, organism_name = organism(df),
                          gene_ids = filterTranscripts(df, by = "gene", 0, 0, 0),
                          org.dataset = paste0(tolower(substr(organism_name, 1, 1)), gsub(".* ", replacement = "", organism_name), "_gene_ensembl"),
@@ -574,7 +579,7 @@ geneToSymbol <- function(df, organism_name = organism(df),
   }
   if (verbose) message("- Symbols extracted from:")
   if (verbose) message("Organism: ", organism_name)
-  if (verbose) message("Dataset: ", org.dataset)
+  if (verbose) message("Dataset: ", attr(ensembl, "dataset"))
   if (verbose) message("Attribute: ", attribute)
 
   # Find correct uniprot column

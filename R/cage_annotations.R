@@ -374,17 +374,8 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
     return(txdb)
   }
 
-  cdsStartSites <- startSites(cds01, is.sorted = TRUE)
-  positiveStrands <- strandBool(cds01)
-  cdsStartSites[positiveStrands] <- cdsStartSites[positiveStrands] - 1
-  cdsStartSites[!positiveStrands] <- cdsStartSites[!positiveStrands] + 1
-  leaderEnds <- cdsStartSites
-
-  undefinedLeaders <- GRanges(seqnamesPerGroup(cds01, keep.names = FALSE),
-                              IRanges(leaderEnds, width = 1),
-                              strandPerGroup(cds01, keep.names = FALSE))
-
-  names(undefinedLeaders) <- names(cds01)
+  undefinedLeaders <- promoters(startSites(cds01,asGR = T, is.sorted = TRUE,
+                                           keep.names = T), 1, 0)
   #make exon_rank col as integer
   undefinedLeaders$exon_rank <- rep.int(1L, length(undefinedLeaders))
   #make GRangesListfrom GRanges
