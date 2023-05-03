@@ -20,12 +20,27 @@ SRP_from_GSE <- function(SRP) {
   return(SRP)
 }
 
+fetch_xml_attributes <- function(xml, xml_path) {
+  dt <- XML::getNodeSet(xml, xml_path)   
+  dt <-  lapply(dt, XML::xmlToDataFrame) 
+  dt <-  lapply(dt, function(x) as.data.table(t(x))) 
+  dt <- lapply(dt, function(x) {colnames(x) <- as.character(x[1,]); return(x[2,])})
+  dt <- rbindlist(dt, fill = TRUE)
+  to_keep <- sapply(dt, function(x) !all(x == "NA"))
+  dt <- dt[,..to_keep]
+  return(dt)
+}
 
 sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
-                                   remove.invalid) {
+                                   remove.invalid, rich.format = FALSE) {
   # Download xml and add more data
   xml <- sample_info_download(SRP)
-
+  if (rich.format) {
+  sample_xml <- XML::xmlParse(xml)
+  sample_dt <- fetch_xml_attributes(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")
+  exp_attr_dt <- fetch_xml_attributes(sample_xml, "//EXPERIMENT/EXPERIMENT_ATTRIBUTES")
+  }
+  xml <- xml2::as_list(xml)
   dt <- data.table()
   is_EXP_SET <- !is.null(xml$EXPERIMENT_PACKAGE_SET)
   EXP <- if(is_EXP_SET) {xml$EXPERIMENT_PACKAGE_SET} else xml
@@ -47,8 +62,10 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
 
   dt <- add_author(dt)
   # Save abstract
+  
+  if (rich.format) dt <- cbind(dt, sample_dt, exp_attr_dt)
   abstract_save(EXP_SAMPLE, abstract, abstract_destfile)
-  return(filter_empty_runs(dt, remove.invalid))
+  return(filter_empty_runs(dt, remove.invalid, SRP))
 }
 
 sample_info_single <- function(EXP_SAMPLE) {
@@ -163,7 +180,7 @@ sample_info_download <- function(SRP) {
   url <- paste0(url_prefix, paste(ids, collapse = ","), url_suffix)
   message("Downloading metadata from:")
   message(url)
-  return(xml2::as_list(xml2::read_xml(url)))
+  return(xml2::read_xml(url))
 }
 
 abstract_save <- function(EXP_SAMPLE, abstract, abstract_destfile) {
@@ -209,7 +226,7 @@ add_author <- function(file) {
   return(file)
 }
 
-filter_empty_runs <- function(dt, remove.invalid = TRUE) {
+filter_empty_runs <- function(dt, remove.invalid = TRUE, SRP) {
   # Filter
   if (nrow(dt) == 0) {
     warning("Experiment not found on SRA, are you sure it is public?")

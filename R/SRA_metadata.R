@@ -38,6 +38,8 @@
 #' @param force logical, default FALSE. If TRUE, will redownload
 #' all files needed even though they exists. Useuful if you wanted
 #' auto.detection, but already downloaded without it.
+#' @param rich.format logical, default FALSE. If TRUE, will fetch all Experiment and Sample attributes.
+#' It means, that different studies can have different set of columns if set to TRUE.
 #' @return a data.table of the metadata, 1 row per sample,
 #'  SRR run number defined in 'Run' column.
 #' @importFrom utils download.file
@@ -62,7 +64,7 @@
 #' # download.SRA.metadata("PRJNA231536")
 download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE,
                                   auto.detect = FALSE, abstract = "printsave",
-                                  force = FALSE) {
+                                  force = FALSE, rich.format = FALSE) {
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   destfile <- paste0(outdir, "/SraRunInfo_", SRP, ".csv")
   abstract_destfile <- paste0(outdir, "/abstract_", SRP, ".csv")
@@ -84,7 +86,7 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
 
 
   file <- sample_info_append_SRA(SRP, destfile, abstract_destfile, abstract,
-                                 remove.invalid)
+                                 remove.invalid, rich.format = rich.format)
 
   # Create ORFik guess columns from metadata:
   if (auto.detect) {
