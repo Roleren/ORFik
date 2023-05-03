@@ -26,7 +26,8 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
   # Download xml and add more data
   xml <- sample_info_download(SRP)
   sample_xml <- XML::xmlParse(xml)
-  sample_dt <- XML::getNodeSet(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")  %>% lapply(XML::xmlToDataFrame) %>% lapply(function(x) as.data.frame(t(x))) %>% lapply(function(x) {colnames(x) <- x[1,]; return(x[2,])}) %>% rbindlist()
+  sample_dt <- XML::getNodeSet(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")  %>% lapply(XML::xmlToDataFrame) %>% lapply(function(x) as.data.table(t(x))) %>% lapply(function(x) {colnames(x) <- as.character(x[1,]); return(x[2,])}) %>% rbindlist(fill = TRUE)
+  exp_attr_dt <- XML::getNodeSet(sample_xml, "//EXPERIMENT/EXPERIMENT_ATTRIBUTES")  %>% lapply(XML::xmlToDataFrame) %>% lapply(function(x) as.data.table(t(x))) %>% lapply(function(x) {colnames(x) <- as.character(x[1,]); return(x[2,])}) %>% rbindlist(fill = TRUE)
   to_keep <- sample_dt %>% apply(2, function(x) !all(x == "NA"))
   sample_dt <- sample_dt[, ..to_keep]
   
@@ -52,9 +53,9 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
 
   dt <- add_author(dt)
   # Save abstract
-  dt <- cbind(dt, sample_dt)
+  dt <- cbind(dt, sample_dt, exp_attr_dt)
   abstract_save(EXP_SAMPLE, abstract, abstract_destfile)
-  return(filter_empty_runs(dt, remove.invalid))
+  return(filter_empty_runs(dt, remove.invalid, SRP))
 }
 
 sample_info_single <- function(EXP_SAMPLE) {
@@ -215,7 +216,7 @@ add_author <- function(file) {
   return(file)
 }
 
-filter_empty_runs <- function(dt, remove.invalid = TRUE) {
+filter_empty_runs <- function(dt, remove.invalid = TRUE, SRP) {
   # Filter
   if (nrow(dt) == 0) {
     warning("Experiment not found on SRA, are you sure it is public?")
