@@ -40,9 +40,13 @@ a named character vector of path to genomes and gtf downloaded,
 \description{
 This function automatically downloads (if files not already exists)
 genomes and contaminants specified for genome alignment.
-By default, upon completion, the function will store
+By default, it will use ensembl reference,
+upon completion, the function will store
 a file called \code{file.path(output.dir, "outputs.rds")} with
 the output paths of your completed genome/annotation downloads.
+For most non-model nonvertebrate organisms, you need
+my fork of biomartr for it to work:
+devtools::install_github("Roleren/biomartr)
 If you misspelled something or crashed, delete wrong files and
 run again.\cr
 Do remake = TRUE, to do it all over again.\cr

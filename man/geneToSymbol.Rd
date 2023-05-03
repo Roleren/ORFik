@@ -86,4 +86,9 @@ gene_id_ATF4 <- "ENSG00000128272"
 # df <- read.experiment("some_experiment)
 # geneToSymbol(df)
 
+## Non vertebrate species (the ones not in ensembl, but in ensemblGenomes mart)
+#txdb_ylipolytica <- loadTxdb("txdb_path")
+#dt2 <- geneToSymbol(txdb_ylipolytica, include_tx_ids = TRUE,
+#   ensembl = useEnsemblGenomes(biomart = "fungi_mart", dataset = "ylipolytica_eg_gene"))
+
 }
