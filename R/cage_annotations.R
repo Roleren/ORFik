@@ -374,8 +374,25 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
     return(txdb)
   }
 
-  undefinedLeaders <- promoters(startSites(cds01,asGR = T, is.sorted = TRUE,
-                                           keep.names = T), 1, 0)
+  undefinedLeaders <- trim(promoters(startSites(cds01,asGR = T,
+                                                is.sorted = TRUE,
+                                                keep.names = T), 1, 0))
+  cds_had_names <- !is.null(names(cds01))
+  undefinedLeaders <- reduce(undefinedLeaders, TRUE,
+                             with.revmap= cds_had_names)
+  if (length(undefinedLeaders) == 0) {
+    message("- All mRNA without leaders, had cds starting on end of contig,",
+            " nothing to be done")
+    return(txdb)
+  } else if (length(undefinedLeaders) != length(cds01)) {
+    message("Some mRNA had cds starting on end of contig, can not be added")
+    message("Number of original CDSs: ", length(cds01))
+    message("Number of valid 5' UTR genes: ", length(undefinedLeaders))
+  }
+  if (cds_had_names) {
+    names(undefinedLeaders) <- names(cds01)[unlist(undefinedLeaders$revmap)]
+    undefinedLeaders$revmap <- NULL
+  }
   #make exon_rank col as integer
   undefinedLeaders$exon_rank <- rep.int(1L, length(undefinedLeaders))
   #make GRangesListfrom GRanges

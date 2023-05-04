@@ -53,6 +53,9 @@ txl <- GRangesList(tx1 = tx1, tx2 = tx2)
 txTst <- GRangesList(GRanges("1", IRanges(c(1,3,5), width = 1), "+"),
                      GRanges("1", IRanges(c(5,3,1), width = 1), "-"))
 
+very_short_contig <-  split(GRanges("1", 1, c("+","-")), c(1,2))
+seqinfo(very_short_contig) <- Seqinfo("1", 1)
+
 test_that("groupGRangesBy works as intended", {
 
   grltest <- groupGRangesBy(gr)
@@ -213,6 +216,15 @@ test_that("extendLeaders works as intended", {
   reassigned <- extendLeaders(fiveUTRs, fiveUTRs)
   expect_equal(startSites(fiveUTRs, is.sorted = TRUE),
                startSites(reassigned, is.sorted = TRUE))
+
+  # Out of bounds test: Currently gives warnings
+  extend_out_of_bounds <- suppressWarnings(extendLeaders(very_short_contig, 10))
+  expect_equal(extend_out_of_bounds, trim(extend_out_of_bounds))
+  extend_out_of_bounds <- suppressWarnings(extendLeaders(very_short_contig, 10,
+                                                         is.circular = T))
+  expect_false(identical(extend_out_of_bounds, trim(extend_out_of_bounds)))
+
+
 })
 
 test_that("extendTrailers works as intended", {
@@ -221,6 +233,12 @@ test_that("extendTrailers works as intended", {
   expect_equal(length(reassigned), 2)
   expect_equal(firstStartPerGroup(reassigned, FALSE), as.integer(c(1, 20)))
   expect_equal(lastExonEndPerGroup(reassigned, FALSE), as.integer(c(50, 70)))
+  # Out of bounds test: Currently gives warnings
+  extend_out_of_bounds <- suppressWarnings(extendTrailers(very_short_contig, 10))
+  expect_equal(extend_out_of_bounds, trim(extend_out_of_bounds))
+  extend_out_of_bounds <- suppressWarnings(extendTrailers(very_short_contig, 10,
+                                                         is.circular = T))
+  expect_false(identical(extend_out_of_bounds, trim(extend_out_of_bounds)))
 })
 
 test_that("matchNaming works as intended", {
