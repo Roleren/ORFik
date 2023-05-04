@@ -374,9 +374,9 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
     return(txdb)
   }
 
-  undefinedLeaders <- trim(promoters(startSites(cds01,asGR = T,
+  undefinedLeaders <- trim(promoters(startSites(cds01,asGR = TRUE,
                                                 is.sorted = TRUE,
-                                                keep.names = T), 1, 0))
+                                                keep.names = TRUE), 1, 0))
   undefinedLeaders <- undefinedLeaders[width(undefinedLeaders) > 0]
   if (length(undefinedLeaders) == 0) {
     message("- All mRNA without leaders, had cds starting on end of contig,",

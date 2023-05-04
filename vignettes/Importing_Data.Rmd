@@ -152,8 +152,8 @@ annotation from ENSEMBL/refseq, for yeast it would look like this:
 library(ORFik)
 organism <- "Saccharomyces cerevisiae" # Baker's yeast
 # This is where you should usually store you annotation references ->
-output_dir <- file.path(ORFik::config()["ref"], gsub(" ", "_", organism))
-
+#output_dir <- file.path(ORFik::config()["ref"], gsub(" ", "_", organism))
+output_dir <- tempdir()
 annotation <- getGenomeAndAnnotation(
                     organism = organism,
                     output.dir = output_dir,

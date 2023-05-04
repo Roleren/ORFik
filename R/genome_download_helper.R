@@ -8,10 +8,10 @@ get_genome_fasta <- function(genome, output.dir, organism,
       if (db == "ensembl") {
         message(paste("Starting", assembly_type, "genome retrieval of",
                       organism, "from ensembl: "))
-        genome <- tryCatch(biomartr:::getENSEMBL.Seq(organism, type = "dna",
-                                                     release = NULL,
-                                                     id.type = assembly_type,
-                                                     path = output.dir)[1],
+        genome <- tryCatch(getENSEMBL.Seq(organism, type = "dna",
+                                          release = NULL,
+                                          id.type = assembly_type,
+                                          path = output.dir)[1],
                            error = function(e) {
                              return(e)
                            }
@@ -25,10 +25,9 @@ get_genome_fasta <- function(genome, output.dir, organism,
           assembly_types_cand <- c("toplevel", "primary_assembly")
           assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
           message("Switching to search for assembly_type: ", assembly_type)
-          genome <- biomartr:::getENSEMBL.Seq(organism, type = "dna",
-                                              release = NULL,
-                                              id.type = assembly_type,
-                                              path = output.dir)[1]
+          genome <- getENSEMBL.Seq(organism, type = "dna",
+                                   release = NULL, id.type = assembly_type,
+                                   path = output.dir)[1]
           } else stop(genome)
         }
 
@@ -39,9 +38,11 @@ get_genome_fasta <- function(genome, output.dir, organism,
                     "then change assembly_type to toplevel and/or use:",
                     " db = refseq.")
           }
+        } else {
+          if (gunzip) # unzip gtf file
+            genome <- R.utils::gunzip(genome, overwrite = TRUE)
         }
-        if (gunzip) # unzip gtf file
-          genome <- R.utils::gunzip(genome, overwrite = TRUE)
+
       } else {
         genome  <- biomartr::getGenome(db = db, organism,
                                        path = output.dir, gunzip = gunzip)
@@ -53,7 +54,8 @@ get_genome_fasta <- function(genome, output.dir, organism,
       if (is_compressed) genome <- R.utils::gunzip(genome, overwrite = TRUE)
     }
 
-    if (any(genome == "Not available")) stop("Could not find genome, check spelling!")
+    if (any(genome == "Not available") | is.logical(genome))
+      stop("Could not find genome, check spelling!")
     message("Making .fai index of genome")
     indexFa(genome)
     message("Genome fetch and fasta indexing complete")
@@ -101,10 +103,8 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
       message("- Download annotation (gtf/gff3)")
       is_compressed <- gunzip
       if (db == "ensembl") {
-        gtf <- biomartr:::getENSEMBL.gtf(organism = organism,
-                                         type = "dna",
-                                         id.type = assembly_type,
-                                         path = output.dir)
+        gtf <- getENSEMBL.gtf(organism = organism, type = "dna",
+                              id.type = assembly_type, path = output.dir)
       } else {
         message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
                 " and might crash during gff reading step!",
