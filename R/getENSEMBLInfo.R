@@ -2,6 +2,7 @@
 #' @description Retrieve species and genome information from
 #' http://rest.ensembl.org/info/species?content-type=application/json/.
 #' @author Hajk-Georg Drost
+#' @return a tibble table with info
 #' @export
 getENSEMBLInfo <- function() {
     ENSEMBLInfoTable <- get.ensembl.info(update = TRUE)

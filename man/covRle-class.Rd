@@ -4,6 +4,9 @@
 \name{covRle-class}
 \alias{covRle-class}
 \title{Coverage Rle for both strands or single}
+\value{
+a covRLE object
+}
 \description{
 Given a run of coverage(x) where x are reads,
 this class combines the 2 strands into 1 object

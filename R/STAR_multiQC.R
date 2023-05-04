@@ -54,7 +54,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
   }
 
   if (1 %in% grep("tr", steps)) {
-    tr <- ORFik:::trimming.table(file.path(folder, "trim/"))
+    tr <- trimming.table(file.path(folder, "trim/"))
     if (!is.null(res)) {
       res <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
     } else res <- tr

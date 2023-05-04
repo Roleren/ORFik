@@ -324,7 +324,7 @@ download.ebi <- function(info, outdir, rename = TRUE,
     stop("Could not find SRR numbers in 'info'")
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
 
-  urls <- ORFik:::find_url_ebi(SRR, study = study)
+  urls <- find_url_ebi(SRR, study = study)
   if (length(urls) == 0) {
     message("None of the Fastq files specified found on ebi")
     return(NULL)

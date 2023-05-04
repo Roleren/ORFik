@@ -256,7 +256,7 @@ export.fstwig <- function(x, file, by.readlength = TRUE,
 
       }
       file_chr <- paste0(file, "_", chr)
-      ORFik:::save.fstwig(dt, file_chr, compress = compress)
+      save.fstwig(dt, file_chr, compress = compress)
       rm(dt)
     }
   } else {

@@ -5,6 +5,9 @@
 \alias{experiment-class}
 \alias{experiment}
 \title{experiment class definition}
+\value{
+a ORFik experiment
+}
 \description{
 It is an object that simplify and error correct your NGS workflow,
 creating a single R object that stores and controls all results relevant

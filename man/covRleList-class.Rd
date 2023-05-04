@@ -4,6 +4,9 @@
 \name{covRleList-class}
 \alias{covRleList-class}
 \title{List of covRle}
+\value{
+a covRleList object
+}
 \description{
 Given a run of coverage(x) where x are reads,
 this covRle combines the 2 strands into 1 object

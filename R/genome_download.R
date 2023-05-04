@@ -144,14 +144,14 @@
 #' # "Drosophila_melanogaster_BDGP6"), assembly_type = "toplevel")
 #' ## How to save malformed refseq gffs:
 #' ## First run function and let it crash:
-#' #annotation <- getGenomeAndAnnotation(organism = "Arabidopsis thaliana", output.dir = "~/Desktop/test_plant/",
+#' #annotation <- getGenomeAndAnnotation(organism = "Arabidopsis thaliana",
+#' #  output.dir = "~/Desktop/test_plant/",
 #' #  assembly_type = "primary_assembly", db = "refseq")
 #' ## Then apply a fix (example for linux, too long rows):
-#' # \code{system("cat ~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.gff | awk '{ if (length($0) < 32768) print }' > ~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed2.gff")}
+#' # fixed_gff <- fix_malformed_gff("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.gff")
 #' ## Then updated arguments:
-#' annotation <- c("~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq_trimmed.gff",
-#'  "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
-#' names(annotation) <- c("gtf", "genome")
+#' # annotation <- c(fixed_gff, "~/Desktop/test_plant/Arabidopsis_thaliana_genomic_refseq.fna")
+#' # names(annotation) <- c("gtf", "genome")
 #' # Then make the txdb (for faster R use)
 #' # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
 getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",

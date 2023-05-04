@@ -112,6 +112,7 @@
 #' df@expInVarName <- FALSE
 #' df
 #' }
+#' @return a ORFik experiment
 #' @export
 #' @family ORFik_experiment
 experiment <- setClass("experiment",

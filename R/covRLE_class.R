@@ -3,6 +3,7 @@
 #' Given a run of coverage(x) where x are reads,
 #' this class combines the 2 strands into 1 object
 #' @importFrom methods new
+#' @return a covRLE object
 #' @export
 #' @family covRLE
 setClass("covRle",
@@ -27,6 +28,7 @@ setClass("covRle",
 #' and generalizations.
 #' @importFrom methods new
 #' @export
+#' @return a covRleList object
 #' @family covRLE
 setClass("covRleList",
          contains=c("List"),

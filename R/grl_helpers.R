@@ -553,7 +553,7 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
     uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
     names(uex_cvg) <- as.character(seqnames(uex))
   }
-  uex_cvg[strand(uex) == "-"] <- ORFik:::revElementsF(uex_cvg)[strand(uex) == "-"]
+  uex_cvg[strand(uex) == "-"] <- revElementsF(uex_cvg)[strand(uex) == "-"]
   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
   ex_cvg <- uex_cvg[ex2uex]
   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)

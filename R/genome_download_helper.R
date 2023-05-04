@@ -148,6 +148,23 @@ auto_detect_gtf_in_dir <- function(organism, output.dir, db) {
   return(gtf)
 }
 
+#' Fix a malformed gff file
+#'
+#' Basically removes all info lines with character length > 32768 and
+#' save that new file.
+#' @param gff character, path to gtf, can not be gzipped!
+#' @return path of fixed gtf
+#' @export
+#' @examples
+#' # fix_malformed_gff("my_bad_gff.gff")
+#'
+fix_malformed_gff <- function(gff) {
+  new_gff <- paste0(remove.file_ext(gff), "_trimmed.gff")
+  call <- paste("cat", gff, "| awk '{ if (length($0) < 32768) print }' >",  new_gff)
+  system(call)
+  return(new_gff)
+}
+
 #' @inherit getGenomeAndAnnotation
 #' @keywords internal
 get_noncoding_rna <- function(ncRNA, output.dir, organism, gunzip) {
