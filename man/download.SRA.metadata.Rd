@@ -86,6 +86,7 @@ doi: 10.1093/nar/gkq1019
 }
 \seealso{
 Other sra: 
+\code{\link{browseSRA}()},
 \code{\link{download.SRA}()},
 \code{\link{download.ebi}()},
 \code{\link{get_bioproject_candidates}()},

@@ -45,6 +45,7 @@ https://www.ncbi.nlm.nih.gov/books/NBK25501/
 }
 \seealso{
 Other sra: 
+\code{\link{browseSRA}()},
 \code{\link{download.SRA.metadata}()},
 \code{\link{download.SRA}()},
 \code{\link{download.ebi}()},

@@ -74,7 +74,7 @@ test_url_status <- function(url, organism) {
 #' @import curl
 exists.ftp.file.new <- function(url, file.path) {
 
-  url_dir_safe <- gsub("//$", "/", file.path(dirname(url), "/"))
+  url_dir_safe <- gsub("//$", "/", paste0(dirname(url), "/"))
   if (!RCurl::url.exists(url_dir_safe))
     return(FALSE)
 

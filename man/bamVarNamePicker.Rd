@@ -11,7 +11,8 @@ bamVarNamePicker(
   skip.stage = FALSE,
   skip.fraction = FALSE,
   skip.experiment = FALSE,
-  skip.libtype = FALSE
+  skip.libtype = FALSE,
+  fraction_prepend_f = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ in variable name.}
 \item{skip.experiment}{a logical (FALSE), don't include experiment}
 
 \item{skip.libtype}{a logical (FALSE), don't include libtype}
+
+\item{fraction_prepend_f}{a logical (TRUE), include "f" in front of
+fraction, useful for knowing what fraction is.}
 }
 \value{
 variable name of library (character vector)

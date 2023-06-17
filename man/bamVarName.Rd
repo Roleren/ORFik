@@ -11,33 +11,37 @@ bamVarName(
   skip.stage = length(unique(df$stage)) == 1,
   skip.fraction = length(unique(df$fraction)) == 1,
   skip.experiment = !df@expInVarName,
-  skip.libtype = FALSE
+  skip.libtype = FALSE,
+  fraction_prepend_f = TRUE
 )
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{skip.replicate}{a logical (FALSE), if TRUE don't include replicate
+\item{skip.replicate}{a logical (FALSE), don't include replicate
 in variable name.}
 
-\item{skip.condition}{a logical (FALSE), if TRUE don't include condition
+\item{skip.condition}{a logical (FALSE), don't include condition
 in variable name.}
 
-\item{skip.stage}{a logical (FALSE), if TRUE don't include stage
+\item{skip.stage}{a logical (FALSE), don't include stage
 in variable name.}
 
-\item{skip.fraction}{a logical (FALSE), if TRUE don't include fraction}
+\item{skip.fraction}{a logical (FALSE), don't include fraction}
 
-\item{skip.experiment}{a logical (\code{!df@expInVarName}),
-if TRUE don't include experiment}
+\item{skip.experiment}{a logical (FALSE), don't include experiment}
 
-\item{skip.libtype}{a logical (FALSE), if TRUE don't include libtype}
+\item{skip.libtype}{a logical (FALSE), don't include libtype}
+
+\item{fraction_prepend_f}{a logical (TRUE), include "f" in front of
+fraction, useful for knowing what fraction is.}
 }
 \value{
 variable names of libraries (character vector)
 }
 \description{
 What will each sample be called given the columns of the experiment?
+A column is included if more than 1 unique element value exist in that column.
 }
 \examples{
 df <- ORFik.template.experiment()

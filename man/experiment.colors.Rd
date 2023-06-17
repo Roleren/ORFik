@@ -22,17 +22,17 @@ That is the vector c("skyblue4", 'orange', "green", "red", "gray",
  "yellow", "blue", "red2", "orange3"). Picks number of colors needed to
  make groupings have unique color}
 
-\item{skip.libtype}{a logical (FALSE), if TRUE don't include libtype}
+\item{skip.libtype}{a logical (FALSE), don't include libtype}
 
-\item{skip.stage}{a logical (FALSE), if TRUE don't include stage
+\item{skip.stage}{a logical (FALSE), don't include stage
 in variable name.}
 
-\item{skip.replicate}{a logical (FALSE), if TRUE don't include replicate
+\item{skip.replicate}{a logical (FALSE), don't include replicate
 in variable name.}
 
-\item{skip.fraction}{a logical (FALSE), if TRUE don't include fraction}
+\item{skip.fraction}{a logical (FALSE), don't include fraction}
 
-\item{skip.condition}{a logical (FALSE), if TRUE don't include condition
+\item{skip.condition}{a logical (FALSE), don't include condition
 in variable name.}
 }
 \value{
