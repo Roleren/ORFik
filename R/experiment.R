@@ -117,17 +117,8 @@ validateExperiments <- function(df) {
 #' Get library variable names from ORFik \code{\link{experiment}}
 #'
 #' What will each sample be called given the columns of the experiment?
-#' @param df an ORFik \code{\link{experiment}}
-#' @param skip.replicate a logical (FALSE), if TRUE don't include replicate
-#' in variable name.
-#' @param skip.condition a logical (FALSE), if TRUE don't include condition
-#' in variable name.
-#' @param skip.stage a logical (FALSE), if TRUE don't include stage
-#' in variable name.
-#' @param skip.fraction a logical (FALSE), if TRUE don't include fraction
-#' @param skip.experiment a logical (\code{!df@expInVarName}),
-#' if TRUE don't include experiment
-#' @param skip.libtype a logical (FALSE), if TRUE don't include libtype
+#' A column is included if more than 1 unique element value exist in that column.
+#' @inheritParams bamVarNamePicker
 #' @return variable names of libraries (character vector)
 #' @export
 #' @family ORFik_experiment
@@ -144,7 +135,8 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        skip.stage = length(unique(df$stage)) == 1,
                        skip.fraction = length(unique(df$fraction)) == 1,
                        skip.experiment = !df@expInVarName,
-                       skip.libtype = FALSE) {
+                       skip.libtype = FALSE,
+                       fraction_prepend_f = TRUE) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   varName <- c()
@@ -153,7 +145,7 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
       varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
                                              skip.condition, skip.stage,
                                              skip.fraction, skip.experiment,
-                                             skip.libtype))
+                                             skip.libtype, fraction_prepend_f))
     }
   }
   return(varName)
@@ -171,12 +163,15 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' @param skip.fraction a logical (FALSE), don't include fraction
 #' @param skip.experiment a logical (FALSE), don't include experiment
 #' @param skip.libtype a logical (FALSE), don't include libtype
+#' @param fraction_prepend_f a logical (TRUE), include "f" in front of
+#' fraction, useful for knowing what fraction is.
 #' @return variable name of library (character vector)
 #' @keywords internal
 bamVarNamePicker <- function(df, skip.replicate = FALSE,
                              skip.condition = FALSE,
                              skip.stage = FALSE, skip.fraction = FALSE,
-                             skip.experiment = FALSE, skip.libtype = FALSE) {
+                             skip.experiment = FALSE, skip.libtype = FALSE,
+                             fraction_prepend_f = TRUE) {
   if(nrow(df) != 1) stop("experiment must only input 1 row")
   lib <- df$libtype
   stage <- df$stage
@@ -197,8 +192,12 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
   if (!(skip.stage | is.na(stage)))
     current <- spaste(current, stage)
   if (!(skip.fraction | is.null(frac) | is.na(frac))) {
-    if (frac != "")
-      current <- spaste(current, paste0("f", frac))
+    if (frac != "") {
+      if (fraction_prepend_f) {
+        current <- spaste(current, paste0("f", frac))
+      } else current <- spaste(current, frac)
+    }
+
   }
   # TODO: FIX _NA for replicates
   if (!(skip.replicate | is.null(rep) | is.na(rep) | (rep == "")))

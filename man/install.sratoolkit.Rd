@@ -30,6 +30,7 @@ https://ncbi.github.io/sra-tools/fastq-dump.html
 }
 \seealso{
 Other sra: 
+\code{\link{browseSRA}()},
 \code{\link{download.SRA.metadata}()},
 \code{\link{download.SRA}()},
 \code{\link{download.ebi}()},

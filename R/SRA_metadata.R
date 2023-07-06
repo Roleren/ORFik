@@ -196,3 +196,14 @@ metadata.autnaming <- function(file) {
                                  inhibitorNames(), "auto")
   return(file)
 }
+
+#' Open SRA in browser for specific bioproject
+#' @param x character, bioproject ID.
+#' @family sra
+#' @export
+#' @examples
+#' browseSRA("PRJNA336542")
+#'
+browseSRA <- function(x) {
+  browseURL(paste0("https://www.ncbi.nlm.nih.gov/Traces/study/?acc=", x, "&o=acc_s%3Aa"))
+}

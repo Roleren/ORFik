@@ -101,12 +101,14 @@ coverage_A_and_P <- function(cds_filtered, mrna, reads,
   gene_split_sites <- c(0, gene_split_sites_general[-length(gene_split_sites_general)])
   a_start_codons <- sort(unlist(lapply(c(1,2,3), function(x) x + gene_split_sites)))
   dt_all_real <- dt_samp[-a_start_codons,]
-  stopifnot(nrow(dt_all_real) == sum(cds_lengths))
+  if (nrow(dt_all_real) != sum(cds_lengths))
+    stop("nrow(dt_all_real) != sum(cds_lengths), did you include 5' UTRs?")
   # A sites
   gene_split_sites <- gene_split_sites_general
   p_stop_codons <- sort(unlist(lapply(c(1,2,3), function(x) gene_split_sites - x)))
   dt_all_real_A <- dt_samp[-p_stop_codons,]
-  stopifnot(nrow(dt_all_real_A) == sum(cds_lengths))
+  if (nrow(dt_all_real_A) != sum(cds_lengths))
+    stop("nrow(dt_all_real_A) != sum(cds_lengths), did you include 3' UTRs?")
   return(list(A = dt_all_real_A, P = dt_all_real))
 }
 
