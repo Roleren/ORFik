@@ -9,7 +9,8 @@ filepath(
   type,
   basename = FALSE,
   fallback = type \%in\% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
-  suffix_stem = "AUTO"
+  suffix_stem = "AUTO",
+  base_folders = libFolder(df)
 )
 }
 \arguments{
@@ -42,6 +43,13 @@ If TRUE, will use type fallback, see above for info.}
 type = "pshifted". Then it is "_pshifted" appended to end of names before
 format. Can be vector, then it searches suffixes in priority: so if you insert
  c("_pshifted", ""), it will look for suffix _pshifted, then the empty suffix.}
+
+\item{base_folders}{character vector, default libFolder(df),
+path to base folder to search for library variant directories.
+If single path (length == 1), it will apply to all libraries in df.
+If df is a collection, an experiment where libraries are put in different
+folders and library variants like pshifted are put inside those respective
+folders, set base_folders = libFolder(df, mode = "all")}
 }
 \value{
 a character vector of paths, or a list of character with 2 paths per,

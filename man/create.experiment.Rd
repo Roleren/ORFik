@@ -21,7 +21,8 @@ create.experiment(
   condition = "auto",
   fraction = "auto",
   author = "",
-  files = findLibrariesInFolder(dir, types, pairedEndBam)
+  files = findLibrariesInFolder(dir, types, pairedEndBam),
+  result_folder = NULL
 )
 }
 \arguments{
@@ -103,6 +104,12 @@ remove files that are not of file format defined by 'type' argument.
 Note that sorting on number that: 10 is before 2, so 1, 2, 10, is sorted as:
 1, 10, 2. If you want to fix this, you could update this argument with:
 ORFik:::findLibrariesInFolder()[1,3,2] to get order back to 1,2,10 etc.}
+
+\item{result_folder}{character, default NULL. The folder to output analysis
+results like QC, count tables etc. By default the libFolder(df) folder is used,
+the folder of first library in experiment. If you are making a new experiment
+which is a collection of other experiments, set this to a new folder,
+to not contaminate your other experiment directories.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,

@@ -264,7 +264,8 @@ setGeneric("resFolder", function(x) standardGeneric("resFolder"))
 setMethod("resFolder",
           "experiment",
           function(x) {
-            if (is.null(x@resultFolder)) return(libFolder(x))
+            if (is(try(x@resultFolder, silent = TRUE), "try-error"))
+              return(libFolder(x))
             if (x@resultFolder != "") {
               return(x@resultFolder)
             } else return(libFolder(x))

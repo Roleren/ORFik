@@ -230,6 +230,12 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' type = "pshifted". Then it is "_pshifted" appended to end of names before
 #' format. Can be vector, then it searches suffixes in priority: so if you insert
 #'  c("_pshifted", ""), it will look for suffix _pshifted, then the empty suffix.
+#' @param base_folders character vector, default libFolder(df),
+#' path to base folder to search for library variant directories.
+#' If single path (length == 1), it will apply to all libraries in df.
+#' If df is a collection, an experiment where libraries are put in different
+#' folders and library variants like pshifted are put inside those respective
+#' folders, set base_folders = libFolder(df, mode = "all")
 #' @return a character vector of paths, or a list of character with 2 paths per,
 #' if paired libraries exists
 #' @importFrom BiocGenerics basename
@@ -246,14 +252,17 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 #' filepath(df[9,], "pshifted") # <- falls back to ofst
 filepath <- function(df, type, basename = FALSE,
                      fallback = type %in% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
-                     suffix_stem = "AUTO") {
+                     suffix_stem = "AUTO",
+                     base_folders = libFolder(df)) {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
   stopifnot(length(type) == 1)
   rel_folder <- c(cov = "cov_RLE/", covl = "cov_RLE_List/", bigwig = "bigwig/",
                   pshifted = "pshifted/")
-  base_folder <- libFolder(df)
+  if (length(base_folders) == 1) base_folders <- rep(base_folders, nrow(df))
+
   paths <- lapply(df$filepath, function(x, df, type) {
     i <- which(df$filepath == x)
+    base_folder <- base_folders[i]
     name_stem <- remove.file_ext(x, basename = TRUE)
     found_valid_file <- FALSE
     input <- NULL

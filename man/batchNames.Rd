@@ -17,6 +17,7 @@ Example: Biological samples (batches) batch will become b1
 \seealso{
 Other experiment_naming: 
 \code{\link{cellLineNames}()},
+\code{\link{cellTypeNames}()},
 \code{\link{conditionNames}()},
 \code{\link{fractionNames}()},
 \code{\link{inhibitorNames}()},

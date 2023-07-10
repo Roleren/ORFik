@@ -66,6 +66,8 @@ of the first library in the set, the columns are:
  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
  \item{var (numeric)}{variance of total counts per seq}
  \item{N (integer)}{total number of codons of that type}
+ \item{mean_txNorm (numeric)}{Default use output, the fair codon usage,
+ normalized both for gene and genome level for codon and read counts}
  \item{...}
  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
            variance of probability of
@@ -83,14 +85,23 @@ This function takes inspiration from the codonDT paper, and among
 others returns the negative binomial estimates, but in addition many
 other features.
 }
+\details{
+The primary column to use is "mean_txNorm", this is the fair normalized
+score.
+}
 \examples{
 df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
 ## For single library
 res <- codon_usage_exp(df, fimport(filepath(df[1,], "pshifted")),
                  min_counts_cds_filter = 10)
+# mean_txNorm is adviced scoring column
+# codon_usage_plot(res, res$mean_txNorm)
+# Default for plot function is the percentage scaled version of mean_txNorm
+# codon_usage_plot(res) # This gives check error
 ## For multiple libs
 res2 <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
                  min_counts_cds_filter = 10)
+# codon_usage_plot(res2)
 }
 \references{
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/

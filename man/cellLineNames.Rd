@@ -23,6 +23,7 @@ can not have - in them)
 \seealso{
 Other experiment_naming: 
 \code{\link{batchNames}()},
+\code{\link{cellTypeNames}()},
 \code{\link{conditionNames}()},
 \code{\link{fractionNames}()},
 \code{\link{inhibitorNames}()},

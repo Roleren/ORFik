@@ -19,6 +19,7 @@ control will then be renamed to WT
 Other experiment_naming: 
 \code{\link{batchNames}()},
 \code{\link{cellLineNames}()},
+\code{\link{cellTypeNames}()},
 \code{\link{fractionNames}()},
 \code{\link{inhibitorNames}()},
 \code{\link{libNames}()},

@@ -27,6 +27,7 @@ https://www.mbl.edu/zebrafish/files/2013/03/Kimmel_stagingseries1.pdf
 Other experiment_naming: 
 \code{\link{batchNames}()},
 \code{\link{cellLineNames}()},
+\code{\link{cellTypeNames}()},
 \code{\link{conditionNames}()},
 \code{\link{fractionNames}()},
 \code{\link{inhibitorNames}()},

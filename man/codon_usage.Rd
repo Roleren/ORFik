@@ -54,6 +54,8 @@ of the first library in the set, the columns are:
  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
  \item{var (numeric)}{variance of total counts per seq}
  \item{N (integer)}{total number of codons of that type}
+ \item{mean_txNorm (numeric)}{Default use output, the fair codon usage,
+ normalized both for gene and genome level for codon and read counts}
  \item{...}
  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
            variance of probability of
@@ -70,6 +72,10 @@ For both A sites and P-sites (Input reads must be P-sites for now)
 This function takes inspiration from the codonDT paper, and among
 others returns the negative binomial estimates, but in addition many
 other features.
+}
+\details{
+The primary column to use is "mean_txNorm", this is the fair normalized
+score.
 }
 \examples{
 df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs

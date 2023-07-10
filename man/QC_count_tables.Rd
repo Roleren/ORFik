@@ -10,10 +10,11 @@ QC_count_tables(df, out.dir, type = "ofst", BPPARAM = bpparam())
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{out.dir}{optional output directory, default:
-\code{libFolder(df)}.
-Will make a folder called "QC_STATS" with all results in this directory.
+\code{resFolder(df)}.
+Will make a folder within this called "QC_STATS" with all results in this directory.
 Warning: If you assign not default path, you will have a hazzle to load files later.
-Much easier to load count tables, statistics, ++ later with default.}
+Much easier to load count tables, statistics, ++ later with default. Update
+resFolder of df instead if needed.}
 
 \item{type}{a character(default: "default"), load files in experiment
 or some precomputed variant, like "ofst" or "pshifted".

@@ -18,6 +18,7 @@ Example: cytosolic, mitochondrial, specific gene knock down
 Other experiment_naming: 
 \code{\link{batchNames}()},
 \code{\link{cellLineNames}()},
+\code{\link{cellTypeNames}()},
 \code{\link{conditionNames}()},
 \code{\link{inhibitorNames}()},
 \code{\link{libNames}()},
