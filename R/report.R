@@ -28,10 +28,11 @@
 #' \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/}
 #' @inheritParams outputLibs
 #' @param out.dir optional output directory, default:
-#' \code{libFolder(df)}.
-#' Will make a folder called "QC_STATS" with all results in this directory.
+#' \code{resFolder(df)}.
+#' Will make a folder within this called "QC_STATS" with all results in this directory.
 #' Warning: If you assign not default path, you will have a hazzle to load files later.
-#' Much easier to load count tables, statistics, ++ later with default.
+#' Much easier to load count tables, statistics, ++ later with default. Update
+#' resFolder of df instead if needed.
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
 #' Note that in pdf format the complex correlation plots become very slow to load!
 #' @param create.ofst logical, default TRUE. Create ".ofst" files from the input
@@ -50,7 +51,7 @@
 #' df <- ORFik.template.experiment()
 #' # Run QC
 #' # QCreport(df)
-QCreport <- function(df, out.dir = libFolder(df),
+QCreport <- function(df, out.dir = resFolder(df),
                      plot.ext = ".pdf", create.ofst = TRUE,
                      complex.correlation.plots = TRUE,
                      BPPARAM = bpparam()) {

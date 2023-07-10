@@ -123,7 +123,8 @@ experiment <- setClass("experiment",
                                   assembly = "character",
                                   author = "character",
                                   expInVarName = "logical",
-                                  envir = "environment"),
+                                  envir = "environment",
+                                  resultFolder = "character"),
                        contains = "DFrame")
 
 #' experiment show definition
@@ -252,6 +253,25 @@ setMethod("organism",
           }
 )
 
+#' Get ORFik experiment main output directory
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a character path
+#' @export
+setGeneric("resFolder", function(x) standardGeneric("resFolder"))
+
+#' @inherit resFolder
+setMethod("resFolder",
+          "experiment",
+          function(x) {
+            if (is.null(x$resultFolder)) return(libFolder(x))
+            if (x$resultFolder != "") {
+              return(x$resultFolder)
+            } else return(libFolder(x))
+          }
+)
+
+
 #' Get ORFik experiment QC folder path
 #'
 #' @param x an ORFik \code{\link{experiment}}
@@ -263,7 +283,7 @@ setGeneric("QCfolder", function(x) standardGeneric("QCfolder"))
 setMethod("QCfolder",
           "experiment",
           function(x) {
-            file.path(libFolder(x), "QC_STATS/")
+            file.path(resFolder(x), "QC_STATS/")
           }
 )
 
