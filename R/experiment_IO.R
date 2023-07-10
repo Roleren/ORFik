@@ -66,6 +66,8 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                 info[2,6], "")
   author <- ifelse(info[3,5] == "author" & !is.na(info[3,6]),
                    info[3,6], "")
+  resultFolder <- ifelse(info[1, 3] == "results" & !is.na(info[1,4]),
+                          info[1,4], "")
   exper <- info[1, 2]
   txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
   fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
@@ -75,6 +77,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                    assembly = assembly,
                    listData = listData,
                    expInVarName = FALSE,
+                   resultFolder = resultFolder,
                    envir = output.env)
   if (validate) validateExperiments(df)
   return(df)
@@ -164,6 +167,11 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #' Note that sorting on number that: 10 is before 2, so 1, 2, 10, is sorted as:
 #' 1, 10, 2. If you want to fix this, you could update this argument with:
 #' ORFik:::findLibrariesInFolder()[1,3,2] to get order back to 1,2,10 etc.
+#' @param result_folder character, default NULL. The folder to output analysis
+#' results like QC, count tables etc. By default the libFolder(df) folder is used,
+#' the folder of first library in experiment. If you are making a new experiment
+#' which is a collection of other experiments, set this to a new folder,
+#' to not contaminate your other experiment directories.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View
@@ -210,7 +218,8 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
                               libtype = "auto", stage = "auto", rep = "auto",
                               condition = "auto", fraction = "auto",
                               author = "",
-                              files = findLibrariesInFolder(dir, types, pairedEndBam)) {
+                              files = findLibrariesInFolder(dir, types, pairedEndBam),
+                              result_folder = NULL) {
   if (!(is(files, "character") | is(files, "data.table")))
     stop("'files' must be of class character or data.table")
   file_dt <- files
@@ -242,13 +251,17 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
   # Set fraction (cytosolic, dmso, mutant etc)
   df[5:(5+length(files)-1), 5] <- findFromPath(files, fractionNames(), fraction)
 
-  ## Add names to info columns
+  ## Reference assembly information
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
   df[3, seq(2)] <- c("fasta", fa)
   if (assembly != "") df[1, seq(5, 6)] <- c("assembly", assembly)
   if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
+  # Additional information
   if (author != "") df[3, seq(5, 6)] <- c("author", author)
+  if (!is.null(result_folder)) {
+    df[1, seq(3,4)] <- c("results", result_folder)
+  }
   df[is.na(df)] <- ""
   if (!is.null(saveDir)) {
     cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
