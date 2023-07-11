@@ -22,7 +22,8 @@ create.experiment(
   fraction = "auto",
   author = "",
   files = findLibrariesInFolder(dir, types, pairedEndBam),
-  result_folder = NULL
+  result_folder = NULL,
+  runIDs = extract_run_id(files)
 )
 }
 \arguments{

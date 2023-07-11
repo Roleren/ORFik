@@ -149,6 +149,7 @@ setMethod("show",
             obj <- as.data.table(as(object@listData, Class = "DataFrame"))
             if (nrow(obj) > 0) {
               obj <- obj[,-c("filepath", "index")]
+              if ("Run" %in% colnames(obj)) obj <- obj[,-c("Run")]
               if (!is.null(obj$reverse)) obj <- obj[,-"reverse"]
               skip <- c()
               for (i in 2:ncol(obj)) {
@@ -309,6 +310,22 @@ setMethod("libFolder",
               dirname(x$filepath)
             } else stop("argument 'mode', must be either first, unique or all")
             return(path)
+          }
+)
+
+#' Get ORFik experiment library folder
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a character vector of runIDs, "" if not existing.
+#' @export
+setGeneric("runIDs", function(x) standardGeneric("runIDs"))
+
+#' @inherit runIDs
+setMethod("runIDs",
+          "experiment",
+          function(x) {
+            if ("Run" %in% colnames(x)) return(x$Run)
+            return(rep("", nrow(x)))
           }
 )
 

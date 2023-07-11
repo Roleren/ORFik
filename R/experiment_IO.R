@@ -219,22 +219,33 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
                               condition = "auto", fraction = "auto",
                               author = "",
                               files = findLibrariesInFolder(dir, types, pairedEndBam),
-                              result_folder = NULL) {
+                              result_folder = NULL,
+                              runIDs = extract_run_id(files)) {
   if (!(is(files, "character") | is(files, "data.table")))
     stop("'files' must be of class character or data.table")
   file_dt <- files
+  # Set runID column if valid
+  runID_exists <- FALSE
+  if (all(runIDs != "")) {
+    runID_exists <- TRUE
+  }
+
+  lib_metadata_columns <- c("libtype", "stage", "rep", "condition",
+                            "fraction","filepath")
   if (is(file_dt, "data.table")) { # If paired data
     files <- file_dt$forward
-    df <- data.frame(matrix(ncol = 7, nrow = length(files) + 4))
+    df <- data.frame(matrix(ncol = 7 + runID_exists, nrow = length(files) + 4))
     # set lib column names
-    df[4,] <- c("libtype", "stage", "rep", "condition", "fraction","filepath",
-                "reverse")
+    lib_metadata_columns <- c(lib_metadata_columns, "reverse")
+    if (runID_exists) lib_metadata_columns <- c(lib_metadata_columns, "Run")
+    df[4,] <-
     df[5:(5+length(files)-1), 7] <- file_dt$reverse
   } else { # only single libraries
     files <- file_dt
-    df <- data.frame(matrix(ncol = 6, nrow = length(files) + 4))
+    df <- data.frame(matrix(ncol = 6 + runID_exists, nrow = length(files) + 4))
     # set lib column names
-    df[4,] <- c("libtype", "stage", "rep", "condition", "fraction","filepath")
+    if (runID_exists) lib_metadata_columns <- c(lib_metadata_columns, "Run")
+    df[4,] <- lib_metadata_columns
   }
   ## Specify library information columns
   # set file paths
@@ -250,7 +261,7 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
   df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames(), condition)
   # Set fraction (cytosolic, dmso, mutant etc)
   df[5:(5+length(files)-1), 5] <- findFromPath(files, fractionNames(), fraction)
-
+  if (runID_exists) df[5:(5+length(files)-1), ncol(df)] <- runIDs
   ## Reference assembly information
   df[1, seq(2)] <- c("name", exper)
   df[2, seq(2)] <- c("gff", txdb)
@@ -262,6 +273,7 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
   if (!is.null(result_folder)) {
     df[1, seq(3,4)] <- c("results", result_folder)
   }
+
   df[is.na(df)] <- ""
   if (!is.null(saveDir)) {
     cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"

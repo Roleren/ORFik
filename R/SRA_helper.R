@@ -488,3 +488,24 @@ find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE) {
 
   return(unlist(strsplit(a$fastq_ftp, ";")))
 }
+
+#' Extract SRR/ERR/DRR run IDs from string
+#'
+#' @param x character vector
+#' @param search asdas
+#' @return a character vector of run accepted run ids according to search,
+#' if only_valid named character vector for which indices are returned
+#' @examples
+#' search <- c("SRR1230123_absdb", "SRR1241204124_asdasd", "asd_ERR1231230213",
+#'  "DRR12412412_asdqwe", "ASDASD_ASDASD", "SRRASDASD")
+#' extract_run_id(search)
+#' extract_run_id(search, only_valid = TRUE)
+extract_run_id <- function(x, search = "(SRR[0-9]+|DRR[0-9]+|ERR[0-9]+)", only_valid = FALSE) {
+  hits <- gsub(paste0(".*", search), "\\1", gsub(paste0(search, ".*"), "\\1", x))
+  match <- grep(search, hits)
+  if (only_valid) {
+    hits <- hits[match]
+    names(hits) <- match
+  } else hits[!(seq_along(hits) %in% match)] <- ""
+  return(hits)
+}
