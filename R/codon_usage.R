@@ -1,12 +1,12 @@
 seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 3,
-                      seqs.order.table = NULL, dispersion_method = "MME") {
+                      seqs.order.table = NULL, dispersion_method = "MME", aligned_position = "left") {
   stopifnot(is(dt, "data.table"))
   if ("genes" %in% colnames(dt)) {
     stop("dt can not contain column called 'genes'",
          "it should be given seperatly in argument 'genes'!")
   }
-  if (length(genes) != nrow(dt)) stop("Length of dt and genes must match!")
-  if (length(seqs) != (nrow(dt) / output.seq.length))
+  if (length(genes) != (nrow(dt))) stop("Length of dt and genes must match!")
+  if (length(seqs) != ((nrow(dt)) / output.seq.length))
     stop("Size of 'seqs' must be nrow(dt) / output.seq.length")
   codon_sums <- copy(dt)
   n.samples <- ncol(dt)
@@ -22,9 +22,12 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
   codon_sums[, genes := rep(genes, length.out = .N)]
   we_must_collapse <- input.dt.length != output.seq.length
   if (we_must_collapse) {
-    codon_sums[, codon_sum := frollsum(x = score, n = output.seq.length, align = "left")]
-    # Keep only first per seq group
-    codon_sums <- codon_sums[rep(c(TRUE, rep(FALSE, output.seq.length - 1)),
+    codon_sums[, codon_sum := frollsum(x = score, n = output.seq.length, align = aligned_position)]
+    # Keep only second (aligned == "center") or first (aligned == "left") per seq group
+    keep <- rep(FALSE, output.seq.length)
+    
+    keep[ifelse(aligned_position == "left",1, ceiling(output.seq.length/2))] <- TRUE
+    codon_sums <- codon_sums[rep(keep,
                                  length.out = .N),]
   }
 
@@ -75,12 +78,13 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
 }
 
 coverage_A_and_P <- function(cds_filtered, mrna, reads,
-                             cds_lengths = widthPerGroup(cds_filtered, FALSE)) {
+                             cds_lengths = widthPerGroup(cds_filtered, FALSE), aligned_position = "center") {
   # Create merged A and P site ranges
-  cds_with_A_site <- windowPerGroup(startSites(cds_filtered, TRUE, TRUE, TRUE),
-                                    mrna,
-                                    downstream = cds_lengths - 1,
-                                    upstream = 3)
+   A_site_extension <- ifelse(aligned_position == "center", 4,3)
+    cds_with_A_site <- startRegion(cds_filtered, mrna,
+                                 downstream = cds_lengths - A_site_extension + 2,
+                                 upstream = A_site_extension)
+
   # Get coverage
   if (is.list(reads)) {
     dt_samp <- lapply(reads, function(lib) {
@@ -139,7 +143,7 @@ filter_CDS_by_counts <- function(cds, filter_table,
     cds_filtered <- cds[is_mod3]
     message("- ", length(cds_filtered), " CDSs are multiple of 3")
   }
-  cds_filtered <- cds_filtered[filter_table[,1][names(cds_filtered)] > min_counts_cds_filter]
+  cds_filtered <- cds_filtered[rowMeans(filter_table[names(cds_filtered),]) > min_counts_cds_filter]
   message("- ", length(cds_filtered), " after filtering by counts filter")
   if (length(cds_filtered) == 0) stop("Filter is too strict, set a lower filter!")
   return(cds_filtered)
@@ -151,6 +155,7 @@ filter_CDS_by_counts <- function(cds, filter_table,
 #' @param mrna a GRangesList
 #' @param faFile a FaFile from genome
 #' @param filter_table a matrix / vector of length equal to cds
+#' @param aligned_position what positions should be taken to calculate per-codon coverage. By default: "center", meaning that positions -1,0,1 will be taken. Alternative: "left", then positions 0,1,2 are taken.
 #' @family codon
 #' @export
 #' @examples
@@ -168,7 +173,7 @@ codon_usage <- function(reads, cds,
                         mrna, faFile,
                         filter_table, filter_cds_mod3 = TRUE,
                         min_counts_cds_filter = max(min(quantile(filter_table, 0.50), 1000), 1000),
-                        with_A_sites = TRUE, code = GENETIC_CODE) {
+                        with_A_sites = TRUE, aligned_position = "center", code = GENETIC_CODE) {
   stopifnot(is(filter_table, "matrix"))
   stopifnot(length(cds) == nrow(filter_table))
   stopifnot(with_A_sites == TRUE)
@@ -179,7 +184,7 @@ codon_usage <- function(reads, cds,
 
   # Get coverage for A sites and P sites
   cds_lengths <- widthPerGroup(cds_filtered, FALSE)
-  coverage_list <- coverage_A_and_P(cds_filtered, mrna, reads, cds_lengths)
+  coverage_list <- coverage_A_and_P(cds_filtered, mrna, reads, cds_lengths, aligned_position = aligned_position)
 
   # Get sequences and translate
   seqs <- orf_coding_table(cds_filtered, faFile, code)
@@ -187,9 +192,9 @@ codon_usage <- function(reads, cds,
   # Calc Codon usage
   type <- NULL # avoid bioccheck error
   genes_pos_index <- rep.int(seq_along(cds_filtered), times = cds_lengths)
-  codon_Psite <- seq_usage(coverage_list[["P"]], seqs$merged, genes_pos_index)
+  codon_Psite <- seq_usage(coverage_list[["P"]], seqs$merged, genes_pos_index, aligned_position = aligned_position)
   codon_Asite <- seq_usage(coverage_list[["A"]], seqs$merged, genes_pos_index,
-                seqs.order.table = unique(as.character(codon_Psite$seqs)))
+                seqs.order.table = unique(as.character(codon_Psite$seqs)), aligned_position = aligned_position)
   return(rbindlist(list(codon_Psite[, type := as.factor("P")],
                         codon_Asite[, type := as.factor("A")])))
 }
@@ -235,6 +240,7 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' names of the full set of mRNA transcripts. This will be subsetted to the
 #' cds subset you use. Then CDSs are filtered from this table by the
 #' 'min_counts_cds_filter' argument.
+#'  @param aligned_position what positions should be taken to calculate per-codon coverage. By default: "center", meaning that positions -1,0,1 will be taken. Alternative: "left", then positions 0,1,2 are taken.
 #' @param min_counts_cds_filter numeric, default:
 #'  \code{max(min(quantile(filter_table, 0.50), 100), 100)}.
 #'   Minimum number of counts from the 'filter_table'  argument.
@@ -287,12 +293,12 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
                             filter_cds_mod3 = TRUE, filter_table = assay(countTable(df, type = "summarized")[names(cds)]),
                             faFile = df@fafile,
                             min_counts_cds_filter = max(min(quantile(filter_table, 0.50), 1000), 1000),
-                            with_A_sites = TRUE, code = GENETIC_CODE) {
+                            with_A_sites = TRUE, code = GENETIC_CODE, aligned_position = "center") {
   codon_usage(reads = reads, cds = cds,
               mrna = mrna,
               filter_cds_mod3 = filter_cds_mod3, filter_table = filter_table,
               faFile = faFile, min_counts_cds_filter = min_counts_cds_filter,
-              with_A_sites = with_A_sites)
+              with_A_sites = with_A_sites, aligned_position = aligned_position)
 }
 
 #' Plot codon_usage
