@@ -25,7 +25,7 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
     codon_sums[, codon_sum := frollsum(x = score, n = output.seq.length, align = aligned_position)]
     # Keep only second (aligned == "center") or first (aligned == "left") per seq group
     keep <- rep(FALSE, output.seq.length)
-    
+
     keep[ifelse(aligned_position == "left",1, ceiling(output.seq.length/2))] <- TRUE
     codon_sums <- codon_sums[rep(keep,
                                  length.out = .N),]
@@ -155,7 +155,6 @@ filter_CDS_by_counts <- function(cds, filter_table,
 #' @param mrna a GRangesList
 #' @param faFile a FaFile from genome
 #' @param filter_table a matrix / vector of length equal to cds
-#' @param aligned_position what positions should be taken to calculate per-codon coverage. By default: "center", meaning that positions -1,0,1 will be taken. Alternative: "left", then positions 0,1,2 are taken.
 #' @family codon
 #' @export
 #' @examples
@@ -240,7 +239,6 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' names of the full set of mRNA transcripts. This will be subsetted to the
 #' cds subset you use. Then CDSs are filtered from this table by the
 #' 'min_counts_cds_filter' argument.
-#'  @param aligned_position what positions should be taken to calculate per-codon coverage. By default: "center", meaning that positions -1,0,1 will be taken. Alternative: "left", then positions 0,1,2 are taken.
 #' @param min_counts_cds_filter numeric, default:
 #'  \code{max(min(quantile(filter_table, 0.50), 100), 100)}.
 #'   Minimum number of counts from the 'filter_table'  argument.
@@ -248,6 +246,9 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' A site scores.
 #' @param code a named character vector of size 64. Default: GENETIC_CODE.
 #' Change if organism does not use the standard code.
+#' @param aligned_position what positions should be taken to calculate per-codon coverage.
+#' By default: "center", meaning that positions -1,0,1 will be taken.
+#' Alternative: "left", then positions 0,1,2 are taken.
 #' @return a data.table of rows per codon / AA. All values are given
 #' per library, per site (A or P), sorted by the mean_txNorm_percentage column
 #' of the first library in the set, the columns are:
@@ -262,9 +263,9 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #'  normalized both for gene and genome level for codon and read counts}
 #'  \item{...}
 #'  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
-#'            variance of probability of
-#'            in 1 value, the lower the value, the higher the variance, mean
-#'            is decided by the relative value between samples)}
+#'            variance of probability in 1 value, the lower the value,
+#'            the higher the variance, mean is decided by the relative
+#'            value between samples)}
 #'  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
 #'  \item{relative_to_max_score (integer)}{Percentage use of codon}
 #'  \item{type (factor(character))}{Either "P" or "A"}

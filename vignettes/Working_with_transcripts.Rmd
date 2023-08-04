@@ -93,7 +93,7 @@ extendTrailers(stopRegion(mrna[1], upstream = 30, downstream = 0, is.sorted = TR
 So how could we now get the coverage per nt in the TIS region of a cds?
 
 ## Loading NGS data
-We first need some NGS data, so let us now use the ORFik experiment included in the package:
+We first need some NGS data with matching annotation, so let us now use the ORFik experiment included in the package:
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 df <- ORFik.template.experiment()
 df
@@ -110,6 +110,20 @@ Load the Ribo-seq
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 ribo <- fimport(filepath(df, "default"))
 ```
+Some NGS statistics, first Read length distribution
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+table(readWidths(ribo))
+```
+Then RFP peak count distribution
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+summary(score(ribo))
+```
+Total number of unique (collapsed) and original (non collapsed reads):
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+paste("Number of collapsed:", length(ribo), 
+      "Number of non-collapsed:", sum(score(ribo)))
+paste("duplication rate:", round(1 - length(ribo)/sum(score(ribo)), 2) * 100, "%")
+```
 
 ## Total counts per region/window
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
@@ -118,18 +132,20 @@ TIS_window <- startRegion(loadRegion(df, "cds"), loadRegion(df, "mrna"),
 ```
 
 
-Now let's get the total counts per window
+Now let's get the total counts per window, we will do it in two identical ways.
+The second version uses the automatic 5' end anchoring to create an identical output.
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 
-countOverlapsW(TIS_window, ribo, weight = "score")
+countOverlapsW(TIS_window, ribo, weight = "score") # score is the number of pshifted RFP peaks at respective position
 # This is shorter version (You do not need TIS_window defined first) ->
 startRegionCoverage(loadRegion(df, "cds"), ribo, loadRegion(df, "mrna"), 
                     is.sorted = TRUE, upstream = 20, downstream = 20)
 ```
 You see the first gene had 33 reads in the 20-20 window around TIS
 
-## Per nucleotide in region/window
-But what if you want the coverage per nucleotide in that window?
+## Per nucleotide in region/window 
+A per nucleotide coverage is in Bioconductor called a 'tiling', 
+if you want the coverage per nucleotide in that predefined window?
 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 # TIS region coverage
@@ -151,3 +167,41 @@ dt <- coveragePerTiling(TIS_window, ribo, as.data.table = TRUE, withFrames = TRU
 dt[, position := position - 21]
 pSitePlot(dt)
 ```
+
+## Per nucleotide in region/window (split by read length)
+
+To get coverage of a window per read length, we can anchor on a specific location,
+namely the 5' end of CDSs (i.e. TISs) in this case.
+
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+# Define transcript with valid UTRs and lengths
+txNames <- filterTranscripts(df, 25, 25,0, longestPerGene = TRUE)
+# TIS region coverage
+dt <- windowPerReadLength(loadRegion(df, "cds", txNames), loadRegion(df, "mrna", txNames), ribo)
+# Remember to set scoring to scoring used above for dt
+coverageHeatMap(dt, scoring = "transcriptNormalized")
+```
+
+To get coverage of a full region per read length 
+(coverage of full transcript per read length), we do: 
+
+```{r eval = TRUE, echo = TRUE, message = FALSE}
+dt <- regionPerReadLength(loadRegion(df, "cds", txNames)[1], ribo, 
+                          exclude.zero.cov.grl = FALSE, drop.zero.dt = FALSE)
+# Remember to set scoring to scoring used above for dt
+coverageHeatMap(dt, scoring = NULL)
+```
+You see the arguments exclude.zero.cov.grl and drop.zero.dt are set to false, 
+default is true, which leads to considerable speed ups for large datasets, by reducing number
+of 0 positions that are kept in the final object.
+
+## Advanced details
+
+Most coverage calculations in ORFik in some way relies on the GenomicRanges::coverage
+function, to understand how it all works and how to speed it up, look up the two functions:
+
+- ORFik:::coverageByTranscriptW (Must convert to coverage)
+- ORFik:::coverageByTranscriptC (Uses precomputed RLE coverage tracks, much faster)
+
+The remaining logic is usually pure R loops, as very little computation is done in R code anyway.
+The output relies on data.table package for efficient computation on results and easy plotting.

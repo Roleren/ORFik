@@ -9,8 +9,8 @@
 \arguments{
 \item{object}{an ORFik \code{\link{experiment}}}
 
-\item{design}{the experiment design, as formula, subset columns, to
-change the model.matrix}
+\item{design_formula}{the experiment design, as formula, subset columns, to
+change the model.matrix, default: \code{design(object, as.formula = T)}}
 }
 \value{
 a matrix with design and level attributes

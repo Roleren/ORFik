@@ -13,6 +13,7 @@ codon_usage(
   filter_cds_mod3 = TRUE,
   min_counts_cds_filter = max(min(quantile(filter_table, 0.5), 1000), 1000),
   with_A_sites = TRUE,
+  aligned_position = "center",
   code = GENETIC_CODE
 )
 }
@@ -40,6 +41,10 @@ ORFs you would not want anyway.}
 \item{with_A_sites}{logical, default TRUE. Not used yet, will also return
 A site scores.}
 
+\item{aligned_position}{what positions should be taken to calculate per-codon coverage.
+By default: "center", meaning that positions -1,0,1 will be taken.
+Alternative: "left", then positions 0,1,2 are taken.}
+
 \item{code}{a named character vector of size 64. Default: GENETIC_CODE.
 Change if organism does not use the standard code.}
 }
@@ -58,9 +63,9 @@ of the first library in the set, the columns are:
  normalized both for gene and genome level for codon and read counts}
  \item{...}
  \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
-           variance of probability of
-           in 1 value, the lower the value, the higher the variance, mean
-           is decided by the relative value between samples)}
+           variance of probability in 1 value, the lower the value,
+           the higher the variance, mean is decided by the relative
+           value between samples)}
  \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
  \item{relative_to_max_score (integer)}{Percentage use of codon}
  \item{type (factor(character))}{Either "P" or "A"}

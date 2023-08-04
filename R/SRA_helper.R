@@ -491,15 +491,16 @@ find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE) {
 
 #' Extract SRR/ERR/DRR run IDs from string
 #'
-#' @param x character vector
-#' @param search asdas
+#' @param x character vector to search through.
+#' @param search the regex search, default: \code{"(SRR[0-9]+|DRR[0-9]+|ERR[0-9]+)"}
+#' @param only_valid logical, default FALSE. If TRUE, return only the hits.
 #' @return a character vector of run accepted run ids according to search,
 #' if only_valid named character vector for which indices are returned
 #' @examples
 #' search <- c("SRR1230123_absdb", "SRR1241204124_asdasd", "asd_ERR1231230213",
 #'  "DRR12412412_asdqwe", "ASDASD_ASDASD", "SRRASDASD")
-#' extract_run_id(search)
-#' extract_run_id(search, only_valid = TRUE)
+#' ORFik:::extract_run_id(search)
+#' ORFik:::extract_run_id(search, only_valid = TRUE)
 extract_run_id <- function(x, search = "(SRR[0-9]+|DRR[0-9]+|ERR[0-9]+)", only_valid = FALSE) {
   hits <- gsub(paste0(".*", search), "\\1", gsub(paste0(search, ".*"), "\\1", x))
   match <- grep(search, hits)

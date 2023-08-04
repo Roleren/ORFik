@@ -172,6 +172,8 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #' the folder of first library in experiment. If you are making a new experiment
 #' which is a collection of other experiments, set this to a new folder,
 #' to not contaminate your other experiment directories.
+#' @param runIDs character ids, usually SRR, ERR, or DRR identifiers, default is to search for any of these 3 in the filename by:
+#'  \code{extract_run_id(files)}. They are optional.
 #' @return a data.frame, NOTE: this is not a ORFik experiment,
 #'  only a template for it!
 #' @importFrom utils View

@@ -11,9 +11,11 @@ extract_run_id(
 )
 }
 \arguments{
-\item{x}{character vector}
+\item{x}{character vector to search through.}
 
-\item{search}{asdas}
+\item{search}{the regex search, default: \code{"(SRR[0-9]+|DRR[0-9]+|ERR[0-9]+)"}}
+
+\item{only_valid}{logical, default FALSE. If TRUE, return only the hits.}
 }
 \value{
 a character vector of run accepted run ids according to search,
@@ -25,6 +27,6 @@ Extract SRR/ERR/DRR run IDs from string
 \examples{
 search <- c("SRR1230123_absdb", "SRR1241204124_asdasd", "asd_ERR1231230213",
  "DRR12412412_asdqwe", "ASDASD_ASDASD", "SRRASDASD")
-extract_run_id(search)
-extract_run_id(search, only_valid = TRUE)
+ORFik:::extract_run_id(search)
+ORFik:::extract_run_id(search, only_valid = TRUE)
 }

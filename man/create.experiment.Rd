@@ -111,6 +111,9 @@ results like QC, count tables etc. By default the libFolder(df) folder is used,
 the folder of first library in experiment. If you are making a new experiment
 which is a collection of other experiments, set this to a new folder,
 to not contaminate your other experiment directories.}
+
+\item{runIDs}{character ids, usually SRR, ERR, or DRR identifiers, default is to search for any of these 3 in the filename by:
+\code{extract_run_id(files)}. They are optional.}
 }
 \value{
 a data.frame, NOTE: this is not a ORFik experiment,
