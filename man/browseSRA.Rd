@@ -9,6 +9,9 @@ browseSRA(x)
 \arguments{
 \item{x}{character, bioproject ID.}
 }
+\value{
+invisible(NULL), opens webpage only
+}
 \description{
 Open SRA in browser for specific bioproject
 }

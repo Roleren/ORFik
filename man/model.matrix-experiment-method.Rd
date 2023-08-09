@@ -4,13 +4,13 @@
 \alias{model.matrix,experiment-method}
 \title{Get experiment design model matrix}
 \usage{
-\S4method{model.matrix}{experiment}(object, design_formula = design(object, as.formula = T))
+\S4method{model.matrix}{experiment}(object, design_formula = design(object, as.formula = TRUE))
 }
 \arguments{
 \item{object}{an ORFik \code{\link{experiment}}}
 
 \item{design_formula}{the experiment design, as formula, subset columns, to
-change the model.matrix, default: \code{design(object, as.formula = T)}}
+change the model.matrix, default: \code{design(object, as.formula = TRUE)}}
 }
 \value{
 a matrix with design and level attributes

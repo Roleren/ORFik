@@ -429,7 +429,7 @@ setMethod("design",
 #' The function extends stats::model.matrix.
 #' @param object an ORFik \code{\link{experiment}}
 #' @param design_formula the experiment design, as formula, subset columns, to
-#'  change the model.matrix, default: \code{design(object, as.formula = T)}
+#'  change the model.matrix, default: \code{design(object, as.formula = TRUE)}
 #' @return a matrix with design and level attributes
 #' @export
 #' @importFrom stats model.matrix
@@ -438,7 +438,7 @@ setMethod("design",
 #' model.matrix(df)
 setMethod("model.matrix",
           "experiment",
-          function(object, design_formula = design(object, as.formula = T)) {
+          function(object, design_formula = design(object, as.formula = TRUE)) {
             stats::model.matrix(design_formula, data = object)
 })
 

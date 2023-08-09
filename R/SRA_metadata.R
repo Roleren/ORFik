@@ -199,6 +199,7 @@ metadata.autnaming <- function(file) {
 
 #' Open SRA in browser for specific bioproject
 #' @param x character, bioproject ID.
+#' @return invisible(NULL), opens webpage only
 #' @family sra
 #' @export
 #' @examples
