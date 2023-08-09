@@ -200,7 +200,7 @@ codon_usage <- function(reads, cds,
 
 orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE) {
   seqs_nt <- txSeqsFromFa(grl, faFile, is.sorted = TRUE)
-  seqs_AA <- translate(seqs_nt, genetic.code = code)
+  seqs_AA <- as.character(translate(seqs_nt, genetic.code = code))
   subseq(seqs_AA, 1, 1) <- "#"
   seqs_AA <- unlist(strsplit(as.character(unlist(seqs_AA, use.names = FALSE)),
                   split = ""))
