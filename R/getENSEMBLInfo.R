@@ -196,6 +196,7 @@ all_bacterias_info <- function() {
 }
 
 get_bacteria_collection_id <- function(ensembl_summary) {
+  # For all non bacterial collections, return ""
   if (ensembl_summary$division[1] != "EnsemblBacteria") return("")
 
   get.org.info <- ensembl_summary[1,]
@@ -203,7 +204,7 @@ get_bacteria_collection_id <- function(ensembl_summary) {
   assembly <- NULL
   bacteria.info <-
     dplyr::filter(bacteria.info,
-                  assembly == get.org.info$assembly)
+                  assembly == gsub("_$", "", get.org.info$assembly))
 
   if (nrow(bacteria.info) == 0) {
     message(

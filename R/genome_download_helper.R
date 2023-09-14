@@ -1,6 +1,6 @@
 #' @inherit getGenomeAndAnnotation
 #' @keywords internal
-get_genome_fasta <- function(genome, output.dir, organism,
+get_genome_fasta <- function(genome, output.dir, organism, assembly,
                              assembly_type, db, gunzip) {
   if (genome != FALSE) { # If not auto detect
     if (is.logical(genome)) { # Then download
@@ -8,7 +8,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
       if (db == "ensembl") {
         message(paste("Starting", assembly_type, "genome retrieval of",
                       organism, "from ensembl: "))
-        genome <- tryCatch(getENSEMBL.Seq(organism, type = "dna",
+        genome <- tryCatch(getENSEMBL.Seq(assembly, type = "dna",
                                           release = NULL,
                                           id.type = assembly_type,
                                           path = output.dir)[1],
@@ -25,7 +25,7 @@ get_genome_fasta <- function(genome, output.dir, organism,
           assembly_types_cand <- c("toplevel", "primary_assembly")
           assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
           message("Switching to search for assembly_type: ", assembly_type)
-          genome <- getENSEMBL.Seq(organism, type = "dna",
+          genome <- getENSEMBL.Seq(assembly, type = "dna",
                                    release = NULL, id.type = assembly_type,
                                    path = output.dir)[1]
           } else stop(genome)
@@ -92,7 +92,8 @@ get_genome_fasta <- function(genome, output.dir, organism,
 #' and correct seqlengths. If value is NULL or FALSE, it will be ignored.
 #' @inheritParams makeTxdbFromGenome
 #' @keywords internal
-get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
+get_genome_gtf <- function(GTF, output.dir, organism, assembly,
+                           assembly_type, db,
                            gunzip, genome, optimize = FALSE,
                            uniprot_id = FALSE,
                            gene_symbols = FALSE,
@@ -103,14 +104,14 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly_type, db,
       message("- Download annotation (gtf/gff3)")
       is_compressed <- gunzip
       if (db == "ensembl") {
-        gtf <- getENSEMBL.gtf(organism = organism, type = "dna",
+        gtf <- getENSEMBL.gtf(organism = assembly, type = "dna",
                               id.type = assembly_type, path = output.dir)
       } else {
         message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
                 " and might crash during gff reading step!",
                 " Until this is fixed in rtracklayer, check out example",
                 " in ?getGenomeAndAnnotation on how to rescue those gffs")
-        gtf <-biomartr::getGFF(db = db, organism = organism,
+        gtf <-biomartr::getGFF(db = db, organism = assembly,
                                path = output.dir, reference = TRUE,
                                remove_annotation_outliers = remove_annotation_outliers)
       }

@@ -110,6 +110,10 @@
 #' (defined as: locally (a file called outputs.rds) exists in outputdir),
 #' print a small message notifying the user it is not redownloading. Set to
 #' FALSE, if this is not wanted
+#' @param assembly character, default is assembly = organism, which means getting
+#' the first assembly in list, otherwise the name of the assembly wanted, like
+#' "GCA_000005845" will get ecoli substrain k12, which is the most used ones for
+#' references. Usually ignore this for non bacterial species.
 #' @inheritParams makeTxdbFromGenome
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
@@ -164,7 +168,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    uniprot_id = FALSE,
                                    pseudo_5UTRS_if_needed = NULL,
                                    remove_annotation_outliers = TRUE,
-                                   notify_load_existing = TRUE) {
+                                   notify_load_existing = TRUE,
+                                   assembly = organism) {
   # Pre checks
   stopifnot(is(organism, "character"))
   stopifnot(is(output.dir, "character"))
@@ -187,10 +192,10 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   conts <- contaminants_download(tRNA, rRNA, phix, ncRNA, output.dir, organism,
                                  gunzip)
   # Get species fasta genome and gtf
-  genome <- get_genome_fasta(genome, output.dir, organism,
+  genome <- get_genome_fasta(genome, output.dir, organism, assembly,
                              assembly_type, db, gunzip)
-  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly_type, db,
-                        gunzip, genome, optimize = optimize,
+  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly, assembly_type,
+                        db, gunzip, genome, optimize = optimize,
                         uniprot_id = uniprot_id,
                         gene_symbols = gene_symbols,
                         pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
