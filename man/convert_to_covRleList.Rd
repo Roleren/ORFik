@@ -57,3 +57,11 @@ ORFik:::convert_to_covRleList(df, out_dir = folder_to_save,
 out_dir_merged = folder_to_save_merged)
 fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
 }
+\seealso{
+Other lib_converters: 
+\code{\link{convertLibs}()},
+\code{\link{convert_bam_to_ofst}()},
+\code{\link{convert_to_bigWig}()},
+\code{\link{convert_to_covRle}()}
+}
+\concept{lib_converters}

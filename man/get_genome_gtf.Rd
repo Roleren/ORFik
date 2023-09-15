@@ -8,6 +8,7 @@ get_genome_gtf(
   GTF,
   output.dir,
   organism,
+  assembly,
   assembly_type,
   db,
   gunzip,
@@ -33,6 +34,11 @@ If db is not "ensembl", you will instead get a gff file.}
 \item{organism}{scientific name of organism, Homo sapiens,
 Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
 for full list of supported organisms.}
+
+\item{assembly}{character, default is assembly = organism, which means getting
+the first assembly in list, otherwise the name of the assembly wanted, like
+"GCA_000005845" will get ecoli substrain k12, which is the most used ones for
+references. Usually ignore this for non bacterial species.}
 
 \item{assembly_type}{a character string specifying from which assembly type
 the genome shall be retrieved from (ensembl only, else this argument is ignored):

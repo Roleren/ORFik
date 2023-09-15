@@ -52,3 +52,11 @@ folder_to_save <- file.path(tempdir(), "cov_RLE")
 convert_to_covRle(df, out_dir = folder_to_save)
 fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
 }
+\seealso{
+Other lib_converters: 
+\code{\link{convertLibs}()},
+\code{\link{convert_bam_to_ofst}()},
+\code{\link{convert_to_bigWig}()},
+\code{\link{convert_to_covRleList}()}
+}
+\concept{lib_converters}

@@ -497,6 +497,11 @@ name_decider <- function(df, naming) {
 #' Export files as .wig / bigWig for use in IGV or other genome browsers.\cr
 #' The input files are checked if they exist from: \code{envExp(df)}.\cr
 #'
+#' We advice you to not use this directly, as other function are more safe
+#' for library type conversions. See family description below. This is
+#' mostly used internally in ORFik. It is only adviced to use if large bam files
+#' are already loaded in R and conversions are wanted from those.
+#'
 #' See \code{\link{export.ofst}}, \code{\link{export.wiggle}},
 #' \code{\link{export.bedo}} and \code{\link{export.bedoc}}
 #' for information on file formats.\cr
@@ -521,13 +526,17 @@ name_decider <- function(df, naming) {
 #' only need the reads over transcript annotation or subset etc.
 #' @param method character, default "None", the method to reduce ranges,
 #' for more info see \code{\link{convertToOneBasedRanges}}
-#' @param type a character of format, default "ofst".
+#' @param type character, output format, default "ofst".
 #' Alternatives: "ofst", "bigWig", "wig","bedo" or "bedoc". Which format you want.
 #' Will make a folder within out.dir with this name containing the files.
+#' @param input.type character, input type "ofst". Remember this function
+#' uses the loaded libraries if existing, so this argument is usually ignored.
+#' Only used if files do not already exist.
 #' @param reassign.when.saving logical, default FALSE. If TRUE, will reassign
 #' library to converted form after saving. Ignored when out.dir = NULL.
 #' @return NULL (saves files to disc or R .GlobalEnv)
 #' @export
+#' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment()
 #' #convertLibs(df)
@@ -537,7 +546,7 @@ convertLibs <- function(df,
                        out.dir = libFolder(df),
                        addScoreColumn = TRUE, addSizeColumn = TRUE,
                        must.overlap = NULL, method = "None",
-                       type = "ofst",
+                       type = "ofst", input.type = "ofst",
                        reassign.when.saving = FALSE,
                        envir = envExp(df),
                        BPPARAM = bpparam()) {
@@ -554,7 +563,7 @@ convertLibs <- function(df,
     message(paste("Saving,", type, "files to:", out.dir))
   }
 
-  outputLibs(df, type = "ofst", chrStyle = must.overlap, BPPARAM = BPPARAM)
+  outputLibs(df, type = input.type, chrStyle = must.overlap, BPPARAM = BPPARAM)
 
   varNames <- bamVarName(df)
   i <- 1

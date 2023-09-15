@@ -59,3 +59,11 @@ convert_to_bigWig(df, out_dir = folder_to_save)
 fimport(file.path(folder_to_save, c("RFP_Mutant_rep2_forward.bigWig",
  "RFP_Mutant_rep2_reverse.bigWig")))
 }
+\seealso{
+Other lib_converters: 
+\code{\link{convertLibs}()},
+\code{\link{convert_bam_to_ofst}()},
+\code{\link{convert_to_covRleList}()},
+\code{\link{convert_to_covRle}()}
+}
+\concept{lib_converters}

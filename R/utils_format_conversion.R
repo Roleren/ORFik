@@ -15,6 +15,7 @@
 #'  \code{file.path(libFolder(df), "cov_RLE")}.
 #' @return invisible(NULL), files saved to disc
 #' @export
+#' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment.zf()
 #' ## Usually do default folder, here we use tmpdir
@@ -63,6 +64,7 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
 #' Use score column in loaded in_files.
 #' @return invisible(NULL), files saved to disc
 #' @export
+#' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment()[10,]
 #' ## Usually do default folder, here we use tmpdir
@@ -129,6 +131,7 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
 #'  Paths to merged output files, Set to NULL to skip making merged covRle.
 #' @return invisible(NULL), files saved to disc
 #' @export
+#' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment()[10,]
 #' ## Usually do default folder, here we use tmpdir
@@ -184,6 +187,7 @@ convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
 #'  \code{file.path(libFolder(df), "bigwig")}.
 #' @return invisible(NULL), files saved to disc
 #' @export
+#' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment()[10,]
 #' ## Usually do default folder, here we use tmpdir

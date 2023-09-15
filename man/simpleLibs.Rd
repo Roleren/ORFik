@@ -12,6 +12,7 @@ simpleLibs(
   must.overlap = NULL,
   method = "None",
   type = "ofst",
+  input.type = "ofst",
   reassign.when.saving = FALSE,
   envir = envExp(df),
   BPPARAM = bpparam()
@@ -40,9 +41,13 @@ only need the reads over transcript annotation or subset etc.}
 \item{method}{character, default "None", the method to reduce ranges,
 for more info see \code{\link{convertToOneBasedRanges}}}
 
-\item{type}{a character of format, default "ofst".
+\item{type}{character, output format, default "ofst".
 Alternatives: "ofst", "bigWig", "wig","bedo" or "bedoc". Which format you want.
 Will make a folder within out.dir with this name containing the files.}
+
+\item{input.type}{character, input type "ofst". Remember this function
+uses the loaded libraries if existing, so this argument is usually ignored.
+Only used if files do not already exist.}
 
 \item{reassign.when.saving}{logical, default FALSE. If TRUE, will reassign
 library to converted form after saving. Ignored when out.dir = NULL.}
@@ -65,6 +70,11 @@ Export files as .wig / bigWig for use in IGV or other genome browsers.\cr
 The input files are checked if they exist from: \code{envExp(df)}.\cr
 }
 \details{
+We advice you to not use this directly, as other function are more safe
+for library type conversions. See family description below. This is
+mostly used internally in ORFik. It is only adviced to use if large bam files
+are already loaded in R and conversions are wanted from those.
+
 See \code{\link{export.ofst}}, \code{\link{export.wiggle}},
 \code{\link{export.bedo}} and \code{\link{export.bedoc}}
 for information on file formats.\cr
@@ -79,4 +89,11 @@ df <- ORFik.template.experiment()
 #convertLibs(df)
 # Keep only 5' ends of reads
 #convertLibs(df, method = "5prime")
+}
+\seealso{
+Other lib_converters: 
+\code{\link{convert_bam_to_ofst}()},
+\code{\link{convert_to_bigWig}()},
+\code{\link{convert_to_covRleList}()},
+\code{\link{convert_to_covRle}()}
 }

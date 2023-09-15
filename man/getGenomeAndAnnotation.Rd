@@ -23,7 +23,8 @@ getGenomeAndAnnotation(
   uniprot_id = FALSE,
   pseudo_5UTRS_if_needed = NULL,
   remove_annotation_outliers = TRUE,
-  notify_load_existing = TRUE
+  notify_load_existing = TRUE,
+  assembly = organism
 )
 }
 \arguments{
@@ -148,6 +149,11 @@ where this is needed}
 (defined as: locally (a file called outputs.rds) exists in outputdir),
 print a small message notifying the user it is not redownloading. Set to
 FALSE, if this is not wanted}
+
+\item{assembly}{character, default is assembly = organism, which means getting
+the first assembly in list, otherwise the name of the assembly wanted, like
+"GCA_000005845" will get ecoli substrain k12, which is the most used ones for
+references. Usually ignore this for non bacterial species.}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,

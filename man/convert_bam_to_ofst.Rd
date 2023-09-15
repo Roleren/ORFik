@@ -49,3 +49,11 @@ folder_to_save <- file.path(tempdir(), "ofst")
 convert_bam_to_ofst(df, out_dir = folder_to_save)
 fimport(file.path(folder_to_save, "ribo-seq.ofst"))
 }
+\seealso{
+Other lib_converters: 
+\code{\link{convertLibs}()},
+\code{\link{convert_to_bigWig}()},
+\code{\link{convert_to_covRleList}()},
+\code{\link{convert_to_covRle}()}
+}
+\concept{lib_converters}
