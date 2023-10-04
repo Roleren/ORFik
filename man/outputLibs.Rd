@@ -99,7 +99,8 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 \item{verbose}{logical, default TRUE, message about library output status.}
 
 \item{force}{logical, default FALSE. If TRUE, reload files even if
-matching named variables are found in environment. A simple way to make
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().

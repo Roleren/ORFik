@@ -58,7 +58,8 @@ to get default count tables!
 \details{
 If df is path to folder:
 Loads the the file in that directory with the regex region.rds,
-where region is what is defined by argument. If loaded as SummarizedExperiment
+where region is what is defined by argument, if multiple exist,
+see if any start with "countTable_", if so, subset. If loaded as SummarizedExperiment
 or deseq, the colData will be made from ORFik.experiment information.
 }
 \examples{

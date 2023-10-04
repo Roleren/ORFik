@@ -35,7 +35,9 @@
 #' @param weight numeric or character, a column to score overlaps by. Default "score",
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
-#' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file.
+#' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file count table files.
+#' @param force logical, default TRUE. IF TRUE, will not use existing libraries found in environment
+#' of experiment. See argument 'force' in \code{link{outputLibs}}
 #' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
 #' @export
@@ -61,6 +63,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             region = "mrna", type = "count",
                                             lib.type = "ofst",
                                             weight = "score", forceRemake = FALSE,
+                                            force = TRUE,
                                             BPPARAM = BiocParallel::SerialParam()) {
   stopifnot(length(geneOrTxNames) == 1)
   stopifnot(geneOrTxNames %in% c("tx", "gene"))
@@ -88,7 +91,8 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
   }
 
   varNames <- bamVarName(df)
-  outputLibs(df, chrStyle = tx, type = lib.type, BPPARAM = BPPARAM)
+  outputLibs(df, chrStyle = tx, type = lib.type, force = force,
+             BPPARAM = BPPARAM)
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
                                  nrow = length(tx)))
@@ -207,7 +211,8 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #'
 #' If df is path to folder:
 #' Loads the the file in that directory with the regex region.rds,
-#' where region is what is defined by argument. If loaded as SummarizedExperiment
+#' where region is what is defined by argument, if multiple exist,
+#' see if any start with "countTable_", if so, subset. If loaded as SummarizedExperiment
 #' or deseq, the colData will be made from ORFik.experiment information.
 #' @param df an ORFik \code{\link{experiment}} or path to folder with
 #' countTable, use path if not same folder as experiment libraries. Will subset to
@@ -277,6 +282,12 @@ countTable <- function(df, region = "mrna", type = "count",
     if (dir.exists(df)) {
       df <- list.files(path = df, pattern = paste0(region, ".rds"),
                        full.names = TRUE)
+      if (length(df) > 1) {
+        hits <- grep("^countTable_", basename(df))
+        if (length(hits) == 1) {
+          df <- df[hits]
+        }
+      }
     }
     if (length(df) == 1) {
       res <- readRDS(df)
@@ -369,7 +380,7 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                      geneOrTxNames = geneOrTxNames,
                                      longestPerGene = longestPerGene,
                                      saveName = path, lib.type = lib.type,
-                                     forceRemake = forceRemake)
+                                     forceRemake = forceRemake, force = FALSE)
     },
     countDir = countDir, df = df,
     geneOrTxNames = geneOrTxNames,

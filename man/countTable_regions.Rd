@@ -55,7 +55,7 @@ will not use weights.}
 \item{rel.dir}{relative output directory for out.dir, default:
 "QC_STATS". For pshifted, write "pshifted".}
 
-\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file.}
+\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file count table files.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

@@ -14,6 +14,7 @@ makeSummarizedExperimentFromBam(
   lib.type = "ofst",
   weight = "score",
   forceRemake = FALSE,
+  force = TRUE,
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -49,7 +50,10 @@ Can also be custom user made folders inside the experiments bam folder.}
 will check for a metacolumn called "score" in libraries. If not found,
 will not use weights.}
 
-\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file.}
+\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file count table files.}
+
+\item{force}{logical, default TRUE. IF TRUE, will not use existing libraries found in environment
+of experiment. See argument 'force' in \code{link{outputLibs}}}
 
 \item{BPPARAM}{how many cores/threads to use? default: BiocParallel::SerialParam()}
 }
