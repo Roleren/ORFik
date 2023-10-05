@@ -194,7 +194,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
   # Get species fasta genome and gtf
   genome <- get_genome_fasta(genome, output.dir, organism, assembly,
                              assembly_type, db, gunzip)
-  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly, assembly_type,
+  gtf <- get_genome_gtf(GTF, output.dir, organism, assembly,
                         db, gunzip, genome, optimize = optimize,
                         uniprot_id = uniprot_id,
                         gene_symbols = gene_symbols,

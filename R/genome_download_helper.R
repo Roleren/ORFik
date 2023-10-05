@@ -8,7 +8,7 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
       if (db == "ensembl") {
         message(paste("Starting", assembly_type, "genome retrieval of",
                       organism, "from ensembl: "))
-        genome <- tryCatch(getENSEMBL.Seq(assembly, type = "dna",
+        genome <- tryCatch(biomartr:::getENSEMBL.Seq(assembly, type = "dna",
                                           release = NULL,
                                           id.type = assembly_type,
                                           path = output.dir)[1],
@@ -25,7 +25,7 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
           assembly_types_cand <- c("toplevel", "primary_assembly")
           assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
           message("Switching to search for assembly_type: ", assembly_type)
-          genome <- getENSEMBL.Seq(assembly, type = "dna",
+          genome <- biomartr:::getENSEMBL.Seq(assembly, type = "dna",
                                    release = NULL, id.type = assembly_type,
                                    path = output.dir)[1]
           } else stop(genome)
@@ -45,7 +45,8 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
 
       } else {
         genome  <- biomartr::getGenome(db = db, organism,
-                                       path = output.dir, gunzip = gunzip)
+                                       path = output.dir, gunzip = gunzip,
+                                       mute_citation = TRUE)
       }
     } else if (is.character(genome)) { # Use hard drive file
       message("- Using pre-existing genome (fasta)")
@@ -93,8 +94,7 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
 #' @inheritParams makeTxdbFromGenome
 #' @keywords internal
 get_genome_gtf <- function(GTF, output.dir, organism, assembly,
-                           assembly_type, db,
-                           gunzip, genome, optimize = FALSE,
+                           db, gunzip, genome, optimize = FALSE,
                            uniprot_id = FALSE,
                            gene_symbols = FALSE,
                            pseudo_5UTRS_if_needed = NULL,
@@ -104,8 +104,8 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly,
       message("- Download annotation (gtf/gff3)")
       is_compressed <- gunzip
       if (db == "ensembl") {
-        gtf <- getENSEMBL.gtf(organism = assembly, type = "dna",
-                              id.type = assembly_type, path = output.dir)
+        gtf <- biomartr:::getENSEMBL.gtf(organism = assembly, type = "dna",
+                                         path = output.dir)
       } else {
         message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
                 " and might crash during gff reading step!",
@@ -113,7 +113,8 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly,
                 " in ?getGenomeAndAnnotation on how to rescue those gffs")
         gtf <-biomartr::getGFF(db = db, organism = assembly,
                                path = output.dir, reference = TRUE,
-                               remove_annotation_outliers = remove_annotation_outliers)
+                               remove_annotation_outliers = remove_annotation_outliers,
+                               mute_citation = TRUE)
       }
     } else if (is.character(GTF)) { # File already exists
       message("- Using pre-existing annotation (gtf/gff3)")

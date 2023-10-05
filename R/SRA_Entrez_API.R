@@ -21,9 +21,9 @@ SRP_from_GSE <- function(SRP) {
 }
 
 fetch_xml_attributes <- function(xml, xml_path) {
-  dt <- XML::getNodeSet(xml, xml_path)   
-  dt <-  lapply(dt, XML::xmlToDataFrame) 
-  dt <-  lapply(dt, function(x) as.data.table(t(x))) 
+  dt <- XML::getNodeSet(xml, xml_path)
+  dt <-  lapply(dt, XML::xmlToDataFrame)
+  dt <-  lapply(dt, function(x) as.data.table(t(x)))
   dt <- lapply(dt, function(x) {colnames(x) <- as.character(x[1,]); return(x[2,])})
   dt <- rbindlist(dt, fill = TRUE)
   to_keep <- sapply(dt, function(x) !all(x == "NA"))
@@ -62,7 +62,7 @@ sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
 
   dt <- add_author(dt)
   # Save abstract
-  
+
   if (rich.format) dt <- cbind(dt, sample_dt, exp_attr_dt)
   abstract_save(EXP_SAMPLE, abstract, abstract_destfile)
   return(filter_empty_runs(dt, remove.invalid, SRP))
@@ -113,7 +113,7 @@ sample_info_single <- function(EXP_SAMPLE) {
   SRAStudy <- EXP_SAMPLE$STUDY$IDENTIFIERS$PRIMARY_ID[[1]]
   BioProject <- attr(EXP_SAMPLE$STUDY$IDENTIFIERS$EXTERNAL_ID, "namespace")
   BioProject <- EXP_SAMPLE$STUDY$IDENTIFIERS$EXTERNAL_ID[[1]]
-  Study_Pubmed_id <- 1
+  Study_Pubmed_id <- as.numeric(NA)
   ProjectID <- ""
   Sample_info <- EXP_SAMPLE$SAMPLE
   Sample <- Sample_info$IDENTIFIERS$PRIMARY_ID[[1]]
