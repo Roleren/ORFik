@@ -1,7 +1,7 @@
 ORFik: R package for discovery of novel genes.
 ==============================================================================
 
-<a href="http://www.bioconductor.org/packages/release/bioc/html/ORFik.html#since"><img border="0" src="http://www.bioconductor.org/shields/years-in-bioc/ORFik.svg" title="Time since release."></a> <a href="https://bioconductor.org/packages/stats/bioc/ORFik"><img border="0" src="http://www.bioconductor.org/shields/downloads/ORFik.svg" title="Downloads over last 6 full months (all, unique IPs)."></a> <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-021-04254-w"><img border="0" src="https://img.shields.io/badge/published-BMC-blue.svg" title="Published in BMC bioinformatics"></a>
+[![bioc](http://www.bioconductor.org/shields/years-in-bioc/ORFik.svg)](http://bioconductor.org/packages/devel/bioc/html/ORFik.html) [![bioc](http://www.bioconductor.org/shields/downloads/devel/ORFik.svg)](https://bioconductor.org/packages/stats/bioc/ORFik/)  <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-021-04254-w"><img border="0" src="https://img.shields.io/badge/published-BMC-blue.svg" title="Published in BMC bioinformatics"></a>
 
 ![](inst/images/ORFik_map.png)
 
@@ -66,6 +66,12 @@ library(ORFik)
 
 # Annotation download
 ?getGenomeAndAnnotation
+
+# Data management
+?create.experiment
+
+# NGS Library Quality control
+?ORFikQC
 
 # Tissue specific 5' utrs using cage-data
 ?reassignTSSbyCage
