@@ -272,29 +272,32 @@ setMethod("collapseDuplicatedReads", "GAlignmentPairs",
 #' @inherit collapseDuplicatedReads
 #' @param addScoreColumn = TRUE, if FALSE,
 #' only collapse and not keep score column of counts for collapsed reads.
+#' @param keepCigar logical, default FALSE. Keep the cigar information
 #' @inheritParams convertToOneBasedRanges
 setMethod("collapseDuplicatedReads", "data.table",
           function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
-                   reuse.score.column = TRUE) {
+                   reuse.score.column = TRUE, keepCigar = FALSE) {
             required_columns <- c("seqnames", "start", "strand", "score")
             stopifnot(all(required_columns %in% colnames(x)))
+            size_exists <- "size" %in% colnames(x)
+            cigar_exists <- "cigar" %in% colnames(x)
+            grouping <- c("seqnames", "start", "strand")
+
             if (addSizeColumn) {
-              if (!("size" %in% colnames(x)))
+              if (size_exists) {
+                grouping <- c(grouping, "size")
+              } else
                 warning("addSizeColumn is TRUE, and no size column found!")
             }
 
+            if (keepCigar & cigar_exists) grouping <- c(grouping, "cigar")
+
+            if ("cigar1" %in% colnames(x))
+              stop("Paired end collapse on dt not supported yet!")
             if (reuse.score.column & ("score" %in% colnames(x))) { # reuse
-              if (addSizeColumn & ("size" %in% colnames(x))) {
-                x <- x[, .(score = sum(score)), .(seqnames, start, strand, size)]
-              } else {
-                x <- x[, .(score = sum(score)), .(seqnames, start, strand)]
-              }
+              x <- x[, .(score = sum(score)), by = grouping]
             } else { # Do not reuse or "score" does not exist
-              if (addSizeColumn & ("size" %in% colnames(x))) {
-                x <- x[, .(score = .N), .(seqnames, start, strand, size)]
-              } else {
-                x <- x[, .(score = .N), .(seqnames, start, strand)]
-              }
+              x <- x[, .(score = .N), by = grouping]
             }
             if (!addScoreColumn) x$score <- NULL
             # TODO change makeGRangesFromDataFrame to internal fast function
