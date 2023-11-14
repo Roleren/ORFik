@@ -8,6 +8,7 @@ ofst_merge(
   file_paths,
   lib_names = sub(pattern = "\\\\.ofst$", replacement = "", basename(file_paths)),
   keep_all_scores = TRUE,
+  keepCigar = TRUE,
   sort = TRUE
 )
 }
@@ -18,6 +19,9 @@ ofst_merge(
 
 \item{keep_all_scores}{logical, default TRUE, keep all library scores in the merged file. These
 score columns are named the libraries full name from \code{bamVarName(df)}.}
+
+\item{keepCigar}{logical, default TRUE. If CIGAR is defined, keep column. Setting
+to FALSE compresses the file much more usually.}
 
 \item{sort}{logical, default TRUE. Sort the ranges. Will make the file smaller and
 faster to load, but some additional merging time is added.}

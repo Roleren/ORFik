@@ -134,12 +134,14 @@ collapse.by.scores <- function(x) {
 #' score columns are named the libraries full name from \code{bamVarName(df)}.
 #' @param sort logical, default TRUE. Sort the ranges. Will make the file smaller and
 #' faster to load, but some additional merging time is added.
+#' @param keepCigar logical, default TRUE. If CIGAR is defined, keep column. Setting
+#' to FALSE compresses the file much more usually.
 #' @return a data.table of merged result, it is merged on all columns except "score".
 #' The returned file will contain the scores of each file + the aggregate sum score.
 #' @importFrom data.table setnames
 ofst_merge <- function(file_paths,
                        lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
-                       keep_all_scores = TRUE, sort = TRUE) {
+                       keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE) {
   # Check valid matching files
   meta <- table(unlist(lapply(file_paths, function(x) data.table(fst::metadata_fst(x)$columnNames))))
   if (!all(meta == length(file_paths))) {
@@ -163,7 +165,8 @@ ofst_merge <- function(file_paths,
     dt <- mergeDTs(dt_list, by = merge_keys, sort = sort)
     dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
   } else {
-    dt <- collapseDuplicatedReads(rbindlist(dt_list), addSizeColumn = TRUE)
+    dt <- collapseDuplicatedReads(rbindlist(dt_list), addSizeColumn = TRUE,
+                                  keepCigar = keepCigar)
     merge_keys <- colnames(dt)
     merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
     if (sort) setorderv(dt, merge_keys)
@@ -190,7 +193,7 @@ setGeneric("collapseDuplicatedReads", function(x, ...) standardGeneric("collapse
 #' @inherit collapseDuplicatedReads
 #' @param addScoreColumn = TRUE, if FALSE,
 #' only collapse and not keep score column of counts for collapsed reads.
-#' @inheritParams convertToOneBasedRanges
+#' @inheritParams collapseDuplicatedReads
 setMethod("collapseDuplicatedReads", "GRanges",
           function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
                    reuse.score.column = TRUE) {

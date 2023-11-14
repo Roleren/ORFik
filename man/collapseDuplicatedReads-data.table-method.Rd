@@ -8,7 +8,8 @@
   x,
   addScoreColumn = TRUE,
   addSizeColumn = FALSE,
-  reuse.score.column = TRUE
+  reuse.score.column = TRUE,
+  keepCigar = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ and a score column exists, will sum up the scores to create a new score.
 If FALSE, will skip old score column and create new according to number
 of replicated reads after conversion.
 If addScoreColumn is FALSE, this argument is ignored.}
+
+\item{keepCigar}{logical, default FALSE. Keep the cigar information}
 }
 \value{
 a GRanges, GAlignments or GAlignmentPairs object, same as input
