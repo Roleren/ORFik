@@ -561,12 +561,13 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
   path <- ifelse(is.character(faFile), faFile, ifelse(is(faFile, "FaFile"), faFile$path, ""))
   if (path != "") {
     if (file.size(path) < 1e7 & length(grl) > 50) {
+      # TODO: make failsafe for more special cases
       faFile <- readDNAStringSet(path)
       seqnames_grl <- unique(seqnamesPerGroup(grl, FALSE))
-      bad_name_format <- !all(names(faFile) %in% seqnames_grl)
+      bad_name_format <- !all(seqnames_grl %in% names(faFile))
       if (bad_name_format) {
         new_names <- try(names(seqinfo(FaFile(path))))
-        if (all(new_names %in% seqnames_grl)) names(faFile) <- new_names
+        if (all(seqnames_grl %in% new_names)) names(faFile) <- new_names
       }
     }
   }
