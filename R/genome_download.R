@@ -24,6 +24,7 @@
 #' paths like this: \cr
 #' annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
 #' genome = "path/to/genome.fasta")\cr
+#' @inheritParams biomartr::getGenome
 #' @param organism scientific name of organism, Homo sapiens,
 #' Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
 #' for full list of supported organisms.
@@ -31,7 +32,7 @@
 #' @param db database to use for genome and GTF,
 #' default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
 #' else it will contain haplotypes, very large file!).
-#' Alternatives: "refseq" (primary assembly) and "genbank" (mix)
+#' Alternatives: "refseq" (reference assemblies) and "genbank" (all assemblies)
 #' @param GTF logical, default: TRUE, download gtf of organism specified
 #' in "organism" argument. If FALSE, check if the downloaded
 #' file already exist. If you want to use a custom gtf from you hard drive,
@@ -92,14 +93,6 @@
 #' @param gunzip logical, default TRUE, uncompress downloaded files
 #' that are zipped when downloaded, should be TRUE!
 #' @param remake logical, default: FALSE, if TRUE remake everything specified
-#' @param assembly_type a character string specifying from which assembly type
-#' the genome shall be retrieved from (ensembl only, else this argument is ignored):
-#' Default is \code{assembly_type = "primary_assembly")}.
-#' This will give you no haplotypes (copies of the same chromosome with small variations).
-#' As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
-#' \code{assembly_type = "toplevel")}.
-#' This will give you all haplotypes.
-#' As an example the toplevel fasta genome in human is over 70 GB uncompressed.
 #' @param remove_annotation_outliers logical, default TRUE. Only for refseq.
 #'  shall outlier lines be removed from the input annotation_file?
 #'  If yes, then the initial annotation_file will be overwritten and
@@ -163,7 +156,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    merge_contaminants = TRUE, phix = FALSE,
                                    ncRNA = FALSE, tRNA = FALSE, rRNA = FALSE,
                                    gunzip = TRUE, remake = FALSE,
-                                   assembly_type = "primary_assembly",
+                                   assembly_type = c("primary_assembly", "toplevel"),
                                    optimize = FALSE, gene_symbols = FALSE,
                                    uniprot_id = FALSE,
                                    pseudo_5UTRS_if_needed = NULL,
@@ -179,7 +172,7 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                   " do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
-  if (!(assembly_type %in% c("toplevel", "primary_assembly")))
+  if (!all(assembly_type %in% c("toplevel", "primary_assembly")))
     stop("Please select one the available assembly types: \ntoplevel, primary_assembly")
   dir.create(output.dir, recursive = TRUE)
 

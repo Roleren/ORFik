@@ -6,8 +6,8 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
     if (is.logical(genome)) { # Then download
       message("- Download genome (fasta)")
       if (db == "ensembl") {
-        message(paste("Starting", assembly_type, "genome retrieval of",
-                      organism, "from ensembl: "))
+        message(paste("Starting", paste(assembly_type, collapse = "|"),
+                      "genome retrieval of", organism, "from ensembl: "))
         genome <- tryCatch(biomartr:::getENSEMBL.Seq(assembly, type = "dna",
                                           release = NULL,
                                           id.type = assembly_type,
@@ -16,31 +16,13 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
                              return(e)
                            }
         )
-        if (inherits(genome, "error") | is.logical(genome)) {
-          swap_assembly_type <- is.logical(genome)
-          if (!swap_assembly_type)
-            swap_assembly_type <- genome$message[1] == "Given file does not exist"
-          if (swap_assembly_type) {
-          message("Could not find assembly_type: ", assembly_type)
-          assembly_types_cand <- c("toplevel", "primary_assembly")
-          assembly_type <- assembly_types_cand[!(assembly_types_cand %in% assembly_type)]
-          message("Switching to search for assembly_type: ", assembly_type)
-          genome <- biomartr:::getENSEMBL.Seq(assembly, type = "dna",
-                                   release = NULL, id.type = assembly_type,
-                                   path = output.dir)[1]
-          } else stop(genome)
-        }
-
-        if (is.logical(genome)) {
-          if (genome == FALSE) {
+        if (is.logical(genome) || genome == FALSE) {
             message("Remember some small genome organisms like yeast,",
                     " does not have primary assemblies, ",
                     "then change assembly_type to toplevel and/or use:",
                     " db = refseq.")
-          }
         } else {
-          if (gunzip) # unzip gtf file
-            genome <- R.utils::gunzip(genome, overwrite = TRUE)
+          if (gunzip) genome <- R.utils::gunzip(genome, overwrite = TRUE)
         }
 
       } else {
