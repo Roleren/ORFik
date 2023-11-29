@@ -17,10 +17,8 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
                            }
         )
         if (is.logical(genome) || genome == FALSE) {
-            message("Remember some small genome organisms like yeast,",
-                    " does not have primary assemblies, ",
-                    "then change assembly_type to toplevel and/or use:",
-                    " db = refseq.")
+            stop("Genome could not be download, do you have internet.
+                 If so, debug to find the reason.")
         } else {
           if (gunzip) genome <- R.utils::gunzip(genome, overwrite = TRUE)
         }

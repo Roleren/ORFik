@@ -34,19 +34,23 @@ the first assembly in list, otherwise the name of the assembly wanted, like
 "GCA_000005845" will get ecoli substrain k12, which is the most used ones for
 references. Usually ignore this for non bacterial species.}
 
-\item{assembly_type}{a character string specifying from which assembly type
-the genome shall be retrieved from (ensembl only, else this argument is ignored):
-Default is \code{assembly_type = "primary_assembly")}.
-This will give you no haplotypes (copies of the same chromosome with small variations).
-As an example, the  primary_assembly fasta genome in human is only a few GB uncompressed.\cr
-\code{assembly_type = "toplevel")}.
-This will give you all haplotypes.
-As an example the toplevel fasta genome in human is over 70 GB uncompressed.}
+\item{assembly_type}{character, default c("primary_assembly", "toplevel"). Used for ensembl only,
+specifies the genome assembly type. Searches for both primary and toplevel, and if both are found, uses the
+first by order (so primary is prioritized by default).
+The Primary assembly should usually be used if it exists.
+The "primary assembly" contains all the top-level sequence regions,
+excluding alternative haplotypes and patches.
+If the primary assembly file is not present for a species
+(only defined for standard model organisms),
+that indicates that there were no haplotype/patch regions,
+and in such cases, the 'toplevel file is used.
+For more details see:
+\\href{https://grch37.ensembl.org/info/genome/genebuild/assembly.html}{ensembl tutorial}}
 
 \item{db}{database to use for genome and GTF,
 default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
 else it will contain haplotypes, very large file!).
-Alternatives: "refseq" (primary assembly) and "genbank" (mix)}
+Alternatives: "refseq" (reference assemblies) and "genbank" (all assemblies)}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}

@@ -42,7 +42,7 @@ references. Usually ignore this for non bacterial species.}
 \item{db}{database to use for genome and GTF,
 default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
 else it will contain haplotypes, very large file!).
-Alternatives: "refseq" (primary assembly) and "genbank" (mix)}
+Alternatives: "refseq" (reference assemblies) and "genbank" (all assemblies)}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}
