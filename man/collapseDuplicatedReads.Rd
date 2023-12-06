@@ -4,16 +4,22 @@
 \alias{collapseDuplicatedReads}
 \title{Collapse duplicated reads}
 \usage{
-collapseDuplicatedReads(x, ...)
+collapseDuplicatedReads(x, addScoreColumn = TRUE, ...)
 }
 \arguments{
 \item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
-\item{...}{alternative arguments. addScoreColumn = TRUE, if FALSE,
-only collapse and not add score column.}
+\item{addScoreColumn}{logical, default: (TRUE), if FALSE,
+only collapse and not keep score column of counts for collapsed reads.
+Returns directly without collapsing if reuse.score.column is FALSE and
+score is already defined.}
+
+\item{...}{alternative arguments for class instances. For example, see:
+\code{?'collapseDuplicatedReads,GRanges-method'}}
 }
 \value{
-a GRanges, GAlignments or GAlignmentPairs object, same as input
+a GRanges, GAlignments, GAlignmentPairs or data.table object,
+ same as input
 }
 \description{
 For every GRanges, GAlignments read, with the same:

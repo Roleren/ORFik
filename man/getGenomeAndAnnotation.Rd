@@ -119,7 +119,7 @@ If the primary assembly file is not present for a species
 that indicates that there were no haplotype/patch regions,
 and in such cases, the 'toplevel file is used.
 For more details see:
-\\href{https://grch37.ensembl.org/info/genome/genebuild/assembly.html}{ensembl tutorial}}
+\href{https://grch37.ensembl.org/info/genome/genebuild/assembly.html}{ensembl tutorial}}
 
 \item{optimize}{logical, default FALSE. Create a folder
 within the folder of the gtf, that includes optimized objects

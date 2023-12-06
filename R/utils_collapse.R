@@ -181,128 +181,124 @@ ofst_merge <- function(file_paths,
 #' meta column called "score", which contains the number of duplicates
 #' of that read. If score column already exists, will return input object!
 #' @param x a GRanges, GAlignments or GAlignmentPairs object
-#' @param ... alternative arguments. addScoreColumn = TRUE, if FALSE,
-#' only collapse and not add score column.
-#' @return a GRanges, GAlignments or GAlignmentPairs object, same as input
+#' @param addScoreColumn logical, default: (TRUE), if FALSE,
+#' only collapse and not keep score column of counts for collapsed reads.
+#' Returns directly without collapsing if reuse.score.column is FALSE and
+#' score is already defined.
+#' @param ... alternative arguments for class instances. For example, see:
+#' \code{?'collapseDuplicatedReads,GRanges-method'}
+#' @return a GRanges, GAlignments, GAlignmentPairs or data.table object,
+#'  same as input
 #' @export
 #' @examples
 #' gr <- rep(GRanges("chr1", 1:10,"+"), 2)
 #' collapseDuplicatedReads(gr)
-setGeneric("collapseDuplicatedReads", function(x, ...) standardGeneric("collapseDuplicatedReads"))
+setGeneric("collapseDuplicatedReads", function(x, addScoreColumn = TRUE, ...) standardGeneric("collapseDuplicatedReads"))
 
 #' @inherit collapseDuplicatedReads
-#' @param addScoreColumn = TRUE, if FALSE,
-#' only collapse and not keep score column of counts for collapsed reads.
-#' @inheritParams collapseDuplicatedReads
+#' @inheritParams convertToOneBasedRanges
 setMethod("collapseDuplicatedReads", "GRanges",
           function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
                    reuse.score.column = TRUE) {
-            if (addSizeColumn) {
-              if (!("size" %in% colnames(mcols(x))))
-                stop("addSizeColumn is TRUE, and no size column found!")
-            }
+  if (addSizeColumn) {
+    if (!("size" %in% colnames(mcols(x))))
+      stop("addSizeColumn is TRUE, and no size column found!")
+  }
 
-            dt <- data.table(seqnames = as.character(seqnames(x)),
-                             start = start(ranges(x)),
-                             end = end(ranges(x)),
-                             strand = as.character(strand(x)))
+  dt <- data.table(seqnames = as.character(seqnames(x)),
+                   start = start(ranges(x)),
+                   end = end(ranges(x)),
+                   strand = as.character(strand(x)))
 
-            if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
-              dt[, score := mcols(x)$score]
-              if (addSizeColumn) {
-                dt[, size := mcols(x)$size]
-                dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand, size)]
-              } else {
-                dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
-              }
-            } else { # Do not reuse or "score" does not exist
-              if (addSizeColumn) {
-                dt[, size := mcols(x)$size]
-                dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
-              } else {
-                dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
-              }
-            }
-            if (!addScoreColumn) dt$score <- NULL
-            # TODO change makeGRangesFromDataFrame to internal fast function
-            return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE, seqinfo = seqinfo(x)))
-          })
+  if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
+    dt[, score := mcols(x)$score]
+    if (addSizeColumn) {
+      dt[, size := mcols(x)$size]
+      dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand, size)]
+    } else {
+      dt <- dt[, .(score = sum(score)), .(seqnames, start, end, strand)]
+    }
+  } else { # Do not reuse or "score" does not exist
+    if (addSizeColumn) {
+      dt[, size := mcols(x)$size]
+      dt <- dt[, .(score = .N), .(seqnames, start, end, strand, size)]
+    } else {
+      dt <- dt[, .(score = .N), .(seqnames, start, end, strand)]
+    }
+  }
+  if (!addScoreColumn) dt$score <- NULL
+  # TODO change makeGRangesFromDataFrame to internal fast function
+  return(makeGRangesFromDataFrame(dt, keep.extra.columns = TRUE, seqinfo = seqinfo(x)))
+})
 
 #' @inherit collapseDuplicatedReads
-#' @param addScoreColumn = TRUE, if FALSE,
-#' only collapse and not keep score column of counts for collapsed reads.
-#' Returns directly without collapsing if reuse.score.column is FALSE and
-#' score is already defined.
 #' @inheritParams convertToOneBasedRanges
 setMethod("collapseDuplicatedReads", "GAlignments",
           function(x, addScoreColumn = TRUE, reuse.score.column = TRUE) {
-            if (("score" %in% colnames(mcols(x))) & !reuse.score.column) return(x)
+  if (("score" %in% colnames(mcols(x))) & !reuse.score.column) return(x)
 
-            dt <- data.table(seqnames = factor(seqnames(x)),
-                             start = start(ranges(x)),
-                             cigar = cigar(x),
-                             strand = factor(strand(x)))
-            if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
-              dt[, score := mcols(x)$score]
-              dt <- dt[, .(score = sum(score)), .(seqnames, start, cigar, strand)]
-            } else { # Do not reuse or "score" does not exist
-              dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
-            }
+  dt <- data.table(seqnames = factor(seqnames(x)),
+                   start = start(ranges(x)),
+                   cigar = cigar(x),
+                   strand = factor(strand(x)))
+  if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
+    dt[, score := mcols(x)$score]
+    dt <- dt[, .(score = sum(score)), .(seqnames, start, cigar, strand)]
+  } else { # Do not reuse or "score" does not exist
+    dt <- dt[, .(score = .N), .(seqnames, start, cigar, strand)]
+  }
 
-            if (!addScoreColumn) dt$score <- NULL
-            return(getGAlignments(dt))
-          })
+  if (!addScoreColumn) dt$score <- NULL
+  return(getGAlignments(dt))
+})
 
 #' @inherit collapseDuplicatedReads
-#' @param addScoreColumn = TRUE, if FALSE,
-#' only collapse and not add score column.
 setMethod("collapseDuplicatedReads", "GAlignmentPairs",
           function(x, addScoreColumn = TRUE) {
-            if ("score" %in% colnames(mcols(x))) return(x)
+  if ("score" %in% colnames(mcols(x))) return(x)
 
-            dt <- data.table(seqnames = factor(x@first@seqnames),
-                             start1 = x@first@start,
-                             start2 = x@last@start,
-                             cigar1 = factor(x@first@cigar),
-                             cigar2 = factor(x@last@cigar),
-                             strand = factor(x@first@strand))
-            dt <- dt[, .(score = .N), .(seqnames, start1, start2,
-                                        cigar1, cigar2, strand)]
-            if (!addScoreColumn) dt$score <- NULL
-            return(getGAlignmentsPairs(dt))
-          })
+  dt <- data.table(seqnames = factor(x@first@seqnames),
+                   start1 = x@first@start,
+                   start2 = x@last@start,
+                   cigar1 = factor(x@first@cigar),
+                   cigar2 = factor(x@last@cigar),
+                   strand = factor(x@first@strand))
+  dt <- dt[, .(score = .N), .(seqnames, start1, start2,
+                              cigar1, cigar2, strand)]
+  if (!addScoreColumn) dt$score <- NULL
+  return(getGAlignmentsPairs(dt))
+})
 
 #' @inherit collapseDuplicatedReads
-#' @param addScoreColumn = TRUE, if FALSE,
-#' only collapse and not keep score column of counts for collapsed reads.
 #' @param keepCigar logical, default FALSE. Keep the cigar information
 #' @inheritParams convertToOneBasedRanges
 setMethod("collapseDuplicatedReads", "data.table",
           function(x, addScoreColumn = TRUE, addSizeColumn = FALSE,
                    reuse.score.column = TRUE, keepCigar = FALSE) {
-            required_columns <- c("seqnames", "start", "strand", "score")
-            stopifnot(all(required_columns %in% colnames(x)))
-            size_exists <- "size" %in% colnames(x)
-            cigar_exists <- "cigar" %in% colnames(x)
-            grouping <- c("seqnames", "start", "strand")
+  is_GAlignmentPair <- "cigar1" %in% colnames(x)
+  if (is_GAlignmentPair)
+    stop("Paired end collapse on data.table not supported yet!")
+  required_columns <- c("seqnames", "start", "strand", "score")
+  stopifnot(all(required_columns %in% colnames(x)))
+  size_exists <- "size" %in% colnames(x)
+  cigar_exists <- "cigar" %in% colnames(x)
+  grouping <- c("seqnames", "start", "strand")
 
-            if (addSizeColumn) {
-              if (size_exists) {
-                grouping <- c(grouping, "size")
-              } else
-                warning("addSizeColumn is TRUE, and no size column found!")
-            }
+  if (addSizeColumn) {
+    if (size_exists) {
+      grouping <- c(grouping, "size")
+    } else
+      warning("addSizeColumn is TRUE, and no size column found!")
+  }
 
-            if (keepCigar & cigar_exists) grouping <- c(grouping, "cigar")
+  if (keepCigar & cigar_exists) grouping <- c(grouping, "cigar")
 
-            if ("cigar1" %in% colnames(x))
-              stop("Paired end collapse on dt not supported yet!")
-            if (reuse.score.column & ("score" %in% colnames(x))) { # reuse
-              x <- x[, .(score = sum(score)), by = grouping]
-            } else { # Do not reuse or "score" does not exist
-              x <- x[, .(score = .N), by = grouping]
-            }
-            if (!addScoreColumn) x$score <- NULL
-            # TODO change makeGRangesFromDataFrame to internal fast function
-            return(x)
-          })
+  if (reuse.score.column & ("score" %in% colnames(x))) { # reuse
+    x <- x[, .(score = sum(score)), by = grouping]
+  } else { # Do not reuse or "score" does not exist
+    x <- x[, .(score = .N), by = grouping]
+  }
+  if (!addScoreColumn) x$score <- NULL
+  # TODO change makeGRangesFromDataFrame to internal fast function
+  return(x)
+})

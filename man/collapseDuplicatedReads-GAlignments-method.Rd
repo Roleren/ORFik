@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
-\item{addScoreColumn}{= TRUE, if FALSE,
+\item{addScoreColumn}{logical, default: (TRUE), if FALSE,
 only collapse and not keep score column of counts for collapsed reads.
 Returns directly without collapsing if reuse.score.column is FALSE and
 score is already defined.}
@@ -21,7 +21,8 @@ of replicated reads after conversion.
 If addScoreColumn is FALSE, this argument is ignored.}
 }
 \value{
-a GRanges, GAlignments or GAlignmentPairs object, same as input
+a GRanges, GAlignments, GAlignmentPairs or data.table object,
+ same as input
 }
 \description{
 For every GRanges, GAlignments read, with the same:

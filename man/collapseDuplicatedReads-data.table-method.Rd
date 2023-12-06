@@ -15,8 +15,10 @@
 \arguments{
 \item{x}{a GRanges, GAlignments or GAlignmentPairs object}
 
-\item{addScoreColumn}{= TRUE, if FALSE,
-only collapse and not keep score column of counts for collapsed reads.}
+\item{addScoreColumn}{logical, default: (TRUE), if FALSE,
+only collapse and not keep score column of counts for collapsed reads.
+Returns directly without collapsing if reuse.score.column is FALSE and
+score is already defined.}
 
 \item{addSizeColumn}{logical (FALSE), if TRUE, add a size column that
 for each read, that gives original width of read. Useful if you need
@@ -32,7 +34,8 @@ If addScoreColumn is FALSE, this argument is ignored.}
 \item{keepCigar}{logical, default FALSE. Keep the cigar information}
 }
 \value{
-a GRanges, GAlignments or GAlignmentPairs object, same as input
+a GRanges, GAlignments, GAlignmentPairs or data.table object,
+ same as input
 }
 \description{
 For every GRanges, GAlignments read, with the same:
