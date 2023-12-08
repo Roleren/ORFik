@@ -199,12 +199,17 @@ metadata.autnaming <- function(file) {
 
 #' Open SRA in browser for specific bioproject
 #' @param x character, bioproject ID.
+#' @inheritParams utils::browseURL
 #' @return invisible(NULL), opens webpage only
 #' @family sra
 #' @export
 #' @examples
-#' browseSRA("PRJNA336542")
+#' #browseSRA("PRJNA336542")
 #'
-browseSRA <- function(x) {
-  browseURL(paste0("https://www.ncbi.nlm.nih.gov/Traces/study/?acc=", x, "&o=acc_s%3Aa"))
+#' #' # For windows make sure a valid browser is defined:
+#' browser <- getOption("browser")
+#' #browseSRA("PRJNA336542", browser)
+browseSRA <- function(x, browser = getOption("browser")) {
+  browseURL(paste0("https://www.ncbi.nlm.nih.gov/Traces/study/?acc=", x, "&o=acc_s%3Aa"),
+            browser = browser)
 }

@@ -4,10 +4,19 @@
 \alias{browseSRA}
 \title{Open SRA in browser for specific bioproject}
 \usage{
-browseSRA(x)
+browseSRA(x, browser = getOption("browser"))
 }
 \arguments{
 \item{x}{character, bioproject ID.}
+
+\item{browser}{a non-empty character string giving the name of the
+    program to be used as the HTML browser.  It should be in the PATH,
+    or a full path specified.  Alternatively, an \R function to be
+    called to invoke the browser.
+
+    Under Windows \code{NULL} is also allowed (and is the default), and
+    implies that the file association mechanism will be used.
+  }
 }
 \value{
 invisible(NULL), opens webpage only
@@ -16,8 +25,11 @@ invisible(NULL), opens webpage only
 Open SRA in browser for specific bioproject
 }
 \examples{
-browseSRA("PRJNA336542")
+#browseSRA("PRJNA336542")
 
+#' # For windows make sure a valid browser is defined:
+browser <- getOption("browser")
+#browseSRA("PRJNA336542", browser)
 }
 \seealso{
 Other sra: 
