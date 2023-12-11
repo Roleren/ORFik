@@ -82,12 +82,18 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     if (pseudo5 > 0 & is.numeric(pseudo5)) {
       message("---- Adding Pseudo 5' UTRs")
       leaders <- loadRegion(txdb, "leaders")
-      cds <- loadRegion(txdb, "cds")
-      percentage <- round((length(leaders) / length(cds))*100, 1)
+
       message("- Total leaders: ", length(leaders))
-      message("- Leader length statistics:")
-      print(summary(widthPerGroup(leaders, FALSE)))
-      message("- Percentage of CDS' with leaders: ", percentage, "%")
+      if (length(leaders) > 0) {
+        message("- Leader length statistics:")
+        print(summary(widthPerGroup(leaders, FALSE)))
+        cds <- loadRegion(txdb, "cds")
+        percentage <- round((length(leaders) / length(cds))*100, 1)
+        message("- Percentage of CDS' with leaders: ", percentage, "%")
+      } else {
+        message("-- This genome has no predefined leaders")
+        percentage <- 0
+      }
       if (percentage < 30) {
         message("- Adding pseudo")
         txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = pseudo5)

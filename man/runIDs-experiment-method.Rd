@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_class.R
 \name{runIDs,experiment-method}
 \alias{runIDs,experiment-method}
-\title{Get ORFik experiment library folder}
+\title{Get SRR/DRR/ERR run ids from ORFik experiment}
 \usage{
 \S4method{runIDs}{experiment}(x)
 }
@@ -13,5 +13,5 @@
 a character vector of runIDs, "" if not existing.
 }
 \description{
-Get ORFik experiment library folder
+Get SRR/DRR/ERR run ids from ORFik experiment
 }

@@ -217,12 +217,23 @@ fi
 # contaminants
 if [[ $contaminants != "" ]]; then
 	echo ""; echo "contamints index:"
+	size=$(ls -la ${contaminants} |cut -d ' ' -f 5)
+	SA=14
+	if [ "60000000" -gt "$size" ]; then
+		if [ "90000" -gt "$size" ]; then
+			SA=7
+		else
+			SA=11
+		fi
+	fi
+
 	eval $STAR \
 	--runMode genomeGenerate \
 	--genomeFastaFiles ${contaminants} \
 	--genomeDir ${out_dir}/contaminants_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
+	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11 \
 	--outFileNamePrefix ${out_dir}/contaminants_genomeDir/
 fi

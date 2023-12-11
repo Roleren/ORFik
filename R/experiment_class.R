@@ -313,7 +313,7 @@ setMethod("libFolder",
           }
 )
 
-#' Get ORFik experiment library folder
+#' Get SRR/DRR/ERR run ids from ORFik experiment
 #'
 #' @param x an ORFik \code{\link{experiment}}
 #' @return a character vector of runIDs, "" if not existing.

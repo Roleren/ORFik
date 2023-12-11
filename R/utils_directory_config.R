@@ -153,7 +153,7 @@ list.genomes <- function(reference.folder = ORFik::config()["ref"]) {
                                                   gtf = "gtf" %in% names(annotation),
                                                   genome = "genome" %in% names(annotation))))
   }
-  indices <- file.path(candidates, "STAR_index")
+  indices <- file.path(candidates, "STAR_index", "outputs.rds")
   availableGenomes[, STAR_index := file.exists(indices)]
   protein_structures <- file.path(candidates, "protein_structure_predictions")
   if (any(file.exists(protein_structures))) availableGenomes[, protein_structures := file.exists(protein_structures)]
