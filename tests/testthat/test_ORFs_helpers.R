@@ -567,3 +567,32 @@ test_that("artificial.orfs works as intended", {
   expect_equal(100, startSites(res[1]))
   expect_equal(150, stopSites(res[1]))
 })
+
+test_that("computeFeatures works with expanded _1 naming", {
+  grl <- GRangesList(tx1_1_1 = GRanges("1", 1:6, "+"),
+                     tx1_1_2 = GRanges("1", 3:9, "+"))
+  leaders <- GRangesList(tx1_1 = GRanges("1", 1:9, "+"))
+  cds <- GRangesList(tx1_1 = GRanges("1", 10:18, "+"))
+  trailers <- GRangesList(tx1_1 = GRanges("1", 19:21, "+"))
+  tx <- GRangesList(tx1_1 = GRanges("1", 1:21, "+"))
+
+  faFile <- DNAStringSet(DNAString(paste0(rep("A", 21), collapse = "")))
+  names(faFile) <- "1"
+  RFP <- GRanges("1", IRanges(1:10, width = 1), "+",
+                 score = sample(c(1,2,3), replace = TRUE, size = 10),
+                 size = sample(c(26,27), replace = TRUE, size = 10))
+
+  allFeaturesHelper(grl, RFP,
+                    GRanges("1", 1:21, "+", score = 3, size = 3),
+                    tx, leaders, cds, trailers,
+                    faFile, 26, 27, T, T, T, 1L, 1L)
+  expect_equal(txNames(grl, unique = TRUE), "tx1_1")
+
+  grl <- GRangesList(tx1_1 = GRanges("1", 1:6, "+"),
+                     tx1_1 = GRanges("1", 3:9, "+"))
+  allFeaturesHelper(grl, RFP,
+                    GRanges("1", 1:21, "+", score = 3, size = 3),
+                    tx, leaders, cds, trailers,
+                    faFile, 26, 27, T, T, T, 1L, 1L)
+})
+

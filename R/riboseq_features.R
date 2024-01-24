@@ -288,7 +288,7 @@ floss <- function(grl, RFP, cds, start = 26, end = 34, weight = 1L){
 translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
                              pseudoCount = 0, librarySize = "full",
                              weight.RFP = 1L, weight.RNA = 1L) {
-  tx <- tx[txNames(grl)]
+  tx <- tx[txNames(grl, tx)]
   #normalize by tx lengths
   fpkmRNA <- fpkm(tx, RNA, pseudoCount, librarySize, weight.RNA)
   #normalize by grl lengths
@@ -346,7 +346,8 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
 
   # exclude non hits and set them to 0
   validIndices <- hasHits(tx, RFP)
-  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
+  txNames_grl <- txNames(grl, tx)
+  validIndices <- validIndices[data.table::chmatch(txNames_grl, names(tx))]
 
   if (!any(validIndices)) { # if no hits
     overlapGrl
@@ -354,7 +355,7 @@ disengagementScore <- function(grl, RFP, GtfOrTx, RFP.sorted = FALSE,
     return(score)
   }
   overlapDownstream <- rep(1, length(grl))
-  downstreamTx <- downstreamOfPerGroup(tx[txNames(grl)][validIndices],
+  downstreamTx <- downstreamOfPerGroup(tx[txNames_grl][validIndices],
                                        grl[validIndices])
 
   # # check for big lists
@@ -420,12 +421,13 @@ insideOutsideORF <- function(grl, RFP, GtfOrTx, ds = NULL,
 
   # find tx with hits
   validIndices <- hasHits(tx, RFP)
-  validIndices <- validIndices[data.table::chmatch(txNames(grl), names(tx))]
+  txNames_grl <- txNames(grl, tx)
+  validIndices <- validIndices[data.table::chmatch(txNames_grl, names(tx))]
   if (!any(validIndices)) { # if no hits
     names(overlapGrl) <- NULL
     return(overlapGrl)
   }
-  tx <- tx[txNames(grl)][validIndices]
+  tx <- tx[txNames_grl][validIndices]
   grl <- grl[validIndices]
 
   grlStarts <- startSites(grl, asGR = FALSE, is.sorted = TRUE,
@@ -490,7 +492,7 @@ ribosomeReleaseScore <- function(grl, RFP, GtfOrThreeUtrs, RNA = NULL,
   overlapGrl <- overlapGrl + 1 # Pseudo count
 
   # check that naming is correct, else change it.
-  orfNames <- txNames(grl, FALSE)
+  orfNames <- txNames(grl, threeUTRs)
   validNamesThree <- names(threeUTRs) %in% orfNames
   validNamesGRL <- orfNames %in% names(threeUTRs)
   rrs <- rep(NA,length(grl))

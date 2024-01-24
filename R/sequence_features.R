@@ -50,7 +50,7 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
   validGRL(class(ORFs), "ORFs")
 
   cdsStarts <- widthPerGroup(fiveUTRs[
-    txNames(ORFs)], FALSE) + 1
+    txNames(ORFs, fiveUTRs)], FALSE) + 1
 
   lastExons <- lastExonPerGroup(ORFs)
   if (is.grl(cds)) {
@@ -357,11 +357,11 @@ rankOrder <- function(grl) {
 #' grl <- GRangesList(tx1_1 = ORF)
 #' # grl must have same names as cds + _1 etc, so that they can be matched.
 #' tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
-#' fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
+#' fractionLength(grl, tx = tx)
 #'
-fractionLength <- function(grl, tx_len) {
+fractionLength <- function(grl, tx_len = widthPerGroup(tx, TRUE), tx = NULL) {
   grl_len <- widthPerGroup(grl, FALSE)
-  tx_len <- tx_len[txNames(grl)]
+  tx_len <- tx_len[txNames(grl, tx)]
   names(tx_len) <- NULL
   return(grl_len / tx_len)
 }

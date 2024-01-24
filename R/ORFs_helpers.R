@@ -96,11 +96,11 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' Get transcript names from orf names
 #'
 #' Using the ORFik definition of orf name, which is:
-#' example ENSEMBL:
-#' tx name: ENST0909090909090
-#' orf id: _1 (the first of on that tx)
-#' orf_name: ENST0909090909090_1
-#' So therefor txNames("ENST0909090909090_1") = ENST0909090909090
+#' example ENSEMBL:\m
+#' tx name: ENST0909090909090\n
+#' orf id: _1 (the first of on that tx)\n
+#' orf_name: ENST0909090909090_1\n
+#' So therefor txNames("ENST0909090909090_1") = ENST0909090909090\n
 #'
 #' The names must be extracted from a column called names, or the names of the
 #' grl object. If it is already tx names, it returns the input
@@ -133,8 +133,11 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE) {
 #' txNames(grl)
 #'
 txNames <- function(grl, ref = NULL, unique = FALSE) {
-  if (!is.null(ref)) { # If reference is also ORFik ORF
-    if (length(grep("_\\d+", names(ref[1]))) > 0) {
+  reference_can_be_checked <- !is.null(ref) && length(ref) > 0
+  if (reference_can_be_checked) {
+    trailing_numbers <- length(grep("_\\d+$", names(ref[1]))) > 0
+    if (trailing_numbers && (names(grl[1]) %in% names(ref))) {
+      # If reference is also ORFik ORF
       if (unique) {
         return(unique(names(grl)))
       } else return(names(grl))
@@ -157,15 +160,15 @@ txNames <- function(grl, ref = NULL, unique = FALSE) {
       stop("grl have no valid orf names to convert")
     } else {
       if (unique) {
-        return(sub("_\\d+", "", unique(otherPossibility), perl = TRUE))
+        return(sub("_\\d+$", "", unique(otherPossibility), perl = TRUE))
       }
-      return(sub("_\\d+", "", otherPossibility, perl = TRUE))
+      return(sub("_\\d+$", "", otherPossibility, perl = TRUE))
     }
   }
   if (unique) {
-    return(sub("_\\d+", "", unique(names(grl)), perl = TRUE))
+    return(sub("_\\d+$", "", unique(names(grl)), perl = TRUE))
   }
-  return(sub("_\\d+", "", names(grl), perl = TRUE))
+  return(sub("_\\d+$", "", names(grl), perl = TRUE))
 }
 
 

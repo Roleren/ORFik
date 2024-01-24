@@ -47,8 +47,18 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
                  "# of reads multimapped")]
     co$sample <- gsub("contaminants_", "", co$sample)
     if (!is.null(res)) {
-      res <- data.table::merge.data.table(aligned, co, by = "sample",
-                                          suffixes = c("-genome", "-contamination"))
+      if (nrow(co) != nrow(res)) {
+        warning("Not equal number of aligned and contaminant depleted log files!
+                Skipping contamint statistics for now.")
+
+      } else {
+        res_temp <- data.table::merge.data.table(aligned, co, by = "sample",
+                                                 suffixes = c("-genome", "-contamination"))
+        if (nrow(res_temp) < nrow(res)) {
+          warning("Contamination statistics could not be appended safely,
+                non default naming of files. Fix them before reruning multiQC for valid output")
+        } else res <- res_temp
+      }
     } else res <- co
 
   }
@@ -56,9 +66,12 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
   if (1 %in% grep("tr", steps)) {
     tr <- trimming.table(file.path(folder, "trim/"))
     if (!is.null(res)) {
-      res <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
+      res_temp <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
+      if (nrow(res_temp) < nrow(res)) {
+        warning("Trimming statistics could not be appended safely,
+                non default naming of files. Fix them before reruning multiQC for valid output")
+      } else res <- res_temp
     } else res <- tr
-
   }
   colnames(res) <- gsub("\\.x", "", colnames(res))
   message("Final statistics:")

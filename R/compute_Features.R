@@ -234,15 +234,17 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
                               weight.RFP = 1L, weight.RNA = 1L,
                               st = NULL) {
   # Clean and optimize
-  if (!grl.is.sorted){
+  if (!grl.is.sorted) {
     grl <- sortPerGroup(grl)
     grl.is.sorted <- TRUE
   }
-  #type <- ifelse(all(unique(width(RFP)) == 1), "within", "any")
+
   tx <- tx[names(tx) %in% txNames(grl, tx, unique = TRUE)]
   RFP <- optimizeReads(tx, RFP)
   tx_old <- tx
-  tx <- tx[txNames(grl)] # Subset tx to only those in grl.
+  tx <- try(tx[txNames(grl, tx)]) # Subset tx to only those in grl.
+  if (is(tx, "try-error")) stop("Could not map names from grl to transcript 'tx'.
+                                Make sure they match and test output of ORFik::txNames(grl)")
   weight.RFP <- getWeights(RFP, weight.RFP)
 
 
@@ -297,7 +299,7 @@ allFeaturesHelper <- function(grl, RFP, RNA, tx, fiveUTRs, cds , threeUTRs,
       "skipping features dependent fasta genome")
     }
     # switch five with tx, is it possible to use ?
-    scores[, fractionLengths := fractionLength(grl, widthPerGroup(tx, TRUE))]
+    scores[, fractionLengths := fractionLength(grl, tx = tx)]
     if (uorfFeatures) {
       scores[, distORFCDS := distToCds(grl, fiveUTRs, cds)]
       scores[, inFrameCDS := isInFrame(distORFCDS)]
