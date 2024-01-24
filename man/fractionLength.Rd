@@ -4,7 +4,7 @@
 \alias{fractionLength}
 \title{Fraction Length}
 \usage{
-fractionLength(grl, tx_len)
+fractionLength(grl, tx_len = widthPerGroup(tx, TRUE), tx = NULL)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object
@@ -20,6 +20,9 @@ If you used CageSeq to reannotate leaders, then the tss for the the leaders
 have changed, therefore the tx lengths have changed. To account for that
 call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
 and calculate fraction length using `fractionLength(grl, tx_len)`.}
+
+\item{tx}{default NULL, a \code{\link{GRangesList}} object of transcript to get
+lengths from. Pass in for wrapping to widths inside the function.}
 }
 \value{
 a numeric vector of ratios
@@ -37,7 +40,7 @@ ORF <- GRanges(seqnames = "1",
 grl <- GRangesList(tx1_1 = ORF)
 # grl must have same names as cds + _1 etc, so that they can be matched.
 tx <-  GRangesList(tx1 = GRanges("1", IRanges(1, 50), "+"))
-fractionLength(grl, ORFik:::widthPerGroup(tx, keep.names = TRUE))
+fractionLength(grl, tx = tx)
 
 }
 \references{

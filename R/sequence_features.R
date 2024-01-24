@@ -347,6 +347,8 @@ rankOrder <- function(grl) {
 #' have changed, therefore the tx lengths have changed. To account for that
 #' call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
 #' and calculate fraction length using `fractionLength(grl, tx_len)`.
+#' @param tx default NULL, a \code{\link{GRangesList}} object of transcript to get
+#' lengths from. Pass in for wrapping to widths inside the function.
 #' @return a numeric vector of ratios
 #' @family features
 #' @export

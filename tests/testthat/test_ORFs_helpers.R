@@ -586,7 +586,7 @@ test_that("computeFeatures works with expanded _1 naming", {
                     GRanges("1", 1:21, "+", score = 3, size = 3),
                     tx, leaders, cds, trailers,
                     faFile, 26, 27, T, T, T, 1L, 1L)
-  expect_equal(txNames(grl, unique = TRUE), "tx1_1")
+  expect_equal(txNames(grl, unique = TRUE), c("tx1_1", "tx1_1"))
 
   grl <- GRangesList(tx1_1 = GRanges("1", 1:6, "+"),
                      tx1_1 = GRanges("1", 3:9, "+"))
@@ -594,5 +594,7 @@ test_that("computeFeatures works with expanded _1 naming", {
                     GRanges("1", 1:21, "+", score = 3, size = 3),
                     tx, leaders, cds, trailers,
                     faFile, 26, 27, T, T, T, 1L, 1L)
+  expect_equal(txNames(grl, tx, unique = TRUE), "tx1_1")
+  expect_equal(txNames(grl, unique = TRUE), "tx1")
 })
 
