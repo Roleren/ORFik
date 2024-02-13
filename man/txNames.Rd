@@ -24,11 +24,11 @@ a character vector of transcript names,
 }
 \description{
 Using the ORFik definition of orf name, which is:
-example ENSEMBL:\m
-tx name: ENST0909090909090\n
-orf id: _1 (the first of on that tx)\n
-orf_name: ENST0909090909090_1\n
-So therefor txNames("ENST0909090909090_1") = ENST0909090909090\n
+example ENSEMBL:\cr
+tx name: ENST0909090909090\cr
+orf id: _1 (the first of on that tx)\cr
+orf_name: ENST0909090909090_1\cr
+So therefor txNames("ENST0909090909090_1") = ENST0909090909090\cr
 }
 \details{
 The names must be extracted from a column called names, or the names of the
