@@ -147,13 +147,13 @@ export.bigWig <- function(x, file, split.by.strand = TRUE,
   if (all(strands == "*") | !split.by.strand) {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     file <- paste0(file, ".bigWig")
-    export.bw(x, file)
+    export.bw(GRanges(coverage(x, weight = "score")), file)
   } else {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     forward_file <- paste0(file, "_forward.bigWig")
     reverse_file <- paste0(file, "_reverse.bigWig")
-    export.bw(x[strandBool(x)], forward_file)
-    export.bw(x[!strandBool(x)], reverse_file)
+    export.bw(GRanges(coverage(x[strandBool(x)], weight = "score")), forward_file)
+    export.bw(GRanges(coverage(x[!strandBool(x)], weight = "score")), reverse_file)
   }
   return(invisible(NULL))
 }

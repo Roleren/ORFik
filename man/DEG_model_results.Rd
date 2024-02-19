@@ -2,7 +2,7 @@
 % Please edit documentation in R/Dif_expression_helpers.R
 \name{DEG_model_results}
 \alias{DEG_model_results}
-\title{Get DESeq2 model results from model}
+\title{Get DESeq2 model results from DESeqDataSet}
 \usage{
 DEG_model_results(ddsMat_rna, target.contrast, pairs, p.value = 0.05)
 }
@@ -27,7 +27,7 @@ What p-value used for the analysis? Will be shown as a caption.}
 a data.table
 }
 \description{
-Get DESeq2 model results from model
+Get DESeq2 model results from DESeqDataSet
 }
 \examples{
 ## Simple example (use ORFik template, then use only RNA-seq)

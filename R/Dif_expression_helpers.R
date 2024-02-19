@@ -74,7 +74,7 @@ DEG_model <- function(df,
   ddsMat_rna <- DEG_DESeq(counts, main.design)
 }
 
-#' Get DESeq2 model results from model
+#' Get DESeq2 model results from DESeqDataSet
 #'
 #'
 #' @param ddsMat_rna a DESeqDataSet object with results stored as metadata columns.
@@ -126,6 +126,41 @@ DEG_model_results <- function(ddsMat_rna, target.contrast, pairs,
                       ordered = TRUE)]
   message("----------------------")
   return(dt.between)
+}
+
+#' Simple Fpkm ratio test DEG
+#'
+#' If you do not have a valid DESEQ2 experimental setup (contrast), you
+#' can use this simplified test
+#' @inheritParams DEG.analysis
+#' @return a data.table of fpkm ratios
+#' @export
+#' @examples
+#' ## Simple example (use ORFik template, then use only RNA-seq)
+#' df <- ORFik.template.experiment()
+#' df <- df[df$libtype == "RNA",]
+#' #dt <- DEG_model_simple(df)
+DEG_model_simple <- function(df,
+                             target.contrast = design[1],
+                             design = ORFik::design(df),
+                             p.value = 0.05,
+                             counts = countTable(df, "mrna", type = "summarized"),
+                             batch.effect = FALSE) {
+  # Design
+  main.design <- ORFik:::DEG_design(design[1], target.contrast, batch.effect)
+  design_ids <- as.character(df[, target.contrast])
+  ids <- rownames(counts)
+  counts <- as.data.table(DESeq2::fpkm(DESeq2::DESeqDataSet(counts, ~ 1)))
+  # Get LFC matrix
+  counts_group <- lapply(unique(design_ids),
+                         function(x) rowMeans(counts[,design_ids == x, with = FALSE]))
+  setDT(counts_group)
+  colnames(counts_group) <- unique(design_ids)
+  dt <- data.table(LFC = log2((counts_group[,1][[1]] + 0.0001) / (counts_group[,2][[1]] + 0.0001)),
+                   meanCounts = c(rowMeans(counts_group[, c(1,2), with = FALSE])))
+  dt[, id := ids]
+  dt[, contrast := paste(unique(design_ids)[1:2], collapse = "_vs_")]
+  return(dt)
 }
 
 DTEG_input_validation <- function(df.rfp, df.rna, RFP_counts, RNA_counts,
