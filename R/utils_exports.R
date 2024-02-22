@@ -127,7 +127,9 @@ export.wiggle <- function(x, file) {
 #' @examples
 #' x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
 #' seqlengths(x) <- 10
-#' # export.bigWig(x, "output/path/rna.bigWig")
+#' file <- file.path(tempdir(), "rna.bigWig")
+#' # export.bigWig(x, file)
+#' # export.bigWig(covRleFromGR(x), file)
 export.bigWig <- function(x, file, split.by.strand = TRUE,
                           is_pre_collapsed = FALSE, seq_info = seqinfo(x)) {
   if(anyNA(seqlengths(seq_info))) stop("seqinfo of x must be defined and have defined seqlengths!")
@@ -150,14 +152,14 @@ export.bigWig <- function(x, file, split.by.strand = TRUE,
     can_split_by_strand <- !all(strands == "*")
     make_single_file <- !can_split_by_strand | !split.by.strand
     x <- covRleFromGR(x, ignore.strand = make_single_file)
-  } else make_single_file <- !strandMode(a) | !split.by.strand
+  } else make_single_file <- !strandMode(x) | !split.by.strand
 
 
   if (make_single_file) {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     file <- paste0(file, ".bigWig")
     if (length(r(x)) > 0) {
-      a@forward <- f(a) + r(a)
+      x@forward <- f(x) + r(x)
     }
     export.bw(GRanges(f(x)), file)
   } else {
