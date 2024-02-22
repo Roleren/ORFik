@@ -133,7 +133,7 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
              cigar(GenomicAlignments::last(reads)))
     } else if (is(reads, "GAlignments")) {
       cigar(reads)
-    } else stop("reads must be either GRanges, GAlignments or GAlignmentPairs")
+    } else stop("reads must be either GRanges, GAlignments, GAlignmentPairs or covRleList")
 
     readWidth <- if (along.reference) {
       cigarWidthAlongReferenceSpace(cigar, N.regions.removed = TRUE)

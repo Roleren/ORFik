@@ -126,34 +126,46 @@ export.wiggle <- function(x, file) {
 #' @family utils
 #' @examples
 #' x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
+#' seqlengths(x) <- 10
 #' # export.bigWig(x, "output/path/rna.bigWig")
 export.bigWig <- function(x, file, split.by.strand = TRUE,
                           is_pre_collapsed = FALSE, seq_info = seqinfo(x)) {
   if(anyNA(seqlengths(seq_info))) stop("seqinfo of x must be defined and have defined seqlengths!")
-  if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments")))
-    stop("x must be GRanges, GAlignments or GAlignmentPairs")
-  if (!is(x, "GRanges")) { x <- GRanges(x, seqinfo = seq_info)
-  } else {seqlevels(x) <- seqlevels(seq_info); seqinfo(x) <- seq_info}
+  if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments") | is(x, "covRle")))
+    stop("x must be GRanges, GAlignments, GAlignmentPairs or covRLE")
 
-  if (!all(width(x) == 1)) x <- resize(x, width = 1, fix = "start")
-  if (!("score" %in% colnames(mcols(x)))) {
-    x <- convertToOneBasedRanges(x, method = "None",
-                                 addScoreColumn = TRUE,
-                                 addSizeColumn = FALSE)
-  } else { # merge reads by sum of existing scores
-    if (!is_pre_collapsed) x <- collapse.by.scores(x)
-  }
-  strands <- as.character(strand(x))
-  if (all(strands == "*") | !split.by.strand) {
+  if (!is(x, "covRle")) {
+    if (!is(x, "GRanges")) { x <- GRanges(x, seqinfo = seq_info)
+    } else {seqlevels(x) <- seqlevels(seq_info); seqinfo(x) <- seq_info}
+
+    if (!all(width(x) == 1)) x <- resize(x, width = 1, fix = "start")
+    if (!("score" %in% colnames(mcols(x)))) {
+      x <- convertToOneBasedRanges(x, method = "None",
+                                   addScoreColumn = TRUE,
+                                   addSizeColumn = FALSE)
+    } else { # merge reads by sum of existing scores
+      if (!is_pre_collapsed) x <- collapse.by.scores(x)
+    }
+    strands <- as.character(strand(x))
+    can_split_by_strand <- !all(strands == "*")
+    make_single_file <- !can_split_by_strand | !split.by.strand
+    x <- covRleFromGR(x, ignore.strand = make_single_file)
+  } else make_single_file <- !strandMode(a) | !split.by.strand
+
+
+  if (make_single_file) {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     file <- paste0(file, ".bigWig")
-    export.bw(GRanges(coverage(x, weight = "score")), file)
+    if (length(r(x)) > 0) {
+      a@forward <- f(a) + r(a)
+    }
+    export.bw(GRanges(f(x)), file)
   } else {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     forward_file <- paste0(file, "_forward.bigWig")
     reverse_file <- paste0(file, "_reverse.bigWig")
-    export.bw(GRanges(coverage(x[strandBool(x)], weight = "score")), forward_file)
-    export.bw(GRanges(coverage(x[!strandBool(x)], weight = "score")), reverse_file)
+    export.bw(GRanges(f(x)), forward_file)
+    export.bw(GRanges(r(x)), reverse_file)
   }
   return(invisible(NULL))
 }
