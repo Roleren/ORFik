@@ -138,13 +138,16 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
                                   grep("^>seq\\d+_x\\d+$|^seq\\d+_x\\d+$", headers)),
                             "ribotoolkit",
                             "fastx")
-    if (format.header == "ribotoolkit") {
-      scores <- as.integer(gsub(".*_x", "", headers))
+    scores <- if (format.header == "ribotoolkit") {
+      as.integer(gsub(".*_x", "", headers))
     } else {
-      scores <- as.integer(gsub(".*-", "", headers))
+      as.integer(gsub(".*-", "", headers))
     }
     bam <- matchSeqStyle(readGAlignments(path, param = param), chrStyle)
-    mcols(bam) <- DataFrame(score = scores)
+    if (ncol(mcols(bam)) > 0) {
+      mcols(bam) <- cbind(DataFrame(score = scores), mcols(bam))
+    } else mcols(bam) <- DataFrame(score = scores)
+
     return(bam)
   } else return(matchSeqStyle(readGAlignments(path, param = param), chrStyle))
 }
