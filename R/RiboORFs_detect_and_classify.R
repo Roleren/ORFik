@@ -84,6 +84,8 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #'  \item{dORF: }{Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
 #'  \item{a_error: }{Any ORF detect not in the above categories}
 #' }
+#' @param name_of_result the prefix name of output files to out_folder. Default:
+#' \code{paste(c(ORF_categories_to_keep, organism(df)), collapse = "_")}
 #' @param mrna = \code{loadRegion(df, "mrna")},
 #' @param cds = \code{loadRegion(df, "cds")},
 #' @param orf_sequences = \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
@@ -94,6 +96,7 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' @param minimum_reads_ORF numeric, default 10, orf removed if less reads overlap whole orf
 #' @param minimum_reads_start numeric, default 3, orf removed if less reads overlap start
 #' @return invisible(NULL), all ORF results saved to disc
+#' @export
 #' @examples
 #' # Pre requisites
 #' # 1. Create ORFik experiment
@@ -109,8 +112,9 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' results <- detect_ribo_orfs(df, result_folder, c("uORF", "uoORF", "annotated", "NTE"))
 #'
 #' # Load results of annotated ORFs
-#' res_annotated <- file.path(result_folder, "uORF_uoORF_annotated_NTE_Homo sapiens_ORFik_RFP_r1_prediction_table.rds")
-#' annotated <- readRDS(res_annotated)
+#' res_path <- "uORF_uoORF_annotated_NTE_Homo sapiens_ORFik_RFP_r1_prediction_table.rds"
+#' res_path <- file.path(result_folder, res_path)
+#' annotated <- readRDS(annotated_path)
 #' annotated # See all statistics
 #' sum(annotated$predicted) # How many were predicted as Ribo-seq ORFs
 detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
@@ -123,6 +127,7 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                              longestORF = FALSE, startCodon =  startDefinition(1),
                              stopCodon = stopDefinition(1), minimumLength = 0,
                              minimum_reads_ORF = 10, minimum_reads_start = 3) {
+  start_timer <- Sys.time()
   message("Finding all candidate ORFs")
   dir.create(out_folder, recursive = TRUE, showWarnings = FALSE)
   stopifnot(length(ORF_categories_to_keep) > 0)
@@ -158,20 +163,29 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
     out_file_prefix <- file.path(out_folder, paste0(name_of_result,
                                                     "_", name(df),
                                                     "_", libnames[i]))
+    # Filter candidates by counts
+    message("-- Filtering")
     reads_10 <- countOverlapsW(orfs_gr, RFP, weight = "score") > minimum_reads_ORF
-    reads_start <- countOverlapsW(orf_start_gr, RFP,weight = "score")
+    reads_start <- countOverlapsW(orf_start_gr, RFP, weight = "score")
     reads_start_3 <- reads_start > minimum_reads_start
+
     # Define candidates
     candidates <- reads_10 & reads_start_3
     orfs_cand <- orfs_gr[candidates]
+    orfs_kept_percentage <- round((length(orfs_cand) / length(orfs_gr)) * 100, 2)
+    message("--- ORFs passed count filters: ", )
     orf_start_cand <- orf_start_gr[candidates]
     orf_stop_cand <- orf_stop_gr[candidates]
     # Make upstream and downstream window
     upstream_gr <- windowPerGroup(orf_start_cand, mrna, 20, -2)
     downstream_gr <- windowPerGroup(orf_stop_cand, mrna, -2, 20)
     # Calculate coverage for ORF and up/down
+    message("-- coverage calculations")
+    message("--- ORFs")
     orfs_cov_stats <- coveragePerORFStatistics(orfs_cand, RFP)
+    message("--- upstream")
     upstream_cov_stats <- coveragePerORFStatistics(upstream_gr, RFP)
+    message("--- downstream")
     downstream_cov_stats <- coveragePerORFStatistics(downstream_gr, RFP)
 
     #iou <- (orfs_cov_stats$mean + 1) / (upstream_cov_stats$mean + 1)
@@ -192,6 +206,7 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
       saveRDS(res, paste0(out_file_prefix, "_prediction_table.rds"))
     }
   }
+  print(Sys.time() - start_timer)
   message("Done")
   return(NULL)
 }
