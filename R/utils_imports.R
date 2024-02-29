@@ -128,7 +128,7 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
   if (bam.is.collapsed) {
     if (is.null(param)) {
       param_header <- ScanBamParam(what = "qname")
-    } {
+    } else {
       param_header <- param
       bamWhat(param_header) <- "qname"
     }
