@@ -126,8 +126,13 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
   bam.is.collapsed <- all(seq_along(headers) %in%
                             grep("(^(>|>seq)\\d+(-|_x)\\d+$)|(^(seq)\\d+(-|_x)\\d+$)", headers))
   if (bam.is.collapsed) {
-
-    headers <- unlist(scanBam(path, param = ScanBamParam(what = "qname")),
+    if (is.null(param)) {
+      param_header <- ScanBamParam(what = "qname")
+    } {
+      param_header <- param
+      bamWhat(param_header) <- "qname"
+    }
+    headers <- unlist(scanBam(path, param = param_header),
                       use.names = FALSE)
     format.header <- ifelse(all(seq_along(headers) %in%
                                   grep("^>seq\\d+_x\\d+$|^seq\\d+_x\\d+$", headers)),

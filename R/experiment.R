@@ -384,10 +384,11 @@ filepath_errors <- function(format) {
 #' \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
 #' \code{envExp(df) <- new.env()} etc.
 #' @param verbose logical, default TRUE, message about library output status.
-#' @param force logical, default FALSE. If TRUE, reload files even if
+#' @param force logical, default TRUE If TRUE, reload files even if
 #' matching named variables are found in environment used by experiment
 #'  (see \code{\link{envExp}}) A simple way to make
-#' sure correct libraries are always loaded.
+#' sure correct libraries are always loaded. FALSE is faster if data
+#' is loaded correctly already.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
