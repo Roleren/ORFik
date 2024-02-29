@@ -84,10 +84,12 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #'  \item{dORF: }{Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
 #'  \item{a_error: }{Any ORF detect not in the above categories}
 #' }
-#' @param name_of_result the prefix name of output files to out_folder. Default:
+#' @param prefix_result the prefix name of output files to out_folder. Default:
 #' \code{paste(c(ORF_categories_to_keep, organism(df)), collapse = "_")}
-#' @param mrna = \code{loadRegion(df, "mrna")},
-#' @param cds = \code{loadRegion(df, "cds")},
+#' @param mrna = \code{loadRegion(df, "mrna")}
+#' @param cds = \code{loadRegion(df, "cds")}
+#' @param libraries the ribo-seq libraries loaded into R as list, default:
+#' \code{outputLibs(df, type = "pshifted", output = "envirlist")}
 #' @param orf_sequences = \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
 #'  startCodon = startCodon, stopCodon = stopCodon,
 #'  minimumLength = minimumLength)}
@@ -118,8 +120,9 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' annotated # See all statistics
 #' sum(annotated$predicted) # How many were predicted as Ribo-seq ORFs
 detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
-                             name_of_result = paste(c(ORF_categories_to_keep, organism(df)), collapse = "_"),
+                             prefix_result = paste(c(ORF_categories_to_keep, organism(df)), collapse = "_"),
                              mrna = loadRegion(df, "mrna"), cds = loadRegion(df, "cds"),
+                             libraries = outputLibs(df, type = "pshifted", output = "envirlist"),
                              orf_sequences = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
                                                       startCodon = startCodon, stopCodon = stopCodon,
                                                       minimumLength = minimumLength),
@@ -155,12 +158,11 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
   orf_start_overlaps_other <- countOverlaps(orf_start_gr, orfs_gr) - 1
 
   message("Start Ribo-seq coverage analysis")
-  list <- outputLibs(df, type = "pshifted", output = "envirlist")
   libnames <- bamVarName(df)
-  for (i in seq_along(list)) {
+  for (i in seq_along(libraries)) {
     message("- ", libnames[i])
-    RFP <- list[[i]]
-    out_file_prefix <- file.path(out_folder, paste0(name_of_result,
+    RFP <- libraries[[i]]
+    out_file_prefix <- file.path(out_folder, paste0(prefix_result,
                                                     "_", name(df),
                                                     "_", libnames[i]))
     # Filter candidates by counts
