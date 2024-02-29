@@ -43,7 +43,10 @@ Can be direct input for ucsc browser or IGV
 }
 \examples{
 x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
-# export.bigWig(x, "output/path/rna.bigWig")
+seqlengths(x) <- 10
+file <- file.path(tempdir(), "rna.bigWig")
+# export.bigWig(x, file)
+# export.bigWig(covRleFromGR(x), file)
 }
 \references{
 https://genome.ucsc.edu/goldenPath/help/bigWig.html

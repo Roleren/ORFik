@@ -59,3 +59,11 @@ SIGNIFICANT USER-VISIBLE CHANGES
     o Improved p-shifting analysis (also added verbose output)
     o Added possible optimization for annotation
     o Rewritten vignettes
+
+CHANGES IN VERSION 1.23.8
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Implemented a Ribo-seq ORF detector now included
+    o Added new export functions for bigwig, covRLE
