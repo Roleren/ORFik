@@ -41,6 +41,9 @@ detect_ribo_orfs(
  \item{a_error: }{Any ORF detect not in the above categories}
 }}
 
+\item{name_of_result}{the prefix name of output files to out_folder. Default:
+\code{paste(c(ORF_categories_to_keep, organism(df)), collapse = "_")}}
+
 \item{mrna}{= \code{loadRegion(df, "mrna")},}
 
 \item{cds}{= \code{loadRegion(df, "cds")},}
@@ -112,8 +115,9 @@ result_folder <- file.path(tempdir(), paste0("Ribo_orfs_", organism(df)))
 results <- detect_ribo_orfs(df, result_folder, c("uORF", "uoORF", "annotated", "NTE"))
 
 # Load results of annotated ORFs
-res_annotated <- file.path(result_folder, "uORF_uoORF_annotated_NTE_Homo sapiens_ORFik_RFP_r1_prediction_table.rds")
-annotated <- readRDS(res_annotated)
+res_path <- "uORF_uoORF_annotated_NTE_Homo sapiens_ORFik_RFP_r1_prediction_table.rds"
+res_path <- file.path(result_folder, res_path)
+annotated <- readRDS(annotated_path)
 annotated # See all statistics
 sum(annotated$predicted) # How many were predicted as Ribo-seq ORFs
 }
