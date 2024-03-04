@@ -98,10 +98,11 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 
-\item{force}{logical, default FALSE. If TRUE, reload files even if
+\item{force}{logical, default TRUE If TRUE, reload files even if
 matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
-sure correct libraries are always loaded.}
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

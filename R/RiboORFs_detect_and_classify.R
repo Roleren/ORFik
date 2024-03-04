@@ -58,16 +58,20 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' Steps (candidate set):\cr
 #' Define a candidate search set by these 3 rules:\cr
 #'   1.a Allowed ORF type: uORF, NTE, etc (only keep these in candidate list)\cr
-#'   1.b Must have at least x reads (default 10 reads)\cr
+#'   1.b Must have at least x reads over whole orf (default 10 reads)\cr
 #'   1.c Must have at least x reads over start site (default 3 reads)\cr
 #' The total list is defined by these names, and saved according to allowed ORF type/types.\cr
 #' To create the prediction status (TRUE/FALSE) per candidate\cr
 #'  Steps (prediction status)\cr
-#' (UP_NT is a 20nt window upstream of ORF, that stops 2NT before ORF starts) :
-#'   1. ORF mean reads per NT > (UP_NT mean reads per NT * 1.3)
-#'   2. ORFScore > 2.5
-#'   3. TIS total reads + 3 >  ORF median reads per NT
+#' (UP_NT is a 20nt window upstream of ORF, that stops 2NT before ORF starts) :\cr
+#'   1. ORF mean reads per NT > (UP_NT mean reads per NT * 1.3)\cr
+#'   2. ORFScore > 2.5\cr
+#'   3. TIS total reads + 3 >  ORF median reads per NT\cr
 #'   4. Given expression above, a TRUE prediction is defined with the AND operatior: 1. & 2. & 3.
+#' \cr\cr
+#' In code that is:\cr
+#' \code{predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) & orfs_cov_stats$ORFScores > 2.5 &
+#'  ((reads_start[candidates] + 3) >  orfs_cov_stats$median)}
 #' @inheritParams findORFs
 #' @inheritParams outputLibs
 #' @param out_folder Directory to save files
@@ -90,8 +94,9 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' @param cds = \code{loadRegion(df, "cds")}
 #' @param libraries the ribo-seq libraries loaded into R as list, default:
 #' \code{outputLibs(df, type = "pshifted", output = "envirlist")}
-#' @param orf_sequences = \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
-#'  startCodon = startCodon, stopCodon = stopCodon,
+#' @param orf_candidate_ranges IRangesList, =
+#'  \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE),
+#'  longestORF = longestORF, startCodon = startCodon, stopCodon = stopCodon,
 #'  minimumLength = minimumLength)}
 #' @param export_metrics_table logical, default TRUE. Export table of statistics to file
 #' with suffix: "_prediction_table.rds"
@@ -123,9 +128,9 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                              prefix_result = paste(c(ORF_categories_to_keep, organism(df)), collapse = "_"),
                              mrna = loadRegion(df, "mrna"), cds = loadRegion(df, "cds"),
                              libraries = outputLibs(df, type = "pshifted", output = "envirlist"),
-                             orf_sequences = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
-                                                      startCodon = startCodon, stopCodon = stopCodon,
-                                                      minimumLength = minimumLength),
+                             orf_candidate_ranges = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
+                                                            startCodon = startCodon, stopCodon = stopCodon,
+                                                            minimumLength = minimumLength),
                              export_metrics_table = TRUE,
                              longestORF = FALSE, startCodon =  startDefinition(1),
                              stopCodon = stopDefinition(1), minimumLength = 0,
@@ -138,7 +143,7 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                                               "NTT", "internal", "doORF", "dORF", "a_error")))
 
   # New group you can start here
-  orfs <- orf_sequences
+  orfs <- orf_candidate_ranges
   orfs_unl <- unlist(orfs, use.names = TRUE)
   groupings <- strtoi(names(orfs_unl))
   names(orfs_unl) <- NULL
@@ -152,63 +157,76 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
 
   orfs_gr <- pmapFromTranscriptF(orfs, mrna, removeEmpty = TRUE)
 
-  orfs_chr <- seqnamesPerGroup(orfs_gr, FALSE)
-  orf_start_gr <- startSites(orfs_gr, T,T,T)
-  orf_stop_gr <- stopSites(orfs_gr, T,T,T)
-  orf_start_overlaps_other <- countOverlaps(orf_start_gr, orfs_gr) - 1
+  # orfs_chr <- seqnamesPerGroup(orfs_gr, FALSE)
+  orf_start_gr <- startSites(orfs_gr, TRUE,TRUE,TRUE)
+  orf_stop_gr <- stopSites(orfs_gr, TRUE,TRUE,TRUE)
+  # orf_start_overlaps_other <- countOverlaps(orf_start_gr, orfs_gr) - 1
 
   message("Start Ribo-seq coverage analysis")
   libnames <- bamVarName(df)
+  out_file_prefixes <- file.path(out_folder, paste0(prefix_result,
+                                                   "_", name(df),
+                                                   "_", libnames))
   for (i in seq_along(libraries)) {
     message("- ", libnames[i])
-    RFP <- libraries[[i]]
-    out_file_prefix <- file.path(out_folder, paste0(prefix_result,
-                                                    "_", name(df),
-                                                    "_", libnames[i]))
-    # Filter candidates by counts
-    message("-- Filtering")
-    reads_10 <- countOverlapsW(orfs_gr, RFP, weight = "score") > minimum_reads_ORF
-    reads_start <- countOverlapsW(orf_start_gr, RFP, weight = "score")
-    reads_start_3 <- reads_start > minimum_reads_start
+    detect_ribo_orfs_single_cov(orfs_gr, libraries[[i]], out_file_prefixes[i],
+                                mrna, ORF_type_keep, orf_start_gr, orf_stop_gr,
+                                export_metrics_table,
+                                minimum_reads_ORF, minimum_reads_start)
 
-    # Define candidates
-    candidates <- reads_10 & reads_start_3
-    orfs_cand <- orfs_gr[candidates]
-    orfs_kept_percentage <- round((length(orfs_cand) / length(orfs_gr)) * 100, 2)
-    message("--- ORFs passed count filters: ", orfs_kept_percentage)
-    orf_start_cand <- orf_start_gr[candidates]
-    orf_stop_cand <- orf_stop_gr[candidates]
-    # Make upstream and downstream window
-    upstream_gr <- windowPerGroup(orf_start_cand, mrna, 20, -2)
-    downstream_gr <- windowPerGroup(orf_stop_cand, mrna, -2, 20)
-    # Calculate coverage for ORF and up/down
-    message("-- coverage calculations")
-    message("--- ORFs")
-    orfs_cov_stats <- coveragePerORFStatistics(orfs_cand, RFP)
-    message("--- upstream")
-    upstream_cov_stats <- coveragePerORFStatistics(upstream_gr, RFP)
-    message("--- downstream")
-    downstream_cov_stats <- coveragePerORFStatistics(downstream_gr, RFP)
-
-    #iou <- (orfs_cov_stats$mean + 1) / (upstream_cov_stats$mean + 1)
-    predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) & orfs_cov_stats$ORFScores > 2.5 &
-      ((reads_start[candidates] + 3) >  orfs_cov_stats$median)
-
-    message("-- Saving ORF and prediction result")
-    saveRDS(orfs_cand, paste0(out_file_prefix, "_candidates.rds"))
-    saveRDS(predicted, paste0(out_file_prefix, "_prediction.rds"))
-
-    if(export_metrics_table) {
-      start_codons <- txSeqsFromFa(startCodons(orfs_cand, TRUE), df, TRUE, keep.names = FALSE)
-      res <- cbind(gene = txNamesToGeneNames(names(orfs_cand), df), tx = names(orfs_cand),
-                   type = ORF_type_keep[candidates], predicted, length = widthPerGroup(orfs_cand, F),
-                   start_codons, orfs_cov_stats, up = upstream_cov_stats, down = downstream_cov_stats)
-      res[, `:=` (down.genes = NULL, up.genes = NULL)]
-      setnames(res, "genes", "id")
-      saveRDS(res, paste0(out_file_prefix, "_prediction_table.rds"))
-    }
   }
   print(Sys.time() - start_timer)
   message("Done")
   return(NULL)
+}
+
+detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
+                                        ORF_type_keep,
+                                        orf_start_gr = startSites(orfs_gr, TRUE,TRUE,TRUE),
+                                        orf_stop_gr = stopSites(orfs_gr, TRUE,TRUE,TRUE),
+                                        export_metrics_table = TRUE,
+                                        minimum_reads_ORF = 10, minimum_reads_start = 3) {
+  # Filter candidates by counts
+  message("-- Filtering")
+  reads_10 <- countOverlapsW(orfs_gr, RFP, weight = "score") > minimum_reads_ORF
+  reads_start <- countOverlapsW(orf_start_gr, RFP, weight = "score")
+  reads_start_3 <- reads_start > minimum_reads_start
+
+  # Define candidates
+  candidates <- reads_10 & reads_start_3
+  orfs_cand <- orfs_gr[candidates]
+  orfs_kept_percentage <- round((length(orfs_cand) / length(orfs_gr)) * 100, 2)
+  message("--- ORFs passed count filters: ", orfs_kept_percentage)
+  orf_start_cand <- orf_start_gr[candidates]
+  orf_stop_cand <- orf_stop_gr[candidates]
+  # Make upstream and downstream window
+  upstream_gr <- windowPerGroup(orf_start_cand, mrna, 20, -2)
+  downstream_gr <- windowPerGroup(orf_stop_cand, mrna, -2, 20)
+  # Calculate coverage for ORF and up/down
+  message("-- coverage calculations")
+  message("--- ORFs")
+  orfs_cov_stats <- coveragePerORFStatistics(orfs_cand, RFP)
+  message("--- upstream")
+  upstream_cov_stats <- coveragePerORFStatistics(upstream_gr, RFP)
+  message("--- downstream")
+  downstream_cov_stats <- coveragePerORFStatistics(downstream_gr, RFP)
+
+  #iou <- (orfs_cov_stats$mean + 1) / (upstream_cov_stats$mean + 1)
+  predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) & orfs_cov_stats$ORFScores > 2.5 &
+    ((reads_start[candidates] + 3) >  orfs_cov_stats$median)
+
+  message("-- Saving ORF and prediction result")
+  saveRDS(orfs_cand, paste0(out_file_prefix, "_candidates.rds"))
+  saveRDS(predicted, paste0(out_file_prefix, "_prediction.rds"))
+
+  if(export_metrics_table) {
+    start_codons <- txSeqsFromFa(startCodons(orfs_cand, TRUE), df, TRUE, keep.names = FALSE)
+    res <- cbind(gene = txNamesToGeneNames(names(orfs_cand), df), tx = names(orfs_cand),
+                 type = ORF_type_keep[candidates], predicted, length = widthPerGroup(orfs_cand, FALSE),
+                 start_codons, orfs_cov_stats, up = upstream_cov_stats, down = downstream_cov_stats)
+    res[, `:=` (down.genes = NULL, up.genes = NULL)]
+    setnames(res, "genes", "id")
+    saveRDS(res, paste0(out_file_prefix, "_prediction_table.rds"))
+  }
+  return(invisible(NULL))
 }

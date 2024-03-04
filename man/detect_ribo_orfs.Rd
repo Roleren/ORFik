@@ -8,11 +8,13 @@ detect_ribo_orfs(
   df,
   out_folder,
   ORF_categories_to_keep,
-  name_of_result = paste(c(ORF_categories_to_keep, organism(df)), collapse = "_"),
+  prefix_result = paste(c(ORF_categories_to_keep, organism(df)), collapse = "_"),
   mrna = loadRegion(df, "mrna"),
   cds = loadRegion(df, "cds"),
-  orf_sequences = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
-    startCodon = startCodon, stopCodon = stopCodon, minimumLength = minimumLength),
+  libraries = outputLibs(df, type = "pshifted", output = "envirlist"),
+  orf_candidate_ranges = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF =
+    longestORF, startCodon = startCodon, stopCodon = stopCodon, minimumLength =
+    minimumLength),
   export_metrics_table = TRUE,
   longestORF = FALSE,
   startCodon = startDefinition(1),
@@ -41,15 +43,19 @@ detect_ribo_orfs(
  \item{a_error: }{Any ORF detect not in the above categories}
 }}
 
-\item{name_of_result}{the prefix name of output files to out_folder. Default:
+\item{prefix_result}{the prefix name of output files to out_folder. Default:
 \code{paste(c(ORF_categories_to_keep, organism(df)), collapse = "_")}}
 
-\item{mrna}{= \code{loadRegion(df, "mrna")},}
+\item{mrna}{= \code{loadRegion(df, "mrna")}}
 
-\item{cds}{= \code{loadRegion(df, "cds")},}
+\item{cds}{= \code{loadRegion(df, "cds")}}
 
-\item{orf_sequences}{= \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
-startCodon = startCodon, stopCodon = stopCodon,
+\item{libraries}{the ribo-seq libraries loaded into R as list, default:
+\code{outputLibs(df, type = "pshifted", output = "envirlist")}}
+
+\item{orf_candidate_ranges}{IRangesList, =
+\code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE),
+longestORF = longestORF, startCodon = startCodon, stopCodon = stopCodon,
 minimumLength = minimumLength)}}
 
 \item{export_metrics_table}{logical, default TRUE. Export table of statistics to file
@@ -89,16 +95,20 @@ To create the candidate ORFs (all ORFs returned):\cr
 Steps (candidate set):\cr
 Define a candidate search set by these 3 rules:\cr
   1.a Allowed ORF type: uORF, NTE, etc (only keep these in candidate list)\cr
-  1.b Must have at least x reads (default 10 reads)\cr
+  1.b Must have at least x reads over whole orf (default 10 reads)\cr
   1.c Must have at least x reads over start site (default 3 reads)\cr
 The total list is defined by these names, and saved according to allowed ORF type/types.\cr
 To create the prediction status (TRUE/FALSE) per candidate\cr
  Steps (prediction status)\cr
-(UP_NT is a 20nt window upstream of ORF, that stops 2NT before ORF starts) :
-  1. ORF mean reads per NT > (UP_NT mean reads per NT * 1.3)
-  2. ORFScore > 2.5
-  3. TIS total reads + 3 >  ORF median reads per NT
+(UP_NT is a 20nt window upstream of ORF, that stops 2NT before ORF starts) :\cr
+  1. ORF mean reads per NT > (UP_NT mean reads per NT * 1.3)\cr
+  2. ORFScore > 2.5\cr
+  3. TIS total reads + 3 >  ORF median reads per NT\cr
   4. Given expression above, a TRUE prediction is defined with the AND operatior: 1. & 2. & 3.
+\cr\cr
+In code that is:\cr
+\code{predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) & orfs_cov_stats$ORFScores > 2.5 &
+ ((reads_start[candidates] + 3) >  orfs_cov_stats$median)}
 }
 \examples{
 # Pre requisites
