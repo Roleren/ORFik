@@ -8,7 +8,8 @@ detect_ribo_orfs(
   df,
   out_folder,
   ORF_categories_to_keep,
-  prefix_result = paste(c(ORF_categories_to_keep, organism(df)), collapse = "_"),
+  prefix_result = paste(c(ORF_categories_to_keep, gsub(" ", "_", organism(df))), collapse
+    = "_"),
   mrna = loadRegion(df, "mrna"),
   cds = loadRegion(df, "cds"),
   libraries = outputLibs(df, type = "pshifted", output = "envirlist"),
@@ -44,7 +45,7 @@ detect_ribo_orfs(
 }}
 
 \item{prefix_result}{the prefix name of output files to out_folder. Default:
-\code{paste(c(ORF_categories_to_keep, organism(df)), collapse = "_")}}
+\code{paste(c(ORF_categories_to_keep, gsub(" ", "_", organism(df))), collapse = "_")}}
 
 \item{mrna}{= \code{loadRegion(df, "mrna")}}
 
@@ -121,13 +122,27 @@ In code that is:\cr
 # EXAMPLE:
 df <- ORFik.template.experiment()
 df <- df[df$libtype == "RFP",][c(1,2),]
-result_folder <- file.path(tempdir(), paste0("Ribo_orfs_", organism(df)))
+result_folder <- riboORFsFolder(df, tempdir())
 results <- detect_ribo_orfs(df, result_folder, c("uORF", "uoORF", "annotated", "NTE"))
 
 # Load results of annotated ORFs
-res_path <- "uORF_uoORF_annotated_NTE_Homo sapiens_ORFik_RFP_r1_prediction_table.rds"
-res_path <- file.path(result_folder, res_path)
-annotated <- readRDS(annotated_path)
-annotated # See all statistics
+table <- riboORFs(df[1,], type = "table", result_folder)
+table # See all statistics
 sum(annotated$predicted) # How many were predicted as Ribo-seq ORFs
+
+# Load GRangesList
+ranges_paths <- list.files(result_folder, "_candidates\\\\.rds", full.names = TRUE)
+candidates_gr <- readRDS(ranges_paths[1])
+prediction_paths <- list.files(result_folder, "_prediction\\\\.rds", full.names = TRUE)
+prediction <- readRDS(prediction_paths[1])
+
+predicted_gr <- candidates_gr[prediction]
+## Inspect predictions in RiboCrypt
+# library(RiboCrypt)
+# Inspect Predicted
+view <- predicted_gr[1]
+#multiOmicsPlot_ORFikExp(view, df, view, leader_extension = 100, trailer_extension = 100)
+# Inspect not predicted
+view <- candidates_gr[!prediction][1]
+#multiOmicsPlot_ORFikExp(view, df, view, leader_extension = 100, trailer_extension = 100)
 }
