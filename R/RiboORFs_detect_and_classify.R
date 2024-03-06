@@ -199,6 +199,8 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
   message("Start Ribo-seq coverage analysis")
   libnames <- name_decider(df, naming = "full")
   symbols <- suppressMessages(symbols(df))
+  txdb <- NULL
+  if (nrow(symbols) == 0) txdb <- loadTxdb(df)
   ORF_type_keep <- mcols(orfs_gr)$category
   mcols(orfs_gr) <- NULL
   out_file_prefixes <- file.path(out_folder, paste0(prefix_result,
@@ -207,7 +209,8 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
   for (i in seq_along(libraries)) {
     message("- ", libnames[i])
     detect_ribo_orfs_single_cov(orfs_gr, libraries[[i]], out_file_prefixes[i],
-                                mrna, ORF_type_keep, orf_start_gr, orf_stop_gr,
+                                mrna, txdb = txdb, faFile = df,
+                                ORF_type_keep, orf_start_gr, orf_stop_gr,
                                 export_metrics_table, symbols,
                                 minimum_reads_ORF, minimum_reads_start)
 
@@ -218,6 +221,7 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
 }
 
 detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
+                                        txdb = NULL, faFile = NULL,
                                         ORF_type_keep = mcols(orfs_gr)$category,
                                         orf_start_gr = startSites(orfs_gr, TRUE,TRUE,TRUE),
                                         orf_stop_gr = stopSites(orfs_gr, TRUE,TRUE,TRUE),
@@ -259,12 +263,15 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
   saveRDS(predicted, paste0(out_file_prefix, "_prediction.rds"))
 
   if(export_metrics_table) {
-    start_codons <- txSeqsFromFa(startCodons(orfs_cand, TRUE), df, TRUE, keep.names = FALSE)
-
+    if (!is.null(faFile)) {
+      start_codons <- txSeqsFromFa(startCodons(orfs_cand, TRUE), faFile, TRUE, keep.names = FALSE)
+    }
     if (is(symbols, "data.table") && nrow(symbols) > 0 && "ensembl_tx_name" %in% colnames(symbols)) {
       naming <- data.table::merge.data.table(data.table(ensembl_tx_name = names(orfs_cand)),
                                              symbols, by = "ensembl_tx_name", all.x = TRUE, sort = FALSE)
-    } else naming <- data.table(gene = txNamesToGeneNames(names(orfs_cand), df), tx = names(orfs_cand))
+    } else if (!is.null(txdb)) {
+      naming <- data.table(gene = txNamesToGeneNames(names(orfs_cand), txdb), tx = names(orfs_cand))
+    }
     res <- cbind(naming, type = ORF_type_keep[candidates], predicted, length = widthPerGroup(orfs_cand, FALSE),
                  start_codons, orfs_cov_stats, up = upstream_cov_stats, down = downstream_cov_stats)
     res[, `:=` (down.genes = NULL, up.genes = NULL)]
