@@ -128,21 +128,24 @@ results <- detect_ribo_orfs(df, result_folder, c("uORF", "uoORF", "annotated", "
 # Load results of annotated ORFs
 table <- riboORFs(df[1,], type = "table", result_folder)
 table # See all statistics
-sum(annotated$predicted) # How many were predicted as Ribo-seq ORFs
+sum(table$predicted) # How many were predicted as Ribo-seq ORFs
+# Load 2 results
+table <- riboORFs(df[1:2,], type = "table", result_folder)
+table # See all statistics
+sum(table$predicted) # How many were predicted as Ribo-seq ORFs
 
 # Load GRangesList
-ranges_paths <- list.files(result_folder, "_candidates\\\\.rds", full.names = TRUE)
-candidates_gr <- readRDS(ranges_paths[1])
-prediction_paths <- list.files(result_folder, "_prediction\\\\.rds", full.names = TRUE)
-prediction <- readRDS(prediction_paths[1])
+candidates_gr <- riboORFs(df[1,], type = "ranges_candidates", result_folder)
+prediction <- riboORFs(df[1,], type = "predictions", result_folder)
 
-predicted_gr <- candidates_gr[prediction]
+predicted_gr <- riboORFs(df[1:2,], type = "ranges_predictions", result_folder)
+identical(predicted_gr[[1]], candidates_gr[[1]][prediction[[1]]])
 ## Inspect predictions in RiboCrypt
 # library(RiboCrypt)
 # Inspect Predicted
-view <- predicted_gr[1]
+view <- predicted_gr[[1]][1]
 #multiOmicsPlot_ORFikExp(view, df, view, leader_extension = 100, trailer_extension = 100)
 # Inspect not predicted
-view <- candidates_gr[!prediction][1]
+view <- candidates_gr[[1]][!prediction[[1]]][1]
 #multiOmicsPlot_ORFikExp(view, df, view, leader_extension = 100, trailer_extension = 100)
 }

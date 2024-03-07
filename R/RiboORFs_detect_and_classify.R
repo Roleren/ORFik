@@ -200,7 +200,7 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
   libnames <- name_decider(df, naming = "full")
   symbols <- suppressMessages(symbols(df))
   txdb <- NULL
-  if (nrow(symbols) == 0) txdb <- loadTxdb(df)
+  if (is(symbols, "try-error") || nrow(symbols) == 0) txdb <- loadTxdb(df)
   ORF_type_keep <- mcols(orfs_gr)$category
   mcols(orfs_gr) <- NULL
   out_file_prefixes <- file.path(out_folder, paste0(prefix_result,
