@@ -80,8 +80,8 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
 coverage_A_and_P <- function(cds_filtered, mrna, reads,
                              cds_lengths = widthPerGroup(cds_filtered, FALSE), aligned_position = "center") {
   # Create merged A and P site ranges
-   A_site_extension <- ifelse(aligned_position == "center", 4,3)
-    cds_with_A_site <- startRegion(cds_filtered, mrna,
+  A_site_extension <- ifelse(aligned_position == "center", 4,3)
+  cds_with_A_site <- startRegion(cds_filtered, mrna,
                                  downstream = cds_lengths - A_site_extension + 2,
                                  upstream = A_site_extension)
 
@@ -135,7 +135,9 @@ dirichlet_params <- function(p.mean, sigma) {
 
 filter_CDS_by_counts <- function(cds, filter_table,
                                  min_counts_cds_filter = 1000,
-                                 filter_cds_mod3 = TRUE) {
+                                 filter_cds_mod3 = TRUE,
+                                 minimum_5p_flank = FALSE,
+                                 mrna = NULL) {
   message("- Starting with ", length(cds), " CDS sequences")
   # Filter CDSs
   if (filter_cds_mod3) {
@@ -143,6 +145,15 @@ filter_CDS_by_counts <- function(cds, filter_table,
     cds_filtered <- cds[is_mod3]
     message("- ", length(cds_filtered), " CDSs are multiple of 3")
   }
+  if (minimum_5p_flank & !is.null(mrna)) {
+    cds_with_flank <- startRegion(cds_filtered, mrna,
+                                   upstream = minimum_5p_flank)
+    flank_size <- widthPerGroup(cds_with_flank, FALSE)
+    has_valid_flank <- flank_size == max(flank_size)
+    cds_filtered <- cds_filtered[has_valid_flank]
+    message("- ", length(cds_filtered), " after filtering 5' flank of size ", minimum_5p_flank)
+  }
+
   cds_filtered <- cds_filtered[rowMeans(as.matrix(filter_table[names(cds_filtered),])) > min_counts_cds_filter]
   message("- ", length(cds_filtered), " after filtering by counts filter")
   if (length(cds_filtered) == 0) stop("Filter is too strict, set a lower filter!")
@@ -179,7 +190,9 @@ codon_usage <- function(reads, cds,
   stopifnot(filter_cds_mod3 == TRUE)
   message("-- Codon usage analysis")
   cds_filtered <- filter_CDS_by_counts(cds, filter_table,
-                       min_counts_cds_filter, filter_cds_mod3)
+                       min_counts_cds_filter, filter_cds_mod3,
+                       minimum_5p_flank = ifelse(aligned_position == "center", 4,3),
+                       mrna = mrna)
 
   # Get coverage for A sites and P sites
   cds_lengths <- widthPerGroup(cds_filtered, FALSE)
