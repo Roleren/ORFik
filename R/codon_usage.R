@@ -143,7 +143,7 @@ filter_CDS_by_counts <- function(cds, filter_table,
     cds_filtered <- cds[is_mod3]
     message("- ", length(cds_filtered), " CDSs are multiple of 3")
   }
-  cds_filtered <- cds_filtered[rowMeans(filter_table[names(cds_filtered),]) > min_counts_cds_filter]
+  cds_filtered <- cds_filtered[rowMeans(as.matrix(filter_table[names(cds_filtered),])) > min_counts_cds_filter]
   message("- ", length(cds_filtered), " after filtering by counts filter")
   if (length(cds_filtered) == 0) stop("Filter is too strict, set a lower filter!")
   return(cds_filtered)
