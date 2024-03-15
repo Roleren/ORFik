@@ -226,32 +226,30 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
   if (!(is(files, "character") | is(files, "data.table")))
     stop("'files' must be of class character or data.table")
   file_dt <- files
+  is_paired_end <- is(file_dt, "data.table")
   # Set runID column if valid
-  runID_exists <- FALSE
-  if (all(runIDs != "")) {
-    runID_exists <- TRUE
-  }
+  runID_exists <- ifelse(all(runIDs != ""), TRUE, FALSE)
 
+  # Define data.frame size
+  df <- data.frame(matrix(ncol = 6 + runID_exists + is_paired_end,
+                          nrow = length(files) + 4))
+  # Define library name columns
   lib_metadata_columns <- c("libtype", "stage", "rep", "condition",
                             "fraction","filepath")
-  if (is(file_dt, "data.table")) { # If paired data
+  if (is_paired_end) { # If paired data
     files <- file_dt$forward
-    df <- data.frame(matrix(ncol = 7 + runID_exists, nrow = length(files) + 4))
-    # set lib column names
     lib_metadata_columns <- c(lib_metadata_columns, "reverse")
-    if (runID_exists) lib_metadata_columns <- c(lib_metadata_columns, "Run")
-    df[4,] <-
-    df[5:(5+length(files)-1), 7] <- file_dt$reverse
   } else { # only single libraries
     files <- file_dt
-    df <- data.frame(matrix(ncol = 6 + runID_exists, nrow = length(files) + 4))
-    # set lib column names
-    if (runID_exists) lib_metadata_columns <- c(lib_metadata_columns, "Run")
-    df[4,] <- lib_metadata_columns
   }
+  if (runID_exists) lib_metadata_columns <- c(lib_metadata_columns, "Run")
+  df[4,] <- lib_metadata_columns
+
+  # TODO: Move this to seperat function
   ## Specify library information columns
   # set file paths
   df[5:(5+length(files)-1), 6] <- files
+  if (is_paired_end) df[5:(5+length(files)-1), 7] <- file_dt$reverse
   # Set library type (RNA-seq etc)
   df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames(), libtype)
   # set stage (sphere, shield etc) (input cell line or tissue here if wanted)
@@ -275,8 +273,8 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
   if (!is.null(result_folder)) {
     df[1, seq(3,4)] <- c("results", result_folder)
   }
-
   df[is.na(df)] <- ""
+
   if (!is.null(saveDir)) {
     cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
     if (dir.exists(cbu.path)) { # This will only trigger on CBU server @ UIB
