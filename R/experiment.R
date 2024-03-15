@@ -106,12 +106,20 @@ validateExperiments <- function(df) {
     stop("Empty files in list, see above for which")
   }
   names <- bamVarName(df)
-  if (length(names) != length(unique(names)))
-    stop("experiment table has non-unique rows!",
-         " update either replicate, stage, condition or fraction,",
-         "to get non unique rows!")
-  if (length(files) != length(unique(files)))
+  if (length(names) != length(unique(names))) {
+    message("Duplicated rows: ", paste(names[duplicated(names)],
+                                      collapse = " ; "))
+    stop("Experiment table has non-unique rows!",
+         " Update either replicate, stage, condition or fraction,",
+         " to get unique rows!")
+  }
+
+  if (length(files) != length(unique(files))) {
+    message("Duplicated filepaths: ", paste(files[duplicated(files)],
+                                            collapse = " ; "))
     stop("Duplicated filepaths in experiment!")
+  }
+
 }
 
 #' Get library variable names from ORFik \code{\link{experiment}}

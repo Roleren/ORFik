@@ -330,7 +330,7 @@ countTable <- function(df, region = "mrna", type = "count",
   }
   message(paste("Invalid count table:", df))
   stop("Table not found!",
-      "must be either: filepath to directory with defined countTable of region, the full path
+      " Must be either: filepath to directory with defined countTable of region, the full path
        to the countTable, run ORFikQC to get default countTables!")
 }
 

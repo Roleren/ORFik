@@ -36,28 +36,24 @@ A numeric vector containing one entropy value per element in
 `grl`
 }
 \description{
-Calculates entropy of the `reads` coverage over each `grl` group.
+Calculates percentage of maximum entropy of the `reads`
+coverage over each ORF in `grl` group.
 The entropy value per group is a real number in the interval (0:1),
-where 0 indicates no variance in reads over group.
-For example c(0,0,0,0) has 0 entropy, since no reads overlap.
+where 0 indicates no variance in reads over all codons of group
+For example c(0,0,0,0) has 0 entropy, since no reads overlap.\cr
+Interval: [0]: No reads or all reads in 1 place \cr
+Interval: [0.01-0.99]: >= 2 positions covered \cr
+Interval: [1]: all positions covered perfectly in frame\cr
 }
 \examples{
 # a toy example with ribo-seq p-shifted reads
-ORF <- GRanges("1", ranges = IRanges(start = c(1, 12, 22),
-                                     end = c(10, 20, 32)),
-               strand = "+",
-               names = rep("tx1_1", 3))
-names(ORF) <- rep("tx1", 3)
-grl <- GRangesList(tx1_1 = ORF)
-reads <- GRanges("1", IRanges(c(25, 35), c(25, 35)), "+")
-# grl must have same names as cds + _1 etc, so that they can be matched.
-entropy(grl, reads)
-# or on cds
-cdsORF <- GRanges("1", IRanges(35, 44), "+", names = "tx1")
-names(cdsORF) <- "tx1"
-cds <-  GRangesList(tx1 = cdsORF)
-entropy(cds, reads)
-
+ORF <- GRangesList(tx1 = GRanges("1", IRanges(1, width = 9), "+"))
+entropy(ORF, GRanges()) # 0
+entropy(ORF, GRanges("1", IRanges(c(1)), "+")) # 0
+entropy(ORF, GRanges("1", IRanges(c(1,4,6,7)), "+")) # 0.94
+entropy(ORF, GRanges("1", IRanges(c(1,4,7)), "+", score = c(1,2,1)),
+        weight = "score") # 0.94
+entropy(ORF, GRanges("1", IRanges(c(1,4,7)), "+")) # Perfect = 1
 }
 \seealso{
 Other features: 
