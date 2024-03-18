@@ -1,9 +1,9 @@
 #' Download sra toolkit
 #'
 #' Currently supported for Linux (64 bit centos and ubunutu is tested to work)
-#' and Mac-OS(64 bit)
+#' and Mac-OS(64 bit). If other linux distro, centos binaries will be used.
 #' @param folder default folder, "~/bin"
-#' @param version a string, default "2.10.9"
+#' @param version a string, default "2.11.3"
 #' @return path to fastq-dump in sratoolkit
 #' @importFrom utils untar
 #' @references https://ncbi.github.io/sra-tools/fastq-dump.html
@@ -11,21 +11,30 @@
 #' @export
 #' @examples
 #' # install.sratoolkit()
-#' ## Custom folder and version
+#' ## Custom folder and version (not adviced)
 #' folder <- "/I/WANT/IT/HERE/"
-#' # install.sratoolkit(folder, version = "2.10.7")
+#' # install.sratoolkit(folder, version = "2.10.9")
 #'
-install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
+install.sratoolkit <- function(folder = "~/bin", version = "2.11.3") {
   if (.Platform$OS.type != "unix")
-    stop("sratoolkit is not currently supported for windows by ORFik, download manually")
+    stop("sratoolkit is not currently supported for windows by ORFik,
+         download manually or use WSL (windows subsystem linux)")
   folder <- path.expand(folder)
   is_linux <- Sys.info()[1] == "Linux" # else it is mac
+  os <- if(!is_linux) {
+    "mac64"
+    } else {
+     is_ubuntu <- grepl("^Ubuntu", osVersion, ignore.case = TRUE)
+     is_centos <- grepl("^cent", osVersion, ignore.case = TRUE)
+     found_exact_match <- sum(c(is_ubuntu, is_centos)) == 1
+     if (!found_exact_match | is_centos) {
+       "centos_linux64"
+     } else "ubuntu64"
+    }
   # TODO; Check if ubuntu compliation is needed for safer download ->
   #length(grep("Ubuntu", system("cat /etc/*release", intern = TRUE)[1])) == 1
 
-  path.final <- ifelse(is_linux,
-                       paste0(folder, "/sratoolkit.", version, "-centos_linux64"),
-                       paste0(folder, "/sratoolkit.", version, "-mac64"))
+  path.final <- paste0(folder, "/sratoolkit.", version, "-", os)
   path.final <- paste0(path.final, "/bin/fastq-dump")
   if (file.exists(path.final)) {
     message(paste("Using fastq-dump at location:",
@@ -36,10 +45,8 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
           this is done only once!")
 
   url <- paste0("https://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/", version, "/")
-  url <- paste0(url, "sratoolkit.", version)
-  url <- ifelse(is_linux,
-                paste0(url, "-centos_linux64.tar.gz"),
-                paste0(url, "-mac64.tar.gz"))
+  url <- paste0(url, "sratoolkit.", version, "-", os, ".tar.gz")
+
   path <- paste0(folder, "/sratoolkit.tar.gz")
 
   dir.create(folder, showWarnings = FALSE, recursive = TRUE)
@@ -107,7 +114,7 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.10.9") {
 #' ## Simple single SRR run of YEAST
 #' outdir <- tempdir() # Specify output directory
 #' # Download, get 5 first reads
-#' #download.SRA(SRR, outdir, subset = 5)
+#' #download.SRA(SRR, outdir, rename = FALSE, subset = 5)
 #'
 #' ## Using metadata column to get SRR numbers and to be able to rename samples
 #' outdir <- tempdir() # Specify output directory
