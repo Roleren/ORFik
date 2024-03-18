@@ -96,8 +96,9 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
                                  nrow = length(tx)))
+  message("    - Counting overlaps")
   for (i in seq(length(varNames))) { # For each sample
-    print(varNames[i])
+    message(varNames[i])
     if (is.character(weight) & length(weight) == 1) {
       if (!(weight %in% colnames(mcols(get(varNames[i], envir = envExp(df))))))
         weight <- NULL
@@ -374,7 +375,7 @@ countTable_regions <- function(df, out.dir = libFolder(df),
     regions,
     function(region, countDir, df, geneOrTxNames, longestPerGene, forceRemake) {
      message("- Creating read count tables for region:")
-     message(region)
+     message("  - ", region)
      path <- paste0(countDir, region)
      makeSummarizedExperimentFromBam(df, region = region,
                                      geneOrTxNames = geneOrTxNames,
