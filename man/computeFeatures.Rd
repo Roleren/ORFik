@@ -119,8 +119,8 @@ See \code{\link{getWeights}}
 # Usually the ORFs are found in orfik, which makes names for you etc.
 gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf",
  package = "ORFik") ## location of the gtf file
-suppressWarnings(txdb <-
-                  GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
+library(txdbmaker)
+suppressWarnings(txdb <- txdbmaker::makeTxDbFromGFF(gtf, format = "gtf"))
 # use cds' as ORFs for this example
 ORFs <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
 ORFs <- makeORFNames(ORFs) # need ORF names
@@ -139,8 +139,8 @@ Other features:
 \code{\link{distToTSS}()},
 \code{\link{entropy}()},
 \code{\link{floss}()},
-\code{\link{fpkm_calc}()},
 \code{\link{fpkm}()},
+\code{\link{fpkm_calc}()},
 \code{\link{fractionLength}()},
 \code{\link{initiationScore}()},
 \code{\link{insideOutsideORF}()},
@@ -151,8 +151,8 @@ Other features:
 \code{\link{rankOrder}()},
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{ribosomeStallingScore}()},
-\code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{startRegionCoverage}()},
 \code{\link{stopRegion}()},
 \code{\link{subsetCoverage}()},
 \code{\link{translationalEff}()}

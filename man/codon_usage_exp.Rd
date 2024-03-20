@@ -113,7 +113,7 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/
 }
 \seealso{
 Other codon: 
-\code{\link{codon_usage_plot}()},
-\code{\link{codon_usage}()}
+\code{\link{codon_usage}()},
+\code{\link{codon_usage_plot}()}
 }
 \concept{codon}

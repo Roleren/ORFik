@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{bedToGR}
 \alias{bedToGR}
-\title{Converts bed style data.frame to Granges}
+\title{Converts bed style data.frame to GRanges}
 \usage{
 bedToGR(x, skip.name = TRUE)
 }

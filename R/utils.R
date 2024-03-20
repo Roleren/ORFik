@@ -1,4 +1,4 @@
-#' Converts bed style data.frame to Granges
+#' Converts bed style data.frame to GRanges
 #'
 #' For info on columns, see:
 #' https://www.ensembl.org/info/website/upload/bed.html

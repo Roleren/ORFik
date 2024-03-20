@@ -46,16 +46,16 @@ startRegion(orf, tx, upstream = -3, downstream = 6)
 }
 \seealso{
 Other features: 
-\code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{computeFeaturesCage}()},
 \code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},
 \code{\link{entropy}()},
 \code{\link{floss}()},
-\code{\link{fpkm_calc}()},
 \code{\link{fpkm}()},
+\code{\link{fpkm_calc}()},
 \code{\link{fractionLength}()},
 \code{\link{initiationScore}()},
 \code{\link{insideOutsideORF}()},

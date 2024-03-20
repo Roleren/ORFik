@@ -37,9 +37,9 @@ strandMode(cov_ignore_strand)
 }
 \seealso{
 Other covRLE: 
+\code{\link{covRle}},
 \code{\link{covRle-class}},
-\code{\link{covRleList-class}},
 \code{\link{covRleList}},
-\code{\link{covRle}}
+\code{\link{covRleList-class}}
 }
 \concept{covRLE}

@@ -15,9 +15,9 @@ and generalizations.
 }
 \seealso{
 Other covRLE: 
+\code{\link{covRle}},
 \code{\link{covRle-class}},
 \code{\link{covRleFromGR}()},
-\code{\link{covRleList}},
-\code{\link{covRle}}
+\code{\link{covRleList}}
 }
 \concept{covRLE}

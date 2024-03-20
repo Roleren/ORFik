@@ -33,8 +33,8 @@ browser <- getOption("browser")
 }
 \seealso{
 Other sra: 
-\code{\link{download.SRA.metadata}()},
 \code{\link{download.SRA}()},
+\code{\link{download.SRA.metadata}()},
 \code{\link{download.ebi}()},
 \code{\link{get_bioproject_candidates}()},
 \code{\link{install.sratoolkit}()},

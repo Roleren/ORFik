@@ -75,8 +75,8 @@ df <- df[df$libtype == "RFP",][1,] #lets only p-shift first RFP sample
 Other pshifting: 
 \code{\link{changePointAnalysis}()},
 \code{\link{detectRibosomeShifts}()},
-\code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shiftFootprints}()},
+\code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shifts.load}()}
 }
 \concept{pshifting}

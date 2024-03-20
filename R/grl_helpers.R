@@ -483,6 +483,7 @@ revElementsF <- function(x) {
 #' correct seqinfo, then you can save some computation time by setting this to
 #' TRUE.
 #' @importFrom S4Vectors wmsg isTRUEorFALSE
+#' @importFrom GenomicFeatures exonsBy 
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
                                     weight = 1L, seqinfo.x.is.correct = FALSE) {
@@ -514,6 +515,7 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
 #' @param transcripts \code{\link{GRangesList}}
 #' @param ignore.strand a logical (default: length(x) == 1)
 #' @importFrom S4Vectors wmsg isTRUEorFALSE List
+#' @importFrom GenomicFeatures exonsBy 
 #' @return Integer Rle of coverage, 1 per transcript
 coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x)) {
   stopifnot(is(x, "covRle"))

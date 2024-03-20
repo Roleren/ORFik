@@ -10,7 +10,7 @@
 #' otherwise duplicated group names will be grouped together.
 #' @param gr a GRanges object
 #' @param other a vector of unique names to group by (default: NULL)
-#' @return a GRangesList named after names(Granges) if other is NULL, else
+#' @return a GRangesList named after names(GRanges) if other is NULL, else
 #' names are from unique(other)
 #' @export
 #' @importFrom data.table chmatch

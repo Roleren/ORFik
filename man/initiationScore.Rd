@@ -11,7 +11,7 @@ initiationScore(grl, cds, tx, reads, pShifted = TRUE, weight = "score")
 
 \item{cds}{a \code{\link{GRangesList}} object with coding sequences}
 
-\item{tx}{a GrangesList of transcripts covering grl.}
+\item{tx}{a GRangesList of transcripts covering grl.}
 
 \item{reads}{ribo seq reads as \code{\link{GAlignments}},
 GRanges or GRangesList object}
@@ -73,16 +73,16 @@ doi: 10.1186/s12915-017-0416-0
 }
 \seealso{
 Other features: 
-\code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{computeFeaturesCage}()},
 \code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},
 \code{\link{entropy}()},
 \code{\link{floss}()},
-\code{\link{fpkm_calc}()},
 \code{\link{fpkm}()},
+\code{\link{fpkm_calc}()},
 \code{\link{fractionLength}()},
 \code{\link{insideOutsideORF}()},
 \code{\link{isInFrame}()},
@@ -92,8 +92,8 @@ Other features:
 \code{\link{rankOrder}()},
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{ribosomeStallingScore}()},
-\code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{startRegionCoverage}()},
 \code{\link{stopRegion}()},
 \code{\link{subsetCoverage}()},
 \code{\link{translationalEff}()}

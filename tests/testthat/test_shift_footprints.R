@@ -2,8 +2,7 @@ context("shift footprints")
 library(ORFik)
 df <- ORFik.template.experiment.zf()
 gtf <- df@txdb
-suppressWarnings(txdb <-
- GenomicFeatures::makeTxDbFromGFF(gtf))
+suppressWarnings(txdb <- txdbmaker::makeTxDbFromGFF(gtf))
 riboSeq_file <- filepath(df, "default")
 
 footprints <- GenomicAlignments::readGAlignments(

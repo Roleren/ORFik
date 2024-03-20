@@ -147,7 +147,7 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE,
 #' @param grl a \code{\link{GRangesList}} of ranges within
 #' the reference, grl must have column called names that gives
 #' grouping for result
-#' @param reference a GrangesList of ranges that include and are bigger or
+#' @param reference a GRangesList of ranges that include and are bigger or
 #' equal to grl ig. cds is grl and gene can be reference
 #' @inheritParams pmapToTranscriptF
 #' @return a GRangesList in transcript coordinates
@@ -529,7 +529,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
   return(result)
 }
 
-#' Get transcript sequence from a GrangesList and a faFile or BSgenome
+#' Get transcript sequence from a GRangesList and a faFile or BSgenome
 #'
 #' For each GRanges object, find the sequence of it from faFile or BSgenome.
 #'
@@ -548,6 +548,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' character vector without names.
 #' @export
 #' @return a \code{\link{DNAStringSet}} of the transcript sequences
+#' @importFrom GenomicFeatures extractTranscriptSeqs
 #' @family ExtendGenomicRanges
 #'
 txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,

@@ -49,7 +49,7 @@ codon_usage_plot(res2, monospace_font = FALSE) # monospace font looks better
 }
 \seealso{
 Other codon: 
-\code{\link{codon_usage_exp}()},
-\code{\link{codon_usage}()}
+\code{\link{codon_usage}()},
+\code{\link{codon_usage_exp}()}
 }
 \concept{codon}

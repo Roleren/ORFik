@@ -23,9 +23,9 @@ covRleList(List(covRle()))
 }
 \seealso{
 Other covRLE: 
+\code{\link{covRle}},
 \code{\link{covRle-class}},
 \code{\link{covRleFromGR}()},
-\code{\link{covRleList-class}},
-\code{\link{covRle}}
+\code{\link{covRleList-class}}
 }
 \concept{covRLE}

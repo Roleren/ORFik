@@ -110,8 +110,8 @@ findUORFs_exp(df, overlappingCDS = TRUE)
 \seealso{
 Other findORFs: 
 \code{\link{findMapORFs}()},
-\code{\link{findORFsFasta}()},
 \code{\link{findORFs}()},
+\code{\link{findORFsFasta}()},
 \code{\link{startDefinition}()},
 \code{\link{stopDefinition}()}
 }

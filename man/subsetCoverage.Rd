@@ -20,16 +20,16 @@ tiled to size of 1. This subsetting takes account for strand.
 }
 \seealso{
 Other features: 
-\code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{computeFeaturesCage}()},
 \code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
 \code{\link{distToTSS}()},
 \code{\link{entropy}()},
 \code{\link{floss}()},
-\code{\link{fpkm_calc}()},
 \code{\link{fpkm}()},
+\code{\link{fpkm_calc}()},
 \code{\link{fractionLength}()},
 \code{\link{initiationScore}()},
 \code{\link{insideOutsideORF}()},
@@ -40,8 +40,8 @@ Other features:
 \code{\link{rankOrder}()},
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{ribosomeStallingScore}()},
-\code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{startRegionCoverage}()},
 \code{\link{stopRegion}()},
 \code{\link{translationalEff}()}
 }

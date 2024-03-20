@@ -81,8 +81,8 @@
 #' # Usually the ORFs are found in orfik, which makes names for you etc.
 #' gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf",
 #'  package = "ORFik") ## location of the gtf file
-#' suppressWarnings(txdb <-
-#'                   GenomicFeatures::makeTxDbFromGFF(gtf, format = "gtf"))
+#' library(txdbmaker)
+#' suppressWarnings(txdb <- txdbmaker::makeTxDbFromGFF(gtf, format = "gtf"))
 #' # use cds' as ORFs for this example
 #' ORFs <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
 #' ORFs <- makeORFNames(ORFs) # need ORF names
@@ -126,7 +126,7 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 #' Each feature have a link to an article describing feature,
 #' try ?floss
 #' @inheritParams computeFeatures
-#' @param tx a GrangesList of transcripts,
+#' @param tx a GRangesList of transcripts,
 #'  normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 #'  only add this if you are not including Gtf file
 #'  If you are using CAGE, you do not need to reassign these to the cage
@@ -134,9 +134,10 @@ computeFeatures <- function(grl, RFP, RNA = NULL,  Gtf, faFile = NULL,
 #' @param fiveUTRs fiveUTRs as GRangesList, if you used cage-data to
 #'  extend 5' utrs, remember to input CAGE assigned version and not original!
 #' @param cds a GRangesList of coding sequences
-#' @param threeUTRs  a GrangesList of transcript 3' utrs,
+#' @param threeUTRs  a GRangesList of transcript 3' utrs,
 #'  normally called from: threeUTRsByTranscript(Gtf, use.names = T)
 #' @importFrom data.table data.table
+#' @importFrom GenomicFeatures fiveUTRsByTranscript threeUTRsByTranscript
 #' @family features
 #' @return a data.table with scores, each column is one score type, name of
 #'  columns are the names of the scores, i.g [floss()]
