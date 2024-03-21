@@ -38,10 +38,18 @@ config.exper <- function(experiment, assembly, type,
 #' 1. fastq files (raw data)\cr
 #' 2. bam files (processed data)\cr
 #' 3. references (organism annotation and STAR index)\cr
-#' 4. exp (Location to store and load all \code{\link{experiment}} .csv files)
+#' 4. experiments (Location to store and load all \code{\link{experiment}} .csv files)
 #' Update or use another config using \code{config.save()} function.
-#' @param file file of config for ORFik, default: "~/Bio_data/ORFik_config.csv"
+#' @param cache path to bioc cache directory with rname from query argument.
+#' For info, see: \code{\link{BiocFileCache::BiocFileCache}}
+#' @param query default: "ORFik_config". Name of file in cache.
+#' @param ask logical, default interactive().
+#' @param old_config_location path, old config location before BiocFileCache
+#' implementation.
+#' Will copy this to cache directory and delete old version.
+#' This is done to follow bioc rules on not writing to user home directory.
 #' @return a named character vector of length 3
+#' @import BiocFileCache
 #' @export
 #' @examples
 #' ## Make with default config path
@@ -49,25 +57,54 @@ config.exper <- function(experiment, assembly, type,
 #' ## Load another config (not adviced!)
 #' config_location <- "/media/Bio_data/ORFik_config.csv"
 #' #config(config_location)
-config <- function(file = "~/Bio_data/ORFik_config.csv") {
-  default.exp.path <- "~/Bio_data/ORFik_experiments/"
-  if(!file.exists(file)) {
+config <- function(cache = BiocFileCache::getBFCOption("CACHE"),
+                   query = "ORFik_config", ask = interactive(),
+                   old_config_location = "~/Bio_data/ORFik_config.csv") {
+  old_location_format <- file.exists(old_config_location)
+  if (old_location_format) {
+    message("ORFik now uses BiocFileCache for config, moving your old config")
+    old_config <- data.table::fread(old_config_location, header = TRUE)
+    file.remove(old_config_location)
+  }
+  cache <- BiocFileCache::BiocFileCache(cache, ask)
+  bfcq <- bfcquery(cache, query, exact = TRUE)
+  file <- file.path(BiocFileCache::bfccache(cache), bfcq$rpath)
+  make_config <-
+  if (length(file) == 0) {
+     TRUE
+  } else if (length(file) > 1) {
+    file <- file[1]
+    BiocFileCache::bfcremove(cache, bfcq[-1,]$rid)
+    !file.exists(file)
+  } else {
+    !file.exists(file)
+  }
+  if (old_location_format & length(file) > 0) {
+    BiocFileCache::bfcremove(cache, bfcq[1,]$rid)
+  }
+
+
+  if (make_config | old_location_format) {
+    file <- BiocFileCache::bfcnew(cache, query, ext = ".csv")
     message("--------------------------------")
     message("Setting up config file for ORFik")
+    message("This config defines where to save:
+            fastq, bam files, references and experiments")
     message(paste("Saving to: ", file))
     if (!dir.exists(dirname(file))) {
       dir.create(dirname(file))
     }
-    config.save(file, "~/Bio_data/raw_data", "~/Bio_data/processed_data",
-                "~/Bio_data/references", default.exp.path)
+    if (old_location_format) {
+      config.save(file, conf = old_config)
+    } else config.save(file)
   }
   dt <- data.table::fread(file, header = TRUE)
   stopifnot(colnames(dt) == c("type", "directory"))
   old_config_format <- nrow(dt) == 3
   if (old_config_format) {
-    dt <- rbind(dt, data.table(type = "exp", directory = default.exp.path))
-    config.save(file, dt$directory[1], dt$directory[2],
-                dt$directory[3], dt$directory[4])
+    dt <- rbind(dt, data.table(type = "exp",
+                               directory = "~/Bio_data/ORFik_experiments/"))
+    config.save(file, conf = dt)
   }
 
   res <- dt$directory
@@ -89,6 +126,9 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
 #' @param exp.dir directory where ORFik puts experiment csv files,
 #' default: "~/Bio_data/ORFik_experiments/", which is retrieved with
 #' \code{config()["exp"]}
+#' @param conf data.frame of complete conf object, default:
+#' data.frame(type = c("fastq", "bam", "ref", "exp"),
+#'  directory = c(fastq.dir, bam.dir, reference.dir, exp.dir))
 #' @return invisible(NULL), file saved to disc
 #' @export
 #' @examples
@@ -97,10 +137,14 @@ config <- function(file = "~/Bio_data/ORFik_config.csv") {
 #' #config.save(config_location, "/media/Bio_data/raw_data/",
 #' # "/media/Bio_data/processed_data", /media/Bio_data/references/)
 config.save <- function(file = "~/Bio_data/ORFik_config.csv",
-                        fastq.dir, bam.dir, reference.dir,
-                        exp.dir = "~/Bio_data/ORFik_experiments/") {
-  conf <- data.frame(type = c("fastq", "bam", "ref", "exp"),
-                     directory = c(fastq.dir, bam.dir, reference.dir, exp.dir))
+                        fastq.dir = "~/Bio_data/raw_data",
+                        bam.dir = "~/Bio_data/processed_data",
+                        reference.dir = "~/Bio_data/references",
+                        exp.dir = "~/Bio_data/ORFik_experiments/",
+                        conf = data.frame(type = c("fastq", "bam", "ref", "exp"),
+                                          directory = c(fastq.dir, bam.dir, reference.dir, exp.dir))) {
+  stopifnot(nrow(conf) == 4)
+  stopifnot(colnames(conf) == c("type", "directory"))
   data.table::fwrite(conf, file, col.names = TRUE)
   return(invisible(NULL))
 }

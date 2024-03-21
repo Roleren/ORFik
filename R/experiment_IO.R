@@ -46,9 +46,9 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
     if (file_ext(file) == "") file <- paste0(file, ".csv")
     if (!file.exists(file)) file <- pasteDir(in.dir, file)
     if (!file.exists(file)) { # This will only trigger on CBU server @ UIB
-      cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
-      if (file.exists(pasteDir(cbu.path, basename(file))))
-        file <- pasteDir(cbu.path, basename(file))
+      cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R"
+      if (file.exists(file.path(cbu.path, basename(file))))
+        file <- file.path(cbu.path, basename(file))
     }
 
     info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
