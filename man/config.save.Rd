@@ -5,28 +5,41 @@
 \title{Save/update directory config for ORFik experiments}
 \usage{
 config.save(
-  file = "~/Bio_data/ORFik_config.csv",
-  fastq.dir,
-  bam.dir,
-  reference.dir,
-  exp.dir = "~/Bio_data/ORFik_experiments/"
+  file = config_file(),
+  fastq.dir = file.path(base.dir, "raw_data"),
+  bam.dir = file.path(base.dir, "processed_data"),
+  reference.dir = file.path(base.dir, "references"),
+  exp.dir = file.path(base.dir, "ORFik_experiments/"),
+  base.dir = "~/Bio_data",
+  conf = data.frame(type = c("fastq", "bam", "ref", "exp"), directory = c(fastq.dir,
+    bam.dir, reference.dir, exp.dir))
 )
 }
 \arguments{
-\item{file}{file of config for ORFik, default: "~/Bio_data/ORFik_config.csv"}
+\item{file}{location of config csv, default: config_file(old_config_location)}
 
 \item{fastq.dir}{directory where ORFik puts fastq file directories,
-default: config()["fastq"]}
+ default: file.path(base.dir, "raw_data"), which is retrieved with:
+\code{config()["fastq"]}}
 
 \item{bam.dir}{directory where ORFik puts bam file directories,
-default: config()["bam"]}
+default: file.path(base.dir, "processed_data"), which is retrieved with:
+\code{config()["bam"]}}
 
 \item{reference.dir}{directory where ORFik puts reference file directories,
-default: config()["ref"]}
+default: file.path(base.dir, "references"), which is retrieved with:
+\code{config()["ref"]}}
 
 \item{exp.dir}{directory where ORFik puts experiment csv files,
-default: "~/Bio_data/ORFik_experiments/", which is retrieved with
+default: file.path(base.dir, "ORFik_experiments/"), which is retrieved with:
 \code{config()["exp"]}}
+
+\item{base.dir}{base directory for all output directories, default:
+"~/Bio_data"}
+
+\item{conf}{data.frame of complete conf object, default:
+data.frame(type = c("fastq", "bam", "ref", "exp"),
+ directory = c(fastq.dir, bam.dir, reference.dir, exp.dir))}
 }
 \value{
 invisible(NULL), file saved to disc
@@ -36,8 +49,11 @@ Defines a folder for fastq files (raw_data), bam files (processed data) and
 references (organism annotation and STAR index)
 }
 \examples{
-## Save at another config location
-config_location <- "/media/Bio_data/ORFik_config.csv"
-#config.save(config_location, "/media/Bio_data/raw_data/",
+# Overwrite default config, with new base directory for files
+#config.save(base.dir = "/media/Bio_data/") # Output files go here instead
+# of ~/Bio_data
+## Dont do this, but for understanding here is how to make a second config
+#new_config_path <- config_file(query = "ORFik_config_2")
+#config.save(new_config_path, "/media/Bio_data/raw_data/",
 # "/media/Bio_data/processed_data", /media/Bio_data/references/)
 }

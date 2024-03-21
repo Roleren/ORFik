@@ -3,8 +3,8 @@ library(ORFik)
 library(GenomicFeatures)
 samplefile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                           package = "GenomicFeatures")
-
-loadRegions(samplefile, c("leaders", "cds"))
+txdb <- loadTxdb(samplefile)
+loadRegions(txdb, c("leaders", "cds"))
 cds <- cds[names(leaders)] # Subset to cds with leaders
 
 cage <- GRanges(seqnames = as.character(seqnames(leaders)[1:2]),

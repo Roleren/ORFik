@@ -291,7 +291,11 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
       txdb <- txdbmaker::makeTxDbFromGFF(txdb)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
-    } else stop("when txdb is path, must be one of .gff, .gtf and .db")
+    } else {
+      stop("when txdb is path, must be one of:
+           gff - (.gff, .gff2, .gff3, .gtf)
+           txdb - (.db, .sqlite")
+    }
 
   } else if(!is(txdb, "TxDb")) stop("txdb must be path or TxDb")
   return(matchSeqStyle(txdb, chrStyle))
