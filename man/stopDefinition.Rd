@@ -27,8 +27,8 @@ stopDefinition(1)
 \seealso{
 Other findORFs: 
 \code{\link{findMapORFs}()},
-\code{\link{findORFsFasta}()},
 \code{\link{findORFs}()},
+\code{\link{findORFsFasta}()},
 \code{\link{findUORFs}()},
 \code{\link{startDefinition}()}
 }

@@ -13,9 +13,9 @@ this class combines the 2 strands into 1 object
 }
 \seealso{
 Other covRLE: 
+\code{\link{covRle}},
 \code{\link{covRleFromGR}()},
-\code{\link{covRleList-class}},
 \code{\link{covRleList}},
-\code{\link{covRle}}
+\code{\link{covRleList-class}}
 }
 \concept{covRLE}

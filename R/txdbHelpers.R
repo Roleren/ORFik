@@ -34,6 +34,7 @@
 #' @param return logical, default FALSE. If TRUE, return TXDB object, else NULL.
 #' @return NULL,  Txdb saved to disc named paste0(gtf, ".db").
 #' Set 'return' argument to TRUE, to get txdb back
+#' @importFrom txdbmaker makeTxDbFromGFF
 #' @export
 #' @examples
 #' gtf <- "/path/to/local/annotation.gtf"
@@ -61,8 +62,8 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
       isCircular(fa.seqinfo)["Mito"] <- TRUE
     }
 
-    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital,
-                                             chrominfo = fa.seqinfo)
+    txdb <- txdbmaker::makeTxDbFromGFF(gtf, organism = organismCapital,
+                                            chrominfo = fa.seqinfo)
 
     supported_species <- try(seqlevelsStyle(txdb)[1], silent = TRUE)
     if (!is(supported_species, "try-error")) {
@@ -74,7 +75,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
 
   } else {
-    txdb <- GenomicFeatures::makeTxDbFromGFF(gtf, organism = organismCapital)
+    txdb <- txdbmaker::makeTxDbFromGFF(gtf, organism = organismCapital)
   }
 
   pseudo5 <- pseudo_5UTRS_if_needed
@@ -270,6 +271,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' @inheritParams matchSeqStyle
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
+#' @importFrom txdbmaker makeTxDbFromGFF
 #' @export
 #' @examples
 #' library(GenomicFeatures)
@@ -286,7 +288,7 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
-      txdb <- GenomicFeatures::makeTxDbFromGFF(txdb)
+      txdb <- txdbmaker::makeTxDbFromGFF(txdb)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
     } else stop("when txdb is path, must be one of .gff, .gtf and .db")
@@ -317,7 +319,9 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
 #' @param skip.optimized logical, default FALSE. If TRUE, will not search for optimized
 #' rds files to load created from ORFik::makeTxdbFromGenome(..., optimize = TRUE). The
 #' optimized files are ~ 100x faster to load for human genome.
-#' @return a GrangesList of region
+#' @return a GRangesList of region
+#' @importFrom GenomicFeatures exonsBy cdsBy intronsByTranscript
+#' fiveUTRsByTranscript threeUTRsByTranscript
 #' @export
 #' @examples
 #' # GTF file is slow, but possible to use
@@ -475,6 +479,7 @@ loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
 #' @param txdb the transcript database to use or gtf/gff path to it.
 #' @return character vector of gene names
 #' @export
+#' @importFrom GenomicFeatures transcripts
 #' @examples
 #' gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
 #' txdb <- loadTxdb(gtf)
@@ -777,7 +782,8 @@ getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
 #' @export
 #' @examples
 #' gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-#' txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
+#' library(txdbmaker)
+#' txdb <- txdbmaker::makeTxDbFromGFF(gtf_file)
 #' txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
 #'                              minThreeUTR = 1)
 #' loadRegion(txdb, "mrna")[txNames]

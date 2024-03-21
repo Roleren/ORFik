@@ -94,6 +94,6 @@ df <- ORFik.template.experiment()
 Other lib_converters: 
 \code{\link{convert_bam_to_ofst}()},
 \code{\link{convert_to_bigWig}()},
-\code{\link{convert_to_covRleList}()},
-\code{\link{convert_to_covRle}()}
+\code{\link{convert_to_covRle}()},
+\code{\link{convert_to_covRleList}()}
 }

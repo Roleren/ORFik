@@ -147,7 +147,7 @@ DEG_model_simple <- function(df,
                              counts = countTable(df, "mrna", type = "summarized"),
                              batch.effect = FALSE) {
   # Design
-  main.design <- ORFik:::DEG_design(design[1], target.contrast, batch.effect)
+  main.design <- DEG_design(design[1], target.contrast, batch.effect)
   design_ids <- as.character(df[, target.contrast])
   ids <- rownames(counts)
   counts <- as.data.table(DESeq2::fpkm(DESeq2::DESeqDataSet(counts, ~ 1)))

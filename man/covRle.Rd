@@ -27,7 +27,7 @@ covRle(chr_rle, chr_rle)
 Other covRLE: 
 \code{\link{covRle-class}},
 \code{\link{covRleFromGR}()},
-\code{\link{covRleList-class}},
-\code{\link{covRleList}}
+\code{\link{covRleList}},
+\code{\link{covRleList-class}}
 }
 \concept{covRLE}

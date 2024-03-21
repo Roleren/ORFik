@@ -16,6 +16,8 @@
 #' @inheritParams coveragePerTiling
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a data.table with columns position, score
+#' @importFrom GenomicFeatures fiveUTRsByTranscript cdsBy threeUTRsByTranscript
+#' exonsBy 
 #' @keywords internal
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                 windowSize = 100, fraction = "1",
@@ -468,6 +470,7 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' @return a numeric RleList, one numeric-Rle per group with # of hits per position.
 #' Or data.table if as.data.table is TRUE,
 #' with column names c("count" [numeric or integer], "genes" [integer], "position" [integer])
+#' @importFrom GenomicFeatures coverageByTranscript
 #' @export
 #' @family ExtendGenomicRanges
 #' @examples

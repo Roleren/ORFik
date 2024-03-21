@@ -79,8 +79,8 @@ filepath(df[9,], "pshifted") # <- falls back to ofst
 }
 \seealso{
 Other ORFik_experiment: 
-\code{\link{ORFik.template.experiment.zf}()},
 \code{\link{ORFik.template.experiment}()},
+\code{\link{ORFik.template.experiment.zf}()},
 \code{\link{bamVarName}()},
 \code{\link{create.experiment}()},
 \code{\link{experiment-class}},

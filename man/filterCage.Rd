@@ -28,7 +28,7 @@ remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
 This is to keep original TSS if it is only +/- 5 bases from the original.}
 }
 \value{
-the filtered Granges object
+the filtered GRanges object
 }
 \description{
 Filter peak of cage-data by value

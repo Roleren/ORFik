@@ -70,8 +70,8 @@ Given as single window
 }
 \seealso{
 Other experiment plots: 
-\code{\link{transcriptWindowPer}()},
-\code{\link{transcriptWindow}()}
+\code{\link{transcriptWindow}()},
+\code{\link{transcriptWindowPer}()}
 }
 \concept{experiment plots}
 \keyword{internal}

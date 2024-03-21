@@ -2,7 +2,7 @@
 % Please edit documentation in R/ranges_helpers.R
 \name{txSeqsFromFa}
 \alias{txSeqsFromFa}
-\title{Get transcript sequence from a GrangesList and a faFile or BSgenome}
+\title{Get transcript sequence from a GRangesList and a faFile or BSgenome}
 \usage{
 txSeqsFromFa(grl, faFile, is.sorted = FALSE, keep.names = TRUE)
 }
