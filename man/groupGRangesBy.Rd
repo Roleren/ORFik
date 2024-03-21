@@ -12,7 +12,7 @@ groupGRangesBy(gr, other = NULL)
 \item{other}{a vector of unique names to group by (default: NULL)}
 }
 \value{
-a GRangesList named after names(Granges) if other is NULL, else
+a GRangesList named after names(GRanges) if other is NULL, else
 names are from unique(other)
 }
 \description{

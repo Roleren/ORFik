@@ -35,8 +35,8 @@ df <- df[df$libtype == "RFP",]
 Other pshifting: 
 \code{\link{changePointAnalysis}()},
 \code{\link{detectRibosomeShifts}()},
-\code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shiftFootprints}()},
+\code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shiftPlots}()}
 }
 \concept{pshifting}

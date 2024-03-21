@@ -63,7 +63,7 @@ fimport(file.path(folder_to_save, c("RFP_Mutant_rep2_forward.bigWig",
 Other lib_converters: 
 \code{\link{convertLibs}()},
 \code{\link{convert_bam_to_ofst}()},
-\code{\link{convert_to_covRleList}()},
-\code{\link{convert_to_covRle}()}
+\code{\link{convert_to_covRle}()},
+\code{\link{convert_to_covRleList}()}
 }
 \concept{lib_converters}

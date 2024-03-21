@@ -109,8 +109,8 @@ txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 \seealso{
 Other findORFs: 
 \code{\link{findMapORFs}()},
-\code{\link{findORFsFasta}()},
 \code{\link{findORFs}()},
+\code{\link{findORFsFasta}()},
 \code{\link{startDefinition}()},
 \code{\link{stopDefinition}()}
 }

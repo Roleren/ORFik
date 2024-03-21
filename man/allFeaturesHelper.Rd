@@ -34,7 +34,7 @@ or \code{\link{GRangesList}} object}
 \item{RNA}{RnaSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
 or \code{\link{GRangesList}} object}
 
-\item{tx}{a GrangesList of transcripts,
+\item{tx}{a GRangesList of transcripts,
 normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 only add this if you are not including Gtf file
 If you are using CAGE, you do not need to reassign these to the cage
@@ -45,7 +45,7 @@ extend 5' utrs, remember to input CAGE assigned version and not original!}
 
 \item{cds}{a GRangesList of coding sequences}
 
-\item{threeUTRs}{a GrangesList of transcript 3' utrs,
+\item{threeUTRs}{a GRangesList of transcript 3' utrs,
 normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 
 \item{faFile}{a path to fasta indexed genome, an open \code{\link{FaFile}},

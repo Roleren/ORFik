@@ -599,7 +599,7 @@ startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
 #' @param reads ribo seq reads as \code{\link{GAlignments}},
 #' GRanges or GRangesList object
 #' @param cds a \code{\link{GRangesList}} object with coding sequences
-#' @param tx a GrangesList of transcripts covering grl.
+#' @param tx a GRangesList of transcripts covering grl.
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
 #' @inheritParams getWeights
 #' @family features

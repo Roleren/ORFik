@@ -58,8 +58,8 @@ all in one.
 }
 \seealso{
 Other experiment plots: 
-\code{\link{transcriptWindow1}()},
-\code{\link{transcriptWindow}()}
+\code{\link{transcriptWindow}()},
+\code{\link{transcriptWindow1}()}
 }
 \concept{experiment plots}
 \keyword{internal}

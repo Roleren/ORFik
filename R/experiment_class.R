@@ -238,7 +238,8 @@ setMethod("envExp<-",
 #' organism(df)
 #'
 #' #' If you have not set the organism you can do:
-#' #txdb <- GenomicFeatures::makeTxDbFromGFF("pat/to/gff_or_gff")
+#' #library(txdbmaker)
+#' #txdb <- txdbmaker::makeTxDbFromGFF("pat/to/gff_or_gff")
 #' #BiocGenerics::organism(txdb) <- "Homo sapiens"
 #' #saveDb(txdb, paste0("pat/to/gff_or_gff", ".db"))
 #' # then use this txdb in you ORFik experiment and load:

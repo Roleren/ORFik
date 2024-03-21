@@ -80,8 +80,8 @@ doi: 10.1038/nbt.1621
 }
 \seealso{
 Other features: 
-\code{\link{computeFeaturesCage}()},
 \code{\link{computeFeatures}()},
+\code{\link{computeFeaturesCage}()},
 \code{\link{countOverlapsW}()},
 \code{\link{disengagementScore}()},
 \code{\link{distToCds}()},
@@ -99,8 +99,8 @@ Other features:
 \code{\link{rankOrder}()},
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{ribosomeStallingScore}()},
-\code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{startRegionCoverage}()},
 \code{\link{stopRegion}()},
 \code{\link{subsetCoverage}()},
 \code{\link{translationalEff}()}

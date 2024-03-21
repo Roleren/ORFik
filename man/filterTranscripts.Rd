@@ -73,7 +73,8 @@ Genes with gene_id = NA will be be removed.
 }
 \examples{
 gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-txdb <- GenomicFeatures::makeTxDbFromGFF(gtf_file)
+library(txdbmaker)
+txdb <- txdbmaker::makeTxDbFromGFF(gtf_file)
 txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
                              minThreeUTR = 1)
 loadRegion(txdb, "mrna")[txNames]

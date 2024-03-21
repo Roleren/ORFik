@@ -17,7 +17,7 @@ asTX(
 the reference, grl must have column called names that gives
 grouping for result}
 
-\item{reference}{a GrangesList of ranges that include and are bigger or
+\item{reference}{a GRangesList of ranges that include and are bigger or
 equal to grl ig. cds is grl and gene can be reference}
 
 \item{ignore.strand}{When ignore.strand is TRUE, strand is ignored in

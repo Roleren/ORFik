@@ -36,7 +36,7 @@ or \code{\link{GRangesList}} object}
 
 \item{Gtf}{a TxDb object of a gtf file or path to gtf, gff .sqlite etc.}
 
-\item{tx}{a GrangesList of transcripts,
+\item{tx}{a GRangesList of transcripts,
 normally called from: exonsBy(Gtf, by = "tx", use.names = T)
 only add this if you are not including Gtf file
 If you are using CAGE, you do not need to reassign these to the cage
@@ -47,7 +47,7 @@ extend 5' utrs, remember to input CAGE assigned version and not original!}
 
 \item{cds}{a GRangesList of coding sequences}
 
-\item{threeUTRs}{a GrangesList of transcript 3' utrs,
+\item{threeUTRs}{a GRangesList of transcript 3' utrs,
 normally called from: threeUTRsByTranscript(Gtf, use.names = T)}
 
 \item{faFile}{a path to fasta indexed genome, an open \code{\link{FaFile}},
@@ -141,8 +141,8 @@ Other features:
 \code{\link{distToTSS}()},
 \code{\link{entropy}()},
 \code{\link{floss}()},
-\code{\link{fpkm_calc}()},
 \code{\link{fpkm}()},
+\code{\link{fpkm_calc}()},
 \code{\link{fractionLength}()},
 \code{\link{initiationScore}()},
 \code{\link{insideOutsideORF}()},
@@ -153,8 +153,8 @@ Other features:
 \code{\link{rankOrder}()},
 \code{\link{ribosomeReleaseScore}()},
 \code{\link{ribosomeStallingScore}()},
-\code{\link{startRegionCoverage}()},
 \code{\link{startRegion}()},
+\code{\link{startRegionCoverage}()},
 \code{\link{stopRegion}()},
 \code{\link{subsetCoverage}()},
 \code{\link{translationalEff}()}

@@ -35,7 +35,7 @@ rds files to load created from ORFik::makeTxdbFromGenome(..., optimize = TRUE). 
 optimized files are ~ 100x faster to load for human genome.}
 }
 \value{
-a GrangesList of region
+a GRangesList of region
 }
 \description{
 Usefull to simplify loading of standard regions, like cds' and leaders.

@@ -223,11 +223,13 @@ defineIsoform <- function(
 #' 'transcript', isoform' and 'biotype'.
 #' @importFrom S4Vectors queryHits
 #' @importFrom S4Vectors subjectHits
+#' @importFrom GenomicFeatures exonsBy cdsBy
+#' @importFrom txdbmaker makeTxDbFromGFF
 #' @keywords internal
 assignAnnotations <- function(ORFs, con) {
 
     message("Loading annotations from gtf file")
-    txdb <- makeTxDbFromGFF(con, format = "gtf")
+    txdb <- txdbmaker::makeTxDbFromGFF(con, format = "gtf")
     gtf_annot <- rtracklayer::import(con, format = "gtf")
     gtf_annot <- gtf_annot[gtf_annot$type == "transcript"]
     transcript_df <- data.frame(gtf_annot$transcript_id, gtf_annot$gene_id,
