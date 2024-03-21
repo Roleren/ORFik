@@ -229,7 +229,7 @@ defineIsoform <- function(
 assignAnnotations <- function(ORFs, con) {
 
     message("Loading annotations from gtf file")
-    txdb <- txdbmaker::makeTxDbFromGFF(con, format = "gtf")
+    txdb <- loadTxdb(con)
     gtf_annot <- rtracklayer::import(con, format = "gtf")
     gtf_annot <- gtf_annot[gtf_annot$type == "transcript"]
     transcript_df <- data.frame(gtf_annot$transcript_id, gtf_annot$gene_id,

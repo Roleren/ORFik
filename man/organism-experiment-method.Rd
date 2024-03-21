@@ -21,13 +21,13 @@ df <- ORFik.template.experiment()
 organism(df)
 
 #' If you have not set the organism you can do:
-#library(txdbmaker)
-#txdb <- txdbmaker::makeTxDbFromGFF("pat/to/gff_or_gff")
-#BiocGenerics::organism(txdb) <- "Homo sapiens"
-#saveDb(txdb, paste0("pat/to/gff_or_gff", ".db"))
+#gtf <- "pat/to/gff_or_gff"
+#txdb_path <- paste0(gtf, ".db") # This file is created in next step
+#txdb <- makeTxdbFromGenome(gtf, genome, organism = "Homo sapiens",
+# optimize = TRUE, return = TRUE)
 # then use this txdb in you ORFik experiment and load:
 # create.experiment(exper = "new_experiment",
-#   txdb = paste0("pat/to/gff_or_gff", ".db")) ...
+#   txdb = txdb_path) ...
 # organism(read.experiment("new-experiment))
 }
 \seealso{

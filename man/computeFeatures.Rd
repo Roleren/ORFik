@@ -119,14 +119,14 @@ See \code{\link{getWeights}}
 # Usually the ORFs are found in orfik, which makes names for you etc.
 gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf",
  package = "ORFik") ## location of the gtf file
-library(txdbmaker)
-suppressWarnings(txdb <- txdbmaker::makeTxDbFromGFF(gtf, format = "gtf"))
+
+suppressWarnings(txdb <- loadTxdb(gtf))
 # use cds' as ORFs for this example
-ORFs <- GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
+ORFs <- loadRegion(txdb, "cds")
 ORFs <- makeORFNames(ORFs) # need ORF names
 # make Ribo-seq data,
 RFP <- unlistGrl(firstExonPerGroup(ORFs))
-suppressWarnings(computeFeatures(ORFs, RFP, Gtf = txdb))
+computeFeatures(ORFs, RFP, Gtf = txdb)
 # For more details see vignettes.
 
 }
