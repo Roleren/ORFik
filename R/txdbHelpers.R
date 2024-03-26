@@ -271,14 +271,14 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #' @inheritParams matchSeqStyle
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
-#' @importFrom txdbmaker makeTxDbFromGFF
+#' @importFrom txdbmaker makeTxDbFromGFF makeTxDb
 #' @export
 #' @examples
 #' library(GenomicFeatures)
 #' # Get the gtf txdb file
 #' txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
 #'                         package = "GenomicFeatures")
-#' txdb <- loadDb(txdbFile)
+#' txdb <- loadTxdb(txdbFile)
 #'
 loadTxdb <- function(txdb, chrStyle = NULL) {
   if (is(txdb, "experiment")) {
@@ -297,7 +297,14 @@ loadTxdb <- function(txdb, chrStyle = NULL) {
            txdb - (.db, .sqlite")
     }
 
-  } else if(!is(txdb, "TxDb")) stop("txdb must be path or TxDb")
+  } else if (is.list(txdb)) {
+    must_have_cols <- c("transcripts", "splicings", "genes", "chrominfo")
+    if (!all(must_have_cols %in% names(txdb))) {
+      stop("When txdb is list input, must have names:",
+           paste(must_have_cols, collapse = ", "))
+    }
+    return(do.call(txdbmaker::makeTxDb, txdb))
+  } else if(!is(txdb, "TxDb")) stop("txdb must be path, list or TxDb")
   return(matchSeqStyle(txdb, chrStyle))
 }
 

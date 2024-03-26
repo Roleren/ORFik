@@ -277,8 +277,6 @@ reassignTSSbyCage <- function(fiveUTRs, cage, extension = 1000,
 #' @inheritParams loadTxdb
 #' @inheritParams reassignTSSbyCage
 #' @importFrom data.table setkeyv
-#' @importFrom GenomicFeatures fiveUTRsByTranscript
-#' @importFrom txdbmaker makeTxDb
 #' @family CAGE
 #' @export
 #' @examples
@@ -296,7 +294,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
                                filterValue = 1, restrictUpstreamToTx = FALSE,
                                removeUnused = FALSE, preCleanup = TRUE) {
   txdb <- loadTxdb(txdb)
-  fiveUTRs <- fiveUTRsByTranscript(txdb, use.names = TRUE)
+  fiveUTRs <- loadRegion(txdb, "leaders")
   fiveUTRs <- reassignTSSbyCage(fiveUTRs, cage, extension, filterValue,
                                 restrictUpstreamToTx, removeUnused, preCleanup)
 
@@ -316,7 +314,7 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
                                                              "GenomicFeatures version at creation time")),]
   txList$metadata <- original_meta
 
-  return(do.call(txdbmaker::makeTxDb, txList))
+  return(loadTxdb(txList))
 }
 
 #' Input a txdb and add a 5' leader for each transcript, that does not have one.
@@ -341,7 +339,6 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' it would make it go outside the defined seqlengths of the genome.
 #' So this length is not guaranteed for all!
 #' @importFrom data.table setkeyv
-#' @importFrom txdbmaker makeTxDb
 #' @family CAGE
 #' @return a TxDb obect of reassigned transcripts
 #' @export
@@ -419,5 +416,5 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
                                                              "RSQLite version at creation time",
                                                              "GenomicFeatures version at creation time")),]
   txList$metadata <- original_meta
-  return(do.call(txdbmaker::makeTxDb, txList))
+  return(loadTxdb(txList))
 }

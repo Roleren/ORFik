@@ -32,6 +32,6 @@ library(GenomicFeatures)
 # Get the gtf txdb file
 txdbFile <- system.file("extdata", "hg19_knownGene_sample.sqlite",
                         package = "GenomicFeatures")
-txdb <- loadDb(txdbFile)
+txdb <- loadTxdb(txdbFile)
 
 }
