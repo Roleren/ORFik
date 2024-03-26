@@ -4,7 +4,7 @@
 \alias{loadTxdb}
 \title{General loader for txdb}
 \usage{
-loadTxdb(txdb, chrStyle = NULL)
+loadTxdb(txdb, chrStyle = NULL, organism = NA, chrominfo = NULL)
 }
 \arguments{
 \item{txdb}{a TxDb file, a path to one of:
@@ -20,6 +20,12 @@ Is chromosome 1 called chr1 or 1,
  is mitocondrial chromosome called MT or chrM etc.
 Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
+
+\item{organism}{character, default NA. Scientific name of organism.
+Only used if input is path to gff.}
+
+\item{chrominfo}{Seqinfo object, default NULL.
+Only used if input is path to gff.}
 }
 \value{
 a TxDb object

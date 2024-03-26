@@ -34,7 +34,6 @@
 #' @param return logical, default FALSE. If TRUE, return TXDB object, else NULL.
 #' @return NULL,  Txdb saved to disc named paste0(gtf, ".db").
 #' Set 'return' argument to TRUE, to get txdb back
-#' @importFrom txdbmaker makeTxDbFromGFF
 #' @export
 #' @examples
 #' gtf <- "/path/to/local/annotation.gtf"
@@ -62,8 +61,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
       isCircular(fa.seqinfo)["Mito"] <- TRUE
     }
 
-    txdb <- txdbmaker::makeTxDbFromGFF(gtf, organism = organismCapital,
-                                            chrominfo = fa.seqinfo)
+    txdb <- loadTxdb(gtf, organism = organismCapital, chrominfo = fa.seqinfo)
 
     supported_species <- try(seqlevelsStyle(txdb)[1], silent = TRUE)
     if (!is(supported_species, "try-error")) {
@@ -75,7 +73,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
 
   } else {
-    txdb <- txdbmaker::makeTxDbFromGFF(gtf, organism = organismCapital)
+    txdb <- loadTxdb(gtf, organism = organismCapital)
   }
 
   pseudo5 <- pseudo_5UTRS_if_needed
@@ -269,6 +267,10 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite)
 #'  or an ORFik experiment
 #' @inheritParams matchSeqStyle
+#' @param organism character, default NA. Scientific name of organism.
+#'  Only used if input is path to gff.
+#' @param chrominfo Seqinfo object, default NULL.
+#'  Only used if input is path to gff.
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
 #' @importFrom txdbmaker makeTxDbFromGFF makeTxDb
@@ -280,7 +282,8 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'                         package = "GenomicFeatures")
 #' txdb <- loadTxdb(txdbFile)
 #'
-loadTxdb <- function(txdb, chrStyle = NULL) {
+loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
+                     chrominfo = NULL) {
   if (is(txdb, "experiment")) {
     txdb <- txdb@txdb
   }
