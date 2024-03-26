@@ -221,10 +221,7 @@ defineIsoform <- function(
 #' @param con - Path to gtf file with annotations.
 #' @return A GRanges object of your ORFs with metadata columns 'gene',
 #' 'transcript', isoform' and 'biotype'.
-#' @importFrom S4Vectors queryHits
-#' @importFrom S4Vectors subjectHits
-#' @importFrom GenomicFeatures exonsBy cdsBy
-#' @importFrom txdbmaker makeTxDbFromGFF
+#' @importFrom S4Vectors queryHits subjectHits
 #' @keywords internal
 assignAnnotations <- function(ORFs, con) {
 
@@ -241,7 +238,7 @@ assignAnnotations <- function(ORFs, con) {
       c("transcript_id", "transcript_biotype")]), ]
 
     # find out overlaping transcripts
-    transcripts <- exonsBy(txdb, by = "tx", use.names = TRUE)
+    transcripts <- loadRegion(txdb)
     transcripts_hits <- findOverlaps(ORFs, transcripts, type = "any")
     t_names <- names(transcripts)
     t_names <- t_names[subjectHits(transcripts_hits)]
@@ -266,7 +263,7 @@ assignAnnotations <- function(ORFs, con) {
 
     newIsoforms_p <- c()
     newIsoforms_o <- c()
-    cds <- cdsBy(txdb, by = "tx", use.names = TRUE)
+    cds <- loadRegion(txdb, "cds")
     p_coding <- newORFs[newORFs$transcript_biotype == "protein_coding"]
     other_coding <- newORFs[newORFs$transcript_biotype != "protein_coding"]
     message("Preparing annotations for ORFs overlapping coding regions...")
