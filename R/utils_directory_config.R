@@ -40,7 +40,8 @@ config.exper <- function(experiment, assembly, type,
 #' 3. references (organism annotation and STAR index)\cr
 #' 4. experiments (Location to store and load all \code{\link{experiment}} .csv files)
 #' Update or use another config using \code{config.save()} function.
-#' @param file location of config csv, default: config_file(old_config_location)
+#' @param file location of config csv, default:
+#'  config_file(old_config_location = old_config_location)
 #' @inheritParams config_file
 #' @return a named character vector of length 3
 #' @import BiocFileCache
@@ -48,7 +49,7 @@ config.exper <- function(experiment, assembly, type,
 #' @examples
 #' ## Make with default config path
 #' #config()
-config <- function(file = config_file(old_config_location),
+config <- function(file = config_file(old_config_location = old_config_location),
                    old_config_location = "~/Bio_data/ORFik_config.csv") {
 
   make_config <- names(file) == "new"

@@ -16,7 +16,8 @@ config.save(
 )
 }
 \arguments{
-\item{file}{location of config csv, default: config_file(old_config_location)}
+\item{file}{location of config csv, default:
+config_file(old_config_location = old_config_location)}
 
 \item{fastq.dir}{directory where ORFik puts fastq file directories,
  default: file.path(base.dir, "raw_data"), which is retrieved with:

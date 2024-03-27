@@ -5,12 +5,13 @@
 \title{Read directory config for ORFik experiments}
 \usage{
 config(
-  file = config_file(old_config_location),
+  file = config_file(old_config_location = old_config_location),
   old_config_location = "~/Bio_data/ORFik_config.csv"
 )
 }
 \arguments{
-\item{file}{location of config csv, default: config_file(old_config_location)}
+\item{file}{location of config csv, default:
+config_file(old_config_location = old_config_location)}
 
 \item{old_config_location}{path, old config location before BiocFileCache
 implementation.
