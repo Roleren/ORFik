@@ -16,10 +16,12 @@ an ORFik \code{\link{experiment}}
 \description{
 Toy-data created to resemble human genes:\cr
 Number of genes: 6\cr
-Ribo-seq: 2 libraries
-RNA-seq: 2 libraries
-CAGE: 1 library
-PAS (poly-A): 1 library
+Genome size: 1161nt x 6 chromosomes = 6966 nt\cr
+Experimental design (2 replicates, Wild type vs Mutant)\cr
+CAGE: 4 libraries\cr
+PAS (poly-A): 4 libraries\cr
+Ribo-seq: 4 libraries\cr
+RNA-seq: 4 libraries\cr
 }
 \examples{
 ORFik.template.experiment()

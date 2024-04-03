@@ -329,9 +329,9 @@ pcaExperiment <- function(df, output.dir = NULL,
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()
-#' df <- df[3,] #lets only p-shift RFP sample at index 3
+#' df <- df[9,] #lets only p-shift RFP sample at index 9
 #' #shiftFootprintsByExperiment(df)
-#' #RiboQC.plot(df)
+#' #RiboQC.plot(df, tempdir())
 RiboQC.plot <- function(df, output.dir = QCfolder(df),
                         width = 6.6, height = 4.5, plot.ext = ".pdf",
                         type = "pshifted", weight = "score", bar.position = "dodge",
@@ -381,6 +381,9 @@ RiboQC.plot <- function(df, output.dir = QCfolder(df),
     ylab("percent") +
     facet_wrap(  ~ fraction, ncol = 1, scales = "free_y") +
     scale_y_continuous(breaks = c(15, 35))
+  if (length(unique(frame_sum_per$length)) > 14) {
+    gg_frame_per_stack <- gg_frame_per_stack + scale_x_continuous(n.breaks = 9)
+  }
   gg_frame_per_stack
 
   # content: all_tx_types > 1%

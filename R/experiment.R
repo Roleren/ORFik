@@ -860,13 +860,15 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
 #' @examples
 #' ORFik.template.experiment.zf()
 ORFik.template.experiment.zf <- function(as.temp = FALSE) {
-  dir <- system.file("extdata/Danio_rerio_sample", "", package = "ORFik")
+  sample_dir <- system.file("extdata/Danio_rerio_sample", "", package = "ORFik")
   # 2. Pick an experiment name
   exper <- "ORFik"
   # 3. Pick .gff/.gtf location
-  txdb <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-  fa <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
-  template <- create.experiment(dir = dir, saveDir = NULL,
+  txdb <- system.file("extdata/references/danio_rerio",
+                      "annotations.gtf", package = "ORFik")
+  fa <- system.file("extdata/references/danio_rerio",
+                    "genome_dummy.fasta", package = "ORFik")
+  template <- create.experiment(dir = sample_dir, saveDir = NULL,
                                 exper, txdb = txdb, fa = fa,
                                 organism = "Danio rerio",
                                 author = "Tjeldnes",
@@ -880,10 +882,12 @@ ORFik.template.experiment.zf <- function(as.temp = FALSE) {
 #'
 #' Toy-data created to resemble human genes:\cr
 #' Number of genes: 6\cr
-#' Ribo-seq: 2 libraries
-#' RNA-seq: 2 libraries
-#' CAGE: 1 library
-#' PAS (poly-A): 1 library
+#' Genome size: 1161nt x 6 chromosomes = 6966 nt\cr
+#' Experimental design (2 replicates, Wild type vs Mutant)\cr
+#' CAGE: 4 libraries\cr
+#' PAS (poly-A): 4 libraries\cr
+#' Ribo-seq: 4 libraries\cr
+#' RNA-seq: 4 libraries\cr
 #' @param as.temp logical, default FALSE, load as ORFik experiment.
 #' If TRUE, loads as data.frame template of the experiment.
 #' @return an ORFik \code{\link{experiment}}
@@ -892,13 +896,15 @@ ORFik.template.experiment.zf <- function(as.temp = FALSE) {
 #' @examples
 #' ORFik.template.experiment()
 ORFik.template.experiment <- function(as.temp = FALSE) {
-  dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
+  sample_dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
   # 2. Pick an experiment name
   exper <- "ORFik"
   # 3. Pick .gff/.gtf location
-  txdb <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
-  fa <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.fasta", package = "ORFik")
-  template <- create.experiment(dir = dir, saveDir = NULL,
+  txdb <- system.file("extdata/references/homo_sapiens",
+                      "Homo_sapiens_dummy.gtf.db", package = "ORFik")
+  fa <- system.file("extdata/references/homo_sapiens",
+                    "Homo_sapiens_dummy.fasta", package = "ORFik")
+  template <- create.experiment(dir = sample_dir, saveDir = NULL,
                                 exper, txdb = txdb, fa = fa,
                                 organism = "Homo sapiens",
                                 author = "Tjeldnes",

@@ -56,7 +56,7 @@ Combines several statistics from the pshifted reads into a plot:\cr
 }
 \examples{
 df <- ORFik.template.experiment()
-df <- df[3,] #lets only p-shift RFP sample at index 3
+df <- df[9,] #lets only p-shift RFP sample at index 9
 #shiftFootprintsByExperiment(df)
-#RiboQC.plot(df)
+#RiboQC.plot(df, tempdir())
 }
