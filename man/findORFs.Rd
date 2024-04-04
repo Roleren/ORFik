@@ -85,7 +85,7 @@ orfs <- findORFs(seq, longestORF = FALSE)
 #  you can get sequences like this:
 gr <- unlist(orfs, use.names = TRUE)
 gr <- GRanges(seqnames = names(seq)[as.integer(names(gr))],
- ranges(gr), strand = "+")
+ ranges = gr, strand = "+")
 # Give them some proper names:
 names(gr) <- paste0("ORF_", seq.int(length(gr)), "_", seqnames(gr))
 orf_seqs <- getSeq(seq, gr)

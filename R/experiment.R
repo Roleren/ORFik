@@ -97,7 +97,7 @@ validateExperiments <- function(df) {
 
   emptyFiles <- file.size(files) == 0
   if (any(is.na(emptyFiles))) {
-    message("Error in experiment:", df@experiment)
+    message("Error in experiment:", name(df))
     stop(paste("File does not exist:\n", files[is.na(emptyFiles)]))
   }
 

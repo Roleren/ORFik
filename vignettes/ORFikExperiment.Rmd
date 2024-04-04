@@ -57,9 +57,9 @@ The minimal amount of information you need to make an ORFik experiment is:
 # 1. Pick directory (normally a folder with your aligned bam files)
 NGS.dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
 # 2. .gff/.gtf location
-txdb <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
+txdb <- system.file("extdata/references/homo_sapiens", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
 # 3. fasta genome location
-fasta <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.fasta", package = "ORFik")
+fasta <- system.file("extdata/references/homo_sapiens", "Homo_sapiens_dummy.fasta", package = "ORFik")
 # 4. Pick an experiment name
 exper.name <- "ORFik_example_human"
 
