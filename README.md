@@ -31,25 +31,25 @@ entropy that are recreated based on scientific publications.
 
 
 #### Installation
-Package is available from bioconductor (3.14, R version >= 4.0.0)
+Package is available from bioconductor (Stable branch, R version >= 4.0.0)
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
 BiocManager::install("ORFik")
 ```
 
-Development version on bioconductor (3.15, R version >= 4.0.0)
+Development version on bioconductor (Devel branch, R version >= 4.0.0)
 ```r
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
 BiocManager::install("ORFik", version = "devel")
 ```  
 
-Package is also available here on github
+Package is also available here on github (Experimental branch, R version >= 4.1.0)
 ```r
-if (!requireNamespace("devtools", quietly=TRUE))
-    install.packages("devtools")
-devtools::install_github("Roleren/ORFik")
+if (!requireNamespace("remotes", quietly=TRUE))
+    install.packages("remotes")
+remotes::install_github("Roleren/ORFik")
 ```  
 
 #### More information

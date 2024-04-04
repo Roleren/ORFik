@@ -8,7 +8,7 @@
 #' the output paths of your completed genome/annotation downloads.
 #' For most non-model nonvertebrate organisms, you need
 #' my fork of biomartr for it to work:
-#' devtools::install_github("Roleren/biomartr)
+#' remotes::install_github("Roleren/biomartr)
 #' If you misspelled something or crashed, delete wrong files and
 #' run again.\cr
 #' Do remake = TRUE, to do it all over again.\cr

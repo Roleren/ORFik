@@ -147,9 +147,11 @@ dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
 # 2. Pick an experiment name
 exper <- "ORFik"
 # 3. Pick .gff/.gtf location
-txdb <- system.file("extdata/references/homo_sapiens", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
+txdb <- system.file("extdata/references/homo_sapiens",
+                    "Homo_sapiens_dummy.gtf.db", package = "ORFik")
 # 4. Pick fasta genome of organism
-fa <- system.file("extdata/references/homo_sapiens", "Homo_sapiens_dummy.fasta", package = "ORFik")
+fa <- system.file("extdata/references/homo_sapiens",
+                  "Homo_sapiens_dummy.fasta", package = "ORFik")
 # 5. Set organism (optional)
 org <- "Homo sapiens"
 
