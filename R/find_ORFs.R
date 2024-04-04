@@ -295,7 +295,7 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
   if (is(filePath, "character")) {
     filePath <- path.expand(filePath)
     if (!file.exists(filePath)) stop("'file' does not exist, check working dir!",
-                                     "If you wanted to pass character sequences",
+                                     " If you wanted to pass character sequences",
                                      "from R, convert to DNAStringSet!")
     gr <- findORFs_fasta(as.character(readDNAStringSet(filePath), use.names = TRUE),
                          startCodon, stopCodon, minimumLength,
