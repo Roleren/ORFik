@@ -51,8 +51,8 @@ config.exper <- function(experiment, assembly, type,
 #' #config()
 config <- function(file = config_file(old_config_location = old_config_location),
                    old_config_location = "~/Bio_data/ORFik_config.csv") {
-
-  make_config <- names(file) == "new"
+  make_config <- (!is.null(names(file)) && names(file) == "new") |
+    !file.exists(file)
 
   if (make_config) {
     message("--------------------------------")
@@ -75,8 +75,9 @@ config <- function(file = config_file(old_config_location = old_config_location)
   stopifnot(colnames(dt) == c("type", "directory"))
   old_config_format <- nrow(dt) == 3
   if (old_config_format) {
-    dt <- rbind(dt, data.table(type = "exp",
-                               directory = "~/Bio_data/ORFik_experiments/"))
+    exp_dir <- file.path(dirname(dt$directory[1]), "ORFik_experiments/")
+    message("Setting new exp dir in config to: ", exp_dir)
+    dt <- rbind(dt, data.table(type = "exp", directory = exp_dir))
     config.save(file, conf = dt)
   }
 

@@ -243,7 +243,8 @@ function findPairs()
 		b="$f/${myArray[x+1]}"
 		i=$((x + 2))
 		if [[ $i == $numOfFiles ]];then
-			keep="n"
+		  echo "Starting last run:"
+			keep="n" # i.e. last file
 		fi
 
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
@@ -270,7 +271,8 @@ function findPairsSub()
 		b="${myArray[x+1]}"
 		i=$((x + 2))
 		if [[ $i == $numOfFiles ]];then
-			keep="n"
+		  echo "Starting last run:"
+			keep="n" # i.e. last file
 		fi
 
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"

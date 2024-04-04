@@ -252,12 +252,36 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @family STAR
 #' @export
 #' @examples
-#' # First specify directories wanted
-#' annotation.dir <- "~/Bio_data/references/Human"
-#' fastq.input.dir <- "~/Bio_data/raw_data/Ribo_seq_subtelny/"
-#' bam.output.dir <- "~/Bio_data/processed_data/Ribo_seq_subtelny_2014/"
+#' # First specify directories wanted (temp directory here)
+#' config_file <- tempfile()
+#' #config.save(config_file, base.dir = tempdir())
+#' #config <- ORFik::config(config_file)
 #'
-#' ## Download some SRA data and metadata
+#' ## Yeast RNA-seq samples (small genome)
+#' #project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
+#' #annotation.dir <- project["ref"]
+#' #fastq.input.dir <- project["fastq RNA-seq"]
+#' #bam.output.dir <- project["bam RNA-seq"]
+#'
+#' ## Download some SRA data and metadata (subset to 50k reads)
+#' # info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
+#' # info <- info[1:2,] # Subset to 2 first libraries
+#' # download.SRA(info, fastq.input.dir, rename = FALSE, subset = 50000)
+#'
+#' ## No contaminant depletion:
+#' # annotation <- getGenomeAndAnnotation("Saccharomyces cerevisiae", annotation.dir)
+#' # index <- STAR.index(annotation)
+#' # STAR.align.folder(fastq.input.dir, bam.output.dir,
+#' #                   index, paired.end = FALSE) # Trim, then align to genome
+#'
+#' ## Human Ribo-seq sample (NB! very large genome and libraries!)
+#' ## Requires >= 32 GB memory
+#' #project <- ORFik::config.exper("subtelny_2014", "Homo_sapiens", "Ribo-seq", config)
+#' #annotation.dir <- project["ref"]
+#' #fastq.input.dir <- project["fastq Ribo-seq"]
+#' #bam.output.dir <- project["bam Ribo-seq"]
+#'
+#' ## Download some SRA data and metadata (full libraries)
 #' # info <- download.SRA.metadata("DRR041459", fastq.input.dir)
 #' # download.SRA(info, fastq.input.dir, rename = FALSE)
 #' ## Now align 2 different ways, without and with contaminant depletion
@@ -355,18 +379,40 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' @param file2 default NULL, set if paired end to R2 file. Allowed formats are:
 #' (.fasta, .fastq, .fq, or.fa) with or without compression of .gz. This filename usually
 #'  contains a suffix of .2
+#' @param keep.index.in.memory logical or character, default FALSE (i.e. LoadAndRemove).
+#' If TRUE, will keep index in memory, useful if you need to loop over single calls,
+#' instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
+#' Alternative useful for MAC machines especially is "noShared", for machines
+#' that do not support shared memory index, usually gives error: "abort trap 6".
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
 #' @export
 #' @examples
 #'
-#' ## Specify output libraries:
-#' output.dir <- "/Bio_data/references/Human"
-#' bam.dir <- "data/processed/human_rna_seq"
-#' # arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
-#' # index <- STAR.index(arguments, output.dir)
-#' # STAR.align.single("data/raw_data/human_rna_seq/file1.bam", bam.dir,
-#' #                    index)
+#' ## Specify output libraries (using temp config)
+#' config_file <- tempfile()
+#' #config.save(config_file, base.dir = tempdir())
+#' #config <- ORFik::config(config_file)
+#' #project <- ORFik::config.exper("yeast_1", "Saccharomyces_cerevisiae", "RNA-seq", config)
+#' # Get genome of yeast (quite small)
+#' # arguments <- getGenomeAndAnnotation("Saccharomyces cerevisiae", project["ref"])
+#' # index <- STAR.index(arguments)
+#'
+#' ## Make fake reads
+#' #genome <- readDNAStringSet(arguments["genome"])
+#' #which_chromosomes <- sample(seq_along(genome), 1000, TRUE, prob = width(genome))
+#' #nt50_windows <- lapply(which_chromosomes, function(x)
+#' # {window <- sample(width(genome[x]) - 51, 1); genome[[x]][seq(window, window+49)]})
+#' #nt50_windows <- DNAStringSet(nt50_windows)
+#' #names(nt50_windows) <- paste0("read_", seq_along(nt50_windows))
+#' #dir.create(project["fastq RNA-seq"], recursive = TRUE)
+#' #fake_fasta <- file.path(project["fastq RNA-seq"], "fake-RNA-seq.fasta")
+#' #writeXStringSet(nt50_windows, fake_fasta, format = "fasta")
+#' ## Align the fake reads and import bam
+#' # STAR.align.single(fake_fasta, NULL, project["bam RNA-seq"], index, steps = "ge")
+#' #bam_file <- list.files(file.path(project["bam RNA-seq"], "aligned"),
+#' #  pattern = "\\.bam$", full.names = TRUE)
+#' #fimport(bam_file)
 STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
                               steps = "tr-ge", adapter.sequence = "auto",
@@ -377,6 +423,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, resume = NULL, keep.contaminants = FALSE,
                               keep.unaligned.genome = FALSE,
+                              keep.index.in.memory = FALSE,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
                                                    package = "ORFik")
@@ -386,20 +433,25 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   if (!dir.exists(index.dir))
     stop("STAR index path must be a valid directory called /STAR_index")
   stopifnot(alignment.type %in% c("Local", "EndToEnd"))
-  stopifnot(is.logical(allow.introns))
+  stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
+  stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
 
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
   quality.filtering <- ifelse(quality.filtering, "-q default", "")
+  keep.index.in.memory <- ifelse(is.logical(keep.index.in.memory),
+                                 ifelse(keep.index.in.memory, "y", "n"),
+                                 keep.index.in.memory)
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
   full <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-A", alignment.type, "-m", max.cpus,
-                "-M", max.multimap, quality.filtering,
+                "-M", max.multimap,
+                "-k", keep.index.in.memory, quality.filtering,
                 keep.contaminants, keep.unaligned.genome,
                 star.path, fastp)
   if (.Platform$OS.type == "unix") {
@@ -514,6 +566,7 @@ install.fastp <- function(folder = "~/bin") {
   if (!is_linux) { # For mac os
     message("On mac OS, must build fastp, since no precompiled binaries exists")
     message("This will only be done once")
+    message("If this fails, please install using conda, and use the path to the conda installation")
     utils::unzip(path, exdir = folder)
     system(paste0("make -C ", folder, "/fastp-master/"))
     path <- paste0(folder, "/fastp-master/fastp")

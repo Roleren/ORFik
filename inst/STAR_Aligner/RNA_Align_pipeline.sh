@@ -398,6 +398,7 @@ function keepOrNot()
 	elif [[ "$1" == "noShared" ]]; then
 	  echo NoSharedMemory
 	else
+	  echo "Error: STAR keep.index.in.memory must be y, n or noShared"
 		exit 1
 	fi
 }

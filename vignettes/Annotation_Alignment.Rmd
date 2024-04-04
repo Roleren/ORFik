@@ -137,7 +137,7 @@ For small organisms like yeast, they don't have a primary assembly, so use "topl
   annotation <- getGenomeAndAnnotation(
                       organism = organism,
                       output.dir = conf["ref"],
-                      assembly_type = "toplevel"
+                      assembly_type = "toplevel" # Usually leave this to "auto"
                       )
 ```
 The function will also create a txdb object to speed up loading of gtf annotation, and index your genome to a .fai file (fasta index),
