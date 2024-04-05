@@ -491,7 +491,7 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
 #' @export
 #' @examples
 #' # Some fasta genome with existing fasta index in same folder
-#' path <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
+#' path <- system.file("extdata/references/danio_rerio", "genome_dummy.fasta", package = "ORFik")
 #' findFa(path)
 #'
 findFa <- function(faFile) {

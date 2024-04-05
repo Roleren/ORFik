@@ -795,8 +795,8 @@ getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
 #' @return a character vector of valid transcript names
 #' @export
 #' @examples
-#' gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-#' txdb <- loadTxdb(gtf_file)
+#' df <- ORFik.template.experiment.zf()
+#' txdb <- loadTxdb(df)
 #' txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
 #'                              minThreeUTR = 1)
 #' loadRegion(txdb, "mrna")[txNames]

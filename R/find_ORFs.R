@@ -277,7 +277,7 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' @family findORFs
 #' @examples
 #' # location of the example fasta file
-#' example_genome <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta",
+#' example_genome <- system.file("extdata/references/danio_rerio", "genome_dummy.fasta",
 #'  package = "ORFik")
 #' orfs <- findORFsFasta(example_genome)
 #' # To store ORF sequences (you need indexed genome .fai file):
