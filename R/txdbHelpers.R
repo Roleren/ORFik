@@ -495,8 +495,8 @@ loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
 #' @export
 #' @importFrom GenomicFeatures transcripts
 #' @examples
-#' gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-#' txdb <- loadTxdb(gtf)
+#' df <- ORFik.template.experiment()
+#' txdb <- loadTxdb(df)
 #' loadRegions(txdb, "cds") # using tx names
 #' txNamesToGeneNames(cds, txdb)
 #' # Identical to:
