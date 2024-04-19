@@ -15,7 +15,9 @@
 #' @export
 #' @return named character vector of paths for experiment
 #' @examples
-#' ## Save to default config location
+#' # Where should files go in general?
+#' ORFik::config()
+#' # Paths for project: "Alexaki_Human" containing Ribo-seq and RNA-seq:
 #' #config.exper("Alexaki_Human", "Homo_sapiens_GRCh38_101", c("Ribo-seq", "RNA-seq"))
 config.exper <- function(experiment, assembly, type,
                          config = ORFik::config()) {

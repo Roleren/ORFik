@@ -130,6 +130,7 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
       param_header <- ScanBamParam(what = "qname")
     } else {
       param_header <- param
+      bamTag(param_header) <- character(0) # Else tags can be loaded too
       bamWhat(param_header) <- "qname"
     }
     headers <- unlist(scanBam(path, param = param_header),
@@ -142,6 +143,10 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
       as.integer(gsub(".*_x", "", headers))
     } else {
       as.integer(gsub(".*-", "", headers))
+    }
+    if (anyNA(scores)) {
+      stop("Bam file was read as collapsed bam with score column in qname,
+           but score format contains NA values, report on github if you need help.")
     }
     bam <- matchSeqStyle(readGAlignments(path, param = param), chrStyle)
     if (ncol(mcols(bam)) > 0) {
