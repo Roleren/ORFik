@@ -257,6 +257,7 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
 #' Can be used to automize re-shifting of read lengths (find read lengths
 #' where frame 0 is not the best frame over the entire cds)
 #' @inheritParams RiboQC.plot
+#' @param orfs GRangesList, default loadRegion(df, part = "cds")
 #' @return data.table with columns: fraction (library) frame (0, 1, 2)
 #' score (coverage) length (read length)
 #'    percent (coverage percentage of library)
@@ -269,9 +270,10 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
 #' ## Check that frame 0 is best frame for all
 #' all(dt[frame == 0,]$best_frame)
 orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
+                                  orfs = loadRegion(df, part = "cds"),
                                   BPPARAM = BiocParallel::bpparam()) {
   outputLibs(df, type = type)
-  cds <- loadRegion(df, part = "cds")
+  cds <- orfs
   libs <- bamVarName(df)
 
   # Frame distribution over all

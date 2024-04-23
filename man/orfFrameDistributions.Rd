@@ -8,6 +8,7 @@ orfFrameDistributions(
   df,
   type = "pshifted",
   weight = "score",
+  orfs = loadRegion(df, part = "cds"),
   BPPARAM = BiocParallel::bpparam()
 )
 }
@@ -18,6 +19,8 @@ orfFrameDistributions(
 warning if not pshifted might crash if too many read lengths!}
 
 \item{weight}{which column in reads describe duplicates, default "score".}
+
+\item{orfs}{GRangesList, default loadRegion(df, part = "cds")}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
