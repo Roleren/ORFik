@@ -11,18 +11,22 @@ findMapORFs(
   stopCodon = stopDefinition(1),
   longestORF = TRUE,
   minimumLength = 0,
-  groupByTx = FALSE
+  groupByTx = FALSE,
+  grl_is_sorted = FALSE
 )
 }
 \arguments{
-\item{grl}{(\code{\link{GRangesList}}) of sequences
-to search for ORFs, probably in genomic coordinates}
+\item{grl}{A \code{\link{GRangesList}} of the original
+sequences that gave the orfs in Genomic coordinates. If grl_is_sorted = TRUE (default),
+negative exon ranges per grl object must be sorted in descending orders.}
 
 \item{seqs}{(DNAStringSet or character vector) - DNA/RNA sequences to search
 for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
 get seqs if you want only regions from a fasta/fasta index pair is:
 seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-search regions and faFile is a \code{\link{FaFile}}.}
+search regions and faFile is a \code{\link{FaFile}}. Note: Remember that if
+you extracted through a GRanges object, that must have been sorted with negative
+strand exons descending.}
 
 \item{startCodon}{(character vector) Possible START codons to search for.
 Check \code{\link{startDefinition}} for helper function. Note that it is
@@ -46,6 +50,10 @@ START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.}
 
 \item{groupByTx}{logical (default: FALSE), should output GRangesList be
 grouped by exons per ORF (TRUE) or by orfs per transcript (FALSE)?}
+
+\item{grl_is_sorted}{logical, default FALSE If FALSE will sort negative transcript
+in descending order for you. If you loaded ranges with default methods this is
+already the case, so you can set to TRUE to save some time.}
 }
 \value{
 A GRangesList of ORFs.
