@@ -24,10 +24,6 @@ DEG.plot.static(
 \item{output.dir}{a character path, default NULL(no save), or a directory
 to save to a file. Relative name of file, specified by 'relative.name' argument.}
 
-\item{p.value}{a numeric, default 0.05 in interval (0,1)
-or "" to not show.
-What p-value used for the analysis? Will be shown as a caption.}
-
 \item{plot.title}{title for plots, usually name of experiment etc}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}

@@ -183,7 +183,7 @@ DTEG_input_validation <- function(df.rfp, df.rna, RFP_counts, RNA_counts,
 
 DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,
                                target.contrast, pairs, p.value = 0.05,
-                               complex.categories) {
+                               complex.categories, lfcShrinkType = "normal") {
   # Do result analysis: per contrast selected
   dt.between <- data.table()
   for(i in pairs) {
@@ -195,11 +195,11 @@ DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,
 
     res_ribo <- results(ddsMat_ribo, contrast = current.contrast)
     suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast,
-                                           res=res_ribo, type = "normal"))
+                                           res=res_ribo, type = lfcShrinkType))
 
     res_rna <- results(ddsMat_rna, contrast = current.contrast)
     suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
-                                          res = res_rna, type = "normal"))
+                                          res = res_rna, type = lfcShrinkType))
 
     ## The differential regulation groupings (padj is padjusted)
     both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)

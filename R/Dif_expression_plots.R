@@ -100,7 +100,7 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' @param dt a data.table with the results from \code{\link{DTEG.analysis}}
 #' @param output.dir a character path, default NULL(no save), or a directory
 #' to save to a file. Relative name of file, specified by 'relative.name' argument.
-#' @param p.value a numeric, default 0.05 in interval (0,1)
+#' @param p.value.label a numeric, default 0.05 in interval (0,1)
 #' or "" to not show.
 #' What p-value used for the analysis? Will be shown as a caption.
 #' @param plot.title title for plots, usually name of experiment etc
@@ -133,7 +133,7 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' #Manual scaling
 #' #DTEG.plot(dt, xlim = c(-2, 2), ylim = c(-2, 2))
 DTEG.plot <- function(dt, output.dir = NULL,
-                      p.value = 0.05,
+                      p.value.label = 0.05,
                       plot.title = "", plot.ext = ".pdf", width = 6,
                       height = 6, dot.size = 0.4,
                       xlim = "bidir.max", ylim = "bidir.max",
@@ -153,8 +153,8 @@ DTEG.plot <- function(dt, output.dir = NULL,
                       levels = regulation.levels,
                       ordered = TRUE)]
   setorder(dt, Regulation)
-  p.caption <- if (p.value != "") {
-    labs(caption = paste("P-value <", p.value))
+  p.caption <- if (p.value.label != "") {
+    labs(caption = paste("P-value <", p.value.label))
   } else NULL
   p.title <- if (plot.title != "") {
     ggtitle(label = plot.title)

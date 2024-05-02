@@ -99,6 +99,10 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #' that is inserted later with setting \code{batch.effect = TRUE}.
 #' Library type 'libtype' column, can also no be part of initial design,
 #' it is always added inside the function, after initial setup.
+#' @param p.value a numeric, default 0.05 in interval (0,1). Defines adjusted
+#' p-value to be used as significance threshold for the result groups. I.e.
+#' for exclusive translation group significant subset for p.value = 0.05 means:
+#' TE$padj < 0.05 & Ribo$padj < 0.05 & RNA$padj > 0.05.
 #' @param output.dir character, default \code{QCfolder(df.rfp)}.
 #' output.dir directory to save plots,
 #' plot will be named "TE_between". If NULL, will not save.
@@ -205,7 +209,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
 
   # Do result analysis: per contrast selected
   dt <- DTEG_model_results(ddsMat_rna, ddsMat_ribo, ddsMat_te,
-                           target.contrast, pairs, p.value = 0.05,
+                           target.contrast, pairs, p.value = p.value,
                            complex.categories)
 
   # Plot the result
