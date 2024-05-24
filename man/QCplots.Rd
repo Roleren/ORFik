@@ -10,6 +10,7 @@ QCplots(
   stats_folder = QCfolder(df),
   plot.ext = ".pdf",
   complex.correlation.plots = TRUE,
+  force = TRUE,
   BPPARAM
 )
 }
@@ -29,6 +30,12 @@ Note that in pdf format the complex correlation plots become very slow to load!}
 to simple correlation plot two computationally heavy dots + correlation plots.
 Useful for deeper analysis, but takes longer time to run, especially on low-quality
 gpu computers. Set to FALSE to skip these.}
+
+\item{force}{logical, default TRUE If TRUE, reload files even if
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

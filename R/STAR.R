@@ -23,7 +23,10 @@
 #' set path to a runnable star if you already have it.
 #' @param max.cpus integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
 #'  number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
-#'  have 8 cores it will use 6.
+#'  have 8 cores it will use 6. Note: FASTP will use maximum 16 threads as from testing
+#'  I see performance actually degrades using anything higher. From testing I also see
+#'  STAR gets no performance gain after ~50 threads. I do suspect this will change
+#'  when hard drives gets better in the future.
 #' @param max.ram integer, default 30, in Giga Bytes (GB).
 #' Maximum amount of RAM allowed for STAR limitGenomeGenerateRAM argument. RULE:
 #' idealy 10x genome size, but do not set too close to machine limit. Default fits

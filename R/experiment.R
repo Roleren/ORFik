@@ -542,28 +542,33 @@ name_decider <- function(df, naming) {
 #' @param input.type character, input type "ofst". Remember this function
 #' uses the loaded libraries if existing, so this argument is usually ignored.
 #' Only used if files do not already exist.
+#' @param libs list, output of outputLibs as list of
+#'  GRanges/GAlignments/GAlignmentPairs objects. Set input.type and force arguments to define parameters.
 #' @param reassign.when.saving logical, default FALSE. If TRUE, will reassign
 #' library to converted form after saving. Ignored when out.dir = NULL.
-#' @return NULL (saves files to disc or R .GlobalEnv)
+#' @return invisible NULL (saves files to disc or R .GlobalEnv)
 #' @export
 #' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment()
-#' #convertLibs(df)
+#' #convertLibs(df, out.dir = NULL)
 #' # Keep only 5' ends of reads
-#' #convertLibs(df, method = "5prime")
+#' #convertLibs(df, out.dir = NULL, method = "5prime")
 convertLibs <- function(df,
-                       out.dir = libFolder(df),
-                       addScoreColumn = TRUE, addSizeColumn = TRUE,
-                       must.overlap = NULL, method = "None",
-                       type = "ofst", input.type = "ofst",
-                       reassign.when.saving = FALSE,
-                       envir = envExp(df),
-                       BPPARAM = bpparam()) {
+                        out.dir = libFolder(df),
+                        addScoreColumn = TRUE, addSizeColumn = TRUE,
+                        must.overlap = NULL, method = "None",
+                        type = "ofst", input.type = "ofst",
+                        reassign.when.saving = FALSE,
+                        envir = envExp(df),
+                        force = TRUE,
+                        libs = outputLibs(df, type = input.type, chrStyle = must.overlap,
+                                          output.mode = "list", force = force, BPPARAM = BPPARAM),
+                        BPPARAM = bpparam()) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig", "bigWig")))
     stop("type must be either ofst, bedo or bedoc")
-
   validateExperiments(df)
+  stopifnot(length(libs) == nrow(df))
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
     stop("must.overlap must be GRanges or GRangesList object!")
   if (!is.null(out.dir)) {
@@ -573,21 +578,19 @@ convertLibs <- function(df,
     message(paste("Saving,", type, "files to:", out.dir))
   }
 
-  outputLibs(df, type = input.type, chrStyle = must.overlap, BPPARAM = BPPARAM)
-
   varNames <- bamVarName(df)
-  i <- 1
   message("--------------------------")
   message("Converting libraries to new format: ", type)
-  for (f in varNames) {
+  lapply(seq_along(libs), function(i) {
+    f <- varNames[i]
     message(f)
     if (type %in% c("bedo", "wig")) { # bedo, wig
-    gr <- convertToOneBasedRanges(gr = get(f, envir = envExp(df), mode = "S4"),
-                                  addScoreColumn = addScoreColumn,
-                                  addSizeColumn = addSizeColumn,
-                                  method = method)
+      gr <- convertToOneBasedRanges(gr = libs[[i]],
+                                    addScoreColumn = addScoreColumn,
+                                    addSizeColumn = addSizeColumn,
+                                    method = method)
     } else if (type %in% c("bedoc", "ofst")) {
-      gr <- collapseDuplicatedReads(x = get(f, envir = envExp(df), mode = "S4"),
+      gr <- collapseDuplicatedReads(x = libs[[i]],
                                     addScoreColumn = addScoreColumn)
     }
 
@@ -607,13 +610,14 @@ convertLibs <- function(df,
         export.bigWig(gr, file = output)
       } else # Must be bedoc, check done
         export.bedoc(gr, output)
-    if (reassign.when.saving)
-      assign(x = f, value = gr, envir = envir)
+      if (reassign.when.saving)
+        assign(x = f, value = gr, envir = envir)
     } else {
       assign(x = f, value = gr, envir = envir)
     }
-    i <- i + 1
-  }
+    return(invisible(NULL))
+  })
+  return(invisible(NULL))
 }
 
 # Keep for legacy purpose for now

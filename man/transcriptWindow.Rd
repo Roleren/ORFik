@@ -23,6 +23,8 @@ transcriptWindow(
   type = "ofst",
   is.sorted = FALSE,
   drop.zero.dt = TRUE,
+  verbose = TRUE,
+  force = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -63,10 +65,22 @@ targets / nontargets etc. (default: "")}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
-\item{type}{a character(default: "ofst"), load files in experiment
-or some precomputed variant, either "ofst", "pshifted" or "default".
-These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
-Will load default if bedoc is not found}
+\item{type}{a character(default: "default"), load files in experiment
+or some precomputed variant, like "ofst" or "pshifted".
+These are made with ORFik:::convertLibs(),
+shiftFootprintsByExperiment(), etc.
+Can also be custom user made folders inside the experiments bam folder.
+It acts in a recursive manner with priority: If you state "pshifted",
+but it does not exist, it checks "ofst". If no .ofst files, it uses
+"default", which always must exists.\cr Presets are (folder is relative
+to default lib folder, some types fall back to other formats if folder does not exist):\cr
+- "default": load the original files for experiment, usually bam.\cr
+- "ofst": loads ofst files from the ofst folder, relative to lib folder (falls back to default)\cr
+- "pshifted": loads ofst, wig or bigwig from pshifted folder (falls back to ofst, then default)\cr
+- "cov": Load covRle objects from cov_RLE folder (fail if not found)\cr
+- "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
+- "bed": Load bed files, from bed folder (falls back to default)\cr
+- Other formats must be loaded directly with fimport}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
@@ -76,6 +90,14 @@ remove all 0 count positions.
 This greatly speeds up and most importantly, greatly reduces memory usage.
 Will not change any plots, unless 0 positions are used in some sense.
 (mean, median, zscore coverage will only scale differently)}
+
+\item{verbose}{logical, default TRUE, message about library output status.}
+
+\item{force}{logical, default TRUE If TRUE, reload files even if
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

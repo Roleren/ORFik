@@ -3,13 +3,20 @@
 #' The better the annotation / gtf used, the more results you get.
 #' @inheritParams outputLibs
 #' @inheritParams QCreport
+#' @param pre_collapse_reads logical, default TRUE. Collapse duplicated reads before counting,
+#' usually saves some time.
 #' @return a data.table of the count info
 #' @keywords internal
 QC_count_tables <- function(df, out.dir, type = "ofst",
+                            pre_collapse_reads = TRUE,
+                            force = TRUE,
                             BPPARAM = bpparam()) {
-  outputLibs(df, chrStyle = findFa(df), type = type, BPPARAM = BPPARAM)
+  outputLibs(df, chrStyle = findFa(df), type = type, force = force, BPPARAM = BPPARAM)
   # TODO: test if needed
-  suppressMessages(convertLibs(df, NULL)) # Speedup by reducing unwanted information
+  if (pre_collapse_reads) {
+    suppressMessages(convertLibs(df, out.dir = NULL, force = force)) # collapse
+  }
+
 
   # Make count tables
   message("--------------------------")
@@ -29,16 +36,16 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
 #' @inheritParams QCreport
 #' @return a data.table of the statistcs
 #' @keywords internal
-alignmentFeatureStatistics <- function(df, type = "ofst",
+alignmentFeatureStatistics <- function(df, type = "ofst", force = TRUE,
                                        BPPARAM = bpparam()) {
   message("--------------------------")
   message("Making alignment statistics for lib:")
+  message("- Loading annotation regions..")
   # Special regions rRNA etc..
   types <- c()
   # TODO: Check if there is a way to get this from txdb directly
   txdb <- loadTxdb(df)
   fa <- findFa(df)
-  outputLibs(df, chrStyle = fa, type = type, BPPARAM = BPPARAM)
   gff.df <- importGtfFromTxdb(txdb, stop.error = FALSE)
   if (is.null(gff.df)) warnings("No biotypes defined in GTF,",
                                 " skiping biotype analysis!")
@@ -60,7 +67,10 @@ alignmentFeatureStatistics <- function(df, type = "ofst",
   leaders <- loadRegion(txdb, "leaders")
   trailers <- loadRegion(txdb, "trailers")
   introns <- loadRegion(txdb, "introns")
+
+  outputLibs(df, chrStyle = fa, type = type, force = force, BPPARAM = BPPARAM)
   libs <- bamVarName(df)
+  message("- Calculating alignment statistics..")
   finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs, env) {
     message(s)
     lib <- get(s, envir = env)
@@ -229,7 +239,7 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
     return(fread(file.name, header = TRUE))
   }
 
-  outputLibs(df, type = type, BPPARAM = BPPARAM)
+  outputLibs(df, type = type, force = FALSE, BPPARAM = BPPARAM)
   dt_read_lengths <- data.table(); sample_id <- 1
   for(lib in bamVarName(df)) {
     dt_read_lengths <- rbind(dt_read_lengths,

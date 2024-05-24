@@ -15,6 +15,9 @@ simpleLibs(
   input.type = "ofst",
   reassign.when.saving = FALSE,
   envir = envExp(df),
+  force = TRUE,
+  libs = outputLibs(df, type = input.type, chrStyle = must.overlap, output.mode = "list",
+    force = force, BPPARAM = BPPARAM),
   BPPARAM = bpparam()
 )
 }
@@ -56,12 +59,21 @@ library to converted form after saving. Ignored when out.dir = NULL.}
 \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
 \code{envExp(df) <- new.env()} etc.}
 
+\item{force}{logical, default TRUE If TRUE, reload files even if
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
+
+\item{libs}{list, output of outputLibs as list of
+GRanges/GAlignments/GAlignmentPairs objects. Set input.type and force arguments to define parameters.}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
 You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
-NULL (saves files to disc or R .GlobalEnv)
+invisible NULL (saves files to disc or R .GlobalEnv)
 }
 \description{
 Export as either .ofst, .wig, .bigWig,.bedo (legacy format) or .bedoc (legacy format) files:\cr
@@ -86,9 +98,9 @@ to .ofst then the .bam files are loaded).
 }
 \examples{
 df <- ORFik.template.experiment()
-#convertLibs(df)
+#convertLibs(df, out.dir = NULL)
 # Keep only 5' ends of reads
-#convertLibs(df, method = "5prime")
+#convertLibs(df, out.dir = NULL, method = "5prime")
 }
 \seealso{
 Other lib_converters: 

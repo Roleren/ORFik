@@ -16,7 +16,7 @@ ORFikQC(
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{out.dir}{optional output directory, default:
+\item{out.dir}{character, output directory, default:
 \code{resFolder(df)}.
 Will make a folder within this called "QC_STATS" with all results in this directory.
 Warning: If you assign not default path, you will have a hazzle to load files later.
@@ -74,7 +74,9 @@ To see some normal mrna coverage profiles of different RNA-seq protocols:
 # Load an experiment
 df <- ORFik.template.experiment()
 # Run QC
-# QCreport(df)
+#QCreport(df, tempdir())
+# QC on subset
+#QCreport(df[9,], tempdir())
 }
 \seealso{
 Other QC report: 

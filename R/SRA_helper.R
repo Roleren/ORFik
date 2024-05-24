@@ -343,7 +343,7 @@ download.ebi <- function(info, outdir, rename = TRUE,
   files <- file.path(outdir, basename(urls))
   message("Starting download of EBI runs:")
   method <- ebiDLMethod
-  options(timeout = timeout)
+  withr::local_options(timeout = timeout)
   BiocParallel::bplapply(urls, function(i, outdir, method) {
     message(i)
     download.file(i, destfile = file.path(outdir, basename(i)),

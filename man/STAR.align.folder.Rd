@@ -139,7 +139,10 @@ if you assigned a gtf at the index step.}
 
 \item{max.cpus}{integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
 number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
-have 8 cores it will use 6.}
+have 8 cores it will use 6. Note: FASTP will use maximum 16 threads as from testing
+I see performance actually degrades using anything higher. From testing I also see
+STAR gets no performance gain after ~50 threads. I do suspect this will change
+when hard drives gets better in the future.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it
