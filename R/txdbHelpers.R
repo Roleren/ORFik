@@ -291,7 +291,8 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
-      txdb <- GenomicFeatures::makeTxDbFromGFF(txdb)
+      txdb <- GenomicFeatures::makeTxDbFromGFF(txdb, organism = organism,
+                                               chrominfo = chrominfo)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
     } else {
