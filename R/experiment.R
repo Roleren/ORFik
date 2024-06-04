@@ -438,10 +438,10 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
   for (df in dfl) {
     validateExperiments(df)
     varNames <- name_decider(df, naming)
-
     loaded <- libs_are_loaded(varNames, envir)
-    # Par apply
-    if (!all(loaded) | force) {
+    import_is_needed <- !all(loaded) | force
+
+    if (import_is_needed) {
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       if (is(BPPARAM, "SerialParam")) {
         libs <- lapply(seq_along(paths),
