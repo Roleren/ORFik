@@ -438,7 +438,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
   for (df in dfl) {
     validateExperiments(df)
     varNames <- name_decider(df, naming)
-    if (add_seqinfo_from_fasta) chrStyle <- seqinfo(df)
+
     loaded <- libs_are_loaded(varNames, envir)
     # Par apply
     if (!all(loaded) | force) {
