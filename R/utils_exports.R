@@ -412,6 +412,7 @@ export.bedoc <- function(object, out) {
 #' Positions are 1-based, not 0-based as .bed.
 #' Import with import.ofst
 #' @param x a GRanges, GAlignments or GAlignmentPairs object
+#' @param file a character, location on disc (full path)
 #' @param ... additional arguments for write_fst
 #' @return NULL, object saved to disc
 #' @importFrom fst write_fst
@@ -425,10 +426,9 @@ export.bedoc <- function(object, out) {
 #' df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
 #' ga <- ORFik:::getGAlignments(df)
 #' # export.ofst(ga, file = "path.ofst")
-setGeneric("export.ofst", function(x, ...) standardGeneric("export.ofst"))
+setGeneric("export.ofst", function(x, file, ...) standardGeneric("export.ofst"))
 
 #' @inherit export.ofst
-#' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GRanges",
           function(x, file, ...) {
             df <- data.frame(seqnames = x@seqnames,
@@ -442,7 +442,6 @@ setMethod("export.ofst", "GRanges",
           })
 
 #' @inherit export.ofst
-#' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GAlignments",
           function(x, file, ...) {
             df <- data.frame(seqnames = x@seqnames,
@@ -456,7 +455,6 @@ setMethod("export.ofst", "GAlignments",
           })
 
 #' @inherit export.ofst
-#' @param file a character, location on disc (full path)
 setMethod("export.ofst", "GAlignmentPairs",
           function(x, file, ...) {
             # There is always equal seqname in a pair,

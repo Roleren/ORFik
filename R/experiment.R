@@ -147,14 +147,14 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        fraction_prepend_f = TRUE) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
-  varName <- c()
+  varName <- character()
   for (df in dfl) {
-    for (i in 1:nrow(df)) {
-      varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
-                                             skip.condition, skip.stage,
-                                             skip.fraction, skip.experiment,
-                                             skip.libtype, fraction_prepend_f))
-    }
+    res <- vapply(1:nrow(df), function(i) bamVarNamePicker(df[i,], skip.replicate,
+                                                    skip.condition,
+                                                    skip.stage, skip.fraction,
+                                                    skip.experiment, skip.libtype,
+                                                    fraction_prepend_f), character(1))
+    varName <- c(varName, res)
   }
   return(varName)
 }
@@ -438,14 +438,8 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
   for (df in dfl) {
     validateExperiments(df)
     varNames <- name_decider(df, naming)
-
-    loaded <- c()
-    for (i in 1:nrow(df)) { # For each stage
-      if (exists(x = varNames[i], envir = envir, inherits = FALSE,
-                 mode = "S4")) {
-        loaded <- append(loaded, TRUE)
-      } else loaded <- append(loaded, FALSE)
-    }
+    if (add_seqinfo_from_fasta) chrStyle <- seqinfo(df)
+    loaded <- libs_are_loaded(varNames, envir)
     # Par apply
     if (!all(loaded) | force) {
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
@@ -498,6 +492,11 @@ name_decider <- function(df, naming) {
     } else bamVarName(df, FALSE, FALSE, FALSE, FALSE, FALSE)
 
   return(varNames)
+}
+
+libs_are_loaded <- function(lib_names, envir) {
+  vapply(lib_names, function(lib) exists(x = lib, envir = envir, inherits = FALSE,
+                                           mode = "S4"), logical(1))
 }
 
 #' Converted format of NGS libraries
