@@ -7,7 +7,7 @@
 DEG.plot.static(
   dt,
   output.dir = NULL,
-  p.value = 0.05,
+  p.value.label = 0.05,
   plot.title = "",
   plot.ext = ".pdf",
   width = 6,
@@ -23,6 +23,10 @@ DEG.plot.static(
 
 \item{output.dir}{a character path, default NULL(no save), or a directory
 to save to a file. Relative name of file, specified by 'relative.name' argument.}
+
+\item{p.value.label}{a numeric, default 0.05 in interval (0,1)
+or "" to not show.
+What p-value used for the analysis? Will be shown as a caption.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
