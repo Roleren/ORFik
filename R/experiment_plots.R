@@ -3,7 +3,7 @@
 #' Gives you binned meta coverage plots, either saved seperatly or
 #' all in one.
 #' @inheritParams splitIn3Tx
-#' @param df an ORFik \code{\link{experiment}}
+#' @inheritParams outputLibs
 #' @param outdir directory to save to (default: NULL, no saving)
 #' @param scores scoring function (default: c("sum", "transcriptNormalized")),
 #' see ?coverageScorings for possible scores.
@@ -22,11 +22,6 @@
 #' and same experiment, like splitting transcripts in two groups like
 #' targets / nontargets etc. (default: "")
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
-#' @param type a character(default: "ofst"), load files in experiment
-#' or some precomputed variant, either "ofst", "pshifted" or "default".
-#' These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
-#' Will load default if bedoc is not found
-#' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return NULL, or ggplot object if returnPlot is TRUE
 #' @export
 #' @family experiment plots
@@ -45,6 +40,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                              returnPlot = is.null(outdir),
                              dfr = NULL, idName = "", plot.ext = ".pdf",
                              type = "ofst", is.sorted = FALSE, drop.zero.dt = TRUE,
+                             verbose = TRUE, force = TRUE,
                              BPPARAM = bpparam()) {
   if (windowSize != 100)
     message(paste0("NOTE: windowSize is not 100! It is: ", windowSize))
@@ -53,7 +49,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
     varNames <- bamVarName(df)
-    outputLibs(df, chrStyle = leaders, type = type)
+    outputLibs(df, chrStyle = leaders, type = type, verbose = verbose, force = force, BPPARAM = BPPARAM)
     coverage <- data.table()
     if (!allTogether) {
       stop("fix!")

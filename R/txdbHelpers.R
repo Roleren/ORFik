@@ -273,7 +273,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'  Only used if input is path to gff.
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
-#' @importFrom txdbmaker makeTxDbFromGFF makeTxDb
+#' @importFrom GenomicFeatures makeTxDbFromGFF makeTxDb
 #' @export
 #' @examples
 #' library(GenomicFeatures)
@@ -291,7 +291,8 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
-      txdb <- txdbmaker::makeTxDbFromGFF(txdb)
+      txdb <- GenomicFeatures::makeTxDbFromGFF(txdb, organism = organism,
+                                               chrominfo = chrominfo)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
     } else {
@@ -306,7 +307,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
       stop("When txdb is list input, must have names:",
            paste(must_have_cols, collapse = ", "))
     }
-    return(do.call(txdbmaker::makeTxDb, txdb))
+    return(do.call(GenomicFeatures::makeTxDb, txdb))
   } else if(!is(txdb, "TxDb")) stop("txdb must be path, list or TxDb")
   return(matchSeqStyle(txdb, chrStyle))
 }
@@ -495,8 +496,8 @@ loadTranscriptType <- function(object, part = "rRNA", tx = NULL) {
 #' @export
 #' @importFrom GenomicFeatures transcripts
 #' @examples
-#' gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-#' txdb <- loadTxdb(gtf)
+#' df <- ORFik.template.experiment()
+#' txdb <- loadTxdb(df)
 #' loadRegions(txdb, "cds") # using tx names
 #' txNamesToGeneNames(cds, txdb)
 #' # Identical to:
@@ -795,8 +796,8 @@ getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
 #' @return a character vector of valid transcript names
 #' @export
 #' @examples
-#' gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-#' txdb <- loadTxdb(gtf_file)
+#' df <- ORFik.template.experiment.zf()
+#' txdb <- loadTxdb(df)
 #' txNames <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 30,
 #'                              minThreeUTR = 1)
 #' loadRegion(txdb, "mrna")[txNames]

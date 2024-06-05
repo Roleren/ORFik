@@ -32,9 +32,10 @@ that is inserted later with setting \code{batch.effect = TRUE}.
 Library type 'libtype' column, can also no be part of initial design,
 it is always added inside the function, after initial setup.}
 
-\item{p.value}{a numeric, default 0.05 in interval (0,1)
-or "" to not show.
-What p-value used for the analysis? Will be shown as a caption.}
+\item{p.value}{a numeric, default 0.05 in interval (0,1). Defines adjusted
+p-value to be used as significance threshold for the result groups. I.e.
+for exclusive translation group significant subset for p.value = 0.05 means:
+TE$padj < 0.05 & Ribo$padj < 0.05 & RNA$padj > 0.05.}
 
 \item{counts}{a SummarizedExperiment, default:
 countTable(df, "mrna", type = "summarized"), all transcripts.

@@ -139,7 +139,10 @@ if you assigned a gtf at the index step.}
 
 \item{max.cpus}{integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
 number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
-have 8 cores it will use 6.}
+have 8 cores it will use 6. Note: FASTP will use maximum 16 threads as from testing
+I see performance actually degrades using anything higher. From testing I also see
+STAR gets no performance gain after ~50 threads. I do suspect this will change
+when hard drives gets better in the future.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it
@@ -207,12 +210,36 @@ is not advantageous, since, by default, STAR performs local (not end-to-end) ali
 i.e. it auto-trims." So trimming can be skipped for longer reads.
 }
 \examples{
-# First specify directories wanted
-annotation.dir <- "~/Bio_data/references/Human"
-fastq.input.dir <- "~/Bio_data/raw_data/Ribo_seq_subtelny/"
-bam.output.dir <- "~/Bio_data/processed_data/Ribo_seq_subtelny_2014/"
+# First specify directories wanted (temp directory here)
+config_file <- tempfile()
+#config.save(config_file, base.dir = tempdir())
+#config <- ORFik::config(config_file)
 
-## Download some SRA data and metadata
+## Yeast RNA-seq samples (small genome)
+#project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
+#annotation.dir <- project["ref"]
+#fastq.input.dir <- project["fastq RNA-seq"]
+#bam.output.dir <- project["bam RNA-seq"]
+
+## Download some SRA data and metadata (subset to 50k reads)
+# info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
+# info <- info[1:2,] # Subset to 2 first libraries
+# download.SRA(info, fastq.input.dir, rename = FALSE, subset = 50000)
+
+## No contaminant depletion:
+# annotation <- getGenomeAndAnnotation("Saccharomyces cerevisiae", annotation.dir)
+# index <- STAR.index(annotation)
+# STAR.align.folder(fastq.input.dir, bam.output.dir,
+#                   index, paired.end = FALSE) # Trim, then align to genome
+
+## Human Ribo-seq sample (NB! very large genome and libraries!)
+## Requires >= 32 GB memory
+#project <- ORFik::config.exper("subtelny_2014", "Homo_sapiens", "Ribo-seq", config)
+#annotation.dir <- project["ref"]
+#fastq.input.dir <- project["fastq Ribo-seq"]
+#bam.output.dir <- project["bam Ribo-seq"]
+
+## Download some SRA data and metadata (full libraries)
 # info <- download.SRA.metadata("DRR041459", fastq.input.dir)
 # download.SRA(info, fastq.input.dir, rename = FALSE)
 ## Now align 2 different ways, without and with contaminant depletion

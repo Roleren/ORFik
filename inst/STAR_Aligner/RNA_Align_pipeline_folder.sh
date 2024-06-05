@@ -198,10 +198,10 @@ done
 
 echo $'\n'
 # steps == "all" is never called from R
-if [ $steps == "all" ]; then
+if [ "$steps" == "all" ]; then
 	steps="tr-ph-rR-nc-tR-ge"
 fi
-if [ -z $out_dir ]; then
+if [ -z "$out_dir" ]; then
 	echo "Error, out directory (-o) must be speficied!"
 	exit 1
 fi
@@ -243,7 +243,8 @@ function findPairs()
 		b="$f/${myArray[x+1]}"
 		i=$((x + 2))
 		if [[ $i == $numOfFiles ]];then
-			keep="n"
+		  echo "Starting last run:"
+			keep="n" # i.e. last file
 		fi
 
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
@@ -270,7 +271,8 @@ function findPairsSub()
 		b="${myArray[x+1]}"
 		i=$((x + 2))
 		if [[ $i == $numOfFiles ]];then
-			keep="n"
+		  echo "Starting last run:"
+			keep="n" # i.e. last file
 		fi
 
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
@@ -291,13 +293,13 @@ fi
 
 echo "Total number of files are:"
 echo $numOfFiles
+
 # Check if resume, if true, jump to given step
 declare -i X
-X=1
+X=0
 if [ "$resume" != "n" ]; then
    echo "Resume mode"
    X=$(echo "$steps" | grep -b -o $resume | cut -d: -f1)
-   X=$(expr 1 + $X)
 fi
 length=${#steps}
 # For each type in tr-co-ge (do one step at a time)
@@ -305,7 +307,7 @@ length=${#steps}
 # Also easier to continue on crash if done this way
 while [ $X -lt $length ]
 do
-  current=$(expr substr "$steps" $X 2)
+  current=${steps:$X:2}
   echo "Current step:"
   echo $current
   X=$((X + 3))

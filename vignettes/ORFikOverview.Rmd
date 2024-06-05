@@ -371,7 +371,7 @@ table(readWidths(footprints))
 Lets look at how the reads distribute around the CDS per read length:
 For that we need to prepare the transcriptome annotation (Organism: Danio rerio).
 ```{r eval = TRUE, echo = TRUE, warning = FALSE, message = FALSE} 
-gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
+gtf_file <- system.file("extdata/references/danio_rerio", "annotations.gtf", package = "ORFik")
 txdb <- loadTxdb(gtf_file)
 tx <- loadRegion(txdb, part = "tx")
 cds <- loadRegion(txdb, part = "cds")

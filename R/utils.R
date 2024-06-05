@@ -251,7 +251,10 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
         seqlevelsStyle(range) <- chrStyle[1]
       } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
                  is(chrStyle, "FaFile") | is(chrStyle, "Seqinfo")) {
-        seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
+        style_is_different <- !any(seqlevelsStyle(range) %in% seqlevelsStyle(chrStyle)[1])
+        if (style_is_different) {
+          seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1]
+        }
       } else stop("chrStyle must be valid GRanges object,",
                   "or a valid chr style!")
     }

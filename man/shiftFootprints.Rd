@@ -49,7 +49,7 @@ NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 \examples{
 ## Basic run
 # Transcriptome annotation ->
-gtf_file <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
+gtf_file <- system.file("extdata/references/danio_rerio", "annotations.gtf", package = "ORFik")
 # Ribo seq data ->
 riboSeq_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 \dontrun{

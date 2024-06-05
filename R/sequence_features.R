@@ -111,7 +111,8 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' ORFs <- makeORFNames(ORFs) # need ORF names
 #' tx <- extendLeaders(ORFs, 100)
 #' # get faFile for sequences
-#' faFile <- FaFile(system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik"))
+#' faFile <- FaFile(system.file("extdata/references/danio_rerio", "genome_dummy.fasta",
+#'  package = "ORFik"))
 #' kozakSequenceScore(ORFs, tx, faFile)
 #' # For more details see vignettes.
 kozakSequenceScore <- function(grl, tx, faFile, species = "human",
@@ -201,7 +202,8 @@ kozakSequenceScore <- function(grl, tx, faFile, species = "human",
 #'                     strand = c("-", "-"))
 #' ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 #' # get path to FaFile for sequences
-#' faFile <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
+#' faFile <- system.file("extdata/references/danio_rerio", "genome_dummy.fasta",
+#'  package = "ORFik")
 #' gcContent(ORFs, faFile)
 gcContent <- function(seqs, fa = NULL) {
   if (is(seqs, "GRangesList")) {

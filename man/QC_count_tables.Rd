@@ -4,12 +4,19 @@
 \alias{QC_count_tables}
 \title{Create count table info for QC report}
 \usage{
-QC_count_tables(df, out.dir, type = "ofst", BPPARAM = bpparam())
+QC_count_tables(
+  df,
+  out.dir,
+  type = "ofst",
+  pre_collapse_reads = TRUE,
+  force = TRUE,
+  BPPARAM = bpparam()
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
-\item{out.dir}{optional output directory, default:
+\item{out.dir}{character, output directory, default:
 \code{resFolder(df)}.
 Will make a folder within this called "QC_STATS" with all results in this directory.
 Warning: If you assign not default path, you will have a hazzle to load files later.
@@ -32,6 +39,15 @@ to default lib folder, some types fall back to other formats if folder does not 
 - "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
 - "bed": Load bed files, from bed folder (falls back to default)\cr
 - Other formats must be loaded directly with fimport}
+
+\item{pre_collapse_reads}{logical, default TRUE. Collapse duplicated reads before counting,
+usually saves some time.}
+
+\item{force}{logical, default TRUE If TRUE, reload files even if
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

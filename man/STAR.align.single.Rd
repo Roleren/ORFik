@@ -25,6 +25,7 @@ STAR.align.single(
   resume = NULL,
   keep.contaminants = FALSE,
   keep.unaligned.genome = FALSE,
+  keep.index.in.memory = FALSE,
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
 )
 }
@@ -129,7 +130,10 @@ if you assigned a gtf at the index step.}
 
 \item{max.cpus}{integer, default: \code{min(90, BiocParallel:::bpparam()$workers)},
 number of threads to use. Default is minimum of 90 and maximum cores - 2. So if you
-have 8 cores it will use 6.}
+have 8 cores it will use 6. Note: FASTP will use maximum 16 threads as from testing
+I see performance actually degrades using anything higher. From testing I also see
+STAR gets no performance gain after ~50 threads. I do suspect this will change
+when hard drives gets better in the future.}
 
 \item{wait}{a logical (not \code{NA}) indicating whether the \R
     interpreter should wait for the command to finish, or run it
@@ -154,6 +158,12 @@ specific tRNAs etc.}
 reads that did not align at the genome alignment step,
 default is to only keep the aliged bam file. Useful if you
 want to do further processing on plasmids/custom sequences.}
+
+\item{keep.index.in.memory}{logical or character, default FALSE (i.e. LoadAndRemove).
+If TRUE, will keep index in memory, useful if you need to loop over single calls,
+instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
+Alternative useful for MAC machines especially is "noShared", for machines
+that do not support shared memory index, usually gives error: "abort trap 6".}
 
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you
@@ -186,13 +196,30 @@ i.e. it auto-trims." So trimming can be skipped for longer reads.
 }
 \examples{
 
-## Specify output libraries:
-output.dir <- "/Bio_data/references/Human"
-bam.dir <- "data/processed/human_rna_seq"
-# arguments <- getGenomeAndAnnotation("Homo sapiens", output.dir)
-# index <- STAR.index(arguments, output.dir)
-# STAR.align.single("data/raw_data/human_rna_seq/file1.bam", bam.dir,
-#                    index)
+## Specify output libraries (using temp config)
+config_file <- tempfile()
+#config.save(config_file, base.dir = tempdir())
+#config <- ORFik::config(config_file)
+#project <- ORFik::config.exper("yeast_1", "Saccharomyces_cerevisiae", "RNA-seq", config)
+# Get genome of yeast (quite small)
+# arguments <- getGenomeAndAnnotation("Saccharomyces cerevisiae", project["ref"])
+# index <- STAR.index(arguments)
+
+## Make fake reads
+#genome <- readDNAStringSet(arguments["genome"])
+#which_chromosomes <- sample(seq_along(genome), 1000, TRUE, prob = width(genome))
+#nt50_windows <- lapply(which_chromosomes, function(x)
+# {window <- sample(width(genome[x]) - 51, 1); genome[[x]][seq(window, window+49)]})
+#nt50_windows <- DNAStringSet(nt50_windows)
+#names(nt50_windows) <- paste0("read_", seq_along(nt50_windows))
+#dir.create(project["fastq RNA-seq"], recursive = TRUE)
+#fake_fasta <- file.path(project["fastq RNA-seq"], "fake-RNA-seq.fasta")
+#writeXStringSet(nt50_windows, fake_fasta, format = "fasta")
+## Align the fake reads and import bam
+# STAR.align.single(fake_fasta, NULL, project["bam RNA-seq"], index, steps = "ge")
+#bam_file <- list.files(file.path(project["bam RNA-seq"], "aligned"),
+#  pattern = "\\.bam$", full.names = TRUE)
+#fimport(bam_file)
 }
 \seealso{
 Other STAR: 

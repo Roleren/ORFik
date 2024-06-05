@@ -61,7 +61,8 @@ ORFs <- GRangesList(tx1 = ORF1, tx2 = ORF2)
 ORFs <- makeORFNames(ORFs) # need ORF names
 tx <- extendLeaders(ORFs, 100)
 # get faFile for sequences
-faFile <- FaFile(system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik"))
+faFile <- FaFile(system.file("extdata/references/danio_rerio", "genome_dummy.fasta",
+ package = "ORFik"))
 kozakSequenceScore(ORFs, tx, faFile)
 # For more details see vignettes.
 }

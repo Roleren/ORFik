@@ -27,7 +27,7 @@
 #' To see some normal mrna coverage profiles of different RNA-seq protocols:
 #' \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4310221/figure/F6/}
 #' @inheritParams outputLibs
-#' @param out.dir optional output directory, default:
+#' @param out.dir character, output directory, default:
 #' \code{resFolder(df)}.
 #' Will make a folder within this called "QC_STATS" with all results in this directory.
 #' Warning: If you assign not default path, you will have a hazzle to load files later.
@@ -50,7 +50,9 @@
 #' # Load an experiment
 #' df <- ORFik.template.experiment()
 #' # Run QC
-#' # QCreport(df)
+#' #QCreport(df, tempdir())
+#' # QC on subset
+#' #QCreport(df[9,], tempdir())
 QCreport <- function(df, out.dir = resFolder(df),
                      plot.ext = ".pdf", create.ofst = TRUE,
                      complex.correlation.plots = TRUE,
@@ -59,6 +61,7 @@ QCreport <- function(df, out.dir = resFolder(df),
   validateExperiments(df)
   stopifnot(plot.ext %in% c(".pdf", ".png"))
   stopifnot(create.ofst %in% c(TRUE, FALSE))
+  stopifnot(is.character(out.dir))
 
   message("Started ORFik QC report for experiment: ", df@experiment)
   stats_folder <- pasteDir(out.dir, "/QC_STATS/")
@@ -72,9 +75,9 @@ QCreport <- function(df, out.dir = resFolder(df),
   message("- Creating read length tables:")
   dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)
   # Get count tables
-  QC_count_tables(df, out.dir, BPPARAM = BPPARAM)
+  QC_count_tables(df, out.dir, force = FALSE,  BPPARAM = BPPARAM)
   # Alignment statistcs
-  finals <- alignmentFeatureStatistics(df, BPPARAM = BPPARAM)
+  finals <- alignmentFeatureStatistics(df, force = FALSE, BPPARAM = BPPARAM)
   # Do trimming detection
   finals <- trim_detection(df, finals)
   # Save file
@@ -82,7 +85,7 @@ QCreport <- function(df, out.dir = resFolder(df),
   # Get plots
   QCplots(df, "mrna", stats_folder, plot.ext = plot.ext,
           complex.correlation.plots = complex.correlation.plots,
-          BPPARAM = BPPARAM)
+          force = FALSE, BPPARAM = BPPARAM)
 
   message("--------------------------")
   message(paste("Everything done, saved QC to:", stats_folder))
@@ -106,6 +109,7 @@ ORFikQC <- QCreport
 #'
 #' Is part of \code{\link{QCreport}}
 #' @inheritParams QCreport
+#' @inheritParams outputLibs
 #' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save, default:
@@ -118,6 +122,7 @@ QCplots <- function(df, region = "mrna",
                     stats_folder = QCfolder(df),
                     plot.ext = ".pdf",
                     complex.correlation.plots = TRUE,
+                    force = TRUE,
                     BPPARAM) {
   message("--------------------------")
   message("Making QC plots:")
@@ -149,6 +154,7 @@ QCplots <- function(df, region = "mrna",
                      GRangesList(), df = df, outdir = stats_folder,
                      scores = c("sum", "transcriptNormalized"),
                      is.sorted = TRUE, windowSize = 100, plot.ext = plot.ext,
+                     verbose = FALSE, force = force,
                      BPPARAM = BPPARAM)
     return(invisible(NULL))
   }
@@ -162,6 +168,7 @@ QCplots <- function(df, region = "mrna",
                    trailers, df = df, outdir = stats_folder,
                    scores = c("sum", "transcriptNormalized"),
                    is.sorted = TRUE, plot.ext = plot.ext,
+                   verbose = FALSE, force = force,
                    BPPARAM = BPPARAM)
   return(invisible(NULL))
 }

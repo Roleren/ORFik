@@ -141,7 +141,8 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' # 1. Create ORFik experiment
 #' #  ORFik::create.experiment(...)
 #' # 2. Create ORFik optimized annotation:
-#' # makeTxdbFromGenome(gtf = ORFik:::getGtfPathFromTxdb(df), genome = df@fafile, organism = organism(df), optimize = TRUE)
+#' # makeTxdbFromGenome(gtf = ORFik:::getGtfPathFromTxdb(df), genome = df@fafile,
+#' #                      organism = organism(df), optimize = TRUE)
 #' # 3. There must exist pshifted reads, either as default files, or in a relative folder called
 #' # "./pshifted/". See ?shiftFootprintsByExperiment
 #' # EXAMPLE:

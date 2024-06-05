@@ -187,11 +187,11 @@ done
 echo ""
 #exit 1
 
-if [ $steps == "all" ]; then
+if [ "$steps" == "all" ]; then
 	steps="tr-ph-rR-nc-tR-ge"
 fi
 
-IFS="-" read -a stepsArray <<< $steps
+IFS="-" read -a stepsArray <<< "$steps"
 export stepsArray
 
 
@@ -224,7 +224,7 @@ if [ ! -z "$in_file_two" ]; then
 	fi
 
 	if [[ ! $in_file_two =~ .*\.(fasta|fa|fastq|gz|fq) ]]; then
-	    echo "Invalid input file type: $in_dir_two"
+	    echo "Invalid input file type: $in_file_two"
 	    echo "Must be either fasta, fa, fastq, fq or gz"
 	    exit 1
 	fi
@@ -268,7 +268,7 @@ ibn=${ibn%.fasta}
 ibn=${ibn%.fa}
 echo "basename of file is: ${ibn}"
 
-
+# Index of current step (tr-ge, means tr = 0)
 function indexOf()
 {
 	string=($1) && shift
@@ -282,7 +282,9 @@ function indexOf()
     	done
 }
 
+# Get all relative paths to outputs of pipeline
 # 1 ${stepsArray[ind]} 2 ${out_dir} 3 ${ibn} 4 ${in_file_two}
+# Return: string Full path to designated file (2 for paired end)
 function pathList()
 {
 	if [ -z ${4} ]; then # if single end
@@ -333,6 +335,7 @@ function pathList()
 # Get fasta/bam file to use in this step
 # Parameters 1. $resume 2. $in_file 3.current:'ge'
 # 4. ${out_dir} 5. ${ibn} 6. ${in_file_two}
+# Return: string: 1 path for single end, 2 for paired.
 function inputFile()
 {
 	var=$(indexOf "$3" ${stepsArray[@]})
@@ -365,6 +368,7 @@ function doThisStep()
 }
 
 # Should STAR use zcat or no decompression ?
+# Return: string zcat or "-"
 function comp()
 {
 	if [[ $1 =~ .*\.(gz) ]]; then
@@ -384,7 +388,7 @@ function nCores()
 	fi
 }
 
-# Keep loaded genomes (y) or not (n), default (n)
+# Keep loaded STAR index of genomes (y) or not (n), default (n)
 function keepOrNot()
 {
 	if [[ "$1" == "y" ]]; then
@@ -394,6 +398,7 @@ function keepOrNot()
 	elif [[ "$1" == "noShared" ]]; then
 	  echo NoSharedMemory
 	else
+	  echo "Error: STAR keep.index.in.memory must be y, n or noShared"
 		exit 1
 	fi
 }
@@ -409,7 +414,7 @@ function trimPaired()
 	fi
 }
 
-# Adapter definition for fastp
+# Adapter definitions for fastp
 if [ -z  "$adapter" ]; then
 	adapter="" # "" is auto detection
 elif [ $adapter == "auto" ]; then

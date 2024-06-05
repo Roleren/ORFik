@@ -107,7 +107,9 @@ stopDefinition <- function(transl_table) {
 #' for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
 #' get seqs if you want only regions from a fasta/fasta index pair is:
 #' seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-#' search regions and faFile is a \code{\link{FaFile}}.
+#' search regions and faFile is a \code{\link{FaFile}}. Note: Remember that if
+#' you extracted through a GRanges object, that must have been sorted with negative
+#' strand exons descending.
 #' @param startCodon (character vector) Possible START codons to search for.
 #' Check \code{\link{startDefinition}} for helper function. Note that it is
 #' case sensitive, so "atg" would give 0 hits for a sequence with only capital
@@ -149,7 +151,7 @@ stopDefinition <- function(transl_table) {
 #' #  you can get sequences like this:
 #' gr <- unlist(orfs, use.names = TRUE)
 #' gr <- GRanges(seqnames = names(seq)[as.integer(names(gr))],
-#'  ranges(gr), strand = "+")
+#'  ranges = gr, strand = "+")
 #' # Give them some proper names:
 #' names(gr) <- paste0("ORF_", seq.int(length(gr)), "_", seqnames(gr))
 #' orf_seqs <- getSeq(seq, gr)
@@ -195,9 +197,8 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #' and that their orders match. 1st seq is 1st grl object, etc.
 #'
 #' See vignette for real life example.
-#' @param grl (\code{\link{GRangesList}}) of sequences
-#'  to search for ORFs, probably in genomic coordinates
 #' @inheritParams findORFs
+#' @inheritParams mapToGRanges
 #' @param groupByTx logical (default: FALSE), should output GRangesList be
 #' grouped by exons per ORF (TRUE) or by orfs per transcript (FALSE)?
 #' @return A GRangesList of ORFs.
@@ -225,7 +226,8 @@ findORFs <- function(seqs, startCodon =  startDefinition(1),
 #'
 findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
                         stopCodon = stopDefinition(1), longestORF = TRUE,
-                        minimumLength = 0, groupByTx = FALSE){
+                        minimumLength = 0, groupByTx = FALSE,
+                        grl_is_sorted = FALSE) {
   validGRL(class(grl))
   if (is.null(seqs) || length(seqs) == 0)
     stop("Fasta sequences had length 0 or is NULL")
@@ -239,7 +241,7 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
   result <- split(IRanges(result$orf[[1]], result$orf[[2]]), result$index)
   if (longestORF) result <- longestORFs(result)
 
-  return(mapToGRanges(grl, result, groupByTx))
+  return(mapToGRanges(grl, result, groupByTx, grl_is_sorted))
 }
 
 
@@ -277,7 +279,7 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' @family findORFs
 #' @examples
 #' # location of the example fasta file
-#' example_genome <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta",
+#' example_genome <- system.file("extdata/references/danio_rerio", "genome_dummy.fasta",
 #'  package = "ORFik")
 #' orfs <- findORFsFasta(example_genome)
 #' # To store ORF sequences (you need indexed genome .fai file):
@@ -295,7 +297,7 @@ findORFsFasta <- function(filePath, startCodon =  startDefinition(1),
   if (is(filePath, "character")) {
     filePath <- path.expand(filePath)
     if (!file.exists(filePath)) stop("'file' does not exist, check working dir!",
-                                     "If you wanted to pass character sequences",
+                                     " If you wanted to pass character sequences",
                                      "from R, convert to DNAStringSet!")
     gr <- findORFs_fasta(as.character(readDNAStringSet(filePath), use.names = TRUE),
                          startCodon, stopCodon, minimumLength,

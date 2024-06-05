@@ -24,7 +24,7 @@ LazyData: TRUE
 BugReports: https://github.com/Roleren/ORFik/issues
 URL: https://github.com/Roleren/ORFik
 Depends:
-  R (>= 4.4.0),
+  R (>= 4.1.0),
   IRanges (>= 2.17.1),
   GenomicRanges (>= 1.35.1),
   GenomicAlignments (>= 1.19.0)
@@ -38,11 +38,8 @@ Imports:
   BiocParallel (>= 1.19.0),
   BSgenome,
   cowplot (>= 1.0.0),
-  curl, 
-  RCurl,
   data.table (>= 1.11.8),
   DESeq2 (>= 1.24.0),
-  downloader,
   fst (>= 0.9.2),
   GenomeInfoDb (>= 1.15.5),
   GenomicFeatures (>= 1.31.10),
@@ -59,7 +56,6 @@ Imports:
   SummarizedExperiment (>= 1.14.0),
   S4Vectors (>= 0.21.3),
   tools,
-  txdbmaker,
   utils,
   XML,
   xml2 (>= 1.2.0),

@@ -40,26 +40,12 @@
 read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                              validate = TRUE, output.env = .GlobalEnv) {
   stopifnot(is.environment(output.env))
-  if (is(file, "character")) {
-    if (length(file) != 1) stop("Experiment name must be single string!")
-    if (file == "") stop("Experiment name is empty: ''")
-    if (file_ext(file) == "") file <- paste0(file, ".csv")
-    if (!file.exists(file)) file <- pasteDir(in.dir, file)
-    if (!file.exists(file)) { # This will only trigger on CBU server @ UIB
-      cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R"
-      if (file.exists(file.path(cbu.path, basename(file))))
-        file <- file.path(cbu.path, basename(file))
-    }
+  stopifnot(is.logical(validate))
+  # Split up metadata and library data
+  parse_list <- experiment_parse_list_info(file, in.dir)
 
-    info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
-    listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
-                          stringsAsFactors = FALSE)
-  } else if(is(file, "data.frame")) {
-    info <- file[seq(3),]
-    listData <- file[-seq(4),]
-    colnames(listData) <- file[4,]
-  } else stop("file must be either character or data.frame template")
-  listData <- cbind(listData, index = as.integer(seq.int(nrow(listData))))
+  # Parse metadata info from list
+  info <- parse_list$info
   assembly <- ifelse(info[1,5] == "assembly" & !is.na(info[1,6]),
                      info[1,6], "")
   org <- ifelse(info[2,5] == "organism" & !is.na(info[2,6]),
@@ -75,7 +61,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
   df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
                    organism = org, author = author,
                    assembly = assembly,
-                   listData = listData,
+                   listData = parse_list$listData,
                    expInVarName = FALSE,
                    resultFolder = resultFolder,
                    envir = output.env)
@@ -184,9 +170,11 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #' # 2. Pick an experiment name
 #' exper <- "ORFik"
 #' # 3. Pick .gff/.gtf location
-#' txdb <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
+#' txdb <- system.file("extdata/references/homo_sapiens",
+#'                     "Homo_sapiens_dummy.gtf.db", package = "ORFik")
 #' # 4. Pick fasta genome of organism
-#' fa <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.fasta", package = "ORFik")
+#' fa <- system.file("extdata/references/homo_sapiens",
+#'                   "Homo_sapiens_dummy.fasta", package = "ORFik")
 #' # 5. Set organism (optional)
 #' org <- "Homo sapiens"
 #'
@@ -202,7 +190,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 #'
 #' ## Create and save experiment directly:
-#' ## Default location: "~/Bio_data/ORFik_experiments/"
+#' ## Default location of experiments is ORFik::config()["exp"]
 #' #template <- create.experiment(dir = dir, exper, txdb = txdb,
 #' #                               fa = fa, organism = org,
 #' #                               viewTemplate = FALSE)
@@ -311,4 +299,33 @@ save.experiment <- function(df, file) {
   write.table(x = df, file = file, sep = ",",
               row.names = FALSE, col.names = FALSE)
   return(invisible(NULL))
+}
+
+experiment_parse_list_info <- function(file, in.dir) {
+  if (is(file, "character")) {
+    if (length(file) != 1) stop("Experiment name must be single string!")
+    if (file == "") stop("Experiment name is empty: ''")
+    if (file_ext(file) == "") file <- paste0(file, ".csv")
+    if (!file.exists(file)) {
+      stopifnot(is.character(in.dir))
+      file <- pasteDir(in.dir, file)
+    }
+    if (!file.exists(file)) { # This will only trigger on CBU server @ UIB
+      cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R"
+      if (file.exists(file.path(cbu.path, basename(file))))
+        file <- file.path(cbu.path, basename(file))
+    }
+
+    info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
+    listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
+                          stringsAsFactors = FALSE)
+  } else if(is(file, "data.frame")) {
+    if (nrow(file) < 5) stop("For data.frame input, file must have > 4 rows")
+    info <- file[seq(3),]
+    listData <- file[-seq(4),]
+    colnames(listData) <- file[4,]
+  } else stop("file must be either character or data.frame template")
+  listData <- cbind(listData, index = as.integer(seq.int(nrow(listData))))
+
+  return(list(listData = listData, info = info))
 }

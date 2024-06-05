@@ -97,7 +97,7 @@ validateExperiments <- function(df) {
 
   emptyFiles <- file.size(files) == 0
   if (any(is.na(emptyFiles))) {
-    message("Error in experiment:", df@experiment)
+    message("Error in experiment:", name(df))
     stop(paste("File does not exist:\n", files[is.na(emptyFiles)]))
   }
 
@@ -147,14 +147,14 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
                        fraction_prepend_f = TRUE) {
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
-  varName <- c()
+  varName <- character()
   for (df in dfl) {
-    for (i in 1:nrow(df)) {
-      varName <- c(varName, bamVarNamePicker(df[i,], skip.replicate,
-                                             skip.condition, skip.stage,
-                                             skip.fraction, skip.experiment,
-                                             skip.libtype, fraction_prepend_f))
-    }
+    res <- vapply(1:nrow(df), function(i) bamVarNamePicker(df[i,], skip.replicate,
+                                                    skip.condition,
+                                                    skip.stage, skip.fraction,
+                                                    skip.experiment, skip.libtype,
+                                                    fraction_prepend_f), character(1))
+    varName <- c(varName, res)
   }
   return(varName)
 }
@@ -438,16 +438,10 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
   for (df in dfl) {
     validateExperiments(df)
     varNames <- name_decider(df, naming)
+    loaded <- libs_are_loaded(varNames, envir)
+    import_is_needed <- !all(loaded) | force
 
-    loaded <- c()
-    for (i in 1:nrow(df)) { # For each stage
-      if (exists(x = varNames[i], envir = envir, inherits = FALSE,
-                 mode = "S4")) {
-        loaded <- append(loaded, TRUE)
-      } else loaded <- append(loaded, FALSE)
-    }
-    # Par apply
-    if (!all(loaded) | force) {
+    if (import_is_needed) {
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       if (is(BPPARAM, "SerialParam")) {
         libs <- lapply(seq_along(paths),
@@ -500,6 +494,11 @@ name_decider <- function(df, naming) {
   return(varNames)
 }
 
+libs_are_loaded <- function(lib_names, envir) {
+  vapply(lib_names, function(lib) exists(x = lib, envir = envir, inherits = FALSE,
+                                           mode = "S4"), logical(1))
+}
+
 #' Converted format of NGS libraries
 #'
 #' Export as either .ofst, .wig, .bigWig,.bedo (legacy format) or .bedoc (legacy format) files:\cr
@@ -542,28 +541,33 @@ name_decider <- function(df, naming) {
 #' @param input.type character, input type "ofst". Remember this function
 #' uses the loaded libraries if existing, so this argument is usually ignored.
 #' Only used if files do not already exist.
+#' @param libs list, output of outputLibs as list of
+#'  GRanges/GAlignments/GAlignmentPairs objects. Set input.type and force arguments to define parameters.
 #' @param reassign.when.saving logical, default FALSE. If TRUE, will reassign
 #' library to converted form after saving. Ignored when out.dir = NULL.
-#' @return NULL (saves files to disc or R .GlobalEnv)
+#' @return invisible NULL (saves files to disc or R .GlobalEnv)
 #' @export
 #' @family lib_converters
 #' @examples
 #' df <- ORFik.template.experiment()
-#' #convertLibs(df)
+#' #convertLibs(df, out.dir = NULL)
 #' # Keep only 5' ends of reads
-#' #convertLibs(df, method = "5prime")
+#' #convertLibs(df, out.dir = NULL, method = "5prime")
 convertLibs <- function(df,
-                       out.dir = libFolder(df),
-                       addScoreColumn = TRUE, addSizeColumn = TRUE,
-                       must.overlap = NULL, method = "None",
-                       type = "ofst", input.type = "ofst",
-                       reassign.when.saving = FALSE,
-                       envir = envExp(df),
-                       BPPARAM = bpparam()) {
+                        out.dir = libFolder(df),
+                        addScoreColumn = TRUE, addSizeColumn = TRUE,
+                        must.overlap = NULL, method = "None",
+                        type = "ofst", input.type = "ofst",
+                        reassign.when.saving = FALSE,
+                        envir = envExp(df),
+                        force = TRUE,
+                        libs = outputLibs(df, type = input.type, chrStyle = must.overlap,
+                                          output.mode = "list", force = force, BPPARAM = BPPARAM),
+                        BPPARAM = bpparam()) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig", "bigWig")))
     stop("type must be either ofst, bedo or bedoc")
-
   validateExperiments(df)
+  stopifnot(length(libs) == nrow(df))
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
     stop("must.overlap must be GRanges or GRangesList object!")
   if (!is.null(out.dir)) {
@@ -573,21 +577,19 @@ convertLibs <- function(df,
     message(paste("Saving,", type, "files to:", out.dir))
   }
 
-  outputLibs(df, type = input.type, chrStyle = must.overlap, BPPARAM = BPPARAM)
-
   varNames <- bamVarName(df)
-  i <- 1
   message("--------------------------")
   message("Converting libraries to new format: ", type)
-  for (f in varNames) {
+  lapply(seq_along(libs), function(i) {
+    f <- varNames[i]
     message(f)
     if (type %in% c("bedo", "wig")) { # bedo, wig
-    gr <- convertToOneBasedRanges(gr = get(f, envir = envExp(df), mode = "S4"),
-                                  addScoreColumn = addScoreColumn,
-                                  addSizeColumn = addSizeColumn,
-                                  method = method)
+      gr <- convertToOneBasedRanges(gr = libs[[i]],
+                                    addScoreColumn = addScoreColumn,
+                                    addSizeColumn = addSizeColumn,
+                                    method = method)
     } else if (type %in% c("bedoc", "ofst")) {
-      gr <- collapseDuplicatedReads(x = get(f, envir = envExp(df), mode = "S4"),
+      gr <- collapseDuplicatedReads(x = libs[[i]],
                                     addScoreColumn = addScoreColumn)
     }
 
@@ -607,13 +609,14 @@ convertLibs <- function(df,
         export.bigWig(gr, file = output)
       } else # Must be bedoc, check done
         export.bedoc(gr, output)
-    if (reassign.when.saving)
-      assign(x = f, value = gr, envir = envir)
+      if (reassign.when.saving)
+        assign(x = f, value = gr, envir = envir)
     } else {
       assign(x = f, value = gr, envir = envir)
     }
-    i <- i + 1
-  }
+    return(invisible(NULL))
+  })
+  return(invisible(NULL))
 }
 
 # Keep for legacy purpose for now
@@ -860,13 +863,15 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
 #' @examples
 #' ORFik.template.experiment.zf()
 ORFik.template.experiment.zf <- function(as.temp = FALSE) {
-  dir <- system.file("extdata/Danio_rerio_sample", "", package = "ORFik")
+  sample_dir <- system.file("extdata/Danio_rerio_sample", "", package = "ORFik")
   # 2. Pick an experiment name
   exper <- "ORFik"
   # 3. Pick .gff/.gtf location
-  txdb <- system.file("extdata/Danio_rerio_sample", "annotations.gtf", package = "ORFik")
-  fa <- system.file("extdata/Danio_rerio_sample", "genome_dummy.fasta", package = "ORFik")
-  template <- create.experiment(dir = dir, saveDir = NULL,
+  txdb <- system.file("extdata/references/danio_rerio",
+                      "annotations.gtf", package = "ORFik")
+  fa <- system.file("extdata/references/danio_rerio",
+                    "genome_dummy.fasta", package = "ORFik")
+  template <- create.experiment(dir = sample_dir, saveDir = NULL,
                                 exper, txdb = txdb, fa = fa,
                                 organism = "Danio rerio",
                                 author = "Tjeldnes",
@@ -880,10 +885,12 @@ ORFik.template.experiment.zf <- function(as.temp = FALSE) {
 #'
 #' Toy-data created to resemble human genes:\cr
 #' Number of genes: 6\cr
-#' Ribo-seq: 2 libraries
-#' RNA-seq: 2 libraries
-#' CAGE: 1 library
-#' PAS (poly-A): 1 library
+#' Genome size: 1161nt x 6 chromosomes = 6966 nt\cr
+#' Experimental design (2 replicates, Wild type vs Mutant)\cr
+#' CAGE: 4 libraries\cr
+#' PAS (poly-A): 4 libraries\cr
+#' Ribo-seq: 4 libraries\cr
+#' RNA-seq: 4 libraries\cr
 #' @param as.temp logical, default FALSE, load as ORFik experiment.
 #' If TRUE, loads as data.frame template of the experiment.
 #' @return an ORFik \code{\link{experiment}}
@@ -892,13 +899,15 @@ ORFik.template.experiment.zf <- function(as.temp = FALSE) {
 #' @examples
 #' ORFik.template.experiment()
 ORFik.template.experiment <- function(as.temp = FALSE) {
-  dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
+  sample_dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
   # 2. Pick an experiment name
   exper <- "ORFik"
   # 3. Pick .gff/.gtf location
-  txdb <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.gtf.db", package = "ORFik")
-  fa <- system.file("extdata/Homo_sapiens_sample", "Homo_sapiens_dummy.fasta", package = "ORFik")
-  template <- create.experiment(dir = dir, saveDir = NULL,
+  txdb <- system.file("extdata/references/homo_sapiens",
+                      "Homo_sapiens_dummy.gtf.db", package = "ORFik")
+  fa <- system.file("extdata/references/homo_sapiens",
+                    "Homo_sapiens_dummy.fasta", package = "ORFik")
+  template <- create.experiment(dir = sample_dir, saveDir = NULL,
                                 exper, txdb = txdb, fa = fa,
                                 organism = "Homo sapiens",
                                 author = "Tjeldnes",

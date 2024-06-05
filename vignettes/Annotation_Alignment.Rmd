@@ -37,6 +37,7 @@ ORFik uses a folder structure of separating these 3 types:
 * 1. fastq files (raw_data)
 * 2. bam files (processed_data)
 * 3. annotation reference files (gtf + fasta genome references)
+* 4. experiment projects (ORFik experiments, NGS + reference linking + analysis)
 
 This is defined in the config() function, and only is needed to run once (config is stored for later experiments),
 so all other experiments will reuse the parent file structure. ORFik will try to automatically
@@ -44,14 +45,15 @@ create suitable locations if the following function is not run;
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   library(ORFik)                        # This package
   # Here the default values are shown:
-  where_to_save_config <- "~/bio_data/ORFik_config.csv"
+  where_to_save_config <- config_file() # Bioc Cache directory default
 
-  parent_folder <- "~/bio_data/"
+  parent_folder <- "~/bio_data/" # Change if you want it somewhere else
   fastq.dir <- file.path(parent_folder, "raw_data")
   bam.dir <- file.path(parent_folder, "processed_data")
   reference.dir <- file.path(parent_folder, "references")
+  exp.dir <- file.path(base.dir, "ORFik_experiments/")
   config.save(where_to_save_config,
-              fastq.dir, bam.dir, reference.dir)
+              fastq.dir, bam.dir, reference.dir, reference.dir)
 ```
 
 Either way if you made a custom config or let ORFik do it for you in next step, you can check what it is
@@ -137,7 +139,7 @@ For small organisms like yeast, they don't have a primary assembly, so use "topl
   annotation <- getGenomeAndAnnotation(
                       organism = organism,
                       output.dir = conf["ref"],
-                      assembly_type = "toplevel"
+                      assembly_type = "toplevel" # Usually leave this to "auto"
                       )
 ```
 The function will also create a txdb object to speed up loading of gtf annotation, and index your genome to a .fai file (fasta index),

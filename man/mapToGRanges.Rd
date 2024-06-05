@@ -4,11 +4,12 @@
 \alias{mapToGRanges}
 \title{Map orfs to genomic coordinates}
 \usage{
-mapToGRanges(grl, result, groupByTx = TRUE)
+mapToGRanges(grl, result, groupByTx = TRUE, grl_is_sorted = FALSE)
 }
 \arguments{
 \item{grl}{A \code{\link{GRangesList}} of the original
-sequences that gave the orfs in Genomic coordinates.}
+sequences that gave the orfs in Genomic coordinates. If grl_is_sorted = TRUE (default),
+negative exon ranges per grl object must be sorted in descending orders.}
 
 \item{result}{IRangesList A list of the results of finding uorfs
 list syntax is: Per list group in IRangesList is per grl index. In
@@ -16,6 +17,10 @@ transcript coordinates. The names are grl index as character.}
 
 \item{groupByTx}{logical (T), should output GRangesList be grouped by
 transcripts (T) or by ORFs (F)?}
+
+\item{grl_is_sorted}{logical, default FALSE If FALSE will sort negative transcript
+in descending order for you. If you loaded ranges with default methods this is
+already the case, so you can set to TRUE to save some time.}
 }
 \value{
 A \code{\link{GRangesList}} of ORFs.

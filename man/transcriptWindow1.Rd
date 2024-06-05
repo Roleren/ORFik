@@ -49,10 +49,22 @@ targets / nontargets etc. (default: "")}
 
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
-\item{type}{a character(default: "ofst"), load files in experiment
-or some precomputed variant, either "ofst", "pshifted" or "default".
-These are made with ORFik:::simpleLibs(), shiftFootprintsByExperiment()..
-Will load default if bedoc is not found}
+\item{type}{a character(default: "default"), load files in experiment
+or some precomputed variant, like "ofst" or "pshifted".
+These are made with ORFik:::convertLibs(),
+shiftFootprintsByExperiment(), etc.
+Can also be custom user made folders inside the experiments bam folder.
+It acts in a recursive manner with priority: If you state "pshifted",
+but it does not exist, it checks "ofst". If no .ofst files, it uses
+"default", which always must exists.\cr Presets are (folder is relative
+to default lib folder, some types fall back to other formats if folder does not exist):\cr
+- "default": load the original files for experiment, usually bam.\cr
+- "ofst": loads ofst files from the ofst folder, relative to lib folder (falls back to default)\cr
+- "pshifted": loads ofst, wig or bigwig from pshifted folder (falls back to ofst, then default)\cr
+- "cov": Load covRle objects from cov_RLE folder (fail if not found)\cr
+- "covl": Load covRleList objects, from cov_RLE_List folder (fail if not found)\cr
+- "bed": Load bed files, from bed folder (falls back to default)\cr
+- Other formats must be loaded directly with fimport}
 
 \item{drop.zero.dt}{logical FALSE, if TRUE and as.data.table is TRUE,
 remove all 0 count positions.

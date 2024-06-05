@@ -67,24 +67,27 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' There is no check on invalid matches, so be carefull if you use this
 #' function directly.
 #' @param grl A \code{\link{GRangesList}} of the original
-#'  sequences that gave the orfs in Genomic coordinates.
+#'  sequences that gave the orfs in Genomic coordinates. If grl_is_sorted = TRUE (default),
+#'  negative exon ranges per grl object must be sorted in descending orders.
 #' @param result IRangesList A list of the results of finding uorfs
 #' list syntax is: Per list group in IRangesList is per grl index. In
 #' transcript coordinates. The names are grl index as character.
 #' @param groupByTx logical (T), should output GRangesList be grouped by
 #' transcripts (T) or by ORFs (F)?
+#' @param grl_is_sorted logical, default FALSE If FALSE will sort negative transcript
+#' in descending order for you. If you loaded ranges with default methods this is
+#' already the case, so you can set to TRUE to save some time.
 #' @return A \code{\link{GRangesList}} of ORFs.
 #' @family ORFHelpers
 #' @keywords internal
-mapToGRanges <- function(grl, result, groupByTx = TRUE) {
+mapToGRanges <- function(grl, result, groupByTx = TRUE, grl_is_sorted = FALSE) {
   if(length(result) == 0) return(GRangesList())
   validGRL(class(grl))
+  stopifnot(is(grl_is_sorted, "logical"))
   if (is.null(names(grl))) stop("'grl' contains no names.")
   if (!is(result, "IRangesList")) stop("Invalid type of result, must be IRL.")
   if (is.null(names(result))) stop("result IRL has no names")
-
-  # Check that grl is sorted
-  grl <- sortPerGroup(grl, ignore.strand = FALSE)
+  if (!grl_is_sorted) grl <- sortPerGroup(grl)
 
   # map transcripts to genomic coordinates, reduce away false hits
   genomicCoordinates <- pmapFromTranscriptF(result, grl, TRUE)

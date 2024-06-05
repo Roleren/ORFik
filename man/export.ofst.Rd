@@ -4,10 +4,12 @@
 \alias{export.ofst}
 \title{Store GRanges / GAlignments object as .ofst}
 \usage{
-export.ofst(x, ...)
+export.ofst(x, file, ...)
 }
 \arguments{
 \item{x}{a GRanges, GAlignments or GAlignmentPairs object}
+
+\item{file}{a character, location on disc (full path)}
 
 \item{...}{additional arguments for write_fst}
 }

@@ -117,7 +117,7 @@ See \code{\link{getWeights}}
 \examples{
 # Here we make an example from scratch
 # Usually the ORFs are found in orfik, which makes names for you etc.
-gtf <- system.file("extdata/Danio_rerio_sample", "annotations.gtf",
+gtf <- system.file("extdata/references/danio_rerio", "annotations.gtf",
  package = "ORFik") ## location of the gtf file
 
 suppressWarnings(txdb <- loadTxdb(gtf))

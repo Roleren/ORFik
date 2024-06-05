@@ -125,3 +125,15 @@ test_that("Experiment class correct renaming", {
   res <- mainNames(names, dt)
   expect_equal(res, c("RNA", "RFP"))
 })
+
+test_that("filepath find correct paths", {
+  df_z <- ORFik.template.experiment.zf()
+  reads <- filepath(df_z[1,], "default")
+  reads_as_ofst <- filepath(df_z[1,], "ofst")
+  expect_is(reads, "character")
+  expect_equal(length(reads), 1)
+  expect_false(identical(reads, reads_as_ofst))
+})
+
+
+

@@ -99,9 +99,9 @@ install.sratoolkit <- function(folder = "~/bin", version = "2.11.3") {
 #' to use in download.file when using ebi ftp download. Sometimes "curl"
 #' is might not work (the default auto usually), in those cases use wget.
 #' See "method" argument of ?download.file, for more info.
-#' @param timeout 1000, how many seconds before killing download if
+#' @param timeout 5000, how many seconds before killing download if
 #' still active? Will overwrite global option until R session is closed.
-#' Increase value if you are on a very slow connection.
+#' Increase value if you are on a very slow connection or downloading a large dataset.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}
 #' @return a character vector of download files filepaths
@@ -134,7 +134,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
                          compress = TRUE,
                          use.ebi.ftp = is.null(subset),
                          ebiDLMethod = "auto",
-                         timeout = 1000,
+                         timeout = 5000,
                          BPPARAM = bpparam()) {
 
   # If character presume SRR, if not check for column Run or SRR
@@ -310,7 +310,7 @@ rename.SRA.files <- function(files, new_names) {
 #' @family sra
 #' @keywords internal
 download.ebi <- function(info, outdir, rename = TRUE,
-                         ebiDLMethod = "auto", timeout = 1000,
+                         ebiDLMethod = "auto", timeout = 5000,
                          BPPARAM = bpparam()) {
 
   study <- NULL
@@ -343,7 +343,7 @@ download.ebi <- function(info, outdir, rename = TRUE,
   files <- file.path(outdir, basename(urls))
   message("Starting download of EBI runs:")
   method <- ebiDLMethod
-  options(timeout = timeout)
+  withr::local_options(timeout = timeout)
   BiocParallel::bplapply(urls, function(i, outdir, method) {
     message(i)
     download.file(i, destfile = file.path(outdir, basename(i)),
