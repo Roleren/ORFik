@@ -300,7 +300,8 @@ ribo_fft_plot <- function(fft_dt, period_window = c(0, 6)) {
 #' can use this function. Defaults to loading pshifts, if you made a-sites or
 #' e-sites, change the path argument to ashifted/eshifted folder instead.
 #' @inheritParams shiftFootprintsByExperiment
-#' @param path path to .rds file containing the shifts as a list,
+#' @param path path, default file.path(libFolder(df), "pshifted", "shifting_table.rds").
+#' Path to .rds file containing the shifts as a list,
 #' one list element per shifted bam file.
 #' @return a list of the shifts, one list element per shifted bam file.
 #' @family pshifting
@@ -310,9 +311,66 @@ ribo_fft_plot <- function(fft_dt, period_window = c(0, 6)) {
 #' # subset on Ribo-seq
 #' df <- df[df$libtype == "RFP",]
 #' #shiftFootprintsByExperiment(df)
-#' #shifts.load(df)
-shifts.load <- function(df,
-                        path = pasteDir(dirname(df$filepath[1]),
-                                        "/pshifted/shifting_table.rds")) {
+#' #shifts_load(df)
+shifts_load <- function(df, path = file.path(libFolder(df), "pshifted",
+                                            "shifting_table.rds")) {
   return(readRDS(file = path))
 }
+
+#' @inherit shifts_load
+shifts.load <- shifts_load
+
+#' Save shifts for Ribo-seq
+#'
+#' Should be stored in pshifted folder relative to default files
+#' @param shifts a list of data.table/data.frame objects.
+#' Must be named with the full path to ofst/bam files that defines the shifts.
+#' @param folder directory to save file,
+#' Usually: file.path(libFolder(df), "pshifted"), where df is the ORFik
+#' experiment / or your path of default file types.
+#' It will be named file.path(folder, "shifting_table.rds").
+#' For ORFik to work optimally,
+#' the folder should be the /pshifted/ folder relative to default files.
+#' @return invisible(NULL), file saved to disc as "shifting_table.rds".
+#' @family pshifting
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment.zf()
+#' shifts <- shifts_load(df)
+#' original_shifts <- file.path(libFolder(df), "pshifted", "shifting_table.rds")
+#' # Move to temp
+#' new_shifts_path <- file.path(tempdir(), "shifting_table.rds")
+#' new_shifts <- c(shifts, shifts)
+#' names(new_shifts)[2] <- file.path(tempdir(), "RiboSeqTemp.ofst")
+#' saveRDS(new_shifts, new_shifts_path)
+#' new_shifts[[1]][1,2] <- -10
+#' # Now update the new shifts, here we input only first
+#' shifts_save(new_shifts[1], tempdir())
+#' readRDS(new_shifts_path) # You still get 2 outputs
+#'
+shifts_save <- function(shifts, folder) {
+  stopifnot(is(shifts, "list"))
+  stopifnot(is(shifts[[1]], "data.frame"))
+  if (length(shifts) == 0) {
+    warning("Tried to save shift table of length 0, returning without saving!")
+  }
+  stopifnot(length(unique(names(shifts))) == length(shifts) & !anyNA(names(shifts)))
+  names(shifts) <- pasteDir(names(shifts))
+  folder <- pasteDir(folder)
+  shift_table_path <- file.path(folder, "shifting_table.rds")
+  if (file.exists(shift_table_path)) {
+    old_shifts <- readRDS(shift_table_path)
+    identical_libs <- identical(names(shifts), names(old_shifts))
+    is_subset <- all(names(shifts) %in% names(old_shifts))
+    if (!identical_libs & is_subset) {
+      old_shifts[names(shifts)] <- shifts
+      shifts <- old_shifts
+    }
+  }
+  saveRDS(shifts, file = shift_table_path)
+  return(invisible(NULL))
+}
+
+
+
+

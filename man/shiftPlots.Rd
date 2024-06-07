@@ -77,6 +77,7 @@ Other pshifting:
 \code{\link{detectRibosomeShifts}()},
 \code{\link{shiftFootprints}()},
 \code{\link{shiftFootprintsByExperiment}()},
-\code{\link{shifts.load}()}
+\code{\link{shifts_load}()},
+\code{\link{shifts_save}()}
 }
 \concept{pshifting}

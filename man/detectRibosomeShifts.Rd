@@ -182,6 +182,7 @@ Other pshifting:
 \code{\link{shiftFootprints}()},
 \code{\link{shiftFootprintsByExperiment}()},
 \code{\link{shiftPlots}()},
-\code{\link{shifts.load}()}
+\code{\link{shifts_load}()},
+\code{\link{shifts_save}()}
 }
 \concept{pshifting}
