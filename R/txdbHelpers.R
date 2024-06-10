@@ -273,7 +273,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'  Only used if input is path to gff.
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
-#' @importFrom GenomicFeatures makeTxDbFromGFF makeTxDb
+#' @importFrom txdbmaker makeTxDbFromGFF makeTxDb
 #' @export
 #' @examples
 #' library(GenomicFeatures)
@@ -291,7 +291,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
-      txdb <- GenomicFeatures::makeTxDbFromGFF(txdb, organism = organism,
+      txdb <- txdbmaker::makeTxDbFromGFF(txdb, organism = organism,
                                                chrominfo = chrominfo)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
@@ -307,7 +307,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
       stop("When txdb is list input, must have names:",
            paste(must_have_cols, collapse = ", "))
     }
-    return(do.call(GenomicFeatures::makeTxDb, txdb))
+    return(do.call(txdbmaker::makeTxDb, txdb))
   } else if(!is(txdb, "TxDb")) stop("txdb must be path, list or TxDb")
   return(matchSeqStyle(txdb, chrStyle))
 }
