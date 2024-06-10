@@ -152,7 +152,7 @@ shiftFootprintsByExperiment(df)
 #shiftFootprintsByExperiment(df, verbose = TRUE)
 ## Re-shift, if you think some are wrong
 ## Here as an example we update library 1, third read length to shift 12
-shift.list <- shifts.load(df)
+shift.list <- shifts_load(df)
 shift.list[[1]]$offsets_start[3] <- -12
 #shiftFootprintsByExperiment(df, shift.list = shift.list)
 ## For additional speedup in R for nucleotide coverage (coveragePerTiling etc)
@@ -167,6 +167,7 @@ Other pshifting:
 \code{\link{detectRibosomeShifts}()},
 \code{\link{shiftFootprints}()},
 \code{\link{shiftPlots}()},
-\code{\link{shifts.load}()}
+\code{\link{shifts_load}()},
+\code{\link{shifts_save}()}
 }
 \concept{pshifting}

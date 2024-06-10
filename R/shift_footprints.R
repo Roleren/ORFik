@@ -358,7 +358,7 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' #shiftFootprintsByExperiment(df, verbose = TRUE)
 #' ## Re-shift, if you think some are wrong
 #' ## Here as an example we update library 1, third read length to shift 12
-#' shift.list <- shifts.load(df)
+#' shift.list <- shifts_load(df)
 #' shift.list[[1]]$offsets_start[3] <- -12
 #' #shiftFootprintsByExperiment(df, shift.list = shift.list)
 #' ## For additional speedup in R for nucleotide coverage (coveragePerTiling etc)
@@ -445,7 +445,7 @@ shiftFootprintsByExperiment <- function(df,
     close(fileConn)
     # Save shifts
     names(shifts) <- rfpFiles
-    saveRDS(shifts, file = file.path(path, "shifting_table.rds"))
+    shifts_save(shifts, folder)
   }
   if (verbose) {
     message("Shifting done, detected shifts per file:")
