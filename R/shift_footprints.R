@@ -445,7 +445,7 @@ shiftFootprintsByExperiment <- function(df,
     close(fileConn)
     # Save shifts
     names(shifts) <- rfpFiles
-    shifts_save(shifts, folder)
+    shifts_save(shifts, path)
   }
   if (verbose) {
     message("Shifting done, detected shifts per file:")

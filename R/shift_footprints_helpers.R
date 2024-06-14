@@ -356,8 +356,8 @@ shifts_save <- function(shifts, folder) {
   }
   stopifnot(length(unique(names(shifts))) == length(shifts) & !anyNA(names(shifts)))
   names(shifts) <- pasteDir(names(shifts))
-  folder <- pasteDir(folder)
-  shift_table_path <- file.path(folder, "shifting_table.rds")
+
+  shift_table_path <- pasteDir(file.path(folder, "shifting_table.rds"))
   if (file.exists(shift_table_path)) {
     old_shifts <- readRDS(shift_table_path)
     identical_libs <- identical(names(shifts), names(old_shifts))
