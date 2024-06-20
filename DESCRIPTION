@@ -55,7 +55,6 @@ Imports:
   stats,
   SummarizedExperiment (>= 1.14.0),
   S4Vectors (>= 0.21.3),
-  txdbmaker,
   tools,
   utils,
   XML,
