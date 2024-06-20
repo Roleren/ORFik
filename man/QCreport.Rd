@@ -10,6 +10,8 @@ QCreport(
   plot.ext = ".pdf",
   create.ofst = TRUE,
   complex.correlation.plots = TRUE,
+  library.names = bamVarName(df),
+  use_simplified_reads = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -34,6 +36,14 @@ in ./ofst/ folder relative to experiment main folder.}
 to simple correlation plot two computationally heavy dots + correlation plots.
 Useful for deeper analysis, but takes longer time to run, especially on low-quality
 gpu computers. Set to FALSE to skip these.}
+
+\item{library.names}{character, default: bamVarName(df). Names to load
+libraries as to environment and names to display in plots.}
+
+\item{use_simplified_reads}{logical, default TRUE. For count tables
+and coverage plots a speed up for GAlignments is to use 5' ends only. This
+will lose some detail for splice sites, but is usually irrelevant. Note: If
+reads are precollapsed GRanges, set to FALSE to avoid recollapsing.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

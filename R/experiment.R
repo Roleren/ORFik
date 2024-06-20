@@ -77,11 +77,11 @@ libraryTypes <- function(df, uniqueTypes = TRUE) {
 #'
 #' Check for valid existing, non-empty and all unique.
 #' A good way to see if your experiment is valid.
-#' @param df an ORFik \code{\link{experiment}}
+#' @inheritParams outputLibs
 #' @return NULL (Stops if failed)
 #' @family ORFik_experiment
 #' @keywords internal
-validateExperiments <- function(df) {
+validateExperiments <- function(df, library.names = bamVarName(df)) {
   libTypes <- libraryTypes(df)
   if (!is(df, "experiment")) stop("df must be experiment!")
   if (!all((c("stage", "libtype") %in% colnames(df))))
@@ -105,7 +105,8 @@ validateExperiments <- function(df) {
     print(files[emptyFiles])
     stop("Empty files in list, see above for which")
   }
-  names <- bamVarName(df)
+  stopifnot(is.character(library.names) && (length(library.names) == nrow(df)))
+  names <- library.names
   if (length(names) != length(unique(names))) {
     message("Duplicated rows: ", paste(names[duplicated(names)],
                                       collapse = " ; "))
@@ -149,11 +150,12 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
   if(!is(dfl, "list")) dfl <- list(dfl)
   varName <- character()
   for (df in dfl) {
-    res <- vapply(1:nrow(df), function(i) bamVarNamePicker(df[i,], skip.replicate,
-                                                    skip.condition,
-                                                    skip.stage, skip.fraction,
-                                                    skip.experiment, skip.libtype,
-                                                    fraction_prepend_f), character(1))
+    res <- vapply(seq(1, nrow(df), length.out = nrow(df)),
+                  function(i) bamVarNamePicker(df[i,], skip.replicate,
+                                               skip.condition, skip.stage,
+                                               skip.fraction,
+                                               skip.experiment, skip.libtype,
+                                               fraction_prepend_f), character(1))
     varName <- c(varName, res)
   }
   return(varName)
@@ -358,6 +360,10 @@ filepath_errors <- function(format) {
 #' the global environment, named by the rows of the experiment
 #' required to make all libraries have unique names.\cr
 #' Uses multiple cores to load, defined by multicoreParam
+#'
+#' The functions checks if the total set of libraries have already been loaded:
+#' i.e. Check if all names from 'library.names' exists as S4 objects in
+#' environment of experiment.
 #' @param df an ORFik \code{\link{experiment}}
 #' @inheritParams fimport
 #' @param type a character(default: "default"), load files in experiment
@@ -392,7 +398,7 @@ filepath_errors <- function(format) {
 #' \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
 #' \code{envExp(df) <- new.env()} etc.
 #' @param verbose logical, default TRUE, message about library output status.
-#' @param force logical, default TRUE If TRUE, reload files even if
+#' @param force logical, default TRUE If TRUE, reload library files even if
 #' matching named variables are found in environment used by experiment
 #'  (see \code{\link{envExp}}) A simple way to make
 #' sure correct libraries are always loaded. FALSE is faster if data
@@ -427,20 +433,21 @@ filepath_errors <- function(format) {
 #' @family ORFik_experiment
 outputLibs <- function(df, type = "default", paths = filepath(df, type),
                        param = NULL, strandMode = 0, naming = "minimum",
+                       library.names = name_decider(df, naming),
                        output.mode = "envir", chrStyle = NULL,
                        envir = envExp(df), verbose = TRUE, force = TRUE,
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   stopifnot(is.character(type))
+
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   all_libs <- NULL
   for (df in dfl) {
-    validateExperiments(df)
-    varNames <- name_decider(df, naming)
-    loaded <- libs_are_loaded(varNames, envir)
+    validateExperiments(df, library.names)
+    loaded <- libs_are_loaded(library.names, envir)
+    varNames <- library.names
     import_is_needed <- !all(loaded) | force
-
     if (import_is_needed) {
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       if (is(BPPARAM, "SerialParam")) {
@@ -561,12 +568,13 @@ convertLibs <- function(df,
                         reassign.when.saving = FALSE,
                         envir = envExp(df),
                         force = TRUE,
-                        libs = outputLibs(df, type = input.type, chrStyle = must.overlap,
+                        library.names = bamVarName(df),
+                        libs = outputLibs(df, type = input.type, chrStyle = must.overlap, library.names = library.names,
                                           output.mode = "list", force = force, BPPARAM = BPPARAM),
                         BPPARAM = bpparam()) {
   if (!(type %in% c("ofst", "bedo", "bedoc", "wig", "bigWig")))
     stop("type must be either ofst, bedo or bedoc")
-  validateExperiments(df)
+  validateExperiments(df, library.names)
   stopifnot(length(libs) == nrow(df))
   if (!is.null(must.overlap) & !is.gr_or_grl(must.overlap))
     stop("must.overlap must be GRanges or GRangesList object!")
@@ -577,11 +585,11 @@ convertLibs <- function(df,
     message(paste("Saving,", type, "files to:", out.dir))
   }
 
-  varNames <- bamVarName(df)
+
   message("--------------------------")
   message("Converting libraries to new format: ", type)
   lapply(seq_along(libs), function(i) {
-    f <- varNames[i]
+    f <- library.names[i]
     message(f)
     if (type %in% c("bedo", "wig")) { # bedo, wig
       gr <- convertToOneBasedRanges(gr = libs[[i]],

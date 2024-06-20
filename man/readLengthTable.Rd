@@ -4,7 +4,14 @@
 \alias{readLengthTable}
 \title{Make table of readlengths}
 \usage{
-readLengthTable(df, output.dir = NULL, type = "ofst", BPPARAM = bpparam())
+readLengthTable(
+  df,
+  output.dir = NULL,
+  type = "ofst",
+  force = TRUE,
+  library.names = bamVarName(df),
+  BPPARAM = bpparam()
+)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
@@ -15,6 +22,15 @@ If defined saves plot to that directory with the name "./readLengths.csv".}
 \item{type}{character, default: "ofst". Type of library:
 either "default", usually bam format (the one you gave to experiment),
 "pshifted" pshifted reads, "ofst", "bed", "bedo" optimized bed, or "wig"}
+
+\item{force}{logical, default TRUE If TRUE, reload library files even if
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
+
+\item{library.names}{character, default: bamVarName(df). Names to load
+libraries as to environment and names to display in plots.}
 
 \item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
 Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of

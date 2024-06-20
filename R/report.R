@@ -42,6 +42,12 @@
 #' to simple correlation plot two computationally heavy dots + correlation plots.
 #' Useful for deeper analysis, but takes longer time to run, especially on low-quality
 #' gpu computers. Set to FALSE to skip these.
+#' @param library.names character, default: bamVarName(df). Names to load
+#' libraries as to environment and names to display in plots.
+#' @param use_simplified_reads logical, default TRUE. For count tables
+#' and coverage plots a speed up for GAlignments is to use 5' ends only. This
+#' will lose some detail for splice sites, but is usually irrelevant. Note: If
+#' reads are precollapsed GRanges, set to FALSE to avoid recollapsing.
 #' @return invisible(NULL) (objects are stored to disc)
 #' @family QC report
 #' @importFrom utils write.csv
@@ -56,12 +62,15 @@
 QCreport <- function(df, out.dir = resFolder(df),
                      plot.ext = ".pdf", create.ofst = TRUE,
                      complex.correlation.plots = TRUE,
+                     library.names = bamVarName(df),
+                     use_simplified_reads = TRUE,
                      BPPARAM = bpparam()) {
   # Check input
-  validateExperiments(df)
+  validateExperiments(df, library.names)
   stopifnot(plot.ext %in% c(".pdf", ".png"))
   stopifnot(create.ofst %in% c(TRUE, FALSE))
   stopifnot(is.character(out.dir))
+  stopifnot(is.logical(use_simplified_reads))
 
   message("Started ORFik QC report for experiment: ", df@experiment)
   stats_folder <- pasteDir(out.dir, "/QC_STATS/")
@@ -69,15 +78,23 @@ QCreport <- function(df, out.dir = resFolder(df),
     if (!dir.exists(stats_folder)) stop("Could not create output directory!")
   }
   if (create.ofst) {
-    convertLibs(df, reassign.when.saving = TRUE)
+    convertLibs(df, library.names = library.names, reassign.when.saving = TRUE,
+                BPPARAM = BPPARAM)
   }
   message("--------------------------")
   message("- Creating read length tables:")
-  dt_read_lengths <- readLengthTable(df, output.dir = stats_folder)
+  dt_read_lengths <- readLengthTable(df, force = FALSE,
+                                     library.names = library.names,
+                                     output.dir = stats_folder,
+                                     BPPARAM = BPPARAM)
   # Get count tables
-  QC_count_tables(df, out.dir, force = FALSE,  BPPARAM = BPPARAM)
+  QC_count_tables(df, out.dir, force = FALSE, library.names = library.names,
+                  use_simplified_reads = use_simplified_reads,
+                  BPPARAM = BPPARAM)
   # Alignment statistcs
-  finals <- alignmentFeatureStatistics(df, force = FALSE, BPPARAM = BPPARAM)
+  finals <- alignmentFeatureStatistics(df, force = FALSE,
+                                       library.names = library.names,
+                                       BPPARAM = BPPARAM)
   # Do trimming detection
   finals <- trim_detection(df, finals)
   # Save file
@@ -85,6 +102,7 @@ QCreport <- function(df, out.dir = resFolder(df),
   # Get plots
   QCplots(df, "mrna", stats_folder, plot.ext = plot.ext,
           complex.correlation.plots = complex.correlation.plots,
+          library.names = library.names,
           force = FALSE, BPPARAM = BPPARAM)
 
   message("--------------------------")
@@ -108,8 +126,8 @@ ORFikQC <- QCreport
 #' log2(fpkm + 1) correlation between samples.
 #'
 #' Is part of \code{\link{QCreport}}
-#' @inheritParams QCreport
 #' @inheritParams outputLibs
+#' @inheritParams QCreport
 #' @param region a character (default: mrna), make raw count matrices of
 #' whole mrnas or one of (leaders, cds, trailers)
 #' @param stats_folder directory to save, default:
@@ -122,6 +140,7 @@ QCplots <- function(df, region = "mrna",
                     stats_folder = QCfolder(df),
                     plot.ext = ".pdf",
                     complex.correlation.plots = TRUE,
+                    library.names = bamVarName(df),
                     force = TRUE,
                     BPPARAM) {
   message("--------------------------")
@@ -155,6 +174,7 @@ QCplots <- function(df, region = "mrna",
                      scores = c("sum", "transcriptNormalized"),
                      is.sorted = TRUE, windowSize = 100, plot.ext = plot.ext,
                      verbose = FALSE, force = force,
+                     library.names = library.names,
                      BPPARAM = BPPARAM)
     return(invisible(NULL))
   }
@@ -169,6 +189,7 @@ QCplots <- function(df, region = "mrna",
                    scores = c("sum", "transcriptNormalized"),
                    is.sorted = TRUE, plot.ext = plot.ext,
                    verbose = FALSE, force = force,
+                   library.names = library.names,
                    BPPARAM = BPPARAM)
   return(invisible(NULL))
 }

@@ -8,6 +8,7 @@ alignmentFeatureStatistics(
   df,
   type = "ofst",
   force = TRUE,
+  library.names = bamVarName(df),
   BPPARAM = bpparam()
 )
 }
@@ -31,11 +32,14 @@ to default lib folder, some types fall back to other formats if folder does not 
 - "bed": Load bed files, from bed folder (falls back to default)\cr
 - Other formats must be loaded directly with fimport}
 
-\item{force}{logical, default TRUE If TRUE, reload files even if
+\item{force}{logical, default TRUE If TRUE, reload library files even if
 matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
+
+\item{library.names}{character, default: bamVarName(df). Names to load
+libraries as to environment and names to display in plots.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

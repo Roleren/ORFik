@@ -107,13 +107,14 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
     is.one_based <- all(as.integer(readWidth) == rep(1, length(readWidth)))
     if (is.one_based ) {
       if (is.null(reads$size)) {
+        note_message <- paste0("Notification: All widths are 1, If this is p-shifted and collapsed ribo-seq,",
+                               "score or size meta column should contain widths of read, ")
         if (is.null(reads$score)) {
-          message("Notification: All widths are 1, If ribo-seq is p-shifted,",
-                  "score or size meta column should contain widths of read, ",
-                  "will continue using 1-widths")
+          note_message <- paste(note_message, "will continue using 1-widths.")
+          message(note_message)
         } else {
-          message("Notification: All widths are 1, using score column for ",
-                  "widths, remove score column and run again if this is wrong.")
+          message(note_message)
+          note_message <- paste(note_message, "will continue using score column for widths.")
           readWidth <- reads$score
         }
 

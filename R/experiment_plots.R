@@ -41,6 +41,7 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                              dfr = NULL, idName = "", plot.ext = ".pdf",
                              type = "ofst", is.sorted = FALSE, drop.zero.dt = TRUE,
                              verbose = TRUE, force = TRUE,
+                             library.names = bamVarName(df),
                              BPPARAM = bpparam()) {
   if (windowSize != 100)
     message(paste0("NOTE: windowSize is not 100! It is: ", windowSize))
@@ -48,8 +49,9 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
   for (df in dfl) {
-    varNames <- bamVarName(df)
-    outputLibs(df, chrStyle = leaders, type = type, verbose = verbose, force = force, BPPARAM = BPPARAM)
+    varNames <- library.names
+    outputLibs(df, chrStyle = leaders, type = type, verbose = verbose,
+               force = force, library.names = library.names, BPPARAM = BPPARAM)
     coverage <- data.table()
     if (!allTogether) {
       stop("fix!")

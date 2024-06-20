@@ -3,18 +3,20 @@
 #' The better the annotation / gtf used, the more results you get.
 #' @inheritParams outputLibs
 #' @inheritParams QCreport
-#' @param pre_collapse_reads logical, default TRUE. Collapse duplicated reads before counting,
-#' usually saves some time.
 #' @return a data.table of the count info
 #' @keywords internal
 QC_count_tables <- function(df, out.dir, type = "ofst",
-                            pre_collapse_reads = TRUE,
-                            force = TRUE,
+                            use_simplified_reads = TRUE,
+                            force = TRUE, library.names = bamVarName(df),
                             BPPARAM = bpparam()) {
-  outputLibs(df, chrStyle = findFa(df), type = type, force = force, BPPARAM = BPPARAM)
+  stopifnot(is.logical(use_simplified_reads))
+
+  outputLibs(df, chrStyle = findFa(df), type = type, force = force,
+             library.names = library.names, BPPARAM = BPPARAM)
   # TODO: test if needed
-  if (pre_collapse_reads) {
-    suppressMessages(convertLibs(df, out.dir = NULL, force = force)) # collapse
+  if (use_simplified_reads) {
+    suppressMessages(convertLibs(df, out.dir = NULL,
+                                 library.names = library.names, force = force))
   }
 
 
@@ -23,6 +25,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
   dt_list <- countTable_regions(df, geneOrTxNames = "tx",
                                 longestPerGene = FALSE,
                                 out.dir = out.dir, lib.type = type,
+                                library.names = library.names,
                                 BPPARAM = BPPARAM)
   return(invisible(NULL))
 }
@@ -37,6 +40,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
 #' @return a data.table of the statistcs
 #' @keywords internal
 alignmentFeatureStatistics <- function(df, type = "ofst", force = TRUE,
+                                       library.names = bamVarName(df),
                                        BPPARAM = bpparam()) {
   message("--------------------------")
   message("Making alignment statistics for lib:")
@@ -68,8 +72,9 @@ alignmentFeatureStatistics <- function(df, type = "ofst", force = TRUE,
   trailers <- loadRegion(txdb, "trailers")
   introns <- loadRegion(txdb, "introns")
 
-  outputLibs(df, chrStyle = fa, type = type, force = force, BPPARAM = BPPARAM)
-  libs <- bamVarName(df)
+  outputLibs(df, chrStyle = fa, type = type, force = force,
+             library.names = library.names, BPPARAM = BPPARAM)
+  libs <- library.names
   message("- Calculating alignment statistics..")
   finals <- bplapply(libs, function(s, sCo, tx, gff.df, libs, env) {
     message(s)
@@ -232,6 +237,8 @@ QCstats <- function(df, path = file.path(QCfolder(df), "STATS.csv")) {
 #'  "counts_per_sample", "perc_of_counts_per_sample")}
 #' @keywords internal
 readLengthTable <- function(df, output.dir = NULL, type = "ofst",
+                            force = TRUE,
+                            library.names = bamVarName(df),
                             BPPARAM = bpparam()) {
   file.name <- file.path(output.dir, "readLengths.csv")
   if (file.exists(file.name)) {
@@ -239,14 +246,13 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
     return(fread(file.name, header = TRUE))
   }
 
-  outputLibs(df, type = type, force = FALSE, BPPARAM = BPPARAM)
-  dt_read_lengths <- data.table(); sample_id <- 1
-  for(lib in bamVarName(df)) {
-    dt_read_lengths <- rbind(dt_read_lengths,
-                             data.table(sample = lib, sample_id,
-                              table(readWidths(get(lib, envir = envExp(df))))))
-    sample_id <- sample_id + 1
-  }
+  outputLibs(df, type = type, force = force, library.names = library.names, BPPARAM = BPPARAM)
+
+  dt_read_lengths <- rbindlist(lapply(seq_along(library.names), function(sample_id) {
+    lib <- library.names[sample_id]
+    data.table(sample = lib, sample_id, table(readWidths(get(lib, envir = envExp(df)))))
+  }))
+
 
   colnames(dt_read_lengths) <- c("sample", "sample_id", "read length", "counts")
   dt_read_lengths[, counts_per_sample := sum(counts), by = sample_id]

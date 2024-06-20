@@ -16,8 +16,9 @@ convertLibs(
   reassign.when.saving = FALSE,
   envir = envExp(df),
   force = TRUE,
-  libs = outputLibs(df, type = input.type, chrStyle = must.overlap, output.mode = "list",
-    force = force, BPPARAM = BPPARAM),
+  library.names = bamVarName(df),
+  libs = outputLibs(df, type = input.type, chrStyle = must.overlap, library.names =
+    library.names, output.mode = "list", force = force, BPPARAM = BPPARAM),
   BPPARAM = bpparam()
 )
 }
@@ -59,7 +60,7 @@ library to converted form after saving. Ignored when out.dir = NULL.}
 \code{envExp(df)}, which defaults to .GlobalEnv, but can be set with
 \code{envExp(df) <- new.env()} etc.}
 
-\item{force}{logical, default TRUE If TRUE, reload files even if
+\item{force}{logical, default TRUE If TRUE, reload library files even if
 matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data

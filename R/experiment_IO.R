@@ -65,6 +65,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                    expInVarName = FALSE,
                    resultFolder = resultFolder,
                    envir = output.env)
+
   if (validate) validateExperiments(df)
   return(df)
 }

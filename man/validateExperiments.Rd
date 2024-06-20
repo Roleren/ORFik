@@ -4,7 +4,7 @@
 \alias{validateExperiments}
 \title{Validate ORFik \code{\link{experiment}}}
 \usage{
-validateExperiments(df)
+validateExperiments(df, library.names = bamVarName(df))
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}

@@ -25,6 +25,7 @@ transcriptWindow(
   drop.zero.dt = TRUE,
   verbose = TRUE,
   force = TRUE,
+  library.names = bamVarName(df),
   BPPARAM = bpparam()
 )
 }
@@ -93,7 +94,7 @@ Will not change any plots, unless 0 positions are used in some sense.
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 
-\item{force}{logical, default TRUE If TRUE, reload files even if
+\item{force}{logical, default TRUE If TRUE, reload library files even if
 matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data

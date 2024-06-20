@@ -12,7 +12,7 @@
 #' gets a count of 1 from that read).
 #' This is the safest way to avoid false negatives
 #' (genes with no assigned hits that actually have true hits).
-#' @param df an ORFik \code{\link{experiment}}
+#' @inheritParams QCreport
 #' @param saveName a character (default NULL),
 #' if set save experiment to path given. Always saved as .rds.,
 #' it is optional to add .rds, it will be added for you if not present.
@@ -36,8 +36,6 @@
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
 #' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file count table files.
-#' @param force logical, default TRUE. IF TRUE, will not use existing libraries found in environment
-#' of experiment. See argument 'force' in \code{link{outputLibs}}
 #' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
 #' @export
@@ -63,11 +61,8 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             region = "mrna", type = "count",
                                             lib.type = "ofst",
                                             weight = "score", forceRemake = FALSE,
-                                            force = TRUE,
+                                            force = TRUE, library.names = bamVarName(df),
                                             BPPARAM = BiocParallel::SerialParam()) {
-  stopifnot(length(geneOrTxNames) == 1)
-  stopifnot(geneOrTxNames %in% c("tx", "gene"))
-
   if(!is.null(saveName)) {
     if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
     if (file.exists(saveName) & !forceRemake) {
@@ -75,7 +70,10 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
       return(readRDS(saveName))
     }
   }
-  validateExperiments(df)
+
+  stopifnot(length(geneOrTxNames) == 1)
+  stopifnot(geneOrTxNames %in% c("tx", "gene"))
+  validateExperiments(df, library.names)
 
   if (is(region, "character")) {
     txdb <- loadTxdb(df)
@@ -90,8 +88,9 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     names(tx) <- txNamesToGeneNames(names(tx), txdb)
   }
 
-  varNames <- bamVarName(df)
+  varNames <- library.names
   outputLibs(df, chrStyle = tx, type = lib.type, force = force,
+             library.names = library.names,
              BPPARAM = BPPARAM)
 
   rawCounts <- data.table(matrix(0, ncol = length(varNames),
@@ -368,12 +367,14 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                type = "count", lib.type = "ofst",
                                weight = "score",
                                rel.dir = "QC_STATS", forceRemake = FALSE,
+                               library.names = bamVarName(df),
                                BPPARAM = bpparam()) {
 
   countDir <- pasteDir(file.path(out.dir, rel.dir, "countTable_"))
   libs <- bplapply(
     regions,
-    function(region, countDir, df, geneOrTxNames, longestPerGene, forceRemake) {
+    function(region, countDir, df, geneOrTxNames, longestPerGene, forceRemake,
+             library.names) {
      message("- Creating read count tables for region:")
      message("  - ", region)
      path <- paste0(countDir, region)
@@ -381,10 +382,11 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                      geneOrTxNames = geneOrTxNames,
                                      longestPerGene = longestPerGene,
                                      saveName = path, lib.type = lib.type,
+                                     library.names = library.names,
                                      forceRemake = forceRemake, force = FALSE)
     },
     countDir = countDir, df = df,
-    geneOrTxNames = geneOrTxNames,
+    geneOrTxNames = geneOrTxNames, library.names = library.names,
     longestPerGene = longestPerGene, forceRemake = forceRemake, BPPARAM = BPPARAM
   )
   names(libs) <- regions

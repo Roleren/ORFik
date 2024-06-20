@@ -11,6 +11,7 @@ outputLibs(
   param = NULL,
   strandMode = 0,
   naming = "minimum",
+  library.names = name_decider(df, naming),
   output.mode = "envir",
   chrStyle = NULL,
   envir = envExp(df),
@@ -98,7 +99,7 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 
-\item{force}{logical, default TRUE If TRUE, reload files even if
+\item{force}{logical, default TRUE If TRUE, reload library files even if
 matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data
@@ -117,6 +118,11 @@ By default loads the original files of the experiment into
 the global environment, named by the rows of the experiment
 required to make all libraries have unique names.\cr
 Uses multiple cores to load, defined by multicoreParam
+}
+\details{
+The functions checks if the total set of libraries have already been loaded:
+i.e. Check if all names from 'library.names' exists as S4 objects in
+environment of experiment.
 }
 \examples{
 ## Load a template ORFik experiment

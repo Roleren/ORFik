@@ -15,6 +15,7 @@ countTable_regions(
   weight = "score",
   rel.dir = "QC_STATS",
   forceRemake = FALSE,
+  library.names = bamVarName(df),
   BPPARAM = bpparam()
 )
 }
@@ -56,6 +57,9 @@ will not use weights.}
 "QC_STATS". For pshifted, write "pshifted".}
 
 \item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file count table files.}
+
+\item{library.names}{character, default: bamVarName(df). Names to load
+libraries as to environment and names to display in plots.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

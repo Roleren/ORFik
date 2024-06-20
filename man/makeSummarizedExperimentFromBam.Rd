@@ -15,6 +15,7 @@ makeSummarizedExperimentFromBam(
   weight = "score",
   forceRemake = FALSE,
   force = TRUE,
+  library.names = bamVarName(df),
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -52,8 +53,8 @@ will not use weights.}
 
 \item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file count table files.}
 
-\item{force}{logical, default TRUE. IF TRUE, will not use existing libraries found in environment
-of experiment. See argument 'force' in \code{link{outputLibs}}}
+\item{library.names}{character, default: bamVarName(df). Names to load
+libraries as to environment and names to display in plots.}
 
 \item{BPPARAM}{how many cores/threads to use? default: BiocParallel::SerialParam()}
 }
