@@ -19,7 +19,7 @@
 #'
 #' NOTE: It will remove softclips from valid width, the CIGAR 3S30M is qwidth
 #' 33, but will remove 3S so final read width is 30 in ORFik.
-#' @param footprints \code{\link{GAlignments}} object of RiboSeq reads
+#' @inheritParams detectRibosomeShifts
 #' @param shifts a data.frame / data.table with minimum 2 columns,
 #' fraction (selected read lengths) and offsets_start (relative position in nt).
 #' Output from \code{\link{detectRibosomeShifts}}.\cr
@@ -59,6 +59,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
   selected_lengths <- shifts$fraction
   selected_shifts <- shifts$offsets_start
 
+  if (is(footprints, "character")) footprints <- fimport(footprints)
   lengthsAll <- readWidths(footprints, along.reference = TRUE)
   validLengths <- lengthsAll %in% selected_lengths
   lengthsAll <- lengthsAll[validLengths]
