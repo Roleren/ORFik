@@ -637,7 +637,14 @@ txSeqsFromFa <- function(grl, faFile, is.sorted = FALSE,
 windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
   g <- asTX(gr, tx, tx.is.sorted = TRUE)
   indices <- chmatch(txNames(gr, tx), names(tx))
-
+  if (anyNA(indices)) {
+    indices <- chmatch(names(gr), names(tx))
+    if (anyNA(indices)) {
+      stop("not all references are present, so can not map to transcripts.",
+           " Does your annotation contains  '_'+number naming?",
+           "ORFik uses this for a special purpose.")
+    }
+  }
   txEnds <- widthPerGroup(tx[indices], FALSE)
   starts <- pmin(pmax(start(g) - upstream, 1L), txEnds)
 
