@@ -143,12 +143,14 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE,
 #'
 #' Similar to GenomicFeatures' pmapToTranscripts, but in this version the
 #' grl ranges are compared to reference ranges with same name, not
-#' by index. And it has a security fix.
+#' by index. This gives a large speedup, but also requires
+#' all objects must be named.
 #' @param grl a \code{\link{GRangesList}} of ranges within
-#' the reference, grl must have column called names that gives
-#' grouping for result
-#' @param reference a GRangesList of ranges that include and are bigger or
-#' equal to grl ig. cds is grl and gene can be reference
+#'  the reference, grl must either have names matching, or a meta column called
+#' 'names' that gives grouping names. i.e. grl named uORF_1_ENST00001, must then
+#'  have a names meta column with ENST00001.
+#' @param reference a GRangesList of ranges that include grl as a subset
+#' of ranges. Example: cds is grl and mrna can be reference
 #' @inheritParams pmapToTranscriptF
 #' @return a GRangesList in transcript coordinates
 #' @family ExtendGenomicRanges
@@ -185,9 +187,14 @@ asTX <- function(grl, reference,
                  tx.is.sorted = TRUE) {
   orfNames <- txNames(grl, reference) # Find tx they came from
   if (sum(orfNames %in% names(reference)) != length(orfNames)) {
-    stop("not all references are present, so can not map to transcripts.")
+    orfNames <- names(grl)
+    if (is.null(orfNames) || sum(orfNames %in% names(reference)) != length(orfNames)) {
+      stop("not all references are present, so can not map to transcripts.",
+           " Does your annotation contains  '_'+number naming?",
+           "ORFik uses this for a special purpose.")
+    }
   }
-  reference <- reference[orfNames] # Duplicate needed transcripts
+  reference <- reference[orfNames] # Duplicate needed references
   names(reference) <- NULL
   return(pmapToTranscriptF(grl, reference,
                            ignore.strand = ignore.strand,

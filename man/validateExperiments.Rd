@@ -8,6 +8,9 @@ validateExperiments(df, library.names = bamVarName(df))
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
+
+\item{library.names}{character vector, names of libraries, default:
+name_decider(df, naming)}
 }
 \value{
 NULL (Stops if failed)

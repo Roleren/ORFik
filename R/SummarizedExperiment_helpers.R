@@ -13,6 +13,7 @@
 #' This is the safest way to avoid false negatives
 #' (genes with no assigned hits that actually have true hits).
 #' @inheritParams QCreport
+#' @inheritParams outputLibs
 #' @param saveName a character (default NULL),
 #' if set save experiment to path given. Always saved as .rds.,
 #' it is optional to add .rds, it will be added for you if not present.

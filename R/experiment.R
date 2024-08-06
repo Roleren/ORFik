@@ -390,6 +390,8 @@ filepath_errors <- function(format) {
 #' information needed to make all files unique. Set to "full" to get full
 #' names. Set to "fullexp", to get full name with experiment name as prefix,
 #' the last one guarantees uniqueness.
+#' @param library.names character vector, names of libraries, default:
+#' name_decider(df, naming)
 #' @param output.mode character, default "envir". Output libraries to environment.
 #' Alternative: "list", return as list. "envirlist", output to envir and return
 #' as list. If output is list format, the list elements are named from:

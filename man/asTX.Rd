@@ -14,11 +14,12 @@ asTX(
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} of ranges within
-the reference, grl must have column called names that gives
-grouping for result}
+ the reference, grl must either have names matching, or a meta column called
+'names' that gives grouping names. i.e. grl named uORF_1_ENST00001, must then
+ have a names meta column with ENST00001.}
 
-\item{reference}{a GRangesList of ranges that include and are bigger or
-equal to grl ig. cds is grl and gene can be reference}
+\item{reference}{a GRangesList of ranges that include grl as a subset
+of ranges. Example: cds is grl and mrna can be reference}
 
 \item{ignore.strand}{When ignore.strand is TRUE, strand is ignored in
 overlaps operations (i.e., all strands are considered "+") and the
@@ -47,7 +48,8 @@ transcriptome (reference) space.
 \details{
 Similar to GenomicFeatures' pmapToTranscripts, but in this version the
 grl ranges are compared to reference ranges with same name, not
-by index. And it has a security fix.
+by index. This gives a large speedup, but also requires
+all objects must be named.
 }
 \examples{
 seqname <- c("tx1", "tx2", "tx3")

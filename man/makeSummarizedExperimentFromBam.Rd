@@ -53,6 +53,12 @@ will not use weights.}
 
 \item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file count table files.}
 
+\item{force}{logical, default TRUE If TRUE, reload library files even if
+matching named variables are found in environment used by experiment
+ (see \code{\link{envExp}}) A simple way to make
+sure correct libraries are always loaded. FALSE is faster if data
+is loaded correctly already.}
+
 \item{library.names}{character, default: bamVarName(df). Names to load
 libraries as to environment and names to display in plots.}
 

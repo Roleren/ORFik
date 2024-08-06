@@ -66,6 +66,9 @@ matching named variables are found in environment used by experiment
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
 
+\item{library.names}{character vector, names of libraries, default:
+name_decider(df, naming)}
+
 \item{libs}{list, output of outputLibs as list of
 GRanges/GAlignments/GAlignmentPairs objects. Set input.type and force arguments to define parameters.}
 

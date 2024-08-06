@@ -100,6 +100,9 @@ matching named variables are found in environment used by experiment
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
 
+\item{library.names}{character vector, names of libraries, default:
+name_decider(df, naming)}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{

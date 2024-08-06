@@ -29,8 +29,8 @@ matching named variables are found in environment used by experiment
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
 
-\item{library.names}{character, default: bamVarName(df). Names to load
-libraries as to environment and names to display in plots.}
+\item{library.names}{character vector, names of libraries, default:
+name_decider(df, naming)}
 
 \item{BPPARAM}{a core param, default: single thread: \code{BiocParallel::SerialParam()}.
 Set to \code{BiocParallel::bpparam()} to use multicore. Be aware, this uses a lot of
