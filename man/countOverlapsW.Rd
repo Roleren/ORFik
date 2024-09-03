@@ -10,13 +10,13 @@ countOverlapsW(query, subject, weight = NULL, ...)
 \item{query}{IRanges, IRangesList, GRanges, GRangesList object.
 Usually transcript a transcript region.}
 
-\item{subject}{GRanges, GRangesList, GAlignment, usually reads.}
+\item{subject}{GRanges, GRangesList, GAlignment or covRle, usually reads.}
 
 \item{weight}{(default: NULL), if defined either numeric or character name
 of valid meta column in subject. If weight is single numeric, it is used
 for all. A normall weight is the score column given as weight = "score".
 GRanges("chr1", 1, "+", score = 5), would mean score column tells
-that this alignment region was found 5 times.}
+that this alignment region was found 5 times. Ignored if subject is covRle.}
 
 \item{...}{additional arguments passed to countOverlaps/findOverlaps}
 }

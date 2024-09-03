@@ -5,12 +5,12 @@
 #'
 #' @param query IRanges, IRangesList, GRanges, GRangesList object.
 #' Usually transcript a transcript region.
-#' @param subject GRanges, GRangesList, GAlignment, usually reads.
+#' @param subject GRanges, GRangesList, GAlignment or covRle, usually reads.
 #' @param weight (default: NULL), if defined either numeric or character name
 #' of valid meta column in subject. If weight is single numeric, it is used
 #' for all. A normall weight is the score column given as weight = "score".
 #' GRanges("chr1", 1, "+", score = 5), would mean score column tells
-#' that this alignment region was found 5 times.
+#' that this alignment region was found 5 times. Ignored if subject is covRle.
 #' @param ... additional arguments passed to countOverlaps/findOverlaps
 #' @return a named vector of number of overlaps to subject weigthed
 #'  by 'weight' column.
@@ -30,6 +30,7 @@
 #' countOverlaps(gr1, gr2)
 #' countOverlapsW(gr1, gr2, weight = "score")
 countOverlapsW <- function(query, subject, weight = NULL, ...) {
+  if (is(subject, "covRle")) weight <- NULL
   if (is.null(weight)) return(countOverlaps(query, subject, ...))
 
   weight <- getWeights(subject, weight)

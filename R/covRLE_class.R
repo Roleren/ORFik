@@ -310,6 +310,13 @@ setMethod("length",
           }
 )
 
+setMethod("countOverlaps",
+          c("GRangesList", "covRle"),
+          function(query, subject) {
+            sum(coveragePerTiling(query, subject))
+          }
+)
+
 
 #' Convert GRanges to covRle
 #' @param x a GRanges, GAlignment or GAlignmentPairs object.
