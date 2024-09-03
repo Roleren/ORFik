@@ -291,8 +291,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
-      txdb <- txdbmaker::makeTxDbFromGFF(txdb, organism = organism,
-                                               chrominfo = chrominfo)
+      txdb <- makeTxDbFromGFF(txdb, organism = organism, chrominfo = chrominfo)
     } else if(f == "db" | f == "sqlite") {
       txdb <- loadDb(txdb)
     } else {
@@ -307,7 +306,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
       stop("When txdb is list input, must have names:",
            paste(must_have_cols, collapse = ", "))
     }
-    return(do.call(txdbmaker::makeTxDb, txdb))
+    return(do.call(makeTxDb, txdb))
   } else if(!is(txdb, "TxDb")) stop("txdb must be path, list or TxDb")
   return(matchSeqStyle(txdb, chrStyle))
 }
