@@ -317,6 +317,16 @@ setMethod("countOverlaps",
           }
 )
 
+setMethod("countOverlaps",
+          c("GRanges", "covRle"),
+          function(query, subject) {
+            old_query_names <- names(query)
+            query <- split(query, seq(length(query)))
+            names(query) <- old_query_names
+            sum(coveragePerTiling(query, subject))
+          }
+)
+
 
 #' Convert GRanges to covRle
 #' @param x a GRanges, GAlignment or GAlignmentPairs object.
