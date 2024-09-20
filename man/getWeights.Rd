@@ -7,7 +7,8 @@
 getWeights(subject, weight = 1L)
 }
 \arguments{
-\item{subject}{a GRanges, IRanges or GAlignment object}
+\item{subject}{a GRanges, IRanges, GAlignment, GAlignmentPairs or
+covRle object}
 
 \item{weight}{a vector (default: 1L, if 1L it is identical to
 countOverlaps()),

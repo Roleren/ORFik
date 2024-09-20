@@ -286,11 +286,14 @@ seqlevelsStyleSafe <- function(x) {
 #' @family utils
 #' @keywords internal
 optimizeReads <- function(grl, reads) {
+  if (is(reads, "covRle")) return(reads)
   seqMatch <- validSeqlevels(grl, reads)
   reads <- keepSeqlevels(reads, seqMatch, pruning.mode = "coarse")
 
   reads <- reads[countOverlaps(reads, grl, type = "within") > 0]
   reads <- if (is(reads, "GAlignmentPairs")) {
+    message("For GAlignmentPairs using 'first' read of pair only,",
+            " Make sure it is correct!")
     reads <- reads[order(GenomicAlignments::first(reads))]
     } else reads <- sort(reads)
 

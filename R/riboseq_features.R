@@ -24,7 +24,7 @@
 #' @param librarySize either numeric value or character vector.
 #' Default ("full"), number of alignments in library (reads).
 #' If you just have a subset, you can give the value by
-#' librarySize = length(wholeLib),
+#' librarySize = length(wholeLib) or sum(wholeLib$score),
 #' if you want lib size to be only number of reads overlapping grl, do:
 #' librarySize = "overlapping"
 #' sum(countOverlaps(reads, grl) > 0),
@@ -64,12 +64,16 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
   overlaps <- countOverlapsW(grl, reads, weight)
 
   if (librarySize == "full") {
-    librarySize <- sum(getWeights(reads, weight))
+    librarySize <-
+      if (is(read, "covRle")) {
+        sum(sum(reads))
+      } else sum(getWeights(reads, weight))
   } else if (is.numeric(librarySize)) {
     # Use value directly
   } else if (librarySize == "overlapping") {
-    librarySize <- sum((countOverlaps(reads, grl) > 0) *
-                         getWeights(reads, weight))
+    librarySize <- sum(overlaps > 0)
+    # librarySize <- sum((countOverlaps(reads, grl) > 0) *
+    #                      getWeights(reads, weight))
   } else if (librarySize == "DESeq") {
     librarySize <- sum(overlaps)
   } else stop("librarySize must be numeric or full, overlapping, DESeq!")
@@ -199,6 +203,9 @@ floss <- function(grl, RFP, cds, start = 26, end = 34, weight = 1L){
   if (end < start) stop("end is smaller than start")
   if (is.grl(class(RFP))) {
     stop("RFP must be either GAlignment or GRanges type")
+  }
+  if (is(RFP, "covRle")) {
+    return(rep(0, length(grl)))
   }
   # Get all weights
   dt <- data.table(weights = getWeights(RFP, weight),

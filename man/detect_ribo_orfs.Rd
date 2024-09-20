@@ -16,6 +16,8 @@ detect_ribo_orfs(
   orf_candidate_ranges = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF =
     longestORF, startCodon = startCodon, stopCodon = stopCodon, minimumLength =
     minimumLength),
+  orfs_gr = categorize_and_filter_ORFs(orf_candidate_ranges, ORF_categories_to_keep, cds,
+    mrna),
   export_metrics_table = TRUE,
   longestORF = FALSE,
   startCodon = startDefinition(1),
@@ -58,6 +60,9 @@ detect_ribo_orfs(
 \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE),
 longestORF = longestORF, startCodon = startCodon, stopCodon = stopCodon,
 minimumLength = minimumLength)}}
+
+\item{orfs_gr}{= categorize_and_filter_ORFs(orf_candidate_ranges,
+ORF_categories_to_keep, cds, mrna). The GRangesList set of ORFs to actually search.}
 
 \item{export_metrics_table}{logical, default TRUE. Export table of statistics to file
 with suffix: "_prediction_table.rds"}

@@ -108,8 +108,10 @@ checkRNA <- function(class){
             "also ribosomeReleaseScore will also be not normalized best ",
             "way possible.")
   } else {
-    if (class != "GAlignmentPairs" & class != "GAlignments" & class != "GRanges") {
-      stop("RNA must be either GAlignments or GRanges")
+    if (class != "GAlignmentPairs" & class != "GAlignments" & class != "GRanges"
+        & class != "covRle") {
+      stop("RNA must be either of class GAlignmentPairs, GAlignments,",
+           " covRle or GRanges")
     }
   }
 }
@@ -121,8 +123,8 @@ checkRNA <- function(class){
 #' @family validity
 #' @keywords internal
 checkRFP <- function(class) {
-  if (class != "GAlignments" & class != "GRanges") {
-    stop("RFP must be either GAlignments or GRanges")
+  if (class != "GAlignments" & class != "GRanges" & class != "covRle") {
+    stop("RFP must be either of class GAlignments, covRle or GRanges")
   }
 }
 

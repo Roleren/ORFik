@@ -130,6 +130,8 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #'  \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE),
 #'  longestORF = longestORF, startCodon = startCodon, stopCodon = stopCodon,
 #'  minimumLength = minimumLength)}
+#' @param orfs_gr = categorize_and_filter_ORFs(orf_candidate_ranges,
+#'  ORF_categories_to_keep, cds, mrna). The GRangesList set of ORFs to actually search.
 #' @param export_metrics_table logical, default TRUE. Export table of statistics to file
 #' with suffix: "_prediction_table.rds"
 #' @param minimum_reads_ORF numeric, default 10, orf removed if less reads overlap whole orf
@@ -181,6 +183,8 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                              orf_candidate_ranges = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
                                                             startCodon = startCodon, stopCodon = stopCodon,
                                                             minimumLength = minimumLength),
+                             orfs_gr = categorize_and_filter_ORFs(orf_candidate_ranges,
+                                                                  ORF_categories_to_keep, cds, mrna),
                              export_metrics_table = TRUE,
                              longestORF = FALSE, startCodon =  startDefinition(1),
                              stopCodon = stopDefinition(1), minimumLength = 0,
@@ -189,10 +193,6 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
   message("Finding all candidate ORFs")
   dir.create(out_folder, recursive = TRUE, showWarnings = FALSE)
 
-
-  # Filter categories and map to GRanges
-  orfs_gr <- categorize_and_filter_ORFs(orf_candidate_ranges,
-                                        ORF_categories_to_keep, cds, mrna)
   orf_start_gr <- startSites(orfs_gr, TRUE,TRUE,TRUE)
   orf_stop_gr <- stopSites(orfs_gr, TRUE,TRUE,TRUE)
   # orf_start_overlaps_other <- countOverlaps(orf_start_gr, orfs_gr) - 1

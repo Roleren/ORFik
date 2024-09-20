@@ -284,6 +284,22 @@ setMethod("lengths",
           }
 )
 
+#' sum covRle
+#'
+#' Sum coverage per chromosome
+#' @param x a covRle object
+#' @return an integer, sum of coverage per chromosomes in covRle object
+#' @export
+setMethod("sum",
+          "covRle",
+          function(x) {
+            f <- sum(f(x))
+            r <- sum(r(x))
+            return(matrix(data = c(f, r), ncol = 2,
+                          dimnames = list(names(f), c("f", "r"))))
+          }
+)
+
 #' length covRle
 #'
 #' Number of chromosomes

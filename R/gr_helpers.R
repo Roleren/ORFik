@@ -76,7 +76,7 @@ groupGRangesBy <- function(gr, other = NULL) {
 #' Remember to think about how you define length. Like the question:
 #' is a Illumina error mismatch sufficient to reduce size of read and how
 #' do you know what is biological variance and what are Illumina errors?
-#' @param reads a GRanges, GAlignment or GAlignmentPairs object.
+#' @param reads a GRanges, GAlignment, GAlignmentPairs or covRleList object.
 #' @param after.softclips logical (TRUE), include softclips in width. Does not
 #' apply if along.reference is TRUE.
 #' @param along.reference logical (FALSE), example: The cigar "26MI2" is
@@ -148,7 +148,8 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
 }
 
 #' Get weights from a subject GenomicRanges object
-#' @param subject a GRanges, IRanges or GAlignment object
+#' @param subject a GRanges, IRanges, GAlignment, GAlignmentPairs or
+#'  covRle object
 #' @param weight a vector (default: 1L, if 1L it is identical to
 #' countOverlaps()),
 #' if single number (!= 1), it applies for all,
@@ -160,6 +161,7 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
 #' @return a numeric vector of weights of equal size to subject
 #' @keywords internal
 getWeights <- function(subject, weight = 1L) {
+  if (is(subject, "covRle")) return(NULL)
   weight <- if (is.numeric(weight)) {
     if (length(weight) == 1) {
       rep.int(weight, length(subject))

@@ -21,7 +21,7 @@ avoid NA and inf values.}
 \item{librarySize}{either numeric value or character vector.
 Default ("full"), number of alignments in library (reads).
 If you just have a subset, you can give the value by
-librarySize = length(wholeLib),
+librarySize = length(wholeLib) or sum(wholeLib$score),
 if you want lib size to be only number of reads overlapping grl, do:
 librarySize = "overlapping"
 sum(countOverlaps(reads, grl) > 0),
