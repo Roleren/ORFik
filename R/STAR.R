@@ -246,6 +246,9 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' which will be further processed in "ge" genome alignment step. Useful if you
 #' want to do further processing on contaminants, like specific coverage of
 #' specific tRNAs etc.
+#' @param keep.contaminants.type logical, default "bam".
+#' If aligned files of contaminants are kept, which format to output as,
+#' only supports "bam" for now. Fasta / Fastq will be implemented later.
 #' @param keep.unaligned.genome logical, default FALSE. Create and keep
 #' reads that did not align at the genome alignment step,
 #' default is to only keep the aliged bam file. Useful if you
@@ -315,6 +318,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, include.subfolders = "n", resume = NULL,
                               multiQC = TRUE, keep.contaminants = FALSE,
+                              keep.contaminants.type = c("bam", "fastq")[1],
                               keep.unaligned.genome = FALSE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
@@ -322,6 +326,9 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               script.single = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline.sh",
                                                           package = "ORFik")) {
+  stopifnot(keep.contaminants.type %in% c("bam", "fastq") & length(keep.contaminants.type) == 1)
+  if (keep.contaminants.type == "fastq") stop("Contaminant as fastq not yet implemented,",
+                                              " for now use: 'samtools fastq path_to_bam.bam'")
   if (!file.exists(script.folder))
     stop("STAR folder alignment script not found, check path of script!")
   if (!file.exists(script.single))
@@ -344,6 +351,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
   quality.filtering <- ifelse(quality.filtering, "-q default", "")
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
+  keep.contaminants.type <- paste("-X", keep.contaminants.type)
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
 
   full <- paste(script.folder, "-f", input.dir, "-o", output.dir,
@@ -352,7 +360,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-M", max.multimap, quality.filtering,
                 "-A", alignment.type, "-B", allow.introns,"-m", max.cpus, "-i", include.subfolders,
-                keep.contaminants, keep.unaligned.genome, star.path, fastp, "-I",script.single,
+                keep.contaminants, keep.contaminants.type,
+                keep.unaligned.genome, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
   if (.Platform$OS.type == "unix") {
     print(paste("Starting time:", Sys.time()))

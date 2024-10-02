@@ -28,10 +28,8 @@
 #' @param uniprot_id logical default FALSE.  If TRUE, will download
 #' and store all uniprot id for all transcripts (coding and noncoding)-
 #' In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
-#' @param pseudo_5UTRS_if_needed integer, default NULL. If defined > 0,
-#' will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
-#' a leader.
 #' @param return logical, default FALSE. If TRUE, return TXDB object, else NULL.
+#' @inheritParams add_pseudo_5utrs_txdb_if_needed
 #' @return NULL,  Txdb saved to disc named paste0(gtf, ".db").
 #' Set 'return' argument to TRUE, to get txdb back
 #' @export
@@ -44,6 +42,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
                                optimize = FALSE, gene_symbols = FALSE,
                                uniprot_id = FALSE,
                                pseudo_5UTRS_if_needed = NULL,
+                               minimum_5UTR_percentage = 30,
                                return = FALSE) {
   message("Making txdb of GTF")
   organismCapital <- paste0(toupper(substr(organism, 1, 1)),
@@ -76,29 +75,8 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     txdb <- loadTxdb(gtf, organism = organismCapital)
   }
 
-  pseudo5 <- pseudo_5UTRS_if_needed
-  if (!is.null(pseudo5)) {
-    if (pseudo5 > 0 & is.numeric(pseudo5)) {
-      message("---- Adding Pseudo 5' UTRs")
-      leaders <- loadRegion(txdb, "leaders")
-
-      message("- Total leaders: ", length(leaders))
-      if (length(leaders) > 0) {
-        message("- Leader length statistics:")
-        print(summary(widthPerGroup(leaders, FALSE)))
-        cds <- loadRegion(txdb, "cds")
-        percentage <- round((length(leaders) / length(cds))*100, 1)
-        message("- Percentage of CDS' with leaders: ", percentage, "%")
-      } else {
-        message("-- This genome has no predefined leaders")
-        percentage <- 0
-      }
-      if (percentage < 30) {
-        message("- Adding pseudo")
-        txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = pseudo5)
-      }
-    } else warning("Malformed 'pseudo_5UTRS_if_needed', ignoring it")
-  }
+  txdb <- add_pseudo_5utrs_txdb_if_needed(txdb, pseudo_5UTRS_if_needed,
+                                          minimum_5UTR_percentage)
 
   txdb_file <- paste0(gtf, ".db")
   AnnotationDbi::saveDb(txdb, txdb_file)
@@ -127,6 +105,44 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
   }
   if (return) return(txdb)
   return(invisible(NULL))
+}
+
+#' add_pseudo_5utrs_txdb_if_needed
+#' @param txdb a TxDb object
+#' @param pseudo_5UTRS_if_needed integer, default NULL. If defined > 0,
+#' will add pseudo 5' UTRs if 'minimum_5UTR_percentage" (default 30%) of
+#' mRNAs (coding transcripts) do not have a leader. (NULL and 0 are both the ignore command)
+#' @param minimum_5UTR_percentage numeric, default 30. What minimum percentage
+#' of mRNAs most have a 5' UTRs (leaders), to not do the pseudo_UTR addition.
+#' If percentage is higher it addition is ignored, set to 101 to always do it.
+#' @return txdb (new txdb if it was done, old if not)
+add_pseudo_5utrs_txdb_if_needed <- function(txdb, pseudo_5UTRS_if_needed = NULL, minimum_5UTR_percentage = 30) {
+  pseudo5 <- pseudo_5UTRS_if_needed
+  if (!is.null(pseudo5)) {
+    if (pseudo5 > 0 & is.numeric(pseudo5)) {
+      message("---- Adding Pseudo 5' UTRs")
+      leaders <- loadRegion(txdb, "leaders")
+
+      message("- Total leaders: ", length(leaders))
+      if (length(leaders) > 0) {
+        message("- Leader length statistics:")
+        print(summary(widthPerGroup(leaders, FALSE)))
+        cds <- loadRegion(txdb, "cds")
+        if (length(cds) == 0)
+          stop("Can not add pseudo 5' UTRs to a genome without Coding sequences!")
+        percentage <- round((length(leaders) / length(cds))*100, 1)
+        message("- Percentage of CDS' with leaders: ", percentage, "%")
+      } else {
+        message("-- This genome has no predefined leaders")
+        percentage <- 0
+      }
+      if (percentage < minimum_5UTR_percentage) {
+        message("- Adding pseudo")
+        txdb <- assignTSSByCage(txdb, cage = NULL, pseudoLength = pseudo5)
+      }
+    } else warning("Malformed 'pseudo_5UTRS_if_needed', ignoring it")
+  }
+  return(txdb)
 }
 
 #' Get new exon ids after update of txdb

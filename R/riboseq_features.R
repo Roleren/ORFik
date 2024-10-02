@@ -65,7 +65,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 
   if (librarySize == "full") {
     librarySize <-
-      if (is(read, "covRle")) {
+      if (is(reads, "covRle")) {
         sum(sum(reads))
       } else sum(getWeights(reads, weight))
   } else if (is.numeric(librarySize)) {

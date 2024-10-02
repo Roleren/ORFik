@@ -15,10 +15,10 @@ names of tx must contain all gr names. The names of gr can also be the
 ORFik orf names. that is "txName_id".}
 
 \item{upstream}{an integer, default (0), relative region to get
-upstream from.}
+upstream end from. (0 means start site, +1 is one upstream, -1 is one downstream)}
 
 \item{downstream}{an integer, default (0), relative region to get
-downstream from}
+downstream end from (0 means start site, +1 is one downstream, -1 is one upstream)}
 }
 \value{
 a GRanges, or GRangesList object if any group had > 1 exon.
@@ -49,13 +49,18 @@ windows, use \code{reduce()} to remove 0-width windows.
 ORF <- GRanges("1", c(3), "+") # start site
 names(ORF) <- "tx1_1" # ORF 1 on tx1
 tx <- GRangesList(tx1 = GRanges("1", c(1,3,5,7,9,11,13), "+"))
+windowPerGroup(ORF, tx, upstream = 0, downstream = 0) # <- TIS
+windowPerGroup(ORF, tx, upstream = 0, downstream = 1) # <- first and second base
+windowPerGroup(ORF, tx, upstream = -1, downstream = 1) # <- second base
+# find 2nd codon of an ORF on a spliced transcript
 windowPerGroup(ORF, tx, upstream = -3, downstream = 5) # <- 2nd codon
 
 # With multiple extensions downstream
 ORF <- rep(ORF, 2)
 names(ORF)[2] <- "tx1_2"
 windowPerGroup(ORF, tx, upstream = 0, downstream = c(2, 5))
-# The last one gives 2nd and (1st and 2nd) codon as two groups
+# The last one gives 2nd for first ORF and (1st and 2nd) codon for
+# second ORF, returned as two groups of class GRanges/GRangsList
 
 }
 \seealso{

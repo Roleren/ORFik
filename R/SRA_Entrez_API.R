@@ -31,39 +31,47 @@ fetch_xml_attributes <- function(xml, xml_path) {
   return(dt)
 }
 
-sample_info_append_SRA <- function(SRP, destfile, abstract_destfile, abstract,
-                                   remove.invalid, rich.format = FALSE) {
-  # Download xml and add more data
+sample_info_append_SRA <- function (SRP, destfile, abstract_destfile, abstract, remove.invalid,
+                                    rich.format = FALSE, fetch_GSE = FALSE)
+{
   xml <- sample_info_download(SRP)
+  if (fetch_GSE) {
+    all_ext <- xml2::xml_text(xml2::xml_find_all(xml, ".//EXTERNAL_ID"))
+    gse <- all_ext[grep("GSE",all_ext)]
+    gse <- unique(gse)
+    if (length(gse) > 1) warning("Multiple GSE identifiers found, using first")
+    if (length(gse) == 1) gse <- gse[1]
+    if (length(gse) == 0) gse <- NA_character_
+  }
   if (rich.format) {
-  sample_xml <- XML::xmlParse(xml)
-  sample_dt <- fetch_xml_attributes(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")
-  exp_attr_dt <- fetch_xml_attributes(sample_xml, "//EXPERIMENT/EXPERIMENT_ATTRIBUTES")
+    sample_xml <- XML::xmlParse(xml)
+    sample_dt <- fetch_xml_attributes(sample_xml, "//SAMPLE/SAMPLE_ATTRIBUTES")
+    exp_attr_dt <- fetch_xml_attributes(sample_xml, "//EXPERIMENT/EXPERIMENT_ATTRIBUTES")
   }
   xml <- xml2::as_list(xml)
   dt <- data.table()
   is_EXP_SET <- !is.null(xml$EXPERIMENT_PACKAGE_SET)
-  EXP <- if(is_EXP_SET) {xml$EXPERIMENT_PACKAGE_SET} else xml
-  # browser()
-  for(i in seq_along(EXP)) { # Per sample in study
+  EXP <- if (is_EXP_SET) {
+    xml$EXPERIMENT_PACKAGE_SET
+  }  else xml
+  for (i in seq_along(EXP)) {
     EXP_SAMPLE <- EXP[i]$EXPERIMENT_PACKAGE
     dt_single <- sample_info_single(EXP_SAMPLE)
     dt <- rbind(dt, dt_single)
   }
   no_linker <- !is.null(EXP$eFetchResult)
   if (no_linker) {
-    # Download runinfo from Trace / SRA server
     warning("Could not find SRA linker, falling back to deprecated search",
             "This might not find all the samples!")
     dt <- study_runinfo_download_deprecated(SRP, destfile)
-  } else {
+  }
+  else {
     dt <- add_pubmed_id(EXP_SAMPLE, dt)
   }
-
   dt <- add_author(dt)
-  # Save abstract
-
-  if (rich.format) dt <- cbind(dt, sample_dt, exp_attr_dt)
+  if (fetch_GSE) dt[,GEO := gse]
+  if (rich.format)
+    dt <- cbind(dt, sample_dt, exp_attr_dt)
   abstract_save(EXP_SAMPLE, abstract, abstract_destfile)
   return(filter_empty_runs(dt, remove.invalid, SRP))
 }

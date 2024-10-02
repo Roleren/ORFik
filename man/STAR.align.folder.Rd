@@ -26,6 +26,7 @@ STAR.align.folder(
   resume = NULL,
   multiQC = TRUE,
   keep.contaminants = FALSE,
+  keep.contaminants.type = c("bam", "fastq")[1],
   keep.unaligned.genome = FALSE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
@@ -168,6 +169,10 @@ contaminant aligning bam files, default is to only keep unaliged fastq reads,
 which will be further processed in "ge" genome alignment step. Useful if you
 want to do further processing on contaminants, like specific coverage of
 specific tRNAs etc.}
+
+\item{keep.contaminants.type}{logical, default "bam".
+If aligned files of contaminants are kept, which format to output as,
+only supports "bam" for now. Fasta / Fastq will be implemented later.}
 
 \item{keep.unaligned.genome}{logical, default FALSE. Create and keep
 reads that did not align at the genome alignment step,

@@ -242,7 +242,7 @@ dt <- computeFeatures(cds,
                 grl.is.sorted = TRUE, faFile = df.rfp,
                 weight.RFP = "score", weight.RNA = "score",
                 riboStart = 21, uorfFeatures = FALSE)
-# The significant DTEGs.
+# The features of significant DTEGs.
 dt[names(cds) %in%  significant_genes$id,]
 # All genes with strong 3nt periodicity of Ribo-seq
 dt[ORFScores > 5,]
@@ -262,13 +262,40 @@ library(RiboCrypt)
 cds <- loadRegion(df.rfp, "cds")
 RiboCrypt::multiOmicsPlot_list(cds[1640], cds[1640], reference_sequence = findFa(df.rfp@fafile), reads = list(fimport(filepath(df.rna[6,], "ofst")), fimport(filepath(df.rfp[6,], "pshifted"))),
                                ylabels = c("RNA", "RFP"), withFrames = c(F, T), frames_type = "columns")
-
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# uORF analysis (advanced under development!)
+# All ORF type predictions
+# Prediction using peridicity (Similar to RiboCode, ORFScore, minimum coverage, and comparison
+# to upstream and downstream window)
+# Will create 3 files in format (.rds), GRangesList of candidate ORFs, of predicted ORFs and a table
+# of all scores per ORF used for prediction
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+prediction_output_folder <- file.path(libFolder(df.rfp), "predicted_orfs")
+tx_subset <- c("ENST00000315377", "ENST00000311672", "ENST00000578186", "ENST00000549017",
+               "ENST00000644684", "ENST00000436146") # Use 6 transcript subset
+# Run on 2 first libraries
+ORFik::detect_ribo_orfs(df.rfp[1:2,], prediction_output_folder,
+                        c("uORF", "uoORF", "annotated", "NTE", "NTT", "doORF", "dORF"), 
+                        startCodon = "ATG|CTG|TTG|GTG", 
+                        mrna = loadRegion(df.rfp, "mrna", tx_subset),
+                        cds = loadRegion(df.rfp, "cds", tx_subset)) # Human also has a lot of ACG uORFs btw
+table <- riboORFs(df.rfp[1:2,], type = "table", prediction_output_folder)
+# Remember we are only predicting on 2 million reads, so we wont find that much
+print(table(table[predicted == TRUE,]$type)) # 3 cds, 5 NTT, 3 uORFs
+table[ensembl_tx_name == "ENST00000315377" & predicted == TRUE,]
+# this tx has 3 NTTs predicted, 2 in RFP_CO_r1 and 1 in RFP_CO_r2
+print(nrow(table[type %in% c("annotated") & predicted == TRUE ])) # 86 cds predicted
+print(nrow(table[type %in% c("uORF", "uoORF") & predicted == TRUE ])) # 3 uORFs predicted
+# I highly advice to check results with results of the python predictor RiboCode,
+# it is by far the best alternative to ORFik prediction out there (I have tested: 
+# RiboTaper (deprecated), ORFquant (very bad), RiboTricer (very bad), RiboNT (OK), RiboCode (very good!))
+# I will link to my optimized github fork of RiboCode which supports input of ORFik covRle objects later 
+# (100x speedup compared to bam input, by using directly an internal hdf5 file!)
+#¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
+# uORF analysis (deprecated, but take a look if you want)
 # (using the extension package to ORFik: uORFomePipe)
 # Will create a mysql database + bed12 file of uORFs with color codes + plots + files with results
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-devtools::install_github("Roleren/uORFomePipe", dependencies = TRUE)
+remotes::install_github("Roleren/uORFomePipe", dependencies = TRUE) # Then restart R session!
 library(uORFomePipe)
 find_uORFome("/media/roler/S/data/Bio_data/projects/Alexaki_uORFome/",
              df.rfp = df.rfp, df.rna = df.rna, df.cage = NULL, biomart = NULL,

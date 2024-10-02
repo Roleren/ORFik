@@ -12,6 +12,7 @@ makeTxdbFromGenome(
   gene_symbols = FALSE,
   uniprot_id = FALSE,
   pseudo_5UTRS_if_needed = NULL,
+  minimum_5UTR_percentage = 30,
   return = FALSE
 )
 }
@@ -44,8 +45,12 @@ and store all uniprot id for all transcripts (coding and noncoding)-
 In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.}
 
 \item{pseudo_5UTRS_if_needed}{integer, default NULL. If defined > 0,
-will add pseudo 5' UTRs if 30% of mRNAs (coding transcripts) do not have
-a leader.}
+will add pseudo 5' UTRs if 'minimum_5UTR_percentage" (default 30%) of
+mRNAs (coding transcripts) do not have a leader. (NULL and 0 are both the ignore command)}
+
+\item{minimum_5UTR_percentage}{numeric, default 30. What minimum percentage
+of mRNAs most have a 5' UTRs (leaders), to not do the pseudo_UTR addition.
+If percentage is higher it addition is ignored, set to 101 to always do it.}
 
 \item{return}{logical, default FALSE. If TRUE, return TXDB object, else NULL.}
 }

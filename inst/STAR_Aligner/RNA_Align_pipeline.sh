@@ -51,7 +51,8 @@ OPTIONS:
 	-k	a character, Keep loaded genomes STAR index:
 	    yes (y), no: Remove loaded (n), no shared genome (noShared),
 	    default (n)
-	-K  Keep contaminant aligned bam files. Default: "no", alternative: "yes".
+	-K  Keep contaminant aligned files. Default: "no", alternative: "yes".
+	-X  Kept contaminant output file type ("bam", "fastq")
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
 	-u  Keep unaligned reads from genome alignment step.
@@ -88,6 +89,7 @@ multimap=10
 trim_front=3
 keep="n"
 keepContam="no"
+keepContamType="bam"
 keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
@@ -168,6 +170,10 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:u:h" opt; do
     K)
       	keepContam=$OPTARG
       	echo "-K Keep contamination reads: $OPTARG"
+        ;;
+    X)
+      	keepContamType=$OPTARG
+      	echo "-X Contamination reads type: $OPTARG"
         ;;
     u)
       	keep_unmapped_genome=$OPTARG

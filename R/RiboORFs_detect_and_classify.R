@@ -240,7 +240,7 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
   candidates <- reads_10 & reads_start_3
   orfs_cand <- orfs_gr[candidates]
   orfs_kept_percentage <- round((length(orfs_cand) / length(orfs_gr)) * 100, 2)
-  message("--- ORFs passed count filters: ", orfs_kept_percentage)
+  message("--- ORFs passed count filters: ", orfs_kept_percentage, "%")
   orf_start_cand <- orf_start_gr[candidates]
   orf_stop_cand <- orf_stop_gr[candidates]
   # Make upstream and downstream window

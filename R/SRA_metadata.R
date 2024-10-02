@@ -13,12 +13,12 @@
 #' Then search Entrez for project and get sample identifier.\cr
 #' From that extract the run information and collect into a final table.\cr
 #'
-#' @param SRP a string, a study ID as either the PRJ, SRP, ERP, DRPor GSE of the study,
+#' @param SRP character string, a study ID as either the PRJ, SRP, ERP, DRPor GSE of the study,
 #' examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
 #' to find the files. The call works as long the runs are registered on the efetch server,
 #' as their is a linked SRP link from bioproject or GSE. Example which fails is "PRJNA449388",
 #' which does not have a linking like this.
-#' @param outdir directory to save file, default: tempdir().
+#' @param outdir character string, directory to save file, default: tempdir().
 #' The file will be called "SraRunInfo_SRP.csv", where SRP is
 #' the SRP argument. We advice to use bioproject IDs "PRJNA...".
 #' The directory will be created if not existing.
@@ -40,6 +40,9 @@
 #' auto.detection, but already downloaded without it.
 #' @param rich.format logical, default FALSE. If TRUE, will fetch all Experiment and Sample attributes.
 #' It means, that different studies can have different set of columns if set to TRUE.
+#' @param fetch_GSE logical, default FALSE. Search for GSE, if exists, appends a column
+#' called GEO. Will be included even though this study is not from GEO, then it
+#' sets all to NA.
 #' @return a data.table of the metadata, 1 row per sample,
 #'  SRR run number defined in 'Run' column.
 #' @importFrom utils download.file
@@ -64,7 +67,10 @@
 #' # download.SRA.metadata("PRJNA231536")
 download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE,
                                   auto.detect = FALSE, abstract = "printsave",
-                                  force = FALSE, rich.format = FALSE) {
+                                  force = FALSE, rich.format = FALSE,
+                                  fetch_GSE = FALSE) {
+  stopifnot(length(SRP) == 1)
+  stopifnot(length(outdir) == 1)
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
   destfile <- paste0(outdir, "/SraRunInfo_", SRP, ".csv")
   abstract_destfile <- paste0(outdir, "/abstract_", SRP, ".csv")
@@ -86,7 +92,8 @@ download.SRA.metadata <- function(SRP, outdir = tempdir(), remove.invalid = TRUE
 
 
   file <- sample_info_append_SRA(SRP, destfile, abstract_destfile, abstract,
-                                 remove.invalid, rich.format = rich.format)
+                                 remove.invalid, rich.format = rich.format,
+                                 fetch_GSE = fetch_GSE)
 
   # Create ORFik guess columns from metadata:
   if (auto.detect) {

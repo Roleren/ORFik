@@ -30,19 +30,32 @@ that this is done and you have the bam files.
 
 ORFik currently supports these formats:
 
-- bam
-- wig
-- bigwig
-- bed5
-- bed12
-- ofst (ORFik fst format, very fast version of bam, bed or wig)
+- bam (only format with mismatch/full read sequence information)
+- wig (supported by many downstream tools)
+- bigwig (fastest for random access on single gene)
+- bed5 (minimal bed format)
+- bed12 (supports spliced regions, similar to gtf, also color coding)
+- ofst (ORFik fst table format, very fast version of bam, bed or wig,
+contains chromosome, start, end (optional), strand, cigar (optional), 
+all is saved with fst zstandard run length encoding, also writes/reads
+using multithreading)
+- covRle (run length encoding of coverage, split by strand, fastest
+format for full genome calculations, formats: (.rds and .qs, rds to 
+share easier to others, qs using the qs package which supports better 
+compression and reading/writing with multithreading, through the zstandard compression))
+- covRleList (a list covRles, split by read lengths, very fast
+for whole genome coverage, where you need each read length separate, formats
+save as covRle)
+
 
 All these formats can be imported using the function `fimport`
 
 ORFik also supports bam files that are collapsed, the number of duplicates
-is stored in the header information per read. This is a very effective speed
+is stored in the header information per read (i.e. >seq1_x150, for first read
+duplicated 150 times). This is a very effective speed
 up for short read sequencing like Ribo-seq. bigwig etc, internally supports
-collapsing since it uses a 'score' column. 
+re-collapsing (different cigar for same read length) since it uses the 'score' column 
+of GAlignments object.
 
 ## Loading files (general)
 
@@ -239,7 +252,7 @@ Let's say you only want mRNAs, which have these properties:
 We can in ORFik get this with:
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
   tx_to_keep <- filterTranscripts(txdb, minFiveUTR = 1, minCDS = 150, minThreeUTR = 0)
-  loadRegion(txdb, "mrna")
+  loadRegion(txdb, "mrna", names.keep = tx_to_keep)
 ```
 But what if you do this?
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
@@ -248,7 +261,8 @@ But what if you do this?
 ```
 
 You see the SacCer3 Yeast gtf does not have any defined leaders at size 10, because
-the annotation is incomplete. Luckily ORFik supports creating pseudo 5' UTRs.
+the annotation is incomplete. Luckily ORFik supports creating pseudo 5' UTRs 
+for txdb objects (NOTE: using function below, the gtf is not changed).
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
   txdb <- makeTxdbFromGenome(gtf, genome, organism, optimize = TRUE, return = TRUE, 
                              pseudo_5UTRS_if_needed = 100)

@@ -18,10 +18,10 @@ ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 
 \item{upstream}{an integer, default (0), relative region to get
-upstream from.}
+upstream end from. (0 means start site, +1 is one upstream, -1 is one downstream)}
 
 \item{downstream}{an integer, default (0), relative region to get
-downstream from}
+downstream end from (0 means start site, +1 is one downstream, -1 is one upstream)}
 }
 \value{
 a character vector of start regions
