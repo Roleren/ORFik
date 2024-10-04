@@ -15,6 +15,7 @@ shiftPlots(
   type = "bar",
   addFracPlot = TRUE,
   plot.ext = ".pdf",
+  dpi = ifelse(nrow(df) < 22, 300, 200),
   BPPARAM = bpparam()
 )
 }
@@ -53,6 +54,8 @@ per heatmap.}
 
 \item{plot.ext}{default ".pdf". Alternative ".png". Only added if output is
 "auto".}
+
+\item{dpi}{numeric, default: ifelse(nrow(df) < 22, 300, 200)}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

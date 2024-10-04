@@ -480,6 +480,7 @@ shiftFootprintsByExperiment <- function(df,
 #' per heatmap.
 #' @param plot.ext default ".pdf". Alternative ".png". Only added if output is
 #' "auto".
+#' @param dpi numeric, default: ifelse(nrow(df) < 22, 300, 200)
 #' @importFrom gridExtra grid.arrange
 #' @importFrom gridExtra arrangeGrob
 #' @return a ggplot2 grob object
@@ -496,9 +497,9 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        pShifted = TRUE,
                        upstream = if (pShifted) 5 else 20,
                        downstream = if (pShifted) 20 else 5,
-                       type = "bar",
-                       addFracPlot = TRUE,
+                       type = "bar", addFracPlot = TRUE,
                        plot.ext = ".pdf",
+                       dpi = ifelse(nrow(df) < 22, 300, 200),
                        BPPARAM = bpparam()) {
   stopifnot(plot.ext %in% c(".png", ".pdf"))
   if (!(type %in% c("bar", "heatmap")))
@@ -531,19 +532,17 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
       if (output == "auto") {
         output <- file.path(QCfolder(df), paste0("pshifts_heatmaps", plot.ext))
       }
-      dpi <- ifelse(nrow(df) < 22, 300, 200)
-      ggsave(output, res,
-             width = 225, height = (length(res) -1)*85,
-             units = "mm", dpi = dpi, limitsize = FALSE)
+      height_scaler <- 85
     } else {
       if (output == "auto") {
         output <- file.path(QCfolder(df), paste0("pshifts_barplots", plot.ext))
       }
-      dpi <- ifelse(nrow(df) < 22, 300, 200)
-      ggsave(output, res,
-             width = 225, height = (length(res) -1)*95,
-             units = "mm", dpi = dpi, limitsize = FALSE)
+      height_scaler <- 95
     }
+    dir.create(dirname(output), showWarnings = FALSE, recursive = TRUE)
+    ggsave(output, res,
+           width = 225, height = (length(res) -1)*height_scaler,
+           units = "mm", dpi = dpi, limitsize = FALSE)
     message("Saved pshift plots to location: ",
             output)
   }
