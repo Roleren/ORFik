@@ -120,7 +120,6 @@ validateExperiments <- function(df, library.names = bamVarName(df)) {
                                             collapse = " ; "))
     stop("Duplicated filepaths in experiment!")
   }
-
 }
 
 #' Get library variable names from ORFik \code{\link{experiment}}
@@ -662,8 +661,10 @@ simpleLibs <- convertLibs
 #' # Collapse by lib types
 #' #mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mode = "all",
-                      type = "ofst", keep_all_scores = TRUE) {
+                      type = "ofst", keep_all_scores = TRUE, paths = filepath(df, type)) {
   stopifnot(mode %in% c("all", "rep", "lib"))
+  stopifnot(nrow(df) == length(paths))
+  filepaths <- paths
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   lib_names_full <- bamVarName(df, skip.libtype = FALSE)
 
@@ -678,7 +679,7 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
   } else {
     libs <- list(all = seq(nrow(df)))
   }
-  filepaths <- filepath(df, type)
+
   for (name in names(libs)) {
     specific_paths <- filepaths[libs[[name]]]
     specific_names <- lib_names_full[libs[[name]]]

@@ -9,7 +9,8 @@ mergeLibs(
   out_dir = file.path(libFolder(df), "ofst_merged"),
   mode = "all",
   type = "ofst",
-  keep_all_scores = TRUE
+  keep_all_scores = TRUE,
+  paths = filepath(df, type)
 )
 }
 \arguments{
@@ -41,6 +42,11 @@ to default lib folder, some types fall back to other formats if folder does not 
 
 \item{keep_all_scores}{logical, default TRUE, keep all library scores in the merged file. These
 score columns are named the libraries full name from \code{bamVarName(df)}.}
+
+\item{paths}{character vector, the filpaths to use,
+default \code{filepath(df, type)}. Change type argument if not correct.
+If that is not enough, then you can also update this argument.
+But be careful about using this directly.}
 }
 \value{
 NULL, files saved to disc. A data.table with a score column that now contains the sum
