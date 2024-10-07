@@ -129,28 +129,76 @@ collapse.by.scores <- function(x) {
 #' It is required that each file is of same ofst type.
 #' That is if one file has cigar information, all must have it.
 #' @param file_paths Full path to .ofst files wanted to merge
-#' @param lib_names the name to give the resulting score columns
+#' @param lib_names character, the name to give the resulting score columns.
+#' Default: \code{sub(pattern = "\\.ofst$", replacement = "", basename(file_paths))}
 #' @param keep_all_scores logical, default TRUE, keep all library scores in the merged file. These
 #' score columns are named the libraries full name from \code{bamVarName(df)}.
 #' @param sort logical, default TRUE. Sort the ranges. Will make the file smaller and
 #' faster to load, but some additional merging time is added.
 #' @param keepCigar logical, default TRUE. If CIGAR is defined, keep column. Setting
 #' to FALSE compresses the file much more usually.
+#' @param max_splits integer, default 20. If number of rows to merge > 2^31,
+#' how many times can you allow split merging to try to "rescue" the merging
+#' process?
 #' @return a data.table of merged result, it is merged on all columns except "score".
 #' The returned file will contain the scores of each file + the aggregate sum score.
 #' @importFrom data.table setnames
 ofst_merge <- function(file_paths,
                        lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
-                       keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE) {
+                       keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE,
+                       max_splits = 20) {
+
   # Check valid matching files
-  meta <- table(unlist(lapply(file_paths, function(x) data.table(fst::metadata_fst(x)$columnNames))))
+  meta <- table(unlist(lapply(file_paths, function(x)
+    data.table(fst::metadata_fst(x)$columnNames))))
   if (!all(meta == length(file_paths))) {
     print(meta)
     stop("Some libraries had columns not in others! ",
          "It is only allowed to merge ofst files with equal set of columns!")
   }
+  row_numbers <- unlist(lapply(file_paths, function(x)
+    data.table(fst::metadata_fst(x)$nrOfRows)))
+  dt_max_index_size <- 2^31
+  total_rows <- sum(row_numbers)
 
-  dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
+  splits <- 1
+  len <- length(row_numbers)
+  split_vector <- ceiling(seq(len) / (len / splits))
+  if (total_rows >= dt_max_index_size) {
+    message("Total rows to load is: ", total_rows,
+            ", data.table only supports: ", dt_max_index_size,
+            " will split data into accepted chunks before merging again")
+
+
+    for (splits in seq(2, 20)) {
+      split_vector <- ceiling(seq(len) / (len / splits))
+      all_valid <- !any(sum(List(split(row_numbers, split_vector))) >= 2^31)
+      if (all_valid) break
+    }
+    if (splits == max_splits) stop("Max splits set to: ", max_splits, "is not enough!")
+    message("Number of chunk splits used: ", splits)
+
+    file_paths_split <- split(file_paths, split_vector)
+    dt <- ofst_merge_internal(lapply(seq(splits), function(split) {
+      message("Loading libraries to merge (split: ", split, ")")
+      dt_list <- lapply(file_paths_split[[split]], function(x) setDT(read_fst(x)))
+      ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
+                          keep_all_scores = keep_all_scores,
+                          keepCigar = keepCigar, sort = FALSE)
+    }), lib_names = lib_names, keep_all_scores = keep_all_scores,
+    keepCigar = keepCigar, sort = sort)
+  } else {
+    dt <- ofst_merge_internal(dt_list, lib_names = lib_names,
+                              keep_all_scores = keep_all_scores,
+                              keepCigar = keepCigar, sort = sort)
+  }
+  return(dt)
+}
+
+ofst_merge_internal<- function(dt_list,
+                               lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
+                               keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE) {
+
   if (keep_all_scores) {
     merge_keys <- colnames(dt_list[[1]])
     merge_keys <- merge_keys[!(merge_keys %in% c("score"))]

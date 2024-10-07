@@ -642,6 +642,8 @@ simpleLibs <- convertLibs
 #' @param out_dir Ouput directory, default \code{file.path(dirname(df$filepath[1]), "ofst_merged")},
 #' saved as "all.ofst" in this folder if mode is "all". Use a folder called pshifted_merged, for
 #' default Ribo-seq ofst files.
+#' @param lib_names_full character vector, default: bamVarName(df, skip.libtype = FALSE).
+#' Name to assign to single libraries inside merged file, only kept if mode != "all"
 #' @param mode character, default "all". Merge all or "rep" for collapsing replicates only, or
 #' "lib" for collapsing all per library type.
 #' @return NULL, files saved to disc. A data.table with a score column that now contains the sum
@@ -661,12 +663,14 @@ simpleLibs <- convertLibs
 #' # Collapse by lib types
 #' #mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mode = "all",
-                      type = "ofst", keep_all_scores = TRUE, paths = filepath(df, type)) {
+                      type = "ofst", keep_all_scores = TRUE, paths = filepath(df, type),
+                      lib_names_full = bamVarName(df, skip.libtype = FALSE),
+                      max_splits = 20) {
   stopifnot(mode %in% c("all", "rep", "lib"))
   stopifnot(nrow(df) == length(paths))
+  stopifnot(is(lib_names_full, "character") & (length(unique(lib_names_full)) == nrow(df)))
   filepaths <- paths
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  lib_names_full <- bamVarName(df, skip.libtype = FALSE)
 
   if (mode == "rep") {
     lib_names <- bamVarName(df, skip.libtype = FALSE, skip.replicate = TRUE)
@@ -684,7 +688,8 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
     specific_paths <- filepaths[libs[[name]]]
     specific_names <- lib_names_full[libs[[name]]]
     save_path <- file.path(out_dir, paste0(name, ".ofst"))
-    write_fst(ofst_merge(specific_paths, specific_names, keep_all_scores), save_path)
+    fst::write_fst(ofst_merge(specific_paths, specific_names, keep_all_scores,
+                              max_splits = max_splits), save_path)
   }
   return(invisible(NULL))
 }

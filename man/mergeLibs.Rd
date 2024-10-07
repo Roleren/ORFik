@@ -10,7 +10,9 @@ mergeLibs(
   mode = "all",
   type = "ofst",
   keep_all_scores = TRUE,
-  paths = filepath(df, type)
+  paths = filepath(df, type),
+  lib_names_full = bamVarName(df, skip.libtype = FALSE),
+  max_splits = 20
 )
 }
 \arguments{
@@ -47,6 +49,13 @@ score columns are named the libraries full name from \code{bamVarName(df)}.}
 default \code{filepath(df, type)}. Change type argument if not correct.
 If that is not enough, then you can also update this argument.
 But be careful about using this directly.}
+
+\item{lib_names_full}{character vector, default: bamVarName(df, skip.libtype = FALSE).
+Name to assign to single libraries inside merged file, only kept if mode != "all"}
+
+\item{max_splits}{integer, default 20. If number of rows to merge > 2^31,
+how many times can you allow split merging to try to "rescue" the merging
+process?}
 }
 \value{
 NULL, files saved to disc. A data.table with a score column that now contains the sum
