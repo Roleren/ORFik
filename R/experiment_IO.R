@@ -101,7 +101,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #' @param saveDir Directory to save experiment csv file, default:
 #' \code{ORFik::config()["exp"]}, which has default: "~/Bio_data/ORFik_experiments/".
 #' Set to NULL if you don't want to save it to disc.
-#' @param types Default \code{c("bam", "bed", "wig", "ofst")},
+#' @param types Default \code{c("bam", "bed", "wig", "bigWig","ofst")},
 #' which types of libraries to allow as NGS data.
 #' @param txdb A path to TxDb (prefered) or gff/gtf (not adviced, slower)
 #' file with transcriptome annotation for the organism.
@@ -185,27 +185,33 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
 #'                               fa = fa, organism = org,
 #'                               viewTemplate = FALSE)
 #' ## Now fix non-unique rows: either is libre office, microsoft excel, or in R
-#' template$X5[6] <- "heart"
+#' template$X5[6] <- "heart" # here a dummy example, even though data is correct
 #' # read experiment (if you set correctly)
 #' df <- read.experiment(template)
-#' # Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 #'
-#' ## Create and save experiment directly:
 #' ## Default location of experiments is ORFik::config()["exp"]
-#' #template <- create.experiment(dir = dir, exper, txdb = txdb,
-#' #                               fa = fa, organism = org,
-#' #                               viewTemplate = FALSE)
+#' # default_experiments_path <- ORFik::config()["exp"]
+#' # exp_path <- file.path(default_experiments_path, paste0("exper", ".csv"))
+#' # Save with: save.experiment(df, file = exp_path)
+#' # Then you can simply load with read.experiment(exper),
+#' # since you saved in the default directory
+#'
 #' ## Custom location (If you work in a team, use a shared folder)
-#' #template <- create.experiment(dir = dir, exper, txdb = txdb,
-#' #                               saveDir = "~/MY/CUSTOME/LOCATION",
-#' #                               fa = fa, organism = org,
-#' #                               viewTemplate = FALSE)
+#' # Remember to update ORFik::config() to ripple the effect through whole
+#' # of ORFik if you want to use this as default
+#' new_dir <- tempdir() # Here we just use tempdir
+#' create.experiment(dir = dir, exper, txdb = txdb,
+#'                   saveDir = new_dir, fa = fa, organism = org)
+#' template_loaded <- read.experiment(exper,  new_dir)
+#' # The csv template paths (from index 5) is equal to file paths of loaded exp
+#' identical(template$X6[-seq(4)], filepath(template_loaded, "default"))
+#'
 #' @family ORFik_experiment
 create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
                               txdb = "", fa = "", organism = "", assembly = "",
                               pairedEndBam = FALSE,
                               viewTemplate = FALSE,
-                              types = c("bam", "bed", "wig", "ofst"),
+                              types = c("bam", "bed", "wig", "bigWig","ofst"),
                               libtype = "auto", stage = "auto", rep = "auto",
                               condition = "auto", fraction = "auto",
                               author = "",
@@ -214,49 +220,31 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
                               runIDs = extract_run_id(files)) {
   if (!(is(files, "character") | is(files, "data.table")))
     stop("'files' must be of class character or data.table")
-  file_dt <- files
-  is_paired_end <- is(file_dt, "data.table")
-  # Set runID column if valid
+  stopifnot(is(exper, "character") & length(exper) == 1)
+  stopifnot(is(runIDs, "character"))
+  stopifnot(is(txdb, "character") & length(txdb) == 1)
+  stopifnot(is(fa, "character") & length(fa) == 1)
+  stopifnot(is(organism, "character") & length(organism) == 1)
+  stopifnot(is(assembly, "character") & length(assembly) == 1)
+
+
+  is_paired_end <- is(files, "data.table")
   runID_exists <- ifelse(all(runIDs != ""), TRUE, FALSE)
+  exper <- sub("\\.csv$", "", exper)
 
   # Define data.frame size
   df <- data.frame(matrix(ncol = 6 + runID_exists + is_paired_end,
                           nrow = length(files) + 4))
-  # Define library name columns
-  lib_metadata_columns <- c("libtype", "stage", "rep", "condition",
-                            "fraction","filepath")
-  if (is_paired_end) { # If paired data
-    files <- file_dt$forward
-    lib_metadata_columns <- c(lib_metadata_columns, "reverse")
-  } else { # only single libraries
-    files <- file_dt
-  }
-  if (runID_exists) lib_metadata_columns <- c(lib_metadata_columns, "Run")
-  df[4,] <- lib_metadata_columns
-
-  # TODO: Move this to seperat function
-  ## Specify library information columns
   # set file paths
-  df[5:(5+length(files)-1), 6] <- files
-  if (is_paired_end) df[5:(5+length(files)-1), 7] <- file_dt$reverse
-  # Set library type (RNA-seq etc)
-  df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames(), libtype)
-  # set stage (sphere, shield etc) (input cell line or tissue here if wanted)
-  stages <- rbind(stageNames(), tissueNames(), cellLineNames())
-  df[5:(5+length(files)-1), 2] <- findFromPath(files, stages, stage)
-  # set rep (1, 2, 3 etc)
-  df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames(), rep)
-  # Set condition (WT, control, mutant etc)
-  df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames(), condition)
-  # Set fraction (cytosolic, dmso, mutant etc)
-  df[5:(5+length(files)-1), 5] <- findFromPath(files, fractionNames(), fraction)
-  if (runID_exists) df[5:(5+length(files)-1), ncol(df)] <- runIDs
-  ## Reference assembly information
-  df[1, seq(2)] <- c("name", exper)
-  df[2, seq(2)] <- c("gff", txdb)
-  df[3, seq(2)] <- c("fasta", fa)
-  if (assembly != "") df[1, seq(5, 6)] <- c("assembly", assembly)
-  if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
+  df <- add_file_paths(df, files, is_paired_end, runIDs, runID_exists)
+  ## Specify library information columns
+  lib_metadata_columns <- c(c("libtype", "stage", "rep", "condition",
+                              "fraction","filepath"),
+                            c("reverse", "Run")[c(is_paired_end, runID_exists)])
+  df <- guess_metadata_from_filepaths(df, files, libtype, stage, rep,
+                                      condition, fraction, lib_metadata_columns)
+  df <- add_reference_info(df, exper, txdb, fa, assembly, organism)
+
   # Additional information
   if (author != "") df[3, seq(5, 6)] <- c("author", author)
   if (!is.null(result_folder)) {
@@ -271,12 +259,23 @@ create.experiment <- function(dir, exper, saveDir = ORFik::config()["exp"],
       message(cbu.path)
       saveDir <- cbu.path
     }
-    save.experiment(df, pasteDir(saveDir, exper,".csv"))
+    save.experiment(df, pasteDir(saveDir, exper, ".csv"))
   }
-
   if (viewTemplate) View(df)
   return(df)
 }
+
+add_reference_info <- function(df, exper, txdb, fa, assembly, organism) {
+  ## Reference assembly information
+  df[1, seq(2)] <- c("name", exper)
+  df[2, seq(2)] <- c("gff", txdb)
+  df[3, seq(2)] <- c("fasta", fa)
+  if (assembly != "") df[1, seq(5, 6)] <- c("assembly", assembly)
+  if (organism != "") df[2, seq(5, 6)] <- c("organism", organism)
+  return(df)
+}
+
+
 
 #' Save \code{\link{experiment}} to disc
 #'
@@ -329,4 +328,14 @@ experiment_parse_list_info <- function(file, in.dir) {
   listData <- cbind(listData, index = as.integer(seq.int(nrow(listData))))
 
   return(list(listData = listData, info = info))
+}
+
+add_file_paths <- function(df, files, is_paired_end, runIDs,
+                           runID_exists) {
+  file_dt <- files
+  files <- if(is_paired_end) { file_dt$forward } else {file_dt}
+  df[5:(5+length(files)-1), 6] <- files
+  if (is_paired_end) df[5:(5+length(files)-1), 7] <- file_dt$reverse
+  if (runID_exists) df[5:(5+length(files)-1), ncol(df)] <- runIDs
+  return(df)
 }

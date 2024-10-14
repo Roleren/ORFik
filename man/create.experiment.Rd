@@ -14,7 +14,7 @@ create.experiment(
   assembly = "",
   pairedEndBam = FALSE,
   viewTemplate = FALSE,
-  types = c("bam", "bed", "wig", "ofst"),
+  types = c("bam", "bed", "wig", "bigWig", "ofst"),
   libtype = "auto",
   stage = "auto",
   rep = "auto",
@@ -65,7 +65,7 @@ that was aligned.}
 \item{viewTemplate}{run View() on template when finished, default (FALSE).
 Usually gives you a better view of result than using print().}
 
-\item{types}{Default \code{c("bam", "bed", "wig", "ofst")},
+\item{types}{Default \code{c("bam", "bed", "wig", "bigWig","ofst")},
 which types of libraries to allow as NGS data.}
 
 \item{libtype}{character, default "auto". Library types,
@@ -161,21 +161,27 @@ template <- create.experiment(dir = dir, exper, txdb = txdb,
                               fa = fa, organism = org,
                               viewTemplate = FALSE)
 ## Now fix non-unique rows: either is libre office, microsoft excel, or in R
-template$X5[6] <- "heart"
+template$X5[6] <- "heart" # here a dummy example, even though data is correct
 # read experiment (if you set correctly)
 df <- read.experiment(template)
-# Save with: save.experiment(df, file = "path/to/save/experiment.csv")
 
-## Create and save experiment directly:
 ## Default location of experiments is ORFik::config()["exp"]
-#template <- create.experiment(dir = dir, exper, txdb = txdb,
-#                               fa = fa, organism = org,
-#                               viewTemplate = FALSE)
+# default_experiments_path <- ORFik::config()["exp"]
+# exp_path <- file.path(default_experiments_path, paste0("exper", ".csv"))
+# Save with: save.experiment(df, file = exp_path)
+# Then you can simply load with read.experiment(exper),
+# since you saved in the default directory
+
 ## Custom location (If you work in a team, use a shared folder)
-#template <- create.experiment(dir = dir, exper, txdb = txdb,
-#                               saveDir = "~/MY/CUSTOME/LOCATION",
-#                               fa = fa, organism = org,
-#                               viewTemplate = FALSE)
+# Remember to update ORFik::config() to ripple the effect through whole
+# of ORFik if you want to use this as default
+new_dir <- tempdir() # Here we just use tempdir
+create.experiment(dir = dir, exper, txdb = txdb,
+                  saveDir = new_dir, fa = fa, organism = org)
+template_loaded <- read.experiment(exper,  new_dir)
+# The csv template paths (from index 5) is equal to file paths of loaded exp
+identical(template$X6[-seq(4)], filepath(template_loaded, "default"))
+
 }
 \seealso{
 Other ORFik_experiment: 

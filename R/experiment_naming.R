@@ -446,3 +446,26 @@ mainNames <- function(names, dt) {
                         allNames = c(unlist(dt$allNames), c("", NA)))
   return(dt.long[chmatch(names, dt.long$allNames),]$mainName)
 }
+
+#' Guess information from file name
+#'
+#' Used by ORFik experiment created data.frame object
+#' If any type is specified, guessing is ignored
+#' @noRd
+guess_metadata_from_filepaths <- function(df, files, libtype, stage, rep,
+                                          condition, fraction,
+                                          lib_metadata_columns) {
+  df[4,] <- lib_metadata_columns
+  # Set library type (RNA-seq etc)
+  df[5:(5+length(files)-1), 1] <- findFromPath(files, libNames(), libtype)
+  # set stage (sphere, shield etc) (input cell line or tissue here if wanted)
+  stages <- rbind(stageNames(), tissueNames(), cellLineNames())
+  df[5:(5+length(files)-1), 2] <- findFromPath(files, stages, stage)
+  # set rep (1, 2, 3 etc)
+  df[5:(5+length(files)-1), 3] <- findFromPath(files, repNames(), rep)
+  # Set condition (WT, control, mutant etc)
+  df[5:(5+length(files)-1), 4] <- findFromPath(files, conditionNames(), condition)
+  # Set fraction (cytosolic, dmso, mutant etc)
+  df[5:(5+length(files)-1), 5] <- findFromPath(files, fractionNames(), fraction)
+  return(df)
+}

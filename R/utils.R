@@ -175,6 +175,8 @@ getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
 #' @keywords internal
 findNGSPairs <- function(paths, f = c("forward", "fwd"),
                          r = c("reverse", "rev"), format = "wig") {
+  if (length(paths) == 0) return(paths)
+
   f <- paste0(f, "\\.", format, "*", collapse = "|")
   r <- paste0(r, "\\.", format, "*", collapse = "|")
   forwardPath <- grep(f, paths)

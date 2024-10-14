@@ -343,6 +343,38 @@ setMethod("countOverlaps",
           }
 )
 
+#' Check for integer overflow in covRle
+#' If any sum is > 2^31-1, it will give NA, convert those Rles to numeric
+#' @noRd
+check_for_na_covRle <- function(cov, x, weight) {
+
+  cov@forward <- check_for_na_coverage(f(cov), x, weight)
+  cov@reverse <- check_for_na_coverage(r(cov), x, weight)
+  return(cov)
+}
+
+#' Check for integer overflow in RleList
+#' If any sum is > 2^31-1, it will give NA, convert those Rles to numeric
+#' @noRd
+check_for_na_coverage <- function(cov, x, weight) {
+  if (sum(lengths(cov)) == 0) return(cov)
+
+  had_names <- ifelse(is.null(names(RleList)), TRUE, FALSE)
+  if (!had_names) names(cov) <- unique(as.character(seqnames(x)))
+  which_na <- which(is.na(sum(cov)))
+  if (length(which_na) > 0) {
+    message("ORFik internally fixes integer overflow, ignore overflow warning")
+    chr_na <- names(which_na)
+    x_numeric <- x[as.character(seqnames(x)) %in% chr_na]
+    if (is.character(weight)) {
+      weights <- as.numeric(mcols(x_numeric)[[weight]])
+    }
+    cov_subset_numeric <- coverage(x_numeric, weight = weights)
+    cov[chr_na] <- cov_subset_numeric[chr_na]
+  }
+  return(cov)
+}
+
 
 #' Convert GRanges to covRle
 #' @param x a GRanges, GAlignment or GAlignmentPairs object.
@@ -393,7 +425,7 @@ covRleFromGR <- function(x, weight = "AUTO",
   if (ignore.strand) {
     both <- coverage(x, weight = weight)
     seqinfo(both) <- seq_info
-    return(covRle(both))
+    return(check_for_na_covRle(covRle(both), x, weight))
   } else {
     pluss <- BiocGenerics::`%in%`(strand(x), c("+", "*"))
     minus <- BiocGenerics::`%in%`(strand(x), c("-", "*"))
@@ -406,7 +438,7 @@ covRleFromGR <- function(x, weight = "AUTO",
       r <- coverage(x[minus], weight = weight)
     }
     seqinfo(f) <- seqinfo(r) <- seq_info
-    return(covRle(f, r))
+    return(check_for_na_covRle(covRle(f, r), x, weight))
   }
 }
 

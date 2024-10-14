@@ -2,15 +2,38 @@ context("Experiment")
 library(ORFik)
 
 df <- ORFik.template.experiment()
+temp <- ORFik.template.experiment(as.temp = TRUE)
 
-test_that("Experiment class created as intended", {
-  # test from example table in orfik
-  expect_equal(nrow(df), 16)
+dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
+exper <- "ORFik"
+txdb <- system.file("extdata/references/homo_sapiens",
+                    "Homo_sapiens_dummy.gtf.db", package = "ORFik")
+fa <- system.file("extdata/references/homo_sapiens",
+                  "Homo_sapiens_dummy.fasta", package = "ORFik")
+org <- "Homo sapiens"
+temp_dir <- tempdir()
+
+test_that("Experiment template created as intended", {
+  template <- create.experiment(dir = dir, exper, txdb = txdb,
+                                saveDir = NULL,
+                                fa = fa, organism = org)
+  expect_equal(nrow(template), 20)
 })
 
-test_that("Experiment class created as intended", {
+test_that("Experiment class loaded as intended", {
   # test from example table in orfik
+  expect_equal(nrow(df), 16)
   expect_equal(ncol(df), 7)
+})
+
+test_that("Experiment saved as intended", {
+  create.experiment(dir = dir, exper, txdb = txdb,
+                    saveDir = temp_dir,
+                    fa = fa, organism = org)
+  df2 <- read.experiment(exper, temp_dir)
+  expect_equal(nrow(df2), nrow(df))
+  expect_equal(ncol(df2), ncol(df))
+  expect_identical(temp$X6[-seq(4)], filepath(df2, "default"))
 })
 
 test_that("Experiment slot access works as intended", {

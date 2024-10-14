@@ -54,7 +54,20 @@ test_that("covRLE fails when it should", {
   expect_error(covRle(f(covRle_both), r(covRle_both)[[1]]))
   expect_error(covRle(1))
   expect_error(coveragePerTiling(grl, cov))
+  expect_error(covRle(1))
+  expect_error(covRle(f(covRle_both), 1))
 })
+
+test_that("covRLE fails when it should", {
+  # Integer overlow handled correctly
+  RFP_overflow <- c(RFP, RFP)
+  score(RFP_overflow) <- as.integer(2^31 / 2)
+  cov_overflow <- suppressMessages(expect_warning(covRleFromGR(RFP_overflow)))
+  expect_is(runValue(f(cov_overflow)[[1]]), "numeric")
+  expect_is(runValue(r(cov_overflow)[[1]]), "integer")
+})
+
+
 
 test_that("covRLE works in coveragePerTiling", {
   dt <- coveragePerTiling(grl = tx, covRle_both, as.data.table = TRUE)
@@ -82,6 +95,7 @@ test_that("covRLEList is created properly", {
 test_that("covRleList fails when it should", {
   expect_error(covRleList(list(RleList())))
   expect_error(covRleList(list(covRle_both, RleList())))
+  expect_error(covRleList(1,1))
 })
 
 test_that("covRLE works in windowPerReadLength", {
@@ -97,3 +111,11 @@ test_that("covRLE works in regionPerReadLength", {
   expect_equal(nrow(dt), 36)
   expect_equal(sum(dt$score), 4)
 })
+
+test_that("covRLE works in countOverlaps", {
+  counts <- countOverlaps(tx, covRle_both)
+  expect_is(counts, "integer")
+  expect_equal(length(counts), 2)
+  expect_equal(sum(counts), 36)
+})
+

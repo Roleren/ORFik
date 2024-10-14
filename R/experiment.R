@@ -214,9 +214,9 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
   if (! (skip.experiment | is.null(df@experiment)))
     current <- spaste(df@experiment, current, TRUE)
 
-  current <- gsub(pattern = "__", "_", current)
+  current <- gsub(pattern = "__", "_", current, fixed = TRUE)
 
-  return(gsub("_$", "", current))
+  return(sub("_$", "", current, perl = TRUE))
 }
 
 #' Get filepaths to ORFik experiment
@@ -709,82 +709,8 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
 remove.experiments <- function(df, envir = envExp(df)) {
   rm(list =  bamVarName(df), envir = envir)
   message(paste0("Removed loaded libraries from experiment:",
-                 df@experiment))
+                 name(df)))
   return(invisible(NULL))
-}
-
-#' Get all library files in folder/folders of given types
-#'
-#' Will try to guess paired / unpaired wig, bed, bam files.
-#'
-#' Set pairedEndBam if you have paired end reads as a single bam file.
-#' @inheritParams create.experiment
-#' @importFrom tools file_ext
-#' @return (data.table) All files found from types parameter.
-#' With 2 extra column (logical), is it wig pairs, and paired bam files.
-#' @keywords internal
-findLibrariesInFolder <- function(dir, types, pairedEndBam = FALSE) {
-  notDir <- !all(dir.exists(dir))
-  if (notDir) stop(paste(dir[!dir.exists(dir)], "is not a existing directory!"))
-
-  regex <- paste("\\.", types, collapse = "|", sep = "")
-  # Find files in multiple dirs in correct order
-  files <- unlist(lapply(dir,
-                         FUN = function(d)
-                           grep(pattern = regex,
-                                x = list.files(d, full.names = TRUE),
-                           value = TRUE)))
-  files <- pasteDir(files)
-  # Remove .bai bam index files etc
-  fext <- file_ext(files)
-  if (!(all(fext %in% types))) {
-    files <- files[fext != "bai"]
-    fext <- fext[fext != "bai"]
-
-    compressed = fext %in% c("gzip", "gz", "bgz", "zip")
-    if (any(compressed)) {
-      fext[compressed] <-file_ext(file_path_sans_ext(files[compressed],
-                                                      compression = FALSE))
-    }
-    files <- files[fext %in% types]
-  }
-  filesOld <- files
-  # Wig pairs
-  wig_files <- findNGSPairs(files[fext == "wig"])
-  # Bed pairs
-  bed_pairs <- findNGSPairs(filesOld[fext == "bed"], format = "bed")
-  # Paired end bam
-  bam_pairs <- findNGSPairs(filesOld[fext == "bam"],
-                                    f = c("_R1_00", "_F", "_Forward", "_forward"),
-                                    r = c("_R2_00", "_R", "_Reverse", "_reverse"),
-                                    format = "bam")
-  pairs <- data.table()
-  if (is(wig_files, "data.table")) pairs <- rbind(pairs, wig_files)
-  if (is(bed_pairs, "data.table")) pairs <- rbind(pairs, bed_pairs)
-  if (is(bam_pairs, "data.table")) pairs <- rbind(pairs, bam_pairs)
-
-  if (nrow(pairs) > 0) {
-    if (nrow(pairs)*2 != length(files)) { # if more than just matched pairs
-      others <- files[!(files %in% c(pairs$forward, pairs$reverse))]
-      file_dt <- data.table(forward = others, reverse = "", match = FALSE)
-      files <- rbind(pairs, file_dt)
-      if (any(pairedEndBam)) {
-        if (length(pairedEndBam) == 1) {
-          files[files$reverse == "",] <- "paired-end"
-        } else if (length(pairedEndBam) == nrow(files)) {
-          files[(files$reverse == "") & pairedEndBam,] <- "paired-end"
-        } else stop("pairedEndBam must be either length 1 or
-                    number of files in experiment")
-      }
-    } else files <- pairs
-    if (nrow(files) == 0) stop("Found no valid files in folder")
-  } else if (length(files) > 0) {
-    if (any(pairedEndBam)) {
-      files <- data.table(forward = files, reverse = "", match = TRUE)
-      files[pairedEndBam == TRUE,]$reverse <- "paired-end"
-    }
-  } else stop("Found no valid files in folder")
-  return(files)
 }
 
 #' List current experiment available
