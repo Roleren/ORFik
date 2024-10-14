@@ -156,7 +156,7 @@ If you you want to remove contaminants: phix, non coding RNAs, ribosomal RNAs, o
                       genome = TRUE, GTF = TRUE,
                       phix = TRUE, ncRNA = TRUE, tRNA = TRUE, rRNA = TRUE,
                       output.dir = conf["ref"],
-                      assembly_type = "toplevel"
+                      assembly_type = "toplevel" # Usually leave this to "auto"
                       )
 ```
 Note that some species does not have well annotated rRNAs, tRNAs etc in their gtf files. For this ORFik contains some clever tricks:

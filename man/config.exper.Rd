@@ -4,7 +4,14 @@
 \alias{config.exper}
 \title{Set directories for experiment}
 \usage{
-config.exper(experiment, assembly, type, config = ORFik::config())
+config.exper(
+  experiment,
+  assembly,
+  type,
+  config = ORFik::config(),
+  sub_dir_single = file.path(type, experiment, ""),
+  name_with_type_suffix = TRUE
+)
 }
 \arguments{
 \item{experiment}{short name of experiment (must be valid as a folder name)}
@@ -16,6 +23,14 @@ one.}
 
 \item{config}{a named character vector of length 3,
 default: \code{ORFik::config()}}
+
+\item{name_with_type_suffix}{logical, default TRUE. Make fastq name
+like 'fastq RNA-seq', setting it to FALSE gives name 'fastq'. Only allowed
+when length(type) == 1}
+
+\item{sub_dir}{character, path. Default: \code{file.path(type, experiment, "")}
+The subdirectory relative to config defined main locations. If defined location
+should be used directly without making subdirectories, set to "".}
 }
 \value{
 named character vector of paths for experiment

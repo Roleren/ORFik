@@ -12,6 +12,12 @@
 #' one.
 #' @param config a named character vector of length 3,
 #'  default: \code{ORFik::config()}
+#' @param sub_dir character, path. Default: \code{file.path(type, experiment, "")}
+#' The subdirectory relative to config defined main locations. If defined location
+#' should be used directly without making subdirectories, set to "".
+#' @param name_with_type_suffix logical, default TRUE. Make fastq name
+#' like 'fastq RNA-seq', setting it to FALSE gives name 'fastq'. Only allowed
+#' when length(type) == 1
 #' @export
 #' @return named character vector of paths for experiment
 #' @examples
@@ -20,16 +26,25 @@
 #' # Paths for project: "Alexaki_Human" containing Ribo-seq and RNA-seq:
 #' #config.exper("Alexaki_Human", "Homo_sapiens_GRCh38_101", c("Ribo-seq", "RNA-seq"))
 config.exper <- function(experiment, assembly, type,
-                         config = ORFik::config()) {
+                         config = ORFik::config(),
+                         sub_dir_single = file.path(type, experiment, ""),
+                         name_with_type_suffix = TRUE) {
+  stopifnot(is(sub_dir_single, "character"))
+  if (sub_dir_single == "" & length(type) > 1)
+    stop("sub_dir_single = '' only allowed when length of type is 1")
+  stopifnot(is(name_with_type_suffix, "logical"))
+  if (!name_with_type_suffix & length(type) > 1)
+    stop("name_with_type_suffix = FALSE only allowed when length of type is 1")
   # Create fastq dir
-  dirs <- file.path(config["fastq"], type, experiment, "")
+  dirs <- file.path(config["fastq"], sub_dir_single)
   # Create bam dir
-  dirs <- c(dirs, file.path(config["bam"], type, experiment, ""))
+  dirs <- c(dirs, file.path(config["bam"], sub_dir_single))
   # Create reference dir
   dirs <- c(dirs, file.path(config["ref"], assembly, ""))
   # Add experiment name
   dirs <- c(dirs, paste(experiment, type, sep = "_"))
-  names(dirs) <- c(paste("fastq", type), paste("bam", type),
+  suffix_name <- ifelse(name_with_type_suffix, paste0(" ", type), "")
+  names(dirs) <- c(paste0("fastq", suffix_name), paste("bam", suffix_name),
                    "ref", paste("exp", type))
   return(dirs)
 }

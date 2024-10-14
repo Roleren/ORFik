@@ -17,7 +17,7 @@
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a data.table with columns position, score
 #' @importFrom GenomicFeatures fiveUTRsByTranscript cdsBy threeUTRsByTranscript
-#' exonsBy 
+#' exonsBy
 #' @keywords internal
 windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
                                 windowSize = 100, fraction = "1",
@@ -503,27 +503,28 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (!is.sorted) grl <- sortPerGroup(grl)
 
   if (is(reads, "character")) {
-    coverage <- coverage_random_access_file(reads, grl, withFrames, fraction)
-  } else {
-    if (is(reads, "covRle") | is(reads, "RleList")) {
-      coverage <- coverageByTranscriptC(reads, grl)
-    } else {
-      score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
-      if (score.defined) {
-        seqinfo.is.correct <- identical(seqlengths(reads), seqlengths(grl)) & !anyNA(seqlengths(grl))
-        coverage <- coverageByTranscriptW(reads, grl, weight = weight,
-                                          seqinfo.x.is.correct = seqinfo.is.correct)
-      } else coverage <- coverageByTranscript(reads, grl)
-    }
-    if (!keep.names) names(coverage) <- NULL
-
-    if (as.data.table) {
-      return(coverage_to_dt(coverage, keep.names = keep.names,
-                            withFrames = withFrames, weight = weight,
-                            drop.zero.dt = drop.zero.dt, fraction = fraction))
-    }
-    if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
+    return(coverage_random_access_file(reads, grl, withFrames, fraction))
   }
+
+  if (is(reads, "covRle") | is(reads, "RleList")) {
+    coverage <- coverageByTranscriptC(reads, grl)
+  } else {
+    score.defined <- is.numeric(weight) | (weight[1] %in% colnames(mcols(reads)))
+    if (score.defined) {
+      seqinfo.is.correct <- identical(seqlengths(reads), seqlengths(grl)) & !anyNA(seqlengths(grl))
+      coverage <- coverageByTranscriptW(reads, grl, weight = weight,
+                                        seqinfo.x.is.correct = seqinfo.is.correct)
+    } else coverage <- coverageByTranscript(reads, grl)
+  }
+  if (!keep.names) names(coverage) <- NULL
+
+  if (as.data.table) {
+    return(coverage_to_dt(coverage, keep.names = keep.names,
+                          withFrames = withFrames, weight = weight,
+                          drop.zero.dt = drop.zero.dt, fraction = fraction))
+  }
+  if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
+
   return(coverage)
 }
 
