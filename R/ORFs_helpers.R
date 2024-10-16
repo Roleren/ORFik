@@ -483,6 +483,7 @@ orfID <- function(grl, with.tx = FALSE) {
 #' uniqueGroups(grl)
 #'
 uniqueGroups <- function(grl) {
+  if (length(grl) == 0) return(grl)
   ids <- orfID(grl)
   grl <- grl[!duplicated(ids)]
   gr <- unlist(grl, use.names = FALSE)

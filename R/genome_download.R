@@ -118,6 +118,7 @@
 #'  and additional contaminants if used. If merge_contaminants is TRUE, will not
 #'  give individual fasta files to contaminants, but only the merged one.
 #' @family STAR
+#' @references https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4919035/
 #' @export
 #' @examples
 #'

@@ -24,13 +24,13 @@ one.}
 \item{config}{a named character vector of length 3,
 default: \code{ORFik::config()}}
 
+\item{sub_dir_single}{character, path. Default: \code{file.path(type, experiment, "")}
+The subdirectory relative to config defined main locations. If defined location
+should be used directly without making subdirectories, set to "".}
+
 \item{name_with_type_suffix}{logical, default TRUE. Make fastq name
 like 'fastq RNA-seq', setting it to FALSE gives name 'fastq'. Only allowed
 when length(type) == 1}
-
-\item{sub_dir}{character, path. Default: \code{file.path(type, experiment, "")}
-The subdirectory relative to config defined main locations. If defined location
-should be used directly without making subdirectories, set to "".}
 }
 \value{
 named character vector of paths for experiment

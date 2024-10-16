@@ -4,7 +4,12 @@
 \alias{STAR.allsteps.multiQC}
 \title{Create STAR multiQC plot and table}
 \usage{
-STAR.allsteps.multiQC(folder, steps = "auto", plot.ext = ".pdf")
+STAR.allsteps.multiQC(
+  folder,
+  steps = "auto",
+  plot.ext = ".pdf",
+  output.file = file.path(folder, "full_process.csv")
+)
 }
 \arguments{
 \item{folder}{path to main output folder of STAR run. The folder that contains
@@ -16,6 +21,9 @@ If manual, a combination of "tr-co-ge". See STAR alignment functions for descrip
 
 \item{plot.ext}{character, default ".pdf". Which format to save QC plot.
 Alternative: ".png".}
+
+\item{output.file}{character, file path, default:
+file.path(folder, "full_process.csv")}
 }
 \value{
 data.table of main statistics, plots and data saved to disc. Named:
@@ -25,6 +33,11 @@ data.table of main statistics, plots and data saved to disc. Named:
 Takes a folder with multiple Log.final.out files
 from STAR, and create a multiQC report. This is automatically run with
 STAR.align.folder function.
+}
+\examples{
+process_dir <- system.file("extdata/test_processing/", package = "ORFik")
+STAR.allsteps.multiQC(process_dir)
+STAR.allsteps.multiQC(process_dir, steps = "tr-ge")
 }
 \seealso{
 Other STAR: 

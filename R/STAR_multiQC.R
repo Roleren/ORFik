@@ -10,12 +10,20 @@
 #' If manual, a combination of "tr-co-ge". See STAR alignment functions for description.
 #' @param plot.ext character, default ".pdf". Which format to save QC plot.
 #' Alternative: ".png".
+#' @param output.file character, file path, default:
+#' file.path(folder, "full_process.csv")
 #' @return data.table of main statistics, plots and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.pdf" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table merge.data.table
 #' @family STAR
 #' @export
-STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
+#' @examples
+#' process_dir <- system.file("extdata/test_processing/", package = "ORFik")
+#' STAR.allsteps.multiQC(process_dir)
+#' STAR.allsteps.multiQC(process_dir, steps = "tr-ge")
+STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf",
+                                  output.file = file.path(folder, "full_process.csv")) {
+  if (is.null(steps)) return(data.table())
   if (steps == "auto") {
     steps <- paste(ifelse(dir.exists(file.path(folder, "aligned/")), "ge", ""),
                    ifelse(dir.exists(file.path(folder, "contaminants_depletion/")), "co", ""),
@@ -24,27 +32,14 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
     if (steps == "--") stop("'folder' is not correct ORFik alignment folder")
   }
 
-
-  output.file <- file.path(folder, "full_process.csv")
   res <- NULL
-  if (1 %in% grep("ge", steps)){
-    # If genome alignment done
+  if (grepl("ge", steps)) { # If genome alignment done
     aligned <- STAR.multiQC(folder, plot.ext = plot.ext)
-    aligned <- aligned[, c("sample", "sample_id",
-                           "total mapped reads %", "total mapped reads #",
-                           "Uniquely mapped reads %","Uniquely mapped reads #",
-                           "% of reads multimapped",
-                           "# of reads multimapped")]
     res <- aligned
   }
-  if (1 %in% grep("co", steps)) {
-    # If contamination depletion was done
+  if (grepl("co", steps)) { # If contamination depletion was done
     co <- STAR.multiQC(folder, "contaminants_depletion", plot.ext = plot.ext)
-    co <- co[, c("sample",
-                 "total mapped reads %", "total mapped reads #",
-                 "Uniquely mapped reads %","Uniquely mapped reads #",
-                 "% of reads multimapped",
-                 "# of reads multimapped")]
+
     co$sample <- gsub("contaminants_", "", co$sample)
     if (!is.null(res)) {
       if (nrow(co) != nrow(res)) {
@@ -63,7 +58,7 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
 
   }
 
-  if (1 %in% grep("tr", steps)) {
+  if (grepl("tr", steps)) {
     tr <- trimming.table(file.path(folder, "trim/"))
     if (!is.null(res)) {
       res_temp <- data.table::merge.data.table(res, tr, by.x = "sample", by.y = "raw_library")
@@ -77,11 +72,11 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
   message("Final statistics:")
 
 
-  if (1 %in% grep("tr", steps)) {
+  if (grepl("tr", steps)) {
     if (any(res$`% trimmed` > 40)) {
       warning("A sample lost > 40% of reads during trimming")
     }
-    if (1 %in% grep("ge", steps)) {
+    if (grepl("ge", steps)) {
       genome_reads <- if (is.null(res$`total mapped reads #-genome`)) {
         res$`total mapped reads #`
       } else res$`total mapped reads #-genome`
@@ -90,8 +85,9 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
         round((genome_reads/ res$raw_reads) * 100, 4)
       res$`total mapped reads %-genome vs trim` <-
         round((genome_reads / res$trim_reads) * 100, 4)
-
-      if (any(res$`total mapped reads %-genome vs trim` < 3)) {
+      very_low_alignment <- !is.na(res$`total mapped reads %-genome vs trim`) &&
+        any(res$`total mapped reads %-genome vs trim` < 3)
+      if (very_low_alignment) {
         warning("A sample aligned with < 3%, are you using the correct genome?")
       }
     }
@@ -117,18 +113,30 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf") {
 #' do type = "contaminants_depletion"
 #' @param plot.ext character, default ".pdf". Which format to save QC plot.
 #' Alternative: ".png".
+#' @param log_files character, path to "Log.final.out" STAR files,
+#'  default: dir(folder, "Log.final.out", full.names = TRUE)
+#' @param simplified_table logical, default TRUE. Subset columns, to
+#' the most important ones.
 #' @return a data.table with all information from STAR runs,
 #'  plot and data saved to disc. Named:
 #' "/00_STAR_LOG_plot.pdf" and "/00_STAR_LOG_table.csv"
 #' @importFrom data.table melt
 #' @family STAR
 #' @export
-STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
+#' @examples
+#' #' @examples
+#' process_dir <- system.file("extdata/test_processing/", package = "ORFik")
+#' STAR.multiQC(process_dir)
+#'
+STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf",
+                         log_files = dir(folder, "Log.final.out", full.names = TRUE),
+                         simplified_table = TRUE) {
   if (!(type %in% c("aligned", "contaminants_depletion")))
       stop("type must be either aligned or contaminants_depletion")
   if (!dir.exists(folder)) stop("folder does not specify existing directory!")
-  pattern <- "Log.final.out"
-  log_files <- dir(folder, pattern, full.names = TRUE)
+  stopifnot(is(log_files, "character"))
+
+
   if (length(log_files) == 0) {
     # Go to subfolder directory called /LOGS/ or /aligned/LOGS/
     new_path <- ifelse(dir.exists(file.path(folder, type, "LOGS/")),
@@ -136,69 +144,33 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
                        file.path(folder, "LOGS/"))
     return(STAR.multiQC(new_path, type = type, plot.ext = plot.ext))
   }
-  message("Runing alignment MultiQC")
-  # Read log files 1 by 1 (only data column)
-  dt <- lapply(log_files, function(file)
-    fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])
-  # Read log files, only 1 (only info column)
-  dt_all <- fread(log_files[1], sep = c("\t"),
-                  blank.lines.skip = TRUE, fill = TRUE)[,1]
-  for (i in dt) {
-    dt_all <- cbind(dt_all, as.data.table(i))
-  }
-  sample_names <- gsub("_Log.final.out", "",dir(folder, pattern))
-  colnames(dt_all) <- c("Info", sample_names)
-  dt_all$Info <- gsub(" \\|", "", dt_all$Info)
-  dt_all$Info <- gsub("Number", "#", dt_all$Info, ignore.case = TRUE)
-  dt_all$Info <- gsub("mapped to multiple loci", "multimapped", dt_all$Info)
-  dt_all$Info <- gsub("too many mismatches", "mismatches", dt_all$Info)
-  dt_dates <- dt_all[1:3, ]
+  message("Runing alignment MultiQC (", type, ")")
+  dt_logs <- STAR_read_log_files(log_files)
 
-  dt_data <- dt_all[-c(1:3, grep("READS", dt_all$Info)),]
-
-  dt_temp <- dt_data[,-1]
-  for (i in seq(ncol(dt_temp))) {
-    dt_temp[,i] <- as.numeric(gsub("%", "", unlist(dt_temp[, i, with = FALSE])))
-  }
-
-  dt_f <- dt_temp
-  dt_f <- data.table(t(dt_f))
-  colnames(dt_f) <- unlist(dt_data[,1])
-  dt_f <- cbind(`total mapped reads %` = dt_f$`Uniquely mapped reads %` + dt_f$`% of reads multimapped`,
-                `total mapped reads #` = dt_f$`Uniquely mapped reads #` + dt_f$`# of reads multimapped`,
-                dt_f)
-  dt_f <- cbind(sample = factor(sample_names, labels = sample_names,
-                                levels = sample_names, ordered = TRUE),
-                sample_id = factor(sample_names, labels = as.character(seq(length(sample_names))),
-                                   levels = sample_names, ordered = TRUE),
-                dt_f)
   # Save table to disc
-  fwrite(dt_f, file.path(folder, "00_STAR_LOG_table.csv"))
+  fwrite(dt_logs, file.path(folder, "00_STAR_LOG_table.csv"))
   # create plot
-  dt_plot <- melt(dt_f, id.vars = c("sample", "sample_id"))
-  sample.col <- if (nrow(dt_f) > 12) {
-    dt_plot$sample } else NULL
+  STAR.multiQC_plot(dt_logs, folder, plot.ext)
 
-  gg_STAR <- ggplot(dt_plot,
-                    aes(x=sample_id, y = value, group = sample, fill = sample)) +
-    geom_bar(aes(color = sample.col), stat="identity", position=position_dodge()) +
-    scale_fill_brewer(palette="Paired")+
-    ylab("Value (log10)") +
-    xlab("Samples") +
-    facet_wrap(  ~ variable, scales = "free") +
-    scale_y_log10() +
-    theme_minimal()
+  if (simplified_table) {
+    dt_logs <- dt_logs[, c("sample",
+                 "total mapped reads %", "total mapped reads #",
+                 "Uniquely mapped reads %","Uniquely mapped reads #",
+                 "% of reads multimapped",
+                 "# of reads multimapped")]
+  }
 
-  ggsave(file.path(folder, paste0("00_STAR_LOG_plot", plot.ext)), gg_STAR,
-         width = 18, height = 9)
-  return(dt_f)
+  return(dt_logs)
 }
 
 #' Create trimming table
 #'
 #' From fastp runs in ORFik alignment process
 #' @param trim_folder folder of trimmed files, only reads
-#' fastp .json files
+#' fastp .json files. Can be NULL if raw_libraries is defined
+#' @param raw_libraries character, default:
+#'  \code{dir(trim_folder, "\\.json", full.names = TRUE)},
+#'  file paths of all json file paths.
 #' @return a data.table with 6 columns, raw_library (names of library),
 #'  raw_reads (numeric, number of raw reads),
 #'  trim_reads (numeric, number of trimmed reads),
@@ -209,11 +181,15 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf") {
 #' @importFrom jsonlite fromJSON
 #' @examples
 #' # Location of fastp trimmed .json files
-#' trimmed_folder <- "path/to/libraries/trim/"
-#' #trimming.table(trimmed_folder)
-trimming.table <- function(trim_folder) {
+#' trimmed_file <- system.file("extdata/test_processing/trim",
+#'  "output_template.json", package = "ORFik")
+#' trimmed_folder <- dirname(trimmed_file)
+#' trimming.table(trimmed_folder)
+#' trimming.table(NULL, trimmed_file)
+trimming.table <- function(trim_folder,
+                           raw_libraries = dir(trim_folder, "\\.json", full.names = TRUE)) {
 
-  raw_library <- dir(trim_folder, "\\.json", full.names = TRUE)
+  raw_library <- raw_libraries
   if (length(raw_library) == 0) stop("fastp .json files not found!,",
                                      " did you change wd delete them?")
   raw_reads <- data.table()
@@ -239,4 +215,66 @@ trimming.table <- function(trim_folder) {
                                x = raw_data$raw_library, replacement = "")
   colnames(raw_data) <- gsub("\\.x", "", colnames(raw_data))
   return(raw_data)
+}
+
+STAR.multiQC_plot <- function(dt_f, folder, plot.ext = ".pdf") {
+  dt_plot <- melt(dt_f, id.vars = c("sample", "sample_id"))
+  sample.col <- if (nrow(dt_f) > 12) {
+    dt_plot$sample } else NULL
+  dt_plot[value == 0, value := 1]
+  gg_STAR <- ggplot(dt_plot,
+                    aes(x=sample_id, y = value, group = sample, fill = sample)) +
+    geom_bar(aes(color = sample.col), stat="identity", position=position_dodge()) +
+    scale_fill_brewer(palette="Paired")+
+    ylab("Value (log10)") +
+    xlab("Samples") +
+    facet_wrap(  ~ variable, scales = "free") +
+    scale_y_log10() +
+    theme_minimal()
+
+  ggsave(file.path(folder, paste0("00_STAR_LOG_plot", plot.ext)), gg_STAR,
+         width = 18, height = 9)
+  return(invisible(NULL))
+}
+
+STAR_read_log_files <- function(log_files, clean_output = TRUE) {
+  # Read log files 1 by 1 (only data column)
+  dt <- lapply(log_files, function(file)
+    fread(file, sep = c("\t"),  blank.lines.skip = TRUE, fill = TRUE)[,2])
+  # Read log files, only 1 (only info column)
+  dt_all <- fread(log_files[1], sep = c("\t"),
+                  blank.lines.skip = TRUE, fill = TRUE)[,1]
+  for (i in dt) {
+    dt_all <- cbind(dt_all, as.data.table(i))
+  }
+
+  if (clean_output) {
+    sample_names <- gsub("_Log.final.out", "", basename(log_files))
+    colnames(dt_all) <- c("Info", sample_names)
+    dt_all$Info <- gsub(" \\|", "", dt_all$Info)
+    dt_all$Info <- gsub("Number", "#", dt_all$Info, ignore.case = TRUE)
+    dt_all$Info <- gsub("mapped to multiple loci", "multimapped", dt_all$Info)
+    dt_all$Info <- gsub("too many mismatches", "mismatches", dt_all$Info)
+    dt_dates <- dt_all[1:3, ]
+
+    dt_data <- dt_all[-c(1:3, grep("READS", dt_all$Info)),]
+
+    dt_temp <- dt_data[,-1]
+    for (i in seq(ncol(dt_temp))) {
+      dt_temp[,i] <- as.numeric(gsub("%", "", unlist(dt_temp[, i, with = FALSE])))
+    }
+
+    dt_f <- dt_temp
+    dt_f <- data.table(t(dt_f))
+    colnames(dt_f) <- unlist(dt_data[,1])
+    dt_f <- cbind(`total mapped reads %` = dt_f$`Uniquely mapped reads %` + dt_f$`% of reads multimapped`,
+                  `total mapped reads #` = dt_f$`Uniquely mapped reads #` + dt_f$`# of reads multimapped`,
+                  dt_f)
+    dt_all <- cbind(sample = factor(sample_names, labels = sample_names,
+                                  levels = sample_names, ordered = TRUE),
+                  sample_id = factor(sample_names, labels = as.character(seq(length(sample_names))),
+                                     levels = sample_names, ordered = TRUE),
+                  dt_f)
+  }
+  return(dt_all)
 }

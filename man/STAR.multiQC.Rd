@@ -4,7 +4,13 @@
 \alias{STAR.multiQC}
 \title{Create STAR multiQC plot and table}
 \usage{
-STAR.multiQC(folder, type = "aligned", plot.ext = ".pdf")
+STAR.multiQC(
+  folder,
+  type = "aligned",
+  plot.ext = ".pdf",
+  log_files = dir(folder, "Log.final.out", full.names = TRUE),
+  simplified_table = TRUE
+)
 }
 \arguments{
 \item{folder}{path to LOGS folder of ORFik STAR runs. Can also be the path
@@ -19,6 +25,12 @@ do type = "contaminants_depletion"}
 
 \item{plot.ext}{character, default ".pdf". Which format to save QC plot.
 Alternative: ".png".}
+
+\item{log_files}{character, path to "Log.final.out" STAR files,
+default: dir(folder, "Log.final.out", full.names = TRUE)}
+
+\item{simplified_table}{logical, default TRUE. Subset columns, to
+the most important ones.}
 }
 \value{
 a data.table with all information from STAR runs,
@@ -28,6 +40,12 @@ a data.table with all information from STAR runs,
 \description{
 Takes a folder with multiple Log.final.out files
 from STAR, and create a multiQC report
+}
+\examples{
+#' @examples
+process_dir <- system.file("extdata/test_processing/", package = "ORFik")
+STAR.multiQC(process_dir)
+
 }
 \seealso{
 Other STAR: 

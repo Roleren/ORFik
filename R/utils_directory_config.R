@@ -12,7 +12,7 @@
 #' one.
 #' @param config a named character vector of length 3,
 #'  default: \code{ORFik::config()}
-#' @param sub_dir character, path. Default: \code{file.path(type, experiment, "")}
+#' @param sub_dir_single character, path. Default: \code{file.path(type, experiment, "")}
 #' The subdirectory relative to config defined main locations. If defined location
 #' should be used directly without making subdirectories, set to "".
 #' @param name_with_type_suffix logical, default TRUE. Make fastq name

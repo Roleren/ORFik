@@ -84,6 +84,9 @@ output.dir <- "/Bio_data/references/zebrafish"
 # Then make the txdb (for faster R use)
 # makeTxdbFromGenome(annotation["gtf"], annotation["genome"], organism = "Arabidopsis thaliana")
 }
+\references{
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4919035/
+}
 \seealso{
 Other STAR: 
 \code{\link{STAR.align.folder}()},

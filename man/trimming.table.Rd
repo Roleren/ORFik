@@ -4,11 +4,18 @@
 \alias{trimming.table}
 \title{Create trimming table}
 \usage{
-trimming.table(trim_folder)
+trimming.table(
+  trim_folder,
+  raw_libraries = dir(trim_folder, "\\\\.json", full.names = TRUE)
+)
 }
 \arguments{
 \item{trim_folder}{folder of trimmed files, only reads
-fastp .json files}
+fastp .json files. Can be NULL if raw_libraries is defined}
+
+\item{raw_libraries}{character, default:
+\code{dir(trim_folder, "\\.json", full.names = TRUE)},
+file paths of all json file paths.}
 }
 \value{
 a data.table with 6 columns, raw_library (names of library),
@@ -23,6 +30,9 @@ From fastp runs in ORFik alignment process
 }
 \examples{
 # Location of fastp trimmed .json files
-trimmed_folder <- "path/to/libraries/trim/"
-#trimming.table(trimmed_folder)
+trimmed_file <- system.file("extdata/test_processing/trim",
+ "output_template.json", package = "ORFik")
+trimmed_folder <- dirname(trimmed_file)
+trimming.table(trimmed_folder)
+trimming.table(NULL, trimmed_file)
 }

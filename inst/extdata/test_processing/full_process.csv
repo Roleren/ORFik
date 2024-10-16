@@ -1,0 +1,2 @@
+sample,sample_id,total mapped reads %,total mapped reads #,Uniquely mapped reads %,Uniquely mapped reads #,% of reads multimapped,# of reads multimapped,raw_reads,trim_reads,% trimmed,raw_mean_length,trim_mean_length,total mapped reads %-genome vs raw,total mapped reads %-genome vs trim
+output_template,1,84.14,414089,16.05,78981,68.09,335108,2000000,1500000,25,125,33,20.7044,27.6059
