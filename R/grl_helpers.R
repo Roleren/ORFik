@@ -378,13 +378,14 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
 flankPerGroup <- function(grl) {
   validGRL(class(grl))
   dt <- as.data.table(grl)
-  dt$group <- NULL
-  dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
-               strand = strand[1]), by = group_name]
-  rownames(dt) <- dt$group_name
+  old_names <- names(grl)
   dt$group_name <- NULL
+  dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
+               strand = strand[1]), by = group]
+  group <- dt$group
   gr <- GRanges(dt, seqinfo = seqinfo(grl))
-  grl <- groupGRangesBy(gr)
+  grl <- groupGRangesBy(gr, group)
+  names(grl) <- old_names
   return(grl)
 }
 
