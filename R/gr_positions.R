@@ -24,17 +24,22 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
     }
   }
 
+  group <- NULL
+  if (!is.null(grl@unlistData$group)) {
+    group <- grl@unlistData$group
+    grl@unlistData$group <- NULL
+  }
   dt <- as.data.table(grl)
-  dt[!duplicated(dt$group),]$start[posIndices] <- newStarts[posIndices]
+  dt[!duplicated(group) & posIndices, start := newStarts[posIndices]]
   if (is.circular) { # For negative strand, make failsafe on seqlength
-    dt[!duplicated(dt$group),]$end[!posIndices] <- newStarts[!posIndices]
+    dt[!duplicated(group) & !posIndices, end := newStarts[!posIndices]]
   } else { # Not circular, check if seqlengths exist
     if (all(!is.na(seqlengths(grl)))) { # All seqlengths seq
       seqlengths.per <- seqlengths(grl)[seqnamesPerGroup(grl[!posIndices], FALSE)]
-      dt[!duplicated(dt$group),]$end[!posIndices] <- pmin(newStarts[!posIndices],
-                                                          seqlengths.per)
+      dt[!duplicated(group) & !posIndices, end := pmin(newStarts[!posIndices],
+                                                       seqlengths.per)]
     } else {
-      dt[!duplicated(dt$group),]$end[!posIndices] <- newStarts[!posIndices]
+      dt[!duplicated(group) & !posIndices, end := newStarts[!posIndices]]
     }
   }
 
@@ -45,6 +50,7 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
                                                 keep.extra.columns = TRUE,
                                                 seqinfo = seqinfo(grl))
   names(ngrl) <- names(grl)
+  ngrl@unlistData$group <- group
   return(ngrl)
 }
 
@@ -75,8 +81,12 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
       newStops <- pmax(newStops, 1)
     }
   }
+  group <- NULL
+  if (!is.null(grl@unlistData$group)) {
+    group <- grl@unlistData$group
+    grl@unlistData$group <- NULL
+  }
   dt <- as.data.table(grl)
-  group <- NULL # avoid check warning
   idx = dt[, .I[.N], by = group]
 
 
@@ -91,7 +101,6 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
       dt[idx$V1]$end[posIndices] <- newStops[posIndices]
     }
   }
-
   ngrl <-
     GenomicRanges::makeGRangesListFromDataFrame(dt,
                                                 split.field = "group",
@@ -99,6 +108,7 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
                                                 keep.extra.columns = TRUE,
                                                 seqinfo = seqinfo(grl))
   names(ngrl) <- names(grl)
+  ngrl@unlistData$group <- group
 
   return(ngrl)
 }
