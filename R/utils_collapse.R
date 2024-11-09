@@ -188,6 +188,7 @@ ofst_merge <- function(file_paths,
     }), lib_names = lib_names, keep_all_scores = keep_all_scores,
     keepCigar = keepCigar, sort = sort)
   } else {
+    dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
     dt <- ofst_merge_internal(dt_list, lib_names = lib_names,
                               keep_all_scores = keep_all_scores,
                               keepCigar = keepCigar, sort = sort)

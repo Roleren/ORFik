@@ -26,6 +26,7 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
                             out_dir = file.path(libFolder(df), "ofst"),
                             verbose = TRUE, strandMode = rep(0, length(in_files))) {
   stopifnot(all(is(strandMode, "numeric")))
+  stopifnot(length(in_files) > 0)
   if (!is.null(df)) {
     stopifnot(is(df, "experiment"))
     if (length(in_files) != nrow(df))
@@ -36,8 +37,10 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
   dir.create(out_dir, showWarnings = FALSE)
   if (verbose) message("-- Converting bam to ofst")
   if (verbose) message("Output to dir: ", out_dir)
+  total_files <- length(out_filepaths)
   for (i in seq_along(out_filepaths)) {
-    if (verbose) message("- Library: ", lib_names[i])
+    index <- paste0("(", i, "/", total_files, ")")
+    if (verbose) message("- Library", index, ": ", lib_names[i])
     out_file <- out_filepaths[i]
     in_file <- in_files[i]
     export.ofst(readBam(in_file, strandMode = strandMode[i]), out_file)
