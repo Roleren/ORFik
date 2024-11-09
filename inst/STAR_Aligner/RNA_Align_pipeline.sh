@@ -93,7 +93,7 @@ keepContamType="bam"
 keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:q:u:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
