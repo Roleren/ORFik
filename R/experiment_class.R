@@ -225,6 +225,8 @@ setMethod("envExp<-",
           }
 )
 
+
+
 #' Get ORFik experiment organism
 #'
 #' If not defined directly, checks the txdb / gtf organism information, if existing.
@@ -352,9 +354,22 @@ setMethod("seqlevels",
 setMethod("seqinfo",
           "experiment",
           function(x) {
-            seqinfo(findFa(x@fafile))
+            seqinfo(findFa(x))
           }
 )
+
+#' Seqnames ORFik experiment
+#' Extracted from fasta genome index
+#' @param x an ORFik \code{\link{experiment}}
+#' @return integer vector with names
+#' @export
+setMethod("seqnames",
+          "experiment",
+          function(x) {
+            seqnames(findFa(x))
+          }
+)
+
 
 #' Get ORFik experiment QC folder path
 #'

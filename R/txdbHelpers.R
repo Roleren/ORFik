@@ -306,16 +306,15 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   #TODO: Check that is is an open connection!
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
-    if (f == "gff" | f == "gff2" | f == "gff3" | f == "gtf") {
+    if (f %in% c("gff", "gff2", "gff3", "gtf")) {
       txdb <- makeTxDbFromGFF(txdb, organism = organism, chrominfo = chrominfo)
-    } else if(f == "db" | f == "sqlite") {
+    } else if(f %in% c("db", "sqlite")) {
       txdb <- loadDb(txdb)
     } else {
       stop("when txdb is path, must be one of:
            gff - (.gff, .gff2, .gff3, .gtf)
            txdb - (.db, .sqlite")
     }
-
   } else if (is.list(txdb)) {
     must_have_cols <- c("transcripts", "splicings", "genes", "chrominfo")
     if (!all(must_have_cols %in% names(txdb))) {
@@ -428,7 +427,6 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
     if (part %in% c("uorf", "uorfs")) {
       txNames(region) %in% names.keep
     } else names(region) %in% names.keep
-
     if (length(subset) == 0)
       stop("Found no kept transcript with given subset of part:", part)
     region <- region[subset]
@@ -618,10 +616,12 @@ geneToSymbol <- function(df, organism_name = organism(df),
       return(as.data.table(fst::read_fst(file)))
     }
   }
-  if (verbose) message("- Symbols extracted from:")
-  if (verbose) message("Organism: ", organism_name)
-  if (verbose) message("Dataset: ", attr(ensembl, "dataset"))
-  if (verbose) message("Attribute: ", attribute)
+  if (verbose) {
+    message("- Symbols extracted from:")
+    message("Organism: ", organism_name)
+    message("Dataset: ", attr(ensembl, "dataset"))
+    message("Attribute: ", attribute)
+  }
 
   # Find correct uniprot column
 
