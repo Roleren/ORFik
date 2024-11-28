@@ -30,16 +30,16 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
     grl@unlistData$group <- NULL
   }
   dt <- as.data.table(grl)
-  dt[!duplicated(group) & posIndices, start := newStarts[posIndices]]
+  dt[!duplicated(group) & posIndices[group], start := newStarts[posIndices]]
   if (is.circular) { # For negative strand, make failsafe on seqlength
-    dt[!duplicated(group) & !posIndices, end := newStarts[!posIndices]]
+    dt[!duplicated(group) & !posIndices[group], end := newStarts[!posIndices]]
   } else { # Not circular, check if seqlengths exist
     if (all(!is.na(seqlengths(grl)))) { # All seqlengths seq
       seqlengths.per <- seqlengths(grl)[seqnamesPerGroup(grl[!posIndices], FALSE)]
-      dt[!duplicated(group) & !posIndices, end := pmin(newStarts[!posIndices],
+      dt[!duplicated(group) & !posIndices[group], end := pmin(newStarts[!posIndices],
                                                        seqlengths.per)]
     } else {
-      dt[!duplicated(group) & !posIndices, end := newStarts[!posIndices]]
+      dt[!duplicated(group) & !posIndices[group], end := newStarts[!posIndices]]
     }
   }
 

@@ -139,7 +139,7 @@ and store all uniprot id for all transcripts (coding and noncoding)-
 In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.}
 
 \item{pseudo_5UTRS_if_needed}{integer, default NULL. If defined > 0,
-will add pseudo 5' UTRs if 'minimum_5UTR_percentage" (default 30%) of
+will add pseudo 5' UTRs of maximum this length if 'minimum_5UTR_percentage" (default 30%) of
 mRNAs (coding transcripts) do not have a leader. (NULL and 0 are both the ignore command)}
 
 \item{remove_annotation_outliers}{logical, default TRUE. Only for refseq.

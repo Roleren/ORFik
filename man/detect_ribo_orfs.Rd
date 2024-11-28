@@ -40,6 +40,8 @@ detect_ribo_orfs(
  \item{annotated: }{The defined CDS for that transcript}
  \item{NTE: }{5' Start codon extension of annotated CDS}
  \item{NTT: }{5' Start codon truncation of annotated CDS}
+ \item{CTE: }{3' stop codon extension of annotated CDS, i.e. readthrough}
+ \item{CTT: }{5' Start codon truncation of annotated CDS, original cds was defined with readthrough}
  \item{internal: }{Starting inside CDS, ending before CDS ends}
  \item{doORF: }{Downstream ORFs (Ending in 3' UTR), overlapping CDS}
  \item{dORF: }{Downstream ORFs (Ending in 3' UTR), not overlapping CDS}

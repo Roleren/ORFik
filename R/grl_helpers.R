@@ -364,31 +364,6 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
   return(lengths(grl, keep.names))
 }
 
-#' Get flanks per group
-#'
-#' For a GRangesList, get start and end site, return back as GRL.
-#' @param grl a \code{\link{GRangesList}}
-#' @return a GRangesList, 1 GRanges per group with:
-#'  start as minimum start of group and end as maximum per group.
-#' @export
-#' @examples
-#' grl <- GRangesList(tx1 = GRanges("1", IRanges(c(1,5), width = 2), "+"),
-#'                    tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
-#' flankPerGroup(grl)
-flankPerGroup <- function(grl) {
-  validGRL(class(grl))
-  dt <- as.data.table(grl)
-  old_names <- names(grl)
-  dt$group_name <- NULL
-  dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
-               strand = strand[1]), by = group]
-  group <- dt$group
-  gr <- GRanges(dt, seqinfo = seqinfo(grl))
-  grl <- groupGRangesBy(gr, group)
-  names(grl) <- old_names
-  return(grl)
-}
-
 #' Safe unlist
 #'
 #' Same as [AnnotationDbi::unlist2()], keeps names correctly.

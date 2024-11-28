@@ -7,7 +7,9 @@
 optimized_txdb_path(txdb, create.dir = FALSE, stop.error = TRUE)
 }
 \arguments{
-\item{txdb}{a loaded TxDb object}
+\item{txdb}{a TxDb object, ORFik experiment object or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
+Only in the loadRegion function: if it is a GRangesList, it will return it self.}
 
 \item{create.dir}{logical FALSE, if TRUE create the
 optimization directory, this should only be called first time used.}

@@ -439,11 +439,8 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
 
   if (is.character(path)) {
     if (all(file.exists(path))) {
-      fext <- file_ext(path)
-      compressions <- c("gzip", "gz", "bgz", "zip")
-      areCompressed <- fext %in% compressions
-      fext[areCompressed] <- file_ext(file_path_sans_ext(path[areCompressed],
-                                                         compression = FALSE))
+      fext <- file_ext_without_compression(path)
+
       if (length(path) == 2) { # Multiple file paths
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
@@ -451,7 +448,7 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
           return(readBam(path, chrStyle, param, strandMode))
         } else if (all(fext %in% c("bigWig", "bw"))) {
           return(readBigWig(path, chrStyle))
-        } else stop("only wig and valid bam format allowed for 2 files input!")
+        } else stop("only bigWig (bw), wig and bam formats allowed for 2 files input!")
       } else if (length(path) == 1) { # Only 1 file path given
         if (fext == "bam") {
           if (pairedEndBam) path <- c(path, "paired-end")
@@ -480,6 +477,23 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
     stop("path must be either a valid character",
          " filepath or ranged object.")
   }
+}
+
+#' Get file extension of files without compressions
+#'
+#' @param x character paths
+#' @param compressions character vector, default: c("gzip", "gz", "bgz", "zip").
+#' Expand if you have other formats
+#' @return character vector of file extensions of paths excluding suffix vector defined in compression.
+#' @export
+#' @examples
+#' file_ext_without_compression(c("abc.bam.gz", "def.bam.zip"))
+file_ext_without_compression <- function(x, compressions = c("gzip", "gz", "bgz", "zip")) {
+  fext <- file_ext(x)
+  areCompressed <- fext %in% compressions
+  fext[areCompressed] <- file_ext(file_path_sans_ext(x[areCompressed],
+                                                     compression = FALSE))
+  return(fext)
 }
 
 #' Convenience wrapper for Rsamtools FaFile

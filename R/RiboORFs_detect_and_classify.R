@@ -1,3 +1,7 @@
+valid_orf_categories <- function() {
+  c("uORF", "uoORF", "annotated", "NTE", "NTT",  "CTT",
+    "CTE", "internal", "doORF", "dORF", "a_error")
+}
 
 categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, mrna,
                             verbose = TRUE) {
@@ -14,6 +18,8 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   is_annotated <- orfs_unl == cds_txcoord
   is_NTE <- (start(orfs_unl) < start(cds_txcoord)) & (end(orfs_unl) == end(cds_txcoord))
   is_NTT <- (start(orfs_unl) > start(cds_txcoord)) & (end(orfs_unl) == end(cds_txcoord))
+  is_CTT <- (start(orfs_unl) == start(cds_txcoord)) & (end(orfs_unl) < end(cds_txcoord))
+  is_CTE <- (start(orfs_unl) == start(cds_txcoord)) & (end(orfs_unl) > end(cds_txcoord))
   is_internal <- (start(orfs_unl) > start(cds_txcoord)) & (end(orfs_unl) < end(cds_txcoord))
   is_doORF <- (start(orfs_unl) > start(cds_txcoord))  & (end(orfs_unl) > end(cds_txcoord))
   is_dORF <- is_doORF & (start(orfs_unl) > end(cds_txcoord))
@@ -26,6 +32,8 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   ORF_type[is_internal] <- "internal"
   ORF_type[is_doORF] <- "doORF"
   ORF_type[is_dORF] <- "dORF"
+  ORF_type[is_CTT] <- "CTT"
+  ORF_type[is_CTE] <- "CTE"
 
   if (verbose) print(table(ORF_type))
   if (any(ORF_type == "a_error")) {
@@ -45,8 +53,7 @@ categorize_and_filter_ORFs <- function(orfs, ORF_categories_to_keep,
                                        cds, mrna,
                                        map_to_gr = TRUE) {
   stopifnot(length(ORF_categories_to_keep) > 0)
-  stopifnot(all(ORF_categories_to_keep %in% c("uORF", "uoORF", "annotated", "NTE",
-                                              "NTT", "internal", "doORF", "dORF", "a_error")))
+  stopifnot(all(ORF_categories_to_keep %in% valid_orf_categories()))
 
   orfs_unl <- unlist(orfs, use.names = TRUE)
   groupings <- strtoi(names(orfs_unl))
@@ -115,6 +122,8 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #'  \item{annotated: }{The defined CDS for that transcript}
 #'  \item{NTE: }{5' Start codon extension of annotated CDS}
 #'  \item{NTT: }{5' Start codon truncation of annotated CDS}
+#'  \item{CTE: }{3' stop codon extension of annotated CDS, i.e. readthrough}
+#'  \item{CTT: }{5' Start codon truncation of annotated CDS, original cds was defined with readthrough}
 #'  \item{internal: }{Starting inside CDS, ending before CDS ends}
 #'  \item{doORF: }{Downstream ORFs (Ending in 3' UTR), overlapping CDS}
 #'  \item{dORF: }{Downstream ORFs (Ending in 3' UTR), not overlapping CDS}

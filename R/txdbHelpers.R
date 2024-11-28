@@ -28,10 +28,11 @@
 #' @param uniprot_id logical default FALSE.  If TRUE, will download
 #' and store all uniprot id for all transcripts (coding and noncoding)-
 #' In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
-#' @param return logical, default FALSE. If TRUE, return TXDB object, else NULL.
+#' @param return logical, default FALSE. If TRUE, return TXDB object,
+#' else invisible(NULL).
 #' @inheritParams add_pseudo_5utrs_txdb_if_needed
 #' @return NULL,  Txdb saved to disc named paste0(gtf, ".db").
-#' Set 'return' argument to TRUE, to get txdb back
+#' Set 'return' argument to TRUE, to also get txdb back as an object.
 #' @export
 #' @examples
 #' gtf <- "/path/to/local/annotation.gtf"
@@ -44,7 +45,37 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
                                pseudo_5UTRS_if_needed = NULL,
                                minimum_5UTR_percentage = 30,
                                return = FALSE) {
-  message("Making txdb of GTF")
+
+  txdb <- makeTxdbTemplate(gtf, genome, organism)
+  txdb <- add_pseudo_5utrs_txdb_if_needed(txdb, pseudo_5UTRS_if_needed,
+                                          minimum_5UTR_percentage)
+
+  txdb_file <- paste0(gtf, ".db")
+  AnnotationDbi::saveDb(txdb, txdb_file)
+  message("--------------------------")
+  message("Txdb stored at: ", txdb_file)
+
+  if (optimize) {
+    message("--------------------------")
+    message("Optimizing annotation, saving to: ", dirname(base_path))
+    # Save all transcript, cds and UTR lengths as .fst
+    optimizedTranscriptLengths(txdb, create.fst.version = TRUE)
+    # Save RDS version of all transcript regions
+    optimizeTranscriptRegions(txdb)
+  }
+  if (gene_symbols) {
+    symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
+                            uniprot_id = uniprot_id)
+    path <- file.path(dirname(gtf), "gene_symbol_tx_table.fst")
+    if (nrow(symbols) > 0) fst::write_fst(symbols, path)
+  }
+  if (return) return(txdb)
+  return(invisible(NULL))
+}
+
+makeTxdbTemplate <- function(gtf, genome = NULL, organism) {
+
+  message("Making optimized txdb using ", toupper(tools::file_ext(gtf)))
   organismCapital <- paste0(toupper(substr(organism, 1, 1)),
                             substr(organism, 2, nchar(organism)))
   organismCapital <- gsub("_", " ", organismCapital)
@@ -74,47 +105,17 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
   } else {
     txdb <- loadTxdb(gtf, organism = organismCapital)
   }
-
-  txdb <- add_pseudo_5utrs_txdb_if_needed(txdb, pseudo_5UTRS_if_needed,
-                                          minimum_5UTR_percentage)
-
-  txdb_file <- paste0(gtf, ".db")
-  AnnotationDbi::saveDb(txdb, txdb_file)
-  message("--------------------------")
-  message("Txdb stored at: ", txdb_file)
-
-  if (optimize) {
-    base_path <- optimized_txdb_path(txdb, create.dir = TRUE)
-    message("--------------------------")
-    message("Optimizing annotation, saving to: ", dirname(base_path))
-    # Save all transcript, cds and UTR lengths as .fst
-    optimizedTranscriptLengths(txdb, create.fst.version = TRUE)
-    # Save RDS version of all transcript regions
-    message("Creating rds speedup files for transcript regions")
-    parts <- c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA")
-    for (i in parts) {
-      saveRDS(loadRegion(txdb, i, by = "tx"),
-              file = paste0(base_path, "_", i, ".rds"))
-    }
-  }
-  if (gene_symbols) {
-    symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
-                            uniprot_id = uniprot_id)
-    path <- file.path(dirname(gtf), "gene_symbol_tx_table.fst")
-    if (nrow(symbols) > 0) fst::write_fst(symbols, path)
-  }
-  if (return) return(txdb)
-  return(invisible(NULL))
+  return(txdb)
 }
 
 #' add_pseudo_5utrs_txdb_if_needed
 #' @param txdb a TxDb object
 #' @param pseudo_5UTRS_if_needed integer, default NULL. If defined > 0,
-#' will add pseudo 5' UTRs if 'minimum_5UTR_percentage" (default 30%) of
+#' will add pseudo 5' UTRs of maximum this length if 'minimum_5UTR_percentage" (default 30%) of
 #' mRNAs (coding transcripts) do not have a leader. (NULL and 0 are both the ignore command)
 #' @param minimum_5UTR_percentage numeric, default 30. What minimum percentage
 #' of mRNAs most have a 5' UTRs (leaders), to not do the pseudo_UTR addition.
-#' If percentage is higher it addition is ignored, set to 101 to always do it.
+#' If percentage is higher, addition is ignored, set to 101 to always do it.
 #' @return txdb (new txdb if it was done, old if not)
 add_pseudo_5utrs_txdb_if_needed <- function(txdb, pseudo_5UTRS_if_needed = NULL, minimum_5UTR_percentage = 30) {
   pseudo5 <- pseudo_5UTRS_if_needed
@@ -332,9 +333,9 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
 #' Adds another safety in that seqlevels will be set
 #'
 #' Load as GRangesList if input is not already GRangesList.
-#' @param txdb a TxDb file or a path to one of:
-#'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
-#'  it will return it self.
+#' @param txdb a TxDb object, ORFik experiment object or a path to one of:
+#'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
+#'  Only in the loadRegion function: if it is a GRangesList, it will return it self.
 #' @param part a character, one of: tx, ncRNA, mrna, leader, cds, trailer, intron,
 #' NOTE: difference between tx and mrna is that tx are all transcripts, while
 #' mrna are all transcripts with a cds, respectivly ncRNA are all tx without a cds.
@@ -743,6 +744,7 @@ importGtfFromTxdb <- function(txdb, stop.error = TRUE) {
 #' and stop.error is FALSE.
 #' @keywords internal
 getGtfPathFromTxdb <- function(txdb, stop.error = TRUE) {
+  txdb <- loadTxdb(txdb)
   genome <- metadata(txdb)[metadata(txdb)[,1] == "Data source", 2]
   valid <- TRUE
   if (length(genome) == 0) valid <- FALSE
@@ -851,7 +853,7 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 }
 
 #' Get path for optimization files for txdb
-#' @param txdb a loaded TxDb object
+#' @inheritParams loadRegion
 #' @param create.dir logical FALSE, if TRUE create the
 #' optimization directory, this should only be called first time used.
 #' @param stop.error logical TRUE
@@ -896,15 +898,15 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE) {
 #' dt[cds_len > 0,] # All mRNA
 optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
                                        with.utr3_len = TRUE,
-                                       create.fst.version = FALSE) {
+                                       create.fst.version = FALSE,
+                                       optimized_path = optimized_txdb_path(txdb, stop.error = FALSE)) {
   txdb <- loadTxdb(txdb)
 
-  optimized_path <- optimized_txdb_path(txdb, stop.error = FALSE)
   found_gtf <- !is.null(optimized_path)
   possible_fst <- paste0(optimized_path, "_txLengths.fst")
-  if (file.exists(possible_fst) & found_gtf) { # If fst exists
+  if (found_gtf && file.exists(possible_fst)) { # If fst exists
     return(setDT(fst::read_fst(possible_fst)))
-  } else if (create.fst.version & found_gtf) { # If make fst
+  } else if (found_gtf && create.fst.version) { # If make fst
     tx <- data.table::setDT(
       GenomicFeatures::transcriptLengths(
         txdb, with.cds_len = TRUE,
@@ -927,4 +929,23 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
       txdb, with.cds_len = TRUE,
       with.utr5_len = with.utr5_len,
       with.utr3_len = with.utr3_len)))
+}
+
+#' Make optimized GRangesList objects saved to disc
+#'
+#' Much faster to load
+#' @inheritParams filterTranscripts
+#' @param base_path Directy and file prefix for files, will append "_region.rds", where region is
+#' specific region.
+#' @param regions character, default: c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA").
+#' Valid options specified by loadRegion.
+#' @return invisible(NULL)
+optimizeTranscriptRegions <- function(txdb, base_path = optimized_txdb_path(txdb, create.dir = TRUE),
+                                       regions = c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA")) {
+  message("Creating rds speedup files for transcript regions")
+  for (region in regions) {
+    saveRDS(loadRegion(txdb, region, by = "tx"),
+            file = paste0(base_path, "_", region, ".rds"))
+  }
+  return(invisible(NULL))
 }

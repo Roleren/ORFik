@@ -8,13 +8,14 @@ optimizedTranscriptLengths(
   txdb,
   with.utr5_len = TRUE,
   with.utr3_len = TRUE,
-  create.fst.version = FALSE
+  create.fst.version = FALSE,
+  optimized_path = optimized_txdb_path(txdb, stop.error = FALSE)
 )
 }
 \arguments{
-\item{txdb}{a TxDb file or a path to one of:
-(.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
-it will return it self.}
+\item{txdb}{a TxDb object, ORFik experiment object or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
+Only in the loadRegion function: if it is a GRangesList, it will return it self.}
 
 \item{with.utr5_len}{logical TRUE, include length of 5' UTRs,
 ignored if .fst exists}

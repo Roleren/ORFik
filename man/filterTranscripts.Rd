@@ -16,9 +16,9 @@ filterTranscripts(
 )
 }
 \arguments{
-\item{txdb}{a TxDb file or a path to one of:
-(.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
-it will return it self.}
+\item{txdb}{a TxDb object, ORFik experiment object or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
+Only in the loadRegion function: if it is a GRangesList, it will return it self.}
 
 \item{minFiveUTR}{(integer) minimum bp for 5' UTR during filtering for the
 transcripts. Set to NULL if no 5' UTRs exists for annotation.}

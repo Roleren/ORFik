@@ -13,9 +13,9 @@ loadRegion(
 )
 }
 \arguments{
-\item{txdb}{a TxDb file or a path to one of:
-(.gtf ,.gff, .gff2, .gff2, .db or .sqlite), if it is a GRangesList,
-it will return it self.}
+\item{txdb}{a TxDb object, ORFik experiment object or a path to one of:
+(.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
+Only in the loadRegion function: if it is a GRangesList, it will return it self.}
 
 \item{part}{a character, one of: tx, ncRNA, mrna, leader, cds, trailer, intron,
 NOTE: difference between tx and mrna is that tx are all transcripts, while
