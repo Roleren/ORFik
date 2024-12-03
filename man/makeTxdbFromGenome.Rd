@@ -30,7 +30,8 @@ must be capital! Example: Homo sapiens. Will force first letter
 to capital and convert any "_" (underscore) to " " (space)}
 
 \item{optimize}{logical, default FALSE. Create a folder
-within the folder of the gtf, that includes optimized objects
+within the output folder (defined by txdb_file_out_path),
+that includes optimized objects
 to speed up loading of annotation regions from up to 15 seconds
 on human genome down to 0.1 second. ORFik will then load these optimized
 objects instead. Currently optimizes filterTranscript() function and

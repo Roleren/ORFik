@@ -4,7 +4,12 @@
 \alias{optimized_txdb_path}
 \title{Get path for optimization files for txdb}
 \usage{
-optimized_txdb_path(txdb, create.dir = FALSE, stop.error = TRUE)
+optimized_txdb_path(
+  txdb,
+  create.dir = FALSE,
+  stop.error = TRUE,
+  gtf_path = getGtfPathFromTxdb(txdb, stop.error = stop.error)
+)
 }
 \arguments{
 \item{txdb}{a TxDb object, ORFik experiment object or a path to one of:
@@ -15,6 +20,9 @@ Only in the loadRegion function: if it is a GRangesList, it will return it self.
 optimization directory, this should only be called first time used.}
 
 \item{stop.error}{logical TRUE}
+
+\item{gtf_path}{path to gtf where output should be stored in subfolder
+"./ORFik_optimized"}
 }
 \value{
 a character file path, returns NULL if not valid

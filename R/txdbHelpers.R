@@ -15,7 +15,8 @@
 #' must be capital! Example: Homo sapiens. Will force first letter
 #' to capital and convert any "_" (underscore) to " " (space)
 #' @param optimize logical, default FALSE. Create a folder
-#' within the folder of the gtf, that includes optimized objects
+#' within the output folder (defined by txdb_file_out_path),
+#' that includes optimized objects
 #' to speed up loading of annotation regions from up to 15 seconds
 #' on human genome down to 0.1 second. ORFik will then load these optimized
 #' objects instead. Currently optimizes filterTranscript() function and
@@ -72,11 +73,15 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
   if (optimize) {
     message("--------------------------")
-    message("Optimizing annotation, saving to: ", dirname(base_path))
+    optimized_path <- optimized_txdb_path(txdb, create.dir = TRUE,
+                                          stop.error = TRUE,
+                                          txdb_file_out_path = txdb_file_out_path)
+    message("Optimizing annotation, saving to: ", dirname(optimized_path))
     # Save all transcript, cds and UTR lengths as .fst
-    optimizedTranscriptLengths(txdb, create.fst.version = TRUE)
+    optimizedTranscriptLengths(txdb, create.fst.version = TRUE,
+                               optimized_path = optimized_path)
     # Save RDS version of all transcript regions
-    optimizeTranscriptRegions(txdb)
+    optimizeTranscriptRegions(txdb, optimized_path)
   }
   if (gene_symbols) {
     stopifnot(is(symbols_file_out_path, "character") &
@@ -874,16 +879,18 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 #' @param create.dir logical FALSE, if TRUE create the
 #' optimization directory, this should only be called first time used.
 #' @param stop.error logical TRUE
+#' @param gtf_path path to gtf where output should be stored in subfolder
+#'  "./ORFik_optimized"
 #' @return a character file path, returns NULL if not valid
 #' and stop.error is FALSE.
 #' @keywords internal
-optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE) {
-  genome <- getGtfPathFromTxdb(txdb, stop.error = stop.error)
-  if (is.null(genome)) {
+optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
+                                gtf_path = getGtfPathFromTxdb(txdb, stop.error = stop.error)) {
+  if (is.null(gtf_path)) {
     return(NULL)
   }
-  base_dir <- file.path(dirname(genome), "ORFik_optimized")
-  base_path <- file.path(base_dir, basename(remove.file_ext(genome)))
+  base_dir <- file.path(dirname(gtf_path), "ORFik_optimized")
+  base_path <- file.path(base_dir, basename(remove.file_ext(gtf_path)))
   creation.time <- gsub(" \\(.*| |:", "",
                         metadata(txdb)[metadata(txdb)[,1] == "Creation time",2])
   if (create.dir) {

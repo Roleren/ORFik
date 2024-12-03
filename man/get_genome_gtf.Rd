@@ -54,7 +54,8 @@ If you want to make sure chromosome naming of the GTF matches the genome
 and correct seqlengths. If value is NULL or FALSE, it will be ignored.}
 
 \item{optimize}{logical, default FALSE. Create a folder
-within the folder of the gtf, that includes optimized objects
+within the output folder (defined by txdb_file_out_path),
+that includes optimized objects
 to speed up loading of annotation regions from up to 15 seconds
 on human genome down to 0.1 second. ORFik will then load these optimized
 objects instead. Currently optimizes filterTranscript() function and
