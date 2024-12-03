@@ -75,7 +75,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     message("--------------------------")
     optimized_path <- optimized_txdb_path(txdb, create.dir = TRUE,
                                           stop.error = TRUE,
-                                          txdb_file_out_path = txdb_file_out_path)
+                                          txdb_file_out_path)
     message("Optimizing annotation, saving to: ", dirname(optimized_path))
     # Save all transcript, cds and UTR lengths as .fst
     optimizedTranscriptLengths(txdb, create.fst.version = TRUE,
