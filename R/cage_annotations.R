@@ -333,10 +333,11 @@ reassignTxDbByCage <- function(txdb, cage, extension = 1000,
 #' interval). If no CAGE supports a leader, the width will be set to 1 base.
 #'
 #' @inheritParams reassignTxDbByCage
-#' @param pseudoLength a numeric, default 1. Either if no CAGE supports
-#' the leader, or if CAGE is set to NULL,
-#' add a pseudo length for all the UTRs. Will not extend a leader if
-#' it would make it go outside the defined seqlengths of the genome.
+#' @param pseudoLength a numeric, default 1.
+#' Add a pseudo length for all the UTRs. Will not extend a leader if
+#' it would make it go outside the defined seqlengths of the chromosome
+#' (for non circular chromosomes),
+#' or extending closer than 50 nucleotides to upstream cds.
 #' So this length is not guaranteed for all!
 #' @importFrom data.table setkeyv
 #' @family CAGE
@@ -393,7 +394,10 @@ assignTSSByCage <- function(txdb, cage, extension = 1000,
   #make GRangesListfrom GRanges
   undefinedLeaders <- groupGRangesBy(undefinedLeaders)
   if (pseudoLength != 1) {
-    undefinedLeaders <- extendLeaders(undefinedLeaders, extension = pseudoLength)
+    undefinedLeaders <- extendLeadersUntil(undefinedLeaders, cds,
+                                           extension = pseudoLength,
+                                           until = 50,
+                                           min_ext = 50)
   }
   newLeaders <- if (!is.null(cage)) {
     reassignTSSbyCage(undefinedLeaders, cage, extension,

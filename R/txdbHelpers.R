@@ -30,30 +30,45 @@
 #' In a file called: "gene_symbol_tx_table.fst" in same folder as txdb.
 #' @param return logical, default FALSE. If TRUE, return TXDB object,
 #' else invisible(NULL).
+#' @param txdb_file_out_path character path, default paste0(gtf, ".db").
+#' Set to NULL to not write file to disc.
+#' @param symbols_file_out_path character path, default
+#' file.path(dirname(gtf), "gene_symbol_tx_table.fst").
+#' Must be defined as character if "gene_symbols" is TRUE. Ignored if
+#' "gene_symbols" is FALSE.
 #' @inheritParams add_pseudo_5utrs_txdb_if_needed
-#' @return NULL,  Txdb saved to disc named paste0(gtf, ".db").
+#' @return logical, default is.null(txdb_file_out_path),
+#' Txdb saved to disc named default paste0(gtf, ".db").
 #' Set 'return' argument to TRUE, to also get txdb back as an object.
 #' @export
 #' @examples
 #' gtf <- "/path/to/local/annotation.gtf"
 #' genome <- "/path/to/local/genome.fasta"
 #' #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
+#' # Runnable full example
+#' df <- ORFik.template.experiment()
+#' gtf <- sub("\\.db$", "", df@txdb)
+#' genome <- df@fafile
+#' txdb <- makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae",
+#'   txdb_file_out_path = NULL)
 #' ## Add pseudo UTRs if needed (< 30% of cds have a defined 5'UTR)
 makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
                                optimize = FALSE, gene_symbols = FALSE,
                                uniprot_id = FALSE,
                                pseudo_5UTRS_if_needed = NULL,
                                minimum_5UTR_percentage = 30,
-                               return = FALSE) {
+                               return = is.null(txdb_file_out_path),
+                               txdb_file_out_path = paste0(gtf, ".db"),
+                               symbols_file_out_path = file.path(dirname(gtf), "gene_symbol_tx_table.fst")) {
 
   txdb <- makeTxdbTemplate(gtf, genome, organism)
   txdb <- add_pseudo_5utrs_txdb_if_needed(txdb, pseudo_5UTRS_if_needed,
                                           minimum_5UTR_percentage)
-
-  txdb_file <- paste0(gtf, ".db")
-  AnnotationDbi::saveDb(txdb, txdb_file)
-  message("--------------------------")
-  message("Txdb stored at: ", txdb_file)
+  if (!is.null(txdb_file_out_path)) {
+    AnnotationDbi::saveDb(txdb, txdb_file_out_path)
+    message("--------------------------")
+    message("Txdb stored at: ", txdb_file_out_path)
+  }
 
   if (optimize) {
     message("--------------------------")
@@ -64,10 +79,12 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     optimizeTranscriptRegions(txdb)
   }
   if (gene_symbols) {
+    stopifnot(is(symbols_file_out_path, "character") &
+                length(symbols_file_out_path) == 1)
     symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
                             uniprot_id = uniprot_id)
-    path <- file.path(dirname(gtf), "gene_symbol_tx_table.fst")
-    if (nrow(symbols) > 0) fst::write_fst(symbols, path)
+
+    if (nrow(symbols) > 0) fst::write_fst(symbols, symbols_file_out_path)
   }
   if (return) return(txdb)
   return(invisible(NULL))

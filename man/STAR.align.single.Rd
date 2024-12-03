@@ -160,8 +160,11 @@ default is to only keep the aliged bam file. Useful if you
 want to do further processing on plasmids/custom sequences.}
 
 \item{keep.index.in.memory}{logical or character, default FALSE (i.e. LoadAndRemove).
+For STAR.align.single:\cr
 If TRUE, will keep index in memory, useful if you need to loop over single calls,
 instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
+For STAR.align.folder:\cr
+Only applies to last library, will always keep for all libraries before last.
 Alternative useful for MAC machines especially is "noShared", for machines
 that do not support shared memory index, usually gives error: "abort trap 6".}
 

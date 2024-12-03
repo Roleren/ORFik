@@ -28,6 +28,7 @@ STAR.align.folder(
   keep.contaminants = FALSE,
   keep.contaminants.type = c("bam", "fastq")[1],
   keep.unaligned.genome = FALSE,
+  keep.index.in.memory = FALSE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
@@ -178,6 +179,15 @@ only supports "bam" for now. Fasta / Fastq will be implemented later.}
 reads that did not align at the genome alignment step,
 default is to only keep the aliged bam file. Useful if you
 want to do further processing on plasmids/custom sequences.}
+
+\item{keep.index.in.memory}{logical or character, default FALSE (i.e. LoadAndRemove).
+For STAR.align.single:\cr
+If TRUE, will keep index in memory, useful if you need to loop over single calls,
+instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
+For STAR.align.folder:\cr
+Only applies to last library, will always keep for all libraries before last.
+Alternative useful for MAC machines especially is "noShared", for machines
+that do not support shared memory index, usually gives error: "abort trap 6".}
 
 \item{script.folder}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you

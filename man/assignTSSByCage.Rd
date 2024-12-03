@@ -47,10 +47,11 @@ support.}
 remove all reads in region (-5:-1, 1:5) of all original tss in leaders.
 This is to keep original TSS if it is only +/- 5 bases from the original.}
 
-\item{pseudoLength}{a numeric, default 1. Either if no CAGE supports
-the leader, or if CAGE is set to NULL,
-add a pseudo length for all the UTRs. Will not extend a leader if
-it would make it go outside the defined seqlengths of the genome.
+\item{pseudoLength}{a numeric, default 1.
+Add a pseudo length for all the UTRs. Will not extend a leader if
+it would make it go outside the defined seqlengths of the chromosome
+(for non circular chromosomes),
+or extending closer than 50 nucleotides to upstream cds.
 So this length is not guaranteed for all!}
 }
 \value{

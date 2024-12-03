@@ -28,8 +28,10 @@ Or a GRangesList where start / stops by strand are the positions
 to use as new starts.
 Will not cross the chromosome boundary for non circular chromosomes.}
 
-\item{until}{numeric, default 200. The nearest you can go to the boundary.
-Defined as boundary hit + 1, so if hit on 22, and until is 2, will set to 22+2+1 = 25.
+\item{until}{numeric, default 200. The nearest you can go to the neighbour
+boundaries of grl2 (the "other" genes).
+Defined as boundary hit + 1, so if hit other gene with distance 22, and
+'until' argument is 2, will set final extension to 22-2-1 = 19.
 Usually if Leaders/trailers are not defined,
 this makes a good pseudo leader boundary around your other genes.}
 

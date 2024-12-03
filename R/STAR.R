@@ -253,6 +253,14 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' reads that did not align at the genome alignment step,
 #' default is to only keep the aliged bam file. Useful if you
 #' want to do further processing on plasmids/custom sequences.
+#' @param keep.index.in.memory logical or character, default FALSE (i.e. LoadAndRemove).
+#' For STAR.align.single:\cr
+#' If TRUE, will keep index in memory, useful if you need to loop over single calls,
+#' instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
+#' For STAR.align.folder:\cr
+#' Only applies to last library, will always keep for all libraries before last.
+#' Alternative useful for MAC machines especially is "noShared", for machines
+#' that do not support shared memory index, usually gives error: "abort trap 6".
 #' @inheritParams STAR.index
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
@@ -320,6 +328,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               multiQC = TRUE, keep.contaminants = FALSE,
                               keep.contaminants.type = c("bam", "fastq")[1],
                               keep.unaligned.genome = FALSE,
+                              keep.index.in.memory = FALSE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -343,6 +352,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   stopifnot(alignment.type %in% c("Local", "EndToEnd"))
   stopifnot(is.logical(allow.introns))
   stopifnot(include.subfolders %in% c("y", "n"))
+  stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
@@ -350,6 +360,9 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
   fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
   quality.filtering <- ifelse(quality.filtering, "-q default", "")
+  keep.index.in.memory <- ifelse(is.logical(keep.index.in.memory),
+                                 ifelse(keep.index.in.memory, "y", "n"),
+                                 keep.index.in.memory)
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
   keep.contaminants.type <- paste("-X", keep.contaminants.type)
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
@@ -359,7 +372,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-M", max.multimap, quality.filtering,
-                "-A", alignment.type, "-B", allow.introns,"-m", max.cpus, "-i", include.subfolders,
+                "-A", alignment.type, "-B", allow.introns,"-m", max.cpus,
+                "-i", include.subfolders, "-k", keep.index.in.memory,
                 keep.contaminants, keep.contaminants.type,
                 keep.unaligned.genome, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
@@ -391,11 +405,6 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 #' @param file2 default NULL, set if paired end to R2 file. Allowed formats are:
 #' (.fasta, .fastq, .fq, or.fa) with or without compression of .gz. This filename usually
 #'  contains a suffix of .2
-#' @param keep.index.in.memory logical or character, default FALSE (i.e. LoadAndRemove).
-#' If TRUE, will keep index in memory, useful if you need to loop over single calls,
-#' instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
-#' Alternative useful for MAC machines especially is "noShared", for machines
-#' that do not support shared memory index, usually gives error: "abort trap 6".
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
 #' @export

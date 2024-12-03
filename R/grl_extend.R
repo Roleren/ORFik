@@ -132,8 +132,8 @@ extendTrailers <- function(grl, extension = 1000L, is.circular =
 #' @param ignore.strand logical, default FALSE
 #' @return numeric vector of distance
 distanceToFollowing <- function(grl, grl2 = grl, ignore.strand = FALSE) {
-  stops <- stopRegion(grl, downstream = 0, upstream = 0) %>% unlistGrl
-  starts <- grl2 %>% unlistToExtremities()
+  stops <- unlistGrl(stopRegion(grl, downstream = 0, upstream = 0))
+  starts <- unlistToExtremities(grl2)
   if (!ignore.strand){
     followers <- precede(stops, starts)
   } else {
@@ -147,7 +147,7 @@ distanceToFollowing <- function(grl, grl2 = grl, ignore.strand = FALSE) {
   }
   nas <- is.na(followers)
   dists <- distance(stops[!is.na(followers)], starts[followers[!is.na(followers)]], ignore.strand = ignore.strand)
-  out <- 1:length(grl)
+  out <- seq_along(grl)
   out[!nas] <- dists
   out[nas] <- NA
   out
@@ -163,8 +163,8 @@ distanceToFollowing <- function(grl, grl2 = grl, ignore.strand = FALSE) {
 #' @param ignore.strand logical, default FALSE
 #' @return numeric vector of distance
 distanceToPreceding <- function(grl, grl2 = grl, ignore.strand = FALSE) {
-  stops <- grl2 %>% unlistToExtremities()
-  starts <- startRegion(grl, downstream = 0,upstream = 0) %>% unlistGrl()
+  stops <- unlistToExtremities(grl2)
+  starts <- unlistGrl(startRegion(grl, downstream = 0,upstream = 0))
   if (!ignore.strand){
     preceders <- follow(starts, stops)
   } else {
@@ -178,7 +178,7 @@ distanceToPreceding <- function(grl, grl2 = grl, ignore.strand = FALSE) {
   }
   nas <- is.na(preceders)
   dists <- distance(starts[!is.na(preceders)], stops[preceders[!is.na(preceders)]], ignore.strand = ignore.strand)
-  out <- 1:length(grl)
+  out <- seq_along(grl)
   out[!nas] <- dists
   out[nas] <- NA
   out
@@ -222,8 +222,10 @@ extendTrailersUntil <- function(grl, grl2=grl, extension = 500, until = 200, min
 #' you hit another gene boundary etc.
 #' @inheritParams distanceToFollowing
 #' @inheritParams extendLeaders
-#' @param until numeric, default 200. The nearest you can go to the boundary.
-#' Defined as boundary hit + 1, so if hit on 22, and until is 2, will set to 22+2+1 = 25.
+#' @param until numeric, default 200. The nearest you can go to the neighbour
+#' boundaries of grl2 (the "other" genes).
+#' Defined as boundary hit + 1, so if hit other gene with distance 22, and
+#' 'until' argument is 2, will set final extension to 22-2-1 = 19.
 #' Usually if Leaders/trailers are not defined,
 #' this makes a good pseudo leader boundary around your other genes.
 #' @param min_ext numeric, default 25. What is the minimum extension, even though it crosses a boundary.
@@ -241,7 +243,7 @@ extendLeadersUntil <- function(grl, grl2=grl, extension = 500, until = 200, min_
                                is.circular = all(isCircular(grl) %in% TRUE), ...) {
   dists <- distanceToPreceding(grl, grl2, ...)
   dists[is.na(dists)] <- extension + until + 1
-  diff <- pmax(dists - until,min_ext)
+  diff <- pmax(dists - until, min_ext)
   extension <- pmin(extension, diff)
 
   return(extendLeaders(grl, extension, is.circular = is.circular))

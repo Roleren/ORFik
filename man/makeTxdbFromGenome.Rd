@@ -13,7 +13,9 @@ makeTxdbFromGenome(
   uniprot_id = FALSE,
   pseudo_5UTRS_if_needed = NULL,
   minimum_5UTR_percentage = 30,
-  return = FALSE
+  return = is.null(txdb_file_out_path),
+  txdb_file_out_path = paste0(gtf, ".db"),
+  symbols_file_out_path = file.path(dirname(gtf), "gene_symbol_tx_table.fst")
 )
 }
 \arguments{
@@ -54,9 +56,18 @@ If percentage is higher, addition is ignored, set to 101 to always do it.}
 
 \item{return}{logical, default FALSE. If TRUE, return TXDB object,
 else invisible(NULL).}
+
+\item{txdb_file_out_path}{character path, default paste0(gtf, ".db").
+Set to NULL to not write file to disc.}
+
+\item{symbols_file_out_path}{character path, default
+file.path(dirname(gtf), "gene_symbol_tx_table.fst").
+Must be defined as character if "gene_symbols" is TRUE. Ignored if
+"gene_symbols" is FALSE.}
 }
 \value{
-NULL,  Txdb saved to disc named paste0(gtf, ".db").
+logical, default is.null(txdb_file_out_path),
+Txdb saved to disc named default paste0(gtf, ".db").
 Set 'return' argument to TRUE, to also get txdb back as an object.
 }
 \description{
@@ -71,5 +82,11 @@ set the seqlengths.
 gtf <- "/path/to/local/annotation.gtf"
 genome <- "/path/to/local/genome.fasta"
 #makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae")
+# Runnable full example
+df <- ORFik.template.experiment()
+gtf <- sub("\\\\.db$", "", df@txdb)
+genome <- df@fafile
+txdb <- makeTxdbFromGenome(gtf, genome, organism = "Saccharomyces cerevisiae",
+  txdb_file_out_path = NULL)
 ## Add pseudo UTRs if needed (< 30\% of cds have a defined 5'UTR)
 }

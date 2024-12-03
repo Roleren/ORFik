@@ -54,6 +54,9 @@ OPTIONS:
 	-i	include subfolders (defualt n, for no), if you want subfolder do y, for yes.
 	-q	a character, Do quality filtering:
 	    yes: "default" no: "disable". Uses default fastp QF.
+	-k	a character, Keep loaded genomes STAR index:
+	    yes (y), no: Remove loaded (n), no shared genome (noShared),
+	    default (n)
 	-K  Keep contaminant aligned files. Default: "no", alternative: "yes".
 	-X  Kept contaminant output file type ("bam", "fastq")
 	-u  Keep unaligned reads from genome alignment step.
@@ -96,7 +99,7 @@ keepContamType="bam"
 keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:o:p:l:T:g:s:a:t:A:B:r:m:K:M:S:i:P:I:X:C:q:u:h:" opt; do
+while getopts ":f:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:h:" opt; do
     case $opt in
     f)
         in_dir=$OPTARG
@@ -182,6 +185,10 @@ while getopts ":f:o:p:l:T:g:s:a:t:A:B:r:m:K:M:S:i:P:I:X:C:q:u:h:" opt; do
       	keepContam=$OPTARG
       	echo "-K Keep contamination reads: $OPTARG"
         ;;
+    k)
+      	keepLast=$OPTARG
+      	echo "-k Keep Star Index loaded: $OPTARG"
+        ;;
     X)
       	keepContamType=$OPTARG
       	echo "-X Contamination reads type: $OPTARG"
@@ -250,7 +257,7 @@ function findPairs()
 		i=$((x + 2))
 		if [[ $i == $numOfFiles ]];then
 		  echo "Starting last run:"
-			keep="n" # i.e. last file
+			keep=${keepLast} # i.e. last file
 		fi
 
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
@@ -278,7 +285,7 @@ function findPairsSub()
 		i=$((x + 2))
 		if [[ $i == $numOfFiles ]];then
 		  echo "Starting last run:"
-			keep="n" # i.e. last file
+			keep=${keepLast} # i.e. last file
 		fi
 
 		eval $align_single -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -k $keep -K $keepContam -X $keepContamType -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
@@ -334,7 +341,7 @@ do
 
   		if [[ $i == $numOfFiles ]];then
   		  echo "Starting last run:"
-  			keep="n"
+  			keep=${keepLast}
   		fi
   		if [ $subfolders == "n" ]; then
         x=$in_dir/$x
