@@ -264,7 +264,8 @@ function findPairs()
     echo "-------------------------------------------"
 	done
 }
-#TODO: find a way to remove this
+
+# Find pairs with subfolders allowed
 function findPairsSub()
 {
 	myArray=($@)

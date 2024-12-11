@@ -191,7 +191,7 @@ trimming.table <- function(trim_folder,
 
   raw_library <- raw_libraries
   if (length(raw_library) == 0) stop("fastp .json files not found!,",
-                                     " did you change wd delete them?")
+                                     " did you change wd or deleted them?")
   raw_reads <- data.table()
   trim_reads <- data.table()
   raw_mean_length <- data.table()

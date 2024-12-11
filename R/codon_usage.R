@@ -153,8 +153,9 @@ filter_CDS_by_counts <- function(cds, filter_table,
     cds_filtered <- cds_filtered[has_valid_flank]
     message("- ", length(cds_filtered), " after filtering 5' flank of size ", minimum_5p_flank)
   }
+  average_cds_counts <- rowMeans(as.matrix(filter_table[names(cds_filtered), , drop = FALSE]))
 
-  cds_filtered <- cds_filtered[rowMeans(as.matrix(filter_table[names(cds_filtered),])) > min_counts_cds_filter]
+  cds_filtered <- cds_filtered[average_cds_counts > min_counts_cds_filter]
   message("- ", length(cds_filtered), " after filtering by counts filter")
   if (length(cds_filtered) == 0) stop("Filter is too strict, set a lower filter!")
   return(cds_filtered)
