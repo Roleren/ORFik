@@ -69,14 +69,14 @@ and they must be named with the same prefix and sufix of either
  steps of depletion and alignment wanted:
  The posible candidates you can use are:\cr
 \itemize{
- \item{tr : }{trim reads}
- \item{co : }{contamination merged depletion}
- \item{ph : }{phix depletion}
- \item{rR : }{rrna depletion}
- \item{nc : }{ncrna depletion}
- \item{tR : }{trna depletion (Mature tRNA, so no intron checks done)}
- \item{ge : }{genome alignment}
- \item{all: }{run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
+ \item{tr : trim reads}
+ \item{co : contamination merged depletion}
+ \item{ph : phix depletion}
+ \item{rR : rrna depletion}
+ \item{nc : ncrna depletion}
+ \item{tR : trna depletion (Mature tRNA, so no intron checks done)}
+ \item{ge : genome alignment}
+ \item{all: run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
  have merged contaminants or not}
 }
  If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
@@ -100,9 +100,9 @@ adapter.sequence = "disable" .You can manually assign adapter like:
 "ATCTCGTATGCCGTCTTCTGCTTG" or "AAAAAAAAAAAAA". You can also specify one of the three
 presets:\cr
 \itemize{
- \item{illumina (TrueSeq ~75/100 bp sequencing): }{AGATCGGAAGAGC}
- \item{small_RNA (standard for ~50 bp sequencing): }{TGGAATTCTCGG}
- \item{nextera: }{CTGTCTCTTATA}
+ \item{illumina (TrueSeq ~75/100 bp sequencing) : AGATCGGAAGAGC}
+ \item{small_RNA (standard for ~50 bp sequencing): TGGAATTCTCGG}
+ \item{nextera: CTGTCTCTTATA}
 }
 Paired end auto detection uses overlap sequence of pairs, to use the slower
 more secure paired end adapter detection, specify as: "autoPE".}
@@ -112,8 +112,8 @@ library prep of RNA-seq, Ribo-seq etc (usually < ~ 0.5% of reads are removed).
 If you are aligning bad quality data, set this to TRUE.\cr
 These filters will then be applied (default of fastp), filter if:
 \itemize{
- \item{Number of N bases in read: }{> 5}
- \item{Read quality: }{> 40\% of bases in the read are <Q15}
+ \item{Number of N bases in read : > 5}
+ \item{Read quality : > 40\% of bases in the read are <Q15}
 }}
 
 \item{min.length}{20, minimum length of aligned read without mismatches
