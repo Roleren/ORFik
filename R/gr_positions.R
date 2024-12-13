@@ -50,7 +50,7 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
                                                 keep.extra.columns = TRUE,
                                                 seqinfo = seqinfo(grl))
   names(ngrl) <- names(grl)
-  ngrl@unlistData$group <- group
+  if (!is.null(group)) ngrl@unlistData$group <- group
   return(ngrl)
 }
 
@@ -108,7 +108,7 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
                                                 keep.extra.columns = TRUE,
                                                 seqinfo = seqinfo(grl))
   names(ngrl) <- names(grl)
-  ngrl@unlistData$group <- group
+  if (!is.null(group)) ngrl@unlistData$group <- group
 
   return(ngrl)
 }

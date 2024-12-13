@@ -910,6 +910,9 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
 #'  ignored if .fst exists
 #' @param with.utr3_len logical TRUE, include length of 3' UTRs,
 #'  ignored if .fst exists
+#' @param optimized_path character, path to optimized txdb objects,
+#' default: optimized_txdb_path(txdb, stop.error = FALSE). If no existing file,
+#' will be slower and load lengths through \code{\link{transcriptLengths}}.
 #' @return a data.table of loaded lengths 8 columns,
 #' 1 row per transcript isoform.
 #' @importFrom data.table setDT

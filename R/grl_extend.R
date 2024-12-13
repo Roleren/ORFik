@@ -201,7 +201,8 @@ distanceToPreceding <- function(grl, grl2 = grl, ignore.strand = FALSE) {
 #' @return a GRangesList of extended grl input
 #' @export
 #' @examples
-#' grl <- GRangesList(tx1 = GRanges("1", IRanges(c(10, 15), c(13, 20)), "+"), tx2 = GRanges("1", IRanges(30, 50), "+"))
+#' grl <- GRangesList(tx1 = GRanges("1", IRanges(c(10, 15), c(13, 20)), "+"),
+#'                    tx2 = GRanges("1", IRanges(30, 50), "+"))
 #' extendTrailersUntil(grl, min_ext = 5)
 #' extendTrailersUntil(grl, min_ext = 5, until = 1)
 #' extendTrailersUntil(grl, min_ext = 5, until = 1)
@@ -234,7 +235,8 @@ extendTrailersUntil <- function(grl, grl2=grl, extension = 500, until = 200, min
 #' @return a GRangesList of extended grl input
 #' @export
 #' @examples
-#' grl <- GRangesList(tx1 = GRanges("1", IRanges(c(10, 15), c(13, 20)), "+"), tx2 = GRanges("1", IRanges(30, 50), "+"))
+#' grl <- GRangesList(tx1 = GRanges("1", IRanges(c(10, 15), c(13, 20)), "+"),
+#'                    tx2 = GRanges("1", IRanges(30, 50), "+"))
 #' extendLeadersUntil(grl, min_ext = 5)
 #' extendLeadersUntil(grl, min_ext = 5, until = 1)
 #' extendLeadersUntil(grl, min_ext = 5, until = 1)
