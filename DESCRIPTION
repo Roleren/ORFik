@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.25.3
+Version: 1.25.4
 Encoding: UTF-8
 Authors@R: c(
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "cre", "dtc")),
@@ -56,6 +56,7 @@ Imports:
   SummarizedExperiment (>= 1.14.0),
   S4Vectors (>= 0.21.3),
   tools,
+  txdbmaker,
   utils,
   XML,
   xml2 (>= 1.2.0),

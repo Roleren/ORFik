@@ -312,7 +312,7 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'  Only used if input is path to gff.
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
-#' @importFrom GenomicFeatures makeTxDbFromGFF makeTxDb
+#' @importFrom txdbmaker makeTxDbFromGFF makeTxDb
 #' @export
 #' @examples
 #' library(GenomicFeatures)
