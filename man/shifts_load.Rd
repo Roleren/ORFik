@@ -28,7 +28,7 @@ e-sites, change the path argument to ashifted/eshifted folder instead.
 \examples{
 df <- ORFik.template.experiment()
 # subset on Ribo-seq
-df <- df[df$libtype == "RFP",]
+df <- df[df$libtype == "RFP",][1,]
 #shiftFootprintsByExperiment(df)
 #shifts_load(df)
 }

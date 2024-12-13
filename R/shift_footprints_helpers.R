@@ -309,7 +309,7 @@ ribo_fft_plot <- function(fft_dt, period_window = c(0, 6)) {
 #' @examples
 #' df <- ORFik.template.experiment()
 #' # subset on Ribo-seq
-#' df <- df[df$libtype == "RFP",]
+#' df <- df[df$libtype == "RFP",][1,]
 #' #shiftFootprintsByExperiment(df)
 #' #shifts_load(df)
 shifts_load <- function(df, path = file.path(libFolder(df), "pshifted",
