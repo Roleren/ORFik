@@ -35,6 +35,10 @@ same folder as the genome this txdb is created from, with the name:\cr
 Some error checks are done to see this is a valid location, if the txdb
 data source is a repository like UCSC and not a local folder, it will not
 be made.}
+
+\item{optimized_path}{character, path to optimized txdb objects,
+default: optimized_txdb_path(txdb, stop.error = FALSE). If no existing file,
+will be slower and load lengths through \code{\link{transcriptLengths}}.}
 }
 \value{
 a data.table of loaded lengths 8 columns,

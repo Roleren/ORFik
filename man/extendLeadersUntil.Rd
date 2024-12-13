@@ -52,7 +52,8 @@ Extend leaders until a restriction group / position. This makes you extend until
 you hit another gene boundary etc.
 }
 \examples{
-grl <- GRangesList(tx1 = GRanges("1", IRanges(c(10, 15), c(13, 20)), "+"), tx2 = GRanges("1", IRanges(30, 50), "+"))
+grl <- GRangesList(tx1 = GRanges("1", IRanges(c(10, 15), c(13, 20)), "+"),
+                   tx2 = GRanges("1", IRanges(30, 50), "+"))
 extendLeadersUntil(grl, min_ext = 5)
 extendLeadersUntil(grl, min_ext = 5, until = 1)
 extendLeadersUntil(grl, min_ext = 5, until = 1)
