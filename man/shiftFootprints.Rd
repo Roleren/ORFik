@@ -16,7 +16,7 @@ with another meaning.}
 \item{shifts}{a data.frame / data.table with minimum 2 columns,
 fraction (selected read lengths) and offsets_start (relative position in nt).
 Output from \code{\link{detectRibosomeShifts}}.\cr
-Run \code{ORFik::shifts.load(df)[[1]]} for an example of input.}
+Run \code{ORFik::shifts_load(df)[[1]]} for an example of input.}
 
 \item{sort}{logical, default TRUE. If False will keep original order of
 reads, and not sort output reads in increasing genomic location per

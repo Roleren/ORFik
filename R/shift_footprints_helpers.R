@@ -317,9 +317,6 @@ shifts_load <- function(df, path = file.path(libFolder(df), "pshifted",
   return(readRDS(file = path))
 }
 
-#' @inherit shifts_load
-shifts.load <- shifts_load
-
 #' Save shifts for Ribo-seq
 #'
 #' Should be stored in pshifted folder relative to default files

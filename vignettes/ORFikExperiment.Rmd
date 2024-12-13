@@ -252,7 +252,7 @@ shiftPlots(df.baz, title = "Ribo-seq, zebrafish, Bazzini et al. 2014", type = "h
 
 To see the shifts per library do:
 ```{r eval = FALSE, echo = TRUE, warning=FALSE}
-shifts.load(df)
+shifts_load(df)
 ```
 
 To see the location of pshifted files:

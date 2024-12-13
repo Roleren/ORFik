@@ -23,7 +23,7 @@
 #' @param shifts a data.frame / data.table with minimum 2 columns,
 #' fraction (selected read lengths) and offsets_start (relative position in nt).
 #' Output from \code{\link{detectRibosomeShifts}}.\cr
-#' Run \code{ORFik::shifts.load(df)[[1]]} for an example of input.
+#' Run \code{ORFik::shifts_load(df)[[1]]} for an example of input.
 #' @param sort logical, default TRUE. If False will keep original order of
 #' reads, and not sort output reads in increasing genomic location per
 #' chromosome and strand.
@@ -333,12 +333,12 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @param log logical, default (TRUE), output a log file with parameters used and
 #' a .rds file with all shifts per library
-#' (can be loaded with \code{\link{shifts.load}})
+#' (can be loaded with \code{\link{shifts_load}})
 #' @param shift.list default NULL, or a list containing named data.frames / data.tables
 #' with minimum 2 columns, fraction (selected read lengths) and
 #' offsets_start (relative position in nt). 1 named data.frame / data.table per library.
 #' Output from \code{\link{detectRibosomeShifts}}.\cr
-#' Run \code{ORFik::shifts.load(df)} for an example of input. The names of the list must
+#' Run \code{ORFik::shifts_load(df)} for an example of input. The names of the list must
 #' be the file.paths of the Ribo-seq libraries. Use this to edit the shifts, if
 #' you suspect some of them are wrong in an experiment.
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",

@@ -94,13 +94,13 @@ either only CDS or non-coding (filtered out).}
 with minimum 2 columns, fraction (selected read lengths) and
 offsets_start (relative position in nt). 1 named data.frame / data.table per library.
 Output from \code{\link{detectRibosomeShifts}}.\cr
-Run \code{ORFik::shifts.load(df)} for an example of input. The names of the list must
+Run \code{ORFik::shifts_load(df)} for an example of input. The names of the list must
 be the file.paths of the Ribo-seq libraries. Use this to edit the shifts, if
 you suspect some of them are wrong in an experiment.}
 
 \item{log}{logical, default (TRUE), output a log file with parameters used and
 a .rds file with all shifts per library
-(can be loaded with \code{\link{shifts.load}})}
+(can be loaded with \code{\link{shifts_load}})}
 
 \item{heatmap}{a logical or character string, default FALSE.
 If TRUE, will plot heatmap of
