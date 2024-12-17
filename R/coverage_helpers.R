@@ -215,8 +215,7 @@ metaWindow <- function(x, windows, scoring = "sum", withFrames = FALSE,
 #'  have equal size for all windows. Rescale all windows to scaleTo.
 #'  i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
 #'  1 number per grl group.
-#' @param scoring a character, one of (meanPos, sumPos, ..) Check the
-#' coverageScoring function for more options.
+#' @inheritParams coverageScorings
 #' @inheritParams coveragePerTiling
 #' @return A data.table with scored counts (counts) of
 #' reads mapped to positions (position) specified in windows along with
@@ -239,23 +238,23 @@ scaledWindowPositions <- function(grl, reads, scaleTo = 100,
   if ((length(scaleTo) != 1) & length(scaleTo) != length(grl))
     stop("length of scaleTo must either be 1 or length(grl)")
 
-  count <- coveragePerTiling(grl, reads, is.sorted = is.sorted, keep.names = FALSE,
-                             as.data.table = TRUE, withFrames = FALSE,
-                             weight = weight, drop.zero.dt = drop.zero.dt)
-  count[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
-  count[, position := ceiling(scalingFactor * position)]
+  cov <- coveragePerTiling(grl, reads, is.sorted = is.sorted, keep.names = FALSE,
+                           as.data.table = TRUE, withFrames = FALSE,
+                           weight = weight, drop.zero.dt = drop.zero.dt)
+  cov[, scalingFactor := (scaleTo/widthPerGroup(grl, FALSE))[genes]]
+  cov[, position := ceiling(scalingFactor * position)]
 
   if (length(scaleTo) == 1) {
-    count[position > scaleTo, position := scaleTo]
+    cov[position > scaleTo, position := scaleTo]
   } else {
-    if (any(count[, .(max = max(position)), by = genes]$max > scaleTo)) {
-      index <- count[, .(ind = which.max(position)), by = genes]$ind
-      count[index, position := scaleTo]
+    if (any(cov[, .(max = max(position)), by = genes]$max > scaleTo)) {
+      index <- cov[, .(ind = which.max(position)), by = genes]$ind
+      cov[index, position := scaleTo]
     }
   }
 
   # mean counts per position per group
-  return(coverageScorings(count, scoring, copy.dt = FALSE))
+  return(coverageScorings(cov, scoring, copy.dt = FALSE))
 }
 
 #' Add a coverage scoring scheme
@@ -455,7 +454,8 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' @param weight (default: 'score'), if defined a character name
 #' of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 #' would mean score column tells that this alignment region was found 5 times.
-#' ORFik ofst, bedoc and .bedo files contains a score column like this.
+#' Formats which loads a score column like this:
+#' Bigwig, wig, ORFik ofst, collapsed bam, bedoc and .bedo.
 #' As do CAGEr CAGE files and many other package formats.
 #' You can also assign a score column manually.
 #' @param drop.zero.dt logical FALSE, if TRUE and as.data.table is TRUE,

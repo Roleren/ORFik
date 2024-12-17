@@ -38,7 +38,7 @@ translationalEff(grl, RNA, RFP, tx = extendLeaders(tx, cageFiveUTRs))
 \item{with.fpkm}{logical, default: FALSE, if true return the fpkm
 values together with translational efficiency as a data.table}
 
-\item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
+\item{pseudoCount}{a numeric, default 0, set it to 1 if you want to
 avoid NA and inf values.}
 
 \item{librarySize}{either numeric value or character vector.

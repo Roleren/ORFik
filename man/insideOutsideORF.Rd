@@ -33,14 +33,17 @@ calculated \code{\link{disengagementScore}}, input here to save time.}
 \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 Normally not touched, for internal optimization purposes.}
 
-\item{weight}{a vector (default: 1L, if 1L it is identical to
-countOverlaps()),
-if single number (!= 1), it applies for all,
-if more than one must be equal size of 'reads'.
-else it must be the string name of a defined meta column in subject
-"reads", that gives number of times a read was found.
+\item{weight}{a numeric/integer vector or metacolumn name.
+(default: 1L, no differential weighting).
+If weight is name of defined meta column in reads object,
+it gives the number of times a read was found at that position.
 GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
-that this alignment region was found 5 times.}
+that this alignment region was found 5 times.
+if 1L it means each read is weighted equal as 1,
+this is what among others countOverlaps() presumes,
+if single number (!= 1), it repeats for all ranges,
+if vector with length > 1, it must be equal size of the
+reads object.}
 
 \item{overlapGrl}{an integer, (default: NULL),
 if defined must be countOverlaps(grl, RFP),

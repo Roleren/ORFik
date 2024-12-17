@@ -15,7 +15,7 @@ regions are not spliced you can send a \code{\link{GRanges}} object.}
 \item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}} or
 \code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.}
 
-\item{pseudoCount}{an integer, by default is 0, set it to 1 if you want to
+\item{pseudoCount}{a numeric, default 0, set it to 1 if you want to
 avoid NA and inf values.}
 
 \item{librarySize}{either numeric value or character vector.
@@ -34,14 +34,17 @@ This is standard fpkm way of DESeq2::fpkm(robust = FALSE)
 sum(countOverlaps(grl, reads))
 if grl[1] has 3 reads and grl[2] has 2 reads, librarySize is 5, not 2.}
 
-\item{weight}{a vector (default: 1L, if 1L it is identical to
-countOverlaps()),
-if single number (!= 1), it applies for all,
-if more than one must be equal size of 'reads'.
-else it must be the string name of a defined meta column in subject
-"reads", that gives number of times a read was found.
+\item{weight}{a numeric/integer vector or metacolumn name.
+(default: 1L, no differential weighting).
+If weight is name of defined meta column in reads object,
+it gives the number of times a read was found at that position.
 GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
-that this alignment region was found 5 times.}
+that this alignment region was found 5 times.
+if 1L it means each read is weighted equal as 1,
+this is what among others countOverlaps() presumes,
+if single number (!= 1), it repeats for all ranges,
+if vector with length > 1, it must be equal size of the
+reads object.}
 }
 \value{
 a numeric vector with the fpkm values

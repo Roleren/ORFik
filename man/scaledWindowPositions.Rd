@@ -30,13 +30,15 @@ have equal size for all windows. Rescale all windows to scaleTo.
 i.e c(1,2,3) -> size 2 -> c(1, mean(2,3)) etc. Can also be a vector,
 1 number per grl group.}
 
-\item{scoring}{a character, one of (meanPos, sumPos, ..) Check the
-coverageScoring function for more options.}
+\item{scoring}{a character, one of (zscore, transcriptNormalized,
+mean, median, sum, log2sum, log10sum, sumLength, meanPos and frameSum,
+periodic, NULL). More info in details}
 
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik ofst, bedoc and .bedo files contains a score column like this.
+Formats which loads a score column like this:
+Bigwig, wig, ORFik ofst, collapsed bam, bedoc and .bedo.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 

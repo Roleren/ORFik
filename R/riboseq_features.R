@@ -19,7 +19,7 @@
 #'  regions are not spliced you can send a \code{\link{GRanges}} object.
 #' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}} or
 #' \code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.
-#' @param pseudoCount an integer, by default is 0, set it to 1 if you want to
+#' @param pseudoCount a numeric, default 0, set it to 1 if you want to
 #' avoid NA and inf values.
 #' @param librarySize either numeric value or character vector.
 #' Default ("full"), number of alignments in library (reads).
@@ -96,7 +96,7 @@ fpkm <- function(grl, reads, pseudoCount = 0, librarySize = "full",
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @param overlapGrl an integer, (default: NULL),
 #' if defined must be countOverlaps(grl, RFP),
-#' added for speed if you already have it
+#' added for speed if you already have it.
 #' @return A numeric vector containing one entropy value per element in
 #' `grl`
 #' @family features
@@ -728,7 +728,8 @@ orfScore <- function(grl, RFP, is.sorted = FALSE, weight = "score",
   if (stop3 & any(!valid))
     stop("ORFs with width < 3  not allowed")
 
-  counts <- if (!is.null(coverage)) {
+  coverage_was_given <- !is.null(coverage)
+  counts <- if (coverage_was_given) {
     stopifnot(is(coverage, "data.table"))
     hasHits <- valid
     stopifnot(length(unique((coverage$genes))) == sum(widths > 0))

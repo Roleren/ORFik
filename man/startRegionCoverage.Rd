@@ -30,14 +30,17 @@ ORFik orf names. that is "txName_id"}
 
 \item{downstream}{an integer (2), relative region to get downstream from}
 
-\item{weight}{a vector (default: 1L, if 1L it is identical to
-countOverlaps()),
-if single number (!= 1), it applies for all,
-if more than one must be equal size of 'reads'.
-else it must be the string name of a defined meta column in subject
-"reads", that gives number of times a read was found.
+\item{weight}{a numeric/integer vector or metacolumn name.
+(default: 1L, no differential weighting).
+If weight is name of defined meta column in reads object,
+it gives the number of times a read was found at that position.
 GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
-that this alignment region was found 5 times.}
+that this alignment region was found 5 times.
+if 1L it means each read is weighted equal as 1,
+this is what among others countOverlaps() presumes,
+if single number (!= 1), it repeats for all ranges,
+if vector with length > 1, it must be equal size of the
+reads object.}
 }
 \value{
 a numeric vector of counts

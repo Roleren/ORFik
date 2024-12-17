@@ -45,7 +45,8 @@ TRUE, return the ORF frame, 1,2,3, where position 1 is 1, 2 is 2 and
 \item{weight}{(default: 'score'), if defined a character name
 of valid meta column in subject. GRanges("chr1", 1, "+", score = 5),
 would mean score column tells that this alignment region was found 5 times.
-ORFik ofst, bedoc and .bedo files contains a score column like this.
+Formats which loads a score column like this:
+Bigwig, wig, ORFik ofst, collapsed bam, bedoc and .bedo.
 As do CAGEr CAGE files and many other package formats.
 You can also assign a score column manually.}
 

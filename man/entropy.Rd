@@ -15,21 +15,24 @@ regions are not spliced you can send a \code{\link{GRanges}} object.}
 \item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}} or
 \code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.}
 
-\item{weight}{a vector (default: 1L, if 1L it is identical to
-countOverlaps()),
-if single number (!= 1), it applies for all,
-if more than one must be equal size of 'reads'.
-else it must be the string name of a defined meta column in subject
-"reads", that gives number of times a read was found.
+\item{weight}{a numeric/integer vector or metacolumn name.
+(default: 1L, no differential weighting).
+If weight is name of defined meta column in reads object,
+it gives the number of times a read was found at that position.
 GRanges("chr1", 1, "+", score = 5), would mean "score" column tells
-that this alignment region was found 5 times.}
+that this alignment region was found 5 times.
+if 1L it means each read is weighted equal as 1,
+this is what among others countOverlaps() presumes,
+if single number (!= 1), it repeats for all ranges,
+if vector with length > 1, it must be equal size of the
+reads object.}
 
 \item{is.sorted}{logical (FALSE), is grl sorted. That is + strand groups in
 increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 
 \item{overlapGrl}{an integer, (default: NULL),
 if defined must be countOverlaps(grl, RFP),
-added for speed if you already have it}
+added for speed if you already have it.}
 }
 \value{
 A numeric vector containing one entropy value per element in
