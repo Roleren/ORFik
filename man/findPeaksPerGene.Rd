@@ -10,7 +10,9 @@ findPeaksPerGene(
   top_tx = 0.5,
   min_reads_per_tx = 20,
   min_reads_per_peak = 10,
-  type = "max"
+  type = "max",
+  gene_ids = names(tx),
+  coverage = coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
 )
 }
 \arguments{
@@ -33,6 +35,10 @@ least 10 reads.}
 Alternatives: "all", all peaks passing the input filter will be returned.
 "median", only peaks that is higher than the median of all peaks. "maxmedian":
 get first "max", then median of those.}
+
+\item{gene_ids}{character vector, names of genes, default names(tx)}
+
+\item{coverage}{a data.table of coverage, with columns position, score and genes}
 }
 \value{
 a data.table of gene_id, position, counts of the peak, zscore

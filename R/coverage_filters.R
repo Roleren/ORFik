@@ -92,6 +92,8 @@ filterExtremePeakGenes <-
 #' Alternatives: "all", all peaks passing the input filter will be returned.
 #' "median", only peaks that is higher than the median of all peaks. "maxmedian":
 #' get first "max", then median of those.
+#' @param gene_ids character vector, names of genes, default names(tx)
+#' @param coverage a data.table of coverage, with columns position, score and genes
 #' @return a data.table of gene_id, position, counts of the peak, zscore
 #' and standard deviation of the peak compared to rest of gene area.
 #' @references doi: 10.1261/rna.065235.117
@@ -108,18 +110,22 @@ filterExtremePeakGenes <-
 findPeaksPerGene <- function(tx, reads, top_tx = 0.50,
                               min_reads_per_tx = 20,
                               min_reads_per_peak = 10,
-                              type = "max") {
+                              type = "max",
+                              gene_ids = names(tx),
+                              coverage = coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)) {
   if (!(type %in% c("max", "median", "maxmedian", "all")))
     stop("type must be either max, median, maxmedian or all")
   # coverage track
-  coverage <- coveragePerTiling(tx, reads, TRUE, as.data.table = TRUE)
   coverage[, sum_per_gene := sum(count), by = genes]
   coverage <- coverage[sum_per_gene >= max(quantile(sum_per_gene, top_tx),
                                            min_reads_per_tx),]
   coverage[, mean_per_gene := mean(count), by = genes]
+  coverage[, median_per_gene := median(count), by = genes]
   coverage[, sd_per_gene := sd(count), by = genes]
+  coverage[, mad_per_gene := mad(count), by = genes]
   coverage[, zscore := (count - mean_per_gene) / sd_per_gene, by = genes]
-  coverage[, gene_id := names(tx)[genes]]
+  coverage[, modzscore := (count - median_per_gene) / mad_per_gene, by = genes]
+  coverage[, gene_id := gene_ids[genes]]
 
   if (type == "max" | type == "maxmedian") {
     coverage <- coverage[coverage[, .I[zscore == max(zscore)], by = genes]$V1]

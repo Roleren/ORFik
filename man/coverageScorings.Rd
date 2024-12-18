@@ -48,8 +48,9 @@ per: the grouping given, if genes is defined,
 group by per gene in default scoring.\cr
 Scorings:\cr
 \itemize{
-\item zscore (count-windowMean)/windowSD per)
-\item transcriptNormalized (sum(count / sum of counts per))
+\item zscore (count-mean(window))/sd(window) per) # Outlier detection
+\item modzscore (count-median(window))/mad(window) per) # Outlier detection for signal with extreme values
+\item transcriptNormalized (sum(count / sum of counts per)) this is scaled per group
 \item mean (mean(count per))
 \item median (median(count per))
 \item sum (count per)
@@ -61,7 +62,7 @@ Scorings:\cr
 \item frameSum (sum per frame per gene) used in ORFScore
 \item frameSumPerL (sum per frame per read length)
 \item frameSumPerLG (sum per frame per read length per gene)
-\item fracPos (fraction of counts per position per gene)
+\item fracPos (fraction of counts per position per gene) non scaled version of transcriptNormalized
 \item periodic (Fourier transform periodicity of meta coverage per fraction)
 \item NULL (no grouping, return input directly)
 }
