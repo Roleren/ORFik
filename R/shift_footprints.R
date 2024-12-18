@@ -505,7 +505,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        dpi = ifelse(nrow(df) < 22, 300, 200),
                        height_scaler = ifelse(type == "heatmap", 85, 95),
                        BPPARAM = bpparam()) {
-  stopifnot(plot.ext %in% c(".png", ".pdf"))
+  stopifnot(plot.ext %in% c(".png", ".pdf", ".jpg"))
   if (!(type %in% c("bar", "heatmap")))
     stop("The 'type' argument must be bar or heatmap")
   txdb <- loadTxdb(df)
@@ -534,8 +534,9 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   if (!is.null(output)) {
     if (output == "auto") {
       rel_path <- ifelse(type == "heatmap", "heatmaps","barplots")
-      output <- file.path(QCfolder(df), paste0("pshifts_", rel_path, plot.ext))
+      output <- file.path(QCfolder(df), paste0("pshifts_", rel_path))
     }
+    output <- image_path_format_append(output, plot.ext)
     dir.create(dirname(output), showWarnings = FALSE, recursive = TRUE)
     ggsave(output, res,
            width = 225, height = (length(res) -1) * height_scaler,

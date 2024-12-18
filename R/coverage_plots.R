@@ -221,24 +221,29 @@ windowCoveragePlot <- function(coverage, output = NULL, scoring = "zscore",
 #' @param height height of output in mm
 #' @param dpi (300) dpi of plot
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
+#' @param limitsize logical, default FALSE. If TRUE, activate ggplot max size restriction.
 #' @return a ggplot object of the coverage plot, NULL if output is set,
 #' then the plot will only be saved to location.
 #' @family coveragePlot
 #' @keywords internal
 savePlot <- function(plot, output = NULL, width = 200, height = 150, plot.ext = ".pdf",
-                     dpi = 300) {
+                     dpi = 300, limitsize = FALSE) {
   if (!is.null(output)) {
     if (is.character(output) && dir.exists(dirname(output))) {
-      ext <- tools::file_ext(output)
-      if (ext != "pdf" & ext != "png" & ext != "jpg") output <- paste0(output, plot.ext)
-      ggsave(output, plot = plot, width = width, height = height, units = "mm",
-             dpi = dpi, limitsize = FALSE)
+      ggsave(image_path_format_append(output, plot.ext), plot = plot, width = width,
+             height = height, units = "mm", dpi = dpi, limitsize = limitsize)
     } else {
       stop("output does not name a valid directory")
     }
     return(NULL)
   }
   return(plot)
+}
+
+image_path_format_append <- function(output, plot.ext, all_formats = c("pdf", "png", "jpg")) {
+  ext <- tools::file_ext(output)
+  if (!(ext %in% all_formats)) output <- paste0(output, plot.ext)
+  return(output)
 }
 
 #' Scale x axis correctly

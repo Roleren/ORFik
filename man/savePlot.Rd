@@ -10,7 +10,8 @@ savePlot(
   width = 200,
   height = 150,
   plot.ext = ".pdf",
-  dpi = 300
+  dpi = 300,
+  limitsize = FALSE
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ is save as specified by plot.ext argument.}
 \item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{dpi}{(300) dpi of plot}
+
+\item{limitsize}{logical, default FALSE. If TRUE, activate ggplot max size restriction.}
 }
 \value{
 a ggplot object of the coverage plot, NULL if output is set,
