@@ -16,6 +16,7 @@ shiftPlots(
   addFracPlot = TRUE,
   plot.ext = ".pdf",
   dpi = ifelse(nrow(df) < 22, 300, 200),
+  height_scaler = ifelse(type == "heatmap", 85, 95),
   BPPARAM = bpparam()
 )
 }
@@ -56,6 +57,10 @@ per heatmap.}
 "auto".}
 
 \item{dpi}{numeric, default: ifelse(nrow(df) < 22, 300, 200)}
+
+\item{height_scaler}{numeric default: ifelse(type == "heatmap", 85, 95).
+The total height of plot in unit "mm" is
+\code{(length(res) -1) * height_scaler}. Increase if many readlengths are used.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }

@@ -481,6 +481,9 @@ shiftFootprintsByExperiment <- function(df,
 #' @param plot.ext default ".pdf". Alternative ".png". Only added if output is
 #' "auto".
 #' @param dpi numeric, default: ifelse(nrow(df) < 22, 300, 200)
+#' @param height_scaler numeric default: ifelse(type == "heatmap", 85, 95).
+#' The total height of plot in unit "mm" is
+#' \code{(length(res) -1) * height_scaler}. Increase if many readlengths are used.
 #' @importFrom gridExtra grid.arrange
 #' @importFrom gridExtra arrangeGrob
 #' @return a ggplot2 grob object
@@ -500,6 +503,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
                        type = "bar", addFracPlot = TRUE,
                        plot.ext = ".pdf",
                        dpi = ifelse(nrow(df) < 22, 300, 200),
+                       height_scaler = ifelse(type == "heatmap", 85, 95),
                        BPPARAM = bpparam()) {
   stopifnot(plot.ext %in% c(".png", ".pdf"))
   if (!(type %in% c("bar", "heatmap")))
@@ -528,20 +532,13 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
      downstream = downstream, type = type)
   res <- do.call("arrangeGrob", c(plots, ncol=1, top = title))
   if (!is.null(output)) {
-    if (type == "heatmap") {
-      if (output == "auto") {
-        output <- file.path(QCfolder(df), paste0("pshifts_heatmaps", plot.ext))
-      }
-      height_scaler <- 85
-    } else {
-      if (output == "auto") {
-        output <- file.path(QCfolder(df), paste0("pshifts_barplots", plot.ext))
-      }
-      height_scaler <- 95
+    if (output == "auto") {
+      rel_path <- ifelse(type == "heatmap", "heatmaps","barplots")
+      output <- file.path(QCfolder(df), paste0("pshifts_", rel_path, plot.ext))
     }
     dir.create(dirname(output), showWarnings = FALSE, recursive = TRUE)
     ggsave(output, res,
-           width = 225, height = (length(res) -1)*height_scaler,
+           width = 225, height = (length(res) -1) * height_scaler,
            units = "mm", dpi = dpi, limitsize = FALSE)
     message("Saved pshift plots to location: ",
             output)
