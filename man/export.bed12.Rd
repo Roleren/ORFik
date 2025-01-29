@@ -30,6 +30,9 @@ If grl has no names, groups will be named 1,2,3,4..
 grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
 # export.bed12(grl, "output/path/orfs.bed")
 }
+\references{
+\code{\link{https://bedtools.readthedocs.io/en/latest/content/general-usage.html#bed-format}}
+}
 \seealso{
 Other utils: 
 \code{\link{bedToGR}()},

@@ -12,7 +12,7 @@ detect_ribo_orfs(
     = "_"),
   mrna = loadRegion(df, "mrna"),
   cds = loadRegion(df, "cds"),
-  libraries = outputLibs(df, type = "pshifted", output = "envirlist"),
+  libraries = outputLibs(df, type = "pshifted", output.mode = "envirlist"),
   orf_candidate_ranges = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF =
     longestORF, startCodon = startCodon, stopCodon = stopCodon, minimumLength =
     minimumLength),
@@ -56,7 +56,7 @@ detect_ribo_orfs(
 \item{cds}{= \code{loadRegion(df, "cds")}}
 
 \item{libraries}{the ribo-seq libraries loaded into R as list, default:
-\code{outputLibs(df, type = "pshifted", output = "envirlist")}}
+\code{outputLibs(df, type = "pshifted", output.mode = "envirlist")}}
 
 \item{orf_candidate_ranges}{IRangesList, =
 \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE),

@@ -134,7 +134,7 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' @param mrna = \code{loadRegion(df, "mrna")}
 #' @param cds = \code{loadRegion(df, "cds")}
 #' @param libraries the ribo-seq libraries loaded into R as list, default:
-#' \code{outputLibs(df, type = "pshifted", output = "envirlist")}
+#' \code{outputLibs(df, type = "pshifted", output.mode = "envirlist")}
 #' @param orf_candidate_ranges IRangesList, =
 #'  \code{findORFs(seqs = txSeqsFromFa(mrna, df, TRUE),
 #'  longestORF = longestORF, startCodon = startCodon, stopCodon = stopCodon,
@@ -188,7 +188,7 @@ coveragePerORFStatistics <- function(grl, RFP) {
 detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                              prefix_result = paste(c(ORF_categories_to_keep, gsub(" ", "_", organism(df))), collapse = "_"),
                              mrna = loadRegion(df, "mrna"), cds = loadRegion(df, "cds"),
-                             libraries = outputLibs(df, type = "pshifted", output = "envirlist"),
+                             libraries = outputLibs(df, type = "pshifted", output.mode = "envirlist"),
                              orf_candidate_ranges = findORFs(seqs = txSeqsFromFa(mrna, df, TRUE), longestORF = longestORF,
                                                             startCodon = startCodon, stopCodon = stopCodon,
                                                             minimumLength = minimumLength),
@@ -236,7 +236,8 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
                                         orf_start_gr = startSites(orfs_gr, TRUE,TRUE,TRUE),
                                         orf_stop_gr = stopSites(orfs_gr, TRUE,TRUE,TRUE),
                                         export_metrics_table = TRUE, symbols,
-                                        minimum_reads_ORF = 10, minimum_reads_start = 3) {
+                                        minimum_reads_ORF = 10, minimum_reads_start = 3,
+                                        min_orfscore = 2.5) {
   stopifnot(!is.null(ORF_type_keep))
   if (ncol(mcols(orfs_gr)) > 0) mcols(orfs_gr) <- NULL
   # Filter candidates by counts
@@ -265,8 +266,9 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
   downstream_cov_stats <- coveragePerORFStatistics(downstream_gr, RFP)
 
   #iou <- (orfs_cov_stats$mean + 1) / (upstream_cov_stats$mean + 1)
-  predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) & orfs_cov_stats$ORFScores > 2.5 &
-    ((reads_start[candidates] + 3) >  orfs_cov_stats$median)
+  predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) &
+                orfs_cov_stats$ORFScores > min_orfscore &
+              ((reads_start[candidates] + 3) >  orfs_cov_stats$median)
 
   message("-- Saving ORF and prediction result")
   saveRDS(orfs_cand, paste0(out_file_prefix, "_candidates.rds"))
@@ -282,7 +284,12 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
     } else if (!is.null(txdb)) {
       naming <- data.table(gene = txNamesToGeneNames(names(orfs_cand), txdb), tx = names(orfs_cand))
     }
-    res <- cbind(naming, type = ORF_type_keep[candidates], predicted, length = widthPerGroup(orfs_cand, FALSE),
+    tx_starts <- start(pmapToTranscriptF(orf_start_cand, mrna[names(orf_start_cand)]))
+    tx_ends <- end(pmapToTranscriptF(orf_stop_cand, mrna[names(orf_start_cand)]))
+    res <- cbind(naming, type = ORF_type_keep[candidates], predicted,
+                 tx_start = tx_starts,
+                 tx_end = tx_ends,
+                 length = widthPerGroup(orfs_cand, FALSE),
                  start_codons, orfs_cov_stats, up = upstream_cov_stats, down = downstream_cov_stats)
     res[, `:=` (down.genes = NULL, up.genes = NULL)]
     setnames(res, "genes", "id")
