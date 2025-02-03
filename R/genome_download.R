@@ -107,6 +107,10 @@
 #' the first assembly in list, otherwise the name of the assembly wanted, like
 #' "GCA_000005845" will get ecoli substrain k12, which is the most used ones for
 #' references. Usually ignore this for non bacterial species.
+#' @param refseq_genbank_format = c("gtf", "gff3")[1] Gtf format files are usually
+#' more secure from bugs downstream, so we highly advice to use them. GFF3 files
+#' can sometimes include information you might not find in the gtf, so sometimes
+#' it makes sense to use it.
 #' @inheritParams makeTxdbFromGenome
 #' @importFrom biomartr getGTF getGenome getENSEMBLInfo
 #' @importFrom Rsamtools indexFa
@@ -163,7 +167,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                                    pseudo_5UTRS_if_needed = NULL,
                                    remove_annotation_outliers = TRUE,
                                    notify_load_existing = TRUE,
-                                   assembly = organism) {
+                                   assembly = organism,
+                                   refseq_genbank_format = c("gtf", "gff3")[1]) {
   # Pre checks
   stopifnot(is(organism, "character"))
   stopifnot(is(output.dir, "character"))
@@ -193,7 +198,8 @@ getGenomeAndAnnotation <- function(organism, output.dir, db = "ensembl",
                         uniprot_id = uniprot_id,
                         gene_symbols = gene_symbols,
                         pseudo_5UTRS_if_needed = pseudo_5UTRS_if_needed,
-                        remove_annotation_outliers = remove_annotation_outliers)
+                        remove_annotation_outliers = remove_annotation_outliers,
+                        refseq_genbank_format = refseq_genbank_format)
   output <- contaminants_processing(conts, gtf, genome, merge_contaminants,
                                     output.dir)
 

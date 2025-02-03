@@ -16,7 +16,8 @@ get_genome_gtf(
   uniprot_id = FALSE,
   gene_symbols = FALSE,
   pseudo_5UTRS_if_needed = NULL,
-  remove_annotation_outliers = TRUE
+  remove_annotation_outliers = TRUE,
+  refseq_genbank_format = c("gtf", "gff3")[1]
 )
 }
 \arguments{
@@ -81,6 +82,11 @@ If yes, then the initial annotation_file will be overwritten and
 the removed outlier lines will be stored at tempdir for further
 exploration. Among others Aridopsis refseq contains malformed lines,
 where this is needed}
+
+\item{refseq_genbank_format}{= c("gtf", "gff3")[1] Gtf format files are usually
+more secure from bugs downstream, so we highly advice to use them. GFF3 files
+can sometimes include information you might not find in the gtf, so sometimes
+it makes sense to use it.}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,

@@ -24,7 +24,8 @@ getGenomeAndAnnotation(
   pseudo_5UTRS_if_needed = NULL,
   remove_annotation_outliers = TRUE,
   notify_load_existing = TRUE,
-  assembly = organism
+  assembly = organism,
+  refseq_genbank_format = c("gtf", "gff3")[1]
 )
 }
 \arguments{
@@ -159,6 +160,11 @@ FALSE, if this is not wanted}
 the first assembly in list, otherwise the name of the assembly wanted, like
 "GCA_000005845" will get ecoli substrain k12, which is the most used ones for
 references. Usually ignore this for non bacterial species.}
+
+\item{refseq_genbank_format}{= c("gtf", "gff3")[1] Gtf format files are usually
+more secure from bugs downstream, so we highly advice to use them. GFF3 files
+can sometimes include information you might not find in the gtf, so sometimes
+it makes sense to use it.}
 }
 \value{
 a named character vector of path to genomes and gtf downloaded,

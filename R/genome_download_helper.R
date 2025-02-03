@@ -78,7 +78,8 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly,
                            uniprot_id = FALSE,
                            gene_symbols = FALSE,
                            pseudo_5UTRS_if_needed = NULL,
-                           remove_annotation_outliers = TRUE) {
+                           remove_annotation_outliers = TRUE,
+                           refseq_genbank_format = c("gtf", "gff3")[1]) {
   if (GTF != FALSE) { # If GTF should be processed
     if (is.logical(GTF)) { # If download
       message("- Download annotation (gtf/gff3)")
@@ -87,14 +88,23 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly,
         gtf <- biomartr:::getENSEMBL.gtf(organism = assembly, type = "dna",
                                          path = output.dir)
       } else {
-        message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
-                " and might crash during gff reading step!",
-                " Until this is fixed in rtracklayer, check out example",
-                " in ?getGenomeAndAnnotation on how to rescue those gffs")
+        if (refseq_genbank_format == "gff3") {
+          message("Some refseq gffs are malformed, like Arabidopsis thaliana,",
+                  " and might crash during gff reading step!",
+                  " Until this is fixed in rtracklayer, check out example",
+                  " in ?getGenomeAndAnnotation on how to rescue those gffs")
+        } else {
+          message("Some refseq gtfs are malformed, like Saccharomyces cerevisiae,",
+                  " and might crash during gff reading step!",
+                  "For those cases use gff3 files!")
+        }
+
         gtf <-biomartr::getGFF(db = db, organism = assembly,
                                path = output.dir, reference = TRUE,
                                remove_annotation_outliers = remove_annotation_outliers,
-                               mute_citation = TRUE)
+                               mute_citation = TRUE,
+                               format = refseq_genbank_format)
+
       }
     } else if (is.character(GTF)) { # File already exists
       message("- Using pre-existing annotation (gtf/gff3)")
