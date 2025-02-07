@@ -24,6 +24,7 @@ OPTIONS:
 	-G         path to use as output for species genome, if other than rest
 	-S         path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
 	-m	   max cpus allowed (defualt 40)
+	-R     maxRAM for genome (default: 300000000000, i.e. 30GB)
 	-r	   genomeSAsparseD argument, default 1.
 	-T     STAR temp dir, default -.
 	-h	   this help message
@@ -209,7 +210,7 @@ if [[ ${genome} != "" ]]; then
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \
 	${sjdbOverhang_to_use} \
-	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
+	--limitGenomeGenerateRAM $maxRAM \
 	--genomeSAsparseD $SAsparse \
 	--outFileNamePrefix ${mainGenomeOut} \
 	--outTmpDir ${tmpStarDir}
