@@ -176,15 +176,19 @@ study_runinfo_download_deprecated <- function(SRP, destfile) {
   return(fread(destfile))
 }
 
-sample_info_download <- function(SRP) {
+sample_info_download <- function(SRP, max_samples = 2000) {
   # Trace db is dead, now we have to get ids first, then get samples
   url_prefix <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&term="
-  url_suffix <- "&retmax=2000&retmode=xml"
+  url_suffix <- paste0("&retmax=", max_samples, "&retmode=xml&tool=ORFik")
   url <- paste0(url_prefix, SRP, url_suffix)
   ids_xml <- xml2::as_list(xml2::read_xml(url))
   ids <- sort(unlist(ids_xml$eSearchResult$IdList, use.names = FALSE))
+  if (is.null(ids)) {
+    stop("SRA server returned the following error: \n",
+         ids_xml$eSearchResult$WarningList$OutputMessage[[1]])
+  }
   url_prefix <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=sra&id="
-  url_suffix <- "&rettype=fasta&retmode=xml"
+  url_suffix <- "&rettype=fasta&retmode=xml&tool=ORFik"
   url <- paste0(url_prefix, paste(ids, collapse = ","), url_suffix)
   message("Downloading metadata from:")
   message(url)
@@ -203,7 +207,7 @@ abstract_save <- function(EXP_SAMPLE, abstract, abstract_destfile) {
       if (abstract %in% c("save", "printsave")) {
         fwrite(data.table(abstract = abstract_text), abstract_destfile)
       }
-    } else message("Could not find abstract for project")
+    } else message("Note: Could not find abstract for project")
   }
 }
 
@@ -219,9 +223,11 @@ add_pubmed_id <- function(EXP_SAMPLE, file) {
 
 add_author <- function(file) {
   if (!is.null(file$Study_Pubmed_id)) {
-    if (!is.na(file$Study_Pubmed_id[1]) & (file$Study_Pubmed_id[1] != 3)) { # 3 is error code
+    # 3 is error code
+    valid_pubmed_id <- !is.na(file$Study_Pubmed_id[1]) & (file$Study_Pubmed_id[1] != 3)
+    if (valid_pubmed_id) {
       url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id="
-      url <- paste0(url, file$Study_Pubmed_id[1])
+      url <- paste0(url, file$Study_Pubmed_id[1], "&tool=ORFik")
       a <- xml2::as_list(xml2::read_xml(url))
       authors <- a$eSummaryResult$DocSum[[5]]
       if (!is.null(unlist(authors)[1])) {

@@ -85,7 +85,7 @@ design(df.rna)[1] # Default target contrast
 #dt <- DEG.analysis(df.rna)
 }
 \references{
-doi: 10.1002/cpmb.108
+\url{https://doi.org/10.1002/cpmb.108}
 }
 \seealso{
 Other DifferentialExpression: 

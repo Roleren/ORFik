@@ -55,15 +55,15 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @param path a character / data.table with path to .bam file. There
 #' are 3 input file possibilities.
 #' \itemize{
-#'  \item{single end : }{a character path (length 1)}
-#'  \item{paired end (1 file) : }{Either a character path (length of 2), where
-#'  path[2] is "paired-end", or a data.table
-#'   with 2 columns, forward = path & reverse = "paired-end"}
-#'  \item{paired end (2 files) : }{Either a character path (length of 2), where
-#'  path[2] is path to R2, or a data.table
-#'   with 2 columns, forward = path to R1 & reverse = path to R2.
-#'   (This one is not used often)}
+#'  \item{single end : a character path (length 1)}
+#'  \item{paired end (1 file) : Either a character path (length of 2),
+#'  where path[2] is "paired-end", or a data.table with 2 columns,
+#'  forward = path & reverse = "paired-end"}
+#'  \item{paired end (2 files) : Either a character path (length of 2),
+#'  where path[2] is path to R2, or a data.table with 2 columns,
+#'  forward = path to R1 & reverse = path to R2. (This one is not used often)}
 #' }
+
 #' @inheritParams matchSeqStyle
 #' @inheritParams GenomicAlignments::readGAlignments
 #' @param strandMode numeric, default 0. Only used for paired end bam files.

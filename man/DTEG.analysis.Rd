@@ -21,7 +21,8 @@ DTEG.analysis(
   height = 6,
   dot.size = 0.4,
   relative.name = paste0("DTEG_plot", plot.ext),
-  complex.categories = FALSE
+  complex.categories = FALSE,
+  plot_to_console = TRUE
 )
 }
 \arguments{
@@ -93,42 +94,76 @@ cluster together more than the design factor, to verify if you need to set it to
 Relative name of file to be saved in folder specified in output.dir.
 Change to .pdf if you want pdf file instead of png.}
 
-\item{complex.categories}{logical, default FALSE. Seperate into more groups,
-will add Inverse (opposite diagonal of mRNA abundance) and Expression (only significant mRNA-seq)}
+\item{complex.categories}{logical, default FALSE. Separate into more groups,
+see above for details.}
+
+\item{plot_to_console}{logical, default TRUE. Plot to console before returning,
+set to FALSE to save some run time.}
 }
 \value{
 a data.table with columns:
-(contrast variable, gene id, regulation status, log fold changes, p.adjust values, mean counts)
+(contrast variable, gene id, regulation status, log fold changes, p.adjust values,
+mean counts, significant (as logical))
 }
 \description{
 Expression analysis of 2 dimensions, usually Ribo-seq vs RNA-seq.\cr
 Using an equal reimplementation of the deltaTE algorithm (see reference).\cr
 Creates a total of 3 DESeq models (given x is the target.contrast argument)
- (usually 'condition' column) and libraryType is RNA-seq and Ribo-seq):\cr
-1. Ribo-seq model: design = ~ x (differences between the x groups in Ribo-seq)\cr
-2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)\cr
-3. TE model: design = ~ x + libraryType + libraryType:x
-(differences between the x and libraryType groups and the interaction between them)\cr
+ (usually 'condition' column) and libraryType is RNA-seq and Ribo-seq):\cr\cr
+** \strong{The 3 differential sub models} **
+\itemize{
+ \item{1. Ribo-seq model : design = ~ x (differences between the x groups in Ribo-seq)}
+ \item{2. RNA-seq model: design = ~ x (differences between the x groups in RNA-seq)}
+ \item{3. TE model: design = ~ x + libraryType + libraryType:x
+ (differences between the x and libraryType groups and the interaction between them)}
+}
 You need at least 2 groups and 2 replicates per group. By default, the Ribo-seq counts will
-be over CDS and RNA-seq counts over whole mRNAs, per transcript. \cr
+be over CDS and RNA-seq counts over whole mRNAs, per transcript. See notes section below
+for more details.\cr
 }
 \details{
 Log fold changes and p-values are created from a Walds test on the comparison contrast described bellow.
 The RNA-seq and Ribo-seq LFC values are shrunken using DESeq2::lfcShrink(type = "normal"). Note
-that the TE LFC values are not shrunken (as following specifications from deltaTE paper)\cr\cr
+that the TE LFC values are not shrunken (as following specifications from deltaTE paper).
+The adjusted p-values are created using DESEQ pAdjustMethod = "BH" (Benjamini-Hochberg correction).
+All other DESEQ2 arguments are default.\cr\cr
 
 Analysis is done between each possible
 combination of levels in the target contrast If target contrast is condition column,
 with factor levels: WT, mut1 and mut2 with 3 replicates each. You get comparison
 of WT vs mut1, WT vs mut2 and mut1 vs mut2. \cr
-The respective result categories are defined as:
-(given a user defined p value, shown here as 0.05):\cr
-1. Translation -  te.p.adj < 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
-2. mRNA abundance - te.p.adj > 0.05 & rfp.p.adj < 0.05 & rna.p.adj > 0.05\cr
-3. Buffering - te.p.adj < 0.05 & rfp.p.adj > 0.05 & rna.p.adj > 0.05\cr\cr
 
-Buffering will be broken down into sub-categories if you set
-complex.categories = TRUE
+The respective result categories are defined through 4 main categories,
+first some intuition.
+The number of ribosomes (Ribo-seq) is significantly different between 2
+contrast elements in the model if the relative counts is
+statistically higher/lower, for mRNA levels (RNA-seq) it is the same.
+So TE is then RFP / RNA which is basically how many ribosomes translated
+per mRNA in the sample, if contrast group 1 has TE of 2, it means 2 ribosomes
+per mrna fragment, while TE of 4 would be a doubling of 4 ribosomes per mRNA.
+
+Mathematically the groups are defined by the p adjusted values as the
+following (te.sign means na_safe(te.padj < p.value),
+na_safe is a function where NA values are FALSE for '<=' test
+and TRUE for '>' test),
+we also use a helper function:
+te.sign & rfp.sign & rna.sign, all_models_sign := TRUE.\cr\cr
+** \strong{Signicant DTEG Classifications} **
+\itemize{
+ \item{No change: None of the below categories}
+ \item{Translation (only RFP): te.sign & rfp.sign & !rna.sign}
+ \item{Expression (only RNA): !te.sign & !rfp.sign & rna.sign}
+ \item{mRNA abundance : all_models_sign & na_safe(te.lfc * rna.lfc, ">", 0)}
+ \item{Inverse : all_models_sign & te.lfc * rna.lfc, "<", 0)}
+ \item{Buffering (Stable protein output) : te.sign & !rfp.sign & rna.sign}
+ \item{Forwarded  : !te.sign & rfp.sign & rna.sign}
+}
+
+If complex.categories is FALSE, then Expression, Inverse and forwarded are defined 'Buffering'.
+mRNA abundance is called"Intensified" in original article
+Inverse is the inverse of mRNA abundance
+For code, of classification, run: View(ORFik:::DTEG_add_regulation_categories)
+
 See Figure 1 in the reference article for a clear definition of the groups!\cr
 If you do not need isoform variants, subset to longest isoform per gene
 either before or in the returned object (See examples).
@@ -169,7 +204,7 @@ design(df.rfp)[1] # Default target contrast
 #                       pairs = pairs)
 }
 \references{
-doi: 10.1002/cpmb.108
+\url{https://doi.org/10.1002/cpmb.108}
 }
 \seealso{
 Other DifferentialExpression: 

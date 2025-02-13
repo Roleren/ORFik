@@ -13,7 +13,7 @@
 #' Then search Entrez for project and get sample identifier.\cr
 #' From that extract the run information and collect into a final table.\cr
 #'
-#' @param SRP character string, a study ID as either the PRJ, SRP, ERP, DRPor GSE of the study,
+#' @param SRP character string, a study ID as either the PRJ, SRP, ERP, DRP, GSE or SRA of the study,
 #' examples would be "SRP226389" or "ERP116106". If GSE it will try to convert to the SRP
 #' to find the files. The call works as long the runs are registered on the efetch server,
 #' as their is a linked SRP link from bioproject or GSE. Example which fails is "PRJNA449388",

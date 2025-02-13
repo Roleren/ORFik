@@ -4,20 +4,12 @@
 #' creating a single R object that stores and controls all results relevant
 #' to a specific experiment.\cr It contains following important parts:
 #' \itemize{
-#'  \item{filepaths : }{and info for each library in the experiment
-#'  (for multiple files formats: bam, bed, wig, ofst, ..)}
-#'  \item{genome : }{annotation files of the experiment
-#'  (fasta genome, index, gtf, txdb)}
-#'  \item{organism : }{name (for automatic GO, sequence analysis..)}
-#'  \item{description : }{and author information (list.experiments(),
-#'  show all experiments you have made with ORFik, easy to find and load them later)}
-#'  \item{API : }{ORFik supports a rich API for using the experiment,
-#'  like outputLibs(experiment, type = "wig") will load all libraries
-#'  converted to wig format into R,  loadTxdb(experiment) will load the
-#'  txdb (gtf) of experiment, transcriptWindow() will automatically plot
-#'  metacoverage of all libraries in the experiment, countTable(experiment) will load count tables, etc..)}
-#'  \item{Safety : }{It is also a safety in that it verifies your experiments contain
-#'   no duplicate, empty or non-accessible files.}
+#'   \item{filepaths: Information for each library in the experiment (for multiple file formats: bam, bed, wig, ofst, etc.)}
+#'   \item{genome: Annotation files for the experiment (fasta genome, index, gtf, txdb)}
+#'   \item{organism: Name (for automatic GO, sequence analysis, etc.)}
+#'   \item{description: Author information and experiment details (use `list.experiments()` to show all experiments made with ORFik; this makes it easy to find and load them later)}
+#'   \item{API: ORFik supports a rich API for using the experiment, e.g., `outputLibs(experiment, type = "wig")` to load all libraries in the wig format into R, `loadTxdb(experiment)` to load the txdb (gtf) of the experiment, `transcriptWindow()` to plot metacoverage for all libraries, and `countTable(experiment)` to load count tables, etc.}
+#'   \item{Safety: Verifies that experiments contain no duplicate, empty, or non-accessible files.}
 #' }
 #' Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
 #' more ease to find not only counts, but rather
@@ -34,18 +26,14 @@
 #' filepaths must be unique and have files with size > 0.\cr\cr
 #' Here all the columns in the experiment will be described:
 #' name (column info): examples\cr
-#' \describe{
-#'      \item{libtype}{library type: rna-seq, ribo-seq, CAGE etc}
-#'      \item{stage}{stage or tissue: 64cell, Shield, HEK293}
-#'      \item{rep}{replicate: 1,2,3 etc}
-#'      \item{condition}{treatment or condition: :
-#'      WT (wild-type), control, target, mzdicer, starved}
-#'      \item{fraction}{fraction of total: 18, 19 (TCP / RCP fractions),
-#'      or other ways to split library.\cr}
-#'      \item{filepath}{Full filepath to file}
-#'      \item{reverse}{optional: 2nd filepath or info, only used if paired files}
+#' \itemize{
+#'   \item{filepaths: Information for each library in the experiment (for multiple file formats: bam, bed, wig, ofst, etc.)}
+#'   \item{genome: Annotation files for the experiment (fasta genome, index, gtf, txdb)}
+#'   \item{organism: Name (for automatic GO, sequence analysis, etc.)}
+#'   \item{description: Author information and experiment details (use `list.experiments()` to show all experiments made with ORFik; this makes it easy to find and load them later)}
+#'   \item{API: ORFik supports a rich API for using the experiment, e.g., `outputLibs(experiment, type = "wig")` to load all libraries in the wig format into R, `loadTxdb(experiment)` to load the txdb (gtf) of the experiment, `transcriptWindow()` to plot metacoverage for all libraries, and `countTable(experiment)` to load count tables, etc.}
+#'   \item{Safety: Verifies that experiments contain no duplicate, empty, or non-accessible files.}
 #' }
-#'
 #' @details
 #' Special rules:\cr
 #' Supported:\cr

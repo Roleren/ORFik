@@ -53,22 +53,22 @@ a data.table of rows per codon / AA. All values are given
 per library, per site (A or P), sorted by the mean_txNorm_percentage column
 of the first library in the set, the columns are:
 \itemize{
- \item{variable (character)}{Library name}
- \item{seq (character)}{Amino acid:codon}
- \item{sum (integer)}{total counts per seq}
- \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
- \item{var (numeric)}{variance of total counts per seq}
- \item{N (integer)}{total number of codons of that type}
- \item{mean_txNorm (numeric)}{Default use output, the fair codon usage,
+ \item{variable (character) : Library name}
+ \item{seq (character) : Amino acid:codon}
+ \item{sum (integer) : total counts per seq}
+ \item{sum_txNorm (integer) : total counts per seq normalized per tx}
+ \item{var (numeric) : variance of total counts per seq}
+ \item{N (integer) : total number of codons of that type}
+ \item{mean_txNorm (numeric) : Default use output, the fair codon usage,
  normalized both for gene and genome level for codon and read counts}
  \item{...}
- \item{alpha (numeric)}{dirichlet alpha MOM estimator (imagine mean and
+ \item{alpha (numeric) : dirichlet alpha MOM estimator (imagine mean and
            variance of probability in 1 value, the lower the value,
            the higher the variance, mean is decided by the relative
            value between samples)}
- \item{sum_txNorm (integer)}{total counts per seq normalized per tx}
- \item{relative_to_max_score (integer)}{Percentage use of codon}
- \item{type (factor(character))}{Either "P" or "A"}
+ \item{sum_txNorm (integer) : total counts per seq normalized per tx}
+ \item{relative_to_max_score (integer) : Percentage use of codon}
+ \item{type (factor(character)) : "P" or "A"}
 }
 }
 \description{

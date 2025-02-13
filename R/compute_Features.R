@@ -11,35 +11,35 @@
 #' ** \strong{NGS features} **
 #' If not stated otherwise stated, the feature apply to Ribo-seq.
 #' \itemize{
-#'  \item{countRFP : }{raw counts of Ribo-seq}
-#'  \item{fpkmRFP : }{FPKM}
-#'  \item{fpkmRNA : }{FPKM of RNA-seq}
-#'  \item{te : }{Translation efficiency Ribo-seq / RNA-seq FPKM}
-#'  \item{floss : }{Fragment length similarity score}
-#'  \item{entropyRFP : }{Positional entropy}
-#'  \item{disengagementScores : }{downstream coverage from ORF}
-#'  \item{RRS: }{Ribosome release score}
-#'  \item{RSS: }{Ribosome staling score }
-#'  \item{ORFScores: }{Periodicity score, does frame 0 have more reads}
-#'  \item{ioScore: }{inside outside score: coverage ORF / coverage rest of transcript}
-#'  \item{startCodonCoverage: }{Coverage over start codon + 2nt before start codon}
-#'  \item{startRegionCoverage: }{Coverage over codon 2 & 3}
-#'  \item{startRegionRelative: }{Peakness of TIS, startCodonCoverage / startRegionCoverage, 0-n}
+#'  \item{countRFP : raw counts of Ribo-seq}
+#'  \item{fpkmRFP : FPKM}
+#'  \item{fpkmRNA : FPKM of RNA-seq}
+#'  \item{te : Translation efficiency Ribo-seq / RNA-seq FPKM}
+#'  \item{floss : Fragment length similarity score}
+#'  \item{entropyRFP : Positional entropy}
+#'  \item{disengagementScores : downstream coverage from ORF}
+#'  \item{RRS : Ribosome release score}
+#'  \item{RSS : Ribosome staling score}
+#'  \item{ORFScores : Periodicity score, does frame 0 have more reads}
+#'  \item{ioScore : inside outside score: coverage ORF / coverage rest of transcript}
+#'  \item{startCodonCoverage : Coverage over start codon + 2nt before start codon}
+#'  \item{startRegionCoverage : Coverage over codon 2 & 3}
+#'  \item{startRegionRelative : Peakness of TIS, startCodonCoverage / startRegionCoverage, 0-n}
 #' }
 #' ** \strong{Sequence features} **
 #' \itemize{
-#'  \item{kozak : }{Similarity to kozak sequence for organism score, 0-1}
-#'  \item{gc : }{GC percentage, 0-1}
-#'  \item{StartCodons : }{Start codon as a string, "ATG"}
-#'  \item{StopCodons : }{stop codon as a string, "TAA"}
-#'  \item{fractionLengths : }{ORF length compared to transcript, 0-1}
+#'  \item{kozak : Similarity to kozak sequence for organism score, 0-1}
+#'  \item{gc : GC percentage, 0-1}
+#'  \item{StartCodons : Start codon as a string, "ATG"}
+#'  \item{StopCodons : stop codon as a string, "TAA"}
+#'  \item{fractionLengths : ORF length compared to transcript, 0-1}
 #' }
 #' ** \strong{uORF features} **
 #' \itemize{
-#'  \item{distORFCDS : }{Distance from ORF stop site to CDS, -n:n}
-#'  \item{inFrameCDS : }{Is ORF in frame with downstream CDS, T/F}
-#'  \item{isOverlappingCds : }{Is ORF overlapping with downstream CDS, T/F}
-#'  \item{rankInTx : }{ORF with most upstream start codon is 1, 1-n}
+#'  \item{distORFCDS : Distance from ORF stop site to CDS, -n:n}
+#'  \item{inFrameCDS : Is ORF in frame with downstream CDS, T/F}
+#'  \item{isOverlappingCds : Is ORF overlapping with downstream CDS, T/F}
+#'  \item{rankInTx : ORF with most upstream start codon is 1, 1-n}
 #' }
 #'
 #' If you used CageSeq to reannotate your leaders, your txDB object must

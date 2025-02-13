@@ -15,7 +15,7 @@
 #' @export
 #' @family utils
 #' @references
-#' \code{\link{https://bedtools.readthedocs.io/en/latest/content/general-usage.html#bed-format}}
+#' \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html#bed-format}
 #' @examples
 #' grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
 #' # export.bed12(grl, "output/path/orfs.bed")

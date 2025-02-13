@@ -117,17 +117,17 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' @param ORF_categories_to_keep options, any subset of: \code{c("uORF", "uoORF", "annotated", "NTE",
 #' "NTT", "internal", "doORF", "dORF", "a_error")}.
 #' \itemize{
-#'  \item{uORF: }{Upstream ORFs (Starting in 5' UTR), not overlapping CDS}
-#'  \item{uoORF: }{Upstream ORFs (Starting in 5' UTR), overlapping CDS}
-#'  \item{annotated: }{The defined CDS for that transcript}
-#'  \item{NTE: }{5' Start codon extension of annotated CDS}
-#'  \item{NTT: }{5' Start codon truncation of annotated CDS}
-#'  \item{CTE: }{3' stop codon extension of annotated CDS, i.e. readthrough}
-#'  \item{CTT: }{5' Start codon truncation of annotated CDS, original cds was defined with readthrough}
-#'  \item{internal: }{Starting inside CDS, ending before CDS ends}
-#'  \item{doORF: }{Downstream ORFs (Ending in 3' UTR), overlapping CDS}
-#'  \item{dORF: }{Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
-#'  \item{a_error: }{Any ORF detect not in the above categories}
+#'  \item{uORF : Upstream ORFs (Starting in 5' UTR), not overlapping CDS}
+#'  \item{uoORF : Upstream ORFs (Starting in 5' UTR), overlapping CDS}
+#'  \item{annotated : The defined CDS for that transcript}
+#'  \item{NTE : 5' Start codon extension of annotated CDS}
+#'  \item{NTT : 5' Start codon truncation of annotated CDS}
+#'  \item{CTE : 3' stop codon extension of annotated CDS, i.e. readthrough}
+#'  \item{CTT : 5' Start codon truncation of annotated CDS, original cds was defined with readthrough}
+#'  \item{internal : Starting inside CDS, ending before CDS ends}
+#'  \item{doORF : Downstream ORFs (Ending in 3' UTR), overlapping CDS}
+#'  \item{dORF : Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
+#'  \item{a_error : Any ORF detect not in the above categories}
 #' }
 #' @param prefix_result the prefix name of output files to out_folder. Default:
 #' \code{paste(c(ORF_categories_to_keep, gsub(" ", "_", organism(df))), collapse = "_")}

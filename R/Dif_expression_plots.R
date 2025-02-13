@@ -100,8 +100,9 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' @param dt a data.table with the results from \code{\link{DTEG.analysis}}
 #' @param output.dir a character path, default NULL(no save), or a directory
 #' to save to a file. Relative name of file, specified by 'relative.name' argument.
-#' @param p.value.label a numeric, default 0.05 in interval (0,1)
-#' or "" to not show.
+#' @param p.value.label a numeric, default
+#' ifelse(!is.null(attr(dt, "p.value")), attr(dt, "p.value"), 0.05)
+#' Interval (0,1), use"" to not show.
 #' What p-value used for the analysis? Will be shown as a caption.
 #' @param plot.title title for plots, usually name of experiment etc
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
@@ -119,6 +120,8 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' @param relative.name character, Default: \code{paste0("DTEG_plot", plot.ext)}
 #' Relative name of file to be saved in folder specified in output.dir.
 #' Change to .pdf if you want pdf file instead of png.
+#' @param plot_to_console logical, default TRUE. Plot to console before returning,
+#' set to FALSE to save some run time.
 #' @return a ggplot object
 #' @family DifferentialExpression
 #' @importFrom data.table setorder
@@ -133,26 +136,29 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' #Manual scaling
 #' #DTEG.plot(dt, xlim = c(-2, 2), ylim = c(-2, 2))
 DTEG.plot <- function(dt, output.dir = NULL,
-                      p.value.label = 0.05,
+                      p.value.label = ifelse(!is.null(attr(dt, "p.value")), attr(dt, "p.value"), 0.05),
                       plot.title = "", plot.ext = ".pdf", width = 6,
                       height = 6, dot.size = 0.4,
                       xlim = "bidir.max", ylim = "bidir.max",
-                      relative.name = paste0("DTEG_plot", plot.ext)) {
+                      relative.name = paste0("DTEG_plot", plot.ext),
+                      plot_to_console = TRUE) {
   if("variable" %in% colnames(dt)) colnames(dt) <- gsub("variable", "contrast", colnames(dt))
   if (is.character(xlim)) stopifnot(xlim %in% c("bidir.max", "auto"))
   if (is.character(ylim)) stopifnot(ylim %in% c("bidir.max", "auto"))
-  stopifnot(c("rna", "rfp", "Regulation", "contrast") %in% colnames(dt))
+  stopifnot(c("rna.lfc", "rfp.lfc", "Regulation", "contrast") %in% colnames(dt))
 
 
   regulation.levels <- c("No change", "Buffering", "mRNA abundance", "Expression",
                          "Forwarded", "Inverse", "Translation")
+  dt[, Regulation :=
+       factor(Regulation,
+              levels = regulation.levels,
+              ordered = TRUE)]
+  setorder(dt, Regulation)
+
   color.values <- c("black", "purple", "darkgreen", "blue", "yellow", "aquamarine", "orange4")
   color.values <- color.values[regulation.levels %in% unique(dt$Regulation)]
-  dt[, Regulation :=
-               factor(Regulation,
-                      levels = regulation.levels,
-                      ordered = TRUE)]
-  setorder(dt, Regulation)
+
   p.caption <- if (p.value.label != "") {
     labs(caption = paste("P-value <", p.value.label))
   } else NULL
@@ -163,7 +169,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
   dot.size <- rep(dot.size, nrow(dt))
   dot.size[dt$Regulation != "No change"] <- dot.size[1]*2
   plot.between <- ggplot(data = dt,
-                         aes(x = rna, y = rfp, color = Regulation)) +
+                         aes(x = rna.lfc, y = rfp.lfc, color = Regulation)) +
     geom_point(alpha = 0.5, size = dot.size) +
     scale_color_manual(values = color.values) +
     theme_minimal() +
@@ -178,22 +184,22 @@ DTEG.plot <- function(dt, output.dir = NULL,
     guides(color = guide_legend(override.aes = list(alpha = 0.8, size = 1.3)))
   if (!all(xlim == "auto")) {
     if (all(xlim == "bidir.max")) {
-      plot.between <- plot.between + xlim(c(-max(abs(dt$rna)) - 0.5,
-                                            max(abs(dt$rna)) + 0.5))
+      plot.between <- plot.between + xlim(c(-max(abs(dt$rna.lfc)) - 0.5,
+                                            max(abs(dt$rna.lfc)) + 0.5))
     } else {
       plot.between <- plot.between + xlim(xlim)
     }
   }
   if (!all(ylim == "auto")) {
     if (all(ylim == "bidir.max")) {
-      plot.between <- plot.between + ylim(c(-max(abs(dt$rfp)) - 0.5,
-                                            max(abs(dt$rfp)) + 0.5))
+      plot.between <- plot.between + ylim(c(-max(abs(dt$rfp.lfc)) - 0.5,
+                                            max(abs(dt$rfp.lfc)) + 0.5))
     } else {
       plot.between <- plot.between + ylim(ylim)
     }
   }
 
-  plot(plot.between)
+  if (plot_to_console) plot(plot.between)
   if (!is.null(output.dir)) {
     ggsave(file.path(output.dir, relative.name), plot.between,
            width = width, height = height, dpi = 300)

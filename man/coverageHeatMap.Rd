@@ -61,9 +61,9 @@ then the plot will only be saved to location.
 \description{
 Creates a ggplot representing a heatmap of coverage:\cr
 \itemize{
- \item{Rows            : }{Position in region}
- \item{Columns         : }{Read length}
- \item{Index intensity : }{(color) coverage scoring per index.}
+ \item{Rows : Position in region}
+ \item{Columns : Read length}
+ \item{Index intensity : (color) coverage scoring per index.}
 }
 Coverage rows in heat map is fraction, usually fractions is divided into
 unique read lengths (standard Illumina is 76 unique widths, with some
@@ -77,10 +77,10 @@ Remember if you want to change anything like colors, just return the
 ggplot object, and reassign like: obj + scale_color_brewer() etc.
 Standard colors are:\cr
 \itemize{
- \item{0 reads in whole readlength :}{gray}
- \item{few reads in position       :}{white}
- \item{medium reads in position    :}{yellow}
- \item{many reads in position      :}{dark blue}
+ \item{0 reads in whole readlength : gray}
+ \item{few reads in position : white}
+ \item{medium reads in position : yellow}
+ \item{many reads in position : dark blue}
 }
 }
 \examples{

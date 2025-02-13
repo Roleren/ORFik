@@ -24,8 +24,9 @@ DEG.plot.static(
 \item{output.dir}{a character path, default NULL(no save), or a directory
 to save to a file. Relative name of file, specified by 'relative.name' argument.}
 
-\item{p.value.label}{a numeric, default 0.05 in interval (0,1)
-or "" to not show.
+\item{p.value.label}{a numeric, default
+ifelse(!is.null(attr(dt, "p.value")), attr(dt, "p.value"), 0.05)
+Interval (0,1), use"" to not show.
 What p-value used for the analysis? Will be shown as a caption.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}

@@ -7,7 +7,7 @@
 DTEG.plot(
   dt,
   output.dir = NULL,
-  p.value.label = 0.05,
+  p.value.label = ifelse(!is.null(attr(dt, "p.value")), attr(dt, "p.value"), 0.05),
   plot.title = "",
   plot.ext = ".pdf",
   width = 6,
@@ -15,7 +15,8 @@ DTEG.plot(
   dot.size = 0.4,
   xlim = "bidir.max",
   ylim = "bidir.max",
-  relative.name = paste0("DTEG_plot", plot.ext)
+  relative.name = paste0("DTEG_plot", plot.ext),
+  plot_to_console = TRUE
 )
 }
 \arguments{
@@ -24,8 +25,9 @@ DTEG.plot(
 \item{output.dir}{a character path, default NULL(no save), or a directory
 to save to a file. Relative name of file, specified by 'relative.name' argument.}
 
-\item{p.value.label}{a numeric, default 0.05 in interval (0,1)
-or "" to not show.
+\item{p.value.label}{a numeric, default
+ifelse(!is.null(attr(dt, "p.value")), attr(dt, "p.value"), 0.05)
+Interval (0,1), use"" to not show.
 What p-value used for the analysis? Will be shown as a caption.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
@@ -51,6 +53,9 @@ For numeric vector, specify min and max y limit: like c(-10, 10)}
 \item{relative.name}{character, Default: \code{paste0("DTEG_plot", plot.ext)}
 Relative name of file to be saved in folder specified in output.dir.
 Change to .pdf if you want pdf file instead of png.}
+
+\item{plot_to_console}{logical, default TRUE. Plot to console before returning,
+set to FALSE to save some run time.}
 }
 \value{
 a ggplot object

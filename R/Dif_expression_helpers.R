@@ -185,75 +185,102 @@ DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,
                                target.contrast, pairs, p.value = 0.05,
                                complex.categories, lfcShrinkType = "normal") {
   # Do result analysis: per contrast selected
-  dt.between <- data.table()
-  for(i in pairs) {
-    name <- paste("Comparison:", i[1], "vs", i[2])
-    message(name)
-    # Results
-    current.contrast <- c(target.contrast, i[1], i[2])
-    res_te <- results(ddsMat_te, contrast = current.contrast)
+  dt_all_pairs <- data.table()
+  for(pair in pairs) {
+    contrast_pair <- c(target.contrast, pair[1], pair[2])
+    dt <- DTEG_pair_results(ddsMat_te, ddsMat_ribo, ddsMat_rna, contrast_pair, lfcShrinkType, p.value)
+    dt <- DTEG_add_regulation_categories(dt, complex.categories)
 
-    res_ribo <- results(ddsMat_ribo, contrast = current.contrast)
-    suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=current.contrast,
-                                           res=res_ribo, type = lfcShrinkType))
-
-    res_rna <- results(ddsMat_rna, contrast = current.contrast)
-    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
-                                          res = res_rna, type = lfcShrinkType))
-
-    ## The differential regulation groupings (padj is padjusted)
-    both <- which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj < p.value)
-
-    ## The 4 classes of genes
-    # Forwarded are non significant in TE, diagonal line
-    forwarded <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj < p.value & res_rna$padj < p.value)]
-    # These two are the X and Y axis
-    exclusive.translation <- rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj < p.value & res_rna$padj > p.value)]
-    exclusive.expression <- rownames(res_te)[which(res_te$padj > p.value & res_ribo$padj > p.value & res_rna$padj < p.value)]
-    ## These are the remaining groups
-    # Also called mRNA abundance
-    intensified <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] > 0)]]
-    # Also called inverse mRNA abundance
-    inverse <- rownames(res_te)[both[which(res_te[both, 2]*res_rna[both, 2] < 0)]]
-    # Stable protein output
-    buffered <- c(rownames(res_te)[which(res_te$padj < p.value & res_ribo$padj > p.value & res_rna$padj < p.value)])
-
-    n <- rownames(res_te)
-    Regulation <- rep("No change", nrow(res_te))
-    Regulation[n %in% forwarded] <- "Forwarded" # Old Buffering
-    Regulation[n %in% buffered] <- "Buffering"
-    Regulation[n %in% inverse] <- "Inverse"
-    Regulation[n %in% exclusive.translation] <- "Translation"
-    Regulation[n %in% exclusive.expression] <- "Expression"
-    Regulation[n %in% intensified] <- "mRNA abundance"
-
-    if (!complex.categories) {
-      Regulation[n %in% exclusive.expression] <- "Buffering"
-      Regulation[n %in% inverse] <- "Buffering"
-      Regulation[n %in% forwarded] <- "Buffering"
-    }
-    print(table(Regulation))
-
-
-    dt.between <-
-      rbindlist(list(dt.between,
-                     data.table(contrast = name,
-                                Regulation = Regulation,
-                                id = rownames(ddsMat_rna),
-                                rna = res_rna$log2FoldChange,
-                                rfp = res_ribo$log2FoldChange,
-                                te = res_te$log2FoldChange,
-                                rna.padj = res_rna$padj,
-                                rfp.padj = res_ribo$padj,
-                                te.padj = res_te$padj,
-                                rna.meanCounts = res_rna$baseMean,
-                                rfp.meanCounts = res_ribo$baseMean
-                     )))
+    print(table(dt$Regulation))
+    dt_all_pairs <- rbindlist(list(dt_all_pairs, dt))
   }
-  regulation_levels <-  c("No change", "Translation", "Buffering",
-                          "mRNA abundance", "Expression", "Forwarded",
-                          "Inverse")
-  dt.between[, Regulation :=
-               factor(Regulation, levels = regulation_levels, ordered = TRUE)]
-  return(dt.between)
+
+  attr(dt_all_pairs, "p.value") <- p.value
+  return(dt_all_pairs)
 }
+
+DTEG_pair_results <- function(ddsMat_te, ddsMat_ribo, ddsMat_rna, contrast_vec,
+                              lfcShrinkType, p.value, return_type = "data.table") {
+  stopifnot(length(contrast_vec) == 3)
+  name <- paste("Comparison:", contrast_vec[2], "vs", contrast_vec[3])
+  message(name)
+
+  res_te <- results(ddsMat_te, contrast = contrast_vec)
+
+  res_ribo <- results(ddsMat_ribo, contrast = contrast_vec)
+  suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=contrast_vec,
+                                         res=res_ribo, type = lfcShrinkType))
+
+  res_rna <- results(ddsMat_rna, contrast = contrast_vec)
+  suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = contrast_vec,
+                                        res = res_rna, type = lfcShrinkType))
+
+  if (return_type != "data.table") {
+    return(list(res_te, res_ribo, res_rna))
+  }
+  dt <- data.table(contrast = name,
+                   Regulation = rep("No change", nrow(res_te)),
+                   id = rownames(ddsMat_rna),
+                   rna.lfc = res_rna$log2FoldChange,
+                   rfp.lfc = res_ribo$log2FoldChange,
+                   te.lfc = res_te$log2FoldChange,
+                   rna.padj = res_rna$padj,
+                   rfp.padj = res_ribo$padj,
+                   te.padj = res_te$padj,
+                   rna.meanCounts = res_rna$baseMean,
+                   rfp.meanCounts = res_ribo$baseMean
+  )
+
+  dt[, rna.sign := ifelse(na_safe(rna.padj, "<=", p.value), TRUE, FALSE)]
+  dt[, rfp.sign := ifelse(na_safe(rfp.padj, "<=", p.value), TRUE, FALSE)]
+  dt[, te.sign := ifelse(na_safe(te.padj, "<=", p.value), TRUE, FALSE)]
+  dt[, all_models_sign := FALSE]
+  dt[te.sign & rfp.sign & rna.sign, all_models_sign := TRUE]
+  return(dt)
+}
+
+na_safe <- function(x, op, threshold) {
+  op_func <- match.fun(op)  # Convert string to function
+
+  if (op %in% c("<", "<=")) {
+    # For "<" and "<=", NA should be FALSE (assume p.adj = 1)
+    !is.na(x) & op_func(x, threshold)
+  } else {
+    # For ">", ">=", "==", NA should be TRUE (assume non-significance)
+    is.na(x) | op_func(x, threshold)
+  }
+}
+
+#' Add regulation categories
+#' @noRd
+DTEG_add_regulation_categories <- function(dt, complex.categories) {
+  # Forwarded are non significant in TE, diagonal line
+  dt[!te.sign & rfp.sign & rna.sign, Regulation := "Forwarded"]
+  # These two are the X and Y axis
+  dt[te.sign & rfp.sign & !rna.sign, Regulation := "Translation"]
+  dt[!te.sign & !rfp.sign & rna.sign, Regulation := "Expression"]
+  ## These are the remaining groups
+
+  dt[all_models_sign & na_safe(te.lfc * rna.lfc, ">", 0), Regulation := "Intensified"]
+  dt[Regulation == "Intensified", Regulation := "mRNA abundance"] #  Rename
+  # Also called inverse mRNA abundance
+  dt[all_models_sign & na_safe(te.lfc * rna.lfc, "<", 0), Regulation := "Inverse"]
+  # Stable protein output
+  dt[te.sign & !rfp.sign & rna.sign, Regulation := "Buffering"]
+
+
+  if (!complex.categories) {
+    dt[Regulation == "Expression", Regulation := "Buffering"]
+    dt[Regulation == "Inverse", Regulation := "Buffering"]
+    dt[Regulation == "Forwarded", Regulation := "Buffering"]
+  }
+  dt[, all_models_sign := NULL]
+  regulation_levels <-  c("No change", "Translation", "Buffering", "mRNA abundance",
+                          if(complex.categories) c("Expression", "Forwarded","Inverse") else NULL)
+
+  stopifnot(all(dt$Regulation %in% regulation_levels))
+  dt[, Regulation :=
+               factor(Regulation, levels = regulation_levels, ordered = TRUE)]
+  return(dt)
+}
+
