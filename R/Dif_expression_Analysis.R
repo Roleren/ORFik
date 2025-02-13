@@ -89,11 +89,11 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #' te.sign & rfp.sign & rna.sign, all_models_sign := TRUE.\cr\cr
 #' ** \strong{Signicant DTEG Classifications} **
 #' \itemize{
-#'  \item{No change: None of the below categories}
-#'  \item{Translation (only RFP): te.sign & rfp.sign & !rna.sign}
-#'  \item{Expression (only RNA): !te.sign & !rfp.sign & rna.sign}
+#'  \item{No change : None of the below categories}
+#'  \item{Translation (only RFP) : te.sign & rfp.sign & !rna.sign}
+#'  \item{Expression (only RNA) : !te.sign & !rfp.sign & rna.sign}
 #'  \item{mRNA abundance : all_models_sign & na_safe(te.lfc * rna.lfc, ">", 0)}
-#'  \item{Inverse (inverse mRNA abundance): all_models_sign & te.lfc * rna.lfc, "<", 0)}
+#'  \item{Inverse (inverse mRNA abundance) : all_models_sign & te.lfc * rna.lfc, "<", 0)}
 #'  \item{Buffering (Stable protein output) : te.sign & !rfp.sign & rna.sign}
 #'  \item{Forwarded (diagonal bottom left to top right) : !te.sign & rfp.sign & rna.sign}
 #' }
