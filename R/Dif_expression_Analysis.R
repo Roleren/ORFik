@@ -93,15 +93,15 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #'  \item{Translation (only RFP): te.sign & rfp.sign & !rna.sign}
 #'  \item{Expression (only RNA): !te.sign & !rfp.sign & rna.sign}
 #'  \item{mRNA abundance : all_models_sign & na_safe(te.lfc * rna.lfc, ">", 0)}
-#'  \item{Inverse : all_models_sign & te.lfc * rna.lfc, "<", 0)}
+#'  \item{Inverse (inverse mRNA abundance): all_models_sign & te.lfc * rna.lfc, "<", 0)}
 #'  \item{Buffering (Stable protein output) : te.sign & !rfp.sign & rna.sign}
-#'  \item{Forwarded  : !te.sign & rfp.sign & rna.sign}
+#'  \item{Forwarded (diagonal bottom left to top right) : !te.sign & rfp.sign & rna.sign}
 #' }
 #'
 #' If complex.categories is FALSE, then Expression, Inverse and forwarded are defined 'Buffering'.
 #' mRNA abundance is called"Intensified" in original article
-#' Inverse is the inverse of mRNA abundance
-#' For code, of classification, run: View(ORFik:::DTEG_add_regulation_categories)
+#' For code, of classification, run: View(ORFik:::DTEG_add_regulation_categories).
+#' Feel free to redefine the categories as you want them.
 #'
 #' See Figure 1 in the reference article for a clear definition of the groups!\cr
 #' If you do not need isoform variants, subset to longest isoform per gene
