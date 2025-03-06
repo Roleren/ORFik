@@ -4,7 +4,13 @@
 \alias{find_url_ebi}
 \title{Locates and check if fastq files exists in ebi}
 \usage{
-find_url_ebi(SRR, stop.on.error = FALSE, study = NULL)
+find_url_ebi(
+  SRR,
+  stop.on.error = FALSE,
+  study = NULL,
+  ebi_file_format = c("fastq_ftp", "sra_ftp")[1],
+  convert_to_ascp = FALSE
+)
 }
 \arguments{
 \item{SRR}{character, SRR, ERR or DRR numbers.}
@@ -22,12 +28,12 @@ full url to fastq files, same length as input
 files not found.
 }
 \description{
-Look for files in ebi following url: ftp://ftp.sra.ebi.ac.uk/vol1/fastq
+Look for files in ebi file servers,
 Paired end and single end fastq files.\cr
-EBI uses 3 ways to organize data inside vol1/fastq:\cr
-- 1: Most common: SRR(3 first)/0(2 last)/whole\cr
-- 2: less common: SRR(3 first)/00(1 last)/whole\cr
-- 3: least common SRR(3 first)/whole
+Fastq ftp url: \code{ftp://ftp.sra.ebi.ac.uk/vol1/fastq}\cr
+SRA   ftp url: \code{ftp://ftp.sra.ebi.ac.uk/vol1/srr}\cr
+Fastq ASCP url: \code{era-fasp@fasp.sra.ebi.ac.uk:vol1/fastq}\cr
+SRA   ASCP url: \code{era-fasp@fasp.sra.ebi.ac.uk:vol1/srr}\cr
 }
 \examples{
 # Test the 3 ways to get fastq files from EBI

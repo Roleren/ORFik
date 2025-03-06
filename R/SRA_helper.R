@@ -364,12 +364,12 @@ download.ebi <- function(info, outdir, rename = TRUE,
 
 #' Locates and check if fastq files exists in ebi
 #'
-#' Look for files in ebi following url: ftp://ftp.sra.ebi.ac.uk/vol1/fastq
+#' Look for files in ebi file servers,
 #' Paired end and single end fastq files.\cr
-#' EBI uses 3 ways to organize data inside vol1/fastq:\cr
-#' - 1: Most common: SRR(3 first)/0(2 last)/whole\cr
-#' - 2: less common: SRR(3 first)/00(1 last)/whole\cr
-#' - 3: least common SRR(3 first)/whole
+#' Fastq ftp url: \code{ftp://ftp.sra.ebi.ac.uk/vol1/fastq}\cr
+#' SRA   ftp url: \code{ftp://ftp.sra.ebi.ac.uk/vol1/srr}\cr
+#' Fastq ASCP url: \code{era-fasp@fasp.sra.ebi.ac.uk:vol1/fastq}\cr
+#' SRA   ASCP url: \code{era-fasp@fasp.sra.ebi.ac.uk:vol1/srr}\cr
 #' @param SRR character, SRR, ERR or DRR numbers.
 #' @param stop.on.error logical FALSE, if TRUE will stop
 #'  if all files are not found. If FALSE returns empty character vector if error
@@ -379,6 +379,7 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' @return full url to fastq files, same length as input
 #' (2 urls for paired end data). Returns empty character() if all
 #' files not found.
+#' @export
 #' @examples
 #' # Test the 3 ways to get fastq files from EBI
 #' # Both single end and paired end data
@@ -399,89 +400,35 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #' #ORFik:::find_url_ebi("SRR105687")
 #' # Paired
 #' #ORFik:::find_url_ebi("SRR105788")
-find_url_ebi <- function(SRR, stop.on.error = FALSE, study = NULL) {
+find_url_ebi <- function(SRR, stop.on.error = FALSE, study = NULL,
+                         ebi_file_format = c("fastq_ftp", "sra_ftp")[1],
+                         convert_to_ascp = FALSE) {
   message("Finding optimal download urls from ebi...")
-  final.path <- if (!is.null(study)) {
-    find_url_ebi_safe(study, SRR, stop.on.error = stop.on.error)
-  } else find_url_ebi_safe(SRR, stop.on.error = stop.on.error)
-  return(final.path)
-  # TODO: remove when not needed
-  ebi_server <- "ftp://ftp.sra.ebi.ac.uk"
-  # Check that we can connect to ebi
-  exists.ftp.dir.fast(ebi_server, report.error = TRUE)
-
-  # Create candidate directories
-  SRR_first_3 <- substring(SRR, 1, 6)
-  SRR_last_3 <- paste0("0", reverse(substring(reverse(SRR), 1, 2)))
-  SRR_last_1 <- paste0("00", reverse(substring(reverse(SRR), 1, 1)))
-  SRR_default <- file.path(ebi_server, "vol1/fastq", SRR_first_3)
-
-  SRR_fastq <- paste0(SRR, ".fastq.gz")
-  SRR_fastq_paired <- c(paste0(SRR, c("_1"), ".fastq.gz"),
-                        paste0(SRR, c("_2"), ".fastq.gz"))
-  # method 1
-  SRR_paths <- file.path(SRR_default, SRR_last_3, SRR, SRR_fastq)
-  SRR_paths_paired <- file.path(SRR_default, SRR_last_3, SRR, SRR_fastq_paired)
-  # method 2:
-  SRR_paths_spec2 <- file.path(SRR_default, SRR_last_1, SRR, SRR_fastq)
-  SRR_paths_paired_spec2 <- file.path(SRR_default, SRR_last_1, SRR, SRR_fastq_paired)
-  # Method 3: Special location
-  SRR_paths_spec <- file.path(SRR_default, SRR, SRR_fastq)
-  SRR_paths_spec_paired <- file.path(SRR_default, SRR, SRR_fastq_paired)
-  # Check what format the files are found in (3 types: 2 each)
-  lib_counter <- 0
-  SRR_possibilities <- list(SRR_paths, SRR_paths_paired, SRR_paths_spec2,
-                            SRR_paths_paired_spec2, SRR_paths_spec,
-                            SRR_paths_spec_paired)
-  url.exists <- c()
-  for (i in seq_along(SRR_possibilities)) { # For each url area
-    if (lib_counter == length(SRR)) break
-    url.temp <-  sapply(SRR_possibilities[[i]], function(x)
-      exists.ftp.file.fast(x))
-    url.temp <- url.temp[url.temp]
-    if (i %% 2 == 1) {
-      lib_counter <- lib_counter + length(url.temp)
-    } else {
-      lib_counter <- lib_counter + (length(url.temp)/2)
-    }
-    url.exists <- c(url.exists, url.temp)
+  if (!is.null(study)) {
+    SRR <- study
   }
-
-  final.path.temp <- names(url.exists[url.exists])
-  # Sort them correctly as input
-  final.path <- unlist(sapply(c(SRR, "asdasd"), function(x, final.path.temp) {
-    sort(final.path.temp[grepl(x, final.path.temp)])
-  }, final.path.temp = final.path.temp), use.names = FALSE)
-
-  valid <- TRUE
-  if (lib_counter != length(SRR)) valid <- FALSE
-  paired <- length(grep("_[1-2]\\.fastq\\.gz",final.path))
-  if (length(SRR) != (paired/2 + length(final.path) - paired))
-    valid <- FALSE
-  if (!valid & stop.on.error) stop("Did not find all fastq files on ENA",
-                                   "set use.ebi.ftp to FALSE,
-                                   to use fastq-dump instead")
-  if (!valid) final.path <- character()
-
-  return(final.path)
+  return(find_url_ebi_safe(SRR, stop.on.error = stop.on.error,
+                           ebi_file_format = ebi_file_format,
+                           convert_to_ascp = convert_to_ascp))
 }
 
 #' Find URL for EBI fastq files
 #'
 #' Safer version
+#' @inheritParams find_url_ebi
 #' @param accession character: (PRJ, SRP, ERP, DRP, SRX, SRR, ERR,..). For studies or samples,
 #' it returns all runs per study or sample.
 #' @param SRR character, which SRR numbers to subset by (can also be ERR or DRR numbers)
-#' @param stop.on.error logical FALSE, if TRUE will stop
-#'  if all files are not found. If FALSE returns empty character vector if error
-#'  is catched.
 #' @return character (1 element per SRR number)
 #' @keywords internal
-find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE) {
+find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE,
+                              ebi_file_format = c("fastq_ftp", "sra_ftp")[1],
+                              convert_to_ascp = FALSE) {
+  stopifnot(ebi_file_format %in% c("fastq_ftp", "sra_ftp"))
   a <- data.table()
   for (i in accession) {
-    search_url <- paste0("http://www.ebi.ac.uk/ena/portal/api/filereport?accession=",
-                         i, "&result=read_run&fields=run_accession,fastq_ftp")
+    search_url <- paste0("https://www.ebi.ac.uk/ena/portal/api/filereport?accession=",
+                         i, "&result=read_run&fields=run_accession,", ebi_file_format)
     temp <- suppressWarnings(temp <- fread(search_url, header = TRUE))
     a <- rbindlist(list(a, temp))
   }
@@ -492,8 +439,12 @@ find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE) {
     }
     a <- a[run_accession %in% SRR,]
   }
-
-  return(unlist(strsplit(a$fastq_ftp, ";")))
+  paths <- a[, colnames(a) == ebi_file_format, with = FALSE][[1]]
+  paths <- unlist(strsplit(paths, ";"))
+  if (convert_to_ascp) {
+    paths <- sub("ftp.sra.ebi.ac.uk/", "era-fasp@fasp.sra.ebi.ac.uk:", paths)
+  }
+  return(paths)
 }
 
 #' Extract SRR/ERR/DRR run IDs from string
