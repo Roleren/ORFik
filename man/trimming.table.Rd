@@ -6,7 +6,8 @@
 \usage{
 trimming.table(
   trim_folder,
-  raw_libraries = dir(trim_folder, "\\\\.json", full.names = TRUE)
+  raw_libraries = dir(trim_folder, "\\\\.json$", full.names = TRUE),
+  include_adapter = FALSE
 )
 }
 \arguments{
@@ -16,6 +17,10 @@ fastp .json files. Can be NULL if raw_libraries is defined}
 \item{raw_libraries}{character, default:
 \code{dir(trim_folder, "\\.json", full.names = TRUE)},
 file paths of all json file paths.}
+
+\item{include_adapter}{logical, default FALSE. If TRUE, will add
+an extra column: adapter, with adapter found. If not found, it will specify:
+ "passed".}
 }
 \value{
 a data.table with 6 columns, raw_library (names of library),
@@ -24,6 +29,8 @@ a data.table with 6 columns, raw_library (names of library),
  % trimmed (numeric, percentage of trimmed reads),
  raw_mean_length (numeric, raw mean read length),
  trim_mean_length (numeric, trim mean read length).
+ Optional columns:
+ adapter (character, adapter, if not found "passed")
 }
 \description{
 From fastp runs in ORFik alignment process
@@ -35,4 +42,5 @@ trimmed_file <- system.file("extdata/test_processing/trim",
 trimmed_folder <- dirname(trimmed_file)
 trimming.table(trimmed_folder)
 trimming.table(NULL, trimmed_file)
+trimming.table(NULL, trimmed_file, include_adapter = TRUE)
 }
