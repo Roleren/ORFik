@@ -376,6 +376,8 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #'  is catched.
 #' @param study default NULL, optional PRJ (study id) to speed up search
 #' for URLs.
+#' @param convert_to_ascp logical, default FALSE. If TRUE use server:
+#' \code{era-fasp@fasp.sra.ebi.ac.uk:}
 #' @return full url to fastq files, same length as input
 #' (2 urls for paired end data). Returns empty character() if all
 #' files not found.

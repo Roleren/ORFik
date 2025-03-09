@@ -21,6 +21,9 @@ it returns all runs per study or sample.}
 \item{stop.on.error}{logical FALSE, if TRUE will stop
 if all files are not found. If FALSE returns empty character vector if error
 is catched.}
+
+\item{convert_to_ascp}{logical, default FALSE. If TRUE use server:
+\code{era-fasp@fasp.sra.ebi.ac.uk:}}
 }
 \value{
 character (1 element per SRR number)

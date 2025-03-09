@@ -21,6 +21,9 @@ is catched.}
 
 \item{study}{default NULL, optional PRJ (study id) to speed up search
 for URLs.}
+
+\item{convert_to_ascp}{logical, default FALSE. If TRUE use server:
+\code{era-fasp@fasp.sra.ebi.ac.uk:}}
 }
 \value{
 full url to fastq files, same length as input

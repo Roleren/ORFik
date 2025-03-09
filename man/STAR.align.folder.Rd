@@ -17,6 +17,7 @@ STAR.align.folder(
   min.length = 20,
   mismatches = 3,
   trim.front = 0,
+  trim.tail = 0,
   max.multimap = 10,
   alignment.type = "Local",
   allow.introns = TRUE,
@@ -124,8 +125,15 @@ become high!}
 filters reads that have defined mismatches in STAR.
 Only applies for genome alignment step.}
 
-\item{trim.front}{0, default trim 0 bases 5'. For Ribo-seq use default 0.
-Ignored if tr (trim) is not one of the arguments in "steps"}
+\item{trim.front}{0, default trim 0 bases on 5' ends.
+Ignored if tr (trim) is not one of the arguments in "steps".
+For Ribo-seq use default 0, unless you have 5' end custom barcodes to remove.
+Alignment to STAR might fail if you have large barcodes, which are not removed!}
+
+\item{trim.tail}{0, default trim 0 bases on 3' ends.
+Ignored if tr (trim) is not one of the arguments in "steps".
+For Ribo-seq use default 0, unless you have 3' end custom barcodes to remove.
+Alignment to STAR might fail if you have large barcodes, which are not removed!}
 
 \item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
 will skip the read. Set to 1 to only get unique mapping reads. Only applies for

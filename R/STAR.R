@@ -215,8 +215,14 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @param mismatches 3, max non matched bases. Excludes soft-clipping, this only
 #' filters reads that have defined mismatches in STAR.
 #' Only applies for genome alignment step.
-#' @param trim.front 0, default trim 0 bases 5'. For Ribo-seq use default 0.
-#' Ignored if tr (trim) is not one of the arguments in "steps"
+#' @param trim.front 0, default trim 0 bases on 5' ends.
+#' Ignored if tr (trim) is not one of the arguments in "steps".
+#' For Ribo-seq use default 0, unless you have 5' end custom barcodes to remove.
+#' Alignment to STAR might fail if you have large barcodes, which are not removed!
+#' @param trim.tail 0, default trim 0 bases on 3' ends.
+#' Ignored if tr (trim) is not one of the arguments in "steps".
+#' For Ribo-seq use default 0, unless you have 3' end custom barcodes to remove.
+#' Alignment to STAR might fail if you have large barcodes, which are not removed!
 #' @param alignment.type default: "Local": standard local alignment with soft-clipping allowed,
 #' "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.
 #' @param allow.introns logical, default TRUE. Allow large gaps of N in reads
@@ -321,7 +327,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               paired.end = FALSE,
                               steps = "tr-ge", adapter.sequence = "auto",
                               quality.filtering = FALSE, min.length = 20, mismatches = 3,
-                              trim.front = 0, max.multimap = 10,
+                              trim.front = 0, trim.tail = 0, max.multimap = 10,
                               alignment.type = "Local", allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
                               wait = TRUE, include.subfolders = "n", resume = NULL,
@@ -335,24 +341,17 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               script.single = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline.sh",
                                                           package = "ORFik")) {
-  stopifnot(keep.contaminants.type %in% c("bam", "fastq") & length(keep.contaminants.type) == 1)
-  if (keep.contaminants.type == "fastq") stop("Contaminant as fastq not yet implemented,",
-                                              " for now use: 'samtools fastq path_to_bam.bam'")
   if (!file.exists(script.folder))
     stop("STAR folder alignment script not found, check path of script!")
-  if (!file.exists(script.single))
-    stop("STAR single file alignment script not found, check path of script!")
-  if (!dir.exists(index.dir))
-    stop("STAR index path must be a valid directory called /STAR_index")
+
   if (is.logical(paired.end)) {
     paired.end <- ifelse(paired.end, "yes", "no")
   } else if(is.character(paired.end)) {
     if (!(paired.end %in% c("yes", "no"))) stop("Argument 'paired.end' must be yes/no")
   } else stop("Argument 'paired.end' must be logical or character yes/no")
-  stopifnot(alignment.type %in% c("Local", "EndToEnd"))
-  stopifnot(is.logical(allow.introns))
   stopifnot(include.subfolders %in% c("y", "n"))
-  stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
+  validate_star_input(script.single, index.dir, keep.contaminants.type, alignment.type,
+                      allow.introns, keep.index.in.memory, trim.front, trim.tail)
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
@@ -371,7 +370,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 "-p", paired.end,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
-                "-t", trim.front, "-M", max.multimap, quality.filtering,
+                "-t", trim.front, "-z", trim.tail,
+                "-M", max.multimap, quality.filtering,
                 "-A", alignment.type, "-B", allow.introns,"-m", max.cpus,
                 "-i", include.subfolders, "-k", keep.index.in.memory,
                 keep.contaminants, keep.contaminants.type,
@@ -388,7 +388,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
           dir.exists(paste0(output.dir,"/aligned/"))) {
       STAR.allsteps.multiQC(output.dir, steps = steps)
     }
-  } else stop("For windows OS, run through WSL!")
+  } else stop("For Windows OS, run through WSL!")
   return(output.dir)
 }
 
@@ -438,7 +438,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               star.path = STAR.install(), fastp = install.fastp(),
                               steps = "tr-ge", adapter.sequence = "auto",
                               quality.filtering = FALSE, min.length = 20,
-                              mismatches = 3, trim.front = 0,
+                              mismatches = 3, trim.front = 0, trim.tail = 0,
                               max.multimap = 10, alignment.type = "Local",
                               allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
@@ -449,13 +449,9 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                                                    "RNA_Align_pipeline.sh",
                                                    package = "ORFik")
 ) {
-  if (!file.exists(script.single))
-    stop("STAR single file alignment script not found, check path of script!")
-  if (!dir.exists(index.dir))
-    stop("STAR index path must be a valid directory called /STAR_index")
-  stopifnot(alignment.type %in% c("Local", "EndToEnd"))
-  stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
-  stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
+  validate_star_input(script.single, index.dir, keep.contaminants.type = "bam",
+                      alignment.type, allow.introns, keep.index.in.memory,
+                      trim.front, trim.tail)
 
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
@@ -470,7 +466,8 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   full <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
-                "-t", trim.front, "-A", alignment.type, "-m", max.cpus,
+                "-t", trim.front, "-z", trim.tail,
+                "-A", alignment.type, "-m", max.cpus,
                 "-M", max.multimap,
                 "-k", keep.index.in.memory, quality.filtering,
                 keep.contaminants, keep.unaligned.genome,
@@ -482,7 +479,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
     out <- system(command = full, wait = wait)
     out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
     message(out)
-  } else stop("For windows OS, run through WSL!")
+  } else stop("For Windows OS, run through WSL!")
   return(output.dir)
 }
 
@@ -625,3 +622,20 @@ STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
   }
   return(status)
 }
+
+validate_star_input <- function(script.single, index.dir, keep.contaminants.type, alignment.type,
+                                allow.introns, keep.index.in.memory, trim.front, trim.tail) {
+  stopifnot(keep.contaminants.type %in% c("bam", "fastq") & length(keep.contaminants.type) == 1)
+  if (keep.contaminants.type == "fastq") stop("Contaminant as fastq not yet implemented,",
+                                              " for now use: 'samtools fastq path_to_bam.bam'")
+  if (!file.exists(script.single))
+    stop("STAR single file alignment script not found, check path of script!")
+  if (!dir.exists(index.dir))
+    stop("STAR index path must be a valid directory called /STAR_index")
+  stopifnot(alignment.type %in% c("Local", "EndToEnd"))
+  stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
+
+  stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
+  stopifnot(all(is.numeric(trim.front, trim.tail)))
+}
+
