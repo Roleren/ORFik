@@ -636,6 +636,6 @@ validate_star_input <- function(script.single, index.dir, keep.contaminants.type
   stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
 
   stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
-  stopifnot(all(is.numeric(trim.front, trim.tail)))
+  stopifnot(all(is.numeric(trim.front) & is.numeric(trim.tail)))
 }
 
