@@ -725,7 +725,10 @@ remove.experiments <- function(df, envir = envExp(df)) {
 #' default ("*", all experiments)
 #' @param libtypeExclusive search for experiments with exclusivly this
 #' libtype, default (NULL, all)
-#' @param BPPARAM how many cores/threads to use? default: bpparam()
+#' @param BPPARAM how many cores/threads to use? Default single thread
+#' if validate is FALSE, else use bpparam.
+#' default: \code{if(!validate){ BiocParallel::SerialParam()} else
+#'  BiocParallel::bpparam()}
 #' @return a data.table, 1 row per experiment with columns:\cr
 #'  - experiment (name),\cr
 #'  - organism\cr
@@ -751,7 +754,8 @@ remove.experiments <- function(df, envir = envExp(df)) {
 list.experiments <- function(dir =  ORFik::config()["exp"],
                              pattern = "*", libtypeExclusive = NULL,
                              validate = TRUE,
-                             BPPARAM = bpparam()) {
+                             BPPARAM = if(!validate){ BiocParallel::SerialParam()} else
+                               BiocParallel::bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
   if (length(experiments) == 0) { # This will only trigger on CBU server @ UIB
     cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"

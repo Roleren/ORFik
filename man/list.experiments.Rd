@@ -9,7 +9,10 @@ list.experiments(
   pattern = "*",
   libtypeExclusive = NULL,
   validate = TRUE,
-  BPPARAM = bpparam()
+  BPPARAM = if (!validate) {
+     BiocParallel::SerialParam()
+ } else
+    BiocParallel::bpparam()
 )
 }
 \arguments{
@@ -26,7 +29,10 @@ libtype, default (NULL, all)}
 \item{validate}{logical, default TRUE. Abort if any library files does not exist.
 Do not set this to FALSE, unless you know what you are doing!}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
+\item{BPPARAM}{how many cores/threads to use? Default single thread
+if validate is FALSE, else use bpparam.
+default: \code{if(!validate){ BiocParallel::SerialParam()} else
+ BiocParallel::bpparam()}}
 }
 \value{
 a data.table, 1 row per experiment with columns:\cr
