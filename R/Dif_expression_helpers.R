@@ -133,6 +133,8 @@ DEG_model_results <- function(ddsMat_rna, target.contrast, pairs,
 #' If you do not have a valid DESEQ2 experimental setup (contrast), you
 #' can use this simplified test
 #' @inheritParams DEG.analysis
+#' @param design_ids character vector of contrast group ids, e.g.
+#'  c("WT", "WT", "Mutant", "Mutant")
 #' @return a data.table of fpkm ratios
 #' @export
 #' @examples
@@ -145,10 +147,13 @@ DEG_model_simple <- function(df,
                              design = ORFik::design(df),
                              p.value = 0.05,
                              counts = countTable(df, "mrna", type = "summarized"),
+                             design_ids = as.character(df[, target.contrast]),
                              batch.effect = FALSE) {
+  stopifnot(ncol(counts) == length(design_ids))
+  stopifnot(length(unique(design_ids)) >= 2)
   # Design
   main.design <- DEG_design(design[1], target.contrast, batch.effect)
-  design_ids <- as.character(df[, target.contrast])
+
   ids <- rownames(counts)
   counts <- as.data.table(DESeq2::fpkm(DESeq2::DESeqDataSet(counts, ~ 1)))
   # Get LFC matrix
@@ -160,6 +165,7 @@ DEG_model_simple <- function(df,
                    meanCounts = c(rowMeans(counts_group[, c(1,2), with = FALSE])))
   dt[, id := ids]
   dt[, contrast := paste(unique(design_ids)[1:2], collapse = "_vs_")]
+  dt[]
   return(dt)
 }
 
