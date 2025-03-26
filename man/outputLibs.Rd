@@ -17,6 +17,7 @@ outputLibs(
   envir = envExp(df),
   verbose = TRUE,
   force = TRUE,
+  validate_libs = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -107,6 +108,10 @@ matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
+
+\item{validate_libs}{logical, default TRUE. If FALSE, don't check that default
+files exists (i.e. bam files), useful if you are using pshifted ofst etc
+and don't have the bams anymore.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.

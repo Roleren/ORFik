@@ -4,16 +4,20 @@
 \alias{validateExperiments}
 \title{Validate ORFik \code{\link{experiment}}}
 \usage{
-validateExperiments(df, library.names = bamVarName(df))
+validateExperiments(df, library.names = bamVarName(df), validate_libs = TRUE)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{library.names}{character vector, names of libraries, default:
 name_decider(df, naming)}
+
+\item{validate_libs}{logical, default TRUE. If FALSE, don't check that default
+files exists (i.e. bam files), useful if you are using pshifted ofst etc
+and don't have the bams anymore.}
 }
 \value{
-NULL (Stops if failed)
+invisible(NULL) (Stops if failed)
 }
 \description{
 Check for valid existing, non-empty and all unique.

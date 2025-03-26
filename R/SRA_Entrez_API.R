@@ -121,6 +121,10 @@ sample_info_single <- function(EXP_SAMPLE) {
   SRAStudy <- EXP_SAMPLE$STUDY$IDENTIFIERS$PRIMARY_ID[[1]]
   BioProject <- attr(EXP_SAMPLE$STUDY$IDENTIFIERS$EXTERNAL_ID, "namespace")
   BioProject <- EXP_SAMPLE$STUDY$IDENTIFIERS$EXTERNAL_ID[[1]]
+  if (is.null(BioProject)) {
+    BioProject <- attr(EXP_SAMPLE$EXPERIMENT$STUDY_REF$IDENTIFIERS$EXTERNAL_ID, "namespace")
+    BioProject <- EXP_SAMPLE$EXPERIMENT$STUDY_REF$IDENTIFIERS$EXTERNAL_ID[[1]]
+  }
   Study_Pubmed_id <- as.numeric(NA)
   ProjectID <- ""
   Sample_info <- EXP_SAMPLE$SAMPLE
@@ -217,8 +221,24 @@ add_pubmed_id <- function(EXP_SAMPLE, file) {
     if (pubmed.id == "pubmed") {
       file$Study_Pubmed_id <- as.integer(unlist(EXP_SAMPLE$STUDY$STUDY_LINKS$STUDY_LINK$XREF_LINK$ID[[1]]))
     }
+  } else {
+    file$Study_Pubmed_id <- pmid_from_bioproject(file$BioProject[1])
   }
   return(file)
+}
+
+pmid_from_bioproject <- function(id) {
+  if (is.null(id)) return(as.numeric(NA))
+  id_short <- gsub("[^0-9]", "", id)
+  url <- paste0("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=bioproject&db=pubmed&id=", id_short,
+                "&retmode=xml&tool=ORFik")
+  xml <- xml2::as_list(xml2::read_xml(url))
+  pmid <- xml$eLinkResult$LinkSet$LinkSetDb$Link$Id[[1]]
+  if (is.null(pmid)) {
+    pmid <- as.numeric(NA)
+  }
+  names(pmid) <- id
+  return(as.numeric(pmid))
 }
 
 add_author <- function(file) {
