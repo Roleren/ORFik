@@ -30,10 +30,10 @@ config.exper <- function(experiment, assembly, type,
                          sub_dir_single = file.path(type, experiment, ""),
                          name_with_type_suffix = TRUE) {
   stopifnot(is(sub_dir_single, "character"))
-  if (sub_dir_single == "" & length(type) > 1)
+  if (length(type) > 1 && all(sub_dir_single == ""))
     stop("sub_dir_single = '' only allowed when length of type is 1")
   stopifnot(is(name_with_type_suffix, "logical"))
-  if (!name_with_type_suffix & length(type) > 1)
+  if (length(type) > 1 && !name_with_type_suffix)
     stop("name_with_type_suffix = FALSE only allowed when length of type is 1")
   # Create fastq dir
   dirs <- file.path(config["fastq"], sub_dir_single)
@@ -43,9 +43,9 @@ config.exper <- function(experiment, assembly, type,
   dirs <- c(dirs, file.path(config["ref"], assembly, ""))
   # Add experiment name
   dirs <- c(dirs, paste(experiment, type, sep = "_"))
-  suffix_name <- ifelse(name_with_type_suffix, paste0(" ", type), "")
-  names(dirs) <- c(paste0("fastq", suffix_name), paste("bam", suffix_name),
-                   "ref", paste("exp", type))
+  suffix_name <- if(name_with_type_suffix) {paste0(" ", type)} else rep("", length(type))
+  names(dirs) <- c(paste0("fastq", suffix_name), paste0("bam", suffix_name),
+                   "ref", paste0("exp", suffix_name))
   return(dirs)
 }
 

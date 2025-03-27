@@ -436,3 +436,110 @@ exists.ftp.file.fast <- function(url, report.error = FALSE) {
   }
   return(FALSE)
 }
+
+#' Detects the mounted drive based on a mounted path
+#' @param ref_path = path.expand(config()["ref"])
+#' @return character, name of FileSystem drive of mounted path,
+#' NA_character_ if not found
+#' @noRd
+detect_drive <- function(ref_path = path.expand(config()["ref"])) {
+  if (.Platform$OS.type != "unix") return(NA_character_)
+
+  # Get disk usage information
+  drive_info <- system("df -h", intern = TRUE)[-1]
+
+  # Iterate through the lines (skip the first row, which is the header)
+  candidate_drives <- c()
+  for (line in drive_info) {
+    parts <- strsplit(line, " +")[[1]]  # Split by spaces
+
+    # Ensure we have enough columns (Filesystem, Size, Used, Avail, Use%, Mounted on)
+    if (length(parts) >= 6 && grepl(paste0("^", parts[6]), ref_path)) {
+      candidate_drives <- c(candidate_drives, parts[1])  # Store filesystem path
+    }
+  }
+
+  # Filter out root "/" if another drive is available
+  if (length(candidate_drives) > 1) {
+    candidate_drives <- setdiff(candidate_drives, system("df -h / | awk 'NR==2{print $1}'", intern = TRUE))
+  }
+
+  if (length(candidate_drives) != 1) {
+    warning("Could not determine the correct unique Filesystem drive for the reference path:\n  ",
+            ref_path)
+    return(NA_character_)
+  }
+
+  return(candidate_drives)
+}
+
+
+#' System usage for Linux (Auto-detects correct drive if not provided)
+#' @param drive path, the Filesystem drive !(Not the mounted name),
+#' use drive = ORFik:::detect_drive("My_directory_inside this mount_name") to
+#' get custom drive
+#' @param one_liner Logical, default FALSE. Instead return a length 1 character string
+#' with all the info.
+#' @return A list with system info, if one_liner is TRUE, then a length 1 character string.
+#' @export
+#' @examples
+#' get_system_usage()
+get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
+  if (.Platform$OS.type != "unix") return(list())
+  # Get CPU usage
+  cpu_usage <- as.numeric(system("top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'", intern = TRUE))
+
+  # Get Memory usage (in GB)
+  mem_info <- system("free -g | awk 'NR==2{print $3, $2}'", intern = TRUE)
+  mem_vals <- as.numeric(strsplit(mem_info, " ")[[1]])
+  mem_usage <- mem_vals[1]
+  mem_total <- mem_vals[2]
+  mem_percent <- round((mem_usage / mem_total) * 100, 2)
+
+  # Get Hard drive usage
+  if (!is.na(drive)) {
+    drive_line <- suppressWarnings(system(paste0("df -h | grep '", drive, "'"), intern = TRUE))
+    if (length(attr(drive_line, "status")) == 1) {
+      drive_vals <- as.character(rep(NA, 5))
+    } else drive_vals <- strsplit(drive_line, " +")[[1]]
+  } else {
+    drive_vals <- as.character(rep(NA, 5))
+  }
+
+  drive_total <- drive_vals[2]  # Total size
+  drive_used <- drive_vals[3]   # Used space
+  drive_free <- drive_vals[4]   # Available space
+  drive_percent <- drive_vals[5]  # Percentage used
+
+
+  # Return as a named list
+  usage <- list(
+    CPU_Usage_Percent = cpu_usage,
+    Memory_Usage_GB = mem_usage,
+    Memory_Total_GB = mem_total,
+    Memory_Usage_Percent = mem_percent,
+    Drive = drive,
+    Drive_Total = drive_total,
+    Drive_Used = drive_used,
+    Drive_Free = drive_free,
+    Drive_Usage_Percent = drive_percent
+  )
+
+  if (one_liner) {
+    usage <- cat(paste0("CPU (", usage$CPU_Usage_Percent, "%),",
+                        " Memory (", usage$Memory_Usage_Percent, "%),",
+                        " Drive ", usage$Drive, " (", usage$Drive_Usage_Percent, "%)\n"))
+  }
+
+  return(usage)
+}
+
+sufficient_memory_to_run_this_check <- function(to_run_GB, step = "indexing", wiggle_room = 1) {
+  system_info <- get_system_usage(output.dir)
+  memory_on_computer <- system_info$Memory_Total_GB
+  if ((system_info$Memory_Total_GB - wiggle_room) < to_run_GB) {
+    message("Your ",step, " might fail, you specified ", to_run_GB,
+            "GB max ram, and you only have ", memory_on_computer, "GB ram available.")
+  }
+}
+

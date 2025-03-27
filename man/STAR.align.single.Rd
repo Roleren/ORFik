@@ -22,7 +22,6 @@ STAR.align.single(
   alignment.type = "Local",
   allow.introns = TRUE,
   max.cpus = min(90, BiocParallel::bpparam()$workers),
-  wait = TRUE,
   resume = NULL,
   keep.contaminants = FALSE,
   keep.unaligned.genome = FALSE,
@@ -142,13 +141,6 @@ have 8 cores it will use 6. Note: FASTP will use maximum 16 threads as from test
 I see performance actually degrades using anything higher. From testing I also see
 STAR gets no performance gain after ~50 threads. I do suspect this will change
 when hard drives gets better in the future.}
-
-\item{wait}{a logical (not \code{NA}) indicating whether the \R
-    interpreter should wait for the command to finish, or run it
-    asynchronously.  This will be ignored (and the interpreter will
-    always wait) if \code{intern = TRUE}. When running the command
-    asynchronously, no output will be displayed on the \code{Rgui}
-    console in Windows (it will be dropped, instead).}
 
 \item{resume}{default: NULL, continue from step, lets say steps are "tr-ph-ge":
 (trim, phix depletion, genome alignment) and resume is "ge", you will then use

@@ -151,6 +151,7 @@ download.SRA <- function(info, outdir, rename = TRUE,
     stop("Could not find SRR numbers in 'info'")
 
   dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+  if (!dir.exists(outdir)) stop("Could not create output directory, is the disc not mounted?")
 
   settings <- paste("--outdir", outdir, settings)
   if (!is.null(subset)) {
@@ -280,7 +281,7 @@ rename.SRA.files <- function(files, new_names) {
     if (length(new_names) != length(files))
       stop("Length of files and new_names to rename by is not equal!",
            " If manual assign of paired end name, repeat each element twice!")
-
+    new_names <- gsub(",", "_", new_names)
     new_names <- gsub(" |\\(|\\)", "_", new_names)
     new_names <- gsub("__", "_", new_names)
     new_names <- gsub("/", "", new_names)

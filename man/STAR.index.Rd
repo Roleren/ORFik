@@ -12,7 +12,6 @@ STAR.index(
   max.ram = 30,
   SAsparse = 1,
   tmpDirStar = "-",
-  wait = TRUE,
   remake = FALSE,
   script = system.file("STAR_Aligner", "STAR_MAKE_INDEX.sh", package = "ORFik"),
   notify_load_existing = TRUE
@@ -55,13 +54,6 @@ deleted when done. The directory can not exists, as a safety STAR must make it!.
 If you are on a NFS file share drive, and you have a non NFS tmp dir,
 set this to \code{tempfile()} or the manually specified folder to get a
 considerable speedup!}
-
-\item{wait}{a logical (not \code{NA}) indicating whether the \R
-    interpreter should wait for the command to finish, or run it
-    asynchronously.  This will be ignored (and the interpreter will
-    always wait) if \code{intern = TRUE}. When running the command
-    asynchronously, no output will be displayed on the \code{Rgui}
-    console in Windows (it will be dropped, instead).}
 
 \item{remake}{logical, default: FALSE, if TRUE remake everything specified}
 

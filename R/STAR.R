@@ -49,7 +49,6 @@
 #' (defined as: locally (a file called outputs.rds) exists in outputdir),
 #' print a small message notifying the user it is not redownloading. Set to
 #' FALSE, if this is not wanted
-#' @inheritParams base::system
 #' @return output.dir, can be used as as input for STAR.align..
 #' @family STAR
 #' @export
@@ -67,7 +66,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
                        star.path = STAR.install(),
                        max.cpus = min(90, BiocParallel::bpparam()$workers),
                        max.ram = 30, SAsparse = 1, tmpDirStar = "-",
-                       wait = TRUE, remake = FALSE,
+                       remake = FALSE,
                        script = system.file("STAR_Aligner",
                                             "STAR_MAKE_INDEX.sh",
                                             package = "ORFik"),
@@ -78,6 +77,8 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
                                  "do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
+  if (.Platform$OS.type == "unix") stop("STAR is not supported on windows, run through R in WSL!")
+
   if (!file.exists(script))
     stop("STAR index script not found, check path of script!")
   if (is.null(names(arguments)))
@@ -85,6 +86,8 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   possible <- c("gtf", "genome", "phix", "rRNA", "tRNA","ncRNA", "contaminants")
   if (!all(names(arguments) %in% possible))
     stop("At least one of arguments with invalid name!")
+
+  sufficient_memory_to_run_this_check(max.ram)
 
   # match which indices to make
   exts <- c("g", "f", "p", "r", "t", "n", "c")
@@ -97,25 +100,19 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   max.ram <- paste("-R", format(max.ram*1e9, scientific = FALSE))
   SAsparse <- paste("-a", SAsparse)
   tmpDirStar <- paste("-T", tmpDirStar)
-  # TODO: ADD check for file size vs available RAM.
-  # file.size(annotation["genome"]) / 1e9
-  # system("cat /proc/meminfo")
-  #memory_GB <- as.integer(gsub(" |MemTotal:|kB", replacement = "", a[1])) / 1e6
 
-  full <- paste(script, out, star.path, max.cpus, max.ram, SAsparse,
+  call <- paste(script, out, star.path, max.cpus, max.ram, SAsparse,
                 tmpDirStar, paste(hits, collapse = " "))
+
   message("STAR indexing:\n")
-  print(full); print("\n")
-  if (.Platform$OS.type == "unix") {
-    message("Starting indexing at time:")
-    print(Sys.time())
-    out <- system(command = full, wait = wait)
-    out <- ifelse(out == 0 & wait, "Index done", "Index process failed!")
-    if (!wait)
-      out <- "Wait for index to be complete before you run Alignment!"
-    message(out)
-    saveRDS(object = output.dir, finished.file)
-  } else stop("STAR is not supported on windows!")
+  print(call); print("\n")
+  message("Starting indexing at time:")
+  print(Sys.time())
+  ret <- system(command = call)
+  if (ret != 0) stop("STAR INDEX step failed, see error above for more info.")
+  message("- Index done")
+  saveRDS(object = output.dir, finished.file)
+
 
   return(output.dir)
 }
@@ -330,7 +327,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               trim.front = 0, trim.tail = 0, max.multimap = 10,
                               alignment.type = "Local", allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
-                              wait = TRUE, include.subfolders = "n", resume = NULL,
+                              include.subfolders = "n", resume = NULL,
                               multiQC = TRUE, keep.contaminants = FALSE,
                               keep.contaminants.type = c("bam", "fastq")[1],
                               keep.unaligned.genome = FALSE,
@@ -341,17 +338,17 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               script.single = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline.sh",
                                                           package = "ORFik")) {
-  if (!file.exists(script.folder))
-    stop("STAR folder alignment script not found, check path of script!")
+
 
   if (is.logical(paired.end)) {
     paired.end <- ifelse(paired.end, "yes", "no")
   } else if(is.character(paired.end)) {
     if (!(paired.end %in% c("yes", "no"))) stop("Argument 'paired.end' must be yes/no")
   } else stop("Argument 'paired.end' must be logical or character yes/no")
-  stopifnot(include.subfolders %in% c("y", "n"))
+
   validate_star_input(script.single, index.dir, keep.contaminants.type, alignment.type,
-                      allow.introns, keep.index.in.memory, trim.front, trim.tail)
+                      allow.introns, keep.index.in.memory, trim.front, trim.tail,
+                      include.subfolders, script.folder, mode = "folder")
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
@@ -366,7 +363,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   keep.contaminants.type <- paste("-X", keep.contaminants.type)
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
 
-  full <- paste(script.folder, "-f", input.dir, "-o", output.dir,
+  call <- paste(script.folder, "-f", input.dir, "-o", output.dir,
                 "-p", paired.end,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
@@ -377,19 +374,8 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 keep.contaminants, keep.contaminants.type,
                 keep.unaligned.genome, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
-  if (.Platform$OS.type == "unix") {
-    print(paste("Starting time:", Sys.time()))
-    print("Full system call:")
-    print(full)
-    out <- system(command = full, wait = wait)
-    out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
-    message(out)
-    if (multiQC & wait & (out == "Alignment done") &
-          dir.exists(paste0(output.dir,"/aligned/"))) {
-      STAR.allsteps.multiQC(output.dir, steps = steps)
-    }
-  } else stop("For Windows OS, run through WSL!")
-  return(output.dir)
+
+  return(STAR.align.internal(call, output.dir, multiQC))
 }
 
 #' Align single or paired end pair with STAR
@@ -442,7 +428,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               max.multimap = 10, alignment.type = "Local",
                               allow.introns = TRUE,
                               max.cpus = min(90, BiocParallel::bpparam()$workers),
-                              wait = TRUE, resume = NULL, keep.contaminants = FALSE,
+                              resume = NULL, keep.contaminants = FALSE,
                               keep.unaligned.genome = FALSE,
                               keep.index.in.memory = FALSE,
                               script.single = system.file("STAR_Aligner",
@@ -463,7 +449,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                                  keep.index.in.memory)
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
-  full <- paste(script.single, "-f", file1, file2, "-o", output.dir,
+  call <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-z", trim.tail,
@@ -472,14 +458,20 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                 "-k", keep.index.in.memory, quality.filtering,
                 keep.contaminants, keep.unaligned.genome,
                 star.path, fastp)
-  if (.Platform$OS.type == "unix") {
-    print(paste("Starting time:", Sys.time()))
-    print("Full system call:")
-    print(full)
-    out <- system(command = full, wait = wait)
-    out <- ifelse(out == 0, "Alignment done", "Alignment process failed!")
-    message(out)
-  } else stop("For Windows OS, run through WSL!")
+
+  return(STAR.align.internal(call, output.dir, multiQC))
+}
+
+STAR.align.internal <- function(call, output.dir, multiQC = FALSE) {
+  print(paste("Starting time:", Sys.time()))
+  print("Full system call:")
+  print(call)
+  ret <- system(command = call)
+  if (ret != 0) stop("STAR alignment step failed, see error above for more info.")
+  message("Alignment done")
+  if (multiQC && dir.exists(paste0(output.dir,"/aligned/"))) {
+    STAR.allsteps.multiQC(output.dir, steps = steps)
+  }
   return(output.dir)
 }
 
@@ -560,7 +552,7 @@ STAR.install <- function(folder = "~/bin", version = "2.7.4a") {
 #' #install.fastp(folder)
 install.fastp <- function(folder = "~/bin") {
   if (.Platform$OS.type != "unix")
-    stop("On windows OS, run through WSL!")
+    stop("On windows OS, install R/ORFik using WSL")
 
   is_linux <- Sys.info()[1] == "Linux" # else it is mac
   url <- ifelse(is_linux, # else it is mac
@@ -624,7 +616,10 @@ STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
 }
 
 validate_star_input <- function(script.single, index.dir, keep.contaminants.type, alignment.type,
-                                allow.introns, keep.index.in.memory, trim.front, trim.tail) {
+                                allow.introns, keep.index.in.memory, trim.front, trim.tail,
+                                include.subfolders = NULL, script.folder = NULL, mode = "single") {
+  if (.Platform$OS.type != "unix") stop("For Windows OS, run through WSL!")
+
   stopifnot(keep.contaminants.type %in% c("bam", "fastq") & length(keep.contaminants.type) == 1)
   if (keep.contaminants.type == "fastq") stop("Contaminant as fastq not yet implemented,",
                                               " for now use: 'samtools fastq path_to_bam.bam'")
@@ -637,5 +632,10 @@ validate_star_input <- function(script.single, index.dir, keep.contaminants.type
 
   stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
   stopifnot(all(is.numeric(trim.front) & is.numeric(trim.tail)))
+  if (mode == "folder") {
+    stopifnot(include.subfolders %in% c("y", "n"))
+    if (is.null(script.folder) || !file.exists(script.folder))
+      stop("STAR folder alignment script not found, check path of script!")
+  }
 }
 

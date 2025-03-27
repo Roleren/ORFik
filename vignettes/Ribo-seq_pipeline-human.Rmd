@@ -22,15 +22,17 @@ Welcome to the `ORFik` package.
 This vignette will preview a simple Ribo-seq pipeline using ORFik. It is important you read all the other vignettes before this one, since functions will not be explained here in detail.
 
 # Pipeline
-This pipeline will shows steps needed to analyse Ribo-seq from 2 studies:
-1. Tsvetkov et al, 2020 (Saccharomyces cerevisiae, 8 GB ram requirement, 6 samples)
-2. Alexaki et al, 2020 (Homo Sapiens, 32GB ram requirement, 6 samples)
+This pipeline will shows steps needed to analyse Ribo-seq from:
+
+- Alexaki et al, 2020 (Homo Sapiens, 32GB ram requirement, 6 samples)
+
+
 The human genome is large, and this pipeline will fail for all computers with < 32GB ram 
 (we advice 64GB if you are running other things).
-For those with 8 or 16GB ram computers run the Yeast Ribo-seq pipeline vignette only!. 
+For those with 8 or 16GB ram computers run the Yeast Ribo-seq pipeline vignette only! 
 
 
-The following steps are done for both pipelines:
+The following steps are done:
 
 1. Define directory paths
 2. Download Ribo-seq & RNA-seq data from SRA (subset to 2 million reads per library)
@@ -46,7 +48,6 @@ The following steps are done for both pipelines:
 11. Gene plotting (Advanced)
 12. uORF analysis (Advanced)
 
-(Human version is commented out, so only yeast will run by default):
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Ribo-seq HEK293 (2020) Investigative analysis of quality of new Ribo-seq data
@@ -66,11 +67,6 @@ conf <- config.exper(experiment = "Alexaki_Human",
                      type = c("Ribo-seq", "RNA-seq"))
 # Will create default config paths, if you want more control of where the
 # data is stored, check out function config() function
-
-# For Human study:
-conf <- config.exper(experiment = "Alexaki_Human",
-                     assembly = "Homo_sapiens_GRCh38_101",
-                     type = c("Ribo-seq", "RNA-seq"))
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Download fastq files for experiment and rename (Skip if you have the files already)
@@ -97,7 +93,7 @@ paired.end.rna <- study.rna$LibraryLayout == "PAIRED"
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Annotation (Download genome, transcript annotation and contaminants)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-
+# This step will cache, so it will not rerun unless you set force = TRUE.
 annotation <- getGenomeAndAnnotation(
   organism = organism,
   genome = TRUE, GTF = TRUE,
@@ -109,8 +105,8 @@ annotation <- getGenomeAndAnnotation(
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # STAR index (index the genome and contaminants seperatly)
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
-# Remove max.ram = 20 and SAsparse = 2, if you have more than 64GB ram
-index <- STAR.index(annotation, wait = TRUE, max.ram = 20, SAsparse = 2)
+# Remove max.ram = 20 and SAsparse = 2, if you have >= 64GB ram
+index <- STAR.index(annotation, max.ram = 20, SAsparse = 2)
 
 # Show all annotations you have made with ORFik so far
 list.genomes()

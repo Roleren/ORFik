@@ -85,14 +85,16 @@ STAR.allsteps.multiQC <- function(folder, steps = "auto", plot.ext = ".pdf",
         round((genome_reads/ res$raw_reads) * 100, 4)
       res$`total mapped reads %-genome vs trim` <-
         round((genome_reads / res$trim_reads) * 100, 4)
-      very_low_alignment <- !is.na(res$`total mapped reads %-genome vs trim`) &&
-        any(res$`total mapped reads %-genome vs trim` < 3)
-      if (very_low_alignment) {
+      very_low_alignment <- which(!is.na(res$`total mapped reads %-genome vs trim`) &
+        any(res$`total mapped reads %-genome vs trim` < 3))
+      if (length(very_low_alignment) > 0) {
         warning("A sample aligned with < 3%, are you using the correct genome?")
+        message("Here are low alignment rate samples:")
+        print(res[very_low_alignment,])
       }
     }
   }
-
+  message("Saving full alignment stats csv to: \n  ", output.file)
   fwrite(res, output.file)
   res[]
   print(res)

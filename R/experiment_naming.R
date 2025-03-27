@@ -37,7 +37,7 @@ libNames <- function() {
          c("tRNA"),
          c("miRNA"),
          c("GRO-seq", "GROseq", "PRO-seq", "PROseq"),
-         c("RiboTag"),
+         c("RiboTag", "TRAP"),
          c("RiboMeth")
     )
   dt <- data.table(mainName, allNames)
@@ -308,12 +308,12 @@ cellTypeNames <- function() {
 repNames <- function() {
   mainName <- c("1", "2", "3", "4", "5", "6")
   allNames <-
-    list(c("rep1", " rep 1 ", "Rep1", "rep-1","rep\\.1","replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$", "_01$", " A$"),
-         c("rep2", " rep 2 ", "Rep2", "rep-2","rep\\.2","replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$", "_02$", " B$"),
-         c("rep3", " rep 3 ", "Rep3", "rep-3","rep\\.3","replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$", "_03$", " C$"),
-         c("rep4", " rep 4 ", "Rep4", "rep-4","rep\\.4","replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$", "_04$", " D$"),
-         c("rep5", " rep 5 ", "Rep5", "rep-5","rep\\.5","replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$", "_05$", " E$"),
-         c("rep6", " rep 6 ", "Rep6", "rep-6","rep\\.6","replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$", "_06$", " F$")
+    list(c("rep1", " rep 1 ", "Rep1", "rep-1","rep\\.1","replicate1", "run1", "run_1_", "_r1_", "WT1", " 1$", "_01$", " A$", "Replicate_1"),
+         c("rep2", " rep 2 ", "Rep2", "rep-2","rep\\.2","replicate2", "run2", "run_2_", "_r2_", "WT2", " 2$", "_02$", " B$", "Replicate_2"),
+         c("rep3", " rep 3 ", "Rep3", "rep-3","rep\\.3","replicate3", "run3", "run_3_", "_r3_", "WT3", " 3$", "_03$", " C$", "Replicate_3"),
+         c("rep4", " rep 4 ", "Rep4", "rep-4","rep\\.4","replicate4", "run4", "run_4_", "_r4_", "WT4", " 4$", "_04$", " D$", "Replicate_4"),
+         c("rep5", " rep 5 ", "Rep5", "rep-5","rep\\.5","replicate5", "run5", "run_5_", "_r5_", "WT5", " 5$", "_05$", " E$", "Replicate_5"),
+         c("rep6", " rep 6 ", "Rep6", "rep-6","rep\\.6","replicate6", "run6", "run_6_", "_r6_", "WT6", " 6$", "_06$", " F$", "Replicate_6")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
@@ -353,11 +353,11 @@ batchNames <- function() {
 conditionNames <- function() {
   mainName <- c("WT", "MZ", "4Ei",
                 "Mutant", "cas9", "NMDA", "DHPG", "KD",
-                "KO", "DKO", "OE", "high", "low")
+                "KO", "DKO", "OE", "high", "low", "surgery", "HSR")
   allNames <-
     list(c("WT", "wt", "wild_type", "Wild_type", "wild-type", "Wild-Type",
            "Wild type", "wild type", "untreated", "control", "Control",
-           "CTRL", "Ctrl", "Basal", "_mock_", " mock ", "+/+"),
+           "CTRL", "Ctrl", "Basal", "_mock_", " mock ", "+/+", "SHAM", "sham"),
          c("MZ", "dicer"),
          c("4Ei", "4ei"),
          c("mutant", "Mutant"),
@@ -369,7 +369,9 @@ conditionNames <- function() {
          c("double knockout", " DKO ", "_DKO_", "dKO","-/-"),
          c("Overexpression", "overexpression","_OE_", "_oe_", "_OE$", "_oe$"),
          c("high", "\\+"),
-         c("low")
+         c("low"),
+         c("surgery", "SNI"),
+         c("radicicol", "HSR")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

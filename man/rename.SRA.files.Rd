@@ -4,7 +4,7 @@
 \alias{rename.SRA.files}
 \title{Rename SRA files from metadata}
 \usage{
-\method{rename}{SRA.files}(files, new_names)
+rename.SRA.files(files, new_names)
 }
 \arguments{
 \item{files}{a character vector, with full path to all the files}
