@@ -126,6 +126,7 @@ ORFikQC <- QCreport
 #' log2(fpkm + 1) correlation between samples.
 #'
 #' Is part of \code{\link{QCreport}}
+#' @inheritParams transcriptWindow
 #' @inheritParams outputLibs
 #' @inheritParams QCreport
 #' @param region a character (default: mrna), make raw count matrices of
@@ -141,8 +142,8 @@ QCplots <- function(df, region = "mrna",
                     plot.ext = ".pdf",
                     complex.correlation.plots = TRUE,
                     library.names = bamVarName(df),
-                    force = TRUE,
-                    BPPARAM) {
+                    force = TRUE, windowSize = 100,
+                    BPPARAM = bpparam()) {
   message("--------------------------")
   message("Making QC plots:")
   message("- Annotation to NGS libraries plot:")
@@ -154,42 +155,8 @@ QCplots <- function(df, region = "mrna",
   pcaExperiment(df, stats_folder, plot.ext = plot.ext)
   # window coverage over mRNA regions
   message("- Meta coverage plots")
-  txdb <- loadTxdb(df)
-  txNames <- filterTranscripts(txdb, 100, 100, 100, longestPerGene = TRUE,
-                               stopOnEmpty = FALSE)
-  if (length(txNames) == 0) { # No valid tx to plot
-    warning("No 5' UTRs or 3' of significant length defined, UTR metacoverage plots",
-    " can not be made, check your annotation file. In case no UTRs exist in your annotation,
-    you can add pseudo UTRs, to also see coverage profiles over those areas.")
-    # Check if CDS exists
-    txNames <- filterTranscripts(txdb, 0, 100, 0, longestPerGene = TRUE,
-                                 stopOnEmpty = FALSE)
-    if (length(txNames) == 0) {
-      warnings("No CDS of length 100 detected, skipping meta coverage completely!")
-      return(invisible(NULL))
-    }
-    message("  - Metacoverage of CDS region only")
-    transcriptWindow(GRangesList(), loadRegion(txdb, "cds", txNames),
-                     GRangesList(), df = df, outdir = stats_folder,
-                     scores = c("sum", "transcriptNormalized"),
-                     is.sorted = TRUE, windowSize = 100, plot.ext = plot.ext,
-                     verbose = FALSE, force = force,
-                     library.names = library.names,
-                     BPPARAM = BPPARAM)
-    return(invisible(NULL))
-  }
+  QCmetaPlot(df, stats_folder, plot.ext, library.names, windowSize,
+             force, BPPARAM)
 
-
-  loadRegions(txdb, parts = c("leaders", "cds", "trailers"),
-              names.keep = txNames)
-  # Plot seperated by leader, cds & trailer
-  message("  - seperated into 5' UTR, CDS and 3' UTR regions")
-  transcriptWindow(leaders, get("cds", mode = "S4"),
-                   trailers, df = df, outdir = stats_folder,
-                   scores = c("sum", "transcriptNormalized"),
-                   is.sorted = TRUE, plot.ext = plot.ext,
-                   verbose = FALSE, force = force,
-                   library.names = library.names,
-                   BPPARAM = BPPARAM)
   return(invisible(NULL))
 }

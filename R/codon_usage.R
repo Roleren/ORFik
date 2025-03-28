@@ -325,10 +325,12 @@ codon_usage_exp <- function(df, reads, cds = loadRegion(df, "cds", filterTranscr
 #' @param legend.position character, default "none", do not display legend.
 #' @param limit numeric, 2 values for plot color limits. Default:
 #' c(0, max(score_column))
-#' @param midpoint numeric, default: limit/2. midpoint of color limit.
+#' @param midpoint numeric, default: max(limit / 2). midpoint of color limit.
 #' @param monospace_font logical, default TRUE. Use monospace font, this
 #' does not work on systems (require specific font packages), set to
 #' FALSE if it crashes for you.
+#' @param ignore_start_stop_codons logical, default FALSE. If TRUE, remove start (#)
+#' and stop (*) codons.
 #' @return a ggplot object
 #' @family codon
 #' @export
@@ -343,11 +345,21 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
                              ylab = "Ribo-seq library",
                              legend.position = "none",
                              limit = c(0, max(score_column)),
-                             midpoint = limit/2, monospace_font = TRUE) {
+                             midpoint = max(limit / 2), monospace_font = TRUE,
+                             ignore_start_stop_codons = FALSE) {
   if (is.null(score_column)) stop("score_column can not be NULL!")
+  stopifnot(length(score_column) %in% c(nrow(res), 1))
   type <- NULL # avoid bioccheck error
   font <- element_text()
   if (monospace_font)  font <- element_text(family = "monospace")
+  if (ignore_start_stop_codons) {
+    start_stop_index <- grep("\\*|#", res$seqs, invert = T)
+    res <- res[start_stop_index,]
+    score_column <- score_column[start_stop_index]
+    limit <- c(0, max(score_column))
+    midpoint <- max(limit / 2)
+  }
+
   plot <- ggplot(res, aes(type, seqs, fill = score_column)) +
     geom_tile(color = "white") +
     scale_fill_gradient2(low = "blue", high = "orange", mid = "white",

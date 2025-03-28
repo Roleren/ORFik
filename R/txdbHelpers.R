@@ -83,16 +83,31 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
     # Save RDS version of all transcript regions
     optimizeTranscriptRegions(txdb, optimized_path)
   }
-  if (gene_symbols) {
-    stopifnot(is(symbols_file_out_path, "character") &
-                length(symbols_file_out_path) == 1)
-    symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
-                            uniprot_id = uniprot_id)
 
-    if (nrow(symbols) > 0) fst::write_fst(symbols, symbols_file_out_path)
+  if (gene_symbols) {
+    makeSymbols(txdb, symbols_file_out_path, uniprot_id = FALSE)
   }
+
   if (return) return(txdb)
   return(invisible(NULL))
+}
+
+#' Make Gene symbols from txdb
+#' @inheritParams loadTxdb
+#' @inheritParams makeTxdbFromGenome
+#' @param symbols_file_out_path path to save, default \code{file.path(dirname(getGtfPathFromTxdb(txdb, stop.error = TRUE)), "gene_symbol_tx_table.fst")}
+#' @return the data.table of tx_ids, gene_ids and gene symbols
+makeSymbols <- function(txdb, symbols_file_out_path = file.path(dirname(getGtfPathFromTxdb(txdb, stop.error = TRUE)), "gene_symbol_tx_table.fst"),
+                        uniprot_id = FALSE) {
+  stopifnot(is(symbols_file_out_path, "character") &
+              length(symbols_file_out_path) == 1)
+  stopifnot(dir.exists(dirname(symbols_file_out_path)))
+
+  symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
+                          uniprot_id = uniprot_id)
+
+  if (nrow(symbols) > 0) fst::write_fst(symbols, symbols_file_out_path)
+  return(symbols)
 }
 
 makeTxdbTemplate <- function(gtf, genome = NULL, organism) {
@@ -727,7 +742,7 @@ geneToSymbol <- function(df, organism_name = organism(df),
       tx_ids <- optimizedTranscriptLengths(df, TRUE, TRUE)[,2:3]
     }
     colnames(tx_ids) <- paste0("ensembl_", colnames(tx_ids))
-    gene_id <- merge.data.table(gene_id, tx_ids, by = filter_column_id, all_x = TRUE)
+    gene_id <- merge.data.table(gene_id, tx_ids, by = filter_column_id, all.x = TRUE)
   }
   gene_id[]
   return(gene_id)

@@ -467,7 +467,7 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
           return(matchSeqStyle(import.ofst(path, strandMode), chrStyle))
         } else if (fext == "covrds") {
           return(matchSeqStyle(readRDS(path), chrStyle))
-        }else return(matchSeqStyle(import(path), chrStyle))
+        } else return(matchSeqStyle(import(path), chrStyle))
       } else stop("fimport takes either 1 or 2 files!")
     } else stop(paste(path, "does not exist as File/Files!"))
   } else if (is.gr_or_grl(path) | is(path, "GAlignments") |

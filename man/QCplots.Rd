@@ -12,7 +12,8 @@ QCplots(
   complex.correlation.plots = TRUE,
   library.names = bamVarName(df),
   force = TRUE,
-  BPPARAM
+  windowSize = 100,
+  BPPARAM = bpparam()
 )
 }
 \arguments{
@@ -24,8 +25,7 @@ whole mrnas or one of (leaders, cds, trailers)}
 \item{stats_folder}{directory to save, default:
 \code{QCfolder(df)}}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
-Note that in pdf format the complex correlation plots become very slow to load!}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{complex.correlation.plots}{logical, default TRUE. Add in addition
 to simple correlation plot two computationally heavy dots + correlation plots.
@@ -41,9 +41,10 @@ matching named variables are found in environment used by experiment
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}.
-You can also add a time remaining bar, for a more detailed pipeline.}
+\item{windowSize}{size of binned windows, minimum of 'wanted_window_size' and
+minimum of ranges given. Will inform you if windowSize is < wanted_window_size.}
+
+\item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
 invisible(NULL) (objects stored to disc)

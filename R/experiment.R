@@ -425,7 +425,10 @@ filepath_errors <- function(format) {
 #' ## Load a template ORFik experiment
 #' df <- ORFik.template.experiment()
 #' ## Default library type load, usually bam files
-#' # outputLibs(df, type = "default")
+#' outputLibs(df, type = "default")
+#' RFP_WT_r1
+#' attr(RFP_WT_r1, "filepath")
+#' attr(RFP_WT_r1, "exp")
 #' ## .ofst file load, if ofst files does not exists
 #' ## it will load default
 #' # outputLibs(df, type = "ofst")
@@ -482,6 +485,8 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
       # assign to environment
       if (output.mode %in% c("envir", "envirlist")) {
         for (i in 1:nrow(df)) { # For each stage
+          attr(libs[[i]], "exp") <- name(df)
+          if (mode(libs[[i]]) == "S4") attr(libs[[i]], "filepath") <- paths[i]
           assign(varNames[i], libs[[i]], envir = envir)
         }
       }

@@ -136,7 +136,10 @@ environment of experiment.
 ## Load a template ORFik experiment
 df <- ORFik.template.experiment()
 ## Default library type load, usually bam files
-# outputLibs(df, type = "default")
+outputLibs(df, type = "default")
+RFP_WT_r1
+attr(RFP_WT_r1, "filepath")
+attr(RFP_WT_r1, "exp")
 ## .ofst file load, if ofst files does not exists
 ## it will load default
 # outputLibs(df, type = "ofst")

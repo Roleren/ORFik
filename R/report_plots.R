@@ -235,26 +235,23 @@ cor_plot <- function(dt_cor, col = c(low = "blue", high = "red", mid = "white", 
   return(ggheatmap)
 }
 
-#' Simple PCA analysis
+#' Simple PCA analysis from ORFik experiment
 #'
 #' Detect outlier libraries with PCA analysis.
 #' Will output PCA plot of PCA component 1 (x-axis) vs
 #' PCA component 2 (y-axis) for each library (colored by library),
 #' shape by replicate. Will be extended to allow batch correction
 #' in the future.
-#' @inheritParams QCplots
+#' @inheritParams pcaPlot
 #' @param output.dir default NULL, else character path to directory.
 #' File saved as "PCAplot_(experiment name)(plot.ext)"
-#' @param table data.table, default countTable(df, "cds", type = "fpkm"),
+#' @param table data.table, e.g. countTable(df, "cds", type = "fpkm"),
 #' a data.table of counts per column (default normalized fpkm values).
-#' @param title character, default "CDS fpkm".
-#' @param subtitle character, default: \code{paste("Numer of genes:", nrow(table))}
 #' @param color.by.group logical, default TRUE. Colors in PCA plot represent
 #' unique library groups, if FALSE. Color each sample in seperate color
 #' (harder to distinguish for > 10 samples)
-#' @param return.data logical, default FALSE. Return data instead of plot
-#' @return ggplot or invisible(NULL) if output.dir is defined or < 3 samples.
-#' Returns data.table with PCA analysis if return.data is TRUE.
+#' @return ggplot if return.data is false, data.table of PCAs if return.data is TRUE,
+#' if data has < 3 samples, returns (invisible(NULL))
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()
@@ -266,31 +263,13 @@ pcaExperiment <- function(df, output.dir = NULL,
                           subtitle = paste("Numer of genes/regions:", nrow(table)),
                           plot.ext = ".pdf",
                           return.data = FALSE,
-                          color.by.group = TRUE) {
+                          color.by.group = TRUE,
+                          PCA_X = "PC1", PCA_Y = "PC2") {
   if (nrow(df) < 3) {
     message("-  Skipping PCA analysis (< 3 samples)")
     return(invisible(NULL))
   }
-  pca <- stats::prcomp(table, scale = FALSE)
-  dt <- data.table(pca$rotation, keep.rownames = TRUE)
-  if (color.by.group) {
-    dt$sample <- bamVarName(df, skip.replicate = TRUE)
-  } else dt$sample <- dt$rn
-
-  if (any(df$rep > 1, na.rm = TRUE)) {
-    dt$replicate <- df$rep
-    dt$replicate[is.na(dt$replicate)] <- 1
-    dt$replicate <- as.factor(dt$replicate)
-  } else dt$replicate <- as.factor("1")
-
-  plot <- ggplot(data = dt,
-                 aes(x = PC1, y = PC2)) +
-    geom_point(aes(shape=replicate, color = sample),
-               size = 3, alpha = 0.8) +
-    scale_fill_brewer() +
-    ggtitle(title, subtitle) +
-    theme_bw() +
-    theme(legend.text=element_text(size=7))
+  path <- NULL
   if(!is.null(output.dir)) {
     if (output.dir == "auto") {
       path <- file.path(dirname(df$filepath[1]), "QC_STATS",
@@ -299,13 +278,136 @@ pcaExperiment <- function(df, output.dir = NULL,
       path <- file.path(output.dir,
                         paste0("PCAplot_", df@experiment, plot.ext))
     }
-    ggsave(path, plot,
-           height = 4 + (nrow(df)*0.1), width = 5 + (nrow(df)*0.1))
-    if (return.data) return(dt)
-    return(invisible(NULL))
+  }
+  dt <- data.table()
+  if (any(df$rep > 1, na.rm = TRUE)) {
+    dt$replicate <- df$rep
+    dt$replicate[is.na(dt$replicate)] <- 1
+    dt$replicate <- as.factor(dt$replicate)
+  } else dt$replicate <- rep(as.factor("1"), nrow(df))
+
+  group <- if (color.by.group) {
+    bamVarName(df, skip.replicate = TRUE)
+  } else dt$sample <- dt$rn
+
+  pcaPlot(table, path = NULL, group, dt$replicate, PCA_X, PCA_Y,
+          title, subtitle, plot.ext, return.data)
+}
+
+#' Simple PCA analysis from table
+#'
+#' Detect outlier libraries with PCA analysis.
+#' Will output PCA plot of PCA component 1 (x-axis) vs
+#' PCA component 2 (y-axis) for each library (colored by library),
+#' shape by replicate.
+#' @inheritParams QCplots
+#' @param table data.table, e.g. countTable(df, "cds", type = "fpkm"),
+#' a data.table of counts per column (default normalized fpkm values).
+#' @param path default NULL, else character path to file to save.
+#' File saved as "PCAplot_(experiment name)(plot.ext)"
+#' @param group character vector of equal size to nrow of dt,
+#'  code{default group = sub("_r[0-9]+$", "", colnames(table))}
+#' @param replicate haracter vector of equal size to nrow of dt,
+#'  \code{sub(".*_r([0-9]+)$", "\\1", colnames(table))}
+#' @param title character, default "CDS fpkm".
+#' @param subtitle character, default: \code{paste("Numer of genes:", nrow(table))}
+#' @param return.data logical, default FALSE. Return data instead of plot
+#' @param PCA_X name of priniciple component to use for x axis: valid options: PC1-PC6
+#' @param PCA_Y name of priniciple component to use for y axis: valid options: PC1-PC6
+#' @return ggplot or invisible(NULL) if output.dir is defined or < 3 samples.
+#' Returns data.table with PCA analysis if return.data is TRUE.
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' # Select only Ribo-seq and RNA-seq
+#' df <- df[df$libtype %in% c("RNA", "RFP"),]
+#' table <- countTable(df, "cds", type = "fpkm")
+#' pcaPlot(table)
+#'
+pcaPlot <- function(table, path = NULL, group = sub("_r[0-9]+$", "", colnames(table)),
+                    replicate = sub(".*_r([0-9]+)$", "\\1", colnames(table)),
+                    PCA_X = "PC1", PCA_Y = "PC2",
+                    title = "PCA analysis by CDS fpkm",
+                    subtitle = paste("Numer of genes/regions:", nrow(table)),
+                    plot.ext = ".pdf", return.data = FALSE) {
+  if (!all(c(PCA_X, PCA_Y) %in% paste0("PC", seq(6)))) stop("PCA_X and PCA_Y must all be named PC1 to PC6")
+  pca <- stats::prcomp(table, scale = FALSE)
+  dt <- data.table(pca$rotation, keep.rownames = TRUE)
+  dt$sample <- group
+  dt$replicate <- as.factor(replicate)
+  attr(dt, "Proportion of Variance") <- summary(pca)$importance[2,]
+
+
+  plot <- ggplot(data = dt,
+                 aes(x = !!sym(PCA_X), y = !!sym(PCA_Y))) +
+    geom_point(aes(shape=replicate, color = sample),
+               size = 3, alpha = 0.8) +
+    scale_fill_brewer() +
+    ggtitle(title, subtitle) +
+    theme_bw() +
+    theme(legend.text=element_text(size=7))
+  if(!is.null(path)) {
+    ggsave(path, plot, height = 4 + (nrow(dt)*0.1), width = 5 + (nrow(dt)*0.1))
   }
   if (return.data) return(dt)
   return(plot)
+}
+
+QCmetaPlot <- function(df,  stats_folder = QCfolder(df), plot.ext = ".pdf",
+                       library.names = bamVarName(df), windowSize = 100,
+                       force = TRUE, BPPARAM = bpparam()) {
+  txdb <- loadTxdb(df)
+  leaders <- trailers <- GRangesList()
+  seqinfo(leaders) <- seqinfo(trailers) <- seqinfo(txdb)
+  txNames <- filterTranscripts(txdb, windowSize, windowSize, windowSize,
+                               longestPerGene = TRUE, stopOnEmpty = FALSE)
+  not_leaders <- not_trailers <- not_both_leaders_and_trailers <- length(txNames) == 0
+
+  if (not_both_leaders_and_trailers) { # No valid tx to plot
+    txNames <- filterTranscripts(txdb, windowSize, windowSize, 0,
+                                 longestPerGene = TRUE, stopOnEmpty = FALSE)
+    not_leaders <- length(txNames) == 0
+    if (not_leaders) { # No valid tx to plot
+      txNames <- filterTranscripts(txdb, 0, windowSize, windowSize, longestPerGene = TRUE,
+                                   stopOnEmpty = FALSE)
+      not_trailers <- length(txNames) == 0
+      if (not_trailers) {
+        txNames <- filterTranscripts(txdb, 0, windowSize, 0, longestPerGene = TRUE,
+                                     stopOnEmpty = FALSE)
+        not_cds <- length(txNames) == 0
+        if (not_cds) {
+          warnings("No CDS of length ", windowSize, " detected, skipping meta coverage completely!")
+          return(invisible(NULL))
+        }
+      }
+    }
+  }
+
+  if (not_leaders & not_trailers) {
+    message("  - Metacoverage of CDS region only")
+    warning("No 5' UTRs or 3' of significant length defined, UTR metacoverage plots",
+            " can not be made, check your annotation file. In case no UTRs exist in your annotation,
+              you can add pseudo UTRs, to also see coverage profiles over those areas.")
+  }
+
+  message("-- Gene used for meta coverage plot: ", length(txNames))
+  truth_vector <- c(!not_leaders, TRUE, !not_trailers)
+  regions_to_load <- c("leaders", "cds", "trailers")[truth_vector]
+  loadRegions(txdb, parts = regions_to_load, names.keep = txNames, envir = envExp(df))
+  # Plot seperated by leader, cds & trailer
+  message("  - seperated into: ", paste(c("5' UTR", "CDS", "3' UTR")[truth_vector], collapse = ", "), " regions")
+  if (exists("leaders", envir = envExp(df), mode = "S4")) leaders <- get("leaders", mode = "S4", envir = envExp(df))
+  if (exists("trailers", envir = envExp(df), mode = "S4")) trailers <- get("trailers", mode = "S4", envir = envExp(df))
+  transcriptWindow(leaders,
+                   get("cds", mode = "S4", envir = envExp(df)),
+                   trailers,
+                   df = df, outdir = stats_folder,
+                   scores = c("sum", "transcriptNormalized"),
+                   is.sorted = TRUE, plot.ext = plot.ext,
+                   wanted_window_size = windowSize,
+                   verbose = FALSE, force = force,
+                   library.names = library.names,
+                   BPPARAM = BPPARAM)
 }
 
 #' Quality control for pshifted Ribo-seq data

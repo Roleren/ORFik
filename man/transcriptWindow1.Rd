@@ -34,7 +34,8 @@ Else assign colors yourself.}
 
 \item{title}{title of ggplot}
 
-\item{windowSize}{size of binned windows, default: 100}
+\item{windowSize}{size of binned windows, minimum of 'wanted_window_size' and
+minimum of ranges given. Will inform you if windowSize is < wanted_window_size.}
 
 \item{returnPlot}{return plot from function, default is.null(outdir),
 so TRUE if outdir is not defined.}

@@ -1,11 +1,11 @@
 ---
-title: "Ribo-seq pipeline"
+title: "Ribo-seq pipeline (Yeast)"
 author: "Haakon Tjeldnes & Kornel Labun"
 date: "`r BiocStyle::doc_date()`"
 package: "`r pkg_ver('ORFik')`"
 output: BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{Ribo-seq pipeline}
+  %\VignetteIndexEntry{Ribo-seq pipeline (Human)}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

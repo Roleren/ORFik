@@ -2,7 +2,7 @@
 % Please edit documentation in R/report_plots.R
 \name{pcaExperiment}
 \alias{pcaExperiment}
-\title{Simple PCA analysis}
+\title{Simple PCA analysis from ORFik experiment}
 \usage{
 pcaExperiment(
   df,
@@ -12,34 +12,37 @@ pcaExperiment(
   subtitle = paste("Numer of genes/regions:", nrow(table)),
   plot.ext = ".pdf",
   return.data = FALSE,
-  color.by.group = TRUE
+  color.by.group = TRUE,
+  PCA_X = "PC1",
+  PCA_Y = "PC2"
 )
 }
 \arguments{
-\item{df}{an ORFik \code{\link{experiment}}}
-
 \item{output.dir}{default NULL, else character path to directory.
 File saved as "PCAplot_(experiment name)(plot.ext)"}
 
-\item{table}{data.table, default countTable(df, "cds", type = "fpkm"),
+\item{table}{data.table, e.g. countTable(df, "cds", type = "fpkm"),
 a data.table of counts per column (default normalized fpkm values).}
 
 \item{title}{character, default "CDS fpkm".}
 
 \item{subtitle}{character, default: \code{paste("Numer of genes:", nrow(table))}}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
-Note that in pdf format the complex correlation plots become very slow to load!}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
 
 \item{return.data}{logical, default FALSE. Return data instead of plot}
 
 \item{color.by.group}{logical, default TRUE. Colors in PCA plot represent
 unique library groups, if FALSE. Color each sample in seperate color
 (harder to distinguish for > 10 samples)}
+
+\item{PCA_X}{name of priniciple component to use for x axis: valid options: PC1-PC6}
+
+\item{PCA_Y}{name of priniciple component to use for y axis: valid options: PC1-PC6}
 }
 \value{
-ggplot or invisible(NULL) if output.dir is defined or < 3 samples.
-Returns data.table with PCA analysis if return.data is TRUE.
+ggplot if return.data is false, data.table of PCAs if return.data is TRUE,
+if data has < 3 samples, returns (invisible(NULL))
 }
 \description{
 Detect outlier libraries with PCA analysis.
