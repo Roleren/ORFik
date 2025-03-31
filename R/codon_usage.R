@@ -353,7 +353,7 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
   font <- element_text()
   if (monospace_font)  font <- element_text(family = "monospace")
   if (ignore_start_stop_codons) {
-    start_stop_index <- grep("\\*|#", res$seqs, invert = T)
+    start_stop_index <- grep("\\*|#", res$seqs, invert = TRUE)
     res <- res[start_stop_index,]
     score_column <- score_column[start_stop_index]
     limit <- c(0, max(score_column))
