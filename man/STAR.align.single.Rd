@@ -23,6 +23,7 @@ STAR.align.single(
   allow.introns = TRUE,
   max.cpus = min(90, BiocParallel::bpparam()$workers),
   resume = NULL,
+  multiQC = FALSE,
   keep.contaminants = FALSE,
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
@@ -147,6 +148,10 @@ when hard drives gets better in the future.}
 the assumed already trimmed and phix depleted data and start at genome alignment,
 useful if something crashed. Like if you specified wrong STAR version, but the trimming
 step was completed. Resume mode can only run 1 step at the time.}
+
+\item{multiQC}{logical, default TRUE. Do mutliQC comparison of STAR
+alignment between all the samples. Outputted in aligned/LOGS folder.
+See ?STAR.multiQC}
 
 \item{keep.contaminants}{logical, default FALSE. Create and keep
 contaminant aligning bam files, default is to only keep unaliged fastq reads,
