@@ -377,6 +377,8 @@ download.ebi <- function(info, outdir, rename = TRUE,
 #'  is catched.
 #' @param study default NULL, optional PRJ (study id) to speed up search
 #' for URLs.
+#' @param ebi_file_format character, format of run download, default is fastq (ftp):
+#'  \code{c("fastq_ftp", "sra_ftp")[1]}
 #' @param convert_to_ascp logical, default FALSE. If TRUE use server:
 #' \code{era-fasp@fasp.sra.ebi.ac.uk:}
 #' @return full url to fastq files, same length as input

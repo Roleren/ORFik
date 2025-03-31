@@ -22,6 +22,9 @@ it returns all runs per study or sample.}
 if all files are not found. If FALSE returns empty character vector if error
 is catched.}
 
+\item{ebi_file_format}{character, format of run download, default is fastq (ftp):
+\code{c("fastq_ftp", "sra_ftp")[1]}}
+
 \item{convert_to_ascp}{logical, default FALSE. If TRUE use server:
 \code{era-fasp@fasp.sra.ebi.ac.uk:}}
 }

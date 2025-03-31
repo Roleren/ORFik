@@ -242,6 +242,7 @@ cor_plot <- function(dt_cor, col = c(low = "blue", high = "red", mid = "white", 
 #' PCA component 2 (y-axis) for each library (colored by library),
 #' shape by replicate. Will be extended to allow batch correction
 #' in the future.
+#' @inheritParams QCplots
 #' @inheritParams pcaPlot
 #' @param output.dir default NULL, else character path to directory.
 #' File saved as "PCAplot_(experiment name)(plot.ext)"
@@ -306,7 +307,7 @@ pcaExperiment <- function(df, output.dir = NULL,
 #' @param path default NULL, else character path to file to save.
 #' File saved as "PCAplot_(experiment name)(plot.ext)"
 #' @param group character vector of equal size to nrow of dt,
-#'  code{default group = sub("_r[0-9]+$", "", colnames(table))}
+#'  \code{default group = sub("_r[0-9]+$", "", colnames(table))}
 #' @param replicate haracter vector of equal size to nrow of dt,
 #'  \code{sub(".*_r([0-9]+)$", "\\1", colnames(table))}
 #' @param title character, default "CDS fpkm".

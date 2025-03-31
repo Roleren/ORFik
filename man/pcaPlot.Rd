@@ -25,7 +25,7 @@ a data.table of counts per column (default normalized fpkm values).}
 File saved as "PCAplot_(experiment name)(plot.ext)"}
 
 \item{group}{character vector of equal size to nrow of dt,
-code{default group = sub("_r[0-9]+$", "", colnames(table))}}
+\code{default group = sub("_r[0-9]+$", "", colnames(table))}}
 
 \item{replicate}{haracter vector of equal size to nrow of dt,
 \code{sub(".*_r([0-9]+)$", "\\1", colnames(table))}}

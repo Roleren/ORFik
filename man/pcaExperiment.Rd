@@ -18,6 +18,8 @@ pcaExperiment(
 )
 }
 \arguments{
+\item{df}{an ORFik \code{\link{experiment}}}
+
 \item{output.dir}{default NULL, else character path to directory.
 File saved as "PCAplot_(experiment name)(plot.ext)"}
 
