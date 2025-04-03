@@ -87,7 +87,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   if (!all(names(arguments) %in% possible))
     stop("At least one of arguments with invalid name!")
 
-  sufficient_memory_to_run_this_check(max.ram)
+  sufficient_memory_to_run_this_check(ref_path = output.dir, max.ram)
 
   # match which indices to make
   exts <- c("g", "f", "p", "r", "t", "n", "c")

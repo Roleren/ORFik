@@ -444,7 +444,7 @@ exists.ftp.file.fast <- function(url, report.error = FALSE) {
 #' @noRd
 detect_drive <- function(ref_path = path.expand(config()["ref"])) {
   if (.Platform$OS.type != "unix") return(NA_character_)
-
+  ref_path <- path.expand(ref_path)
   # Get disk usage information
   drive_info <- system("df -h", intern = TRUE)[-1]
 
@@ -526,16 +526,23 @@ get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
   )
 
   if (one_liner) {
-    usage <- cat(paste0("CPU (", usage$CPU_Usage_Percent, "%),",
-                        " Memory (", usage$Memory_Usage_Percent, "%),",
-                        " Drive ", usage$Drive, " (", usage$Drive_Usage_Percent, "%)\n"))
+    usage <- get_system_usage_one_liner(usage)
   }
 
   return(usage)
 }
 
-sufficient_memory_to_run_this_check <- function(to_run_GB, step = "indexing", wiggle_room = 1) {
-  system_info <- get_system_usage(output.dir)
+get_system_usage_one_liner <- function(usage) {
+  cat(paste0("CPU (", usage$CPU_Usage_Percent, "%),",
+             " Memory (", usage$Memory_Usage_Percent, "%),",
+             " Drive ", usage$Drive, " (", usage$Drive_Usage_Percent, "%)\n"))
+}
+
+sufficient_memory_to_run_this_check <- function(to_run_GB, step = "indexing", wiggle_room = 1,
+                                                ref_path = path.expand(config()["ref"])) {
+  system_info <- get_system_usage(detect_drive(ref_path))
+  cat("-- System resource usage:\n")
+  get_system_usage_one_liner(system_info)
   memory_on_computer <- system_info$Memory_Total_GB
   if ((system_info$Memory_Total_GB - wiggle_room) < to_run_GB) {
     message("Your ",step, " might fail, you specified ", to_run_GB,
