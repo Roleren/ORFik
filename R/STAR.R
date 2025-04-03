@@ -462,7 +462,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   return(STAR.align.internal(call, output.dir, multiQC))
 }
 
-STAR.align.internal <- function(call, output.dir, multiQC = FALSE) {
+STAR.align.internal <- function(call, output.dir, multiQC = FALSE, steps = "auto") {
   print(paste("Starting time:", Sys.time()))
   print("Full system call:")
   print(call)
