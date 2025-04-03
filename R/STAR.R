@@ -77,7 +77,7 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
                                  "do remake = TRUE if you want to run again")
     return(readRDS(finished.file))
   }
-  if (.Platform$OS.type == "unix") stop("STAR is not supported on windows, run through R in WSL!")
+  if (.Platform$OS.type != "unix") stop("STAR is not supported on windows, run through R in WSL!")
 
   if (!file.exists(script))
     stop("STAR index script not found, check path of script!")
