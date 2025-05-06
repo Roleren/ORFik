@@ -176,10 +176,10 @@ ofst_merge <- function(file_paths,
       if (all_valid) break
     }
     if (splits == max_splits) stop("Max splits set to: ", max_splits, " is not enough!")
-    if (keepCigar & !is.na(meta["cigar"])) {
-      splits <- min(splits*2, max_splits)
-      split_vector <- ceiling(seq(len) / (len / splits))
-    }
+    # if (keepCigar & !is.na(meta["cigar"])) {
+    #   splits <- min(splits*2, max_splits)
+    #   split_vector <- ceiling(seq(len) / (len / splits))
+    # }
     message("Number of chunk splits used: ", splits)
 
     file_paths_split <- split(file_paths, split_vector)
@@ -207,7 +207,7 @@ ofst_merge <- function(file_paths,
 
 
 
-    dt <- ofst_merge_internal(dt_list, lib_names = lib_names,
+    dt <- ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
                               keep_all_scores = keep_all_scores,
                               keepCigar = keepCigar, sort = sort)
 
