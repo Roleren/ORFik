@@ -291,7 +291,7 @@ pcaExperiment <- function(df, output.dir = NULL,
     bamVarName(df, skip.replicate = TRUE)
   } else dt$sample <- dt$rn
 
-  pcaPlot(table, path = NULL, group, dt$replicate, PCA_X, PCA_Y,
+  pcaPlot(table, path = path, group, dt$replicate, PCA_X, PCA_Y,
           title, subtitle, plot.ext, return.data)
 }
 

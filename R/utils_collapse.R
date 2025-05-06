@@ -175,7 +175,7 @@ ofst_merge <- function(file_paths,
       all_valid <- !any(sum(List(split(row_numbers, split_vector))) >= 2^31)
       if (all_valid) break
     }
-    if (splits == max_splits) stop("Max splits set to: ", max_splits, "is not enough!")
+    if (splits == max_splits) stop("Max splits set to: ", max_splits, " is not enough!")
     message("Number of chunk splits used: ", splits)
 
     file_paths_split <- split(file_paths, split_vector)
