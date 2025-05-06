@@ -9,6 +9,7 @@ QCreport(
   out.dir = resFolder(df),
   plot.ext = ".pdf",
   create.ofst = TRUE,
+  force.remake.count.tables = FALSE,
   complex.correlation.plots = TRUE,
   library.names = bamVarName(df),
   use_simplified_reads = TRUE,
@@ -31,6 +32,10 @@ Note that in pdf format the complex correlation plots become very slow to load!}
 \item{create.ofst}{logical, default TRUE. Create ".ofst" files from the input
 libraries, ofst is much faster to load in R, for later use. Stored
 in ./ofst/ folder relative to experiment main folder.}
+
+\item{force.remake.count.tables}{logical, default FALSE.
+If TRUE and count tables already exists, delete and make new ones. Useful
+if you altered input libraries.}
 
 \item{complex.correlation.plots}{logical, default TRUE. Add in addition
 to simple correlation plot two computationally heavy dots + correlation plots.

@@ -371,6 +371,55 @@ unlistToExtremities <- function(grl) {
   dt$group_name <- NULL
   dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
                strand = strand[1]), by = group]
-  dt[, names := old_names]
+  if (!is.null(old_names)) dt[, names := old_names]
   return(GRanges(dt, seqinfo = seqinfo(grl)))
+}
+
+#' Get pseudo introns per Group
+#'
+#' If an intron is of length < 'width' * 2, it will not be split into pseudo.
+#' @param grl a GrangesList of length 1
+#' @param width numeric, default 100. The size of pseudo flanks.
+#' @return a GRangesList
+#' @export
+#' @examples
+#' tx <- GRangesList(GRanges("1", IRanges(c(1, 150, 1e5, 1e6)), "+"))
+#' pseudoIntronsPerGroup(tx) # See intron 1 is not split
+pseudoIntronsPerGroup <- function(grl, width = 100) {
+  validGRL(grl)
+  if (length(grl) == 0) return(grl)
+  if (length(grl) > 1) stop("Only support length 1 grl for now!")
+
+  flanks <- flankPerGroup(grl)
+  introns <- setdiff(flanks, grl)
+  original_names <- names(introns)
+  names(introns) <- seq(length(introns))
+  gr <- unlistGrl(introns)
+  # Only consider introns longer than 1 bp
+  gr_is_too_short <- width(gr) < width*2
+  gr_too_short <- gr[gr_is_too_short]
+  gr_too_short$type <- rep("original", length(gr_too_short))
+  gr_too_short$flank <- rep("whole", length(gr_too_short))
+  gr <- gr[!gr_is_too_short]
+  left <- right <- GRanges()
+  if (length(gr) > 0) {
+    # Get left flank
+    left <- resize(gr, width = width, fix = "start")
+    # Get right flank
+    right <- resize(gr, width = width, fix = "end")
+
+    # Trim in case flank is longer than intron
+    left <- pintersect(left, gr)
+    right <- pintersect(right, gr)
+    left$hit <- right$hit <- NULL
+    left$type <- right$type <- "pseudo"
+    left$flank <- "left"
+    right$flank <- "right"
+  }
+
+  # Combine
+  grl_new <- sortPerGroup(groupGRangesBy(c(gr_too_short, left, right)))
+
+  names(grl_new) <- original_names
+  return(grl_new)
 }

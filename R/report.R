@@ -73,6 +73,7 @@ QCreport <- function(df, out.dir = resFolder(df),
   validateExperiments(df, library.names)
   stopifnot(plot.ext %in% c(".pdf", ".png"))
   stopifnot(create.ofst %in% c(TRUE, FALSE))
+  stopifnot(is.logical(force.remake.count.tables))
   stopifnot(is.character(out.dir))
   stopifnot(is.logical(use_simplified_reads))
 
@@ -92,7 +93,8 @@ QCreport <- function(df, out.dir = resFolder(df),
                                      output.dir = stats_folder,
                                      BPPARAM = BPPARAM)
   # Get count tables
-  QC_count_tables(df, out.dir, force = force.remake.count.tables,
+  QC_count_tables(df, out.dir, force = FALSE,
+                  forceRemake = force.remake.count.tables,
                   library.names = library.names,
                   use_simplified_reads = use_simplified_reads,
                   BPPARAM = BPPARAM)

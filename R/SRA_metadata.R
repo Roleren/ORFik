@@ -221,6 +221,9 @@ browseSRA <- function(x, browser = getOption("browser")) {
             browser = browser)
 }
 
+#' Download summary information of a gene
+#'
+#' Uses ncbi gene database summary from RefSeq
 #' @param gene character, gene name (symbol)
 #' @param organism, default NULL. Scientific name (e.g. Homo sapiens)
 #' @importFrom jsonlite read_json

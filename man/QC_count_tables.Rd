@@ -10,6 +10,7 @@ QC_count_tables(
   type = "ofst",
   use_simplified_reads = TRUE,
   force = TRUE,
+  forceRemake = FALSE,
   library.names = bamVarName(df),
   BPPARAM = bpparam()
 )
@@ -51,6 +52,8 @@ matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
+
+\item{forceRemake}{logical, default FALSE. If TRUE, will not look for existing file count table files.}
 
 \item{library.names}{character vector, names of libraries, default:
 name_decider(df, naming)}
