@@ -71,6 +71,7 @@ splitIn3Tx <- function(leaders, cds, trailers, reads, windowSize = 100,
                        is.sorted = FALSE, drop.zero.dt = FALSE,
                        BPPARAM = BiocParallel::SerialParam()) {
   features <- c("leaders", "cds", "trailers")
+  features <- features[c(length(leaders) > 0, length(cds) > 0, length(trailers) > 0)]
   txCov <- bplapply(features, FUN = function(feature, reads, leaders, cds,
                                     trailers, windowSize, weight, drop.zero.dt) {
     cov <- scaledWindowPositions(get(feature, mode = "S4"), reads, windowSize,

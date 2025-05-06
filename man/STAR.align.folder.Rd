@@ -17,11 +17,11 @@ STAR.align.folder(
   min.length = 20,
   mismatches = 3,
   trim.front = 0,
+  trim.tail = 0,
   max.multimap = 10,
   alignment.type = "Local",
   allow.introns = TRUE,
   max.cpus = min(90, BiocParallel::bpparam()$workers),
-  wait = TRUE,
   include.subfolders = "n",
   resume = NULL,
   multiQC = TRUE,
@@ -124,8 +124,15 @@ become high!}
 filters reads that have defined mismatches in STAR.
 Only applies for genome alignment step.}
 
-\item{trim.front}{0, default trim 0 bases 5'. For Ribo-seq use default 0.
-Ignored if tr (trim) is not one of the arguments in "steps"}
+\item{trim.front}{0, default trim 0 bases on 5' ends.
+Ignored if tr (trim) is not one of the arguments in "steps".
+For Ribo-seq use default 0, unless you have 5' end custom barcodes to remove.
+Alignment to STAR might fail if you have large barcodes, which are not removed!}
+
+\item{trim.tail}{0, default trim 0 bases on 3' ends.
+Ignored if tr (trim) is not one of the arguments in "steps".
+For Ribo-seq use default 0, unless you have 3' end custom barcodes to remove.
+Alignment to STAR might fail if you have large barcodes, which are not removed!}
 
 \item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
 will skip the read. Set to 1 to only get unique mapping reads. Only applies for
@@ -145,13 +152,6 @@ have 8 cores it will use 6. Note: FASTP will use maximum 16 threads as from test
 I see performance actually degrades using anything higher. From testing I also see
 STAR gets no performance gain after ~50 threads. I do suspect this will change
 when hard drives gets better in the future.}
-
-\item{wait}{a logical (not \code{NA}) indicating whether the \R
-    interpreter should wait for the command to finish, or run it
-    asynchronously.  This will be ignored (and the interpreter will
-    always wait) if \code{intern = TRUE}. When running the command
-    asynchronously, no output will be displayed on the \code{Rgui}
-    console in Windows (it will be dropped, instead).}
 
 \item{include.subfolders}{"n" (no), do recursive search downwards for fast files if "y".}
 

@@ -10,8 +10,9 @@ codon_usage_plot(
   ylab = "Ribo-seq library",
   legend.position = "none",
   limit = c(0, max(score_column)),
-  midpoint = limit/2,
-  monospace_font = TRUE
+  midpoint = max(limit/2),
+  monospace_font = TRUE,
+  ignore_start_stop_codons = FALSE
 )
 }
 \arguments{
@@ -27,11 +28,14 @@ Which parameter to use as score column.}
 \item{limit}{numeric, 2 values for plot color limits. Default:
 c(0, max(score_column))}
 
-\item{midpoint}{numeric, default: limit/2. midpoint of color limit.}
+\item{midpoint}{numeric, default: max(limit / 2). midpoint of color limit.}
 
 \item{monospace_font}{logical, default TRUE. Use monospace font, this
 does not work on systems (require specific font packages), set to
 FALSE if it crashes for you.}
+
+\item{ignore_start_stop_codons}{logical, default FALSE. If TRUE, remove start (#)
+and stop (*) codons.}
 }
 \value{
 a ggplot object

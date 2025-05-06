@@ -220,3 +220,22 @@ browseSRA <- function(x, browser = getOption("browser")) {
   browseURL(paste0("https://www.ncbi.nlm.nih.gov/Traces/study/?acc=", x, "&o=acc_s%3Aa"),
             browser = browser)
 }
+
+#' @param gene character, gene name (symbol)
+#' @param organism, default NULL. Scientific name (e.g. Homo sapiens)
+#' @importFrom jsonlite read_json
+download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens") {
+  esearch_gene_api_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene"
+  if (!is.null(organism)) organism <- gsub(" ", "%20", organism)
+  url_search <- paste0(esearch_gene_api_url, "&term=", gene, "[Gene%20Name]+", organism, "[Organism]&retmode=json&tool=ORFik")
+  json <- jsonlite::read_json(url_search)
+  id <- json$esearchresult$idlist[[1]]
+  if (length(id) == 0) {
+    message("No id found for this gene, returning empty string")
+    return("")
+  }
+  esummary_gene_api_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gene"
+  url_summary <- paste0(esummary_gene_api_url, "&id=", id,"&retmode=json&tool=ORFik")
+  json <- jsonlite::read_json(url_summary)
+  return(json$result[[id]]$summary)
+}

@@ -78,48 +78,54 @@ libraryTypes <- function(df, uniqueTypes = TRUE) {
 #' Check for valid existing, non-empty and all unique.
 #' A good way to see if your experiment is valid.
 #' @inheritParams outputLibs
-#' @return NULL (Stops if failed)
+#' @return invisible(NULL) (Stops if failed)
 #' @family ORFik_experiment
 #' @keywords internal
-validateExperiments <- function(df, library.names = bamVarName(df)) {
+validateExperiments <- function(df, library.names = bamVarName(df), validate_libs = TRUE) {
   libTypes <- libraryTypes(df)
   if (!is(df, "experiment")) stop("df must be experiment!")
   if (!all((c("stage", "libtype") %in% colnames(df))))
     stop("stage and libtype must be colnames in df!")
   if (length(libTypes) == 0) stop("df have no valid sequencing libraries!")
   if (nrow(df) == 0) stop("df must have at least 1 row!")
-  files <- df$filepath
-  if (length(df$filepath) == 0) stop("df have no filepaths!")
-  if (!is.null(df$reverse)) {
-    reversePaths <- df$reverse[!(df$reverse %in% c("", "paired-end"))]
-    files <- c(files, reversePaths)
-  }
 
-  emptyFiles <- file.size(files) == 0
-  if (any(is.na(emptyFiles))) {
-    message("Error in experiment:", name(df))
-    stop(paste("File does not exist:\n", files[is.na(emptyFiles)]))
-  }
-
-  if (any(emptyFiles)) {
-    print(files[emptyFiles])
-    stop("Empty files in list, see above for which")
-  }
   stopifnot(is.character(library.names) && (length(library.names) == nrow(df)))
   names <- library.names
   if (length(names) != length(unique(names))) {
     message("Duplicated rows: ", paste(names[duplicated(names)],
-                                      collapse = " ; "))
+                                       collapse = " ; "))
     stop("Experiment table has non-unique rows!",
          " Update either replicate, stage, condition or fraction,",
          " to get unique rows!")
   }
 
-  if (length(files) != length(unique(files))) {
-    message("Duplicated filepaths: ", paste(files[duplicated(files)],
-                                            collapse = " ; "))
-    stop("Duplicated filepaths in experiment!")
+  if (validate_libs) {
+    files <- df$filepath
+    if (length(df$filepath) == 0) stop("df have no filepaths!")
+    if (!is.null(df$reverse)) {
+      reversePaths <- df$reverse[!(df$reverse %in% c("", "paired-end"))]
+      files <- c(files, reversePaths)
+    }
+
+    emptyFiles <- file.size(files) == 0
+    if (any(is.na(emptyFiles))) {
+      message("Error in experiment:", name(df))
+      stop(paste("File does not exist:\n", files[is.na(emptyFiles)]))
+    }
+
+    if (any(emptyFiles)) {
+      print(files[emptyFiles])
+      stop("Empty files in list, see above for which")
+    }
+
+
+    if (length(files) != length(unique(files))) {
+      message("Duplicated filepaths: ", paste(files[duplicated(files)],
+                                              collapse = " ; "))
+      stop("Duplicated filepaths in experiment!")
+    }
   }
+  return(invisible(NULL))
 }
 
 #' Get library variable names from ORFik \code{\link{experiment}}
@@ -404,6 +410,9 @@ filepath_errors <- function(format) {
 #'  (see \code{\link{envExp}}) A simple way to make
 #' sure correct libraries are always loaded. FALSE is faster if data
 #' is loaded correctly already.
+#' @param validate_libs logical, default TRUE. If FALSE, don't check that default
+#' files exists (i.e. bam files), useful if you are using pshifted ofst etc
+#' and don't have the bams anymore.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
@@ -416,7 +425,10 @@ filepath_errors <- function(format) {
 #' ## Load a template ORFik experiment
 #' df <- ORFik.template.experiment()
 #' ## Default library type load, usually bam files
-#' # outputLibs(df, type = "default")
+#' outputLibs(df, type = "default")
+#' RFP_WT_r1
+#' attr(RFP_WT_r1, "filepath")
+#' attr(RFP_WT_r1, "exp")
 #' ## .ofst file load, if ofst files does not exists
 #' ## it will load default
 #' # outputLibs(df, type = "ofst")
@@ -437,6 +449,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
                        library.names = name_decider(df, naming),
                        output.mode = "envir", chrStyle = NULL,
                        envir = envExp(df), verbose = TRUE, force = TRUE,
+                       validate_libs = TRUE,
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   stopifnot(is.character(type))
@@ -445,7 +458,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
   if(!is(dfl, "list")) dfl <- list(dfl)
   all_libs <- NULL
   for (df in dfl) {
-    validateExperiments(df, library.names)
+    validateExperiments(df, library.names, validate_libs)
     loaded <- libs_are_loaded(library.names, envir)
     varNames <- library.names
     import_is_needed <- !all(loaded) | force
@@ -472,6 +485,8 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
       # assign to environment
       if (output.mode %in% c("envir", "envirlist")) {
         for (i in 1:nrow(df)) { # For each stage
+          attr(libs[[i]], "exp") <- name(df)
+          if (mode(libs[[i]]) == "S4") attr(libs[[i]], "filepath") <- paths[i]
           assign(varNames[i], libs[[i]], envir = envir)
         }
       }
@@ -725,7 +740,10 @@ remove.experiments <- function(df, envir = envExp(df)) {
 #' default ("*", all experiments)
 #' @param libtypeExclusive search for experiments with exclusivly this
 #' libtype, default (NULL, all)
-#' @param BPPARAM how many cores/threads to use? default: bpparam()
+#' @param BPPARAM how many cores/threads to use? Default single thread
+#' if validate is FALSE, else use bpparam.
+#' default: \code{if(!validate){ BiocParallel::SerialParam()} else
+#'  BiocParallel::bpparam()}
 #' @return a data.table, 1 row per experiment with columns:\cr
 #'  - experiment (name),\cr
 #'  - organism\cr
@@ -751,7 +769,8 @@ remove.experiments <- function(df, envir = envExp(df)) {
 list.experiments <- function(dir =  ORFik::config()["exp"],
                              pattern = "*", libtypeExclusive = NULL,
                              validate = TRUE,
-                             BPPARAM = bpparam()) {
+                             BPPARAM = if(!validate){ BiocParallel::SerialParam()} else
+                               BiocParallel::bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
   if (length(experiments) == 0) { # This will only trigger on CBU server @ UIB
     cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"

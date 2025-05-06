@@ -10,6 +10,7 @@ DEG_model_simple(
   design = ORFik::design(df),
   p.value = 0.05,
   counts = countTable(df, "mrna", type = "summarized"),
+  design_ids = as.character(df[, target.contrast]),
   batch.effect = FALSE
 )
 }
@@ -41,6 +42,9 @@ TE$padj < 0.05 & Ribo$padj < 0.05 & RNA$padj > 0.05.}
 countTable(df, "mrna", type = "summarized"), all transcripts.
 Assign a subset if you don't want to analyze all genes.
 It is recommended to not subset, to give DESeq2 data for variance analysis.}
+
+\item{design_ids}{character vector of contrast group ids, e.g.
+c("WT", "WT", "Mutant", "Mutant")}
 
 \item{batch.effect}{logical, default TRUE. Makes replicate column of the experiment
 part of the design.\cr

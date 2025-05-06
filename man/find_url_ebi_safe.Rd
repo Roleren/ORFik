@@ -4,7 +4,13 @@
 \alias{find_url_ebi_safe}
 \title{Find URL for EBI fastq files}
 \usage{
-find_url_ebi_safe(accession, SRR = NULL, stop.on.error = FALSE)
+find_url_ebi_safe(
+  accession,
+  SRR = NULL,
+  stop.on.error = FALSE,
+  ebi_file_format = c("fastq_ftp", "sra_ftp")[1],
+  convert_to_ascp = FALSE
+)
 }
 \arguments{
 \item{accession}{character: (PRJ, SRP, ERP, DRP, SRX, SRR, ERR,..). For studies or samples,
@@ -15,6 +21,12 @@ it returns all runs per study or sample.}
 \item{stop.on.error}{logical FALSE, if TRUE will stop
 if all files are not found. If FALSE returns empty character vector if error
 is catched.}
+
+\item{ebi_file_format}{character, format of run download, default is fastq (ftp):
+\code{c("fastq_ftp", "sra_ftp")[1]}}
+
+\item{convert_to_ascp}{logical, default FALSE. If TRUE use server:
+\code{era-fasp@fasp.sra.ebi.ac.uk:}}
 }
 \value{
 character (1 element per SRR number)
