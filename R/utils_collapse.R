@@ -170,12 +170,16 @@ ofst_merge <- function(file_paths,
             " will split data into accepted chunks before merging again")
 
 
-    for (splits in seq(2, 20)) {
+    for (splits in seq(2, max_splits)) {
       split_vector <- ceiling(seq(len) / (len / splits))
       all_valid <- !any(sum(List(split(row_numbers, split_vector))) >= 2^31)
       if (all_valid) break
     }
     if (splits == max_splits) stop("Max splits set to: ", max_splits, " is not enough!")
+    if (keepCigar & !is.na(meta["cigar"])) {
+      splits <- min(splits*2, max_splits)
+      split_vector <- ceiling(seq(len) / (len / splits))
+    }
     message("Number of chunk splits used: ", splits)
 
     file_paths_split <- split(file_paths, split_vector)
