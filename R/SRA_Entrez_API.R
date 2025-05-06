@@ -1,7 +1,7 @@
 SRP_from_GSE <- function(SRP) {
   message("GSE inserted, trying to find SRP from the GSE")
   url <- "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc="
-  url <- paste0(url, SRP, "&form=text")
+  url <- paste0(url, SRP, "&form=text&tool=ORFik")
   # Get GSE info
   a <- fread(url, sep = "!", header = FALSE, col.names = c("row.info", "info"))
   # Now find SRP from GSE

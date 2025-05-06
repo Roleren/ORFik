@@ -38,6 +38,9 @@
 #' @param create.ofst logical, default TRUE. Create ".ofst" files from the input
 #' libraries, ofst is much faster to load in R, for later use. Stored
 #' in ./ofst/ folder relative to experiment main folder.
+#' @param force.remake.count.tables logical, default FALSE.
+#' If TRUE and count tables already exists, delete and make new ones. Useful
+#' if you altered input libraries.
 #' @param complex.correlation.plots logical, default TRUE. Add in addition
 #' to simple correlation plot two computationally heavy dots + correlation plots.
 #' Useful for deeper analysis, but takes longer time to run, especially on low-quality
@@ -61,6 +64,7 @@
 #' #QCreport(df[9,], tempdir())
 QCreport <- function(df, out.dir = resFolder(df),
                      plot.ext = ".pdf", create.ofst = TRUE,
+                     force.remake.count.tables = FALSE,
                      complex.correlation.plots = TRUE,
                      library.names = bamVarName(df),
                      use_simplified_reads = TRUE,
@@ -88,7 +92,8 @@ QCreport <- function(df, out.dir = resFolder(df),
                                      output.dir = stats_folder,
                                      BPPARAM = BPPARAM)
   # Get count tables
-  QC_count_tables(df, out.dir, force = FALSE, library.names = library.names,
+  QC_count_tables(df, out.dir, force = force.remake.count.tables,
+                  library.names = library.names,
                   use_simplified_reads = use_simplified_reads,
                   BPPARAM = BPPARAM)
   # Alignment statistcs

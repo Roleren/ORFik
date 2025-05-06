@@ -3,11 +3,13 @@
 #' The better the annotation / gtf used, the more results you get.
 #' @inheritParams outputLibs
 #' @inheritParams QCreport
+#' @inheritParams countTable_regions
 #' @return a data.table of the count info
 #' @keywords internal
 QC_count_tables <- function(df, out.dir, type = "ofst",
                             use_simplified_reads = TRUE,
-                            force = TRUE, library.names = bamVarName(df),
+                            force = TRUE, forceRemake = FALSE,
+                            library.names = bamVarName(df),
                             BPPARAM = bpparam()) {
   stopifnot(is.logical(use_simplified_reads))
 
@@ -26,6 +28,7 @@ QC_count_tables <- function(df, out.dir, type = "ofst",
                                 longestPerGene = FALSE,
                                 out.dir = out.dir, lib.type = type,
                                 library.names = library.names,
+                                forceRemake = forceRemake,
                                 BPPARAM = BPPARAM)
   return(invisible(NULL))
 }
