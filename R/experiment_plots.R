@@ -12,7 +12,9 @@
 #' \code{\link{experiment.colors}}, new color per library type.
 #' Else assign colors yourself.
 #' @param title title of ggplot
-#' @param windowSize size of binned windows, default: 100
+#' @param windowSize size of binned windows, minimum of 'wanted_window_size' and
+#' minimum of ranges given. Will inform you if windowSize is < wanted_window_size.
+#' @param wanted_window_size numeric, default 100. The wanted window size to bin on.
 #' @param returnPlot return plot from function, default is.null(outdir),
 #' so TRUE if outdir is not defined.
 #' @param dfr an ORFik \code{\link{experiment}} of RNA-seq to
@@ -33,18 +35,19 @@ transcriptWindow <- function(leaders, cds, trailers, df, outdir = NULL,
                              scores = c("sum", "transcriptNormalized"), allTogether = TRUE,
                              colors = experiment.colors(df),
                              title = "Coverage metaplot",
-                             windowSize = min(100,
-                                           min(widthPerGroup(leaders, FALSE)),
-                                           min(widthPerGroup(cds, FALSE)),
-                                           min(widthPerGroup(trailers, FALSE))),
+                             windowSize = min(
+                                           min(c(wanted_window_size, widthPerGroup(leaders, FALSE))),
+                                           min(c(wanted_window_size, widthPerGroup(cds, FALSE))),
+                                           min(c(wanted_window_size, widthPerGroup(trailers, FALSE)))),
+                             wanted_window_size = 100,
                              returnPlot = is.null(outdir),
                              dfr = NULL, idName = "", plot.ext = ".pdf",
                              type = "ofst", is.sorted = FALSE, drop.zero.dt = TRUE,
                              verbose = TRUE, force = TRUE,
                              library.names = bamVarName(df),
                              BPPARAM = bpparam()) {
-  if (windowSize != 100)
-    message(paste0("NOTE: windowSize is not 100! It is: ", windowSize))
+  if (windowSize != wanted_window_size)
+    message(paste0("NOTE: windowSize is not ", wanted_window_size, "! It is: ", windowSize))
 
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)

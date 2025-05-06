@@ -33,8 +33,9 @@ OPTIONS:
 		To just do trim and alignment to genome write -s "tr-ge"
 	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
 		to disable it or "standard" to get "AAAAAAAAAA", the illumina standard sequence.
-	-t	trim front (default 3) How many bases to pre trim reads 5' end,
+	-t	trim front (default 3) How many bases to pre trim reads on 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
+	-z	trim tail (default 0) How many bases to pre trim reads on 3' end.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
   -B Allow introns (default yes (1), else no (0))
 	Path arguments:
@@ -87,13 +88,14 @@ quality_filtering="disable"
 maxCPU=90
 multimap=10
 trim_front=3
+trim_tail=0
 keep="n"
 keepContam="no"
 keepContamType="bam"
 keep_unmapped_genome="None"
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:h" opt; do
+while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
     case $opt in
     f)
         in_file=$OPTARG
@@ -134,6 +136,10 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:h" opt; do
     t)
         trim_front=$OPTARG
         echo "-t trim front (nt): $OPTARG"
+        ;;
+    z)
+        trim_tail=$OPTARG
+        echo "-z trim tail (nt): $OPTARG"
         ;;
     A)
         alignment=$OPTARG
@@ -484,6 +490,8 @@ if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
 		--html=${out_dir}/trim/report_${ibn}.html \
 		--trim_front1=${trim_front} \
 		--trim_front2=${trim_front} \
+		--trim_tail1=${trim_tail} \
+		--trim_tail2=${trim_tail} \
 		--length_required=$min_length \
 		$quality_filtering \
 		$adapter \

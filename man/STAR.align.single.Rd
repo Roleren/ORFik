@@ -17,12 +17,13 @@ STAR.align.single(
   min.length = 20,
   mismatches = 3,
   trim.front = 0,
+  trim.tail = 0,
   max.multimap = 10,
   alignment.type = "Local",
   allow.introns = TRUE,
   max.cpus = min(90, BiocParallel::bpparam()$workers),
-  wait = TRUE,
   resume = NULL,
+  multiQC = FALSE,
   keep.contaminants = FALSE,
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
@@ -113,8 +114,15 @@ become high!}
 filters reads that have defined mismatches in STAR.
 Only applies for genome alignment step.}
 
-\item{trim.front}{0, default trim 0 bases 5'. For Ribo-seq use default 0.
-Ignored if tr (trim) is not one of the arguments in "steps"}
+\item{trim.front}{0, default trim 0 bases on 5' ends.
+Ignored if tr (trim) is not one of the arguments in "steps".
+For Ribo-seq use default 0, unless you have 5' end custom barcodes to remove.
+Alignment to STAR might fail if you have large barcodes, which are not removed!}
+
+\item{trim.tail}{0, default trim 0 bases on 3' ends.
+Ignored if tr (trim) is not one of the arguments in "steps".
+For Ribo-seq use default 0, unless you have 3' end custom barcodes to remove.
+Alignment to STAR might fail if you have large barcodes, which are not removed!}
 
 \item{max.multimap}{numeric, default 10. If a read maps to more locations than specified,
 will skip the read. Set to 1 to only get unique mapping reads. Only applies for
@@ -135,18 +143,15 @@ I see performance actually degrades using anything higher. From testing I also s
 STAR gets no performance gain after ~50 threads. I do suspect this will change
 when hard drives gets better in the future.}
 
-\item{wait}{a logical (not \code{NA}) indicating whether the \R
-    interpreter should wait for the command to finish, or run it
-    asynchronously.  This will be ignored (and the interpreter will
-    always wait) if \code{intern = TRUE}. When running the command
-    asynchronously, no output will be displayed on the \code{Rgui}
-    console in Windows (it will be dropped, instead).}
-
 \item{resume}{default: NULL, continue from step, lets say steps are "tr-ph-ge":
 (trim, phix depletion, genome alignment) and resume is "ge", you will then use
 the assumed already trimmed and phix depleted data and start at genome alignment,
 useful if something crashed. Like if you specified wrong STAR version, but the trimming
 step was completed. Resume mode can only run 1 step at the time.}
+
+\item{multiQC}{logical, default TRUE. Do mutliQC comparison of STAR
+alignment between all the samples. Outputted in aligned/LOGS folder.
+See ?STAR.multiQC}
 
 \item{keep.contaminants}{logical, default FALSE. Create and keep
 contaminant aligning bam files, default is to only keep unaliged fastq reads,

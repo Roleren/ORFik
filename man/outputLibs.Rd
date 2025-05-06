@@ -17,6 +17,7 @@ outputLibs(
   envir = envExp(df),
   verbose = TRUE,
   force = TRUE,
+  validate_libs = TRUE,
   BPPARAM = bpparam()
 )
 }
@@ -108,6 +109,10 @@ matching named variables are found in environment used by experiment
 sure correct libraries are always loaded. FALSE is faster if data
 is loaded correctly already.}
 
+\item{validate_libs}{logical, default TRUE. If FALSE, don't check that default
+files exists (i.e. bam files), useful if you are using pshifted ofst etc
+and don't have the bams anymore.}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
 You can also add a time remaining bar, for a more detailed pipeline.}
@@ -131,7 +136,10 @@ environment of experiment.
 ## Load a template ORFik experiment
 df <- ORFik.template.experiment()
 ## Default library type load, usually bam files
-# outputLibs(df, type = "default")
+outputLibs(df, type = "default")
+RFP_WT_r1
+attr(RFP_WT_r1, "filepath")
+attr(RFP_WT_r1, "exp")
 ## .ofst file load, if ofst files does not exists
 ## it will load default
 # outputLibs(df, type = "ofst")

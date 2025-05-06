@@ -48,16 +48,16 @@ create suitable locations if the following function is not run;
   where_to_save_config <- config_file() # Bioc Cache directory default
 
   parent_folder <- "~/bio_data/" # Change if you want it somewhere else
-  fastq.dir <- file.path(parent_folder, "raw_data")
-  bam.dir <- file.path(parent_folder, "processed_data")
-  reference.dir <- file.path(parent_folder, "references")
-  exp.dir <- file.path(base.dir, "ORFik_experiments/")
+  fastq.dir <- file.path(parent_folder, "raw_data") # Raw fast files
+  bam.dir <- file.path(parent_folder, "processed_data") # Processed files
+  reference.dir <- file.path(parent_folder, "references") # Genome references
+  exp.dir <- file.path(base.dir, "ORFik_experiments/") # ORFik experiments
   config.save(where_to_save_config,
               fastq.dir, bam.dir, reference.dir, reference.dir)
 ```
 
 Either way if you made a custom config or let ORFik do it for you in next step, you can check what it is
-by now running config()
+by now running config(). Modify and rerun steps above to get wanted directories.
 
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
   config()
@@ -139,7 +139,8 @@ For small organisms like yeast, they don't have a primary assembly, so use "topl
   annotation <- getGenomeAndAnnotation(
                       organism = organism,
                       output.dir = conf["ref"],
-                      assembly_type = "toplevel" # Usually leave this to "auto"
+                      optimize = TRUE, 
+                      pseudo_5UTRS_if_needed = 100 # If species have not 5' UTR (leader) definitions, make 100nt pseudo leaders.
                       )
 ```
 The function will also create a txdb object to speed up loading of gtf annotation, and index your genome to a .fai file (fasta index),

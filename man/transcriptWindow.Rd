@@ -14,8 +14,10 @@ transcriptWindow(
   allTogether = TRUE,
   colors = experiment.colors(df),
   title = "Coverage metaplot",
-  windowSize = min(100, min(widthPerGroup(leaders, FALSE)), min(widthPerGroup(cds,
-    FALSE)), min(widthPerGroup(trailers, FALSE))),
+  windowSize = min(min(c(wanted_window_size, widthPerGroup(leaders, FALSE))),
+    min(c(wanted_window_size, widthPerGroup(cds, FALSE))), min(c(wanted_window_size,
+    widthPerGroup(trailers, FALSE)))),
+  wanted_window_size = 100,
   returnPlot = is.null(outdir),
   dfr = NULL,
   idName = "",
@@ -51,7 +53,10 @@ Else assign colors yourself.}
 
 \item{title}{title of ggplot}
 
-\item{windowSize}{size of binned windows, default: 100}
+\item{windowSize}{size of binned windows, minimum of 'wanted_window_size' and
+minimum of ranges given. Will inform you if windowSize is < wanted_window_size.}
+
+\item{wanted_window_size}{numeric, default 100. The wanted window size to bin on.}
 
 \item{returnPlot}{return plot from function, default is.null(outdir),
 so TRUE if outdir is not defined.}
