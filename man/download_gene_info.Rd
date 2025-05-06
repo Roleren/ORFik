@@ -11,6 +11,9 @@ download_gene_info(gene = "CCND1", organism = "Homo sapiens")
 
 \item{organism, }{default NULL. Scientific name (e.g. Homo sapiens)}
 }
+\value{
+character, summary text for gene from the database.
+}
 \description{
 Uses ncbi gene database summary from RefSeq
 }

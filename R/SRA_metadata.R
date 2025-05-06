@@ -226,6 +226,8 @@ browseSRA <- function(x, browser = getOption("browser")) {
 #' Uses ncbi gene database summary from RefSeq
 #' @param gene character, gene name (symbol)
 #' @param organism, default NULL. Scientific name (e.g. Homo sapiens)
+#' @return character, summary text for gene from the database.
+#' @export
 #' @importFrom jsonlite read_json
 download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens") {
   esearch_gene_api_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene"

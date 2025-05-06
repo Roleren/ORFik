@@ -1,7 +1,7 @@
 Package: ORFik
 Type: Package
 Title: Open Reading Frames in Genomics
-Version: 1.27.4
+Version: 1.29.1
 Encoding: UTF-8
 Authors@R: c(
   person(given = "Haakon", family = "Tjeldnes", email = "hauken_heyken@hotmail.com", role = c("aut", "cre", "dtc")),
@@ -66,6 +66,7 @@ Suggests:
   rmarkdown,
   knitr,
   BiocStyle,
-  BSgenome.Hsapiens.UCSC.hg19
+  BSgenome.Hsapiens.UCSC.hg19,
+  GenomeInfoDbData
 LinkingTo: Rcpp
 VignetteBuilder: knitr
