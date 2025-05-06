@@ -183,14 +183,34 @@ ofst_merge <- function(file_paths,
     message("Number of chunk splits used: ", splits)
 
     file_paths_split <- split(file_paths, split_vector)
-    dt <- ofst_merge_internal(lapply(seq(splits), function(split) {
-      message("Loading libraries to merge (split: ", split, ")")
+    message("Split round 1")
+    dt_list <- lapply(seq(splits), function(split) {
+      message("- Loading libraries to merge (split: ", split, ")")
       dt_list <- lapply(file_paths_split[[split]], function(x) setDT(read_fst(x)))
       ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
                           keep_all_scores = keep_all_scores,
                           keepCigar = keepCigar, sort = FALSE)
-    }), lib_names = lib_names, keep_all_scores = keep_all_scores,
-    keepCigar = keepCigar, sort = sort)
+    })
+
+    if (splits > 2) {
+      splits <- 2
+      split_vector <- ceiling(seq(len) / (len / splits))
+      message("Split round 2")
+      dt_list <- lapply(seq(splits), function(split) {
+        message("- Loading libraries to merge (split: ", split, ")")
+        dt_list <- lapply(file_paths_split[[split]], function(x) setDT(read_fst(x)))
+        ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
+                            keep_all_scores = keep_all_scores,
+                            keepCigar = keepCigar, sort = FALSE)
+      })
+    }
+
+
+
+    dt <- ofst_merge_internal(dt_list, lib_names = lib_names,
+                              keep_all_scores = keep_all_scores,
+                              keepCigar = keepCigar, sort = sort)
+
   } else {
     dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
     dt <- ofst_merge_internal(dt_list, lib_names = lib_names,
