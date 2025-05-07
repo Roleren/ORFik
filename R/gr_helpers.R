@@ -39,6 +39,7 @@
 #'
 groupGRangesBy <- function(gr, other = NULL) {
   if (!is(gr, "GRanges")) stop("gr must be GRanges Object")
+  if (length(gr) == 0) return(GRangesList(GRanges(seqinfo = seqinfo(gr))))
   if (is.null(other)) { # if not using other
     if (is.null(names(gr))) stop("gr object have no names")
     l <- names(gr)
