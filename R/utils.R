@@ -372,8 +372,8 @@ combn.pairs <- function(x) {
 #' read_RDSQS(path)
 read_RDSQS <- function(file, nthread = 5) {
   format <- file_ext(file)
-  stopifnot(format %in% c("qs", "rds"))
-  if (format == "rds") {
+  stopifnot(format %in% c("qs", "rds", "covqs", "covrds"))
+  if (format %in% c("rds", "covrds")) {
     readRDS(file)
   } else qs::qread(file, nthread = nthread)
 }
