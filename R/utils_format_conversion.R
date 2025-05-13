@@ -145,13 +145,13 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
 #' folder_to_save_merged <- file.path(tempdir(), "cov_RLE")
 #' ORFik:::convert_to_covRleList(df, out_dir = folder_to_save,
 #' out_dir_merged = folder_to_save_merged)
-#' fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
+#' fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covqs"))
 convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir = file.path(libFolder(df), "cov_RLE_List"),
                               out_dir_merged = file.path(libFolder(df), "cov_RLE"),
                               split.by.strand = TRUE,
                               seq_info = seqinfo(df), weight = "score",
-                              format = format,
+                              format = "qs",
                               verbose = TRUE) {
   if (!is.null(df)) {
     stopifnot(is(df, "experiment"))

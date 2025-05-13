@@ -309,8 +309,8 @@ export.cov <- function(x, file, seqinfo, split.by.strand = TRUE,
     x <- covRleFromGR(x, weight = weight, ignore.strand = !split.by.strand)
   }
   seqinfo(x) <- seqinfo
-  format <- paste0("cov", format)
 
+  format <- paste0("cov", format)
   file <- paste0(gsub(paste0("\\.", format, "$"), "", file, ignore.case = TRUE),
                  ".", format)
   save_RDSQS(x, file = file)
@@ -335,6 +335,8 @@ export.covlist <- function(x, file, seqinfo, split.by.strand = TRUE,
     }
     x <- covRleList(list, fraction = read_lengths)
   }
+
+  format <- paste0("cov", format)
   file <- paste0(gsub(paste0("\\.", format, "$"), "", file, ignore.case = TRUE),
                  ".", format)
   save_RDSQS(x, file = file)

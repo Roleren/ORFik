@@ -53,7 +53,7 @@ libraries of experiment
 df <- ORFik.template.experiment()[10,]
 ## Usually do default folder, here we use tmpdir
 folder_to_save <- file.path(tempdir(), "cov_RLE")
-convert_to_covRle(df, out_dir = folder_to_save,)
+convert_to_covRle(df, out_dir = folder_to_save)
 fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covqs"))
 }
 \seealso{

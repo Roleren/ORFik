@@ -12,7 +12,7 @@ convert_to_covRleList(
   split.by.strand = TRUE,
   seq_info = seqinfo(df),
   weight = "score",
-  format = format,
+  format = "qs",
   verbose = TRUE
 )
 }
@@ -59,7 +59,7 @@ folder_to_save <- file.path(tempdir(), "cov_RLE_List")
 folder_to_save_merged <- file.path(tempdir(), "cov_RLE")
 ORFik:::convert_to_covRleList(df, out_dir = folder_to_save,
 out_dir_merged = folder_to_save_merged)
-fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
+fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covqs"))
 }
 \seealso{
 Other lib_converters: 
