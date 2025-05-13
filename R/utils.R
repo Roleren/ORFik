@@ -359,6 +359,47 @@ combn.pairs <- function(x) {
   return(pairs)
 }
 
+#' Read RDS or QS format file
+#'
+#' @param file path to file with "rds" or "qs" file extension
+#' @param nthread numeric, number of threads for qs::qread
+#' @return R object loaded from file
+#' @importFrom qs qread
+#' @export
+#' @examples
+#' df <- ORFik::ORFik.template.experiment()
+#' path <- countTablePath(df)
+#' read_RDSQS(path)
+read_RDSQS <- function(file, nthread = 5) {
+  format <- file_ext(file)
+  stopifnot(format %in% c("qs", "rds"))
+  if (format == "rds") {
+    readRDS(file)
+  } else qs::qread(file, nthread = nthread)
+}
+
+#' Read RDS or QS format file
+#'
+#' @param object the object to save
+#' @param file path to file with "rds" or "qs" file extension
+#' @param nthread numeric, number of threads for qs::qread
+#' @return R object loaded from file
+#' @importFrom qs qread
+#' @export
+#' @examples
+#' path <- tempfile(fileext = ".qs")
+#' dt <- data.table(a = 1)
+#' save_RDSQS(dt, path)
+#' read_RDSQS(path)
+save_RDSQS <- function(object, file, nthread = 5) {
+  stopifnot(is(file, "character"))
+  format <- file_ext(file)
+  stopifnot(format %in% c("qs", "rds"))
+  if (format == "rds") {
+    saveRDS(object, file)
+  } else qs::qsave(object, file, nthread = nthread)
+}
+
 #' A fast ftp directory check
 #'
 #' Check if ftp directory exists
