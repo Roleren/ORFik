@@ -300,20 +300,24 @@ save.fstwig <- function(x, file, compress = 50) {
 }
 
 export.cov <- function(x, file, seqinfo, split.by.strand = TRUE,
-                       weight = "score") {
+                       weight = "score", format = "qs") {
   stopifnot(is(seqinfo, "Seqinfo"))
+  stopifnot(format %in% c("qs", "rds"))
   if (!is(x, "covRle") & !is(x, "RleList")) {
     seqlevels(x) <- seqlevels(seqinfo)
     seqinfo(x) <- seqinfo
     x <- covRleFromGR(x, weight = weight, ignore.strand = !split.by.strand)
   }
   seqinfo(x) <- seqinfo
-  file <- paste0(gsub("\\.covrds", "", file, ignore.case = TRUE), ".covrds")
-  saveRDS(x, file = file)
+  format <- paste0("cov", format)
+
+  file <- paste0(gsub(paste0("\\.", format, "$"), "", file, ignore.case = TRUE),
+                 ".", format)
+  save_RDSQS(x, file = file)
 }
 
 export.covlist <- function(x, file, seqinfo, split.by.strand = TRUE,
-                       weight = "score", verbose = TRUE) {
+                       weight = "score", verbose = TRUE, format = "qs") {
   stopifnot(is(seqinfo, "Seqinfo"))
   if (!is(x, "covRleList")) {
     seqlevels(x) <- seqlevels(seqinfo)
@@ -331,8 +335,9 @@ export.covlist <- function(x, file, seqinfo, split.by.strand = TRUE,
     }
     x <- covRleList(list, fraction = read_lengths)
   }
-  file <- paste0(gsub("\\.covrds", "", file, ignore.case = TRUE), ".covrds")
-  saveRDS(x, file = file)
+  file <- paste0(gsub(paste0("\\.", format, "$"), "", file, ignore.case = TRUE),
+                 ".", format)
+  save_RDSQS(x, file = file)
 }
 
 #' Store GRanges object as .bedo

@@ -394,8 +394,8 @@ read_RDSQS <- function(file, nthread = 5) {
 save_RDSQS <- function(object, file, nthread = 5) {
   stopifnot(is(file, "character"))
   format <- file_ext(file)
-  stopifnot(format %in% c("qs", "rds"))
-  if (format == "rds") {
+  stopifnot(format %in% c("qs", "rds", "covqs", "covrds"))
+  if (format %in% c("rds", "covrds")) {
     saveRDS(object, file)
   } else qs::qsave(object, file, nthread = nthread)
 }

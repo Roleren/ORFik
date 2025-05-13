@@ -12,6 +12,7 @@ convert_to_covRle(
   split.by.readlength = FALSE,
   seq_info = seqinfo(df),
   weight = "score",
+  format = "qs",
   verbose = TRUE
 )
 }
@@ -35,6 +36,9 @@ for each readlength, defined by readWidths(x) for each file.}
 
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}
+
+\item{format}{chatacter, default "qs", alternative "rds". File format to
+save R object.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 }

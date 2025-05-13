@@ -12,6 +12,7 @@ convert_to_covRleList(
   split.by.strand = TRUE,
   seq_info = seqinfo(df),
   weight = "score",
+  format = format,
   verbose = TRUE
 )
 }
@@ -36,6 +37,9 @@ strand RleList inside covRle object.}
 
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}
+
+\item{format}{chatacter, default "qs", alternative "rds". File format to
+save R object.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 }

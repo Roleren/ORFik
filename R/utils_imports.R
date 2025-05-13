@@ -465,10 +465,8 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
           return(matchSeqStyle(import.bedoc(path), chrStyle))
         } else if (fext == "ofst") {
           return(matchSeqStyle(import.ofst(path, strandMode), chrStyle))
-        } else if (fext == "covrds") {
-          return(matchSeqStyle(readRDS(path), chrStyle))
-        } else if (fext == "qs") {
-          return(matchSeqStyle(readRDS(path), chrStyle))
+        } else if (fext %in% c("covrds", "covqs")) {
+          return(matchSeqStyle(read_RDSQS(path), chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))
       } else stop("fimport takes either 1 or 2 files!")
     } else stop(paste(path, "does not exist as File/Files!"))

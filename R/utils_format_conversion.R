@@ -63,6 +63,8 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
 #' @param split.by.readlength logical, default FALSE, split into files
 #' for each readlength, defined by readWidths(x) for each file.
 #' @param seq_info SeqInfo object, default \code{seqinfo(findFa(df))}
+#' @param format chatacter, default "qs", alternative "rds". File format to
+#' save R object.
 #' @param weight integer, numeric or single length character. Default "score".
 #' Use score column in loaded in_files.
 #' @return invisible(NULL), files saved to disc
@@ -79,6 +81,7 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
                               split.by.strand = TRUE,
                               split.by.readlength = FALSE,
                               seq_info = seqinfo(df), weight = "score",
+                              format = "qs",
                               verbose = TRUE) {
   if (!is.null(df)) {
     stopifnot(is(df, "experiment"))
@@ -104,16 +107,16 @@ convert_to_covRle <- function(df, in_files =  filepath(df, "pshifted"),
         out_file_rl <- paste0(out_file, "_", i)
         export.cov(x = x[all_readl_lengths == i], file = out_file_rl,
                    split.by.strand = split.by.strand,
-                   seqinfo = seq_info, weight = weight)
+                   seqinfo = seq_info, weight = weight, format = format)
       }
       if (verbose) message(", All readlengths merged")
       export.cov(x = x, file = out_file,
                  split.by.strand = split.by.strand,
-                 seqinfo = seq_info, weight = weight)
+                 seqinfo = seq_info, weight = weight, format = format)
     } else {
       export.cov(x = fimport(in_file), file = out_file,
                  split.by.strand = split.by.strand,
-                 seqinfo = seq_info, weight = weight)
+                 seqinfo = seq_info, weight = weight, format = format)
     }
   }
   if (verbose) message("Done")
@@ -148,6 +151,7 @@ convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
                               out_dir_merged = file.path(libFolder(df), "cov_RLE"),
                               split.by.strand = TRUE,
                               seq_info = seqinfo(df), weight = "score",
+                              format = format,
                               verbose = TRUE) {
   if (!is.null(df)) {
     stopifnot(is(df, "experiment"))
@@ -168,13 +172,14 @@ convert_to_covRleList <- function(df, in_files =  filepath(df, "pshifted"),
     x <- fimport(in_file)
     export.covlist(x, file = out_file,
                    split.by.strand = split.by.strand,
-                   seqinfo = seq_info, weight = weight, verbose = verbose)
+                   seqinfo = seq_info, weight = weight,
+                   verbose = verbose, format = format)
 
     if (!is.null(out_dir_merged)) {
       if (verbose) message(", All readlengths merged")
       export.cov(x = x, file = out_filepaths_merged[i],
                  split.by.strand = split.by.strand,
-                 seqinfo = seq_info, weight = weight)
+                 seqinfo = seq_info, weight = weight, format = format)
     }
 
   }
