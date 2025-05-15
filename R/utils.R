@@ -526,34 +526,70 @@ detect_drive <- function(ref_path = path.expand(config()["ref"])) {
 #' @examples
 #' get_system_usage()
 get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
-  if (.Platform$OS.type != "unix") return(list())
-  # Get CPU usage
-  cpu_usage <- as.numeric(system("top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'", intern = TRUE))
+  is_windows <- .Platform$OS.type != "unix"
+  if (is_windows) return(list())
 
-  # Get Memory usage (in GB)
-  mem_info <- system("free -g | awk 'NR==2{print $3, $2}'", intern = TRUE)
-  mem_vals <- as.numeric(strsplit(mem_info, " ")[[1]])
-  mem_usage <- mem_vals[1]
-  mem_total <- mem_vals[2]
-  mem_percent <- round((mem_usage / mem_total) * 100, 2)
+  sysname <- Sys.info()[["sysname"]]
+  is_linux <- sysname == "Linux"
+  is_macos <- sysname == "Darwin"
 
-  # Get Hard drive usage
-  if (!is.na(drive)) {
-    drive_line <- suppressWarnings(system(paste0("df -h | grep '", drive, "'"), intern = TRUE))
-    if (length(attr(drive_line, "status")) == 1) {
-      drive_vals <- as.character(rep(NA, 5))
-    } else drive_vals <- strsplit(drive_line, " +")[[1]]
+  # ---- CPU usage ----
+  cpu_call <- if (is_linux) {
+    "top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}'"
+  } else if (is_macos) {
+    "top -l 1 | grep 'CPU usage' | awk -F'[:,]' '{print $2}' | awk -F'%' '{print 100 - $1}'"
   } else {
-    drive_vals <- as.character(rep(NA, 5))
+    return(list())
+  }
+  cpu_usage <- as.numeric(system(cpu_call, intern = TRUE))
+
+  # ---- Memory usage (in GB) ----
+  if (is_linux) {
+    mem_info <- system("free -g | awk 'NR==2{print $3, $2}'", intern = TRUE)
+    mem_vals <- as.numeric(strsplit(trimws(mem_info), "\\s+")[[1]])
+    mem_usage <- mem_vals[1]
+    mem_total <- mem_vals[2]
+  } else if (is_macos) {
+    page_size <- as.numeric(system("sysctl -n hw.pagesize", intern = TRUE))
+    vm_stats <- system("vm_stat", intern = TRUE)
+    get_pages <- function(label) {
+      as.numeric(gsub("[^0-9]", "", grep(label, vm_stats, value = TRUE)))
+    }
+    free_pages <- get_pages("Pages free:")
+    active_pages <- get_pages("Pages active:")
+    speculative_pages <- get_pages("Pages speculative:")
+    inactive_pages <- get_pages("Pages inactive:")
+    wired_pages <- get_pages("Pages wired down:")
+
+    used_pages <- active_pages + inactive_pages + wired_pages + speculative_pages
+    total_pages <- used_pages + free_pages
+
+    mem_usage <- round((used_pages * page_size) / 1e9, 2)  # in GB
+    mem_total <- round((total_pages * page_size) / 1e9, 2)
+  } else {
+    return(list())
   }
 
-  drive_total <- drive_vals[2]  # Total size
-  drive_used <- drive_vals[3]   # Used space
-  drive_free <- drive_vals[4]   # Available space
-  drive_percent <- drive_vals[5]  # Percentage used
+  mem_percent <- round((mem_usage / mem_total) * 100, 2)
 
+  # ---- Drive usage ----
+  if (!is.na(drive)) {
+    drive_line <- suppressWarnings(system(paste0("df -h ", drive, " | tail -1"), intern = TRUE))
+    if (length(attr(drive_line, "status")) == 1 || length(drive_line) == 0) {
+      drive_vals <- as.character(rep(NA, 6))
+    } else {
+      drive_vals <- strsplit(trimws(drive_line), " +")[[1]]
+    }
+  } else {
+    drive_vals <- as.character(rep(NA, 6))
+  }
 
-  # Return as a named list
+  drive_total <- drive_vals[2]
+  drive_used <- drive_vals[3]
+  drive_free <- drive_vals[4]
+  drive_percent <- drive_vals[5]
+
+  # ---- Output ----
   usage <- list(
     CPU_Usage_Percent = cpu_usage,
     Memory_Usage_GB = mem_usage,
@@ -572,6 +608,7 @@ get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
 
   return(usage)
 }
+
 
 get_system_usage_one_liner <- function(usage) {
   cat(paste0("CPU (", usage$CPU_Usage_Percent, "%),",
