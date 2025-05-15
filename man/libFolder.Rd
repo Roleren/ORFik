@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_class.R
 \name{libFolder}
 \alias{libFolder}
-\title{Get ORFik experiment library folder}
+\title{Get path to ORFik experiment library folder}
 \usage{
 libFolder(x, mode = "first")
 }
@@ -15,5 +15,5 @@ libFolder(x, mode = "first")
 a character path
 }
 \description{
-Get ORFik experiment library folder
+Get path to ORFik experiment library folder
 }

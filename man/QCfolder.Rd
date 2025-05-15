@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_class.R
 \name{QCfolder}
 \alias{QCfolder}
-\title{Get ORFik experiment QC folder path}
+\title{Get path to ORFik experiment QC folder}
 \usage{
 QCfolder(x)
 }
@@ -13,5 +13,5 @@ QCfolder(x)
 a character path
 }
 \description{
-Get ORFik experiment QC folder path
+Get path to ORFik experiment QC folder
 }

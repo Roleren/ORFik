@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_class.R
 \name{symbols,experiment-method}
 \alias{symbols,experiment-method}
-\title{Get ORFik experiment QC folder path}
+\title{Get path to ORFik experiment QC folder}
 \usage{
 \S4method{symbols}{experiment}(x)
 }
@@ -13,5 +13,5 @@
 a character path
 }
 \description{
-Get ORFik experiment QC folder path
+Get path to ORFik experiment QC folder
 }
