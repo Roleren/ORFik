@@ -248,7 +248,7 @@ download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens") {
 #' Download homologue information of a gene
 #'
 #' Uses ncbi gene database for vertebrates
-#' @param gene character, gene name (ensembl gene id, not symbol!)
+#' @param gene_id character, gene name (ensembl gene id, not symbol!)
 #' @param organism, default NULL. Scientific name (e.g. Homo sapiens)
 #' @return character, summary text for gene from the database.
 #' @export

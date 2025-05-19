@@ -10,9 +10,9 @@ download_gene_homologues(
 )
 }
 \arguments{
-\item{organism, }{default NULL. Scientific name (e.g. Homo sapiens)}
+\item{gene_id}{character, gene name (ensembl gene id, not symbol!)}
 
-\item{gene}{character, gene name (ensembl gene id, not symbol!)}
+\item{organism, }{default NULL. Scientific name (e.g. Homo sapiens)}
 }
 \value{
 character, summary text for gene from the database.

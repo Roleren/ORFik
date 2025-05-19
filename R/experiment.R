@@ -271,7 +271,9 @@ filepath <- function(df, type, basename = FALSE,
                      base_folders = libFolder(df)) {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
   stopifnot(length(type) == 1)
-  rel_folder <- c(cov = "cov_RLE/", covl = "cov_RLE_List/", bigwig = "bigwig/",
+  rel_folder <- c(cov = "cov_RLE/", covqs = "cov_RLE/",
+                  covl = "cov_RLE_List/", covlqs = "cov_RLE_List/",
+                  bigwig = "bigwig/",
                   pshifted = "pshifted/")
   if (length(base_folders) == 1) base_folders <- rep(base_folders, nrow(df))
 
@@ -307,7 +309,7 @@ filepath <- function(df, type, basename = FALSE,
     ext <- c(bigwig = ".bigWig", covqs = ".covqs", covlqs = ".covqs",
              cov = ".covrds", covl = ".covrds")
     paired_files <- list(bigwig = c("_forward", "_reverse"))
-    if (type %in% c("cov", "covl", "bigwig")) {
+    if (type %in% names(ext)) {
       t <- type
       out.dir.type <- file.path(base_folder, rel_folder[t])
       paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
