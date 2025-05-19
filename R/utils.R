@@ -368,7 +368,7 @@ combn.pairs <- function(x) {
 #' @export
 #' @examples
 #' df <- ORFik::ORFik.template.experiment()
-#' path <- countTablePath(df)
+#' path <- ORFik:::countTablePath(df)
 #' read_RDSQS(path)
 read_RDSQS <- function(file, nthread = 5) {
   format <- file_ext(file)

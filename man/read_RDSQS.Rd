@@ -19,6 +19,6 @@ Read RDS or QS format file
 }
 \examples{
 df <- ORFik::ORFik.template.experiment()
-path <- countTablePath(df)
+path <- ORFik:::countTablePath(df)
 read_RDSQS(path)
 }
