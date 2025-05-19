@@ -574,7 +574,8 @@ get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
 
   # ---- Drive usage ----
   if (!is.na(drive)) {
-    drive_line <- suppressWarnings(system(paste0("df -h ", drive, " | tail -1"), intern = TRUE))
+    drive_line <- suppressWarnings(system(paste0("df -h | grep '",
+                              drive, "'", " | tail -1"), intern = TRUE))
     if (length(attr(drive_line, "status")) == 1 || length(drive_line) == 0) {
       drive_vals <- as.character(rep(NA, 6))
     } else {
