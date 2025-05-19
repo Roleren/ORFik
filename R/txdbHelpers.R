@@ -411,49 +411,57 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
   txdb <- loadTxdb(txdb)
   # Check for optimized paths
   optimized_path <- optimized_txdb_path(txdb, stop.error = FALSE)
+  formats <- c(".qs", ".rds")
   optimized <- !is.null(optimized_path) & !skip.optimized
   region <-
     if (part %in% c("tx", "transcript", "transcripts")) {
-      optimized.rds <- paste0(optimized_path, "_", "tx", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "tx", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else exonsBy(txdb, by = "tx", use.names = TRUE)
     } else if (part %in% c("leader", "leaders", "5'", "5", "5utr",
                            "fiveUTRs", "5pUTR")) {
-      optimized.rds <- paste0(optimized_path, "_", "leaders", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "leaders", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else fiveUTRsByTranscript(txdb, use.names = TRUE)
     } else if (part %in% c("cds", "CDS", "mORF")) {
-      optimized.rds <- paste0(optimized_path, "_", "cds", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "cds", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else cdsBy(txdb, by = "tx", use.names = TRUE)
     } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr",
                            "threeUTRs", "3pUTR")) {
-      optimized.rds <- paste0(optimized_path, "_", "trailers", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "trailers", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else threeUTRsByTranscript(txdb, use.names = TRUE)
     } else if (part %in% c("intron", "introns")) {
       intronsByTranscript(txdb, use.names = TRUE)
     }  else if (part %in% c("ncRNA", "ncrna")) {
-      optimized.rds <- paste0(optimized_path, "_", "ncRNA", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "ncRNA", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else {
         tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
         tx[!(names(tx) %in% names(cdsBy(txdb, use.names = TRUE)))]
       }
     } else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
-      optimized.rds <- paste0(optimized_path, "_", "mrna", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "mrna", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else exonsBy(txdb, by = "tx", use.names = TRUE)[names(cdsBy(txdb, use.names = TRUE))]
     } else if (part %in% c("uorf", "uorfs")) {
-      optimized.rds <- paste0(optimized_path, "_", "uorfs", ".rds")
-      if (optimized & file.exists(optimized.rds)) {
-        readRDS(optimized.rds)
+      optimized.rds <- paste0(optimized_path, "_", "uorfs", formats)
+      optimized.rds.exists <- file.exists(optimized.rds)
+      if (optimized & any(optimized.rds.exists)) {
+        read_RDSQS(optimized.rds[optimized.rds.exists][1])
       } else stop("uORFs must always exist before calling this function, see ?findUORFs_exp")
     } else stop("invalid: must be tx, leader, cds, trailer, introns, ncRNA, uorf or mrna")
 

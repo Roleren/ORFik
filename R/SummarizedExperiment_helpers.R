@@ -37,6 +37,7 @@
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
 #' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file count table files.
+#' @param format character, default "qs", alternative: "rds". Which format to save summarizedExperiment.
 #' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
 #' @export
@@ -63,12 +64,14 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             lib.type = "ofst",
                                             weight = "score", forceRemake = FALSE,
                                             force = TRUE, library.names = bamVarName(df),
+                                            format = "qs",
                                             BPPARAM = BiocParallel::SerialParam()) {
+
   if(!is.null(saveName)) {
-    if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
+    if (file_ext(saveName) != format) saveName <- paste0(saveName,".", format)
     if (file.exists(saveName) & !forceRemake) {
       message("Loading existing count table, set forceRemake=TRUE if you want to remake")
-      return(readRDS(saveName))
+      return(read_RDSQS(saveName))
     }
   }
 
@@ -129,8 +132,8 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     if (!dir.exists(dirname(saveName))) {
       dir.create(dirname(saveName), showWarnings = FALSE, recursive = TRUE)
     }
-    if (file_ext(saveName) != "rds") saveName <- paste0(saveName,".rds")
-    saveRDS(res, file = saveName)
+    if (file_ext(saveName) != format) saveName <- paste0(saveName, ".", format)
+    save_RDSQS(res, file = saveName)
   }
   return(res)
 }
@@ -216,7 +219,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' see if any start with "countTable_", if so, subset. If loaded as SummarizedExperiment
 #' or deseq, the colData will be made from ORFik.experiment information.
 #' @param df an ORFik \code{\link{experiment}} or path to folder with
-#' countTable, use path if not same folder as experiment libraries. Will subset to
+#' countTables, use path if not same folder as experiment libraries. Will subset to
 #' the count tables specified if df is experiment. If experiment has 4 rows and you subset it
 #' to only 2, then only those 2 count tables will be outputted.
 #' @param region a character vector (default: "mrna"), make raw count matrices
@@ -240,6 +243,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' custom count tables with \code{\link{makeSummarizedExperimentFromBam}}.
 #' Always make the location of the folder directly
 #' inside the bam file directory!
+#' @param full_path Full path to countTable, default: countTablePath(df, region, count.folder)
 #' @return a data.table/SummarizedExperiment/DESeq object
 #' of columns as counts / normalized counts per library, column name
 #' is name of library. Rownames must be unique for now. Might change.
@@ -268,12 +272,59 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # countTable(df, "mrna", type = "deseq")
 countTable <- function(df, region = "mrna", type = "count",
                        collapse = FALSE,
-                       count.folder = "default") {
+                       count.folder = "default",
+                       full_path = countTablePath(df, region, count.folder)) {
+  df.temp <- attr(full_path, "experiment")
+  if (length(full_path) == 1) {
+    res <- read_RDSQS(full_path)
+
+    # Subset to samples wanted
+    if (!is.null(df.temp)) {
+      if ((ncol(res) != nrow(df.temp))) {
+        res <- subset_count_table(res, df.temp)
+      }
+    }
+
+    is_ribo <- any(c("RFP", "RPF", "LSU","80S") %in% colData(res)$libtype, na.rm = TRUE)
+    if(count.folder != "pshifted" & is_ribo)
+      message("Loading default 80S counts, update count.folder to pshifted if wanted?")
+    if (type == "count") return(as.data.table(assay(res)))
+
+    res <- metadata_count_table(res, df.temp, type)
+    # Give important sanity check info:
+
+    # Decide output format
+    if (type == "summarized") return(res)
+    if (type == "deseq") {
+      # remove replicate from formula
+      formula <- colnames(colData(res))
+      if ("replicate" %in% formula)
+        formula <- formula[-grep("replicate", formula)]
+      formula <- as.formula(paste(c("~", paste(formula,
+                                  collapse = " + ")), collapse = " "))
+      return(DESeqDataSet(res, design = formula))
+    }
+    ress <- scoreSummarizedExperiment(res, type, collapse)
+    if (is(ress, "matrix")) {
+      ress <- as.data.table(ress)
+    } else { # is deseq
+      ress <- as.data.table(assay(ress))
+    }
+    rownames(ress) <- names(ranges(res))
+    return(ress)
+  } else if (length(full_path) > 1) {
+    message(paste("More than 1 count table: ", df, collapse = ", "))
+    stop("Folder contains multiple count tables for the same region, ORFik does not
+         know which to pick. Delete or move the one that is not supposed to be there!")
+  }
+}
+
+countTablePath <- function(df, region = "mrna", count.folder = "default") {
   # TODO fix bug if deseq!
-  df.temp <- NULL
+  experiment <- NULL
   if (is(df, "experiment")) {
     if (nrow(df) == 0) stop("df experiment has 0 rows (samples)!")
-    df.temp <- df
+    experiment <- df
     df <-
       if (count.folder == "default") {
         QCfolder(df)
@@ -281,64 +332,36 @@ countTable <- function(df, region = "mrna", type = "count",
   }
   if (is(df, "character")) {
     if (dir.exists(df)) {
-      df <- list.files(path = df, pattern = paste0(region, ".rds"),
+      full_path <- list.files(path = df, pattern = paste0(region, "\\.qs$"),
                        full.names = TRUE)
-      if (length(df) > 1) {
-        hits <- grep("^countTable_", basename(df))
+      if (length(full_path) == 0) {
+        full_path <- list.files(path = df, pattern = paste0(region, "\\.rds$"),
+                         full.names = TRUE)
+      }
+      if (length(full_path) > 1) {
+        hits <- grep("^countTable_", basename(full_path))
         if (length(hits) == 1) {
-          df <- df[hits]
+          full_path <- full_path[hits]
         }
       }
-    }
-    if (length(df) == 1) {
-      res <- readRDS(df)
-      # Subset to samples wanted
-      if (!is.null(df.temp)) {
-        if ((ncol(res) != nrow(df.temp))) {
-          res <- subset_count_table(res, df.temp)
-        }
-      }
-      res <- metadata_count_table(res, df.temp, type)
-      # Give important sanity check info:
-      is_ribo <- any(c("RFP", "RPF", "LSU","80S") %in% colData(res)$libtype, na.rm = TRUE)
-      if(count.folder != "pshifted" & is_ribo)
-        message("Loading default 80S counts, update count.folder to pshifted if wanted?")
-
-      # Decide output format
-      if (type == "summarized") return(res)
-      if (type == "deseq") {
-        # remove replicate from formula
-        formula <- colnames(colData(res))
-        if ("replicate" %in% formula)
-          formula <- formula[-grep("replicate", formula)]
-        formula <- as.formula(paste(c("~", paste(formula,
-                                    collapse = " + ")), collapse = " "))
-        return(DESeqDataSet(res, design = formula))
-      }
-      ress <- scoreSummarizedExperiment(res, type, collapse)
-      if (is(ress, "matrix")) {
-        ress <- as.data.table(ress)
-      } else { # is deseq
-        ress <- as.data.table(assay(ress))
-      }
-      rownames(ress) <- names(ranges(res))
-      return(ress)
-    } else if (length(df) > 1) {
-      message(paste("More than 1 count table: ", df))
-      stop("Folder contains multiple count tables for the same region, ORFik does not
-           know which to pick. Delete or move the one that is not supposed to be there!")
     }
   }
-  message(paste("Invalid count table:", df))
-  stop("Table not found!",
-      " Must be either: filepath to directory with defined countTable of region, the full path
+
+  if (length(full_path) == 0) {
+    message(paste("Invalid count table directory:", df))
+    stop("Table not found!",
+         " Must be either: filepath to directory with defined countTable of region, the full path
        to the countTable, run ORFikQC to get default countTables!")
+  }
+
+  attr(full_path, "experiment") <- experiment
+  return(full_path)
 }
 
 #' Make a list of count matrices from experiment
 #'
 #' By default will make count tables over mRNA, leaders, cds and trailers for
-#' all libraries in experiment. region
+#' all libraries in experiment. Saved as "qs" or "rds" format files.
 #'
 #' @inheritParams makeSummarizedExperimentFromBam
 #' @inheritParams QCreport
@@ -369,6 +392,7 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                weight = "score",
                                rel.dir = "QC_STATS", forceRemake = FALSE,
                                library.names = bamVarName(df),
+                               format = "qs",
                                BPPARAM = bpparam()) {
 
   countDir <- pasteDir(file.path(out.dir, rel.dir, "countTable_"))
@@ -384,7 +408,8 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                      longestPerGene = longestPerGene,
                                      saveName = path, lib.type = lib.type,
                                      library.names = library.names,
-                                     forceRemake = forceRemake, force = FALSE)
+                                     forceRemake = forceRemake, force = FALSE,
+                                     format = format)
     },
     countDir = countDir, df = df,
     geneOrTxNames = geneOrTxNames, library.names = library.names,

@@ -364,15 +364,20 @@ flankPerGroup <- function(grl) {
 #' @inheritParams flankPerGroup
 #' @return a GRangs object with meta column "group", which gives
 unlistToExtremities <- function(grl) {
+  if (length(grl) == 0) return(unlist(grl))
   validGRL(class(grl))
   old_names <- names(grl)
   grl@unlistData$group <- NULL
   dt <- as.data.table(grl)
-  dt$group_name <- NULL
+  dt[, group_name := NULL]
   dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
                strand = strand[1]), by = group]
-  if (!is.null(old_names)) dt[, names := old_names]
-  return(GRanges(dt, seqinfo = seqinfo(grl)))
+
+  gr <- GRanges(seqnames = dt$seqnames, ranges = IRanges(dt$start, dt$end), strand = dt$strand,
+                group = dt$group, seqinfo = seqinfo(grl))
+  if (!is.null(old_names)) gr$names <- old_names
+  names(gr) <- names(grl)
+  return(gr)
 }
 
 #' Get pseudo introns per Group
@@ -385,14 +390,16 @@ unlistToExtremities <- function(grl) {
 #' @examples
 #' tx <- GRangesList(GRanges("1", IRanges(c(1, 150, 1e5, 1e6)), "+"))
 #' pseudoIntronsPerGroup(tx) # See intron 1 is not split
+#' tx_2 <- rep(GRangesList(GRanges("1", IRanges(c(1, 150, 1e5, 1e6)), "+")), 2)
+#' pseudoIntronsPerGroup(tx_2)
+#' pseudoIntronsPerGroup(tx_2, 1e6)
 pseudoIntronsPerGroup <- function(grl, width = 100) {
-  validGRL(grl)
+  validGRL(class(grl))
   if (length(grl) == 0) return(grl)
-  if (length(grl) > 1) stop("Only support length 1 grl for now!")
-
+  original_names <- names(grl)
   flanks <- flankPerGroup(grl)
   introns <- setdiff(flanks, grl)
-  original_names <- names(introns)
+
   names(introns) <- seq(length(introns))
   gr <- unlistGrl(introns)
   # Only consider introns longer than 1 bp
@@ -422,4 +429,31 @@ pseudoIntronsPerGroup <- function(grl, width = 100) {
 
   names(grl_new) <- original_names
   return(grl_new)
+}
+
+#' Get exons with pseudo introns per Group
+#'
+#' If an intron is of length < 'width' * 2, it will not be split into pseudo.
+#' @param grl a GrangesList of length 1
+#' @param width numeric, default 100. The size of pseudo flanks.
+#' @return a GRangesList
+#' @export
+#' @examples
+#' tx <- GRangesList(GRanges("1", IRanges(c(1, 150, 1e5, 1e6)), "+"))
+#' exonsWithPseudoIntronsPerGroup(tx) # See intron 1 is not split
+#' tx_2 <- rep(GRangesList(GRanges("1", IRanges(c(1, 150, 1e5, 1e6)), "+")), 2)
+#' exonsWithPseudoIntronsPerGroup(tx_2)
+#' tx_3 <- tx_2
+#' names(tx_3) <- c("tx1", "tx2")
+#' exonsWithPseudoIntronsPerGroup(tx_3, 1e6)
+exonsWithPseudoIntronsPerGroup <- function(grl, width = 100) {
+  if (length(grl) == 0 || max(lengths(grl)) == 1) return(grl)
+  original_names <- names(grl)
+  names(grl) <- seq_along(grl)
+  pseudo_introns <- ORFik:::pseudoIntronsPerGroup(grl, width)
+  exons_introns_gr <- c(unlistGrl(grl), unlistGrl(pseudo_introns))
+  mcols(exons_introns_gr) <- NULL
+  grl <- reduceKeepAttr(groupGRangesBy(exons_introns_gr), keep.names = TRUE)
+  names(grl) <- original_names
+  return(grl)
 }

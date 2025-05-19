@@ -12,6 +12,7 @@ convert_to_covRle(
   split.by.readlength = FALSE,
   seq_info = seqinfo(df),
   weight = "score",
+  format = "qs",
   verbose = TRUE
 )
 }
@@ -36,6 +37,9 @@ for each readlength, defined by readWidths(x) for each file.}
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}
 
+\item{format}{chatacter, default "qs", alternative "rds". File format to
+save R object.}
+
 \item{verbose}{logical, default TRUE, message about library output status.}
 }
 \value{
@@ -50,7 +54,7 @@ df <- ORFik.template.experiment()[10,]
 ## Usually do default folder, here we use tmpdir
 folder_to_save <- file.path(tempdir(), "cov_RLE")
 convert_to_covRle(df, out_dir = folder_to_save)
-fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covrds"))
+fimport(file.path(folder_to_save, "RFP_Mutant_rep2.covqs"))
 }
 \seealso{
 Other lib_converters: 

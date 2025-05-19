@@ -9,12 +9,13 @@ countTable(
   region = "mrna",
   type = "count",
   collapse = FALSE,
-  count.folder = "default"
+  count.folder = "default",
+  full_path = countTablePath(df, region, count.folder)
 )
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}} or path to folder with
-countTable, use path if not same folder as experiment libraries. Will subset to
+countTables, use path if not same folder as experiment libraries. Will subset to
 the count tables specified if df is experiment. If experiment has 4 rows and you subset it
 to only 2, then only those 2 count tables will be outputted.}
 
@@ -42,6 +43,8 @@ have custom ranges, like reads over uORFs stored in a folder called
 custom count tables with \code{\link{makeSummarizedExperimentFromBam}}.
 Always make the location of the folder directly
 inside the bam file directory!}
+
+\item{full_path}{Full path to countTable, default: countTablePath(df, region, count.folder)}
 }
 \value{
 a data.table/SummarizedExperiment/DESeq object

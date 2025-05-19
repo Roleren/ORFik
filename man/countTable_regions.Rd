@@ -16,6 +16,7 @@ countTable_regions(
   rel.dir = "QC_STATS",
   forceRemake = FALSE,
   library.names = bamVarName(df),
+  format = "qs",
   BPPARAM = bpparam()
 )
 }
@@ -61,6 +62,8 @@ will not use weights.}
 \item{library.names}{character, default: bamVarName(df). Names to load
 libraries as to environment and names to display in plots.}
 
+\item{format}{character, default "qs", alternative: "rds". Which format to save summarizedExperiment.}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
@@ -69,7 +72,7 @@ will be the names the list elements.
 }
 \description{
 By default will make count tables over mRNA, leaders, cds and trailers for
-all libraries in experiment. region
+all libraries in experiment. Saved as "qs" or "rds" format files.
 }
 \examples{
 ##Make experiment

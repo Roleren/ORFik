@@ -16,6 +16,7 @@ makeSummarizedExperimentFromBam(
   forceRemake = FALSE,
   force = TRUE,
   library.names = bamVarName(df),
+  format = "qs",
   BPPARAM = BiocParallel::SerialParam()
 )
 }
@@ -61,6 +62,8 @@ is loaded correctly already.}
 
 \item{library.names}{character, default: bamVarName(df). Names to load
 libraries as to environment and names to display in plots.}
+
+\item{format}{character, default "qs", alternative: "rds". Which format to save summarizedExperiment.}
 
 \item{BPPARAM}{how many cores/threads to use? default: BiocParallel::SerialParam()}
 }

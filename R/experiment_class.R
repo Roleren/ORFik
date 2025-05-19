@@ -267,7 +267,7 @@ setMethod("resFolder",
 )
 
 
-#' Get ORFik experiment QC folder path
+#' Get path to ORFik experiment QC folder
 #'
 #' @param x an ORFik \code{\link{experiment}}
 #' @return a character path
@@ -282,7 +282,7 @@ setMethod("QCfolder",
           }
 )
 
-#' Get ORFik experiment library folder
+#' Get path to ORFik experiment library folder
 #'
 #' @param x an ORFik \code{\link{experiment}}
 #' @param mode character, default "first". Alternatives: "unique", "all".
@@ -303,6 +303,21 @@ setMethod("libFolder",
               dirname(x$filepath)
             } else stop("argument 'mode', must be either first, unique or all")
             return(path)
+          }
+)
+
+#' Get path to ORFik experiment genome reference folder
+#'
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a character path
+#' @export
+setGeneric("refFolder", function(x) standardGeneric("refFolder"))
+
+#' @inherit refFolder
+setMethod("refFolder",
+          "experiment",
+          function(x) {
+            return(dirname(x@fafile))
           }
 )
 

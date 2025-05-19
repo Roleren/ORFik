@@ -304,7 +304,8 @@ filepath <- function(df, type, basename = FALSE,
     }} else if (all(suffix_stem == "AUTO")) suffix_stem <- ""
 
 
-    ext <- c(cov = ".covrds", covl = ".covrds", bigwig = ".bigWig")
+    ext <- c(bigwig = ".bigWig", covqs = ".covqs", covlqs = ".covqs",
+             cov = ".covrds", covl = ".covrds")
     paired_files <- list(bigwig = c("_forward", "_reverse"))
     if (type %in% c("cov", "covl", "bigwig")) {
       t <- type

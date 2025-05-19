@@ -244,3 +244,24 @@ download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens") {
   json <- jsonlite::read_json(url_summary)
   return(json$result[[id]]$summary)
 }
+
+#' Download homologue information of a gene
+#'
+#' Uses ncbi gene database for vertebrates
+#' @param gene character, gene name (ensembl gene id, not symbol!)
+#' @param organism, default NULL. Scientific name (e.g. Homo sapiens)
+#' @return character, summary text for gene from the database.
+#' @export
+download_gene_homologues <- function(gene_id = "ENSG00000110092", organism = "Homo sapiens") {
+  organism <- tolower(gsub(" ", "_", organism))
+  rest_api_url <- "https://rest.ensembl.org/homology/id/"
+  organism_url <- paste0(organism, "/", gene_id)
+  settings_url <- "?content-type=application/json&sequence=none&type=orthologues&cigar_line=0&format=condensed"
+  url_summary <- paste0(rest_api_url, organism_url, settings_url)
+  json <- jsonlite::read_json(url_summary)
+  homologues <- json$data[[1]]$homologies
+  dt <- rbindlist(lapply(homologues, function(species) {
+    data.table::data.table(species = species$species, gene_id = species$id)
+    }))[!duplicated(species)]
+  return(dt)
+}
