@@ -442,4 +442,20 @@ covRleFromGR <- function(x, weight = "AUTO",
   }
 }
 
+covRleListFromGR <- function(x, weight = "AUTO",
+                         ignore.strand = FALSE, verbose = TRUE) {
+  all_readl_lengths <- readWidths(x)
+  read_lengths <- sort(unique(all_readl_lengths))
+
+  if (verbose) message("Readlength:", appendLF = FALSE)
+  list <- list()
+  for (i in read_lengths) {
+    if (verbose) message(", ", i, appendLF = FALSE)
+    list <- c(list, covRleFromGR(x[all_readl_lengths == i],
+                                 weight = weight,
+                                 ignore.strand = ignore.strand))
+  }
+  return(covRleList(list, fraction = read_lengths))
+}
+
 

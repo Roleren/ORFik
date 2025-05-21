@@ -490,7 +490,7 @@ shiftFootprintsByExperiment <- function(df,
 #' @family pshifting
 #' @export
 #' @examples
-#' df <- ORFik.template.experiment.zf()
+#' df <- ORFik.template.experiment()
 #' df <- df[df$libtype == "RFP",][1,] #lets only p-shift first RFP sample
 #' #shiftFootprintsByExperiment(df, output_format = "bedo)
 #' #grob <- shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
@@ -513,7 +513,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
   style <- seqinfo(df)
-  plots <- bplapply(seq(nrow(df)),
+  plots <- lapply(seq(nrow(df)),
                     function(x, cds, mrna, style, paths, df, upstream,
                              downstream, type) {
     miniTitle <- gsub("_", " ", bamVarName(df, skip.experiment = TRUE)[x])
@@ -527,7 +527,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
       pSitePlot(hitMap, scoring = scoring,
                 facet = TRUE, frameSum = TRUE, title = miniTitle)
     }
-  }, cds = cds, mrna = mrna, style = style, BPPARAM = BPPARAM,
+  }, cds = cds, mrna = mrna, style = style,
      paths = filepath(df, "pshifted"), df = df, upstream = upstream,
      downstream = downstream, type = type)
   res <- do.call("arrangeGrob", c(plots, ncol=1, top = title))

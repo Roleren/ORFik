@@ -318,22 +318,13 @@ export.cov <- function(x, file, seqinfo, split.by.strand = TRUE,
 
 export.covlist <- function(x, file, seqinfo, split.by.strand = TRUE,
                        weight = "score", verbose = TRUE, format = "qs") {
-  stopifnot(is(seqinfo, "Seqinfo"))
+
   if (!is(x, "covRleList")) {
+    stopifnot(is(seqinfo, "Seqinfo"))
     seqlevels(x) <- seqlevels(seqinfo)
     seqinfo(x) <- seqinfo
-
-    all_readl_lengths <- readWidths(x)
-    read_lengths <- sort(unique(all_readl_lengths))
-    if (verbose) message("Readlength:", appendLF = FALSE)
-    list <- list()
-    for (i in read_lengths) {
-      if (verbose) message(", ", i, appendLF = FALSE)
-      list <- c(list, covRleFromGR(x[all_readl_lengths == i],
-                                   weight = weight,
-                                   ignore.strand = !split.by.strand))
-    }
-    x <- covRleList(list, fraction = read_lengths)
+    x <- covRleListFromGR(x, weight = weight, ignore.strand = !split.by.strand,
+                          verbose = verbose)
   }
 
   format <- paste0("cov", format)

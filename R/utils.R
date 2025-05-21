@@ -392,8 +392,13 @@ read_RDSQS <- function(file, nthread = 5) {
 #' @export
 #' @examples
 #' path <- tempfile(fileext = ".qs")
-#' dt <- data.table(a = 1)
-#' save_RDSQS(dt, path)
+#' # Simple numeric save
+#' x <- 1
+#' save_RDSQS(x, path)
+#' read_RDSQS(path)
+#' # Save a list
+#' x <- list(a = 1, b = c(1,2,3))
+#' save_RDSQS(x, path)
 #' read_RDSQS(path)
 save_RDSQS <- function(object, file, nthread = 5) {
   stopifnot(is(file, "character"))
