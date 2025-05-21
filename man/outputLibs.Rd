@@ -119,7 +119,9 @@ You can also add a time remaining bar, for a more detailed pipeline.}
 }
 \value{
 NULL (libraries set by envir assignment), unless output.mode is
-"list" or "envirlist": Then you get a list of the libraries.
+"list" or "envirlist": Then you get a list of the libraries. The library
+objects will have 3 additional attributes, "exp", "filepath"
+and "short_name".
 }
 \description{
 By default loads the original files of the experiment into
