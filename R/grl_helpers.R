@@ -550,6 +550,7 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
 #' @export
 #' @examples
 #' library(data.table)
+#' library(ORFik)
 #' grl <- GRangesList("1:1-5:+")
 #' tempdir <- tempdir()
 #' fst_index <- file.path(tempdir, "coverage_index.fst")
@@ -570,6 +571,16 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
 coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
   if (!file.exists(fst_index)) stop("No valid fst index file at location: ", fst_index)
   index <- read_fst(fst_index, as.data.table = TRUE)
+  if (dirname(index$file_forward[1]) != dirname(fst_index)) {
+    index[, file_forward := file.path(dirname(fst_index), basename(file_forward))]
+    index[, file_reverse := file.path(dirname(fst_index), basename(file_reverse))]
+  }
+  if (!file.exists(index$file_forward[1])) {
+    stop("Fst index found, but no coverage fst page files found, first file missing: ",
+         index$file_forward[1],
+         "\n  Index located at: ", fst_index)
+  }
+
   valid_chromosomes <- unique(index$chr)
   input_chromosomes <- as.character(unique(unlist(seqnames(grl), use.names = FALSE)))
   stopifnot(all(input_chromosomes %in% valid_chromosomes))
