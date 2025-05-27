@@ -18,13 +18,14 @@ from either: libtype, condition, stage and fraction.}
 \item{object}{an ORFik \code{\link{experiment}}}
 
 \item{batch.correction.design}{logical, default FALSE. If true,
-add replicate as a second design factor (only if >= 2 replicates exists).}
+add replicate as a trailing design factor (only if >= 2 replicates exists).}
 
 \item{as.formula}{logical, default FALSE. If TRUE, return as formula}
 
 \item{multi.factor}{logical, default TRUE If FALSE, return first factor only
-(+ rep, if batch.correction.design is true). Order of picking is:
-libtype, if not then: stage, if not then: condition, if not then: fraction.}
+(+ rep, if batch.correction.design is true). Order of picking for single.factor
+is: does libtype have > 1 level, if not then: stage, if not then: condition,
+if not then: fraction.}
 }
 \value{
 a character (name of column) or a formula

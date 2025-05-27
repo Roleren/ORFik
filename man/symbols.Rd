@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_class.R
 \name{symbols}
 \alias{symbols}
-\title{Get ORFik experiment QC folder path}
+\title{Get ORFik experiment gene symbols}
 \usage{
 symbols(x)
 }
@@ -13,5 +13,6 @@ symbols(x)
 a data.table with gene id, gene symbols and tx ids (3 columns)
 }
 \description{
-Get ORFik experiment QC folder path
+Loads premade fst table at path:
+file.path(refFolder(x), "gene_symbol_tx_table.fst")
 }

@@ -420,7 +420,9 @@ filepath_errors <- function(format) {
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
 #' @return NULL (libraries set by envir assignment), unless output.mode is
-#' "list" or "envirlist": Then you get a list of the libraries.
+#' "list" or "envirlist": Then you get a list of the libraries. The library
+#' objects will have 3 additional attributes, "exp", "filepath"
+#' and "short_name".
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel bpparam
 #' @export
@@ -456,6 +458,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   stopifnot(is.character(type))
+  stopifnot(length(library.names) == nrow(df) & is(library.names, "character"))
 
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
@@ -489,6 +492,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
       if (output.mode %in% c("envir", "envirlist")) {
         for (i in 1:nrow(df)) { # For each stage
           attr(libs[[i]], "exp") <- name(df)
+          attr(libs[[i]], "name_short") <- varNames[i]
           if (mode(libs[[i]]) == "S4") attr(libs[[i]], "filepath") <- paths[i]
           assign(varNames[i], libs[[i]], envir = envir)
         }

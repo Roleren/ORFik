@@ -374,8 +374,10 @@ setMethod("seqnames",
 )
 
 
-#' Get ORFik experiment QC folder path
+#' Get ORFik experiment gene symbols
 #'
+#' Loads premade fst table at path:
+#' file.path(refFolder(x), "gene_symbol_tx_table.fst")
 #' @param x an ORFik \code{\link{experiment}}
 #' @return a data.table with gene id, gene symbols and tx ids (3 columns)
 #' @export
@@ -385,9 +387,9 @@ setGeneric("symbols", function(x) standardGeneric("symbols"))
 setMethod("symbols",
           "experiment",
           function(x) {
-            cand_path <- file.path(dirname(x@txdb), "gene_symbol_tx_table.fst")
+            cand_path <- file.path(refFolder(x), "gene_symbol_tx_table.fst")
             if (file.exists(cand_path)) {
-              return(as.data.table(read_fst(cand_path)))
+              return(read_fst(cand_path, as.data.table = TRUE))
             } else {
               message("Gene symbols not created, run ",
               "ORFik:::makeTxdbFromGenome(gene_symbols = TRUE)")
@@ -402,11 +404,12 @@ setMethod("symbols",
 #' from either: libtype, condition, stage and fraction.
 #' @param object an ORFik \code{\link{experiment}}
 #' @param batch.correction.design logical, default FALSE. If true,
-#' add replicate as a second design factor (only if >= 2 replicates exists).
+#' add replicate as a trailing design factor (only if >= 2 replicates exists).
 #' @param as.formula logical, default FALSE. If TRUE, return as formula
 #' @param multi.factor logical, default TRUE If FALSE, return first factor only
-#' (+ rep, if batch.correction.design is true). Order of picking is:
-#' libtype, if not then: stage, if not then: condition, if not then: fraction.
+#' (+ rep, if batch.correction.design is true). Order of picking for single.factor
+#' is: does libtype have > 1 level, if not then: stage, if not then: condition,
+#' if not then: fraction.
 #' @return a character (name of column) or a formula
 #' @export
 #' @examples
@@ -433,17 +436,21 @@ setMethod("design",
               stop("Malformed experiment, you need a column that seperates the libraries (> 1 unique value")
             factors <- colnames(dt)
 
+            factors <- c(factors[!(factors %in% "rep")], factors[factors %in% "rep"][1])
             if (!multi.factor) {
               factors <- c(factors[!(factors %in% "rep")][1], factors[factors %in% "rep"][1])
-              factors <- factors[!is.na(factors)]
             }
+            factors <- factors[!is.na(factors)]
+
             if (as.formula) {
-              return(as.formula(paste(c("~", paste(factors,
-                                                   collapse = " + ")),
-                                      collapse = " ")))
+              return(as.formula.vector(factors))
             } else return(factors)
           }
 )
+
+as.formula.vector <- function(x) {
+  as.formula(paste(c("~", paste(x, collapse = " + ")), collapse = " "))
+}
 
 #' Get experiment design model matrix
 #'
@@ -456,7 +463,8 @@ setMethod("design",
 #' @importFrom stats model.matrix
 #' @examples
 #' df <- ORFik.template.experiment()
-#' model.matrix(df)
+#' model.matrix(df) # Single factor, default
+#' model.matrix(df, design(df, as.formula = TRUE, multi.factor = TRUE))
 setMethod("model.matrix",
           "experiment",
           function(object, design_formula = design(object, as.formula = TRUE)) {

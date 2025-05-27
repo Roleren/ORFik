@@ -20,5 +20,6 @@ The function extends stats::model.matrix.
 }
 \examples{
 df <- ORFik.template.experiment()
-model.matrix(df)
+model.matrix(df) # Single factor, default
+model.matrix(df, design(df, as.formula = TRUE, multi.factor = TRUE))
 }

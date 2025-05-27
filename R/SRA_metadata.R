@@ -226,23 +226,36 @@ browseSRA <- function(x, browser = getOption("browser")) {
 #' Uses ncbi gene database summary from RefSeq
 #' @param gene character, gene name (symbol)
 #' @param organism, default NULL. Scientific name (e.g. Homo sapiens)
+#' @param by character, default symbol (search by gene symbol name).
+#' If "ensembl id", it seraches as it is ensembl gene id ENSG.. etc.
 #' @return character, summary text for gene from the database.
 #' @export
 #' @importFrom jsonlite read_json
-download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens") {
+#' @examples
+#' download_gene_info(gene = "CCND1")
+#' download_gene_info("ENSG00000110092", by = "ensembl_id") # By ensembl id
+#' download_gene_info(gene = "CCND1", organism = "Mus musculus")
+download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens", by = "symbol") {
+  stopifnot(by %in% c("symbol", "ensembl_id"))
+  format <- ifelse(by == "symbol", "[Gene%20Name]+", "[Source%20ID]+")
   esearch_gene_api_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene"
   if (!is.null(organism)) organism <- gsub(" ", "%20", organism)
-  url_search <- paste0(esearch_gene_api_url, "&term=", gene, "[Gene%20Name]+", organism, "[Organism]&retmode=json&tool=ORFik")
+  url_search <- paste0(esearch_gene_api_url, "&term=", gene, format, organism, "[Organism]&retmode=json&tool=ORFik")
   json <- jsonlite::read_json(url_search)
-  id <- json$esearchresult$idlist[[1]]
-  if (length(id) == 0) {
+  hits <- json$esearchresult$count[[1]]
+  if (hits == 0) {
     message("No id found for this gene, returning empty string")
     return("")
   }
+  id <- json$esearchresult$idlist[[1]]
   esummary_gene_api_url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=gene"
   url_summary <- paste0(esummary_gene_api_url, "&id=", id,"&retmode=json&tool=ORFik")
   json <- jsonlite::read_json(url_summary)
-  return(json$result[[id]]$summary)
+  summary <- json$result[[id]]$summary
+  if (length(summary) == 0 || summary == "") {
+    summary <- paste(json$result[[id]]$description, "| Chromosome:", json$result[[id]]$chromosome)
+  }
+  return(summary)
 }
 
 #' Download homologue information of a gene

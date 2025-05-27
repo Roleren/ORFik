@@ -4,16 +4,24 @@
 \alias{download_gene_info}
 \title{Download summary information of a gene}
 \usage{
-download_gene_info(gene = "CCND1", organism = "Homo sapiens")
+download_gene_info(gene = "CCND1", organism = "Homo sapiens", by = "symbol")
 }
 \arguments{
 \item{gene}{character, gene name (symbol)}
 
 \item{organism, }{default NULL. Scientific name (e.g. Homo sapiens)}
+
+\item{by}{character, default symbol (search by gene symbol name).
+If "ensembl id", it seraches as it is ensembl gene id ENSG.. etc.}
 }
 \value{
 character, summary text for gene from the database.
 }
 \description{
 Uses ncbi gene database summary from RefSeq
+}
+\examples{
+download_gene_info(gene = "CCND1")
+download_gene_info("ENSG00000110092", by = "ensembl_id") # By ensembl id
+download_gene_info(gene = "CCND1", organism = "Mus musculus")
 }

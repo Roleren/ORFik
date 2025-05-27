@@ -540,6 +540,71 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
   return(ans)
 }
 
+#' Get coverage from fst large coverage format
+#'
+#' @param grl a GRangesList
+#' @param fst_index a path to an existing fst index file
+#' @param columns NULL or character, default NULL. Else must be a subset of
+#' names in the fst files. Run ids etc.
+#' @return a list, each element is a data.table of coverage
+#' @export
+#' @examples
+#' library(data.table)
+#' grl <- GRangesList("1:1-5:+")
+#' tempdir <- tempdir()
+#' fst_index <- file.path(tempdir, "coverage_index.fst")
+#' mock_run_names <- c("SRR1010101", "SRR1010102", "SRR1010103")
+#' coverage_file <- file.path(tempdir, paste0("coverage_1_part1_",
+#'  c("forward", "reverse"), ".fst"))
+#' mock_coverage <- setnames(setDT(lapply(mock_run_names, function(x) {
+#'  sample(seq(0, 100), 100, replace = TRUE, prob = c(0.95, rep(0.01, 100)))})),
+#'  mock_run_names)
+#' mock_index <- data.table(chr = "1", start = 1, end = nrow(mock_coverage),
+#'  file_forward = coverage_file[1], file_reverse = coverage_file[2])
+#'
+#' fst::write_fst(mock_index, fst_index)
+#' fst::write_fst(mock_coverage, coverage_file[1])
+#'
+#' coverageByTranscriptFST(grl, fst_index)
+#' coverageByTranscriptFST(grl, fst_index, c("SRR1010101", "SRR1010102"))
+coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
+  if (!file.exists(fst_index)) stop("No valid fst index file at location: ", fst_index)
+  index <- read_fst(fst_index, as.data.table = TRUE)
+  valid_chromosomes <- unique(index$chr)
+  input_chromosomes <- as.character(unique(unlist(seqnames(grl), use.names = FALSE)))
+  stopifnot(all(input_chromosomes %in% valid_chromosomes))
+
+  # Find page files needed per grl
+  tiles_all <- lapply(grl, function(gr) {
+    dt <-  index[chr %in% unique(as.character(seqnames(gr))),]
+    setkey(dt, start, end)
+    query <- as.data.table(ranges(gr))[, c(1,2), with = FALSE]
+    setnames(query, c("start", "end"))
+    query[, query_id := .I]  # optional: track which query range matched
+    setkey(query, start, end)
+    res <- foverlaps(dt, query, nomatch = 0)
+
+    res[, start_segment := pmax(start - i.start + 1, 1)]
+    res[, end_segment := pmin(end - i.start + 1, i.end - i.start + 1)]
+    res[, strand := as.character(strand(gr)[query_id])]
+    res[, file := ifelse(strand == "+", file_forward, file_reverse)][]
+  })
+
+  # Read data from appropriate files using offset
+  results <- lapply(tiles_all, function(tiles) {
+    fst::threads_fst(5, reset_after_fork = FALSE)
+    return(rbindlist(lapply(data.table::transpose(tiles[, .(start_segment, end_segment, file, strand)]), function(x) {
+      d <- read_fst(x[3], columns,
+                    from = as.numeric(format(x[1], scientific=FALSE)),
+                    to = as.numeric(format(x[2], scientific=FALSE)),
+                    as.data.table = TRUE)
+      if (x[4] == "-") d <- d[rev(seq.int(nrow(dt))),]
+      return(d)
+    })))
+  })
+  return(results)
+}
+
 # Testing new version
 # coverageByTranscriptW2 <- function (x, transcripts, ignore.strand = FALSE,
 #                                    weight = 1L) {
