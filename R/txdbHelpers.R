@@ -478,9 +478,10 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
     region <- region[subset]
   }
   if (all(seqlevels(region) %in% seqlevels(txdb))) { # Avoid warnings
-    seqlevels(region) <- seqlevels(txdb)
+    if (!identical(seqlevels(region), seqlevels(txdb))) {
+      seqlevels(region) <- seqlevels(txdb)
+    }
   }
-
   return(region)
 }
 

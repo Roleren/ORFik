@@ -598,7 +598,7 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
                     from = as.numeric(format(x[1], scientific=FALSE)),
                     to = as.numeric(format(x[2], scientific=FALSE)),
                     as.data.table = TRUE)
-      if (x[4] == "-") d <- d[rev(seq.int(nrow(dt))),]
+      if (x[4] == "-") d <- d[rev(seq.int(nrow(d))),]
       return(d)
     })))
   })
