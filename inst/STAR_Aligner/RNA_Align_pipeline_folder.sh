@@ -302,7 +302,7 @@ function findPairsSub()
 }
 # Run per file / pair
 # Relative path for non subfolder, full for subfolder
-formats='\.\(fasta\|fa\|fastq\|fq\)\(\.gz\)\?$'
+formats='(fasta|fa|fastq|fq)(\.gz)?$'
 if [ $subfolders == "n" ]; then
   	 listOfFiles=$(ls "${in_dir}" | grep -E "${formats}")
   	else
