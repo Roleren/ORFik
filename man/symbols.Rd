@@ -16,3 +16,7 @@ a data.table with gene id, gene symbols and tx ids (3 columns)
 Loads premade fst table at path:
 file.path(refFolder(x), "gene_symbol_tx_table.fst")
 }
+\examples{
+df <- ORFik.template.experiment()
+symbols(df)
+}

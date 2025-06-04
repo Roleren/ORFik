@@ -381,6 +381,9 @@ setMethod("seqnames",
 #' @param x an ORFik \code{\link{experiment}}
 #' @return a data.table with gene id, gene symbols and tx ids (3 columns)
 #' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' symbols(df)
 setGeneric("symbols", function(x) standardGeneric("symbols"))
 
 #' @inherit QCfolder

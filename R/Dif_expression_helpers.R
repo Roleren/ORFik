@@ -257,6 +257,60 @@ na_safe <- function(x, op, threshold) {
   }
 }
 
+#' Append gene symbols to a data.table with tx ids
+#'
+#' Main use case is to add gene symbols to data.table outputs from ORFik
+#' with tx ids only, like the DTEG.analysis etc.
+#' @param dt a data.table, must have a id_col with transcript ids
+#' @param symbols_dt the data.table with symbols, must have a column
+#'  with tx, transcript or value in the name. And only 1 of those!
+#' @param extend_id logical, if TRUE, paste together old id from dt,
+#' with the symbol id like: tx_id(symbol_id)
+#' @param id_col character, default "id". The name of the id column in dt.
+#' @return a data.table
+#' @export
+#' @examples
+#' library(data.table)
+#' df <- ORFik.template.experiment()
+#'
+#' cds_names <- names(loadRegion(df, "cds"))
+#' dt <- data.table(id = cds_names[-1], LFC = seq(5), p.value = 0.05)
+#'
+#' symbols_dt <- data.table(ensembl_transcript_name = cds_names,
+#'  ensembl_gene_id = txNamesToGeneNames(cds_names, df),
+#'  external_gene_name = c("ATF4", "AAT1", "ML4", "AST2", "RPL4", "RPL12"))
+#' append_gene_symbols(dt, symbols_dt)
+#' append_gene_symbols(dt, symbols_dt, extend_id = FALSE)
+append_gene_symbols <- function(dt, symbols_dt, extend_id = TRUE,
+                                id_col = "id") {
+  stopifnot(is(dt, "data.table"))
+  stopifnot(!is.null(dt$id))
+
+  dt_with_symbols <- copy(dt)
+  if (length(symbols_dt) > 0 & nrow(symbols_dt) > 0) {
+    tx_column <- grep("tx|transcript|value", colnames(symbols_dt), ignore.case = TRUE, value = TRUE)
+    if (length(tx_column) != 1) {
+      if (length(tx_column) == 0) {
+        warning("Could not find any column of symbols table with tx, transcript or value in column name, please rename/add")
+      } else{
+        warning("Found multiple columns of symbols table with tx, transcript or value in column name, please rename/remove")
+      }
+    }
+
+    dt_with_symbols <- data.table::merge.data.table(dt, symbols_dt, by.x = id_col, by.y = tx_column, sort = FALSE)
+    if (extend_id) {
+      dt_with_symbols[, id_original := id]
+      if (!is.null(dt_with_symbols$external_gene_name)) {
+        dt_with_symbols[, id := paste0(id, "(", external_gene_name, ")")]
+      } else if (!is.null(dt_with_symbols$label)) {
+        dt_with_symbols[, id := paste0(id, "(", sub("-.*", "", label), ")")]
+      } else warning("Could not find any column of symbols table with external_gene_name or label in column name, please rename/add")
+    }
+  }
+  dt_with_symbols[]
+  return(dt_with_symbols)
+}
+
 #' Add regulation categories
 #' @noRd
 DTEG_add_regulation_categories <- function(dt, complex.categories) {

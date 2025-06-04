@@ -302,14 +302,13 @@ function findPairsSub()
 }
 # Run per file / pair
 # Relative path for non subfolder, full for subfolder
-formats='\.fasta\|\.fa\|\.fastq\|\.fq\|\.gz' # Remove .gz!
+formats='\.\(fasta\|fa\|fastq\|fq\)\(\.gz\)\?$'
 if [ $subfolders == "n" ]; then
-  	 listOfFiles=$(ls ${in_dir} | grep ${formats})
-     numOfFiles=$(ls ${in_dir} | grep ${formats} | wc -l)
+  	 listOfFiles=$(ls "${in_dir}" | grep -E "${formats}")
   	else
-  	 listOfFiles=$(find ${in_dir} | grep ${formats} | sort)
-     numOfFiles=$(find ${in_dir} | grep ${formats} | sort | wc -l)
+  	 listOfFiles=$(find "${in_dir}" | grep -E "${formats}" | sort)
 fi
+numOfFiles=$(echo "$listOfFiles" | wc -l)
 
 echo "Total number of files are:"
 echo $numOfFiles

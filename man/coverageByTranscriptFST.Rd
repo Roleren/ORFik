@@ -22,6 +22,7 @@ Get coverage from fst large coverage format
 }
 \examples{
 library(data.table)
+library(ORFik)
 grl <- GRangesList("1:1-5:+")
 tempdir <- tempdir()
 fst_index <- file.path(tempdir, "coverage_index.fst")
