@@ -250,8 +250,8 @@ matchSeqStyle <- function(range, chrStyle = NULL) {
     valid_seq_style <- seqlevelsStyleSafe(range)
     if (!is.null(valid_seq_style)) {
       if (is.character(chrStyle)) {
-        if (!!any(seqlevelsStyle(range) %in% chrStyle)) {
-          try(seqlevelsStyle(range) <- seqlevelsStyle(chrStyle)[1], silent = TRUE)
+        if (!any(seqlevelsStyle(range) %in% chrStyle)) {
+          try(seqlevelsStyle(range) <- chrStyle[1], silent = TRUE)
         }
       } else if (is.gr_or_grl(chrStyle) | is(chrStyle, "TxDb") |
                  is(chrStyle, "FaFile") | is(chrStyle, "Seqinfo")) {
