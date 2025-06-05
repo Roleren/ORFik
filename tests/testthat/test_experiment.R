@@ -1,8 +1,10 @@
 context("Experiment")
 library(ORFik)
+library(data.table)
 
 df <- ORFik.template.experiment()
 temp <- ORFik.template.experiment(as.temp = TRUE)
+df_z <- ORFik.template.experiment.zf()
 
 dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
 exper <- "ORFik"
@@ -50,7 +52,17 @@ test_that("output organism correctly", {
 })
 
 test_that("symbols work correctly", {
-  suppressMessages(expect_equal(symbols(df), data.table::data.table()))
+
+  cds_names <- names(loadRegion(df, "cds"))
+  dt <- data.table(id = cds_names[-1], LFC = seq(5), p.value = 0.05)
+  symbols_dt <- data.table(ensembl_transcript_name = cds_names,
+   ensembl_gene_id = txNamesToGeneNames(cds_names, df),
+   external_gene_name = c("ATF4", "AAT1", "ML4", "AST2", "RPL4", "RPL12"))
+  suppressMessages(expect_equal(symbols(df), symbols_dt))
+})
+
+test_that("symbols work correctly empty", {
+  suppressMessages(expect_equal(symbols(df_z), data.table()))
 })
 
 test_that("filepath work as intended", {
@@ -150,7 +162,6 @@ test_that("Experiment class correct renaming", {
 })
 
 test_that("filepath find correct paths", {
-  df_z <- ORFik.template.experiment.zf()
   reads <- filepath(df_z[1,], "default")
   reads_as_ofst <- filepath(df_z[1,], "ofst")
   expect_is(reads, "character")
