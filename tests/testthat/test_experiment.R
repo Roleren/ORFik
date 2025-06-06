@@ -55,7 +55,7 @@ test_that("symbols work correctly", {
 
   cds_names <- names(loadRegion(df, "cds"))
   dt <- data.table(id = cds_names[-1], LFC = seq(5), p.value = 0.05)
-  symbols_dt <- data.table(ensembl_transcript_name = cds_names,
+  symbols_dt <- data.table(ensembl_tx_name = cds_names,
    ensembl_gene_id = txNamesToGeneNames(cds_names, df),
    external_gene_name = c("ATF4", "AAT1", "ML4", "AST2", "RPL4", "RPL12"))
   suppressMessages(expect_equal(symbols(df), symbols_dt))

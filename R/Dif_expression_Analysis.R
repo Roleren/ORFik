@@ -325,3 +325,100 @@ te.table <- function(df.rfp, df.rna,
   message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of transcripts"))
   return(dt.final)
 }
+
+#' GO analysis with GOrilla
+#'
+#' Supports Gene symbols as default, and will produce the best
+#' results.
+#' You can also use ensembl gene ids, refseq gene ids and Entrez gene
+#' ids, but this will give weaker results.
+#' @param target_genes a path to a txt file with the target Gene symbols,
+#' or presumed to be a character vector of genes (if length > 1).
+#' Minimum 10 genes, maximum 1 million.
+#' @param background_genes a path to a txt file with the background Gene symbols,
+#' or presumed to be a character vector of genes (if length > 1).
+#' Minimum 10 genes, maximum 2 million.
+#' @param organism organism(df), example "Homo sapiens"
+#' @param analysis_name character name, default "test".
+#' Used for saved file names and analysis name in GOrilla.
+#' @param open_browser = TRUE, open the URL
+#' @param pvalue_thresh fixed set numeric, default 0.001, Alternatives: 10e-3 to 10e-11
+#' @param db character, default "all". Which GO onthology categories to use,
+#' all means process, function and component.
+#' Alternatives: "proc", "func" and "comp", if you only want that single category subset.
+#' @references https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-10-48
+#' @return a url path to results, will also open your default web browser if open_browser
+#' is TRUE.
+#' @importFrom httr POST
+#' @export
+#' @examples
+#' target_genes <- system.file("extdata/Homo_sapiens_sample/QC_STATS",
+#'   "/DTEG_Comparison_Translation.txt", package = "ORFik")
+#' background_genes <- system.file("extdata/Homo_sapiens_sample/QC_STATS",
+#'   "/DTEG_Comparison_Background.txt", package = "ORFik")
+#' #go_analaysis_gorilla(target_genes, background_genes, "Homo sapiens",
+#' #                     analysis_name = "Translation vs background")
+go_analaysis_gorilla <- function(target_genes, background_genes,
+                                 organism,
+                                 analysis_name = paste0("Go_analysis_", organism),
+                                 open_browser = TRUE,
+                                 pvalue_thresh = 10e-3,
+                                 db = "all") {
+
+  gorilla_species <- c(
+    "Arabidopsis thaliana"       = "ARABIDOPSIS_THALIANA",
+    "Saccharomyces cerevisiae"   = "SACCHAROMYCES_CEREVISIAE",
+    "Caenorhabditis elegans"     = "CAENORHABDITIS_ELEGANS",
+    "Drosophila melanogaster"    = "DROSOPHILA_MELANOGASTER",
+    "Danio rerio (Zebrafish)"    = "DANIO_RERIO",
+    "Homo sapiens"               = "HOMO_SAPIENS",
+    "Mus musculus"               = "MUS_MUSCULUS",
+    "Rattus norvegicus"          = "RATTUS_NORVEGICUS"
+  )
+  organism <- toupper(gsub("_x_.*", "", gsub(" |-", "_", organism)))
+  if (!(organism %in% gorilla_species)) {
+    print(gorilla_species)
+    stop("Invalid Gorilla organism, see above for valid options")
+  }
+
+  file_input <- length(target_genes) == 1 & length(background_genes) == 1
+  if (file_input) {
+    stopifnot(file.exists(target_genes))
+    stopifnot(file.exists(background_genes))
+    target_genes <- read.table(target_genes)[[1]]
+    background_genes <- read.table(background_genes)[[1]]
+  }
+
+  stopifnot(is.character(target_genes) & is.character(background_genes))
+  stopifnot(length(target_genes) > 10 & length(background_genes) > 10)
+  stopifnot(length(target_genes) < 1e6 & length(background_genes) < 2e6)
+  stopifnot(is.logical(open_browser))
+  message("- Target genes: ", length(target_genes))
+  message("- Background genes: ", length(background_genes))
+  message("-- Sending GO analysis request..")
+  res <- httr::POST(
+    url = "https://cbl-gorilla.cs.technion.ac.il/servlet/GOrilla",
+    body = list(
+      application = "gorilla",
+      species = organism,
+      run_mode = "hg",  # 'hg' = two unranked lists
+      target_set = paste(target_genes, collapse = "\n"),
+      background_set = paste(background_genes, collapse = "\n"),
+      db = db,  # or proc/func/comp
+      pvalue_thresh = as.character(pvalue_thresh),
+      analysis_name = analysis_name,
+      output_excel = "on",
+      output_revigo = "on"
+    ),
+    encode = "form"
+  )
+  if (res$status_code != 200) {
+    print(res)
+    stop("Gorilla did not resond with OK (200), see above for more info")
+  }
+  gorilla_url <- res$url
+  message("- Complete")
+  if (open_browser) browseURL(gorilla_url)
+
+  return(c(GOrilla = gorilla_url))
+}

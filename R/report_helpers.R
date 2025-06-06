@@ -281,6 +281,8 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
 #' where frame 0 is not the best frame over the entire cds)
 #' @inheritParams RiboQC.plot
 #' @param orfs GRangesList, default loadRegion(df, part = "cds")
+#' @param libraries a list of loaded libraries, default:
+#'  outputLibs(df, type = type, output.mode = "envirlist")
 #' @return data.table with columns: fraction (library) frame (0, 1, 2)
 #' score (coverage) length (read length)
 #'    percent (coverage percentage of library)

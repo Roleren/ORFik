@@ -278,12 +278,13 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
     if (!is.null(faFile)) {
       start_codons <- txSeqsFromFa(startCodons(orfs_cand, TRUE), faFile, TRUE, keep.names = FALSE)
     }
+
     if (is(symbols, "data.table") && nrow(symbols) > 0 && "ensembl_tx_name" %in% colnames(symbols)) {
       naming <- data.table::merge.data.table(data.table(ensembl_tx_name = names(orfs_cand)),
                                              symbols, by = "ensembl_tx_name", all.x = TRUE, sort = FALSE)
     } else if (!is.null(txdb)) {
       naming <- data.table(gene = txNamesToGeneNames(names(orfs_cand), txdb), tx = names(orfs_cand))
-    }
+    } else naming <- data.table()
     tx_starts <- start(pmapToTranscriptF(orf_start_cand, mrna[names(orf_start_cand)]))
     tx_ends <- end(pmapToTranscriptF(orf_stop_cand, mrna[names(orf_start_cand)]))
     res <- cbind(naming, type = ORF_type_keep[candidates], predicted,
