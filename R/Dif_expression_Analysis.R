@@ -416,9 +416,11 @@ go_analaysis_gorilla <- function(target_genes, background_genes,
     print(res)
     stop("Gorilla did not resond with OK (200), see above for more info")
   }
+
   gorilla_url <- res$url
   message("- Complete")
   if (open_browser) browseURL(gorilla_url)
-
-  return(c(GOrilla = gorilla_url))
+  stable_url <- paste0("https://cbl-gorilla.cs.technion.ac.il/GOrilla/", sub(".*\\?id=", "", gorilla_url), "/GOResults.html")
+  attr(gorilla_url, "stable_url") <- stable_url
+  return(gorilla_url)
 }
