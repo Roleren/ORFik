@@ -3,6 +3,7 @@
 export("envExp<-")
 export(DEG.analysis)
 export(DEG.plot.static)
+export(DEG_gorilla)
 export(DEG_model)
 export(DEG_model_results)
 export(DEG_model_simple)
