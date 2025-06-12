@@ -474,3 +474,38 @@ setMethod("model.matrix",
             stats::model.matrix(design_formula, data = object)
 })
 
+setMethod("model.matrix",
+          "experiment",
+          function(object, design_formula = design(object, as.formula = TRUE)) {
+            stats::model.matrix(design_formula, data = object)
+          })
+
+#' Get canonical isoforms of organism
+#'
+#' Search for a txt file at location:
+#' file.path(refFolder(x), "canonical_isoforms.txt"), where x is an
+#' ORFik experiment.
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a character vector
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' canonical_isoforms(df)
+setGeneric("canonical_isoforms", function(x) standardGeneric("canonical_isoforms"))
+
+#' @inherit canonical_isoforms
+setMethod("canonical_isoforms",
+          "experiment",
+          function(x) {
+            path <- file.path(refFolder(x), "canonical_isoforms.txt")
+            if (file.exists(path)) {
+              isoforms <- fread(path, header = FALSE)[[1]]
+            } else {
+              warning("No canonical isoform file exists, will use longest isoform!")
+              isoforms <- filterTranscripts(x, 0, 0, 0)
+            }
+            return(isoforms)
+          }
+)
+
+
