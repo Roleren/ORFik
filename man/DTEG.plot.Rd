@@ -58,7 +58,7 @@ Change to .pdf if you want pdf file instead of png.}
 set to FALSE to save some run time.}
 }
 \value{
-a ggplot object
+a ggplot object, will facet_wrap if length(unique(dt$contrasts)) > 1
 }
 \description{
 For explanation of plot catagories, see \code{\link{DTEG.analysis}}

@@ -109,10 +109,11 @@ go_analaysis_gorilla <- function(target_genes, background_genes,
 #' @param dt a data.table of DEG or DTEG results, must also have appended
 #' gene symbols column called "external_gene_name"
 #' @param output_dir path to save results
+#' @inheritParams go_analaysis_gorilla
 #' @return a data.table with urls per contrast, this is also saved in
 #' output_dir
 #' @export
-DEG_gorilla <- function(dt, output_dir) {
+DEG_gorilla <- function(dt, output_dir, organism) {
   stopifnot(is(dt, "data.table"))
   stopifnot(!is.null(dt$external_gene_name))
   stopifnot(nrow(dt) > 20)
@@ -151,7 +152,7 @@ DEG_gorilla <- function(dt, output_dir) {
                                  paste0("DTEG_", contrast_sel, "_",
                                         ifelse(reg == "No change", "Background", as.character(reg)),".txt"))
         name <- gsub("_", " ", paste(sub("\\.txt$", "", basename(target_file)), "vs Background"))
-        url <- ORFik:::go_analaysis_gorilla(target_file, background_file, organism(df),
+        url <- ORFik:::go_analaysis_gorilla(target_file, background_file, organism,
                                             analysis_name = name, open_browser = FALSE)
         Sys.sleep(3)
         names(url) <- name

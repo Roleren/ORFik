@@ -306,18 +306,22 @@ filepath <- function(df, type, basename = FALSE,
     }} else if (all(suffix_stem == "AUTO")) suffix_stem <- ""
 
 
-    ext <- c(bigwig = ".bigWig", covqs = ".covqs", covlqs = ".covqs",
+    ext <- c(bigwig = ".bigWig", cov = ".covqs", covl = ".covqs",
              cov = ".covrds", covl = ".covrds")
     paired_files <- list(bigwig = c("_forward", "_reverse"))
     if (type %in% names(ext)) {
-      t <- type
-      out.dir.type <- file.path(base_folder, rel_folder[t])
-      paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
-      for (suf_stem in suffix_stem) {
-        input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ext[t])
-        found_valid_file <- all(file.exists(input))
+
+      for (t in ext[type]) {
+        out.dir.type <- file.path(base_folder, rel_folder[t])
+        paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
+        for (suf_stem in suffix_stem) {
+          input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ext[t])
+          found_valid_file <- all(file.exists(input))
+          if (found_valid_file) break
+        }
         if (found_valid_file) break
       }
+
 
       if (!found_valid_file) {
         if (fallback) {

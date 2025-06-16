@@ -4,13 +4,15 @@
 \alias{DEG_gorilla}
 \title{GO analysis with GOrilla}
 \usage{
-DEG_gorilla(dt, output_dir)
+DEG_gorilla(dt, output_dir, organism)
 }
 \arguments{
 \item{dt}{a data.table of DEG or DTEG results, must also have appended
 gene symbols column called "external_gene_name"}
 
 \item{output_dir}{path to save results}
+
+\item{organism}{organism(df), example "Homo sapiens"}
 }
 \value{
 a data.table with urls per contrast, this is also saved in
