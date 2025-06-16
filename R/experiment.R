@@ -277,86 +277,93 @@ filepath <- function(df, type, basename = FALSE,
                   pshifted = "pshifted/")
   if (length(base_folders) == 1) base_folders <- rep(base_folders, nrow(df))
 
-  paths <- lapply(df$filepath, function(x, df, type) {
-    i <- which(df$filepath == x)
-    base_folder <- base_folders[i]
-    name_stem <- remove.file_ext(x, basename = TRUE)
-    found_valid_file <- FALSE
-    input <- NULL
-    if (type == "pshifted") {
-      if (all(suffix_stem == "AUTO")) suffix_stem <- "_pshifted"
-      out.dir.type <- file.path(base_folder, rel_folder["pshifted"])
-      type_dir_exists <- dir.exists(out.dir.type)
-      if (type_dir_exists) {
-        formats <- paste0(".", c("ofst", "bigWig", "wig", "bed"))
-        for (suf_stem in suffix_stem) {
-          input_stem <- paste0(out.dir.type, name_stem, suf_stem)
-          for (format in formats) {
-            input <-  paste0(input_stem, format)
-            found_valid_file <- file.exists(input)
-            if (found_valid_file) break
-          }
-        }
-      }
-      # If not hit, fall back to default ofst files
-      if (!found_valid_file) {
-        if (fallback) {
-          type <- "ofst"
-        } else stop(filepath_errors(type))
-    }} else if (all(suffix_stem == "AUTO")) suffix_stem <- ""
+  paths <- lapply(df$filepath, function(file)
+    filepath_internal(file, df, type, base_folders, suffix_stem, rel_folder,
+                      basename, fallback))
 
-
-    ext <- c(bigwig = ".bigWig", cov = ".covqs", covl = ".covqs",
-             cov = ".covrds", covl = ".covrds")
-    paired_files <- list(bigwig = c("_forward", "_reverse"))
-    if (type %in% names(ext)) {
-
-      for (t in ext[type]) {
-        out.dir.type <- file.path(base_folder, rel_folder[t])
-        paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
-        for (suf_stem in suffix_stem) {
-          input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ext[t])
-          found_valid_file <- all(file.exists(input))
-          if (found_valid_file) break
-        }
-        if (found_valid_file) break
-      }
-
-
-      if (!found_valid_file) {
-        if (fallback) {
-          type <- "ofst"
-        } else stop(filepath_errors(t))
-      }
-    }
-
-    if (type %in% c("bed", "ofst", "bedoc", "bedo")) {
-      out.dir <- paste0(base_folder, "/",type,"/")
-      if (dir.exists(out.dir)) {
-        input <- paste0(out.dir, remove.file_ext(x,basename = TRUE), ".", type)
-        if (!file.exists(input)) type <- "default"
-      } else type <- "default"
-    }
-    if (type == "default") {
-      input <- x
-      if (!is.null(df$reverse)) { # If reverse exists
-        if (df[i,]$reverse != "")
-          input <- c(x, df[i,]$reverse)
-      }
-    }
-    if (is.null(input)) stop("filepath type not valid!")
-    if (basename) input <- basename(input)
-    return(input)
-  }, df = df, type = type)
   if (all(lengths(paths) == 1)) {
     paths <- unlist(paths)
   }
   return(paths)
 }
 
+filepath_internal <- function(x, df, type, base_folders, suffix_stem, rel_folder,
+                              basename, fallback) {
+  i <- which(df$filepath == x)
+  base_folder <- base_folders[i]
+  name_stem <- remove.file_ext(x, basename = TRUE)
+  found_valid_file <- FALSE
+  input <- NULL
+  if (type == "pshifted") {
+    if (all(suffix_stem == "AUTO")) suffix_stem <- "_pshifted"
+    out.dir.type <- file.path(base_folder, rel_folder["pshifted"])
+    type_dir_exists <- dir.exists(out.dir.type)
+    if (type_dir_exists) {
+      formats <- paste0(".", c("ofst", "bigWig", "wig", "bed"))
+      for (suf_stem in suffix_stem) {
+        input_stem <- paste0(out.dir.type, name_stem, suf_stem)
+        for (format in formats) {
+          input <-  paste0(input_stem, format)
+          found_valid_file <- file.exists(input)
+          if (found_valid_file) break
+        }
+      }
+    }
+    # If not hit, fall back to default ofst files
+    if (!found_valid_file) {
+      if (fallback) {
+        type <- "ofst"
+      } else stop(filepath_errors(type))
+    }} else if (all(suffix_stem == "AUTO")) suffix_stem <- ""
+
+
+  ext <- c(bigwig = "bigwig", cov = "covqs", covl = "covqs",
+           cov = "covrds", covl = "covrds")
+  paired_files <- list(bigwig = c("_forward", "_reverse"))
+  if (type %in% names(ext)) {
+    for (t in ext[names(ext) == type]) {
+      out.dir.type <- file.path(base_folder, rel_folder[type])
+      paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
+      for (suf_stem in suffix_stem) {
+        file_ext <- ifelse(t == "bigwig", "bigWig", t)
+        input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ".", file_ext)
+        found_valid_file <- all(file.exists(input))
+        if (found_valid_file) break
+      }
+      if (found_valid_file) break
+    }
+
+
+    if (!found_valid_file) {
+      if (fallback) {
+        type <- "ofst"
+      } else stop(filepath_errors(t))
+    }
+  }
+
+  if (type %in% c("bed", "ofst", "bedoc", "bedo")) {
+    out.dir <- paste0(base_folder, "/",type,"/")
+    if (dir.exists(out.dir)) {
+      input <- paste0(out.dir, remove.file_ext(x,basename = TRUE), ".", type)
+      if (!file.exists(input)) type <- "default"
+    } else type <- "default"
+  }
+  if (type == "default") {
+    input <- x
+    if (!is.null(df$reverse)) { # If reverse exists
+      if (df[i,]$reverse != "")
+        input <- c(x, df[i,]$reverse)
+    }
+  }
+  if (is.null(input)) stop("filepath type not valid!")
+  if (basename) input <- basename(input)
+  return(input)
+}
+
 filepath_errors <- function(format) {
   stopifnot(is(format, "character"))
   stem <- "File did not exist,"
+  format <- sub("qs$|rds$", "", format)
   candidates <- c(cov = paste(stem, "did you create covRle yet?"),
                   covl = paste(stem, "did you create covRleList yet?"),
                   bigwig = paste(stem, "did you create bigwig yet?",
