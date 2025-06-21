@@ -122,7 +122,7 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' Change to .pdf if you want pdf file instead of png.
 #' @param plot_to_console logical, default TRUE. Plot to console before returning,
 #' set to FALSE to save some run time.
-#' @return a ggplot object
+#' @return a ggplot object, will facet_wrap if length(unique(dt$contrasts)) > 1
 #' @family DifferentialExpression
 #' @importFrom data.table setorder
 #' @export
@@ -180,8 +180,11 @@ DTEG.plot <- function(dt, output.dir = NULL,
     ylab("RFP (log2 fold change)") +
     p.title +
     p.caption +
-    facet_wrap(~ contrast, ncol = 2) +
     guides(color = guide_legend(override.aes = list(alpha = 0.8, size = 1.3)))
+
+  if (!is.null(dt$contrast) & length(unique(dt$contrast)) > 1){
+    plot.between <- plot.between + facet_wrap(~ contrast, ncol = 2)
+  }
   if (!all(xlim == "auto")) {
     if (all(xlim == "bidir.max")) {
       plot.between <- plot.between + xlim(c(-max(abs(dt$rna.lfc)) - 0.5,

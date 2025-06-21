@@ -180,6 +180,7 @@ df.rna <- df[df$libtype == "RNA",]
 design(df.rfp) # The experimental design, per libtype
 design(df.rfp)[1] # Default target contrast
 #dt <- DTEG.analysis(df.rfp, df.rna)
+#dt_with_gene_ids <- append_gene_symbols(dt, symbols(df))
 ## If you want to use the pshifted libs for analysis:
 #dt <- DTEG.analysis(df.rfp, df.rna,
 #                    RFP_counts = countTable(df.rfp, region = "cds",

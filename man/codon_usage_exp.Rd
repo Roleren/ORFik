@@ -61,25 +61,34 @@ By default: "center", meaning that positions -1,0,1 will be taken.
 Alternative: "left", then positions 0,1,2 are taken.}
 }
 \value{
-a data.table of rows per codon / AA. All values are given
-per library, per site (A or P), sorted by the mean_txNorm_percentage column
+a data.table of rows per AA:codon. All values are given
+per library, per site (A or P) per codon type (start, internal, stop),
+sorted by the mean_txNorm_percentage column
 of the first library in the set, the columns are:
 \itemize{
  \item{variable (character) : Library name}
- \item{seq (character) : Amino acid:codon}
+ \item{seq (character) : Amino acid:codon , for start codons: Amino acid is #, and
+ stop codons are "*". So for human, there will be both #:ATG (the start sites),
+ and M:ATG (internal ATGs)}
  \item{sum (integer) : total counts per seq}
  \item{sum_txNorm (integer) : total counts per seq normalized per tx}
  \item{var (numeric) : variance of total counts per seq}
- \item{N (integer) : total number of codons of that type}
+ \item{N (integer) : total number of genes with this codon,
+  per type (start, stop, internal codon)}
+ \item{N.total (integer) : total number of codons over all genes,
+  per type (start, stop, internal codon)}
  \item{mean_txNorm (numeric) : Default use output, the fair codon usage,
  normalized both for gene and genome level for codon and read counts}
- \item{...}
+ \item{mean_txNorm_percentage : Percentage transform of mean_txNorm}
+ \item{dispersion : (mean^2) / (var - mean)}
+ \item{dispersion_txNorm : (mean_txNorm^2) / (var_txNorm - mean_txNorm)}
  \item{alpha (numeric) : dirichlet alpha MOM estimator (imagine mean and
            variance of probability in 1 value, the lower the value,
            the higher the variance, mean is decided by the relative
            value between samples)}
  \item{sum_txNorm (integer) : total counts per seq normalized per tx}
- \item{relative_to_max_score (integer) : Percentage use of codon}
+ \item{relative_to_max_score (integer) : Max scaled percentage of mean_txNorm_percentage,
+ so percentage on the ratio of mean_txNorm_percentage / max(mean_txNorm_percentage)}
  \item{type (factor(character)) : "P" or "A"}
 }
 }

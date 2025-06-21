@@ -156,10 +156,14 @@ alignmentFeatureStatistics <- function(df, type = "ofst", force = TRUE,
 #' @keywords internal
 trim_detection <- function (df, finals,
                             alignment_folder = libFolder(df, "unique")) {
+  found_data <- FALSE
   trim_folders <- file.path(alignment_folder, "..", "trim/")
   if (all(dir.exists(trim_folders))) {
     message("Create raw read counts")
-    raw_data <- rbindlist(lapply(trim_folders, trimming.table))
+    raw_data <- try(rbindlist(lapply(trim_folders, trimming.table)), silent = TRUE)
+    if (!is(raw_data, "try-error")) found_data <- TRUE
+  }
+  if (found_data) {
     matches <- unlist(lapply(X = df$filepath, function(x) {
       match <- sapply(raw_data$raw_library, function(p) grep(pattern = p, x, fixed = TRUE))
       if (isEmpty(match)) NA else names(unlist(match))[1]
@@ -181,7 +185,7 @@ trim_detection <- function (df, finals,
                                           4)
   } else {
     message("Could not find raw read counts of data, setting to NA")
-    message(paste0("No folder called:", trim_folders))
+    message(paste0("No existing fastp json files in folder:", trim_folders))
   }
   return(finals)
 }
@@ -277,6 +281,8 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
 #' where frame 0 is not the best frame over the entire cds)
 #' @inheritParams RiboQC.plot
 #' @param orfs GRangesList, default loadRegion(df, part = "cds")
+#' @param libraries a list of loaded libraries, default:
+#'  outputLibs(df, type = type, output.mode = "envirlist")
 #' @return data.table with columns: fraction (library) frame (0, 1, 2)
 #' score (coverage) length (read length)
 #'    percent (coverage percentage of library)

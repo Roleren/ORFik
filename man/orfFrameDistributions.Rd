@@ -23,6 +23,9 @@ warning if not pshifted might crash if too many read lengths!}
 
 \item{orfs}{GRangesList, default loadRegion(df, part = "cds")}
 
+\item{libraries}{a list of loaded libraries, default:
+outputLibs(df, type = type, output.mode = "envirlist")}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}.
 You can also add a time remaining bar, for a more detailed pipeline.}

@@ -54,7 +54,7 @@ Relative name of file to be saved in folder specified in output.dir.
 Change to .pdf if you want pdf file instead of png.}
 }
 \value{
-a ggplot object
+a ggplot object, will facet_wrap if length(unique(dt$contrasts)) > 1
 }
 \description{
 Plot setup:\cr
