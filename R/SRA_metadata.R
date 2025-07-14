@@ -232,9 +232,10 @@ browseSRA <- function(x, browser = getOption("browser")) {
 #' @export
 #' @importFrom jsonlite read_json
 #' @examples
-#' download_gene_info(gene = "CCND1")
-#' download_gene_info("ENSG00000110092", by = "ensembl_id") # By ensembl id
-#' download_gene_info(gene = "CCND1", organism = "Mus musculus")
+#' # Wrap in 'try' to avoid wrong bioc test error
+#' try(download_gene_info(gene = "CCND1"))
+#' try(download_gene_info("ENSG00000110092", by = "ensembl_id")) # By ensembl id
+#' try(download_gene_info(gene = "CCND1", organism = "Mus musculus"))
 download_gene_info <- function(gene = "CCND1", organism = "Homo sapiens", by = "symbol") {
   stopifnot(by %in% c("symbol", "ensembl_id"))
   format <- ifelse(by == "symbol", "[Gene%20Name]+", "[Source%20ID]+")

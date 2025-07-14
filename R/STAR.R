@@ -348,7 +348,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 
   validate_star_input(script.single, index.dir, keep.contaminants.type, alignment.type,
                       allow.introns, keep.index.in.memory, trim.front, trim.tail,
-                      include.subfolders, script.folder, mode = "folder")
+                      steps, include.subfolders, script.folder, mode = "folder")
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
@@ -437,7 +437,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
 ) {
   validate_star_input(script.single, index.dir, keep.contaminants.type = "bam",
                       alignment.type, allow.introns, keep.index.in.memory,
-                      trim.front, trim.tail)
+                      trim.front, trim.tail, steps)
 
   file2 <- ifelse(is.null(file2), "", paste("-F", file2))
   resume <- ifelse(is.null(resume), "", paste("-r", resume))
@@ -616,7 +616,7 @@ STAR.remove.crashed.genome <- function(index.path, star.path = STAR.install()) {
 }
 
 validate_star_input <- function(script.single, index.dir, keep.contaminants.type, alignment.type,
-                                allow.introns, keep.index.in.memory, trim.front, trim.tail,
+                                allow.introns, keep.index.in.memory, trim.front, trim.tail, steps,
                                 include.subfolders = NULL, script.folder = NULL, mode = "single") {
   if (.Platform$OS.type != "unix") stop("For Windows OS, run through WSL!")
 
@@ -625,7 +625,9 @@ validate_star_input <- function(script.single, index.dir, keep.contaminants.type
                                               " for now use: 'samtools fastq path_to_bam.bam'")
   if (!file.exists(script.single))
     stop("STAR single file alignment script not found, check path of script!")
-  if (!dir.exists(index.dir))
+  if (is.null(steps) || !is.character(steps) || length(steps) > 1)
+    stop("steps argument must be length 1 character!")
+  if (!dir.exists(index.dir) & steps != "tr")
     stop("STAR index path must be a valid directory called /STAR_index")
   stopifnot(alignment.type %in% c("Local", "EndToEnd"))
   stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
