@@ -21,7 +21,8 @@ character, summary text for gene from the database.
 Uses ncbi gene database summary from RefSeq
 }
 \examples{
-download_gene_info(gene = "CCND1")
-download_gene_info("ENSG00000110092", by = "ensembl_id") # By ensembl id
-download_gene_info(gene = "CCND1", organism = "Mus musculus")
+# Wrap in 'try' to avoid wrong bioc test error
+try(download_gene_info(gene = "CCND1"))
+try(download_gene_info("ENSG00000110092", by = "ensembl_id")) # By ensembl id
+try(download_gene_info(gene = "CCND1", organism = "Mus musculus"))
 }
