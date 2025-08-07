@@ -45,6 +45,7 @@ detect_ribo_orfs(
  \item{internal : Starting inside CDS, ending before CDS ends}
  \item{doORF : Downstream ORFs (Ending in 3' UTR), overlapping CDS}
  \item{dORF : Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
+ \item{ncORF : Any ORF on a transcript without a defined CDS}
  \item{a_error : Any ORF detect not in the above categories}
 }}
 

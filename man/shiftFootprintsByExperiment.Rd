@@ -134,7 +134,8 @@ A function that combines the steps of periodic read length detection,
 p-site shift detection and p-shifting into 1 function.
 For more details, see: \code{\link{detectRibosomeShifts}}\cr
 Saves files to a specified location as .ofst and .wig,
-The .ofst file will include a score column containing read width. \cr
+The .ofst file will include a 'score' column with read count at that
+position per read width (read width column is called 'size')  \cr
 The .wig files, will be saved in pairs of +/- strand, and score column
 will be replicates of reads starting at that position,
 score = 5 means 5 reads.\cr

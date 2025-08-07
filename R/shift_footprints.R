@@ -309,7 +309,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' p-site shift detection and p-shifting into 1 function.
 #' For more details, see: \code{\link{detectRibosomeShifts}}\cr
 #' Saves files to a specified location as .ofst and .wig,
-#' The .ofst file will include a score column containing read width. \cr
+#' The .ofst file will include a 'score' column with read count at that
+#' position per read width (read width column is called 'size')  \cr
 #' The .wig files, will be saved in pairs of +/- strand, and score column
 #' will be replicates of reads starting at that position,
 #' score = 5 means 5 reads.\cr
@@ -456,6 +457,24 @@ shiftFootprintsByExperiment <- function(df,
   return(invisible(NULL))
 }
 
+#' Make template for shift table of experiment
+#'
+#' Must have ofst files already created!
+#' @inheritParams shiftFootprintsByExperiment
+#' @return a list with names of elements as file path to the ofst,
+#' the data.table elements 2 columns fraction: read length and offset_start,
+#' the shifts in negative coordinates.
+#' @export
+#' @examples
+#' df <- ORFik:::ORFik.template.experiment()
+#' template_shift_table(df)
+template_shift_table <- function(df, accepted_lengths = 26:34) {
+  filepaths <- filepath(df, "ofst")
+  l <- lapply(filepaths, function(f) data.table(fraction = accepted_lengths, offsets_start = -12))
+  names(l) <- filepaths
+  return(l)
+}
+
 #' Plot shifted heatmaps per library
 #'
 #' Around CDS TISs, plot coverage.
@@ -492,7 +511,7 @@ shiftFootprintsByExperiment <- function(df,
 #' @examples
 #' df <- ORFik.template.experiment()
 #' df <- df[df$libtype == "RFP",][1,] #lets only p-shift first RFP sample
-#' #shiftFootprintsByExperiment(df, output_format = "bedo)
+#' #shiftFootprintsByExperiment(df, output_format = "ofst")
 #' #grob <- shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 #' #plot(grob) #Only plot in RStudio for small amount of files!
 shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
@@ -513,23 +532,29 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
   style <- seqinfo(df)
+  lib_names <- bamVarName(df, skip.experiment = TRUE)
   plots <- lapply(seq(nrow(df)),
                     function(x, cds, mrna, style, paths, df, upstream,
-                             downstream, type) {
-    miniTitle <- gsub("_", " ", bamVarName(df, skip.experiment = TRUE)[x])
+                             downstream, type, lib_names) {
+    miniTitle <- gsub("_", " ", lib_names[x])
     hitMap <- windowPerReadLength(cds, mrna,  fimport(paths[x], style),
                                   upstream = upstream, downstream = downstream)
+    hitMap[, frame := position %% 3]
+
     if (type == "heatmap") {
-      coverageHeatMap(hitMap, scoring = scoring, addFracPlot = addFracPlot,
+      p <- coverageHeatMap(hitMap, scoring = scoring, addFracPlot = addFracPlot,
                       title = miniTitle)
     } else {
-      hitMap[, frame := position %% 3]
-      pSitePlot(hitMap, scoring = scoring,
+      p <- pSitePlot(hitMap, scoring = scoring,
                 facet = TRUE, frameSum = TRUE, title = miniTitle)
     }
+    attr(p, "data") <- hitMap
+    p
   }, cds = cds, mrna = mrna, style = style,
      paths = filepath(df, "pshifted"), df = df, upstream = upstream,
-     downstream = downstream, type = type)
+     downstream = downstream, type = type, lib_names = lib_names)
+  browser()
+  data <- rbindlist(lapply(plots, function(p) attr(p, "data")), idcol = TRUE)
   res <- do.call("arrangeGrob", c(plots, ncol=1, top = title))
   if (!is.null(output)) {
     if (output == "auto") {
@@ -541,8 +566,11 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
     ggsave(output, res,
            width = 225, height = (length(res) -1) * height_scaler,
            units = "mm", dpi = dpi, limitsize = FALSE)
+    fst::write_fst(data, paste0(output, ".fst"))
     message("Saved pshift plots to location: ",
             output)
   }
+  attr(res, "data") <- data
+
   return(res)
 }

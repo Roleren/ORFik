@@ -1,6 +1,6 @@
 valid_orf_categories <- function() {
   c("uORF", "uoORF", "annotated", "NTE", "NTT",  "CTT",
-    "CTE", "internal", "doORF", "dORF", "a_error")
+    "CTE", "internal", "doORF", "dORF", "ncORF","a_error")
 }
 
 categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, mrna,
@@ -9,8 +9,26 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   stopifnot(is.integer(groupings) & (max(groupings) <= length(mrna)))
   # Prepare CDS
   tx_ORF <- names(mrna)[groupings]
-  cds_txcoord <- ranges(unlist(pmapToTranscriptF(cds, mrna)))
-  cds_txcoord <- cds_txcoord[chmatch(tx_ORF, names(cds))]
+  tx_noncoding <- mrna[!(names(mrna) %in% names(cds))]
+
+  # Initialize empty vector of same length as orfs_unl
+  cds_txcoord <- IRanges(start = 0, end = -1)
+
+  # Determine which are coding
+  is_coding <- tx_ORF %in% names(cds)
+
+  # Map coding ORFs
+  cds_mapped <- ranges(unlist(pmapToTranscriptF(cds, mrna[names(cds)])))
+  mapped_idx <- chmatch(tx_ORF[is_coding], names(cds))  # Order matched to tx_ORF[coding]
+  cds_txcoord[is_coding] <- cds_mapped[mapped_idx]
+
+  # Fake CDS ranges for noncoding ORFs
+  cds_txcoord[!is_coding] <- IRanges(start = -1L, end = -1L)
+
+  # Now cds_txcoord is in same order as orfs_unl / tx_ORF
+  stopifnot(length(cds_txcoord) == length(orfs_unl))
+  stopifnot(all(!is.na(start(cds_txcoord))))
+
 
   # Create categories
   is_uORF <- start(orfs_unl) < start(cds_txcoord)
@@ -23,6 +41,7 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   is_internal <- (start(orfs_unl) > start(cds_txcoord)) & (end(orfs_unl) < end(cds_txcoord))
   is_doORF <- (start(orfs_unl) > start(cds_txcoord))  & (end(orfs_unl) > end(cds_txcoord))
   is_dORF <- is_doORF & (start(orfs_unl) > end(cds_txcoord))
+  is_noncoding <- !is_coding
   ORF_type <- rep("a_error", length(orfs_unl))
   ORF_type[is_uORF] <- "uORF"
   ORF_type[is_uoORF] <- "uoORF"
@@ -34,6 +53,7 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   ORF_type[is_dORF] <- "dORF"
   ORF_type[is_CTT] <- "CTT"
   ORF_type[is_CTE] <- "CTE"
+  ORF_type[is_noncoding] <- "ncORF"
 
   if (verbose) print(table(ORF_type))
   if (any(ORF_type == "a_error")) {
@@ -127,6 +147,7 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #'  \item{internal : Starting inside CDS, ending before CDS ends}
 #'  \item{doORF : Downstream ORFs (Ending in 3' UTR), overlapping CDS}
 #'  \item{dORF : Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
+#'  \item{ncORF : Any ORF on a transcript without a defined CDS}
 #'  \item{a_error : Any ORF detect not in the above categories}
 #' }
 #' @param prefix_result the prefix name of output files to out_folder. Default:

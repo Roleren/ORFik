@@ -6,7 +6,7 @@
 #' @return a GRangesList of reads restricted to firstN and tiled by 1
 #' @keywords internal
 downstreamN <- function(grl, firstN = 150L) {
-  return(heads(tile1(grl, matchNaming = FALSE), firstN))
+  return(heads(tile1(grl, matchNaming = FALSE, mergeEqualNamed = FALSE), firstN))
 }
 
 #' Get list of widths per granges group
