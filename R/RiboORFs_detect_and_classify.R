@@ -12,7 +12,7 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   tx_noncoding <- mrna[!(names(mrna) %in% names(cds))]
 
   # Initialize empty vector of same length as orfs_unl
-  cds_txcoord <- IRanges(start = 0, end = -1)
+  cds_txcoord <- IRanges(start = rep(-1L, length(tx_ORF)), end = -1L)
 
   # Determine which are coding
   is_coding <- tx_ORF %in% names(cds)
@@ -21,9 +21,6 @@ categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, 
   cds_mapped <- ranges(unlist(pmapToTranscriptF(cds, mrna[names(cds)])))
   mapped_idx <- chmatch(tx_ORF[is_coding], names(cds))  # Order matched to tx_ORF[coding]
   cds_txcoord[is_coding] <- cds_mapped[mapped_idx]
-
-  # Fake CDS ranges for noncoding ORFs
-  cds_txcoord[!is_coding] <- IRanges(start = -1L, end = -1L)
 
   # Now cds_txcoord is in same order as orfs_unl / tx_ORF
   stopifnot(length(cds_txcoord) == length(orfs_unl))
