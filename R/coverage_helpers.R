@@ -560,13 +560,11 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
       }
       coverage <- c(coverage, temp_cov2)
     }
-    # # Order back the strands
-    # if (length(grl) > 1) {
-    #   names(coverage) <- ORFik::groupings(grl)
-    #   coverage[]
-    # }
+
     # To data.table
-    coverage <- data.table(count = as.integer(unlist(coverage, use.names = FALSE)))
+    coverage <- data.table(count = unlist(coverage, use.names = FALSE))
+    is_integers <- all(round(coverage$count, 0) == coverage$count)
+    if (is_integers) coverage[, count := as.integer(count)]
     coverage[, genes := rep.int(1L, nrow(coverage))]
 
   } else if (all(file_ext == "fstwig") | TRUE) {

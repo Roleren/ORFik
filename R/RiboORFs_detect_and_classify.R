@@ -213,7 +213,7 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                              orfs_gr = categorize_and_filter_ORFs(orf_candidate_ranges,
                                                                   ORF_categories_to_keep, cds, mrna),
                              export_metrics_table = TRUE,
-                             longestORF = FALSE, startCodon =  startDefinition(1),
+                             longestORF = FALSE, startCodon = startDefinition(1),
                              stopCodon = stopDefinition(1), minimumLength = 0,
                              minimum_reads_ORF = 10, minimum_reads_start = 3) {
   start_timer <- Sys.time()
