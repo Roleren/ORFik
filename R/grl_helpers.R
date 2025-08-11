@@ -190,11 +190,12 @@ reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
 #' strandPerGroup(grl)
 strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
-  if (keep.names) {
-    return(heads(strand(grl), 1L))
-  } else {
-    return(as.character(heads(strand(grl), 1L)))
+  starts <- start(IRanges::PartitioningByEnd(grl))
+  res <- strand(grl@unlistData)[starts]
+  if (!keep.names) {
+    return(as.character(res))
   }
+  return(res)
 }
 
 
