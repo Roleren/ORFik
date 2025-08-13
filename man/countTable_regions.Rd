@@ -46,9 +46,10 @@ for example uORFs or a subset of cds etc.}
 "log2fpkm" or "log10fpkm"}
 
 \item{lib.type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+or some precomputed variant, either "ofst", "pshifted" or "cov"
 These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
-Can also be custom user made folders inside the experiments bam folder.}
+Can also be custom user made folders inside the experiments bam folder.
+Format "cov" (i.e. covRle format) is by far the fastest to use if existing.}
 
 \item{weight}{numeric or character, a column to score overlaps by. Default "score",
 will check for a metacolumn called "score" in libraries. If not found,

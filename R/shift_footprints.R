@@ -341,7 +341,8 @@ detectRibosomeShifts <- function(footprints, txdb, start = TRUE, stop = FALSE,
 #' Output from \code{\link{detectRibosomeShifts}}.\cr
 #' Run \code{ORFik::shifts_load(df)} for an example of input. The names of the list must
 #' be the file.paths of the Ribo-seq libraries. Use this to edit the shifts, if
-#' you suspect some of them are wrong in an experiment.
+#' you suspect some of them are wrong in an experiment.\cr Can be a subset of libraries,
+#' i.e. all other libraries will use auto-detect.
 #' @return NULL (Objects are saved to out.dir/pshited/"name_pshifted.ofst",
 #' wig, bedo or .bedo)
 #' @importFrom rtracklayer export.bed
@@ -410,9 +411,8 @@ shiftFootprintsByExperiment <- function(df,
                           ) {
     message(file)
     rfp <- fimport(file)
-    if (!is.null(shift.list)) { # Pre defined shifts
-      shifts <- shift.list[file][[1]]
-    } else {
+    shifts <- shift.list[file][[1]]
+    if (is.null(shift.list)) { # Without Pre defined shifts
       shifts <- detectRibosomeShifts(rfp, txdb = loadTxdb(df), start = start,
                                      stop = stop, top_tx = top_tx,
                                      minFiveUTR = minFiveUTR,

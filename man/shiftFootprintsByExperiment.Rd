@@ -96,7 +96,8 @@ offsets_start (relative position in nt). 1 named data.frame / data.table per lib
 Output from \code{\link{detectRibosomeShifts}}.\cr
 Run \code{ORFik::shifts_load(df)} for an example of input. The names of the list must
 be the file.paths of the Ribo-seq libraries. Use this to edit the shifts, if
-you suspect some of them are wrong in an experiment.}
+you suspect some of them are wrong in an experiment.\cr Can be a subset of libraries,
+i.e. all other libraries will use auto-detect.}
 
 \item{log}{logical, default (TRUE), output a log file with parameters used and
 a .rds file with all shifts per library
