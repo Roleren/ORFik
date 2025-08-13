@@ -412,7 +412,8 @@ shiftFootprintsByExperiment <- function(df,
     message(file)
     rfp <- fimport(file)
     shifts <- shift.list[file][[1]]
-    if (is.null(shift.list)) { # Without Pre defined shifts
+    no_predefined_shifts <- is.null(shifts)
+    if (no_predefined_shifts) { # Without Pre defined shifts
       shifts <- detectRibosomeShifts(rfp, txdb = loadTxdb(df), start = start,
                                      stop = stop, top_tx = top_tx,
                                      minFiveUTR = minFiveUTR,
