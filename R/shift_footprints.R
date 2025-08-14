@@ -535,7 +535,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   style <- seqinfo(df)
   lib_names <- bamVarName(df, skip.experiment = TRUE)
   plots <- lapply(seq(nrow(df)),
-                    function(x, cds, mrna, style, paths, df, upstream,
+                    function(x, cds, mrna, style, paths, upstream,
                              downstream, type, lib_names) {
     miniTitle <- gsub("_", " ", lib_names[x])
     hitMap <- windowPerReadLength(cds, mrna,  fimport(paths[x], style),
@@ -552,9 +552,9 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
     attr(p, "data") <- hitMap
     p
   }, cds = cds, mrna = mrna, style = style,
-     paths = filepath(df, "pshifted"), df = df, upstream = upstream,
+     paths = filepath(df, "pshifted"), upstream = upstream,
      downstream = downstream, type = type, lib_names = lib_names)
-  browser()
+
   data <- rbindlist(lapply(plots, function(p) attr(p, "data")), idcol = TRUE)
   res <- do.call("arrangeGrob", c(plots, ncol=1, top = title))
   if (!is.null(output)) {

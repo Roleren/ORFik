@@ -460,7 +460,7 @@ filepath_errors <- function(format) {
 #' # outputLibs(df)
 #'
 #' @family ORFik_experiment
-outputLibs <- function(df, type = "default", paths = filepath(df, type),
+outputLibs <- function(df, type = "default", paths = filepath(df, type, suffix_stem = c("", "_pshifted")),
                        param = NULL, strandMode = 0, naming = "minimum",
                        library.names = name_decider(df, naming),
                        output.mode = "envir", chrStyle = NULL,
@@ -470,6 +470,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   stopifnot(is.character(type))
   stopifnot(length(library.names) == nrow(df) & is(library.names, "character"))
+  stopifnot(is.logical(force) & is.logical(verbose) & is.logical(validate_libs))
 
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)

@@ -38,6 +38,9 @@
 #' will check for a metacolumn called "score" in libraries. If not found,
 #' will not use weights.
 #' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file count table files.
+#' @param libraries The call to output libraries, the input is not used! Default:
+#' outputLibs(df, chrStyle = seqinfo(df), type = lib.type, force = force,
+#'  library.names = library.names, BPPARAM = BPPARAM)
 #' @param format character, default "qs", alternative: "rds". Which format to save summarizedExperiment.
 #' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
@@ -65,6 +68,11 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             lib.type = "ofst",
                                             weight = "score", forceRemake = FALSE,
                                             force = TRUE, library.names = bamVarName(df),
+                                            libraries = outputLibs(df, chrStyle = seqinfo(df),
+                                                                   paths = filepath(df, lib.type, suffix_stem = c("", "_pshifted")),
+                                                                   type = lib.type, force = force,
+                                                                   library.names = library.names,
+                                                                   BPPARAM = BPPARAM),
                                             format = "qs",
                                             BPPARAM = BiocParallel::SerialParam()) {
 
@@ -75,56 +83,26 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
       return(read_RDSQS(saveName))
     }
   }
-
-  stopifnot(length(geneOrTxNames) == 1)
-  stopifnot(geneOrTxNames %in% c("tx", "gene"))
   validateExperiments(df, library.names)
+  tx <- loadRegionCustom(df, region, geneOrTxNames, longestPerGene)
 
-  if (is(region, "character")) {
-    txdb <- loadTxdb(df)
-    if (longestPerGene) {
-      longestTxNames <- filterTranscripts(txdb, 0, 1, 0, longestPerGene = TRUE)
-      tx <- loadRegion(txdb, region, names.keep = longestTxNames)
-    } else tx <- loadRegion(txdb, region)
-  } else tx <- region
 
-  if (geneOrTxNames == "gene") {
-    if (!is(region, "character")) txdb <- loadTxdb(df)
-    names(tx) <- txNamesToGeneNames(names(tx), txdb)
-  }
-
-  varNames <- library.names
-  outputLibs(df, chrStyle = tx, type = lib.type, force = force,
-             library.names = library.names,
-             BPPARAM = BPPARAM)
-
-  rawCounts <- data.table(matrix(0, ncol = length(varNames),
+  rawCounts <- data.table(matrix(0, ncol = length(library.names),
                                  nrow = length(tx)))
+  colnames(rawCounts) <- library.names
   message("    - Counting overlaps")
-  for (i in seq(length(varNames))) { # For each sample
-    message(varNames[i])
+  envir <- envExp(df)
+  force(libraries)
+  for (lib in library.names) { # For each sample
+    message(lib)
     if (is.character(weight) & length(weight) == 1) {
-      if (!(weight %in% colnames(mcols(get(varNames[i], envir = envExp(df))))))
-        weight <- NULL
+      has_no_weights <- !(weight %in% colnames(mcols(get_lib_from_env(lib, envir))))
+      if (has_no_weights) weight <- NULL
     }
-
-    co <- countOverlapsW(tx, get(varNames[i], envir = envExp(df)), weight = weight)
-    rawCounts[, (paste0("V",i)) := co]
+    rawCounts[, (paste0(lib)) := countOverlapsW(tx, get_lib_from_env(lib, envir), weight = weight)]
   }
-  mat <- as.matrix(rawCounts);colnames(mat) <- NULL
+  res <- SummarizedExperimentExp(df, rawCounts, tx, library.names)
 
-  colData <- DataFrame(SAMPLE = as.factor(bamVarName(df, TRUE)),
-                       row.names=varNames)
-  # Add sample columns
-  if (!is.null(df$rep)) colData$replicate <- as.factor(df$rep)
-  if (!is.null(df$stage)) colData$stage <- as.factor(df$stage)
-  if (!is.null(df$libtype)) colData$libtype <- as.factor(df$libtype)
-  if (!is.null(df$condition)) colData$condition <- as.factor(df$condition)
-  if (!is.null(df$fraction))
-    colData$fraction <- as.factor(as.character(df$fraction))
-
-  res <- SummarizedExperiment(assays=list(counts=mat), rowRanges=tx,
-                              colData=colData)
   if (type %in% c("fpkm", "log2fpkm", "log10fpkm")) {
     res <- as.data.table(scoreSummarizedExperiment(res, score = type))
     rownames(res) <- names(tx)
@@ -137,6 +115,46 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
     save_RDSQS(res, file = saveName)
   }
   return(res)
+}
+
+SummarizedExperimentExp <- function(df, rawCounts, rowRanges, library.names = bamVarName(df)) {
+  mat <- as.matrix(rawCounts);colnames(mat) <- NULL
+  return(SummarizedExperiment(assays=list(counts=mat), rowRanges=rowRanges,
+                              colData=colDataFromExp(df, library.names)))
+}
+
+colDataFromExp <- function(df, library.names = bamVarName(df)) {
+  colData <- DataFrame(SAMPLE = as.factor(bamVarName(df, TRUE)),
+                       row.names=library.names)
+  # Add sample columns
+  if (!is.null(df$rep)) colData$replicate <- as.factor(df$rep)
+  if (!is.null(df$stage)) colData$stage <- as.factor(df$stage)
+  if (!is.null(df$libtype)) colData$libtype <- as.factor(df$libtype)
+  if (!is.null(df$condition)) colData$condition <- as.factor(df$condition)
+  if (!is.null(df$fraction)) colData$fraction <- as.factor(as.character(df$fraction))
+  return(colData)
+}
+
+get_lib_from_env <- function(lib_variable_name, envir = .GlobalEnv) {
+  return(get(lib_variable_name, envir))
+}
+
+loadRegionCustom <- function(df, region, geneOrTxNames = "tx", longestPerGene= TRUE) {
+  stopifnot(length(geneOrTxNames) == 1)
+  stopifnot(geneOrTxNames %in% c("tx", "gene"))
+  if (is(region, "character")) {
+    txdb <- loadTxdb(df)
+    if (longestPerGene) {
+      longestTxNames <- filterTranscripts(txdb, 0, 0, 0, longestPerGene = TRUE)
+      tx <- loadRegion(txdb, region, names.keep = longestTxNames)
+    } else tx <- loadRegion(txdb, region)
+  } else tx <- region
+
+  if (geneOrTxNames == "gene") {
+    if (!is(region, "character")) txdb <- loadTxdb(df)
+    names(tx) <- txNamesToGeneNames(names(tx), txdb)
+  }
+  return(tx)
 }
 
 #' Helper function for makeSummarizedExperimentFromBam
@@ -372,6 +390,9 @@ countTablePath <- function(df, region = "mrna", count.folder = "default") {
 #' for example uORFs or a subset of cds etc.
 #' @param rel.dir relative output directory for out.dir, default:
 #' "QC_STATS". For pshifted, write "pshifted".
+#' @param path_prefix the prefix names of tables, default:
+#' if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else NULL,
+#' i.e. directory + countTable_ or NULL if out.dir is NULL.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a list of data.table, 1 data.table per region. The regions
 #' will be the names the list elements.
@@ -381,7 +402,7 @@ countTablePath <- function(df, region = "mrna", count.folder = "default") {
 #' ##Make experiment
 #' df <- ORFik.template.experiment()
 #' ## Create count tables for all default regions
-#' # countTable_regions(df)
+#' countTable_regions(df, NULL)
 #' ## Pshifted reads (first create pshiftead libs)
 #' # countTable_regions(df, lib.type = "pshifted", rel.dir = "pshifted")
 countTable_regions <- function(df, out.dir = libFolder(df),
@@ -394,27 +415,34 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                rel.dir = "QC_STATS", forceRemake = FALSE,
                                library.names = bamVarName(df),
                                format = "qs",
+                               path_prefix = if (!is.null(out.dir)) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else NULL,
+                               libraries = outputLibs(df, chrStyle = seqinfo(df),
+                                                      paths = filepath(df, lib.type, suffix_stem = c("", "_pshifted")),
+                                                      type = lib.type, force = FALSE,
+                                                      library.names = library.names,
+                                                      BPPARAM = BiocParallel::SerialParam()),
                                BPPARAM = bpparam()) {
 
-  countDir <- pasteDir(file.path(out.dir, rel.dir, "countTable_"))
   libs <- bplapply(
     regions,
-    function(region, countDir, df, geneOrTxNames, longestPerGene, forceRemake,
-             library.names) {
+    function(region, path, df, geneOrTxNames, longestPerGene, forceRemake,
+             library.names, libraries) {
      message("- Creating read count tables for region:")
      message("  - ", region)
-     path <- paste0(countDir, region)
+     if (!is.null(path)) path <- paste0(path, region)
      makeSummarizedExperimentFromBam(df, region = region,
                                      geneOrTxNames = geneOrTxNames,
                                      longestPerGene = longestPerGene,
                                      saveName = path, lib.type = lib.type,
                                      library.names = library.names,
                                      forceRemake = forceRemake, force = FALSE,
+                                     libraries = libraries,
                                      format = format)
     },
-    countDir = countDir, df = df,
+    path = path_prefix, df = df,
     geneOrTxNames = geneOrTxNames, library.names = library.names,
-    longestPerGene = longestPerGene, forceRemake = forceRemake, BPPARAM = BPPARAM
+    longestPerGene = longestPerGene, libraries = libraries,
+    forceRemake = forceRemake, BPPARAM = BPPARAM
   )
   names(libs) <- regions
   return(libs)

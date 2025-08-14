@@ -814,11 +814,12 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 append.zeroes = FALSE,
                                 windows = startRegion(grl, tx, TRUE, upstream, downstream)) {
   if(length(reads) == 0 | length(grl) == 0) {
-    return(data.table())
+    return(empty_coverage_dt(scoring))
   }
   if (is.null(tx)) upstream <- min(upstream, 0)
-  if(!grl_has_any_valid_lengths(windows, upstream + downstream + 1))
-    return(data.table())
+  if(!grl_has_any_valid_lengths(windows, upstream + downstream + 1)) {
+    return(empty_coverage_dt(scoring))
+  }
 
   rWidth <- readWidths(reads)
   all_lengths <- sort(unique(rWidth))
@@ -836,6 +837,13 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   }
 
   dt[] # for print
+  return(dt)
+}
+
+empty_coverage_dt <- function(scoring) {
+  if (is.null(scoring)) {
+    dt <- data.table(count = integer(), genes = integer(), position = integer(), fraction = integer())
+  } else dt <- data.table(position = integer(), score = integer(), fraction = integer())
   return(dt)
 }
 
