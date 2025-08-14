@@ -17,6 +17,13 @@ countTable_regions(
   forceRemake = FALSE,
   library.names = bamVarName(df),
   format = "qs",
+  path_prefix = if (!is.null(out.dir)) {
+     pasteDir(file.path(out.dir, rel.dir,
+    "countTable_"))
+ } else NULL,
+  libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type,
+    suffix_stem = c("", "_pshifted")), type = lib.type, force = FALSE, library.names =
+    library.names, BPPARAM = BiocParallel::SerialParam()),
   BPPARAM = bpparam()
 )
 }
@@ -65,6 +72,14 @@ libraries as to environment and names to display in plots.}
 
 \item{format}{character, default "qs", alternative: "rds". Which format to save summarizedExperiment.}
 
+\item{path_prefix}{the prefix names of tables, default:
+if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else NULL,
+i.e. directory + countTable_ or NULL if out.dir is NULL.}
+
+\item{libraries}{The call to output libraries, the input is not used! Default:
+outputLibs(df, chrStyle = seqinfo(df), type = lib.type, force = force,
+ library.names = library.names, BPPARAM = BPPARAM)}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
@@ -79,7 +94,7 @@ all libraries in experiment. Saved as "qs" or "rds" format files.
 ##Make experiment
 df <- ORFik.template.experiment()
 ## Create count tables for all default regions
-# countTable_regions(df)
+countTable_regions(df, NULL)
 ## Pshifted reads (first create pshiftead libs)
 # countTable_regions(df, lib.type = "pshifted", rel.dir = "pshifted")
 }

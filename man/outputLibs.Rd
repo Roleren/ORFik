@@ -7,7 +7,7 @@
 outputLibs(
   df,
   type = "default",
-  paths = filepath(df, type),
+  paths = filepath(df, type, suffix_stem = c("", "_pshifted")),
   param = NULL,
   strandMode = 0,
   naming = "minimum",
