@@ -599,7 +599,8 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
     res[, start_segment := pmax(start - i.start + 1, 1)]
     res[, end_segment := pmin(end - i.start + 1, i.end - i.start + 1)]
     res[, strand := as.character(strand(gr)[query_id])]
-    res[, file := ifelse(strand == "+", file_forward, file_reverse)][]
+    res[, file := ifelse(strand == "+", file_forward, file_reverse)]
+    res[order(query_id),][]
   })
 
   # Read data from appropriate files using offset
