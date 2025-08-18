@@ -416,6 +416,17 @@ removeMetaCols <- function(grl) {
   return(grl)
 }
 
+#' @export
+setMethod("as.character", "GRangesList", function(x, ...) {
+  if (length(x) == 0) return(character())
+  u <- unlist(x, use.names = FALSE)
+  per <- paste0(seqnames(u), ":", start(u), "-", end(u), ":", as.character(strand(u)))
+  cl <- relist(per, x)
+  res <- unstrsplit(cl, sep = ";")
+  # names(res) <- names(x)
+  return(res)
+})
+
 #' Convert a character vector to GRangesList
 #' @param x a character vector
 #' @return a GRangesList
@@ -428,8 +439,12 @@ makeGRangesListFromCharacter <- function(x) {
 
   str_split <- strsplit(x, ";")
   gr <- as(unlist(str_split), "GRanges")
-  return(split(gr, groupings(str_split)))
+  res <- split(gr, groupings(str_split))
+  names(res) <- names(x)
+  return(res)
 }
+
+
 
 
 
