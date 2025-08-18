@@ -416,6 +416,23 @@ removeMetaCols <- function(grl) {
   return(grl)
 }
 
+#' Convert a character vector to GRangesList
+#' @param x a character vector
+#' @return a GRangesList
+#' @export
+#' @examples
+#' vec <- c("1:14598834-14598914:+", "1:15210514-15210562:+;1:15214895-15215025:+")
+#' makeGRangesListFromCharacter(vec)
+makeGRangesListFromCharacter <- function(x) {
+  if (length(x) == 0) return(GRangesList())
+
+  str_split <- strsplit(x, ";")
+  gr <- as(unlist(str_split), "GRanges")
+  return(split(gr, groupings(str_split)))
+}
+
+
+
 #' Get number of ranges per group as an iteration
 #'
 #' @param grl GRangesList
