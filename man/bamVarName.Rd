@@ -10,7 +10,7 @@ bamVarName(
   skip.condition = length(unique(df$condition)) == 1,
   skip.stage = length(unique(df$stage)) == 1,
   skip.fraction = length(unique(df$fraction)) == 1,
-  skip.experiment = !df@expInVarName,
+  skip.experiment = !tryCatch(df@expInVarName, error = function(e) FALSE),
   skip.libtype = FALSE,
   fraction_prepend_f = TRUE
 )

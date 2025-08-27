@@ -132,42 +132,6 @@ validateExperiments <- function(df, library.names = bamVarName(df), validate_lib
 #'
 #' What will each sample be called given the columns of the experiment?
 #' A column is included if more than 1 unique element value exist in that column.
-#' @inheritParams bamVarNamePicker
-#' @return variable names of libraries (character vector)
-#' @export
-#' @family ORFik_experiment
-#' @examples
-#' df <- ORFik.template.experiment()
-#' bamVarName(df)
-#'
-#' ## without libtype
-#' bamVarName(df, skip.libtype = TRUE)
-#' ## Without experiment name
-#' bamVarName(df, skip.experiment = TRUE)
-bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
-                       skip.condition = length(unique(df$condition)) == 1,
-                       skip.stage = length(unique(df$stage)) == 1,
-                       skip.fraction = length(unique(df$fraction)) == 1,
-                       skip.experiment = !df@expInVarName,
-                       skip.libtype = FALSE,
-                       fraction_prepend_f = TRUE) {
-  dfl <- df
-  if(!is(dfl, "list")) dfl <- list(dfl)
-  varName <- character()
-  for (df in dfl) {
-    res <- vapply(seq(1, nrow(df), length.out = nrow(df)),
-                  function(i) bamVarNamePicker(df[i,], skip.replicate,
-                                               skip.condition, skip.stage,
-                                               skip.fraction,
-                                               skip.experiment, skip.libtype,
-                                               fraction_prepend_f), character(1))
-    varName <- c(varName, res)
-  }
-  return(varName)
-}
-
-#' Get variable name per filepath in experiment
-#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
@@ -180,49 +144,78 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' @param skip.libtype a logical (FALSE), don't include libtype
 #' @param fraction_prepend_f a logical (TRUE), include "f" in front of
 #' fraction, useful for knowing what fraction is.
-#' @return variable name of library (character vector)
-#' @keywords internal
-bamVarNamePicker <- function(df, skip.replicate = FALSE,
-                             skip.condition = FALSE,
-                             skip.stage = FALSE, skip.fraction = FALSE,
-                             skip.experiment = FALSE, skip.libtype = FALSE,
-                             fraction_prepend_f = TRUE) {
-  if(nrow(df) != 1) stop("experiment must only input 1 row")
-  lib <- df$libtype
-  stage <- df$stage
-  cond <- df$condition
-  rep <- df$rep
-  frac <- df$fraction
-  current <- ""
-  # Add only underscore if x is not ""
-  spaste <- function(x, y, reverse = FALSE) {
-    if (reverse)
-      return(paste(x, y, sep = ifelse(y %in% "", "", "_")))
-    return(paste(x, y, sep = ifelse(x %in% "", "", "_")))
-  }
-  if (!skip.libtype)
-    current <- lib
-  if(!(skip.condition | is.na(cond)))
-    current <- spaste(current, cond)
-  if (!(skip.stage | is.na(stage)))
-    current <- spaste(current, stage)
-  if (!(skip.fraction | is.null(frac) | is.na(frac))) {
-    if (frac != "") {
-      if (fraction_prepend_f) {
-        current <- spaste(current, paste0("f", frac))
-      } else current <- spaste(current, frac)
+#' @return variable names of libraries (character vector)
+#' @export
+#' @family ORFik_experiment
+#' @examples
+#' df <- ORFik.template.experiment()
+#' bamVarName(df)
+#'
+#' ## without libtype
+#' bamVarName(df, skip.libtype = TRUE)
+#' ## Without experiment name
+#' bamVarName(df, skip.experiment = TRUE)
+bamVarName <- function(df,
+                       skip.replicate  = length(unique(df$rep)) == 1,
+                       skip.condition  = length(unique(df$condition)) == 1,
+                       skip.stage      = length(unique(df$stage)) == 1,
+                       skip.fraction   = length(unique(df$fraction)) == 1,
+                       skip.experiment = !tryCatch(df@expInVarName, error = function(e) FALSE),
+                       skip.libtype    = FALSE,
+                       fraction_prepend_f = TRUE) {
+
+  # Make input always a list of data.frames/experiments
+  dfl <- if (!is(df, "list")) list(df) else df
+  varName <- character()
+
+  for (d in dfl) {
+    n <- nrow(d)
+    if (n == 0L) next
+
+    # helper to coerce, remove NA/NULL/""
+    clean <- function(x) {
+      if (is.null(x)) return(rep("", n))
+      y <- as.character(x)
+      y[is.na(y)] <- ""
+      y
     }
 
+    # extract columns (treated as "" when skipped or missing)
+    lib   <- if (skip.libtype) rep("", n) else clean(d$libtype)
+    cond  <- if (skip.condition) rep("", n) else clean(d$condition)
+    stage <- if (skip.stage)     rep("", n) else clean(d$stage)
+
+    frac <- if (skip.fraction) rep("", n) else clean(d$fraction)
+    if (fraction_prepend_f) {
+      has_frac <- frac != ""
+      frac[has_frac] <- paste0("f", frac[has_frac])
+    }
+
+    repv <- if (skip.replicate) rep("", n) else clean(d$rep)
+    repv <- ifelse(repv == "", "", paste0("r", repv))
+
+    # vectorized “smart paste”: add "_" only when both sides non-empty
+    spaste <- function(x, y) ifelse(y == "", x, ifelse(x == "", y, paste0(x, "_", y)))
+
+    current <- lib
+    current <- spaste(current, cond)
+    current <- spaste(current, stage)
+    current <- spaste(current, frac)
+    current <- spaste(current, repv)
+
+    # experiment prefix (same as original: prefix if not skipped and slot exists)
+    exp_name <- tryCatch(d@experiment, error = function(e) NULL)
+    if (!is.null(exp_name) && !isTRUE(skip.experiment)) {
+      current <- ifelse(current == "", exp_name, paste0(exp_name, "_", current))
+    }
+
+    # cleanup like original
+    current <- gsub("__+", "_", current, perl = TRUE)
+    current <- sub("_$", "", current, perl = TRUE)
+
+    varName <- c(varName, current)
   }
-  # TODO: FIX _NA for replicates
-  if (!(skip.replicate | is.null(rep) | is.na(rep) | (rep == "")))
-    current <- spaste(current, paste0("r", rep))
-  if (! (skip.experiment | is.null(df@experiment)))
-    current <- spaste(df@experiment, current, TRUE)
-
-  current <- gsub(pattern = "__", "_", current, fixed = TRUE)
-
-  return(sub("_$", "", current, perl = TRUE))
+  varName
 }
 
 #' Get filepaths to ORFik experiment

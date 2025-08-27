@@ -491,7 +491,9 @@ exists.ftp.file.fast <- function(url, report.error = FALSE) {
 #' @param ref_path = path.expand(config()["ref"])
 #' @return character, name of FileSystem drive of mounted path,
 #' NA_character_ if not found
-#' @noRd
+#' @export
+#' @examples
+#' detect_drive(tempdir())
 detect_drive <- function(ref_path = path.expand(config()["ref"])) {
   if (.Platform$OS.type != "unix") return(NA_character_)
   ref_path <- path.expand(ref_path)
