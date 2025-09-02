@@ -787,6 +787,7 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
 
   experiments <- grep(experiments, pattern = pattern, value = TRUE)
   experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
+  experiments <- pasteDir(dir, experiments)
   if (length(experiments) == 0) {
     message(paste("Searching for experiments in dir:", dir))
     stop("No experiments found, have you made any ?")
