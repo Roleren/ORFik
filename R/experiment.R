@@ -784,13 +784,6 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
                              BPPARAM = if(!validate){ BiocParallel::SerialParam()} else
                                BiocParallel::bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
-  if (length(experiments) == 0) { # This will only trigger on CBU server @ UIB
-    cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
-    if (dir.exists(cbu.path)) { # If on UIB SERVER
-      dir <- cbu.path
-      experiments <- list.files(path = dir, pattern = "\\.csv")
-    }
-  }
 
   experiments <- grep(experiments, pattern = pattern, value = TRUE)
   experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
@@ -800,9 +793,16 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
   }
 
   info <- bplapply(experiments, function(x, dir, validate) { # Open each experiment in parallell
-    e <- read.experiment(x, dir, validate)
-    list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism,
-         author = e@author)
+    if (validate) {
+      e <- read.experiment(x, dir, validate)
+      list(libtype = unique(e$libtype), runs = length(e$libtype),
+           organism = e@organism, author = e@author)
+    } else {
+      e <- read.experiment.as.list(x, dir)
+      e$libtype <- e$parse_list$listData$libtype
+      list(libtype = unique(e$libtype), runs = length(e$libtype),
+           organism = e$org, author = e$author)
+    }
   }, dir = dir, validate = validate, BPPARAM = BPPARAM)
 
   info <- unlist(info, recursive = FALSE)

@@ -41,6 +41,21 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                              validate = TRUE, output.env = .GlobalEnv) {
   stopifnot(is.environment(output.env))
   stopifnot(is.logical(validate))
+
+  list <- read.experiment.as.list(file, in.dir)
+  df <- experiment(experiment = list$exper, txdb = list$txdb, fafile = list$fa,
+                   organism = list$org, author = list$author,
+                   assembly = list$assembly,
+                   listData = list$parse_list$listData,
+                   expInVarName = FALSE,
+                   resultFolder = list$resultFolder,
+                   envir = output.env)
+
+  if (validate) validateExperiments(df)
+  return(df)
+}
+
+read.experiment.as.list <- function(file, in.dir = ORFik::config()["exp"]) {
   # Split up metadata and library data
   parse_list <- experiment_parse_list_info(file, in.dir)
 
@@ -53,21 +68,13 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
   author <- ifelse(info[3,5] == "author" & !is.na(info[3,6]),
                    info[3,6], "")
   resultFolder <- ifelse(info[1, 3] == "results" & !is.na(info[1,4]),
-                          info[1,4], "")
+                         info[1,4], "")
   exper <- info[1, 2]
   txdb <- ifelse(is.na(info[2, 2]),  "", info[2, 2])
   fa <- ifelse(is.na(info[3, 2]),  "", info[3, 2])
-
-  df <- experiment(experiment = exper, txdb = txdb, fafile = fa,
-                   organism = org, author = author,
-                   assembly = assembly,
-                   listData = parse_list$listData,
-                   expInVarName = FALSE,
-                   resultFolder = resultFolder,
-                   envir = output.env)
-
-  if (validate) validateExperiments(df)
-  return(df)
+  return(list(parse_list = parse_list, info = info, assembly = assembly,
+              org = org, author = author, resultFolder = resultFolder,
+              exper = exper, txdb = txdb, fa = fa))
 }
 
 #' Create an ORFik \code{\link{experiment}}
