@@ -317,22 +317,18 @@ experiment_parse_list_info <- function(file, in.dir) {
       stopifnot(is.character(in.dir))
       file <- pasteDir(in.dir, file)
     }
-    if (!file.exists(file)) { # This will only trigger on CBU server @ UIB
-      cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R"
-      if (file.exists(file.path(cbu.path, basename(file))))
-        file <- file.path(cbu.path, basename(file))
-    }
 
     info <- read.table(file, sep = ",", nrows = 3, stringsAsFactors = FALSE)
-    listData <- read.csv2(file, skip = 3, header = TRUE, sep = ",",
+    listData <- fread(file, skip = 3, header = TRUE, sep = ",",
                           stringsAsFactors = FALSE)
   } else if(is(file, "data.frame")) {
     if (nrow(file) < 5) stop("For data.frame input, file must have > 4 rows")
     info <- file[seq(3),]
     listData <- file[-seq(4),]
     colnames(listData) <- file[4,]
-  } else stop("file must be either character or data.frame template")
-  listData <- cbind(listData, index = as.integer(seq.int(nrow(listData))))
+  } else stop("file must be either character path or data.frame template")
+  setDT(listData)
+  listData[, index := as.integer(seq.int(nrow(listData)))]
 
   return(list(listData = listData, info = info))
 }
