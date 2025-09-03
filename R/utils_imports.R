@@ -157,6 +157,23 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
   } else return(matchSeqStyle(readGAlignments(path, param = param), chrStyle))
 }
 
+#' Read read sequences from bam
+#'
+#' The 'seq' flag of the bam, with a specified number of rows
+#' @param path path to bam file
+#' @param yieldSize integer, default 1e5, number of reads to read in,
+#' set to NA to get full file.
+#' @return a DNAStringSet of length yieldSize (all in file if NA was specified)
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment.zf()
+#' bam_file_path <- filepath(df, "default")
+#' readBamSeqs(bam_file_path, 1e2)
+readBamSeqs <- function(path, yieldSize = 1e5) {
+  param <- ScanBamParam(what = "seq")
+  return(scanBam(BamFile(path, yieldSize = yieldSize), param = param)[[1]]$seq)
+}
+
 #' Custom wig reader
 #'
 #' Given 2 wig files, first is forward second is reverse.

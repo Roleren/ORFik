@@ -6,11 +6,11 @@
 \usage{
 ofst_merge(
   file_paths,
-  lib_names = sub(pattern = "\\\\.ofst$", replacement = "", basename(file_paths)),
+  lib_names = sub("\\\\.ofst$", "", basename(file_paths)),
   keep_all_scores = TRUE,
   keepCigar = TRUE,
   sort = TRUE,
-  max_splits = 20
+  max_splits = 20L
 )
 }
 \arguments{

@@ -69,13 +69,16 @@ Only allowed for .ofst files!
 df2 <- ORFik.template.experiment()
 df2 <- df2[df2$libtype == "RFP",]
 # Merge all
-#mergeLibs(df2, tempdir(), mode = "all", type = "default")
+mergeLibs(df2, tempdir(), mode = "all", type = "default")
 # Read as GRanges with mcols
-#fimport(file.path(tempdir(), "all.ofst"))
-# Read as direct fst data.table
-#read_fst(file.path(tempdir(), "all.ofst"))
+fimport(file.path(tempdir(), "all.ofst"))
+# Only keep total score, Read as direct fst data.table
+mergeLibs(df2, tempdir(), mode = "all", type = "default", keep_all_scores = FALSE)
+read_fst(file.path(tempdir(), "all.ofst"))
 # Collapse replicates
-#mergeLibs(df2, tempdir(), mode = "rep", type = "default")
-# Collapse by lib types
+mergeLibs(df2, tempdir(), mode = "rep", type = "default")
+paths <- file.path(tempdir(), paste0("RFP_", c("Mutant", "WT"), ".ofst"))
+lapply(paths, fimport)
+# Collapse by lib types (same as "all" in this case)
 #mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 }
