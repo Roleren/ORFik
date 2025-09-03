@@ -151,9 +151,9 @@ ofst_merge <- function(file_paths,
   stopifnot(length(file_paths) == length(lib_names))
   .validate_schema(file_paths)
 
-  # plan splits
+  # Plan splits against data.table's index limit
   row_numbers <- unlist(lapply(file_paths, function(x)
-    data.table(fst::metadata_fst(x)$nrOfRows)))
+    data.table::data.table(fst::metadata_fst(x)$nrOfRows)))
   plan <- .plan_splits(row_numbers, limit = 2^31, max_splits = max_splits)
 
   if (!plan$must_split) {
@@ -186,34 +186,57 @@ ofst_merge <- function(file_paths,
     )
   })
 
-
+  # Second-round: combine chunks
   if (length(chunk_list) == 1L) {
-    message("Split round 2")
     dt <- chunk_list[[1L]]
-    # be explicit about keys and sorting
     merge_keys <- .keys_nonlib_nonscore(dt, lib_names)
     if (keep_all_scores) dt <- .recompute_total_score(dt, lib_names)
+    if (sort && length(merge_keys)) data.table::setorderv(dt, merge_keys)
+    # if ("seqnames" %in% names(dt)) stopifnot(!anyNA(dt$seqnames))
+    return(dt)
+  }
+
+  if (keep_all_scores) {
+    message("Split round 2")
+    merge_keys <- .keys_nonlib_nonscore(chunk_list[[1L]], lib_names)
+    if (!length(merge_keys)) stop("Could not determine merge keys (non-library, non-score columns).")
+    dt <- .merge_by_keys_reduce(chunk_list, by = merge_keys, sort = FALSE)
+    dt <- .recompute_total_score(dt, lib_names)
   } else {
     message("Split round 2")
-    if (keep_all_scores) {
-      merge_keys <- .keys_nonlib_nonscore(chunk_list[[1L]], lib_names)
-      if (!length(merge_keys)) stop("Could not determine merge keys.")
-      dt <- .merge_by_keys_reduce(chunk_list, by = merge_keys, sort = FALSE)
-      dt <- .recompute_total_score(dt, lib_names)
-    } else {
-      dt_all <- rbindlist(chunk_list, use.names = TRUE, fill = TRUE)
-      merge_keys <- setdiff(names(dt_all), "score")
-      if (!length(merge_keys)) stop("No non-score columns to group by when keep_all_scores = FALSE.")
-      dt <- dt_all[, .(score = sum(score, na.rm = TRUE)), by = merge_keys]
-    }
+    dt_all <- data.table::rbindlist(chunk_list, use.names = TRUE, fill = TRUE)
+    merge_keys <- setdiff(names(dt_all), "score")
+    if (!length(merge_keys)) stop("No non-score columns to group by when keep_all_scores = FALSE.")
+    dt <- dt_all[, .(score = sum(score, na.rm = TRUE)), by = merge_keys]
   }
+
   if (sort && length(merge_keys)) data.table::setorderv(dt, merge_keys)
+  # if ("seqnames" %in% names(dt)) stopifnot(!anyNA(dt$seqnames))
   return(dt)
+}
+
+.normalize_dt <- function(d) {
+  # Coerce common key cols to character (never factors)
+  if ("seqnames" %in% names(d) && is.factor(d$seqnames))
+    data.table::set(d, j = "seqnames", value = as.character(d$seqnames))
+  if ("strand" %in% names(d) && is.factor(d$strand))
+    data.table::set(d, j = "strand", value = as.character(d$strand))
+  if ("cigar" %in% names(d) && is.factor(d$cigar))
+    data.table::set(d, j = "cigar", value = as.character(d$cigar))
+  # Make sure integer-like coords are integer (optional, but consistent)
+  for (col in intersect(c("start","end","size"), names(d))) {
+    if (is.double(d[[col]])) data.table::set(d, j = col, value = as.integer(round(d[[col]])))
+  }
+  d
+}
+
+.read_fst_list <- function(paths) {
+  lapply(paths, function(x) .normalize_dt(fst::read_fst(x, as.data.table = TRUE)))
 }
 
 .validate_schema <- function(paths) {
   meta <- table(unlist(lapply(paths, function(x)
-    data.table(fst::metadata_fst(x)$columnNames))))
+    data.table::data.table(fst::metadata_fst(x)$columnNames))))
   if (!all(meta == length(paths))) {
     print(meta)
     stop("Some libraries had columns not in others! ",
@@ -238,12 +261,8 @@ ofst_merge <- function(file_paths,
   stop("max_splits = ", max_splits, " is not enough for safe chunking.")
 }
 
-.read_fst_list <- function(paths) {
-  lapply(paths, function(x) read_fst(x, as.data.table = TRUE))
-}
-
 .merge_by_keys_reduce <- function(dt_list, by, sort = FALSE) {
-  Reduce(function(x, y) merge(x, y, by = by, all = TRUE, sort = sort), dt_list)
+  Reduce(function(x, y) merge.data.table(x, y, by = by, all = TRUE, sort = sort), dt_list)
 }
 
 .keys_nonlib_nonscore <- function(dt, lib_names) {
@@ -252,49 +271,60 @@ ofst_merge <- function(file_paths,
 
 .recompute_total_score <- function(dt, lib_names) {
   present_libs <- intersect(lib_names, names(dt))
-  if (!length(present_libs)) {
-    stop("No per-library columns present; cannot recompute total score.")
-  }
+  if (!length(present_libs)) stop("No per-library columns present; cannot recompute total score.")
   dt[, score := rowSums(.SD, na.rm = TRUE), .SDcols = present_libs]
   dt
 }
+
+# ---------- Internal merge (keepCigar-aware; factor-free) ----------
 
 ofst_merge_internal <- function(dt_list,
                                 lib_names,
                                 keep_all_scores = TRUE,
                                 keepCigar = TRUE,
                                 sort = TRUE) {
-
   stopifnot(length(dt_list) == length(lib_names))
 
   if (keep_all_scores) {
-    # If not keeping cigar, pre-collapse within each library by keys without 'cigar'
+    # If not keeping CIGAR, collapse per-library by keys without 'cigar'
     if (!keepCigar && "cigar" %in% names(dt_list[[1L]])) {
       keys_no_cigar <- setdiff(names(dt_list[[1L]]), c("score", "cigar"))
       dt_list <- lapply(dt_list, function(d)
         d[, .(score = sum(score, na.rm = TRUE)), by = keys_no_cigar])
     }
 
+    # Normalize all chunks (coerce factors -> character, etc.)
+    dt_list <- lapply(dt_list, .normalize_dt)
+
+    # Merge keys = all non-score columns (includes cigar only if kept)
     merge_keys <- setdiff(names(dt_list[[1L]]), "score")
 
-    # One lib per dt in this phase: rename score -> lib column
-    for (i in seq_along(dt_list)) data.table::setnames(dt_list[[i]], "score", lib_names[i])
+    # One library per dt here: rename 'score' -> its library name
+    for (i in seq_along(dt_list))
+      data.table::setnames(dt_list[[i]], old = "score", new = lib_names[i])
 
+    # Merge all libraries by keys, outer join
     dt <- .merge_by_keys_reduce(dt_list, by = merge_keys, sort = sort)
+
+    # Recompute row-wise total score
     dt <- .recompute_total_score(dt, lib_names)
 
   } else {
-    # Only totals needed: stack & collapse duplicates (respect keepCigar)
+    # Totals only: stack & collapse duplicates (respect keepCigar)
     if (!keepCigar && "cigar" %in% names(dt_list[[1L]])) {
       dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
     }
+    dt_list <- lapply(dt_list, .normalize_dt)
+
     dt <- collapseDuplicatedReads(
-      rbindlist(dt_list, use.names = TRUE, fill = TRUE),
+      data.table::rbindlist(dt_list, use.names = TRUE, fill = TRUE),
       addSizeColumn = TRUE,
       keepCigar = keepCigar
     )
+
     if (sort) data.table::setorderv(dt, setdiff(names(dt), "score"))
   }
+
   dt
 }
 
