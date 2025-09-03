@@ -151,7 +151,7 @@ ofst_merge <- function(file_paths,
   stopifnot(length(file_paths) == length(lib_names))
   .validate_schema(file_paths)
 
-  # Plan splits against data.table's index limit
+  # Plan splits vs data.table's index limit
   row_numbers <- unlist(lapply(file_paths, function(x)
     data.table::data.table(fst::metadata_fst(x)$nrOfRows)))
   plan <- .plan_splits(row_numbers, limit = 2^31, max_splits = max_splits)
@@ -190,51 +190,59 @@ ofst_merge <- function(file_paths,
   if (length(chunk_list) == 1L) {
     dt <- chunk_list[[1L]]
     merge_keys <- .keys_nonlib_nonscore(dt, lib_names)
-    if (keep_all_scores) dt <- .recompute_total_score(dt, lib_names)
+    if (keep_all_scores) {
+      dt <- .downcast_cols_if_safe(dt, lib_names)  # ensure per-lib types
+      dt <- .recompute_total_score(dt, lib_names)
+      dt <- .downcast_score_if_safe(dt)
+    }
     if (sort && length(merge_keys)) data.table::setorderv(dt, merge_keys)
-    # if ("seqnames" %in% names(dt)) stopifnot(!anyNA(dt$seqnames))
     return(dt)
   }
 
   if (keep_all_scores) {
-    message("Split round 2")
     merge_keys <- .keys_nonlib_nonscore(chunk_list[[1L]], lib_names)
     if (!length(merge_keys)) stop("Could not determine merge keys (non-library, non-score columns).")
+
     dt <- .merge_by_keys_reduce(chunk_list, by = merge_keys, sort = FALSE)
+
+    # After outer-merge of chunks, per-lib cols may be double; downcast each if safe
+    dt <- .downcast_cols_if_safe(dt, lib_names)
+
+    # Recompute grand total and downcast if safe
     dt <- .recompute_total_score(dt, lib_names)
+    dt <- .downcast_score_if_safe(dt)
+
   } else {
-    message("Split round 2")
     dt_all <- data.table::rbindlist(chunk_list, use.names = TRUE, fill = TRUE)
     merge_keys <- setdiff(names(dt_all), "score")
     if (!length(merge_keys)) stop("No non-score columns to group by when keep_all_scores = FALSE.")
     dt <- dt_all[, .(score = sum(score, na.rm = TRUE)), by = merge_keys]
+    dt <- .downcast_score_if_safe(dt)
   }
 
   if (sort && length(merge_keys)) data.table::setorderv(dt, merge_keys)
-  # if ("seqnames" %in% names(dt)) stopifnot(!anyNA(dt$seqnames))
-  return(dt)
+  dt
 }
 
 .normalize_dt <- function(d) {
-  # Defensive: convert any factors to plain character safely
+  # Robustly coerce possible factors (even malformed) to character
   for (col in intersect(c("seqnames","strand","cigar"), names(d))) {
-    if (is.factor(d[[col]])) {
-      # Use format() to bypass malformed factor issues
-      d[[col]] <- as.character(levels(d[[col]])[as.integer(d[[col]])])
+    v <- d[[col]]
+    if (is.factor(v)) {
+      # Decode factor codes via levels[] indexing to survive malformed factors
+      lv <- levels(v)
+      codes <- as.integer(v)
+      d[[col]] <- as.character(lv[pmax.int(pmin.int(codes, length(lv)), 1L)])
+      # Any out-of-range codes turn into NA via indexing outside [1, nlevels]
+      d[[col]][is.na(codes) | codes < 1L | codes > length(lv)] <- NA_character_
     }
-    # Make sure it's character
-    if (!is.character(d[[col]]))
-      d[[col]] <- as.character(d[[col]])
+    if (!is.character(d[[col]])) d[[col]] <- as.character(d[[col]])
   }
-
-  # Make sure integer-like coords are integer
-  for (col in intersect(c("start","end","size"), names(d))) {
-    if (is.double(d[[col]])) {
-      d[[col]] <- as.integer(round(d[[col]]))
-    }
+  # Ensure integer-like coords are integer (optional, keeps joins precise)
+  for (col in intersect(c("start","end","size","width"), names(d))) {
+    if (is.double(d[[col]])) d[[col]] <- as.integer(round(d[[col]]))
   }
-
-  return(data.table::setDT(d))
+  data.table::setDT(d)
 }
 
 .read_fst_list <- function(paths) {
@@ -283,7 +291,29 @@ ofst_merge <- function(file_paths,
   dt
 }
 
-# ---------- Internal merge (keepCigar-aware; factor-free) ----------
+.int32_max <- 2^31 - 1
+.int32_min <- -.int32_max
+
+.is_safe_int32 <- function(x) {
+  if (!is.double(x)) return(FALSE)                 # only handle double -> int
+  if (anyNA(x) || any(!is.finite(x))) return(FALSE)
+  # exact integers within int32 bounds
+  if (any(x != round(x))) return(FALSE)
+  r <- range(x)
+  (r[1] >= .int32_min) && (r[2] <= .int32_max)
+}
+
+.downcast_cols_if_safe <- function(dt, cols) {
+  cols <- intersect(cols, names(dt))
+  for (col in cols) {
+    x <- dt[[col]]
+    if (is.integer(x)) next
+    if (.is_safe_int32(x)) data.table::set(dt, j = col, value = as.integer(round(x)))
+  }
+  invisible(dt)
+}
+
+.downcast_score_if_safe <- function(dt) .downcast_cols_if_safe(dt, "score")
 
 ofst_merge_internal <- function(dt_list,
                                 lib_names,
@@ -293,28 +323,32 @@ ofst_merge_internal <- function(dt_list,
   stopifnot(length(dt_list) == length(lib_names))
 
   if (keep_all_scores) {
-    # If not keeping CIGAR, collapse per-library by keys without 'cigar'
+    # If not keeping CIGAR, pre-collapse per library by keys excluding 'cigar'
     if (!keepCigar && "cigar" %in% names(dt_list[[1L]])) {
       keys_no_cigar <- setdiff(names(dt_list[[1L]]), c("score", "cigar"))
       dt_list <- lapply(dt_list, function(d)
         d[, .(score = sum(score, na.rm = TRUE)), by = keys_no_cigar])
     }
 
-    # Normalize all chunks (coerce factors -> character, etc.)
+    # Normalize all chunks (remove factors -> character, fix coords)
     dt_list <- lapply(dt_list, .normalize_dt)
 
-    # Merge keys = all non-score columns (includes cigar only if kept)
+    # Merge keys = all non-score columns (includes 'cigar' only if kept)
     merge_keys <- setdiff(names(dt_list[[1L]]), "score")
 
-    # One library per dt here: rename 'score' -> its library name
+    # One library per dt here: rename 'score' -> the lib's column
     for (i in seq_along(dt_list))
       data.table::setnames(dt_list[[i]], old = "score", new = lib_names[i])
 
     # Merge all libraries by keys, outer join
     dt <- .merge_by_keys_reduce(dt_list, by = merge_keys, sort = sort)
 
-    # Recompute row-wise total score
+    # Downcast per-library columns if safe (requested)
+    dt <- .downcast_cols_if_safe(dt, lib_names)
+
+    # Recompute row-wise total score, then downcast total if safe
     dt <- .recompute_total_score(dt, lib_names)
+    dt <- .downcast_score_if_safe(dt)
 
   } else {
     # Totals only: stack & collapse duplicates (respect keepCigar)
@@ -330,11 +364,13 @@ ofst_merge_internal <- function(dt_list,
     )
 
     if (sort) data.table::setorderv(dt, setdiff(names(dt), "score"))
+
+    # Downcast total score if safe
+    dt <- .downcast_score_if_safe(dt)
   }
 
   dt
 }
-
 
 #' Collapse duplicated reads
 #'
