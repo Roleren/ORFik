@@ -815,7 +815,7 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
   organism <- unlist(info[names(info) == "organism"])
   author <- unlist(info[names(info) == "author"])
 
-  dt <- data.table(name = gsub(".csv", "", experiments), organism, author,libtypes, samples)
+  dt <- data.table(name = gsub("\\.csv", "", basename(experiments)), organism, author,libtypes, samples)
   dt <- dt[order(organism, name),]
   if (!is.null(libtypeExclusive)) {
     message(paste("subset on libtype:", libtypeExclusive))
