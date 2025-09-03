@@ -216,18 +216,25 @@ ofst_merge <- function(file_paths,
 }
 
 .normalize_dt <- function(d) {
-  # Coerce common key cols to character (never factors)
-  if ("seqnames" %in% names(d) && is.factor(d$seqnames))
-    data.table::set(d, j = "seqnames", value = as.character(d$seqnames))
-  if ("strand" %in% names(d) && is.factor(d$strand))
-    data.table::set(d, j = "strand", value = as.character(d$strand))
-  if ("cigar" %in% names(d) && is.factor(d$cigar))
-    data.table::set(d, j = "cigar", value = as.character(d$cigar))
-  # Make sure integer-like coords are integer (optional, but consistent)
-  for (col in intersect(c("start","end","size"), names(d))) {
-    if (is.double(d[[col]])) data.table::set(d, j = col, value = as.integer(round(d[[col]])))
+  # Defensive: convert any factors to plain character safely
+  for (col in intersect(c("seqnames","strand","cigar"), names(d))) {
+    if (is.factor(d[[col]])) {
+      # Use format() to bypass malformed factor issues
+      d[[col]] <- as.character(levels(d[[col]])[as.integer(d[[col]])])
+    }
+    # Make sure it's character
+    if (!is.character(d[[col]]))
+      d[[col]] <- as.character(d[[col]])
   }
-  d
+
+  # Make sure integer-like coords are integer
+  for (col in intersect(c("start","end","size"), names(d))) {
+    if (is.double(d[[col]])) {
+      d[[col]] <- as.integer(round(d[[col]]))
+    }
+  }
+
+  return(data.table::setDT(d))
 }
 
 .read_fst_list <- function(paths) {
