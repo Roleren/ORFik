@@ -10,7 +10,8 @@ ofst_merge(
   keep_all_scores = TRUE,
   keepCigar = TRUE,
   sort = TRUE,
-  max_splits = 20L
+  max_splits = 20L,
+  dt_max_index_size = 2^31
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ faster to load, but some additional merging time is added.}
 \item{max_splits}{integer, default 20. If number of rows to merge > 2^31,
 how many times can you allow split merging to try to "rescue" the merging
 process?}
+
+\item{dt_max_index_size}{2^31, the number of rows data.table support, set lower
+to merge split on lower counts}
 }
 \value{
 a data.table of merged result, it is merged on all columns except "score".

@@ -149,7 +149,8 @@ ofst_merge <- function(file_paths,
                        lib_names = sub("\\.ofst$", "", basename(file_paths)),
                        keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE,
                        max_splits = 20L, dt_max_index_size = 2^31) {
-  stopifnot(length(file_paths) > 0 && is.character(file_paths) && all(file.exists(file_paths)))
+  stopifnot(length(file_paths) > 0 && is.character(file_paths))
+  stopifnot(all(file.exists(file_paths)))
   stopifnot(length(file_paths) == length(lib_names))
   if (keep_all_scores) stopifnot(length(lib_names) == length(unique(lib_names)))
   .validate_schema(file_paths)
@@ -217,7 +218,6 @@ ofst_merge <- function(file_paths,
   for (col in intersect(c("start","end","size","width"), names(d))) {
     if (is.double(d[[col]])) d[[col]] <- as.integer(round(d[[col]]))
   }
-  data.table::setDT(d)
 }
 
 .read_fst_list <- function(paths) {
@@ -307,7 +307,6 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
     if (!chunkified) {
       # Normalize & collapse per-library BEFORE merging
       dt_list <- lapply(dt_list, function(d) {
-        d <- .normalize_dt(d)
         keys <- setdiff(names(d), "score")
         if (!keepCigar && "cigar" %in% keys) keys <- setdiff(keys, "cigar")
         d[, .(score = sum(score, na.rm = TRUE)), by = keys]
@@ -330,7 +329,6 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
       if (!keepCigar && "cigar" %in% colnames) {
         dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
       }
-      dt_list <- lapply(dt_list, .normalize_dt)
     }
     dt <- collapseDuplicatedReads(
       data.table::rbindlist(dt_list, use.names = TRUE, fill = TRUE),
