@@ -218,6 +218,7 @@ ofst_merge <- function(file_paths,
   for (col in intersect(c("start","end","size","width"), names(d))) {
     if (is.double(d[[col]])) d[[col]] <- as.integer(round(d[[col]]))
   }
+  return(d)
 }
 
 .read_fst_list <- function(paths) {
