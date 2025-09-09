@@ -289,16 +289,16 @@ setMethod("QCfolder",
 #' @param x an ORFik \code{\link{experiment}}
 #' @param mode character, default "first". Alternatives: "unique", "all". Unique
 #' means the unique directories, not to be confused with unique_mappers argument below.
-#' @param unique_mappers logical, default FALSE. If true appends unique_mappers to path
+#' @param unique_mappers logical, default uniqueMappers(x) If true appends unique_mappers to path
 #' @return a character path
 #' @export
-setGeneric("libFolder", function(x, mode = "first", unique_mappers = uniqueMappers(df))
+setGeneric("libFolder", function(x, mode = "first", unique_mappers = uniqueMappers(x))
   standardGeneric("libFolder"))
 
 #' @inherit libFolder
 setMethod("libFolder",
           "experiment",
-          function(x, mode = "first", unique_mappers = uniqueMappers(df)) {
+          function(x, mode = "first", unique_mappers = uniqueMappers(x)) {
             path <-
             if (mode == "first") {
               dirname(x$filepath[1])
