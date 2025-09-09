@@ -22,9 +22,14 @@
 #' folder_to_save <- file.path(tempdir(), "ofst")
 #' convert_bam_to_ofst(df, out_dir = folder_to_save)
 #' fimport(file.path(folder_to_save, "ribo-seq.ofst"))
-convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
-                            out_dir = file.path(libFolder(df), "ofst"),
-                            verbose = TRUE, strandMode = rep(0, length(in_files))) {
+#' folder_to_save_unique <- file.path(tempdir(), "unique_mappers", "ofst")
+#' convert_bam_to_ofst(df, out_dir = folder_to_save_unique, only_unique_mappers = TRUE)
+#' fimport(file.path(folder_to_save_unique, "ribo-seq.ofst"))
+convert_bam_to_ofst <- function(df,
+                            in_files =  filepath(df, "default"),
+                            out_dir = file.path(libFolder(df, unique_mappers = only_unique_mappers), "ofst"),
+                            verbose = TRUE, strandMode = rep(0, length(in_files)),
+                            only_unique_mappers = uniqueMappers(df)) {
   stopifnot(all(is(strandMode, "numeric")))
   stopifnot(length(in_files) > 0)
   if (!is.null(df)) {
@@ -34,7 +39,7 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
   }
   lib_names <- remove.file_ext(basename(in_files))
   out_filepaths <- file.path(out_dir, paste0(lib_names, ".ofst"))
-  dir.create(out_dir, showWarnings = FALSE)
+  dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
   if (verbose) message("-- Converting bam to ofst")
   if (verbose) message("Output to dir: ", out_dir)
   total_files <- length(out_filepaths)
@@ -43,7 +48,8 @@ convert_bam_to_ofst <- function(df, in_files =  filepath(df, "default"),
     if (verbose) message("- Library", index, ": ", lib_names[i])
     out_file <- out_filepaths[i]
     in_file <- in_files[i]
-    export.ofst(readBam(in_file, strandMode = strandMode[i]), out_file)
+    export.ofst(readBam(in_file, strandMode = strandMode[i], only_unique_mappers = only_unique_mappers),
+                out_file)
   }
   if (verbose) message("Done")
   return(invisible(NULL))

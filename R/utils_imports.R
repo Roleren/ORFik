@@ -71,6 +71,9 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
 #' This is to guarantee hits, but will also make mismatches of overlapping
 #' transcripts in opposite directions.
+#' @param only_unique_mappers, logical, default FALSE. Only load unique mappers.
+#' For bam files it extracts NH flag, for other formats, it presumes the presence of
+#' a directory './unique_mappers' relative to bam file directory.
 #' @return a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
 #' @importFrom Rsamtools scanBam BamFile ScanBamParam
 #' @export
@@ -78,7 +81,8 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @examples
 #' bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 #' readBam(bam_file, "UCSC")
-readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
+readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
+                    only_unique_mappers = FALSE) {
   if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
   if (is(path, "factor")) path <- as.character(path)
   # If data.table path
@@ -91,15 +95,12 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
       if (length(bam) == 0)
         stop(paste("File", path$forward,
                    "was read as paired-end file, but had 0 paired reads!"))
-      return(bam)
     } else {
       message("ORFik reads these split paired end bams as readGAlignments combination")
-      return(matchSeqStyle(c(readGAlignments(path$forward, param = param),
-                             readGAlignments(path$reverse, param = param)), chrStyle))
+      bam <- matchSeqStyle(c(readGAlignments(path$forward, param = param),
+                             readGAlignments(path$reverse, param = param)), chrStyle)
     }
-  }
-  # If character path
-  if (is(path, "character") & length(path) == 2) {
+  } else if (is(path, "character") & length(path) == 2) {
     if (path[2] == "paired-end"){
       message("ORFik reads paired end bam in as readGAlignmentPairs")
       message(paste("strandMode =", strandMode, ". Update it if is wrong!"))
@@ -108,70 +109,107 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
       if (length(bam) == 0)
         stop(paste("File", path[1],
                    "was read as paired-end file, but had 0 paired reads!"))
-      return(bam)
     } else {
       message("ORFik reads these split paired end bams as readGAlignments combination")
-      return(matchSeqStyle(c(readGAlignments(path[1], param = param),
-                             readGAlignments(path[2], param = param)), chrStyle))
+      bam <- matchSeqStyle(c(readGAlignments(path[1], param = param),
+                             readGAlignments(path[2], param = param)), chrStyle)
+    }
+  } else {
+    bam <- matchSeqStyle(readGAlignments(path, param = param), chrStyle)
+
+    if (bamIsCollapsed(path)) {
+      scores <- bamLoadCollapsedScores(path, param)
+      if (ncol(mcols(bam)) > 0) {
+        mcols(bam) <- cbind(DataFrame(score = scores), mcols(bam))
+      } else mcols(bam) <- DataFrame(score = scores)
     }
   }
-  # else single end bam file
 
+  if (only_unique_mappers) {
+    unique_mapper_status <- readBamIsUniqueMapper(path)
+    if (length(bam) != length(unique_mapper_status[[1]]))
+      stop("Not equal length to unique mapper status vector and bam file!")
+    bam <- bam[unique_mapper_status[[1]] == TRUE]
+  }
+  return(bam)
+}
+
+bamIsCollapsed <- function(path, yieldSize = 2) {
   # Check if it is a collapsed reads format bam file
   # Get qnames with the data (check first 2 rows)
-  headers <- unlist(scanBam(BamFile(path, yieldSize=2),
+  headers <- unlist(scanBam(BamFile(path, yieldSize=yieldSize),
                             param = ScanBamParam(what = "qname")),
                     use.names = FALSE)
   # Check with and without extra ">" start sign
-  bam.is.collapsed <- all(seq_along(headers) %in%
-                            grep("(^(>|>seq)\\d+(-|_x)\\d+$)|(^(seq)\\d+(-|_x)\\d+$)", headers))
-  if (bam.is.collapsed) {
-    if (is.null(param)) {
-      param_header <- ScanBamParam(what = "qname")
-    } else {
-      param_header <- param
-      bamTag(param_header) <- character(0) # Else tags can be loaded too
-      bamWhat(param_header) <- "qname"
-    }
-    headers <- unlist(scanBam(path, param = param_header),
-                      use.names = FALSE)
-    format.header <- ifelse(all(seq_along(headers) %in%
-                                  grep("^>seq\\d+_x\\d+$|^seq\\d+_x\\d+$", headers)),
-                            "ribotoolkit",
-                            "fastx")
-    scores <- if (format.header == "ribotoolkit") {
-      as.integer(gsub(".*_x", "", headers))
-    } else {
-      as.integer(gsub(".*-", "", headers))
-    }
-    if (anyNA(scores)) {
-      stop("Bam file was read as collapsed bam with score column in qname,
-           but score format contains NA values, report on github if you need help.")
-    }
-    bam <- matchSeqStyle(readGAlignments(path, param = param), chrStyle)
-    if (ncol(mcols(bam)) > 0) {
-      mcols(bam) <- cbind(DataFrame(score = scores), mcols(bam))
-    } else mcols(bam) <- DataFrame(score = scores)
-
-    return(bam)
-  } else return(matchSeqStyle(readGAlignments(path, param = param), chrStyle))
+  return(all(seq_along(headers) %in%
+               grep("(^(>|>seq)\\d+(-|_x)\\d+$)|(^(seq)\\d+(-|_x)\\d+$)",
+                    headers)))
 }
 
-#' Read read sequences from bam
+bamLoadCollapsedScores <- function(path, param) {
+  if (is.null(param)) {
+    param_header <- ScanBamParam(what = "qname")
+  } else {
+    param_header <- param
+    bamTag(param_header) <- character(0) # Else tags can be loaded too
+    bamWhat(param_header) <- "qname"
+  }
+  headers <- unlist(scanBam(path, param = param_header),
+                    use.names = FALSE)
+  format.header <- ifelse(all(seq_along(headers) %in%
+                                grep("^>seq\\d+_x\\d+$|^seq\\d+_x\\d+$", headers)),
+                          "ribotoolkit",
+                          "fastx")
+  scores <- if (format.header == "ribotoolkit") {
+    as.integer(gsub(".*_x", "", headers))
+  } else {
+    as.integer(gsub(".*-", "", headers))
+  }
+  if (anyNA(scores)) {
+    stop("Bam file was read as collapsed bam with score column in qname,
+           but score format contains NA values, report on github if you need help.")
+  }
+
+  return(scores)
+}
+
+#' Read sequences from bam
 #'
 #' The 'seq' flag of the bam, with a specified number of rows
 #' @param path path to bam file
-#' @param yieldSize integer, default 1e5, number of reads to read in,
-#' set to NA to get full file.
+#' @param yieldSize integer, default NA_integer_, number of reads to read in,
+#' set to NA_integer_ to get full file.
 #' @return a DNAStringSet of length yieldSize (all in file if NA was specified)
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment.zf()
 #' bam_file_path <- filepath(df, "default")
 #' readBamSeqs(bam_file_path, 1e2)
-readBamSeqs <- function(path, yieldSize = 1e5) {
+readBamSeqs <- function(path, yieldSize = NA_integer_) {
   param <- ScanBamParam(what = "seq")
   return(scanBam(BamFile(path, yieldSize = yieldSize), param = param)[[1]]$seq)
+}
+
+#' Read unique mapper status from bam
+#'
+#' The 'seq' flag of the bam, with a specified number of rows
+#' @param paths paths to bam files
+#' @inheritParams readBamSeqs
+#' @return a list of logical elements, 1 for each bam file, TRUE is unique
+#' mapper.
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment.zf()
+#' bam_file_path <- filepath(df, "default")
+#' readBamIsUniqueMapper(bam_file_path, 1e2)
+readBamIsUniqueMapper <- function(bam_paths, yieldSize = NA_integer_) {
+  param <- ScanBamParam(tag = c("NH"))
+  list <- lapply(bam_paths, function(bam) {
+    scanBam(BamFile(bam, yieldSize = yieldSize), param=param)[1][[1]]$tag$NH == 1
+  })
+  names(list) <- basename(bam_paths)
+  attr(list, "unique_mappers_summary") <- sapply(list, table)
+  return(list)
 }
 
 #' Custom wig reader
@@ -430,7 +468,8 @@ import.ofst <- function(file, strandMode = 0, seqinfo = NULL) {
 #' fimport(bam_file, strandMode = 1)
 #' # (will have no effect in this case, since it is not paired end)
 #'
-fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
+fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
+                    only_unique_mappers = FALSE) {
   if (is(path, "data.table")) {
     if (ncol(path) == 2 & colnames(path) == c("forward", "reverse")) {
       path <- c(path$forward, path$reverse)
@@ -462,14 +501,14 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0) {
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
         } else if (all(fext %in% c("bam"))) {
-          return(readBam(path, chrStyle, param, strandMode))
+          return(readBam(path, chrStyle, param, strandMode, only_unique_mappers))
         } else if (all(fext %in% c("bigWig", "bw"))) {
           return(readBigWig(path, chrStyle))
         } else stop("only bigWig (bw), wig and bam formats allowed for 2 files input!")
       } else if (length(path) == 1) { # Only 1 file path given
         if (fext == "bam") {
           if (pairedEndBam) path <- c(path, "paired-end")
-          return(readBam(path, chrStyle, param, strandMode))
+          return(readBam(path, chrStyle, param, strandMode, only_unique_mappers))
         } else if (fext == "bed" |
                    file_ext(file_path_sans_ext(path,
                                                compression = TRUE)) == "bed" |

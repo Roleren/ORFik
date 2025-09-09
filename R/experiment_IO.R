@@ -48,6 +48,7 @@ read.experiment <-  function(file, in.dir = ORFik::config()["exp"],
                    assembly = list$assembly,
                    listData = list$parse_list$listData,
                    expInVarName = FALSE,
+                   uniqueMappers = FALSE,
                    resultFolder = list$resultFolder,
                    envir = output.env)
 

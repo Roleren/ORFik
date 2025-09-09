@@ -261,9 +261,11 @@ bamVarName <- function(df,
 filepath <- function(df, type, basename = FALSE,
                      fallback = type %in% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
                      suffix_stem = "AUTO",
-                     base_folders = libFolder(df)) {
+                     base_folders = libFolder(df, unique_mappers = only_unique_mappers),
+                     only_unique_mappers = uniqueMappers(df) & type != "default") {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
   stopifnot(length(type) == 1)
+
   rel_folder <- c(cov = "cov_RLE/", covqs = "cov_RLE/",
                   covl = "cov_RLE_List/", covlqs = "cov_RLE_List/",
                   bigwig = "bigwig/",
@@ -282,13 +284,13 @@ filepath <- function(df, type, basename = FALSE,
 
 filepath_internal <- function(x, df, type, base_folders, suffix_stem, rel_folder,
                               basename, fallback) {
+  if (all(suffix_stem == "AUTO")) suffix_stem <- c("", "_pshifted")
   i <- which(df$filepath == x)
   base_folder <- base_folders[i]
   name_stem <- remove.file_ext(x, basename = TRUE)
   found_valid_file <- FALSE
   input <- NULL
   if (type == "pshifted") {
-    if (all(suffix_stem == "AUTO")) suffix_stem <- "_pshifted"
     out.dir.type <- file.path(base_folder, rel_folder["pshifted"])
     type_dir_exists <- dir.exists(out.dir.type)
     if (type_dir_exists) {
@@ -395,7 +397,8 @@ filepath_errors <- function(format) {
 #' - "bed": Load bed files, from bed folder (falls back to default)\cr
 #' - Other formats must be loaded directly with fimport
 #' @param paths character vector, the filpaths to use,
-#' default \code{filepath(df, type)}. Change type argument if not correct.
+#' default \code{filepath(df, type, only_unique_mappers = only_unique_mappers)}.
+#' Change type argument if not what is wanted.
 #' If that is not enough, then you can also update this argument.
 #' But be careful about using this directly.
 #' @param naming a character (default: "minimum"). Name files as minimum
@@ -420,6 +423,9 @@ filepath_errors <- function(format) {
 #' @param validate_libs logical, default TRUE. If FALSE, don't check that default
 #' files exists (i.e. bam files), useful if you are using pshifted ofst etc
 #' and don't have the bams anymore.
+#' @param only_unique_mappers logical, default \code{uniqueMappers(df)}.
+#' Load file of only unique format type, located in './unique_mappers' relative
+#' to bam files / default files. See ?uniqueMappers for more information.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
@@ -453,12 +459,15 @@ filepath_errors <- function(format) {
 #' # outputLibs(df)
 #'
 #' @family ORFik_experiment
-outputLibs <- function(df, type = "default", paths = filepath(df, type, suffix_stem = c("", "_pshifted")),
+outputLibs <- function(df, type = "default",
+                       paths = filepath(df, type,
+                             only_unique_mappers = only_unique_mappers),
                        param = NULL, strandMode = 0, naming = "minimum",
                        library.names = name_decider(df, naming),
                        output.mode = "envir", chrStyle = NULL,
                        envir = envExp(df), verbose = TRUE, force = TRUE,
                        validate_libs = TRUE,
+                       only_unique_mappers = uniqueMappers(df),
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   stopifnot(is.character(type))
@@ -477,20 +486,25 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type, suffix_s
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       if (is(BPPARAM, "SerialParam")) {
         libs <- lapply(seq_along(paths),
-                       function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
+                       function(i, paths, df, chrStyle, param, strandMode, varNames, verbose,
+                                only_unique_mappers) {
                            if (verbose) message(paste(i, ": ", varNames[i]))
-                           fimport(paths[i], chrStyle, param, strandMode)
+                           fimport(paths[i], chrStyle, param, strandMode,
+                                   only_unique_mappers)
                          }, paths = paths, chrStyle = chrStyle, df = df,
                          param = param, strandMode = strandMode, varNames = varNames,
-                         verbose = verbose)
+                         verbose = verbose, only_unique_mappers = only_unique_mappers)
       } else {
         libs <- bplapply(seq_along(paths),
-                         function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
+                         function(i, paths, df, chrStyle, param, strandMode, varNames, verbose,
+                                  only_unique_mappers) {
                            if (verbose) message(paste(i, ": ", varNames[i]))
-                           fimport(paths[i], chrStyle, param, strandMode)
+                           fimport(paths[i], chrStyle, param, strandMode,
+                                   only_unique_mappers)
                          }, paths = paths, chrStyle = chrStyle, df = df,
                          param = param, strandMode = strandMode, varNames = varNames,
-                         verbose = verbose, BPPARAM = BPPARAM)
+                         verbose = verbose, only_unique_mappers = only_unique_mappers,
+                         BPPARAM = BPPARAM)
       }
 
       # assign to environment
@@ -498,6 +512,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type, suffix_s
         for (i in 1:nrow(df)) { # For each stage
           attr(libs[[i]], "exp") <- name(df)
           attr(libs[[i]], "name_short") <- varNames[i]
+          attr(libs[[i]], "unique_mappers") <- only_unique_mappers
           if (mode(libs[[i]]) == "S4") attr(libs[[i]], "filepath") <- paths[i]
           assign(varNames[i], libs[[i]], envir = envir)
         }

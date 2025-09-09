@@ -340,7 +340,7 @@ countTable <- function(df, region = "mrna", type = "count",
 
 countTablePath <- function(df, region = "mrna", count.folder = "default") {
   # TODO fix bug if deseq!
-  experiment <- NULL
+  full_path <- experiment <- NULL
   if (is(df, "experiment")) {
     if (nrow(df) == 0) stop("df experiment has 0 rows (samples)!")
     experiment <- df

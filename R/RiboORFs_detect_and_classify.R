@@ -1,6 +1,6 @@
 valid_orf_categories <- function() {
   c("uORF", "uoORF", "annotated", "NTE", "NTT",  "CTT",
-    "CTE", "internal", "doORF", "dORF", "ncORF","a_error")
+    "CTE", "internal", "doORF", "dORF", "ncORF","a_error", "all")
 }
 
 categorize_ORFs <- function(orfs_unl, groupings = strtoi(names(orfs_unl)), cds, mrna,
@@ -71,6 +71,8 @@ categorize_and_filter_ORFs <- function(orfs, ORF_categories_to_keep,
                                        map_to_gr = TRUE) {
   stopifnot(length(ORF_categories_to_keep) > 0)
   stopifnot(all(ORF_categories_to_keep %in% valid_orf_categories()))
+  if ("all" %in% ORF_categories_to_keep)
+    ORF_categories_to_keep <- valid_orf_categories()[-length(valid_orf_categories)]
 
   orfs_unl <- unlist(orfs, use.names = TRUE)
   groupings <- strtoi(names(orfs_unl))
@@ -132,7 +134,7 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' @inheritParams outputLibs
 #' @param out_folder Directory to save files
 #' @param ORF_categories_to_keep options, any subset of: \code{c("uORF", "uoORF", "annotated", "NTE",
-#' "NTT", "internal", "doORF", "dORF", "a_error")}.
+#' "NTT", "internal", "doORF", "dORF", "ncORF", "a_error", "all")}.
 #' \itemize{
 #'  \item{uORF : Upstream ORFs (Starting in 5' UTR), not overlapping CDS}
 #'  \item{uoORF : Upstream ORFs (Starting in 5' UTR), overlapping CDS}
@@ -146,6 +148,7 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #'  \item{dORF : Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
 #'  \item{ncORF : Any ORF on a transcript without a defined CDS}
 #'  \item{a_error : Any ORF detect not in the above categories}
+#'  \item{all : use all ORF types above}
 #' }
 #' @param prefix_result the prefix name of output files to out_folder. Default:
 #' \code{paste(c(ORF_categories_to_keep, gsub(" ", "_", organism(df))), collapse = "_")}

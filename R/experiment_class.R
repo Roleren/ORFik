@@ -111,6 +111,7 @@ experiment <- setClass("experiment",
                                   assembly = "character",
                                   author = "character",
                                   expInVarName = "logical",
+                                  uniqueMappers = "logical",
                                   envir = "environment",
                                   resultFolder = "character"),
                        contains = "DFrame")
@@ -130,10 +131,11 @@ setMethod("show",
           function(object) {
             type <- ifelse(length(unique(object@listData$libtype)) == 1,
                            "type", "types")
-            cat("experiment:", object@experiment, "with",
-                length(unique(object@listData$libtype)), "library", type, "and",
+            cat("ORFik experiment:", object@experiment, if (object@author != "") paste0("(", object@author, "et al.)"), "\n")
+            cat("Libraries: ", length(unique(object@listData$libtype)), "library", type, "and",
                 length(object@listData$libtype), "runs","\n")
-            if (object@author != "") cat(object@author, "et al. \n")
+            cat("Organism:", organism(object), ifelse(object@assembly != "", paste0("(", object@assembly,")"), ""), "\n")
+            if (uniqueMappers(object)) cat("Unique mappers status: Only unique\n")
 
             obj <- as.data.table(as(object@listData, Class = "DataFrame"))
             withr::local_options(list(datatable.print.class = FALSE))
@@ -285,15 +287,18 @@ setMethod("QCfolder",
 #' Get path to ORFik experiment library folder
 #'
 #' @param x an ORFik \code{\link{experiment}}
-#' @param mode character, default "first". Alternatives: "unique", "all".
+#' @param mode character, default "first". Alternatives: "unique", "all". Unique
+#' means the unique directories, not to be confused with unique_mappers argument below.
+#' @param unique_mappers logical, default FALSE. If true appends unique_mappers to path
 #' @return a character path
 #' @export
-setGeneric("libFolder", function(x, mode = "first") standardGeneric("libFolder"))
+setGeneric("libFolder", function(x, mode = "first", unique_mappers = uniqueMappers(df))
+  standardGeneric("libFolder"))
 
 #' @inherit libFolder
 setMethod("libFolder",
           "experiment",
-          function(x, mode = "first") {
+          function(x, mode = "first", unique_mappers = uniqueMappers(df)) {
             path <-
             if (mode == "first") {
               dirname(x$filepath[1])
@@ -302,6 +307,7 @@ setMethod("libFolder",
             } else if (mode == "all") {
               dirname(x$filepath)
             } else stop("argument 'mode', must be either first, unique or all")
+            if (unique_mappers) path <- file.path(path, "unique_mappers")
             return(path)
           }
 )
@@ -318,6 +324,47 @@ setMethod("refFolder",
           "experiment",
           function(x) {
             return(dirname(x@fafile))
+          }
+)
+
+#' Get ORFik uniqueMappers status
+#'
+#' Do you want to load/save libraries with unique mappers only,
+#' for bam it subsets from file, for other formats it presumes a
+#' directory './unique_mappers' relative to bam directory.
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a logical (length 1)
+#' @export
+setGeneric("uniqueMappers", function(x) standardGeneric("uniqueMappers"))
+
+#' Set ORFik uniqueMappers status
+#'
+#' Do you want to load/save libraries with unique mappers only,
+#' for bam it subsets from file, for other formats it presumes a
+#' directory './unique_mappers' relative to bam directory.
+#' @param x an ORFik \code{\link{experiment}}
+#' @param value a logical (length 1) (NA values not allowed)
+#' @return an ORFik \code{\link{experiment}} with updated uniqueMappers
+#' @export
+setGeneric("uniqueMappers<-", function(x, value) standardGeneric("uniqueMappers<-"))
+
+#' @inherit uniqueMappers
+setMethod("uniqueMappers",
+          "experiment",
+          function(x) {
+            x@uniqueMappers
+          }
+)
+
+#' @inherit uniqueMappers<-
+setMethod("uniqueMappers<-",
+          "experiment",
+          function(x, value) {
+            stopifnot(is.logical(value))
+            stopifnot(length(value) == 1)
+            if (anyNA(value)) stop("uniqueMappers must be non NA logical")
+            x@uniqueMappers <- value
+            return(x)
           }
 )
 
