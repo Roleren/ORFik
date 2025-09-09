@@ -46,7 +46,8 @@ to default lib folder, some types fall back to other formats if folder does not 
 score columns are named the libraries full name from \code{bamVarName(df)}.}
 
 \item{paths}{character vector, the filpaths to use,
-default \code{filepath(df, type)}. Change type argument if not correct.
+default \code{filepath(df, type, only_unique_mappers = only_unique_mappers)}.
+Change type argument if not what is wanted.
 If that is not enough, then you can also update this argument.
 But be careful about using this directly.}
 

@@ -4,7 +4,13 @@
 \alias{readBam}
 \title{Custom bam reader}
 \usage{
-readBam(path, chrStyle = NULL, param = NULL, strandMode = 0)
+readBam(
+  path,
+  chrStyle = NULL,
+  param = NULL,
+  strandMode = 0,
+  only_unique_mappers = FALSE
+)
 }
 \arguments{
 \item{path}{a character / data.table with path to .bam file. There
@@ -56,6 +62,10 @@ One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
 See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
 This is to guarantee hits, but will also make mismatches of overlapping
 transcripts in opposite directions.}
+
+\item{only_unique_mappers, }{logical, default FALSE. Only load unique mappers.
+For bam files it extracts NH flag, for other formats, it presumes the presence of
+a directory './unique_mappers' relative to bam file directory.}
 }
 \value{
 a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file

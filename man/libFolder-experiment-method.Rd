@@ -4,12 +4,15 @@
 \alias{libFolder,experiment-method}
 \title{Get path to ORFik experiment library folder}
 \usage{
-\S4method{libFolder}{experiment}(x, mode = "first")
+\S4method{libFolder}{experiment}(x, mode = "first", unique_mappers = uniqueMappers(df))
 }
 \arguments{
 \item{x}{an ORFik \code{\link{experiment}}}
 
-\item{mode}{character, default "first". Alternatives: "unique", "all".}
+\item{mode}{character, default "first". Alternatives: "unique", "all". Unique
+means the unique directories, not to be confused with unique_mappers argument below.}
+
+\item{unique_mappers}{logical, default FALSE. If true appends unique_mappers to path}
 }
 \value{
 a character path

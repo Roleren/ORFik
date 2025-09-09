@@ -10,7 +10,8 @@ filepath(
   basename = FALSE,
   fallback = type \%in\% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
   suffix_stem = "AUTO",
-  base_folders = libFolder(df)
+  base_folders = libFolder(df, unique_mappers = only_unique_mappers),
+  only_unique_mappers = uniqueMappers(df) & type != "default"
 )
 }
 \arguments{
@@ -50,6 +51,10 @@ If single path (length == 1), it will apply to all libraries in df.
 If df is a collection, an experiment where libraries are put in different
 folders and library variants like pshifted are put inside those respective
 folders, set base_folders = libFolder(df, mode = "all")}
+
+\item{only_unique_mappers}{logical, default \code{uniqueMappers(df)}.
+Load file of only unique format type, located in './unique_mappers' relative
+to bam files / default files. See ?uniqueMappers for more information.}
 }
 \value{
 a character vector of paths, or a list of character with 2 paths per,

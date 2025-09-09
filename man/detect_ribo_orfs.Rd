@@ -33,7 +33,7 @@ detect_ribo_orfs(
 \item{out_folder}{Directory to save files}
 
 \item{ORF_categories_to_keep}{options, any subset of: \code{c("uORF", "uoORF", "annotated", "NTE",
-"NTT", "internal", "doORF", "dORF", "a_error")}.
+"NTT", "internal", "doORF", "dORF", "ncORF", "a_error", "all")}.
 \itemize{
  \item{uORF : Upstream ORFs (Starting in 5' UTR), not overlapping CDS}
  \item{uoORF : Upstream ORFs (Starting in 5' UTR), overlapping CDS}
@@ -47,6 +47,7 @@ detect_ribo_orfs(
  \item{dORF : Downstream ORFs (Ending in 3' UTR), not overlapping CDS}
  \item{ncORF : Any ORF on a transcript without a defined CDS}
  \item{a_error : Any ORF detect not in the above categories}
+ \item{all : use all ORF types above}
 }}
 
 \item{prefix_result}{the prefix name of output files to out_folder. Default:
