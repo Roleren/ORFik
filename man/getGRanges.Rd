@@ -7,7 +7,7 @@
 getGRanges(df, seqinfo = NULL)
 }
 \arguments{
-\item{df}{a data.frame with columns minimum 4 columns:
+\item{df}{a data.frame/data.table with columns minimum 4 columns:
 seqnames, start, strand\cr
 Additional specific columns are:\cr
 - width (if not set, width is set to 1 for all reads)\cr

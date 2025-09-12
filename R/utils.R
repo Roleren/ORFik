@@ -25,7 +25,7 @@ bedToGR <- function(x, skip.name = TRUE) {
 }
 
 #' Internal GRanges loader from fst data.frame
-#' @param df a data.frame with columns minimum 4 columns:
+#' @param df a data.frame/data.table with columns minimum 4 columns:
 #' seqnames, start, strand\cr
 #' Additional specific columns are:\cr
 #' - width (if not set, width is set to 1 for all reads)\cr
@@ -71,7 +71,7 @@ getGRanges <- function(df, seqinfo = NULL) {
 }
 
 #' Internal GAlignments loader from fst data.frame
-#' @param df a data.frame with columns minimum 4 columns:
+#' @param df a data.frame/data.table with columns minimum 4 columns:
 #' seqnames, start ("pos" in final GA object), cigar and strand.\cr
 #' Additional columns will be assigned as meta columns
 #' @inheritParams import.ofst
@@ -79,11 +79,14 @@ getGRanges <- function(df, seqinfo = NULL) {
 #' @importFrom S4Vectors new2
 #' @keywords internal
 getGAlignments <- function(df, seqinfo = NULL) {
+  stopifnot(is(df, "data.frame"))
   if (!all(c("seqnames", "start", "cigar", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, cigar and strand")
   if (nrow(df) == 0) return(GenomicAlignments::GAlignments())
+  if (!is(df, "data.table")) setDT(df)
+
   if (is.null(levels(df$seqnames))) {
-    df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
+    df[, seqnames := factor(df$seqnames, levels = unique(df$seqnames))]
   }
   if (!is.null(seqinfo)) {
     stopifnot(is(seqinfo, "Seqinfo"))
@@ -100,7 +103,10 @@ getGAlignments <- function(df, seqinfo = NULL) {
       names(mcols) <- names(df)[5]
     }
   }
-  df$strand <- factor(df$strand, levels = c("+", "-", "*"))
+  if (!is(df$strand, "factor") && identical(levels(df$strand), c("+", "-", "*"))){
+    df[, strand := factor(strand, levels = c("+", "-", "*"))]
+  }
+
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
   new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start,
        cigar = as.character(df$cigar), strand = Rle(df$strand), elementMetadata = mcols,
