@@ -344,10 +344,22 @@ filepath_internal <- function(x, df, type, base_folders, suffix_stem, rel_folder
     } else type <- "default"
   }
   if (type == "default") {
-    input <- x
-    if (!is.null(df$reverse)) { # If reverse exists
-      if (df[i,]$reverse != "")
-        input <- c(x, df[i,]$reverse)
+    default_lib <- file.path(base_folder, basename(x))
+    rev_input <- df[i,]$reverse
+    if (file.exists(default_lib)) {
+      input <- default_lib
+      if (!is.null(rev_input) && (rev_input != "")) {
+        default_lib_rev <- file.path(base_folder, basename(rev_input))
+        if (!file.exists(default_lib_rev)) {
+          rev_input <- df[i,]$reverse
+        }
+      }
+    } else {
+      input <- x
+    }
+    if (!is.null(rev_input)) { # If reverse exists
+      if (rev_input != "")
+        input <- c(x, rev_input)
     }
   }
   if (is.null(input)) stop("filepath type not valid!")
