@@ -216,7 +216,6 @@ DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,
     dt <- DTEG_pair_results(ddsMat_te, ddsMat_ribo, ddsMat_rna, contrast_pair, lfcShrinkType, p.value)
     dt <- DTEG_add_regulation_categories(dt, complex.categories)
 
-    print(table(dt$Regulation))
     dt_all_pairs <- rbindlist(list(dt_all_pairs, dt))
   }
 
@@ -239,7 +238,7 @@ DTEG_pair_results <- function(ddsMat_te, ddsMat_ribo, ddsMat_rna, contrast_vec,
   if (return_type != "data.table") {
     return(list(res_te, res_ribo, res_rna))
   }
-  dt <- data.table(contrast = name,
+  dt <- data.table(contrast = attr(res_te, "name"),
                    Regulation = rep("No change", nrow(res_te)),
                    id = rownames(ddsMat_rna),
                    rna.lfc = res_rna$log2FoldChange,
@@ -356,6 +355,8 @@ DTEG_add_regulation_categories <- function(dt, complex.categories) {
   stopifnot(all(dt$Regulation %in% regulation_levels))
   dt[, Regulation :=
                factor(Regulation, levels = regulation_levels, ordered = TRUE)]
+  print(table(dt$Regulation))
+
   return(dt)
 }
 
