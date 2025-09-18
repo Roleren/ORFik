@@ -250,7 +250,7 @@ ofst_merge <- function(file_paths,
       return(list(must_split = TRUE, is_single_chunked = FALSE,
                   splits = s, split_vector = tmp_vec, message = "Split round 1",
                   note_message = paste0("Total rows exceed limit (", limit,
-                                        ") — splitting into ", s, " chunk(s).")))
+                                        ") - splitting into ", s, " chunk(s).")))
     }
   }
   stop("max_splits = ", max_splits, " is not enough for safe chunking.")
