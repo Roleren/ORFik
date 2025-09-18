@@ -33,11 +33,16 @@ DEG_design <- function(design, target.contrast, batch.effect) {
   return(main.design)
 }
 
-DEG_DESeq <- function(counts, main.design, message = "Creating DESeq model:") {
+DEG_DESeq <- function(counts, main.design, message = "Creating DESeq model:",
+                      fitType = c("parametric", "local", "mean", "glmGamPoi")) {
   message(message)
   message("----------------------")
   ddsMat <- DESeqDataSet(se = counts, design = main.design)
-  ddsMat <- DESeq(ddsMat)
+  if (nrow(counts) < 30) {
+    message("Setting fitType to 'mean', too few genes (n=", nrow(counts), ")")
+    fitType <- "mean"
+  }
+  ddsMat <- DESeq(ddsMat, fitType = fitType)
   message("----------------------")
   return(ddsMat)
 }
@@ -63,7 +68,8 @@ DEG_model <- function(df,
                       design = ORFik::design(df),
                       p.value = 0.05,
                       counts = countTable(df, "mrna", type = "summarized"),
-                      batch.effect = TRUE) {
+                      batch.effect = TRUE,
+                      fitType = c("parametric", "local", "mean", "glmGamPoi")) {
   # Input validation
   DEG_input_validation(df, counts, design, target.contrast, p.value)
 
@@ -71,7 +77,7 @@ DEG_model <- function(df,
   main.design <- DEG_design(design, target.contrast, batch.effect)
 
   # DESeq2 model
-  ddsMat_rna <- DEG_DESeq(counts, main.design)
+  ddsMat_rna <- DEG_DESeq(counts, main.design, fitType = fitType)
 }
 
 #' Get DESeq2 model results from DESeqDataSet
@@ -91,41 +97,54 @@ DEG_model <- function(df,
 #' #pairs <- combn.pairs(unlist(df[, target.contrast]))
 #' #dt <- DEG_model_results(ddsMat_rna, target.contrast, pairs)
 DEG_model_results <- function(ddsMat_rna, target.contrast, pairs,
-                              p.value = 0.05) {
+                              p.value = 0.05, lfcShrinkType = "normal",
+                              as.data.table = TRUE) {
   # Do result analysis: per contrast selected
   dt.between <- data.table()
-  for(i in pairs) {
-    name <- paste("Comparison:", i[1], "vs", i[2])
-    message(name)
-    # Results
-    current.contrast <- c(target.contrast, i[1], i[2])
-    res_rna <- results(ddsMat_rna, contrast = current.contrast)
-    suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = current.contrast,
-                                          res = res_rna, type = "normal"))
+  for(contrast_pair in pairs) {
+    res <- DEG_model_results_contrast(ddsMat_rna, c(target.contrast, contrast_pair),
+                                      lfcShrinkType, verbose = TRUE)
 
     # The differential regulation groupings (padj is padjusted)
-    expressed <- which(res_rna$padj < p.value)
-    n <- rownames(res_rna)
-    Regulation <- rep("No change", nrow(res_rna))
+    expressed <- which(res$padj < p.value)
+    n <- rownames(res)
+    Regulation <- factor(rep("No change", nrow(res)),
+           levels = c("No change", "Significant"),
+           ordered = TRUE)
     Regulation[expressed] <- "Significant" # Old Buffering
     print(table(Regulation))
 
     dt.between <-
       rbindlist(list(dt.between,
-                     data.table(contrast = name,
+                     data.table(contrast = attr(res, "name"),
                                 Regulation = Regulation,
                                 id = rownames(ddsMat_rna),
-                                meanCounts = res_rna$baseMean,
-                                LFC = res_rna$log2FoldChange,
-                                padj = res_rna$padj
+                                meanCounts = res$baseMean,
+                                LFC = res$log2FoldChange,
+                                padj = res$padj
                      )))
   }
-  dt.between[, Regulation :=
-               factor(Regulation,
-                      levels = c("No change", "Significant"),
-                      ordered = TRUE)]
   message("----------------------")
   return(dt.between)
+}
+
+DEG_model_results_contrast <- function(ddsMat, contrast_vec,
+                                       lfcShrinkType = "normal",
+                                       verbose = TRUE,
+                                       name = paste("Comparison:", contrast_vec[2], "vs", contrast_vec[3])) {
+  stopifnot(length(contrast_vec) == 3 && is.character(contrast_vec))
+
+  if (verbose) {
+    message(name)
+  }
+  # Results
+  res <- results(ddsMat, contrast = contrast_vec)
+  if (!is.null(lfcShrinkType)) {
+    suppressMessages(res <- lfcShrink(ddsMat, contrast = contrast_vec,
+                                      res = res, type = lfcShrinkType))
+  }
+  attr(res, "name") <- name
+  return(res)
 }
 
 #' Simple Fpkm ratio test DEG
@@ -207,19 +226,15 @@ DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,
 
 DTEG_pair_results <- function(ddsMat_te, ddsMat_ribo, ddsMat_rna, contrast_vec,
                               lfcShrinkType, p.value, return_type = "data.table") {
-  stopifnot(length(contrast_vec) == 3)
-  name <- paste("Comparison:", contrast_vec[2], "vs", contrast_vec[3])
-  message(name)
 
-  res_te <- results(ddsMat_te, contrast = contrast_vec)
+  res_te <- DEG_model_results_contrast(ddsMat_te, contrast_vec,
+                                        lfcShrinkType = NULL, verbose = TRUE)
 
-  res_ribo <- results(ddsMat_ribo, contrast = contrast_vec)
-  suppressMessages(res_ribo <- lfcShrink(ddsMat_ribo, contrast=contrast_vec,
-                                         res=res_ribo, type = lfcShrinkType))
+  res_ribo <- DEG_model_results_contrast(ddsMat_ribo, contrast_vec,
+                                        lfcShrinkType, verbose = FALSE)
 
-  res_rna <- results(ddsMat_rna, contrast = contrast_vec)
-  suppressMessages(res_rna <- lfcShrink(ddsMat_rna, contrast = contrast_vec,
-                                        res = res_rna, type = lfcShrinkType))
+  res_rna <- DEG_model_results_contrast(ddsMat_rna, contrast_vec,
+                                        lfcShrinkType, verbose = FALSE)
 
   if (return_type != "data.table") {
     return(list(res_te, res_ribo, res_rna))

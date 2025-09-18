@@ -131,7 +131,7 @@ setMethod("show",
           function(object) {
             type <- ifelse(length(unique(object@listData$libtype)) == 1,
                            "type", "types")
-            cat("ORFik experiment:", object@experiment, if (object@author != "") paste0("(", object@author, "et al.)"), "\n")
+            cat("ORFik experiment:", object@experiment, if (object@author != "") paste0("(", object@author, " et al.)"), "\n")
             cat("Libraries: ", length(unique(object@listData$libtype)), "library", type, "and",
                 length(object@listData$libtype), "runs","\n")
             cat("Organism:", organism(object), ifelse(object@assembly != "", paste0("(", object@assembly,")"), ""), "\n")

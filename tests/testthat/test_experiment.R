@@ -89,10 +89,10 @@ test_that("validateExperiments() work as intended", {
   df2$libtype[10] <- "RNA"
   suppressMessages(expect_error(validateExperiments(df2)))
 })
-
+# To update, just run: capture_output(show(df)) and update text below.
 test_that("Show experiment correctly", {
   expect_identical(capture_output(df, print = TRUE),
-                   "experiment: ORFik with 4 library types and 16 runs \nTjeldnes et al. \n    libtype rep condition\n 1:    CAGE   1    Mutant\n 2:    CAGE   2    Mutant\n 3:    CAGE   1        WT\n 4:    CAGE   2        WT\n 5:     PAS   1    Mutant\n 6:     PAS   2    Mutant\n 7:     PAS   1        WT\n 8:     PAS   2        WT\n 9:     RFP   1    Mutant\n10:     RFP   2    Mutant\n11:     RFP   1        WT\n12:     RFP   2        WT\n13:     RNA   1    Mutant\n14:     RNA   2    Mutant\n15:     RNA   1        WT\n16:     RNA   2        WT")
+                   "ORFik experiment: ORFik (Tjeldnes et al.) \nLibraries:  4 library types and 16 runs \nOrganism: Homo sapiens  \n    libtype rep condition\n 1:    CAGE   1    Mutant\n 2:    CAGE   2    Mutant\n 3:    CAGE   1        WT\n 4:    CAGE   2        WT\n 5:     PAS   1    Mutant\n 6:     PAS   2    Mutant\n 7:     PAS   1        WT\n 8:     PAS   2        WT\n 9:     RFP   1    Mutant\n10:     RFP   2    Mutant\n11:     RFP   1        WT\n12:     RFP   2        WT\n13:     RNA   1    Mutant\n14:     RNA   2    Mutant\n15:     RNA   1        WT\n16:     RNA   2        WT")
 })
 
 test_that("Experiment class loaded/removed as intended to custom environment", {

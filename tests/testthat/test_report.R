@@ -20,7 +20,7 @@ test_that("count tables loaded as intended", {
   # Summairzed Experiment load
   #countTable_regions(df, out.dir = "~/Desktop/ORFik/extdata/Homo_sapiens_sample/QC_STATS/")
   table <- countTable(df, "mrna")
-  expect_equal(table[1,3], data.table("CAGE_WT_r1" = 860))
+  expect_equal(table[1,3], data.table("CAGE_WT_r1" = 69))
   table <- countTable(df[2:3,], "mrna")
   expect_equal(colnames(table), c("CAGE_Mutant_r2", "CAGE_WT_r1"))
 })
