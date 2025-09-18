@@ -37,20 +37,18 @@ isPeriodic <- function(x, info = NULL, verbose = FALSE, strict.fft = TRUE) {
   amp <- amplitudes[2 : (length(amplitudes) / 2 + 1)]
   specter <- spec.pgram(x = x, plot = FALSE)
   periods <- 1 / specter$freq
+  dt <- data.table(periods, amp, spec = specter$spec)
+  dt <- dt[periods != length(x)]
   if (verbose) {
-
-    dt <- data.table(periods,
-                     amp, spec = specter$spec)[order(spec, decreasing = TRUE)][1:10,]
+    dt <- dt[order(spec, decreasing = TRUE)][1:10,]
     if (!is.null(info)) message("Read length: ", info)
     message("Top 10 periods from spectrogram, look for period > 2.9 & < 3.1:")
     print(dt)
   }
-  if (strict.fft) {
-    return((periods[which.max(amp)] > 2.9) & (periods[which.max(amp)] < 3.1))
-  } else {
-    return((periods[which.max(specter$spec)] > 2.9) &
-             (periods[which.max(specter$spec)] < 3.1))
-  }
+  max_period <- ifelse(strict.fft,
+                       dt[which.max(amp)]$periods,
+                       dt[which.max(spec)]$periods)
+  return((max_period > 2.9) & (max_period < 3.1))
 }
 
 #' Get the offset for specific RiboSeq read width

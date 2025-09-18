@@ -4,7 +4,13 @@
 \alias{tile1}
 \title{Tile each GRangesList group to 1-base resolution.}
 \usage{
-tile1(grl, sort.on.return = TRUE, matchNaming = TRUE, is.sorted = TRUE)
+tile1(
+  grl,
+  sort.on.return = TRUE,
+  matchNaming = TRUE,
+  is.sorted = TRUE,
+  mergeEqualNamed = TRUE
+)
 }
 \arguments{
 \item{grl}{a \code{\link{GRangesList}} object with names.}
@@ -19,10 +25,12 @@ and meta data.(This make the list very big, for > 100K groups)}
 \item{is.sorted}{logical (TRUE), grl is presorted
 (negative coordinates are decreasing). Set to FALSE if they are not,
 else output will most likely be wrong!}
+
+\item{mergeEqualNamed}{logical, default TRUE. Merge groups with equal name}
 }
 \value{
 a GRangesList grouped by original group, tiled to 1. Groups with identical names
-will be merged.
+will be merged unless mergeEqualNamed is FALSE!
 }
 \description{
 Will tile a GRangesList into single bp resolution, each group of the list

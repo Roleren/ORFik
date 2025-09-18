@@ -4,7 +4,14 @@
 \alias{DEG_model_results}
 \title{Get DESeq2 model results from DESeqDataSet}
 \usage{
-DEG_model_results(ddsMat_rna, target.contrast, pairs, p.value = 0.05)
+DEG_model_results(
+  ddsMat_rna,
+  target.contrast,
+  pairs,
+  p.value = 0.05,
+  lfcShrinkType = "normal",
+  as.data.table = TRUE
+)
 }
 \arguments{
 \item{ddsMat_rna}{a DESeqDataSet object with results stored as metadata columns.}
@@ -23,6 +30,13 @@ be based on this contrast only. It is usually the 'condition' column.}
 p-value to be used as significance threshold for the result groups. I.e.
 for exclusive translation group significant subset for p.value = 0.05 means:
 TE$padj < 0.05 & Ribo$padj < 0.05 & RNA$padj > 0.05.}
+
+\item{lfcShrinkType}{character or NULL. Default "normal", which
+shrinkage to apply to results for low count gene subset.
+This avoids the problem of extreme fold changes,
+ when counts are low. See \link[DESeq2]{lfcShrink}.
+A note for DTEG.analysis function: The interaction term (TE),
+is not shrunked as this is not counts, but a ratio.}
 }
 \value{
 a data.table

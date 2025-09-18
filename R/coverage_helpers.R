@@ -550,6 +550,7 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
     for (strand in unique(strands)) {
       strand_now <- ifelse(strand == "+", 1,2)
       if (strand_now == 2) {
+        if (length(reads) == 1) strand_now <- 1
         temp_cov <- import.bw(reads[strand_now], as = "NumericList",
                               which = rl[strands == strand])
         temp_cov2 <- rev(temp_cov)
@@ -560,13 +561,11 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
       }
       coverage <- c(coverage, temp_cov2)
     }
-    # # Order back the strands
-    # if (length(grl) > 1) {
-    #   names(coverage) <- ORFik::groupings(grl)
-    #   coverage[]
-    # }
+
     # To data.table
-    coverage <- data.table(count = as.integer(unlist(coverage, use.names = FALSE)))
+    coverage <- data.table(count = unlist(coverage, use.names = FALSE))
+    is_integers <- all(round(coverage$count, 0) == coverage$count)
+    if (is_integers) coverage[, count := as.integer(count)]
     coverage[, genes := rep.int(1L, nrow(coverage))]
 
   } else if (all(file_ext == "fstwig") | TRUE) {
@@ -815,11 +814,12 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
                                 append.zeroes = FALSE,
                                 windows = startRegion(grl, tx, TRUE, upstream, downstream)) {
   if(length(reads) == 0 | length(grl) == 0) {
-    return(data.table())
+    return(empty_coverage_dt(scoring))
   }
   if (is.null(tx)) upstream <- min(upstream, 0)
-  if(!grl_has_any_valid_lengths(windows, upstream + downstream + 1))
-    return(data.table())
+  if(!grl_has_any_valid_lengths(windows, upstream + downstream + 1)) {
+    return(empty_coverage_dt(scoring))
+  }
 
   rWidth <- readWidths(reads)
   all_lengths <- sort(unique(rWidth))
@@ -837,6 +837,13 @@ windowPerReadLength <- function(grl, tx = NULL, reads, pShifted = TRUE,
   }
 
   dt[] # for print
+  return(dt)
+}
+
+empty_coverage_dt <- function(scoring) {
+  if (is.null(scoring)) {
+    dt <- data.table(count = integer(), genes = integer(), position = integer(), fraction = integer())
+  } else dt <- data.table(position = integer(), score = integer(), fraction = integer())
   return(dt)
 }
 

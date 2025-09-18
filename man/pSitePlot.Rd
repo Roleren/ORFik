@@ -74,7 +74,7 @@ reads <- GRanges("1", range, "+")
 coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
                               withFrames = TRUE)
 pSitePlot(coverage)
-
+pSitePlot(coverage, frameSum = TRUE)
 # See vignette for more examples
 
 }

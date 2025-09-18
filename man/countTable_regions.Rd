@@ -17,6 +17,13 @@ countTable_regions(
   forceRemake = FALSE,
   library.names = bamVarName(df),
   format = "qs",
+  path_prefix = if (!is.null(out.dir)) {
+     pasteDir(file.path(out.dir, rel.dir,
+    "countTable_"))
+ } else NULL,
+  libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type,
+    suffix_stem = c("", "_pshifted")), type = lib.type, force = FALSE, library.names =
+    library.names, BPPARAM = BiocParallel::SerialParam()),
   BPPARAM = bpparam()
 )
 }
@@ -46,9 +53,10 @@ for example uORFs or a subset of cds etc.}
 "log2fpkm" or "log10fpkm"}
 
 \item{lib.type}{a character(default: "default"), load files in experiment
-or some precomputed variant, either "ofst", "bedo", "bedoc" or "pshifted".
+or some precomputed variant, either "ofst", "pshifted" or "cov"
 These are made with ORFik:::convertLibs() or shiftFootprintsByExperiment().
-Can also be custom user made folders inside the experiments bam folder.}
+Can also be custom user made folders inside the experiments bam folder.
+Format "cov" (i.e. covRle format) is by far the fastest to use if existing.}
 
 \item{weight}{numeric or character, a column to score overlaps by. Default "score",
 will check for a metacolumn called "score" in libraries. If not found,
@@ -64,6 +72,14 @@ libraries as to environment and names to display in plots.}
 
 \item{format}{character, default "qs", alternative: "rds". Which format to save summarizedExperiment.}
 
+\item{path_prefix}{the prefix names of tables, default:
+if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else NULL,
+i.e. directory + countTable_ or NULL if out.dir is NULL.}
+
+\item{libraries}{The call to output libraries, the input is not used! Default:
+outputLibs(df, chrStyle = seqinfo(df), type = lib.type, force = force,
+ library.names = library.names, BPPARAM = BPPARAM)}
+
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
 \value{
@@ -78,7 +94,7 @@ all libraries in experiment. Saved as "qs" or "rds" format files.
 ##Make experiment
 df <- ORFik.template.experiment()
 ## Create count tables for all default regions
-# countTable_regions(df)
+countTable_regions(df, NULL)
 ## Pshifted reads (first create pshiftead libs)
 # countTable_regions(df, lib.type = "pshifted", rel.dir = "pshifted")
 }

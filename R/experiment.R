@@ -132,42 +132,6 @@ validateExperiments <- function(df, library.names = bamVarName(df), validate_lib
 #'
 #' What will each sample be called given the columns of the experiment?
 #' A column is included if more than 1 unique element value exist in that column.
-#' @inheritParams bamVarNamePicker
-#' @return variable names of libraries (character vector)
-#' @export
-#' @family ORFik_experiment
-#' @examples
-#' df <- ORFik.template.experiment()
-#' bamVarName(df)
-#'
-#' ## without libtype
-#' bamVarName(df, skip.libtype = TRUE)
-#' ## Without experiment name
-#' bamVarName(df, skip.experiment = TRUE)
-bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
-                       skip.condition = length(unique(df$condition)) == 1,
-                       skip.stage = length(unique(df$stage)) == 1,
-                       skip.fraction = length(unique(df$fraction)) == 1,
-                       skip.experiment = !df@expInVarName,
-                       skip.libtype = FALSE,
-                       fraction_prepend_f = TRUE) {
-  dfl <- df
-  if(!is(dfl, "list")) dfl <- list(dfl)
-  varName <- character()
-  for (df in dfl) {
-    res <- vapply(seq(1, nrow(df), length.out = nrow(df)),
-                  function(i) bamVarNamePicker(df[i,], skip.replicate,
-                                               skip.condition, skip.stage,
-                                               skip.fraction,
-                                               skip.experiment, skip.libtype,
-                                               fraction_prepend_f), character(1))
-    varName <- c(varName, res)
-  }
-  return(varName)
-}
-
-#' Get variable name per filepath in experiment
-#'
 #' @param df an ORFik \code{\link{experiment}}
 #' @param skip.replicate a logical (FALSE), don't include replicate
 #' in variable name.
@@ -180,49 +144,78 @@ bamVarName <- function(df, skip.replicate = length(unique(df$rep)) == 1,
 #' @param skip.libtype a logical (FALSE), don't include libtype
 #' @param fraction_prepend_f a logical (TRUE), include "f" in front of
 #' fraction, useful for knowing what fraction is.
-#' @return variable name of library (character vector)
-#' @keywords internal
-bamVarNamePicker <- function(df, skip.replicate = FALSE,
-                             skip.condition = FALSE,
-                             skip.stage = FALSE, skip.fraction = FALSE,
-                             skip.experiment = FALSE, skip.libtype = FALSE,
-                             fraction_prepend_f = TRUE) {
-  if(nrow(df) != 1) stop("experiment must only input 1 row")
-  lib <- df$libtype
-  stage <- df$stage
-  cond <- df$condition
-  rep <- df$rep
-  frac <- df$fraction
-  current <- ""
-  # Add only underscore if x is not ""
-  spaste <- function(x, y, reverse = FALSE) {
-    if (reverse)
-      return(paste(x, y, sep = ifelse(y %in% "", "", "_")))
-    return(paste(x, y, sep = ifelse(x %in% "", "", "_")))
-  }
-  if (!skip.libtype)
-    current <- lib
-  if(!(skip.condition | is.na(cond)))
-    current <- spaste(current, cond)
-  if (!(skip.stage | is.na(stage)))
-    current <- spaste(current, stage)
-  if (!(skip.fraction | is.null(frac) | is.na(frac))) {
-    if (frac != "") {
-      if (fraction_prepend_f) {
-        current <- spaste(current, paste0("f", frac))
-      } else current <- spaste(current, frac)
+#' @return variable names of libraries (character vector)
+#' @export
+#' @family ORFik_experiment
+#' @examples
+#' df <- ORFik.template.experiment()
+#' bamVarName(df)
+#'
+#' ## without libtype
+#' bamVarName(df, skip.libtype = TRUE)
+#' ## Without experiment name
+#' bamVarName(df, skip.experiment = TRUE)
+bamVarName <- function(df,
+                       skip.replicate  = length(unique(df$rep)) == 1,
+                       skip.condition  = length(unique(df$condition)) == 1,
+                       skip.stage      = length(unique(df$stage)) == 1,
+                       skip.fraction   = length(unique(df$fraction)) == 1,
+                       skip.experiment = !tryCatch(df@expInVarName, error = function(e) FALSE),
+                       skip.libtype    = FALSE,
+                       fraction_prepend_f = TRUE) {
+
+  # Make input always a list of data.frames/experiments
+  dfl <- if (!is(df, "list")) list(df) else df
+  varName <- character()
+
+  for (d in dfl) {
+    n <- nrow(d)
+    if (n == 0L) next
+
+    # helper to coerce, remove NA/NULL/""
+    clean <- function(x) {
+      if (is.null(x)) return(rep("", n))
+      y <- as.character(x)
+      y[is.na(y)] <- ""
+      y
     }
 
+    # extract columns (treated as "" when skipped or missing)
+    lib   <- if (skip.libtype) rep("", n) else clean(d$libtype)
+    cond  <- if (skip.condition) rep("", n) else clean(d$condition)
+    stage <- if (skip.stage)     rep("", n) else clean(d$stage)
+
+    frac <- if (skip.fraction) rep("", n) else clean(d$fraction)
+    if (fraction_prepend_f) {
+      has_frac <- frac != ""
+      frac[has_frac] <- paste0("f", frac[has_frac])
+    }
+
+    repv <- if (skip.replicate) rep("", n) else clean(d$rep)
+    repv <- ifelse(repv == "", "", paste0("r", repv))
+
+    # vectorized “smart paste”: add "_" only when both sides non-empty
+    spaste <- function(x, y) ifelse(y == "", x, ifelse(x == "", y, paste0(x, "_", y)))
+
+    current <- lib
+    current <- spaste(current, cond)
+    current <- spaste(current, stage)
+    current <- spaste(current, frac)
+    current <- spaste(current, repv)
+
+    # experiment prefix (same as original: prefix if not skipped and slot exists)
+    exp_name <- tryCatch(d@experiment, error = function(e) NULL)
+    if (!is.null(exp_name) && !isTRUE(skip.experiment)) {
+      current <- ifelse(current == "", exp_name, paste0(exp_name, "_", current))
+    }
+
+    # cleanup like original
+    current <- gsub("__+", "_", current, perl = TRUE)
+    current <- sub("_$", "", current, perl = TRUE)
+
+    varName <- c(varName, current)
   }
-  # TODO: FIX _NA for replicates
-  if (!(skip.replicate | is.null(rep) | is.na(rep) | (rep == "")))
-    current <- spaste(current, paste0("r", rep))
-  if (! (skip.experiment | is.null(df@experiment)))
-    current <- spaste(df@experiment, current, TRUE)
-
-  current <- gsub(pattern = "__", "_", current, fixed = TRUE)
-
-  return(sub("_$", "", current, perl = TRUE))
+  varName
 }
 
 #' Get filepaths to ORFik experiment
@@ -268,9 +261,11 @@ bamVarNamePicker <- function(df, skip.replicate = FALSE,
 filepath <- function(df, type, basename = FALSE,
                      fallback = type %in% c("pshifted", "bed", "ofst", "bedoc", "bedo"),
                      suffix_stem = "AUTO",
-                     base_folders = libFolder(df)) {
+                     base_folders = libFolder(df, unique_mappers = only_unique_mappers),
+                     only_unique_mappers = uniqueMappers(df) & type != "default") {
   if (!is(df, "experiment")) stop("df must be ORFik experiment!")
   stopifnot(length(type) == 1)
+
   rel_folder <- c(cov = "cov_RLE/", covqs = "cov_RLE/",
                   covl = "cov_RLE_List/", covlqs = "cov_RLE_List/",
                   bigwig = "bigwig/",
@@ -289,13 +284,13 @@ filepath <- function(df, type, basename = FALSE,
 
 filepath_internal <- function(x, df, type, base_folders, suffix_stem, rel_folder,
                               basename, fallback) {
+  if (all(suffix_stem == "AUTO")) suffix_stem <- c("", "_pshifted")
   i <- which(df$filepath == x)
   base_folder <- base_folders[i]
   name_stem <- remove.file_ext(x, basename = TRUE)
   found_valid_file <- FALSE
   input <- NULL
   if (type == "pshifted") {
-    if (all(suffix_stem == "AUTO")) suffix_stem <- "_pshifted"
     out.dir.type <- file.path(base_folder, rel_folder["pshifted"])
     type_dir_exists <- dir.exists(out.dir.type)
     if (type_dir_exists) {
@@ -349,10 +344,22 @@ filepath_internal <- function(x, df, type, base_folders, suffix_stem, rel_folder
     } else type <- "default"
   }
   if (type == "default") {
-    input <- x
-    if (!is.null(df$reverse)) { # If reverse exists
-      if (df[i,]$reverse != "")
-        input <- c(x, df[i,]$reverse)
+    default_lib <- file.path(base_folder, basename(x))
+    rev_input <- df[i,]$reverse
+    if (file.exists(default_lib)) {
+      input <- default_lib
+      if (!is.null(rev_input) && (rev_input != "")) {
+        default_lib_rev <- file.path(base_folder, basename(rev_input))
+        if (!file.exists(default_lib_rev)) {
+          rev_input <- df[i,]$reverse
+        }
+      }
+    } else {
+      input <- x
+    }
+    if (!is.null(rev_input)) { # If reverse exists
+      if (rev_input != "")
+        input <- c(x, rev_input)
     }
   }
   if (is.null(input)) stop("filepath type not valid!")
@@ -402,7 +409,8 @@ filepath_errors <- function(format) {
 #' - "bed": Load bed files, from bed folder (falls back to default)\cr
 #' - Other formats must be loaded directly with fimport
 #' @param paths character vector, the filpaths to use,
-#' default \code{filepath(df, type)}. Change type argument if not correct.
+#' default \code{filepath(df, type, only_unique_mappers = only_unique_mappers)}.
+#' Change type argument if not what is wanted.
 #' If that is not enough, then you can also update this argument.
 #' But be careful about using this directly.
 #' @param naming a character (default: "minimum"). Name files as minimum
@@ -427,6 +435,9 @@ filepath_errors <- function(format) {
 #' @param validate_libs logical, default TRUE. If FALSE, don't check that default
 #' files exists (i.e. bam files), useful if you are using pshifted ofst etc
 #' and don't have the bams anymore.
+#' @param only_unique_mappers logical, default \code{uniqueMappers(df)}.
+#' Load file of only unique format type, located in './unique_mappers' relative
+#' to bam files / default files. See ?uniqueMappers for more information.
 #' @param BPPARAM how many cores/threads to use? default: bpparam().
 #' To see number of threads used, do \code{bpparam()$workers}.
 #' You can also add a time remaining bar, for a more detailed pipeline.
@@ -460,16 +471,20 @@ filepath_errors <- function(format) {
 #' # outputLibs(df)
 #'
 #' @family ORFik_experiment
-outputLibs <- function(df, type = "default", paths = filepath(df, type),
+outputLibs <- function(df, type = "default",
+                       paths = filepath(df, type,
+                             only_unique_mappers = only_unique_mappers),
                        param = NULL, strandMode = 0, naming = "minimum",
                        library.names = name_decider(df, naming),
                        output.mode = "envir", chrStyle = NULL,
                        envir = envExp(df), verbose = TRUE, force = TRUE,
                        validate_libs = TRUE,
+                       only_unique_mappers = uniqueMappers(df),
                        BPPARAM = bpparam()) {
   stopifnot(output.mode %in% c("envir", "list", "envirlist"))
   stopifnot(is.character(type))
   stopifnot(length(library.names) == nrow(df) & is(library.names, "character"))
+  stopifnot(is.logical(force) & is.logical(verbose) & is.logical(validate_libs))
 
   dfl <- df
   if(!is(dfl, "list")) dfl <- list(dfl)
@@ -483,20 +498,25 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
       if (verbose) message(paste0("Outputting libraries from: ", name(df)))
       if (is(BPPARAM, "SerialParam")) {
         libs <- lapply(seq_along(paths),
-                       function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
+                       function(i, paths, df, chrStyle, param, strandMode, varNames, verbose,
+                                only_unique_mappers) {
                            if (verbose) message(paste(i, ": ", varNames[i]))
-                           fimport(paths[i], chrStyle, param, strandMode)
+                           fimport(paths[i], chrStyle, param, strandMode,
+                                   only_unique_mappers)
                          }, paths = paths, chrStyle = chrStyle, df = df,
                          param = param, strandMode = strandMode, varNames = varNames,
-                         verbose = verbose)
+                         verbose = verbose, only_unique_mappers = only_unique_mappers)
       } else {
         libs <- bplapply(seq_along(paths),
-                         function(i, paths, df, chrStyle, param, strandMode, varNames, verbose) {
+                         function(i, paths, df, chrStyle, param, strandMode, varNames, verbose,
+                                  only_unique_mappers) {
                            if (verbose) message(paste(i, ": ", varNames[i]))
-                           fimport(paths[i], chrStyle, param, strandMode)
+                           fimport(paths[i], chrStyle, param, strandMode,
+                                   only_unique_mappers)
                          }, paths = paths, chrStyle = chrStyle, df = df,
                          param = param, strandMode = strandMode, varNames = varNames,
-                         verbose = verbose, BPPARAM = BPPARAM)
+                         verbose = verbose, only_unique_mappers = only_unique_mappers,
+                         BPPARAM = BPPARAM)
       }
 
       # assign to environment
@@ -504,6 +524,7 @@ outputLibs <- function(df, type = "default", paths = filepath(df, type),
         for (i in 1:nrow(df)) { # For each stage
           attr(libs[[i]], "exp") <- name(df)
           attr(libs[[i]], "name_short") <- varNames[i]
+          attr(libs[[i]], "unique_mappers") <- only_unique_mappers
           if (mode(libs[[i]]) == "S4") attr(libs[[i]], "filepath") <- paths[i]
           assign(varNames[i], libs[[i]], envir = envir)
         }
@@ -686,14 +707,17 @@ simpleLibs <- convertLibs
 #' df2 <- ORFik.template.experiment()
 #' df2 <- df2[df2$libtype == "RFP",]
 #' # Merge all
-#' #mergeLibs(df2, tempdir(), mode = "all", type = "default")
+#' mergeLibs(df2, tempdir(), mode = "all", type = "default")
 #' # Read as GRanges with mcols
-#' #fimport(file.path(tempdir(), "all.ofst"))
-#' # Read as direct fst data.table
-#' #read_fst(file.path(tempdir(), "all.ofst"))
+#' fimport(file.path(tempdir(), "all.ofst"))
+#' # Only keep total score, Read as direct fst data.table
+#' mergeLibs(df2, tempdir(), mode = "all", type = "default", keep_all_scores = FALSE)
+#' read_fst(file.path(tempdir(), "all.ofst"))
 #' # Collapse replicates
-#' #mergeLibs(df2, tempdir(), mode = "rep", type = "default")
-#' # Collapse by lib types
+#' mergeLibs(df2, tempdir(), mode = "rep", type = "default")
+#' paths <- file.path(tempdir(), paste0("RFP_", c("Mutant", "WT"), ".ofst"))
+#' lapply(paths, fimport)
+#' # Collapse by lib types (same as "all" in this case)
 #' #mergeLibs(df2, tempdir(), mode = "lib", type = "default")
 mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mode = "all",
                       type = "ofst", keep_all_scores = TRUE, paths = filepath(df, type),
@@ -790,25 +814,26 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
                              BPPARAM = if(!validate){ BiocParallel::SerialParam()} else
                                BiocParallel::bpparam()) {
   experiments <- list.files(path = dir, pattern = "\\.csv")
-  if (length(experiments) == 0) { # This will only trigger on CBU server @ UIB
-    cbu.path <- "/export/valenfs/data/processed_data/experiment_tables_for_R/"
-    if (dir.exists(cbu.path)) { # If on UIB SERVER
-      dir <- cbu.path
-      experiments <- list.files(path = dir, pattern = "\\.csv")
-    }
-  }
 
   experiments <- grep(experiments, pattern = pattern, value = TRUE)
   experiments <- experiments[grep(experiments, pattern = "template", value = FALSE, invert = TRUE)]
+  experiments <- pasteDir(dir, experiments)
   if (length(experiments) == 0) {
     message(paste("Searching for experiments in dir:", dir))
     stop("No experiments found, have you made any ?")
   }
 
   info <- bplapply(experiments, function(x, dir, validate) { # Open each experiment in parallell
-    e <- read.experiment(x, dir, validate)
-    list(libtype = unique(e$libtype), runs = length(e$libtype), organism = e@organism,
-         author = e@author)
+    if (validate) {
+      e <- read.experiment(x, dir, validate)
+      list(libtype = unique(e$libtype), runs = length(e$libtype),
+           organism = e@organism, author = e@author)
+    } else {
+      e <- read.experiment.as.list(x, dir)
+      e$libtype <- e$parse_list$listData$libtype
+      list(libtype = unique(e$libtype), runs = length(e$libtype),
+           organism = e$org, author = e$author)
+    }
   }, dir = dir, validate = validate, BPPARAM = BPPARAM)
 
   info <- unlist(info, recursive = FALSE)
@@ -817,7 +842,7 @@ list.experiments <- function(dir =  ORFik::config()["exp"],
   organism <- unlist(info[names(info) == "organism"])
   author <- unlist(info[names(info) == "author"])
 
-  dt <- data.table(name = gsub(".csv", "", experiments), organism, author,libtypes, samples)
+  dt <- data.table(name = gsub("\\.csv", "", basename(experiments)), organism, author,libtypes, samples)
   dt <- dt[order(organism, name),]
   if (!is.null(libtypeExclusive)) {
     message(paste("subset on libtype:", libtypeExclusive))

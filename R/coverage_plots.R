@@ -45,7 +45,7 @@
 #' coverage <- coveragePerTiling(grl, reads, TRUE, as.data.table = TRUE,
 #'                               withFrames = TRUE)
 #' pSitePlot(coverage)
-#'
+#' pSitePlot(coverage, frameSum = TRUE)
 #' # See vignette for more examples
 #'
 pSitePlot <- function(hitMap, length = unique(hitMap$fraction),
@@ -257,6 +257,7 @@ image_path_format_append <- function(output, plot.ext, all_formats = c("pdf", "p
 #' @keywords internal
 xAxisScaler <- function(covPos) {
   pos <- length(unique(covPos))
+  if (pos == 0) return(0)
   min <- min(covPos)
   max <- max(covPos)
   by <- max(floor(pos / 20), 1)

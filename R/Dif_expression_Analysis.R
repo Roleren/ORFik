@@ -31,17 +31,20 @@
 #' df.rna <- df[df$libtype == "RNA",]
 #' design(df.rna) # The full experimental design
 #' design(df.rna)[1] # Default target contrast
-#' #dt <- DEG.analysis(df.rna)
+#' dt <- DEG.analysis(df.rna)
 DEG.analysis <- function(df, target.contrast = design[1],
                          design = ORFik::design(df), p.value = 0.05,
                          counts = countTable(df, "mrna", type = "summarized"),
                          batch.effect = TRUE,
-                         pairs = combn.pairs(unlist(df[, target.contrast]))) {
+                         pairs = combn.pairs(unlist(df[, target.contrast])),
+                         fitType = c("parametric", "local", "mean", "glmGamPoi"),
+                         lfcShrinkType = "normal") {
   # Get DESeq model
   ddsMat_rna <- DEG_model(df, target.contrast, design, p.value,
-                          counts, batch.effect)
+                          counts, batch.effect, fitType)
   # Do result analysis: per contrast selected
-  return(DEG_model_results(ddsMat_rna, target.contrast, pairs, p.value))
+  return(DEG_model_results(ddsMat_rna, target.contrast, pairs, p.value,
+                           lfcShrinkType))
 }
 
 #' Run differential TE analysis
@@ -63,7 +66,8 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #'
 #' Log fold changes and p-values are created from a Walds test on the comparison contrast described bellow.
 #' The RNA-seq and Ribo-seq LFC values are shrunken using DESeq2::lfcShrink(type = "normal"). Note
-#' that the TE LFC values are not shrunken (as following specifications from deltaTE paper).
+#' that the TE LFC values are not shrunken, since these are ratios and not counts
+#' (as following specifications from deltaTE paper).
 #' The adjusted p-values are created using DESEQ pAdjustMethod = "BH" (Benjamini-Hochberg correction).
 #' All other DESEQ2 arguments are default.\cr\cr
 #'
@@ -110,6 +114,7 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
 #' Remember that DESeq by default can not
 #' do global change analysis, it can only find subsets with changes in LFC!
+#' @inheritParams DESeq2::DESeq
 #' @inheritParams DTEG.plot
 #' @param df.rfp a \code{\link{experiment}} of usually Ribo-seq or 80S from TCP-seq.
 #' (the numerator of the experiment, usually having a primary role)
@@ -157,6 +162,12 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #'  \code{combn.pairs(unlist(df.rfp[, target.contrast])}
 #' @param complex.categories logical, default FALSE. Separate into more groups,
 #' see above for details.
+#' @param lfcShrinkType character or NULL. Default "normal", which
+#' shrinkage to apply to results for low count gene subset.
+#' This avoids the problem of extreme fold changes,
+#'  when counts are low. See \link[DESeq2]{lfcShrink}.
+#' A note for DTEG.analysis function: The interaction term (TE),
+#' is not shrunked as this is not counts, but a ratio.
 #' @references \url{https://doi.org/10.1002/cpmb.108}
 #' @return a data.table with columns:
 #' (contrast variable, gene id, regulation status, log fold changes, p.adjust values,
@@ -207,7 +218,9 @@ DTEG.analysis <- function(df.rfp, df.rna,
                           height = 6, dot.size = 0.4,
                           relative.name = paste0("DTEG_plot", plot.ext),
                           complex.categories = FALSE,
-                          plot_to_console = TRUE) {
+                          plot_to_console = TRUE,
+                          fitType = c("parametric", "local", "mean", "glmGamPoi"),
+                          lfcShrinkType = "normal") {
   # Input validation
   DTEG_input_validation(df.rfp, df.rna, RFP_counts, RNA_counts, design,
                         target.contrast, p.value)
@@ -232,16 +245,16 @@ DTEG.analysis <- function(df.rfp, df.rna,
   ## DESeq models (total: 3)
   # TE
   message("----------------------")
-  ddsMat_te <- DEG_DESeq(combined_se, te.design, "Model 1/3: TE")
+  te <- DEG_DESeq(combined_se, te.design, "Model 1/3: TE", fitType)
 
   # Ribo
-  ddsMat_ribo <- DEG_DESeq(RFP_counts, main.design, "Model 2/3: Ribo-seq")
+  ribo <- DEG_DESeq(RFP_counts, main.design, "Model 2/3: Ribo-seq", fitType)
 
   # RNA
-  ddsMat_rna <- DEG_DESeq(RNA_counts, main.design, "Model 3/3: RNA-seq")
+  rna <- DEG_DESeq(RNA_counts, main.design, "Model 3/3: RNA-seq", fitType)
 
   # Do result analysis: per contrast selected
-  dt <- DTEG_model_results(ddsMat_rna, ddsMat_ribo, ddsMat_te,
+  dt <- DTEG_model_results(rna, ribo, te,
                            target.contrast, pairs, p.value = p.value,
                            complex.categories)
 

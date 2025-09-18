@@ -7,9 +7,10 @@
 convert_bam_to_ofst(
   df,
   in_files = filepath(df, "default"),
-  out_dir = file.path(libFolder(df), "ofst"),
+  out_dir = file.path(libFolder(df, unique_mappers = only_unique_mappers), "ofst"),
   verbose = TRUE,
-  strandMode = rep(0, length(in_files))
+  strandMode = rep(0, length(in_files)),
+  only_unique_mappers = uniqueMappers(df)
 )
 }
 \arguments{
@@ -29,6 +30,10 @@ One of (0: strand = *, 1: first read of pair is +, 2: first read of pair is -).
 See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
 This is to guarantee hits, but will also make mismatches of overlapping
 transcripts in opposite directions.}
+
+\item{only_unique_mappers}{logical, default \code{uniqueMappers(df)}.
+Load file of only unique format type, located in './unique_mappers' relative
+to bam files / default files. See ?uniqueMappers for more information.}
 }
 \value{
 invisible(NULL), files saved to disc
@@ -48,6 +53,9 @@ df <- ORFik.template.experiment.zf()
 folder_to_save <- file.path(tempdir(), "ofst")
 convert_bam_to_ofst(df, out_dir = folder_to_save)
 fimport(file.path(folder_to_save, "ribo-seq.ofst"))
+folder_to_save_unique <- file.path(tempdir(), "unique_mappers", "ofst")
+convert_bam_to_ofst(df, out_dir = folder_to_save_unique, only_unique_mappers = TRUE)
+fimport(file.path(folder_to_save_unique, "ribo-seq.ofst"))
 }
 \seealso{
 Other lib_converters: 

@@ -6,7 +6,7 @@
 #' @return a GRangesList of reads restricted to firstN and tiled by 1
 #' @keywords internal
 downstreamN <- function(grl, firstN = 150L) {
-  return(heads(tile1(grl, matchNaming = FALSE), firstN))
+  return(heads(tile1(grl, matchNaming = FALSE, mergeEqualNamed = FALSE), firstN))
 }
 
 #' Get list of widths per granges group
@@ -190,11 +190,12 @@ reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
 #' strandPerGroup(grl)
 strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
-  if (keep.names) {
-    return(heads(strand(grl), 1L))
-  } else {
-    return(as.character(heads(strand(grl), 1L)))
+  starts <- start(IRanges::PartitioningByEnd(grl))
+  res <- strand(grl@unlistData)[starts]
+  if (!keep.names) {
+    return(as.character(res))
   }
+  return(res)
 }
 
 
@@ -415,6 +416,38 @@ removeMetaCols <- function(grl) {
   return(grl)
 }
 
+#' @export
+setMethod("as.character", "GRangesList", function(x, ...) {
+  if (length(x) == 0) return(character())
+  u <- unlist(x, use.names = FALSE)
+  per <- paste0(seqnames(u), ":", start(u), "-", end(u), ":", as.character(strand(u)))
+  cl <- relist(per, x)
+  res <- unstrsplit(cl, sep = ";")
+  # names(res) <- names(x)
+  return(res)
+})
+
+#' Convert a character vector to GRangesList
+#' @param x a character vector
+#' @return a GRangesList
+#' @export
+#' @examples
+#' vec <- c("1:14598834-14598914:+", "1:15210514-15210562:+;1:15214895-15215025:+")
+#' makeGRangesListFromCharacter(vec)
+makeGRangesListFromCharacter <- function(x) {
+  if (length(x) == 0) return(GRangesList())
+
+  str_split <- strsplit(x, ";")
+  gr <- as(unlist(str_split), "GRanges")
+  res <- split(gr, groupings(str_split))
+  names(res) <- names(x)
+  return(res)
+}
+
+
+
+
+
 #' Get number of ranges per group as an iteration
 #'
 #' @param grl GRangesList
@@ -598,7 +631,8 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
     res[, start_segment := pmax(start - i.start + 1, 1)]
     res[, end_segment := pmin(end - i.start + 1, i.end - i.start + 1)]
     res[, strand := as.character(strand(gr)[query_id])]
-    res[, file := ifelse(strand == "+", file_forward, file_reverse)][]
+    res[, file := ifelse(strand == "+", file_forward, file_reverse)]
+    res[order(query_id),][]
   })
 
   # Read data from appropriate files using offset

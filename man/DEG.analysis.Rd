@@ -11,7 +11,9 @@ DEG.analysis(
   p.value = 0.05,
   counts = countTable(df, "mrna", type = "summarized"),
   batch.effect = TRUE,
-  pairs = combn.pairs(unlist(df[, target.contrast]))
+  pairs = combn.pairs(unlist(df[, target.contrast])),
+  fitType = c("parametric", "local", "mean", "glmGamPoi"),
+  lfcShrinkType = "normal"
 )
 }
 \arguments{
@@ -52,6 +54,17 @@ cluster together more than the design factor, to verify if you need to set it to
 
 \item{pairs}{list of character pairs, the experiment contrasts. Default:
 \code{combn.pairs(unlist(df.rfp[, target.contrast])}}
+
+\item{fitType}{either "parametric", "local", "mean", or "glmGamPoi"
+for the type of fitting of dispersions to the mean intensity.
+See \code{\link{estimateDispersions}} for description.}
+
+\item{lfcShrinkType}{character or NULL. Default "normal", which
+shrinkage to apply to results for low count gene subset.
+This avoids the problem of extreme fold changes,
+ when counts are low. See \link[DESeq2]{lfcShrink}.
+A note for DTEG.analysis function: The interaction term (TE),
+is not shrunked as this is not counts, but a ratio.}
 }
 \value{
 a data.table with columns:
@@ -82,7 +95,7 @@ df <- ORFik.template.experiment()
 df.rna <- df[df$libtype == "RNA",]
 design(df.rna) # The full experimental design
 design(df.rna)[1] # Default target contrast
-#dt <- DEG.analysis(df.rna)
+dt <- DEG.analysis(df.rna)
 }
 \references{
 \url{https://doi.org/10.1002/cpmb.108}

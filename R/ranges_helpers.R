@@ -83,8 +83,9 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' @param is.sorted logical (TRUE), grl is presorted
 #' (negative coordinates are decreasing). Set to FALSE if they are not,
 #' else output will most likely be wrong!
+#' @param mergeEqualNamed logical, default TRUE. Merge groups with equal name
 #' @return a GRangesList grouped by original group, tiled to 1. Groups with identical names
-#' will be merged.
+#' will be merged unless mergeEqualNamed is FALSE!
 #' @importFrom S4Vectors DataFrame
 #' @export
 #' @family ExtendGenomicRanges
@@ -101,11 +102,12 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' tile1(grl)
 #'
 tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE,
-                  is.sorted = TRUE) {
+                  is.sorted = TRUE, mergeEqualNamed = TRUE) {
   if (!is.grl(grl)) stop("grl must be a GRangesList")
   if (!is.sorted) grl <- sortPerGroup(grl)
 
   # optimize by removing all unecessary data
+  original_names <- names(grl)
   ORFs <- unlist(grl, use.names = FALSE)
   mcols(ORFs) <- NULL
   names(ORFs) <- NULL
@@ -127,11 +129,12 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE,
   } else {
     tilex <- unlistGrl(tilex)
     grouping <- names(tilex)
-    if (!is.null(names(grl))) {
+    if (!is.null(names(grl)) & mergeEqualNamed) {
       grouping <- names(grl)[as.integer(grouping)]
     }
     names(tilex) <- NULL
     tilex <- groupGRangesBy(tilex, grouping)
+    if (!mergeEqualNamed) names(tilex) <- original_names
   }
   return(tilex)
 }

@@ -10,7 +10,8 @@ DEG_model(
   design = ORFik::design(df),
   p.value = 0.05,
   counts = countTable(df, "mrna", type = "summarized"),
-  batch.effect = TRUE
+  batch.effect = TRUE,
+  fitType = c("parametric", "local", "mean", "glmGamPoi")
 )
 }
 \arguments{
@@ -48,6 +49,10 @@ If you believe you might have batch effects, keep as TRUE.
 Batch effect usually means that you have a strong variance between
 biological replicates. Check out \code{\link{pcaExperiment}} and see if replicates
 cluster together more than the design factor, to verify if you need to set it to TRUE.}
+
+\item{fitType}{either "parametric", "local", "mean", or "glmGamPoi"
+for the type of fitting of dispersions to the mean intensity.
+See \code{\link{estimateDispersions}} for description.}
 }
 \value{
 a DESeqDataSet object with results stored as metadata columns.

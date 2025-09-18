@@ -10,7 +10,8 @@
 libNames <- function() {
   mainName <- c("RNA", "RFP", "QTI", "CAGE", "LSU",
                 "SSU", "ATAC", "PRPF", "PAS", "PAL", "RIP","SHAPE",
-                "ChIP", "CLIP", "tRNA", "miRNA", "GRO", "RiboTag", "RiboMeth")
+                "ChIP", "CLIP", "tRNA", "miRNA", "GRO", "RiboTag", "RiboMeth",
+                "slam", "polysome", "disome", "trisome")
   allNames <-
     list(c("rna-seq", "Rna-seq", "RNA-seq", "RNA-Seq", "RNASeq", "RNAseq", "RNA seq", "RNASEQ",
            "rnaseq", "Input", "input", "total RNA", "Total RNA", "total_RNA", "totalRNA","TotalRNA_", "_Total_",
@@ -24,7 +25,7 @@ libNames <- function() {
            "RP$", "rp$", "rpfs ", "_rpf_", "_rpf$", " ribo-", "_rp_", "\\.rp\\.", "_RF", "RIBOSEQ"),
          c("QTI"),
          c("CAGE", "cage", "TSS", "tss"),
-         c("80S", "40s","LSU"),
+         c("80S", "80s","LSU"),
          c("40S", "40s", "SSU"),
          c("ATAC"),
          c("PRPF"),
@@ -38,7 +39,11 @@ libNames <- function() {
          c("miRNA"),
          c("GRO-seq", "GROseq", "PRO-seq", "PROseq"),
          c("RiboTag", "TRAP"),
-         c("RiboMeth")
+         c("RiboMeth"),
+         c("slam"),
+         c("polysome"),
+         c("disome"),
+         c("trisome")
     )
   dt <- data.table(mainName, allNames)
   return(dt)

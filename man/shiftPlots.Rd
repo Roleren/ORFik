@@ -75,7 +75,7 @@ and close to the CDS TIS.
 \examples{
 df <- ORFik.template.experiment()
 df <- df[df$libtype == "RFP",][1,] #lets only p-shift first RFP sample
-#shiftFootprintsByExperiment(df, output_format = "bedo)
+#shiftFootprintsByExperiment(df, output_format = "ofst")
 #grob <- shiftPlots(df, title = "Ribo-seq Human ORFik et al. 2020")
 #plot(grob) #Only plot in RStudio for small amount of files!
 }

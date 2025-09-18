@@ -140,111 +140,207 @@ collapse.by.scores <- function(x) {
 #' @param max_splits integer, default 20. If number of rows to merge > 2^31,
 #' how many times can you allow split merging to try to "rescue" the merging
 #' process?
+#' @param dt_max_index_size 2^31, the number of rows data.table support, set lower
+#' to merge split on lower counts
 #' @return a data.table of merged result, it is merged on all columns except "score".
 #' The returned file will contain the scores of each file + the aggregate sum score.
 #' @importFrom data.table setnames
 ofst_merge <- function(file_paths,
-                       lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
+                       lib_names = sub("\\.ofst$", "", basename(file_paths)),
                        keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE,
-                       max_splits = 20) {
+                       max_splits = 20L, dt_max_index_size = 2^31) {
+  stopifnot(length(file_paths) > 0 && is.character(file_paths))
+  stopifnot(all(file.exists(file_paths)))
+  stopifnot(length(file_paths) == length(lib_names))
+  if (keep_all_scores) stopifnot(length(lib_names) == length(unique(lib_names)))
+  .validate_schema(file_paths)
 
-  # Check valid matching files
-  meta <- table(unlist(lapply(file_paths, function(x)
-    data.table(fst::metadata_fst(x)$columnNames))))
-  if (!all(meta == length(file_paths))) {
-    print(meta)
-    stop("Some libraries had columns not in others! ",
-         "It is only allowed to merge ofst files with equal set of columns!")
-  }
+  # Plan splits vs data.table's index limit
   row_numbers <- unlist(lapply(file_paths, function(x)
-    data.table(fst::metadata_fst(x)$nrOfRows)))
-  dt_max_index_size <- 2^31
-  total_rows <- sum(row_numbers)
+    data.table::data.table(fst::metadata_fst(x)$nrOfRows)))
+  plan <- .plan_splits(row_numbers, limit = dt_max_index_size,
+                       max_splits = max_splits)
 
-  splits <- 1
-  len <- length(row_numbers)
-  split_vector <- ceiling(seq(len) / (len / splits))
-  if (total_rows >= dt_max_index_size) {
-    message("Total rows to load is: ", total_rows,
-            ", data.table only supports: ", dt_max_index_size,
-            " will split data into accepted chunks before merging again")
+  # First-round: per-chunk merge
+  file_paths_split <- split(file_paths, plan$split_vector)
+  lib_names_split  <- split(lib_names,  plan$split_vector)
 
+  is_single_chunked <- plan$is_single_chunked
+  if (!is_single_chunked) message(plan$note_message)
+  message(plan$message)
+  sort_on_chunking <- is_single_chunked & sort
+  chunk_list <- lapply(seq_along(file_paths_split), function(g) {
+    message("- Merging chunk ", g, "/", length(file_paths_split))
+    ofst_merge_internal(
+      .read_fst_list(file_paths_split[[g]]),
+      lib_names = lib_names_split[[g]],
+      keep_all_scores = keep_all_scores,
+      keepCigar = keepCigar,
+      sort = sort_on_chunking
+    )
+  })
 
-    for (splits in seq(2, max_splits)) {
-      split_vector <- ceiling(seq(len) / (len / splits))
-      all_valid <- !any(sum(List(split(row_numbers, split_vector))) >= 2^31)
-      if (all_valid) break
-    }
-    if (splits == max_splits) stop("Max splits set to: ", max_splits, " is not enough!")
-    # if (keepCigar & !is.na(meta["cigar"])) {
-    #   splits <- min(splits*2, max_splits)
-    #   split_vector <- ceiling(seq(len) / (len / splits))
-    # }
-    message("Number of chunk splits used: ", splits)
-
-    file_paths_split <- split(file_paths, split_vector)
-    message("Split round 1")
-    dt_list <- lapply(seq(splits), function(split) {
-      message("- Loading libraries to merge (split: ", split, ")")
-      dt_list <- lapply(file_paths_split[[split]], function(x) setDT(read_fst(x)))
-      ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
-                          keep_all_scores = keep_all_scores,
-                          keepCigar = keepCigar, sort = FALSE)
-    })
-
-    if (splits > 2) {
-      splits <- 2
-      split_vector <- ceiling(seq(len) / (len / splits))
-      message("Split round 2")
-      dt_list <- lapply(seq(splits), function(split) {
-        message("- Loading libraries to merge (split: ", split, ")")
-        dt_list <- lapply(file_paths_split[[split]], function(x) setDT(read_fst(x)))
-        ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
-                            keep_all_scores = keep_all_scores,
-                            keepCigar = keepCigar, sort = FALSE)
-      })
-    }
-
-
-
-    dt <- ofst_merge_internal(dt_list, lib_names = lib_names[split_vector == split],
-                              keep_all_scores = keep_all_scores,
-                              keepCigar = keepCigar, sort = sort)
-
+  # Second-round: combine chunks
+  dt <- if (is_single_chunked) {
+    chunk_list[[1L]]
   } else {
-    dt_list <- lapply(file_paths, function(x) setDT(read_fst(x)))
-    dt <- ofst_merge_internal(dt_list, lib_names = lib_names,
-                              keep_all_scores = keep_all_scores,
-                              keepCigar = keepCigar, sort = sort)
+    message("Split round 2")
+    ofst_merge_internal(
+      chunk_list,
+      lib_names = lib_names,
+      keep_all_scores = keep_all_scores,
+      keepCigar = keepCigar,
+      sort = sort, chunkified = TRUE
+    )
   }
-  return(dt)
+  # Make seqnames and strand factor
+  dt[, seqnames := as.factor(seqnames)]
+  dt[, strand := factor(strand, levels = c("+", "-", "*"))]
+  message("Done merging")
+  return(dt[])
 }
 
-ofst_merge_internal<- function(dt_list,
-                               lib_names = sub(pattern = "\\.ofst$", replacement = "", basename(file_paths)),
-                               keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE) {
+.normalize_dt <- function(d) {
+  # Robustly coerce possible factors (even malformed) to character
+  for (col in intersect(c("seqnames","strand","cigar"), names(d))) {
+    v <- d[[col]]
+    if (is.factor(v)) {
+      # Decode factor codes via levels[] indexing to survive malformed factors
+      lv <- levels(v)
+      codes <- as.integer(v)
+      d[[col]] <- as.character(lv[pmax.int(pmin.int(codes, length(lv)), 1L)])
+      # Any out-of-range codes turn into NA via indexing outside [1, nlevels]
+      d[[col]][is.na(codes) | codes < 1L | codes > length(lv)] <- NA_character_
+    }
+    if (!is.character(d[[col]])) d[[col]] <- as.character(d[[col]])
+  }
+  # Ensure integer-like coords are integer (optional, keeps joins precise)
+  for (col in intersect(c("start","end","size","width"), names(d))) {
+    if (is.double(d[[col]])) d[[col]] <- as.integer(round(d[[col]]))
+  }
+  return(d)
+}
+
+.read_fst_list <- function(paths) {
+  lapply(paths, function(x) .normalize_dt(fst::read_fst(x, as.data.table = TRUE)))
+}
+
+.validate_schema <- function(paths) {
+  meta <- table(unlist(lapply(paths, function(x)
+    data.table::data.table(fst::metadata_fst(x)$columnNames))))
+  if (!all(meta == length(paths))) {
+    print(meta)
+    stop("Some libraries had columns not in others! ",
+         "Only ofst files with identical columns can be merged.")
+  }
+  invisible(TRUE)
+}
+
+.plan_splits <- function(row_counts, limit = 2^31, max_splits = 20L) {
+  total <- sum(row_counts)
+  if (total < limit) {
+    return(list(must_split = FALSE, is_single_chunked = TRUE, splits = 1L,
+                split_vector = rep(1L, length(row_counts)),
+                message = "Merging all libraries without splitting required.."))
+  }
+  for (s in seq_len(max_splits)[-1L]) {
+    tmp_vec <- ceiling(seq_len(length(row_counts)) / (length(row_counts) / s))
+    group_sums <- vapply(split(row_counts, tmp_vec), sum, numeric(1))
+    if (all(group_sums < limit)) {
+      return(list(must_split = TRUE, is_single_chunked = FALSE,
+                  splits = s, split_vector = tmp_vec, message = "Split round 1",
+                  note_message = paste0("Total rows exceed limit (", limit,
+                                        ") — splitting into ", s, " chunk(s).")))
+    }
+  }
+  stop("max_splits = ", max_splits, " is not enough for safe chunking.")
+}
+
+.merge_by_keys_reduce <- function(dt_list, by, sort = FALSE) {
+  Reduce(function(x, y) merge.data.table(x, y, by = by, all = TRUE, sort = sort), dt_list)
+}
+
+.keys_nonlib_nonscore <- function(dt, lib_names) {
+  setdiff(names(dt), c("score", lib_names))
+}
+
+.recompute_total_score <- function(dt, lib_names) {
+  present_libs <- intersect(lib_names, names(dt))
+  if (!length(present_libs)) stop("No per-library columns present; cannot recompute total score.")
+  dt[, score := rowSums(.SD, na.rm = TRUE), .SDcols = present_libs]
+  dt
+}
+
+.int32_max <- 2^31 - 1
+.int32_min <- -.int32_max
+
+.is_safe_int32 <- function(x) {
+  if (!is.double(x)) return(FALSE)                 # only handle double -> int
+  if (anyNA(x) || any(!is.finite(x))) return(FALSE)
+  # exact integers within int32 bounds
+  if (any(x != round(x))) return(FALSE)
+  r <- range(x)
+  (r[1] >= .int32_min) && (r[2] <= .int32_max)
+}
+
+.downcast_cols_if_safe <- function(dt, cols) {
+  cols <- intersect(cols, names(dt))
+  for (col in cols) {
+    x <- dt[[col]]
+    if (is.integer(x)) next
+    if (.is_safe_int32(x)) data.table::set(dt, j = col, value = as.integer(round(x)))
+  }
+  invisible(dt)
+}
+
+.downcast_score_if_safe <- function(dt) .downcast_cols_if_safe(dt, "score")
+
+ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
+                                keepCigar = TRUE, sort = TRUE,
+                                chunkified = FALSE) {
+  if (!chunkified) stopifnot(length(dt_list) == length(lib_names))
+  colnames <- names(dt_list[[1L]])
+  non_key_columns <- "score"
+  if (chunkified) non_key_columns <- c(non_key_columns, lib_names)
 
   if (keep_all_scores) {
-    merge_keys <- colnames(dt_list[[1]])
-    merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
-    for (x in seq_along(dt_list)) setnames(dt_list[[x]], "score", lib_names[x])
 
-    mergeDTs <- function(dt_list, by = NULL, sort = TRUE) {
-      Reduce(
-        function(...) {
-          merge.data.table(..., by = by, all = TRUE, sort = sort)
-        }, dt_list)
-    }
-    dt <- mergeDTs(dt_list, by = merge_keys, sort = sort)
-    dt[, score:=rowSums(dt[, lib_names, with = FALSE], na.rm = TRUE)]
+    if (!chunkified) {
+      # Normalize & collapse per-library BEFORE merging
+      dt_list <- lapply(dt_list, function(d) {
+        keys <- setdiff(names(d), "score")
+        if (!keepCigar && "cigar" %in% keys) keys <- setdiff(keys, "cigar")
+        d[, .(score = sum(score, na.rm = TRUE)), by = keys]
+      })
+
+      # Rename each library's 'score' to its lib name
+      for (i in seq_along(dt_list))
+        data.table::setnames(dt_list[[i]], "score", lib_names[i])
+    } else dt_list <- lapply(dt_list, function(d) {d[, score := NULL]})
+
+    merge_keys <- setdiff(colnames, non_key_columns)
+
+    # 4) Outer-merge libraries on keys, then recompute total
+    dt <- .merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE)
+    # Optional: downcast per-lib cols if safe, then total
+    dt <- .downcast_cols_if_safe(dt, lib_names)
+    dt <- .recompute_total_score(dt, lib_names)
   } else {
-    dt <- collapseDuplicatedReads(rbindlist(dt_list), addSizeColumn = TRUE,
-                                  keepCigar = keepCigar)
-    merge_keys <- colnames(dt)
-    merge_keys <- merge_keys[!(merge_keys %in% c("score"))]
-    if (sort) setorderv(dt, merge_keys)
+    if (!chunkified) {
+      if (!keepCigar && "cigar" %in% colnames) {
+        dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
+      }
+    }
+    dt <- collapseDuplicatedReads(
+      data.table::rbindlist(dt_list, use.names = TRUE, fill = TRUE),
+      addSizeColumn = TRUE,
+      keepCigar = keepCigar
+    )
   }
-  return(dt)
+  # Downcast total score if safe
+  dt <- .downcast_score_if_safe(dt)
+  if (sort) data.table::setorderv(dt, setdiff(names(dt), "score"))
+  dt
 }
 
 #' Collapse duplicated reads
