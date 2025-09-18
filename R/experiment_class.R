@@ -356,6 +356,14 @@ setMethod("uniqueMappers",
           }
 )
 
+#' @inherit uniqueMappers
+setMethod("uniqueMappers",
+          "NULL",
+          function(x) {
+            FALSE
+          }
+)
+
 #' @inherit uniqueMappers<-
 setMethod("uniqueMappers<-",
           "experiment",
