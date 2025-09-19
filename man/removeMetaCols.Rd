@@ -7,7 +7,7 @@
 removeMetaCols(grl)
 }
 \arguments{
-\item{grl}{a GRangesList or GRanges object}
+\item{grl}{a \code{\link{GRangesList}} or GRanges object}
 }
 \value{
 same type and structure as input without meta columns

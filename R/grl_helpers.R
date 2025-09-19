@@ -392,7 +392,7 @@ unlistGrl <- function(grl) {
 
 #' Removes meta columns
 #'
-#' @param grl a GRangesList or GRanges object
+#' @param grl a \code{\link{GRangesList}} or GRanges object
 #' @return same type and structure as input without meta columns
 #' @keywords internal
 removeMetaCols <- function(grl) {
@@ -416,6 +416,15 @@ removeMetaCols <- function(grl) {
   return(grl)
 }
 
+#' Convert GRangesList to character vector
+#'
+#' Single exon format:\cr
+#' "1:14598834-14598914:+"\cr
+#' Multi-exon format (exon separator: ';'):\cr
+#' "1:15210514-15210562:+;1:15214895-15215025:+"
+#' @param x A \code{\link{GRangesList}}
+#' @param ... Not used for now, to preserve generic requirement
+#' @return a character vector, 1 element per element in GRangesList
 #' @export
 setMethod("as.character", "GRangesList", function(x, ...) {
   if (length(x) == 0) return(character())
@@ -443,10 +452,6 @@ makeGRangesListFromCharacter <- function(x) {
   names(res) <- names(x)
   return(res)
 }
-
-
-
-
 
 #' Get number of ranges per group as an iteration
 #'
