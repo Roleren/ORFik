@@ -39,8 +39,8 @@
 #' will not use weights.
 #' @param forceRemake logical, default FALSE. If TRUE, will not look for existing file count table files.
 #' @param libraries The call to output libraries, the input is not used! Default:
-#' outputLibs(df, chrStyle = seqinfo(df), type = lib.type, force = force,
-#'  library.names = library.names, BPPARAM = BPPARAM)
+#' \code{outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type),
+#'  type = lib.type, force = force, library.names = library.names, BPPARAM = BPPARAM)}
 #' @param format character, default "qs", alternative: "rds". Which format to save summarizedExperiment.
 #' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
@@ -69,7 +69,7 @@ makeSummarizedExperimentFromBam <- function(df, saveName = NULL,
                                             weight = "score", forceRemake = FALSE,
                                             force = TRUE, library.names = bamVarName(df),
                                             libraries = outputLibs(df, chrStyle = seqinfo(df),
-                                                                   paths = filepath(df, lib.type, suffix_stem = c("", "_pshifted")),
+                                                                   paths = filepath(df, lib.type),
                                                                    type = lib.type, force = force,
                                                                    library.names = library.names,
                                                                    BPPARAM = BPPARAM),
@@ -390,8 +390,8 @@ countTablePath <- function(df, region = "mrna", count.folder = "default") {
 #' for example uORFs or a subset of cds etc.
 #' @param rel.dir relative output directory for out.dir, default:
 #' "QC_STATS". For pshifted, write "pshifted".
-#' @param path_prefix the prefix names of tables, default:
-#' if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else NULL,
+#' @param path_prefix the prefix names of tables, default:\cr
+#' \code{if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else {NULL}}\cr
 #' i.e. directory + countTable_ or NULL if out.dir is NULL.
 #' @param BPPARAM how many cores/threads to use? default: bpparam()
 #' @return a list of data.table, 1 data.table per region. The regions
@@ -417,7 +417,7 @@ countTable_regions <- function(df, out.dir = libFolder(df),
                                format = "qs",
                                path_prefix = if (!is.null(out.dir)) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else {NULL},
                                libraries = outputLibs(df, chrStyle = seqinfo(df),
-                                                      paths = filepath(df, lib.type, suffix_stem = c("", "_pshifted")),
+                                                      paths = filepath(df, lib.type),
                                                       type = lib.type, force = FALSE,
                                                       library.names = library.names,
                                                       BPPARAM = BiocParallel::SerialParam()),

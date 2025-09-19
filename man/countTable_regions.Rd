@@ -23,9 +23,9 @@ countTable_regions(
  } else {
      NULL
  },
-  libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type,
-    suffix_stem = c("", "_pshifted")), type = lib.type, force = FALSE, library.names =
-    library.names, BPPARAM = BiocParallel::SerialParam()),
+  libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type), type
+    = lib.type, force = FALSE, library.names = library.names, BPPARAM =
+    BiocParallel::SerialParam()),
   BPPARAM = bpparam()
 )
 }
@@ -74,13 +74,13 @@ libraries as to environment and names to display in plots.}
 
 \item{format}{character, default "qs", alternative: "rds". Which format to save summarizedExperiment.}
 
-\item{path_prefix}{the prefix names of tables, default:
-if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else NULL,
+\item{path_prefix}{the prefix names of tables, default:\cr
+\code{if (!is.null(out.dir) {pasteDir(file.path(out.dir, rel.dir, "countTable_"))} else {NULL}}\cr
 i.e. directory + countTable_ or NULL if out.dir is NULL.}
 
 \item{libraries}{The call to output libraries, the input is not used! Default:
-outputLibs(df, chrStyle = seqinfo(df), type = lib.type, force = force,
- library.names = library.names, BPPARAM = BPPARAM)}
+\code{outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type),
+ type = lib.type, force = force, library.names = library.names, BPPARAM = BPPARAM)}}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam()}
 }
