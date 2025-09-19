@@ -469,9 +469,9 @@ shiftFootprintsByExperiment <- function(df,
 #' @examples
 #' df <- ORFik:::ORFik.template.experiment()
 #' template_shift_table(df)
-template_shift_table <- function(df, accepted_lengths = 26:34) {
+template_shift_table <- function(df, accepted.lengths = 26:34) {
   filepaths <- filepath(df, "ofst")
-  l <- lapply(filepaths, function(f) data.table(fraction = accepted_lengths, offsets_start = -12))
+  l <- lapply(filepaths, function(f) data.table(fraction = accepted.lengths, offsets_start = -12))
   names(l) <- filepaths
   return(l)
 }

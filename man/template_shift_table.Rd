@@ -4,10 +4,13 @@
 \alias{template_shift_table}
 \title{Make template for shift table of experiment}
 \usage{
-template_shift_table(df, accepted_lengths = 26:34)
+template_shift_table(df, accepted.lengths = 26:34)
 }
 \arguments{
 \item{df}{an ORFik \code{\link{experiment}}}
+
+\item{accepted.lengths}{accepted read lengths, default 26:34, usually ribo-seq
+is strongest between 27:32.}
 }
 \value{
 a list with names of elements as file path to the ofst,

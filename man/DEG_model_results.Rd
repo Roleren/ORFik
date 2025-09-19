@@ -37,9 +37,11 @@ This avoids the problem of extreme fold changes,
  when counts are low. See \link[DESeq2]{lfcShrink}.
 A note for DTEG.analysis function: The interaction term (TE),
 is not shrunked as this is not counts, but a ratio.}
+
+\item{as.data.table}{logical, default TRUE. Return as data.table or list of DESeq result objects (FALSE).}
 }
 \value{
-a data.table
+a data.table or list
 }
 \description{
 Get DESeq2 model results from DESeqDataSet

@@ -12,6 +12,7 @@ DEG.analysis(
   counts = countTable(df, "mrna", type = "summarized"),
   batch.effect = TRUE,
   pairs = combn.pairs(unlist(df[, target.contrast])),
+  as.data.table = TRUE,
   fitType = c("parametric", "local", "mean", "glmGamPoi"),
   lfcShrinkType = "normal"
 )
@@ -54,6 +55,8 @@ cluster together more than the design factor, to verify if you need to set it to
 
 \item{pairs}{list of character pairs, the experiment contrasts. Default:
 \code{combn.pairs(unlist(df.rfp[, target.contrast])}}
+
+\item{as.data.table}{logical, default TRUE. Return as data.table or list of DESeq result objects (FALSE).}
 
 \item{fitType}{either "parametric", "local", "mean", or "glmGamPoi"
 for the type of fitting of dispersions to the mean intensity.

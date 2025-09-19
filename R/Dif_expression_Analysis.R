@@ -22,8 +22,10 @@
 #' countTable(df, "mrna", type = "summarized"), all transcripts.
 #' Assign a subset if you don't want to analyze all genes.
 #' It is recommended to not subset, to give DESeq2 data for variance analysis.
+#' @param as.data.table logical, default TRUE. Return as data.table or list of DESeq result objects (FALSE).
 #' @return a data.table with columns:
 #' (contrast variable, gene id, regulation status, log fold changes, p.adjust values, mean counts)
+#' @importFrom data.table fifelse
 #' @export
 #' @examples
 #' ## Simple example (use ORFik template, then use only RNA-seq)
@@ -37,6 +39,7 @@ DEG.analysis <- function(df, target.contrast = design[1],
                          counts = countTable(df, "mrna", type = "summarized"),
                          batch.effect = TRUE,
                          pairs = combn.pairs(unlist(df[, target.contrast])),
+                         as.data.table = TRUE,
                          fitType = c("parametric", "local", "mean", "glmGamPoi"),
                          lfcShrinkType = "normal") {
   # Get DESeq model
@@ -44,7 +47,7 @@ DEG.analysis <- function(df, target.contrast = design[1],
                           counts, batch.effect, fitType)
   # Do result analysis: per contrast selected
   return(DEG_model_results(ddsMat_rna, target.contrast, pairs, p.value,
-                           lfcShrinkType))
+                           lfcShrinkType, as.data.table))
 }
 
 #' Run differential TE analysis
@@ -224,34 +227,23 @@ DTEG.analysis <- function(df.rfp, df.rna,
   # Input validation
   DTEG_input_validation(df.rfp, df.rna, RFP_counts, RNA_counts, design,
                         target.contrast, p.value)
-
   # Designs
-  be <- ifelse(batch.effect, "replicate + ", "")
-  te.design <- as.formula(paste0("~ libtype + ", be,
-                                 paste(design, collapse = " + "),
-                                 "+ libtype:", target.contrast))
-  main.design <- as.formula(paste0("~ ", be, paste(design, collapse = " + ")))
-  message("----------------------")
-  message("Full exper. design: ", main.design)
-  message("Interaction design: ", te.design)
-  message("Target -- contrast: ", target.contrast)
-  message("----------------------")
+  all_designs <- DTEG_design(design, target.contrast, batch.effect)
+
   # TE count table (cbind of both)
   se <- cbind(assay(RFP_counts), assay(RNA_counts))
   colData <- rbind(colData(RFP_counts), colData(RNA_counts))
   combined_se <- SummarizedExperiment(list(counts = se),
                                       rowRanges = rowRanges(RFP_counts),
                                       colData = colData)
-  ## DESeq models (total: 3)
-  # TE
+  ## DESeq models (total: 3 models)
   message("----------------------")
-  te <- DEG_DESeq(combined_se, te.design, "Model 1/3: TE", fitType)
-
+  # TE
+  te <-   DEG_DESeq(combined_se, all_designs$te.design, "Model 1/3: TE", fitType)
   # Ribo
-  ribo <- DEG_DESeq(RFP_counts, main.design, "Model 2/3: Ribo-seq", fitType)
-
+  ribo <- DEG_DESeq(RFP_counts, all_designs$main.design, "Model 2/3: Ribo-seq", fitType)
   # RNA
-  rna <- DEG_DESeq(RNA_counts, main.design, "Model 3/3: RNA-seq", fitType)
+  rna <-  DEG_DESeq(RNA_counts, all_designs$main.design, "Model 3/3: RNA-seq", fitType)
 
   # Do result analysis: per contrast selected
   dt <- DTEG_model_results(rna, ribo, te,
