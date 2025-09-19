@@ -2,8 +2,9 @@ DEG_input_validation <- function(df, counts, design, target.contrast, p.value,
                                  input_check_name = "") {
   message("----------------------")
   message("Input check: ", input_check_name)
+  if (input_check_name == "") input_check_name <- "df"
   if (!is(df, "experiment"))
-    stop("df must be ORFik experiments!")
+    stop(input_check_name, " must be an ORFik experiments!")
   if (!is(design, "character") | length(design) == 0) {
     stop("Design must be character of length > 0, don't use formula as input here")
   }
@@ -85,7 +86,7 @@ DEG_model <- function(df,
 #'
 #' @param ddsMat_rna a DESeqDataSet object with results stored as metadata columns.
 #' @inheritParams DEG.analysis
-#' @return a data.table
+#' @return a data.table or list
 #' @export
 #' @examples
 #' ## Simple example (use ORFik template, then use only RNA-seq)
@@ -100,32 +101,17 @@ DEG_model_results <- function(ddsMat_rna, target.contrast, pairs,
                               p.value = 0.05, lfcShrinkType = "normal",
                               as.data.table = TRUE) {
   # Do result analysis: per contrast selected
-  dt.between <- data.table()
-  for(contrast_pair in pairs) {
-    res <- DEG_model_results_contrast(ddsMat_rna, c(target.contrast, contrast_pair),
+  res <- lapply(pairs, function(contrast_pair) {
+    r <- DEG_model_results_contrast(ddsMat_rna, c(target.contrast, contrast_pair),
                                       lfcShrinkType, verbose = TRUE)
-
-    # The differential regulation groupings (padj is padjusted)
-    expressed <- which(res$padj < p.value)
-    n <- rownames(res)
-    Regulation <- factor(rep("No change", nrow(res)),
-           levels = c("No change", "Significant"),
-           ordered = TRUE)
-    Regulation[expressed] <- "Significant" # Old Buffering
-    print(table(Regulation))
-
-    dt.between <-
-      rbindlist(list(dt.between,
-                     data.table(contrast = attr(res, "name"),
-                                Regulation = Regulation,
-                                id = rownames(ddsMat_rna),
-                                meanCounts = res$baseMean,
-                                LFC = res$log2FoldChange,
-                                padj = res$padj
-                     )))
-  }
+    print(DEG_model_results_regulation_status(r, p.value))
+    return(r)
+  })
   message("----------------------")
-  return(dt.between)
+  if (as.data.table) {
+    res <- DEG_model_results_as_dt(res, p.value)
+  }
+  return(res)
 }
 
 DEG_model_results_contrast <- function(ddsMat, contrast_vec,
@@ -145,6 +131,26 @@ DEG_model_results_contrast <- function(ddsMat, contrast_vec,
   }
   attr(res, "name") <- name
   return(res)
+}
+
+DEG_model_results_regulation_status <- function(res, p.value) {
+  Regulation <- length(which(res$padj < p.value))
+  Regulation <- c(Regulation, nrow(res) - Regulation)
+  names(Regulation) <- c("Significant", "No change")
+  return(Regulation)
+}
+
+DEG_model_results_as_dt <- function(res, p.value) {
+  stopifnot(is.list(res) & is.numeric(p.value))
+  rbindlist(lapply(res, function(r) {
+    data.table(contrast = attr(r, "name"),
+               Regulation = fifelse(na_safe(r$padj, "<=", p.value), "Significant", "No change"),
+               id = rownames(r),
+               meanCounts = r$baseMean,
+               LFC = r$log2FoldChange,
+               padj = r$padj
+    )
+  }))
 }
 
 #' Simple Fpkm ratio test DEG
@@ -192,9 +198,6 @@ DTEG_input_validation <- function(df.rfp, df.rna, RFP_counts, RNA_counts,
                                   design, target.contrast, p.value) {
   message("----------------------")
   message("Input check:")
-  if (!is(df.rfp, "experiment") | !is(df.rna, "experiment"))
-    stop("df.rfp and df.rna must be ORFik experiments!")
-
   DEG_input_validation(df.rfp, RFP_counts, design, target.contrast, p.value,
                        "df.rfp")
   DEG_input_validation(df.rna, RNA_counts, design, target.contrast, p.value,
@@ -204,6 +207,20 @@ DTEG_input_validation <- function(df.rfp, df.rna, RFP_counts, RNA_counts,
     stop("Count tables must have equall number of rows!")
   message("----------------------")
   return(invisible(NULL))
+}
+
+DTEG_design <- function(design, target.contrast, batch.effect) {
+  be <- ifelse(batch.effect, "replicate + ", "")
+  te.design <- as.formula(paste0("~ libtype + ", be,
+                                 paste(design, collapse = " + "),
+                                 "+ libtype:", target.contrast))
+  main.design <- as.formula(paste0("~ ", be, paste(design, collapse = " + ")))
+  message("----------------------")
+  message("Full exper. design: ", main.design)
+  message("Interaction design: ", te.design)
+  message("Target -- contrast: ", target.contrast)
+  message("----------------------")
+  return(list(main.design = main.design, te.design = te.design))
 }
 
 DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,

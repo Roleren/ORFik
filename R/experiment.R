@@ -712,7 +712,7 @@ simpleLibs <- convertLibs
 #' fimport(file.path(tempdir(), "all.ofst"))
 #' # Only keep total score, Read as direct fst data.table
 #' mergeLibs(df2, tempdir(), mode = "all", type = "default", keep_all_scores = FALSE)
-#' read_fst(file.path(tempdir(), "all.ofst"))
+#' fst::read_fst(file.path(tempdir(), "all.ofst"))
 #' # Collapse replicates
 #' mergeLibs(df2, tempdir(), mode = "rep", type = "default")
 #' paths <- file.path(tempdir(), paste0("RFP_", c("Mutant", "WT"), ".ofst"))

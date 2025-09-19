@@ -20,7 +20,9 @@ countTable_regions(
   path_prefix = if (!is.null(out.dir)) {
      pasteDir(file.path(out.dir, rel.dir,
     "countTable_"))
- } else NULL,
+ } else {
+     NULL
+ },
   libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type,
     suffix_stem = c("", "_pshifted")), type = lib.type, force = FALSE, library.names =
     library.names, BPPARAM = BiocParallel::SerialParam()),

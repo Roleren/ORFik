@@ -193,7 +193,7 @@ readBamSeqs <- function(path, yieldSize = NA_integer_) {
 #' Read unique mapper status from bam
 #'
 #' The 'seq' flag of the bam, with a specified number of rows
-#' @param paths paths to bam files
+#' @param bam_paths paths to bam files
 #' @inheritParams readBamSeqs
 #' @return a list of logical elements, 1 for each bam file, TRUE is unique
 #' mapper.

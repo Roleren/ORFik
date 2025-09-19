@@ -7,10 +7,10 @@
 readBamIsUniqueMapper(bam_paths, yieldSize = NA_integer_)
 }
 \arguments{
+\item{bam_paths}{paths to bam files}
+
 \item{yieldSize}{integer, default NA_integer_, number of reads to read in,
 set to NA_integer_ to get full file.}
-
-\item{paths}{paths to bam files}
 }
 \value{
 a list of logical elements, 1 for each bam file, TRUE is unique
