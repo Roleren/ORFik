@@ -633,7 +633,11 @@ validate_star_input <- function(script.single, index.dir, keep.contaminants.type
   stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
 
   stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
+  stopifnot(length(trim.front) > 0 & length(trim.tail) > 0)
   stopifnot(all(is.numeric(trim.front) & is.numeric(trim.tail)))
+  stopifnot(all(!is.na(trim.front) &&  !is.na(trim.tail)))
+  if (max(c(trim.front, trim.tail)) > 30) stop("For some reason fastp only allows trimming ",
+                                               "of up to 30 bases, run twice (e.g. 30 + 28 would give 58)")
   if (mode == "folder") {
     stopifnot(include.subfolders %in% c("y", "n"))
     if (is.null(script.folder) || !file.exists(script.folder))
