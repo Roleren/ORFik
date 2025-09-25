@@ -329,7 +329,7 @@ setMethod("length",
 setMethod("countOverlaps",
           c("GRangesList", "covRle"),
           function(query, subject) {
-            sum(coveragePerTiling(query, subject))
+            coverageByTranscriptSum(subject, query)
           }
 )
 
@@ -339,7 +339,7 @@ setMethod("countOverlaps",
             old_query_names <- names(query)
             query <- split(query, seq(length(query)))
             names(query) <- old_query_names
-            sum(coveragePerTiling(query, subject))
+            coverageByTranscriptSum(subject, query)
           }
 )
 

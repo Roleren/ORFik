@@ -655,78 +655,56 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
   return(results)
 }
 
-# Testing new version
-# coverageByTranscriptW2 <- function (x, transcripts, ignore.strand = FALSE,
-#                                    weight = 1L) {
-#   if (!is(transcripts, "GRangesList")) {
-#     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
-#                        silent = TRUE)
-#     if (is(transcripts, "try-error"))
-#       stop(wmsg("failed to extract the exon ranges ",
-#                 "from 'transcripts' with ", "exonsBy(transcripts, by=\"tx\", use.names=TRUE)"))
-#   }
-#   if (!isTRUEorFALSE(ignore.strand))
-#     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
-#   seqinfo(x) <- GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
-#                                                                               transcripts)
-#   ex <- unlist(transcripts, use.names = FALSE)
-#   sm <- selfmatch(ex)
-#   is_unique <- sm == seq_along(sm)
-#   uex2ex <- which(is_unique)
-#   uex <- ex[uex2ex]
-#   # Fix GAlignments not allowing mcol weight, remove when they fix it
-#   # in GAlignments definition of coverage.
-#   if ((is(x, "GAlignments") | is(x, "GAlignmentPairs"))
-#       & is.character(weight)) {
-#     if (!(weight %in% colnames(mcols(x))))
-#       stop("weight is character and not mcol of x,",
-#            " check spelling of weight.")
-#     weight <- mcols(x)[, weight]
-#     x <- grglist(x) # convert to grl
-#     weight = weight[groupings(x)] # repeat weight per group
-#   }
-#
-#   if (ignore.strand) {
-#     cvg <- coverage(x, weight = weight)
-#     uex_cvg <- cvg[uex]
-#   }
-#   else {
-#     pluss <- BiocGenerics::`%in%`(strand(x), c("+", "*"))
-#     minus <- BiocGenerics::`%in%`(strand(x), c("-", "*"))
-#     x1 <- x[pluss]
-#     x2 <- x[minus]
-#     if (length(weight) > 1) {
-#       # Add unlist in case of GAlignments
-#       cvg1 <- coverage(x1, weight = weight[as.logical(unlist(pluss))])
-#       cvg2 <- coverage(x2, weight = weight[as.logical(unlist(minus))])
-#     } else {
-#       cvg1 <- coverage(x1, weight = weight)
-#       cvg2 <- coverage(x2, weight = weight)
-#     }
-#
-#     is_plus_ex <- strand(uex) == "+"
-#     is_minus_ex <- strand(uex) == "-"
-#     if (!identical(is_plus_ex, !is_minus_ex))
-#       stop(wmsg("'transcripts' has exons on the * strand. ",
-#                 "This is not supported at the moment."))
-#     # uex_cvg <- cvg1[uex]
-#     # uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
-#     uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
-#     uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
-#     uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
-#     names(uex_cvg) <- as.character(seqnames(uex))
-#
-#     # uex_irl_pos <- split(ranges(uex[is_plus_ex]), as.character(seqnames(uex[is_plus_ex])))
-#     # uex_irl_neg <- split(ranges(uex[is_minus_ex]), as.character(seqnames(uex[is_minus_ex])))
-#     # uex_irl_pos <- uex_irl_pos[names(cvg1)[names(cvg1) %in% unique(names(uex_irl_pos))]]
-#     # uex_irl_neg <- uex_irl_neg[names(cvg2)[names(cvg2) %in% unique(names(uex_irl_neg))]]
-#     # uex_cvg3_pos <- RleViewsList(rleList = cvg1[names(uex_irl_pos)], rangesList = uex_irl_pos)
-#     # uex_cvg3_neg <- RleViewsList(rleList = cvg1[names(uex_irl_neg)], rangesList = uex_irl_neg)
-#   }
-#   uex_cvg[strand(uex) == "-"] <- ORFik:::revElementsF(uex_cvg)[strand(uex) == "-"]
-#   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
-#   ex_cvg <- uex_cvg[ex2uex]
-#   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
-#   mcols(ans) <- mcols(transcripts)
-#   return(ans)
-# }
+coverageByTranscriptSum <- function(x, transcripts, ignore.strand = !strandMode(x),
+                                    return_per_exon = FALSE) {
+  stopifnot(is(x, "covRle"))
+  stopifnot(all(!anyNA(seqlengths(f(x)))))
+
+  if (!is(transcripts, "GRangesList")) {
+    transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE), silent = TRUE)
+    if (is(transcripts, "try-error"))
+      stop("Failed to extract exons with exonsBy(transcripts, by='tx', use.names=TRUE)")
+  }
+
+  if (!isTRUEorFALSE(ignore.strand))
+    stop("'ignore.strand' must be TRUE or FALSE")
+
+  # Unique exons to avoid recomputing same ranges
+  ex <- unlist(transcripts, use.names = FALSE)
+  sm <- selfmatch(ex)
+  is_unique <- sm == seq_along(sm)
+  uex2ex <- which(is_unique)      # indices of unique exons in 'ex'
+  uex <- ex[uex2ex]
+
+  cvg1 <- f(x)                    # + strand coverage (RleList)
+  cvg2 <- if (strandMode(x)) r(x) else NULL  # - strand coverage if available
+  # Pre-allocate sums for unique exons
+  uex_sum <- integer(length(uex))
+  uex_old_names <- names(uex)
+  names(uex) <- seq_along(uex)
+  strands <- as.character(strand(uex))
+  v <- (Views(cvg1, uex[strands == "+"]))
+  names(v) <- NULL
+  r <- unlist(lapply(v[lengths(v) > 0], sum))
+  uex_sum[as.integer(names(r))] <- r
+  if (!is.null(cvg2)) {
+    v <- (Views(cvg2, uex[strands == "-"]))
+    names(v) <- NULL
+    r <- unlist(lapply(v[lengths(v) > 0], sum))
+    uex_sum[as.integer(names(r))] <- r
+  }
+
+  # Map sums back from unique exons to all exons, then relist by transcript
+  ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
+  ex_sum <- uex_sum[ex2uex]                       # one value per exon in 'ex'
+  exon_sums_by_tx <- relist(ex_sum, transcripts)  # IntegerList parallel to 'transcripts'
+  mcols(exon_sums_by_tx) <- mcols(transcripts)
+
+  if (return_per_exon)
+    return(exon_sums_by_tx)
+
+  # Per-transcript totals (sum across each element of the IntegerList)
+  tx_totals <- sum(exon_sums_by_tx)
+  names(tx_totals) <- names(transcripts)
+  tx_totals
+}

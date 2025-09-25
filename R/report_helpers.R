@@ -306,7 +306,6 @@ orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
                                  withFrames = TRUE, scoring = "frameSumPerL",
                                  weight = weight, drop.zero.dt = TRUE)
     total[, length := fraction]
-    #hits <- get(lib, mode = "S4")[countOverlaps(get(lib, mode = "S4"), cds) > 0]
     name <- attr(lib, "name_short")
     total[, fraction := rep(name, nrow(total))]
   }, cds = cds, weight = weight, BPPARAM = BPPARAM)
