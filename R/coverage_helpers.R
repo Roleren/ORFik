@@ -489,7 +489,7 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #'                                 end = c(5, 15, 25)),
 #'                strand = "+")
 #' grl <- GRangesList(tx1_1 = ORF)
-#' RFP <- GRanges("1", IRanges(25, 25), "+")
+#' RFP <- GRanges("1", IRanges(25, 25), "+", seqlengths = c("1" = 25))
 #' coveragePerTiling(grl, RFP, is.sorted = TRUE)
 #' # now as data.table with frames
 #' coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE,
@@ -504,11 +504,16 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
 #'                         as.data.table = TRUE, withFrames = TRUE)
 #' class(dt$count) # integer
+#' # Much faster coverage format for genomes (ORFik often stores these on disc
+#' # with .qs format)
+#' cov <- covRleFromGR(RFP)
+#' dt <- coveragePerTiling(grl, cov, is.sorted = TRUE)
+#'
 #'
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
-                               keep.names = TRUE, as.data.table = FALSE,
-                               withFrames = FALSE, weight = "score",
-                               drop.zero.dt = FALSE, fraction = NULL) {
+                              keep.names = TRUE, as.data.table = FALSE,
+                              withFrames = FALSE, weight = "score",
+                              drop.zero.dt = FALSE, fraction = NULL) {
   if (!is.null(fraction)) stopifnot(length(fraction) == 1)
   if (!is.sorted) grl <- sortPerGroup(grl)
 
