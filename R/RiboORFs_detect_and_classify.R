@@ -72,7 +72,7 @@ categorize_and_filter_ORFs <- function(orfs, ORF_categories_to_keep,
   stopifnot(length(ORF_categories_to_keep) > 0)
   stopifnot(all(ORF_categories_to_keep %in% valid_orf_categories()))
   if ("all" %in% ORF_categories_to_keep)
-    ORF_categories_to_keep <- valid_orf_categories()[-length(valid_orf_categories)]
+    ORF_categories_to_keep <- valid_orf_categories()[-length(valid_orf_categories())]
 
   orfs_unl <- unlist(orfs, use.names = TRUE)
   groupings <- strtoi(names(orfs_unl))
