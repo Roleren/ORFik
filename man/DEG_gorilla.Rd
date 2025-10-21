@@ -15,8 +15,8 @@ gene symbols column called "external_gene_name"}
 \item{organism}{organism(df), example "Homo sapiens"}
 }
 \value{
-a data.table with urls per contrast, this is also saved in
-output_dir
+a data.table with 2 columns (id: name of contrast), urls: url to html online,
+this table is also saved in output_dir.
 }
 \description{
 Per contrast, split list into regulation groups and run GOrilla go analysis.

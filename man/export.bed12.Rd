@@ -11,12 +11,13 @@ export.bed12(grl, file, rgb = 0)
 
 \item{file}{a character path to valid output file name}
 
-\item{rgb}{integer vector, default (0), either single integer or
-vector of same size as grl to specify groups. It is adviced to not
-use more than 8 different groups}
+\item{rgb}{integer vector, default (0), maximum (255),
+either single integer or vector of same size as grl to specify groups.
+It is adviced to not use more than 8 different groups. (In IGV / UCSC
+0 is black and 255 is blue)}
 }
 \value{
-NULL (File is saved as .bed)
+invisible(NULL) (File is saved only)
 }
 \description{
 bed format for multiple exons per group, as transcripts.
@@ -28,7 +29,6 @@ If grl has no names, groups will be named 1,2,3,4..
 }
 \examples{
 grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
-# export.bed12(grl, "output/path/orfs.bed")
 }
 \references{
 \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html#bed-format}

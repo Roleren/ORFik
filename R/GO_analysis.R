@@ -110,9 +110,10 @@ go_analaysis_gorilla <- function(target_genes, background_genes,
 #' gene symbols column called "external_gene_name"
 #' @param output_dir path to save results
 #' @inheritParams go_analaysis_gorilla
-#' @return a data.table with urls per contrast, this is also saved in
-#' output_dir
+#' @return a data.table with 2 columns (id: name of contrast), urls: url to html online,
+#' this table is also saved in output_dir.
 #' @export
+#' @family GOrilla
 DEG_gorilla <- function(dt, output_dir, organism) {
   stopifnot(is(dt, "data.table"))
   stopifnot(!is.null(dt$external_gene_name))
@@ -168,4 +169,59 @@ DEG_gorilla <- function(dt, output_dir, organism) {
   if (nrow(all_gorilla_ids) > 0)
     fwrite(all_gorilla_ids, file.path(output_dir, paste0("All_contrasts", "_GOrilla_urls.csv")))
   return(all_gorilla_ids)
+}
+
+#' Copy GOrilla result htmls to local
+#'
+#' Will retrieve full html, png and xls structure so analysis can be used even
+#' when results are deleted online (1 month after creation).\cr
+#' Files are saved to disc in directory "./GOrilla_local_html_outputs/", relative
+#' to input directory 'gorilla_output_dir'. There is 1 subfolder per
+#' analysis url. Open the GOResults.html to view.
+#' @param gorilla_output_dir character, directory path to existing results of a
+#' DEG_gorilla call. Must contain a file with relative path "./All_contrasts_GOrilla_urls.csv"
+#' @param local_html_dir character, output directory,
+#' default: \code{file.path(gorilla_output_dir, "GOrilla_local_html_outputs")}
+#' @return invisible(NULL), files are saved to disc.
+#' @export
+#' @family GOrilla
+DEG_gorilla_copy_to_local <- function(gorilla_output_dir,
+                                      local_html_dir = file.path(gorilla_output_dir, "GOrilla_local_html_outputs")) {
+  stopifnot(dir.exists(gorilla_output_dir) && length(gorilla_output_dir) == 1)
+  urls <- fread(file.path(gorilla_output_dir, "All_contrasts_GOrilla_urls.csv"))
+  message("Creating local copy of GOrilla html structures..")
+  for (i in seq_along(urls$url)) {
+    gorilla_copy_to_local(urls$url[i], urls$id[i], local_html_dir, i, nrow(urls))
+  }
+  message("GOrilla htmls also saved localy at location:\n", local_html_dir)
+  return(invisible(NULL))
+}
+
+gorilla_copy_to_local <- function(url, id, local_html_dir, this_url_index = 1,
+                                  total_urls = 1) {
+  message("- ", id, " (", this_url_index, "/", total_urls, ")")
+  this_dir <- file.path(local_html_dir, gsub(" ", "_", id))
+  dir.create(this_dir, showWarnings = FALSE, recursive = TRUE)
+
+  headers <- c("", "top")
+  go_types <- c("PROCESS", "FUNCTION", "COMPONENT")
+  html_components <- c(headers, go_types)
+  for (go_type in html_components) {
+    cat(paste0(ifelse(go_type == "", "RESULTS", go_type)))
+    go_type_url <- sub("\\.html$", paste0(go_type, ".html"), url)
+    if (go_type == "top") go_type_url <- sub("GOResults", "", go_type_url)
+    out_file <- file.path(this_dir, basename(go_type_url))
+    cat("(HTML)")
+    download.file(go_type_url, out_file)
+    if (go_type %in% go_types) {
+      for (additional_format in c("png", "xls")) {
+        cat(paste0("(", toupper(additional_format), ")"))
+        go_type_url <- file.path(dirname(go_type_url), paste0("GO", go_type, ".", additional_format))
+        out_file <- file.path(this_dir, basename(go_type_url))
+        download.file(go_type_url, out_file)
+      }
+    }
+  }
+  cat("\n")
+  return(invisible(NULL))
 }
