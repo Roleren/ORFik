@@ -199,6 +199,9 @@ DEG_gorilla_copy_to_local <- function(gorilla_output_dir,
 
 gorilla_copy_to_local <- function(url, id, local_html_dir, this_url_index = 1,
                                   total_urls = 1) {
+  stopifnot(is.character(url) & length(url) == 1)
+  stopifnot(is.character(id) & length(id) == 1)
+
   message("- ", id, " (", this_url_index, "/", total_urls, ")")
   this_dir <- file.path(local_html_dir, gsub(" ", "_", id))
   dir.create(this_dir, showWarnings = FALSE, recursive = TRUE)
