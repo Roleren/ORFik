@@ -97,20 +97,26 @@ collapse.fastq <- function(files, outdir = file.path(dirname(files[1]), "collaps
   return(invisible(NULL))
 }
 
-collapse.fastq.internal <- function(seqs, header.out.format = "ribotoolkit") {
+collapse.fastq.internal <- function(seqs, header.out.format = "ribotoolkit",
+                                    asDNAStringSet = TRUE) {
   # Fast collapser using data.table
   replicates <- data.table(seqs = as.character(seqs))
-  # Much faster with 1 core actually, strange..
-  old_threads <- data.table::getDTthreads()
-  data.table::setDTthreads(1)
+  local_DTthreads(1)
   replicates <- replicates[, .N, by = seqs][order(N, decreasing = TRUE),]
-  data.table::setDTthreads(old_threads)
-  if (header.out.format == "fastx") {
-    headers <- paste0(seq.int(nrow(replicates)), "-", replicates$N)
-  } else if (header.out.format == "ribotoolkit") {
-    headers <- paste0("seq", seq.int(nrow(replicates)), "_x", replicates$N)
-  } else stop("format must be 'fastx' or 'ribotoolkit'")
+
   new_seqs <- replicates$seqs
-  names(new_seqs) <- headers
+  names(new_seqs) <- collapse_header_set(replicates$N, seq.int(nrow(replicates)),
+                                         header.out.format)
+  if (!asDNAStringSet) return(new_seqs)
   return(DNAStringSet(new_seqs, use.names = TRUE))
+}
+
+collapse_header_set <- function(N, indices = seq_along(N),
+                                header.out.format = "ribotoolkit") {
+  if (header.out.format == "fastx") {
+    headers <- sprintf("%d-%d", indices, N)
+  } else if (header.out.format == "ribotoolkit") {
+    headers <- sprintf("seq%d_x%d", indices, N)
+  } else stop("format must be 'fastx' or 'ribotoolkit'")
+  return(headers)
 }

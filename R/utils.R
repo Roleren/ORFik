@@ -493,6 +493,12 @@ exists.ftp.file.fast <- function(url, report.error = FALSE) {
   return(FALSE)
 }
 
+local_DTthreads <- function(n = 1, env = parent.frame()) {
+  old <- data.table::getDTthreads()
+  withr::defer(data.table::setDTthreads(old), envir = env)
+  data.table::setDTthreads(n)
+}
+
 #' Detects the mounted drive based on a mounted path
 #' @param ref_path = path.expand(config()["ref"])
 #' @return character, name of FileSystem drive of mounted path,

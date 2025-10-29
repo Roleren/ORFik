@@ -4,11 +4,17 @@
 \alias{DEG_gorilla_copy_to_local}
 \title{Copy GOrilla result htmls to local}
 \usage{
-DEG_gorilla_copy_to_local(gorilla_output_dir)
+DEG_gorilla_copy_to_local(
+  gorilla_output_dir,
+  local_html_dir = file.path(gorilla_output_dir, "GOrilla_local_html_outputs")
+)
 }
 \arguments{
-\item{gorilla_output_dir}{character, directory path to results of a DEG_gorilla
-call. Must contain a file with relative path "./All_contrasts_GOrilla_urls.csv"}
+\item{gorilla_output_dir}{character, directory path to existing results of a
+DEG_gorilla call. Must contain a file with relative path "./All_contrasts_GOrilla_urls.csv"}
+
+\item{local_html_dir}{character, output directory,
+default: \code{file.path(gorilla_output_dir, "GOrilla_local_html_outputs")}}
 }
 \value{
 invisible(NULL), files are saved to disc.
@@ -20,3 +26,8 @@ Files are saved to disc in directory "./GOrilla_local_html_outputs/", relative
 to input directory 'gorilla_output_dir'. There is 1 subfolder per
 analysis url. Open the GOResults.html to view.
 }
+\seealso{
+Other GOrilla: 
+\code{\link{DEG_gorilla}()}
+}
+\concept{GOrilla}

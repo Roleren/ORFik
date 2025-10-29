@@ -23,3 +23,8 @@ Per contrast, split list into regulation groups and run GOrilla go analysis.
 If you want to change LFC threshold or p-value cutoff, you reassign
 Regulation column by LFC and/or p-value.
 }
+\seealso{
+Other GOrilla: 
+\code{\link{DEG_gorilla_copy_to_local}()}
+}
+\concept{GOrilla}
