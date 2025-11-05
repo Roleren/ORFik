@@ -63,7 +63,6 @@ DEG.plot.static <- function(dt, output.dir = NULL,
     scale_color_manual(values = color.values) +
     theme_minimal() +
     geom_hline(aes(yintercept =  0), alpha = 0.2, color = "red") +
-    geom_abline(alpha = 0.2, color = "gray67", linetype = "dashed", intercept = 0, slope = 1) +
     xlab("Mean Counts (log2)") +
     ylab("Fold change (log2)") +
     p.title +
