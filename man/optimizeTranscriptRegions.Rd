@@ -15,7 +15,7 @@ optimizeTranscriptRegions(
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
 Only in the loadRegion function: if it is a GRangesList, it will return it self.}
 
-\item{base_path}{Directy and file prefix for files, will append "_region.rds", where region is
+\item{base_path}{Directy and file prefix for files, will append "_region.qs", where region is
 specific region.}
 
 \item{regions}{character, default: c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA").

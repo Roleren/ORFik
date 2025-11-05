@@ -42,8 +42,13 @@ best for reads < 50 read length. Not so effective for 150 bp length mRNA-seq etc
 }
 \examples{
 
-fastq.folder <- tempdir() # <- Your fastq files
-infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
-# collapse.fastq(infiles)
-
+seqs <- rep(c("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "GGGGGGGGGGGGGGGGGGGG"), times = c(2,3))
+fastq.folder <- tempfile()
+dir.create(fastq.folder)
+fastq.file <- file.path(fastq.folder, "test.fasta")
+writeXStringSet(DNAStringSet(seqs), filepath = fastq.file)
+infiles <- dir(fastq.folder, "fasta|fastq", full.names = TRUE)
+collapse.fastq(infiles)
+readDNAStringSet(file.path(fastq.folder, "collapsed", "collapsed_test.fasta"))
+# You see names says x3 of read 1 (GGGG...) and x2 of read 2 (AAAA....)
 }

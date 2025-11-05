@@ -17,6 +17,7 @@
 #' @param relative.name character, Default: \code{paste0("DEG_plot", plot.ext)}
 #' Relative name of file to be saved in folder specified in output.dir.
 #' Change to .pdf if you want pdf file instead of png.
+#' Multiple values allowed, if so will save file in each format specified.
 #' @family DifferentialExpression
 #' @export
 #' @examples
@@ -30,7 +31,7 @@
 DEG.plot.static <- function(dt, output.dir = NULL,
                             p.value.label = 0.05,
                             plot.title = "", plot.ext = ".pdf", width = 6,
-                            height = 6, dot.size = 0.4,
+                            height = 6, dpi = 300, dot.size = 0.4,
                             xlim = "auto", ylim = "bidir.max",
                             relative.name = paste0("DEG_plot", plot.ext)) {
   if("variable" %in% colnames(dt)) colnames(dt) <- gsub("variable", "contrast", colnames(dt))
@@ -88,8 +89,10 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 
   plot(plot.between)
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, relative.name), plot.between,
-           width = width, height = height, dpi = 300)
+    for (rel_name in unique(relative.name)) {
+      ggsave(file.path(output.dir, rel_name), plot.between,
+             width = width, height = height, dpi = dpi)
+    }
   }
   return(plot.between)
 }
@@ -106,8 +109,10 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' What p-value used for the analysis? Will be shown as a caption.
 #' @param plot.title title for plots, usually name of experiment etc
 #' @param plot.ext character, default: ".pdf". Alternatives: ".png" or ".jpg".
+#'  Multiple values allowed, if so will save file in each format specified.
 #' @param width numeric, default 6 (in inches)
 #' @param height numeric, default 6 (in inches)
+#' @param dpi numeric, default 300.
 #' @param dot.size numeric, default 0.4, size of point dots in plot.
 #' @param xlim numeric vector or character preset, default: "bidir.max"
 #' (Equal in both + / - direction, using max value + 0.5 of rna column in dt).
@@ -120,6 +125,7 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 #' @param relative.name character, Default: \code{paste0("DTEG_plot", plot.ext)}
 #' Relative name of file to be saved in folder specified in output.dir.
 #' Change to .pdf if you want pdf file instead of png.
+#' Multiple values allowed, if so will save file in each format specified.
 #' @param plot_to_console logical, default TRUE. Plot to console before returning,
 #' set to FALSE to save some run time.
 #' @return a ggplot object, will facet_wrap if length(unique(dt$contrasts)) > 1
@@ -138,7 +144,7 @@ DEG.plot.static <- function(dt, output.dir = NULL,
 DTEG.plot <- function(dt, output.dir = NULL,
                       p.value.label = ifelse(!is.null(attr(dt, "p.value")), attr(dt, "p.value"), 0.05),
                       plot.title = "", plot.ext = ".pdf", width = 6,
-                      height = 6, dot.size = 0.4,
+                      height = 6, dpi = 300, dot.size = 0.4,
                       xlim = "bidir.max", ylim = "bidir.max",
                       relative.name = paste0("DTEG_plot", plot.ext),
                       plot_to_console = TRUE) {
@@ -204,8 +210,10 @@ DTEG.plot <- function(dt, output.dir = NULL,
 
   if (plot_to_console) plot(plot.between)
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, relative.name), plot.between,
-           width = width, height = height, dpi = 300)
+    for (rel_name in unique(relative.name)) {
+      ggsave(file.path(output.dir, rel_name), plot.between,
+             width = width, height = height, dpi = dpi)
+    }
   }
   return(plot.between)
 }
@@ -235,7 +243,7 @@ DTEG.plot <- function(dt, output.dir = NULL,
 te_rna.plot <- function(dt, output.dir = NULL,
                         filter.rfp = 1, filter.rna = 1,
                         plot.title = "", plot.ext = ".pdf",
-                        width = 6, height = "auto",
+                        width = 6, height = "auto", dpi = 300,
                         dot.size = 0.4, xlim = c(filter.rna, filter.rna + 2.5)) {
 
   if (height == "auto") height <- 3+length(unique(dt$variable))
@@ -263,8 +271,11 @@ te_rna.plot <- function(dt, output.dir = NULL,
 
   plot(plot)
   if (!is.null(output.dir)) {
-    ggsave(file.path(output.dir, paste0("TE_within", plot.ext)), plot,
-           width = width, height = height, dpi = 300)
+    relative.name <- paste0("TE_within", plot.ext)
+    for (rel_name in unique(relative.name)) {
+      ggsave(file.path(output.dir, rel_name), plot,
+             width = width, height = height, dpi = dpi)
+    }
   }
   return(plot)
 }

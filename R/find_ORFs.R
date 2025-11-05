@@ -421,7 +421,7 @@ findUORFs_exp <- function(df, faFile = findFa(df),
               removeUnused = removeUnused)
   if (save_optimized) {
     optimized_path <- optimized_txdb_path(txdb, stop.error = TRUE)
-    saveRDS(uorfs, paste0(optimized_path, "_", "uorfs", ".rds"))
+    save_RDSQS(uorfs, paste0(optimized_path, "_", "uorfs", ".qs"))
   }
   return(uorfs)
 }
