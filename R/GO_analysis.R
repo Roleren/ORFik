@@ -251,6 +251,7 @@ DEG_gorilla_local_load_data <- function(gorilla_local_dir) {
   dt[, Enrichment := as.numeric(sub("^1,", "", Enrichment))]
   # Parse GeneRatio "b/n" -> numeric; add -log10(adjusted p)
   dt[, GeneRatio := b / n]
+  attr(dt, "species") <- DEG_gorilla_local_species(gorilla_local_dir)
   dt[] # Make print work first time
   return(dt)
 }
@@ -266,15 +267,18 @@ DEG_gorilla_local_load_data <- function(gorilla_local_dir) {
 #' @param enrich_cutoff numeric, default 8. Minimum enrichment, set it lower
 #' to get more generic groups, higher to get more specific groups.
 #' @return a ggplot, it uses facet_wrap to split analysis / components.
-#'
 #' @export
 DEG_gorilla_plot <- function(dt, top_n = 20L, enrich_cutoff = 8) {
+  stopifnot(is.numeric(top_n) & is.numeric(enrich_cutoff))
   stopifnot(is(dt, "data.table"))
   cols <- c(
     "go_category", "GO Term", "Description", "P-value", "FDR q-value", "Enrichment",
     "N", "B", "n", "b", "Genes", "analysis", "p.adjust", "GeneRatio"
   )
   stopifnot(all(cols %in% colnames(dt)))
+  species <- attr(dt, "species")
+  if (!is.null(species)) species <- paste0("(", species, ")")
+
   plot_dt <- dt[is.finite(p.adjust) & is.finite(GeneRatio) & Enrichment > enrich_cutoff]
   plot_dt <- plot_dt[order(-GeneRatio, -p.adjust), head(.SD, min(top_n, .N)), by = .(analysis, go_category)]
   # order y-axis (GO terms) by GeneRatio (or by negLog10Padj if you prefer)
@@ -297,7 +301,8 @@ DEG_gorilla_plot <- function(dt, top_n = 20L, enrich_cutoff = 8) {
     labs(
       x = "Gene ratio", y = NULL,
       title = paste0("GO enrichment"),
-      subtitle = paste0("(", species, ") (", "analysis", ") \nTop ", top_n, " terms by adjusted p-value (Enrichment ratio >", enrich_cutoff, ")")
+      subtitle = paste0(species,
+                        "\nTop ", top_n, " terms by adjusted p-value (Enrichment ratio >", enrich_cutoff, ")")
     ) +
     theme_minimal(base_size = 12) +
     theme(
@@ -306,4 +311,17 @@ DEG_gorilla_plot <- function(dt, top_n = 20L, enrich_cutoff = 8) {
       legend.title = element_text(size = 10)
     ) + facet_wrap(analysis ~ go_category, ncol = 3, scales = "free_y")
   return(g)
+}
+
+DEG_gorilla_local_species <- function(gorilla_local_dir) {
+  species <- NA_character_
+  pattern <- "(PROCESS|FUNCTION|COMPONENT)\\.html"
+  file <- list.files(gorilla_local_dir, pattern = pattern, recursive = TRUE,
+                     full.names = TRUE)[1]
+  if (length(file) == 1) {
+    txt <- readLines(file)
+    species <- sub(".*Species used:\\s*([^<]+)<.*", "\\1",
+                   grep("Species", txt, value = TRUE))
+  }
+  return(species)
 }
