@@ -228,3 +228,82 @@ gorilla_copy_to_local <- function(url, id, local_html_dir, this_url_index = 1,
   cat("\n")
   return(invisible(NULL))
 }
+
+#' Load all GOrilla xls files from study
+#'
+#' Output as data.table with column 'analysis' describing DEG
+#' contrast and column 'go_category' describing COMPONENT, FUNCTION or PROCESS.
+#' @param gorilla_local_dir path to directory of local GORilla html and xls data
+#' @return a data.table
+#' @export
+DEG_gorilla_local_load_data <- function(gorilla_local_dir) {
+  stopifnot(dir.exists(gorilla_local_dir))
+  files <- list.files(gorilla_local_dir, pattern = "\\.xls", recursive = TRUE,
+                      full.names = TRUE)
+  dt <- rbindlist(lapply(files, fread), fill = TRUE, idcol = TRUE)
+  analysis_categories <- gsub("_", " ", sub("^DTEG_Comparison:_", "", basename(dirname(files))))
+  dt[, analysis := analysis_categories[`.id`]]
+
+  go_categories <- gsub("^GO|\\.xls$", "", basename(files))
+  dt[, `.id` := go_categories[`.id`]]
+  dt[, p.adjust := `FDR q-value`]
+  colnames(dt)[1] <- "go_category"
+  dt[, Enrichment := as.numeric(sub("^1,", "", Enrichment))]
+  # Parse GeneRatio "b/n" -> numeric; add -log10(adjusted p)
+  dt[, GeneRatio := b / n]
+  dt[] # Make print work first time
+  return(dt)
+}
+
+#' Plot GOrilla xls results
+#'
+#' Inspired by the enrichment plot from the package clusterProfiler.
+#' @param dt a data.table with results loaded using
+#' \code{DEG_gorilla_local_load_data}
+#' @param top_n maximum number of GO terms per analysis / component split. The
+#' sorting is done as -GeneRatio, -p.adjust, so it extracts the top 20
+#' highest GeneRatio terms by p.adjust values (decreasing sort).
+#' @param enrich_cutoff numeric, default 8. Minimum enrichment, set it lower
+#' to get more generic groups, higher to get more specific groups.
+#' @return a ggplot, it uses facet_wrap to split analysis / components.
+#'
+#' @export
+DEG_gorilla_plot <- function(dt, top_n = 20L, enrich_cutoff = 8) {
+  stopifnot(is(dt, "data.table"))
+  cols <- c(
+    "go_category", "GO Term", "Description", "P-value", "FDR q-value", "Enrichment",
+    "N", "B", "n", "b", "Genes", "analysis", "p.adjust", "GeneRatio"
+  )
+  stopifnot(all(cols %in% colnames(dt)))
+  plot_dt <- dt[is.finite(p.adjust) & is.finite(GeneRatio) & Enrichment > enrich_cutoff]
+  plot_dt <- plot_dt[order(-GeneRatio, -p.adjust), head(.SD, min(top_n, .N)), by = .(analysis, go_category)]
+  # order y-axis (GO terms) by GeneRatio (or by negLog10Padj if you prefer)
+  # Highest on top:
+  setorder(plot_dt, -GeneRatio)  # ascending
+  plot_dt[, Description := factor(Description, levels = unique(Description))]
+  plot_dt[, Description := factor(Description, levels = rev(levels(Description)))]
+
+  # ggplot dot plot
+  g <- ggplot(plot_dt,
+              aes(x = GeneRatio, y = Description, size = b, color = p.adjust)) +
+    geom_point(alpha = 0.85) +
+    scale_size_area(max_size = 12, guide = guide_legend(title = "Gene set size")) +
+    scale_color_gradientn(
+      colors = rev(c("#4575B4", "#7E3ABF", "#D73027")),  # blue–purple–red
+      guide = guide_colorbar(title = "p.adjust"),
+      limits = c(min(plot_dt$p.adjust, na.rm = TRUE),
+                 max(plot_dt$p.adjust, na.rm = TRUE))
+    ) +
+    labs(
+      x = "Gene ratio", y = NULL,
+      title = paste0("GO enrichment"),
+      subtitle = paste0("(", species, ") (", "analysis", ") \nTop ", top_n, " terms by adjusted p-value (Enrichment ratio >", enrich_cutoff, ")")
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.y = element_text(size = 10),
+      plot.title  = element_text(face = "bold"),
+      legend.title = element_text(size = 10)
+    ) + facet_wrap(analysis ~ go_category, ncol = 3, scales = "free_y")
+  return(g)
+}
