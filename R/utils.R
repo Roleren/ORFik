@@ -30,44 +30,81 @@ bedToGR <- function(x, skip.name = TRUE) {
 #' Additional specific columns are:\cr
 #' - width (if not set, width is set to 1 for all reads)\cr
 #' Additional columns will be assigned as meta columns
+#' @param keep.extra.columns logical, default TRUE, keep meta cols.
 #' @inheritParams import.ofst
 #' @return GRanges object
 #' @importFrom S4Vectors new2
 #' @keywords internal
-getGRanges <- function(df, seqinfo = NULL) {
+getGRanges <- function(df, keep.extra.columns = TRUE, seqinfo = NULL) {
+  stopifnot(is(df, "data.frame"))
+  if (!isTRUEorFALSE(keep.extra.columns))
+    stop("'keep.extra.columns' must be TRUE or FALSE")
   if (!all(c("seqnames", "start", "strand") %in% colnames(df)))
     stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
+  if (!is(df, "data.table")) setDT(df)
 
   widths <- if ("width" %in% colnames(df)) {
     df$width
-  } else rep.int(1L, nrow(df))
+  } else {
+    if ("end" %in% colnames(df)) {
+      df$end - df$start  + 1L
+    } else rep.int(1L, nrow(df))
+  }
+
   ranges <- new2("IRanges", start = df$start,
                  width = widths,
                  NAMES = df$NAMES,
                  elementMetadata = NULL,
                  check = FALSE)
   if (is.null(levels(df$seqnames))) {
-    df$seqnames <- factor(df$seqnames, levels = unique(df$seqnames))
+    df[, seqnames := factor(seqnames, levels = unique(seqnames))]
+  }
+  if (is.null(levels(df$strand))) {
+    df[, strand := factor(strand, levels = c("+", "-", "*"))]
   }
   if (!is.null(seqinfo)) {
     stopifnot(is(seqinfo, "Seqinfo"))
   } else seqinfo <- Seqinfo(levels(df$seqnames))
-  df$NAMES <- NULL
-  mcols_hits <- !(colnames(df) %in% c("seqnames", "start", "strand", "width"))
-  has_mcols <- any(mcols_hits)
-  if (!has_mcols){
-    mcols <- NULL
-  } else {
-    mcols <- df[,which(mcols_hits)]
-    if (sum(mcols_hits) == 1) {
-      mcols <- data.frame(mcols)
-      names(mcols) <- names(df)[mcols_hits]
+
+  if (!is.null(df$NAMES)) df$NAMES <- NULL
+
+
+  mcols <- NULL
+  if (keep.extra.columns) {
+    mcols_hits <- !(colnames(df) %in% c("seqnames", "start", "strand", "width", "end"))
+    has_mcols <- any(mcols_hits)
+    if (has_mcols) {
+      mcols <- df[, which(mcols_hits), with = FALSE]
     }
   }
   mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
 
   new2("GRanges", seqnames = Rle(df$seqnames), ranges = ranges, strand = Rle(df$strand),
        elementMetadata = mcols, seqinfo = seqinfo, check = FALSE)
+}
+
+#' Faster version (also less safe) of makeGRangesFromDataFrame
+#'
+#' @inheritParams getGRanges
+#' @return GRanges object
+#' @export
+#' @examples
+#' df <- data.frame(start = rep(1L, 1e5), end = 10L, strand = "+", seqnames = "1")
+#'
+#' system.time(res <- makeGRangesFromDataFrame(df))
+#' system.time(res_fast <- makeGRangesFromDataFrameFast(df))
+#' identical(res, res_fast)
+#'
+#' # Use width instead of end, does not work in original
+#' df2 <- data.frame(start = rep(1L, 1e5), width = 10L, strand = "+", seqnames = "1")
+#' system.time(makeGRangesFromDataFrameFast(df2))
+#' df_small <- data.frame(start = 1L, end = 10L, strand = "+", seqnames = "1")
+#' system.time(res <- makeGRangesFromDataFrame(df_small))
+#' system.time(res_fast <- makeGRangesFromDataFrameFast(df_small))
+#' identical(res, res_fast)
+makeGRangesFromDataFrameFast <- function(df, keep.extra.columns = TRUE,
+                                         seqinfo = NULL) {
+  return(getGRanges(df, keep.extra.columns, seqinfo))
 }
 
 #' Internal GAlignments loader from fst data.frame

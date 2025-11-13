@@ -61,7 +61,7 @@ Imports:
   XML,
   xml2 (>= 1.2.0),
   withr
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.3
 Suggests:
   testthat,
   rmarkdown,
