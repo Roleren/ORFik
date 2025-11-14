@@ -27,17 +27,15 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
   if (length(grl) == 0) return(integer(0))
   validGRL(class(grl))
 
+  res <- data.table(widths = grl@unlistData@ranges@width,
+                    grouping = rep.int(seq_along(grl),
+                      times = width(grl@partitioning)))[, .(widths = sum(widths)), by = grouping]$widths
+
   if (keep.names) {
-    return(sum(width(grl)))
-  } else {
-    # return(as.integer(sum(width(grl))))
-    return(data.table(widths = (width(.unlistGrl(grl))),
-                      grouping = rep.int(seq_along(grl), times = width(grl@partitioning)))
-           [, .(widths = sum(widths)), by = grouping]$widths)
+    names(res) <- names(grl)
   }
+  return(res)
 }
-
-
 #' Get first seqname per GRangesList group
 #' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
@@ -779,7 +777,7 @@ setMethod(
   "names",
   signature(x = "GRangesList"),
   function(x) {
-    x@partitioning@NAMES
+    return(x@partitioning@NAMES)
   }
 )
 
@@ -792,7 +790,19 @@ setReplaceMethod(
     if (!is.null(value) && length(value) != length(x)) {
       stop("length(names) must equal length of GRangesList")
     }
-    x@partitioning@NAMES <- value
-    x
+    x@partitioning@NAMES <- if (!is.null(value)) {
+       as.character(value)
+    } else value
+
+    return(x)
+  }
+)
+
+#' @export
+setMethod(
+  "length",
+  signature(x = "GRangesList"),
+  function(x) {
+    return(length(x@partitioning@end))
   }
 )
