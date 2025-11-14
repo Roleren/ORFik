@@ -9,7 +9,7 @@ downstreamN <- function(grl, firstN = 150L) {
   return(heads(tile1(grl, matchNaming = FALSE, mergeEqualNamed = FALSE), firstN))
 }
 
-#' Get list of widths per granges group
+#' Get total widths per GRangesList group
 #' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return an integer vector (named/unnamed) of widths
@@ -24,16 +24,21 @@ downstreamN <- function(grl, firstN = 150L) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' widthPerGroup(grl)
 widthPerGroup <- function(grl, keep.names = TRUE) {
+  if (length(grl) == 0) return(integer(0))
   validGRL(class(grl))
+
   if (keep.names) {
     return(sum(width(grl)))
   } else {
-    return(as.integer(sum(width(grl))))
+    # return(as.integer(sum(width(grl))))
+    return(data.table(widths = (width(.unlistGrl(grl))),
+                      grouping = rep.int(seq_along(grl), times = width(grl@partitioning)))
+           [, .(widths = sum(widths)), by = grouping]$widths)
   }
 }
 
 
-#' Get list of seqnames per granges group
+#' Get first seqname per GRangesList group
 #' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @importFrom IRanges heads
@@ -55,6 +60,29 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   } else {
     return(as.character(heads(seqnames(grl), 1L)))
   }
+}
+
+#' Get first strand per GRangesList group
+#' @param grl a \code{\link{GRangesList}}
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
+#' @return a vector named/unnamed of characters
+#' @importFrom IRanges heads
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' strandPerGroup(grl)
+strandPerGroup <- function(grl, keep.names = TRUE) {
+  validGRL(class(grl))
+  if (!keep.names) {
+    return(as.character(grl@unlistData@strand)[grl@partitioning@end])
+  }
+  return(grl@unlistData@strand[grl@partitioning@end])
 }
 
 
@@ -172,32 +200,6 @@ reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
   oldGrl[rev(minus)]@unlistData@ranges <- rev(grl[minus]@unlistData@ranges)
   return(rev(oldGrl))
 }
-
-#' Get list of strands per granges group
-#' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not, default: (TRUE)
-#' @return a vector named/unnamed of characters
-#' @importFrom IRanges heads
-#' @export
-#' @examples
-#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
-#'                    ranges = IRanges(c(7, 14), width = 3),
-#'                    strand = c("+", "+"))
-#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
-#'                     ranges = IRanges(c(4, 1), c(9, 3)),
-#'                     strand = c("-", "-"))
-#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
-#' strandPerGroup(grl)
-strandPerGroup <- function(grl, keep.names = TRUE) {
-  validGRL(class(grl))
-  starts <- start(IRanges::PartitioningByEnd(grl))
-  res <- strand(grl@unlistData)[starts]
-  if (!keep.names) {
-    return(as.character(res))
-  }
-  return(res)
-}
-
 
 #' Get first exon per GRangesList group
 #'
@@ -379,15 +381,53 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
 #'                ranges = IRanges(start = c(1, 10, 20),
 #'                                 end = c(5, 15, 25)),
 #'                strand = "+")
+#' # GRL named, GR not named
 #' grl <- GRangesList(tx1_1 = ORF)
-#' unlistGrl(grl)
+#' res <- unlistGrl(grl)
+#' res_original <- unlist(grl)
+#' identical(res, res_original) # TRUE
+#'
+#' # GRL not named, GR not named
+#' grl_no_names <- grl
+#' names(grl_no_names) <- NULL
+#' unlistGrl(grl_no_names)
+#' res <- unlistGrl(grl_no_names)
+#' res_original <- unlist(grl_no_names)
+#' identical(res, res_original) # TRUE
+#'
+#' # GRL named, GR named
+#' grl_names_gr_names <- unlistGrl(grl)
+#' grl_names_gr_names <-
+#'  split(grl_names_gr_names, names(grl_names_gr_names))
+#' res <- unlistGrl(grl_names_gr_names)
+#' res_original <- unlist(grl_names_gr_names)
+#' identical(res, res_original) # FALSE
+#'
+#' # GRL not named, GR named
+#' grl_not_names_gr_names <- grl_names_gr_names
+#' names(grl_not_names_gr_names) <- NULL
+#' res <- unlistGrl(grl_not_names_gr_names)
+#' res_original <- unlist(grl_not_names_gr_names)
+#' identical(res, res_original) # TRUE
+#'
 #'
 unlistGrl <- function(grl) {
   validGRL(class(grl))
-  if (length(grl) == 0) return(unlist(grl))
-  unl <- unlist(grl[1], use.names = FALSE)
-  return(unlist(grl, use.names = is.null(names(unl))))
+  if (length(grl) == 0) return(.unlistGrl(grl))
+
+  grl_is_named <- !is.null(names(grl))
+  res <- .unlistGrl(grl)
+  if (grl_is_named) {
+    gr_is_not_named <- is.null(names(res[1]))
+    if (gr_is_not_named) {
+      names(res) <- rep(names(grl), width(grl@partitioning))
+      return(res)
+    }
+  }
+  return(res)
 }
+
+.unlistGrl <- function(grl) grl@unlistData
 
 
 #' Removes meta columns
@@ -733,3 +773,26 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
   })
   return(results)
 }
+
+#' @export
+setMethod(
+  "names",
+  signature(x = "GRangesList"),
+  function(x) {
+    x@partitioning@NAMES
+  }
+)
+
+#' @export
+setReplaceMethod(
+  "names",
+  signature(x = "GRangesList"),
+  function(x, value) {
+    ## basic sanity check
+    if (!is.null(value) && length(value) != length(x)) {
+      stop("length(names) must equal length of GRangesList")
+    }
+    x@partitioning@NAMES <- value
+    x
+  }
+)

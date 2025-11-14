@@ -301,7 +301,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   if (is(x, "IRangesList")) {
     indices <- groupings(x)
     xWidths <- as.integer(sum(xWidths))
-    x <- unlist(x, use.names = FALSE)
+    x <- .unlistGrl(x)
     names(x) <- NULL
   } else if (is(x, "IRanges")) {
     indices <- seq.int(1, length(x))
@@ -329,7 +329,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   names <- names(tx)
   names(tx) <- NULL
   if (is.grl(transcripts) | is(transcripts, "IRangesList")) {
-    tx <- unlist(tx, use.names = FALSE)
+    tx <- .unlistGrl(tx)
     groupings <- groupings(transcripts)
     exonN <- lengths(transcripts)
   } else { # not list
@@ -379,12 +379,12 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
                 index = vector("integer"))
   }
   xStart <- vector("integer", length(indices))
-  xStart[xStrand] <- unlist(pos$ranges[1], use.names = FALSE)
-  xStart[!xStrand] <- unlist(neg$ranges[1], use.names = FALSE)
+  xStart[xStrand] <- pos$ranges[[1]]
+  xStart[!xStrand] <- neg$ranges[[1]]
 
   xEnd <- vector("integer", length(indices))
-  xEnd[xStrand] <- unlist(pos$ranges[2], use.names = FALSE)
-  xEnd[!xStrand] <- unlist(neg$ranges[2], use.names = FALSE)
+  xEnd[xStrand] <- pos$ranges[[2]]
+  xEnd[!xStrand] <- neg$ranges[[2]]
 
   result <- IRanges(xStart, xEnd)
 
@@ -401,6 +401,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     } else as.character(strand(transcripts))[indices]
     result <- GRanges(seqnames = newSeqnames[indices],
                       ranges = result, strand = newStrand)
+
     # TODO: remove this when not needed
     unmapped <- start(result) == 0
     if (!ignore.strand) # Check strand correction only if not ignore

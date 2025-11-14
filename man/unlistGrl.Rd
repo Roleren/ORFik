@@ -23,7 +23,34 @@ ORF <- GRanges(seqnames = "1",
                ranges = IRanges(start = c(1, 10, 20),
                                 end = c(5, 15, 25)),
                strand = "+")
+# GRL named, GR not named
 grl <- GRangesList(tx1_1 = ORF)
-unlistGrl(grl)
+res <- unlistGrl(grl)
+res_original <- unlist(grl)
+identical(res, res_original) # TRUE
+
+# GRL not named, GR not named
+grl_no_names <- grl
+names(grl_no_names) <- NULL
+unlistGrl(grl_no_names)
+res <- unlistGrl(grl_no_names)
+res_original <- unlist(grl_no_names)
+identical(res, res_original) # TRUE
+
+# GRL named, GR named
+grl_names_gr_names <- unlistGrl(grl)
+grl_names_gr_names <-
+ split(grl_names_gr_names, names(grl_names_gr_names))
+res <- unlistGrl(grl_names_gr_names)
+res_original <- unlist(grl_names_gr_names)
+identical(res, res_original) # FALSE
+
+# GRL not named, GR named
+grl_not_names_gr_names <- grl_names_gr_names
+names(grl_not_names_gr_names) <- NULL
+res <- unlistGrl(grl_not_names_gr_names)
+res_original <- unlist(grl_not_names_gr_names)
+identical(res, res_original) # TRUE
+
 
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/grl_helpers.R
 \name{strandPerGroup}
 \alias{strandPerGroup}
-\title{Get list of strands per granges group}
+\title{Get first strand per GRangesList group}
 \usage{
 strandPerGroup(grl, keep.names = TRUE)
 }
@@ -15,7 +15,7 @@ strandPerGroup(grl, keep.names = TRUE)
 a vector named/unnamed of characters
 }
 \description{
-Get list of strands per granges group
+Get first strand per GRangesList group
 }
 \examples{
 gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
