@@ -27,6 +27,14 @@ is.grl <- function(class) {
   return((class == "GRangesList" || class == "CompressedGRangesList"))
 }
 
+is.rl <- function(class) {
+  if (!is.character(class)) {
+    class <- class(class)
+  }
+  return(is.grl(class) ||
+           (class == "IRangesList" || class == "CompressedIRangesList"))
+}
+
 
 #' Helper function to check for GRangesList or GRanges class
 #' @param class the class you want to check if is GRL or GR,
@@ -89,6 +97,26 @@ validGRL <- function(class, type = "grl", checkNULL = FALSE) {
   for (classI in seq_along(class)) {
     if (!is.grl(class[classI])) {
       messageI <- paste(type[classI], "must be given and be type GRangesList")
+      stop(messageI)
+    }
+  }
+  if (checkNULL) {
+    return(indeces)
+  }
+}
+
+validRL <- function(class, type = "rl", checkNULL = FALSE) {
+  if(length(class) != length(type)) stop("not equal length of classes",
+                                         " and types, see validsRL")
+  if (checkNULL) {
+    indeces <- "NULL" == class
+    class <- class[!indeces]
+    if (length(class) == 0) return(rep(TRUE, length(type)))
+    type <- type[!indeces]
+  }
+  for (classI in seq_along(class)) {
+    if (!is.rl(class[classI])) {
+      messageI <- paste(type[classI], "must be given and be type GRangesList or IRangesList")
       stop(messageI)
     }
   }

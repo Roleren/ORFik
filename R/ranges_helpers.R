@@ -279,34 +279,33 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     } else stop("recycling is supported when length(x) == 1 or,",
                 "length(transcripts) == 1; otherwise the lengths must match")
   }
+  if (is.grl(x) & !x.is.sorted) x <- sortPerGroup(x, ignore.strand)
 
   # Store original values we need
   xOriginal <- x; oldNames <- names(x); xClass <- class(x)
-  xWidths <- width(xOriginal)
-
   oldTxNames <- names(transcripts)
-  txWidths <- if (is.grl(transcripts)) {
+  txWidths <- if (is.rl(transcripts)) {
     widthPerGroup(transcripts, FALSE)
-  } else width(transcripts)
+  } else if (is(transcripts, "IRanges") | is(transcripts, "GRanges")) {
+    if(is(txWidths, "IRanges")) {txWidths@width} else {txWidths@ranges@width}
+  } else stop("transcripts must either be IRanges, IRangesList, GRanges or GRangesList")
+
+  # subset to ranges and get indices for x
+  if (is.rl(x)) {
+    indices <- groupings(x)
+    xWidths <- widthPerGroup(x)
+    x <- .unlistGrl(x)
+  } else if (is(x, "IRanges") | is(x, "GRanges")) {
+    xWidths <-
+    indices <- seq.int(1, length(x))
+  } else stop("x must either be IRanges, IRangesList, GRanges or GRangesList")
+  names(x) <- NULL
 
   xStrandOriginal <- if(is.grl(xOriginal)) {
     as.character(unlist(strand(xOriginal), use.names = FALSE))
   } else if (is(xOriginal, "GRanges")) {
     as.character(strand(xOriginal))
   } else NULL
-
-  # subset to ranges and get indices for x
-  if (is.grl(x) & !x.is.sorted) x <- sortPerGroup(x, ignore.strand)
-  if (is.gr_or_grl(x)) x <- ranges(x)
-  if (is(x, "IRangesList")) {
-    indices <- groupings(x)
-    xWidths <- as.integer(sum(xWidths))
-    x <- .unlistGrl(x)
-    names(x) <- NULL
-  } else if (is(x, "IRanges")) {
-    indices <- seq.int(1, length(x))
-    names(x) <- NULL
-  } else stop("x must either be IRanges, IRangesList, GRanges or GRangesList")
 
   # Sanity tests
   if (!is.logical(ignore.strand)) stop("ignore.strand must be logical")
@@ -325,17 +324,18 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   }
 
   # Unlist tx, if list structure
-  tx <- ranges(transcripts)
-  names <- names(tx)
-  names(tx) <- NULL
   if (is.grl(transcripts) | is(transcripts, "IRangesList")) {
-    tx <- .unlistGrl(tx)
+    tx <- .unlistGrl(transcripts)
     groupings <- groupings(transcripts)
     exonN <- lengths(transcripts)
   } else { # not list
+    tx <- transcripts
     groupings <- seq.int(1, length(transcripts))
     exonN <- seq.int(1, length(transcripts))
   }
+  # Unlist tx, if list structure
+  if (!is(tx, "IRanges")) tx <- tx@ranges
+  names(tx) <- NULL
 
   txStrand <- if (ignore.strand) { # If ignore strand, set to '+'
     rep(TRUE, length(transcripts))

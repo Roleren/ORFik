@@ -25,12 +25,20 @@ downstreamN <- function(grl, firstN = 150L) {
 #' widthPerGroup(grl)
 widthPerGroup <- function(grl, keep.names = TRUE) {
   if (length(grl) == 0) return(integer(0))
-  validGRL(class(grl))
+  validRL(class(grl))
 
-  res <- data.table(widths = grl@unlistData@ranges@width,
+  widths_raw <- if (is.grl(grl)) {grl@unlistData@ranges@width
+  } else grl@unlistData@width
+
+  res <- data.table(widths = widths_raw,
                     grouping = rep.int(seq_along(grl),
                       times = width(grl@partitioning)))[, .(widths = sum(widths)), by = grouping]$widths
-
+  empty_groups <- length(grl) != max(nrow(res), 0)
+  if (empty_groups) {
+    res_temp <- res
+    res <- rep(0L, length(grl))
+    res[width(grl@partitioning) > 0] <- res_temp
+  }
   if (keep.names) {
     names(res) <- names(grl)
   }

@@ -90,10 +90,21 @@ test_that("tile1 works as intended", {
 })
 
 test_that("widthPerGroup works as intended", {
-
+  widths <- widthPerGroup(GRangesList(), FALSE)
+  expect_is(widths,"integer")
+  expect_equal(widths, integer(0))
+  widths <- widthPerGroup(GRangesList(GRanges(), GRanges()), FALSE)
+  expect_is(widths,"integer")
+  expect_equal(widths, c(0,0))
   widths <- widthPerGroup(grl, FALSE)
   expect_is(widths,"integer")
   expect_equal(widths, c(17,18))
+  widths <- widthPerGroup(grl, FALSE)
+  expect_is(widths,"integer")
+  expect_equal(widths, c(17,18))
+  widths <- widthPerGroup(grl, TRUE)
+  expect_is(widths,"integer")
+  expect_equal(widths, c(tx1_1 = 17, tx1_2 = 18))
 })
 
 test_that("firstExonPerGroup works as intended", {
