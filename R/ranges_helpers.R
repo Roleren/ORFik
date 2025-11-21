@@ -296,7 +296,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
     xWidths <- widthPerGroup(x)
     x <- .unlistGrl(x)
   } else if (is(x, "IRanges") | is(x, "GRanges")) {
-    xWidths <-
+    xWidths <- width(x)
     indices <- seq.int(1, length(x))
   } else stop("x must either be IRanges, IRangesList, GRanges or GRangesList")
   names(x) <- NULL

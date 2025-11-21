@@ -780,6 +780,11 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
   return(results)
 }
 
+#' Get names of GRangesList
+#'
+#' Faster version than S4Vector generic caller
+#' @param x a GRangesList
+#' @return a character vector
 #' @export
 setMethod(
   "names",
@@ -789,6 +794,12 @@ setMethod(
   }
 )
 
+#' Get names of GRangesList
+#'
+#' Faster version than S4Vector generic caller
+#' @param x a GRangesList
+#' @param value character vector of names
+#' @return a GRangesList with updated names
 #' @export
 setReplaceMethod(
   "names",
@@ -806,11 +817,30 @@ setReplaceMethod(
   }
 )
 
+#' Get length of GRangesList
+#'
+#' Faster version than S4Vector generic caller
+#' @param x a GRangesList
+#' @return an integer (length 1)
 #' @export
 setMethod(
   "length",
   signature(x = "GRangesList"),
   function(x) {
     return(length(x@partitioning@end))
+  }
+)
+
+#' Get width of GRanges
+#'
+#' Faster version than S4Vector generic caller
+#' @param x a GRanges
+#' @return an integer (length 1)
+#' @export
+setMethod(
+  "width",
+  "GRanges",
+  function(x) {
+    return(x@ranges@width)
   }
 )

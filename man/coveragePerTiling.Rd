@@ -97,7 +97,8 @@ dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
                         as.data.table = TRUE, withFrames = TRUE)
 class(dt$count) # numeric
 # With integer score column (faster and less space usage)
-RFP <- GRanges("1", IRanges(25, 25), "+", score = 5L)
+RFP <- GRanges("1", IRanges(25, 25), "+", score = 5L,
+ seqlengths = c("1" = 50)) # We need to know size of the chromosome here
 dt <- coveragePerTiling(grl, RFP, is.sorted = TRUE,
                         as.data.table = TRUE, withFrames = TRUE)
 class(dt$count) # integer
@@ -105,7 +106,6 @@ class(dt$count) # integer
 # with .qs format)
 cov <- covRleFromGR(RFP)
 dt <- coveragePerTiling(grl, cov, is.sorted = TRUE)
-
 
 }
 \seealso{
