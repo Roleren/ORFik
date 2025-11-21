@@ -27,9 +27,9 @@ test_that("count tables loaded as intended", {
 
 test_that("transcriptWindow plots correctly", {
   loadRegions(df)
-  expect(exists("leaders", mode = "S4"), TRUE)
-  expect(exists("cds", mode = "S4"), TRUE)
-  expect(exists("trailers", mode = "S4"), TRUE)
+  expect(exists("leaders", mode = "S4"), "Leaders does not exist in global env")
+  expect(exists("cds", mode = "S4"), "CDS does not exist in global env")
+  expect(exists("trailers", mode = "S4"), "trailers does not exist in global env")
   expect_warning(transcriptWindow(leaders, get("cds", mode = "S4"), trailers, df[3,],
                                   BPPARAM = BiocParallel::SerialParam()))
 
@@ -37,5 +37,6 @@ test_that("transcriptWindow plots correctly", {
 
 test_that("QCreport work as intended", {
   QCreport(df[9,], out.dir = tempdir(), BPPARAM = BiocParallel::SerialParam())
-  expect(file.exists(file.path(tempdir(), "QC_STATS", "STATS.csv")), TRUE)
+  expect(file.exists(file.path(tempdir(), "QC_STATS", "STATS.csv")),
+         "QC_STATS/STATS.csv does not exist in tempdir")
 })
