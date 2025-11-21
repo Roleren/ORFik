@@ -350,12 +350,7 @@ stopRegion <- function(grl, tx = NULL, is.sorted = TRUE,
 #'                    tx2 = GRanges("2", IRanges(c(10,15), width = 2), "+"))
 #' flankPerGroup(grl)
 flankPerGroup <- function(grl) {
-
-  gr <- unlistToExtremities(grl)
-  grl <- groupGRangesBy(gr, gr$group)
-  names(grl) <- grl@unlistData$names
-  grl@unlistData$names <- grl@unlistData$group <- NULL
-  return(grl)
+  return(as(unlistToExtremities(grl), "CompressedGRangesList"))
 }
 
 #' Get flanks as GRanges
@@ -366,18 +361,14 @@ flankPerGroup <- function(grl) {
 unlistToExtremities <- function(grl) {
   if (length(grl) == 0) return(unlist(grl))
   validGRL(class(grl))
-  old_names <- names(grl)
-  grl@unlistData$group <- NULL
+  if (!is.null(grl@unlistData$group)) grl@unlistData$group <- NULL
   dt <- as.data.table(grl)
-  dt[, group_name := NULL]
   dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
                strand = strand[1]), by = group]
-
-  gr <- GRanges(seqnames = dt$seqnames, ranges = IRanges(dt$start, dt$end), strand = dt$strand,
-                group = dt$group, seqinfo = seqinfo(grl))
-  if (!is.null(old_names)) gr$names <- old_names
-  names(gr) <- names(grl)
-  return(gr)
+  if (!is.null(names(grl))) {
+    dt[, NAMES := names(grl)]
+  }
+  return(makeGRangesFromDataFrameFast(dt, seqinfo = seqinfo(grl)))
 }
 
 #' Get pseudo introns per Group

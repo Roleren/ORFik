@@ -16,9 +16,8 @@ makeSummarizedExperimentFromBam(
   forceRemake = FALSE,
   force = TRUE,
   library.names = bamVarName(df),
-  libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type,
-    suffix_stem = c("", "_pshifted")), type = lib.type, force = force, library.names =
-    library.names, BPPARAM = BPPARAM),
+  libraries = outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type), type
+    = lib.type, force = force, library.names = library.names, BPPARAM = BPPARAM),
   format = "qs",
   BPPARAM = BiocParallel::SerialParam()
 )
@@ -68,8 +67,8 @@ is loaded correctly already.}
 libraries as to environment and names to display in plots.}
 
 \item{libraries}{The call to output libraries, the input is not used! Default:
-outputLibs(df, chrStyle = seqinfo(df), type = lib.type, force = force,
- library.names = library.names, BPPARAM = BPPARAM)}
+\code{outputLibs(df, chrStyle = seqinfo(df), paths = filepath(df, lib.type),
+ type = lib.type, force = force, library.names = library.names, BPPARAM = BPPARAM)}}
 
 \item{format}{character, default "qs", alternative: "rds". Which format to save summarizedExperiment.}
 

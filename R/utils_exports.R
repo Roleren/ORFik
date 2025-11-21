@@ -7,10 +7,11 @@
 #' If grl has no names, groups will be named 1,2,3,4..
 #' @param grl A GRangesList
 #' @param file a character path to valid output file name
-#' @param rgb integer vector, default (0), either single integer or
-#' vector of same size as grl to specify groups. It is adviced to not
-#' use more than 8 different groups
-#' @return NULL (File is saved as .bed)
+#' @param rgb integer vector, default (0), maximum (255),
+#' either single integer or vector of same size as grl to specify groups.
+#' It is adviced to not use more than 8 different groups. (In IGV / UCSC
+#' 0 is black and 255 is blue)
+#' @return invisible(NULL) (File is saved only)
 #' @importFrom data.table fwrite
 #' @export
 #' @family utils
@@ -18,7 +19,7 @@
 #' \url{https://bedtools.readthedocs.io/en/latest/content/general-usage.html#bed-format}
 #' @examples
 #' grl <- GRangesList(GRanges("1", c(1,3,5), "+"))
-#' # export.bed12(grl, "output/path/orfs.bed")
+#  export.bed12(grl, file.path(tempdir(), "test_orfs.bed12"))
 export.bed12 <- function(grl, file, rgb = 0) {
   if (!is.grl(class(grl))) stop("grl, must be of class GRangesList")
   if (!is.character(file)) stop("file must be of class character")
@@ -26,6 +27,7 @@ export.bed12 <- function(grl, file, rgb = 0) {
     stop("rgb must be integer of size 1 or length(grl)")
   if (is.null(names(grl))) names(grl) <- seq.int(length(grl))
   grl <- sortPerGroup(grl, ignore.strand = TRUE) # <- sort bed way!
+  withr::local_options(scipen = 999) # Turn off for only function
 
   dt.grl <- data.table(seqnames = seqnamesPerGroup(grl, FALSE))
   dt.grl$start <- as.integer(firstStartPerGroup(grl,keep.names = FALSE) -1)

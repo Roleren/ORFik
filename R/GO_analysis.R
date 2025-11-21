@@ -110,9 +110,10 @@ go_analaysis_gorilla <- function(target_genes, background_genes,
 #' gene symbols column called "external_gene_name"
 #' @param output_dir path to save results
 #' @inheritParams go_analaysis_gorilla
-#' @return a data.table with urls per contrast, this is also saved in
-#' output_dir
+#' @return a data.table with 2 columns (id: name of contrast), urls: url to html online,
+#' this table is also saved in output_dir.
 #' @export
+#' @family GOrilla
 DEG_gorilla <- function(dt, output_dir, organism) {
   stopifnot(is(dt, "data.table"))
   stopifnot(!is.null(dt$external_gene_name))
@@ -168,4 +169,159 @@ DEG_gorilla <- function(dt, output_dir, organism) {
   if (nrow(all_gorilla_ids) > 0)
     fwrite(all_gorilla_ids, file.path(output_dir, paste0("All_contrasts", "_GOrilla_urls.csv")))
   return(all_gorilla_ids)
+}
+
+#' Copy GOrilla result htmls to local
+#'
+#' Will retrieve full html, png and xls structure so analysis can be used even
+#' when results are deleted online (1 month after creation).\cr
+#' Files are saved to disc in directory "./GOrilla_local_html_outputs/", relative
+#' to input directory 'gorilla_output_dir'. There is 1 subfolder per
+#' analysis url. Open the GOResults.html to view.
+#' @param gorilla_output_dir character, directory path to existing results of a
+#' DEG_gorilla call. Must contain a file with relative path "./All_contrasts_GOrilla_urls.csv"
+#' @param local_html_dir character, output directory,
+#' default: \code{file.path(gorilla_output_dir, "GOrilla_local_html_outputs")}
+#' @return invisible(NULL), files are saved to disc.
+#' @export
+#' @family GOrilla
+DEG_gorilla_copy_to_local <- function(gorilla_output_dir,
+                                      local_html_dir = file.path(gorilla_output_dir, "GOrilla_local_html_outputs")) {
+  stopifnot(dir.exists(gorilla_output_dir) && length(gorilla_output_dir) == 1)
+  urls <- fread(file.path(gorilla_output_dir, "All_contrasts_GOrilla_urls.csv"))
+  message("Creating local copy of GOrilla html structures..")
+  for (i in seq_along(urls$url)) {
+    gorilla_copy_to_local(urls$url[i], urls$id[i], local_html_dir, i, nrow(urls))
+  }
+  message("GOrilla htmls also saved localy at location:\n", local_html_dir)
+  return(invisible(NULL))
+}
+
+gorilla_copy_to_local <- function(url, id, local_html_dir, this_url_index = 1,
+                                  total_urls = 1) {
+  stopifnot(is.character(url) & length(url) == 1)
+  stopifnot(is.character(id) & length(id) == 1)
+
+  message("- ", id, " (", this_url_index, "/", total_urls, ")")
+  this_dir <- file.path(local_html_dir, gsub(" ", "_", id))
+  dir.create(this_dir, showWarnings = FALSE, recursive = TRUE)
+
+  headers <- c("", "top")
+  go_types <- c("PROCESS", "FUNCTION", "COMPONENT")
+  html_components <- c(headers, go_types)
+  for (go_type in html_components) {
+    cat(paste0(ifelse(go_type == "", "RESULTS", go_type)))
+    go_type_url <- sub("\\.html$", paste0(go_type, ".html"), url)
+    if (go_type == "top") go_type_url <- sub("GOResults", "", go_type_url)
+    out_file <- file.path(this_dir, basename(go_type_url))
+    cat("(HTML)")
+    download.file(go_type_url, out_file)
+    if (go_type %in% go_types) {
+      for (additional_format in c("png", "xls")) {
+        cat(paste0("(", toupper(additional_format), ")"))
+        go_type_url <- file.path(dirname(go_type_url), paste0("GO", go_type, ".", additional_format))
+        out_file <- file.path(this_dir, basename(go_type_url))
+        download.file(go_type_url, out_file)
+      }
+    }
+  }
+  cat("\n")
+  return(invisible(NULL))
+}
+
+#' Load all GOrilla xls files from study
+#'
+#' Output as data.table with column 'analysis' describing DEG
+#' contrast and column 'go_category' describing COMPONENT, FUNCTION or PROCESS.
+#' @param gorilla_local_dir path to directory of local GORilla html and xls data
+#' @return a data.table
+#' @export
+DEG_gorilla_local_load_data <- function(gorilla_local_dir) {
+  stopifnot(dir.exists(gorilla_local_dir))
+  files <- list.files(gorilla_local_dir, pattern = "\\.xls", recursive = TRUE,
+                      full.names = TRUE)
+  dt <- rbindlist(lapply(files, fread), fill = TRUE, idcol = TRUE)
+  analysis_categories <- gsub("_", " ", sub("^DTEG_Comparison:_", "", basename(dirname(files))))
+  dt[, analysis := analysis_categories[`.id`]]
+
+  go_categories <- gsub("^GO|\\.xls$", "", basename(files))
+  dt[, `.id` := go_categories[`.id`]]
+  dt[, p.adjust := `FDR q-value`]
+  colnames(dt)[1] <- "go_category"
+  dt[, Enrichment := as.numeric(sub("^1,", "", Enrichment))]
+  # Parse GeneRatio "b/n" -> numeric; add -log10(adjusted p)
+  dt[, GeneRatio := b / n]
+  attr(dt, "species") <- DEG_gorilla_local_species(gorilla_local_dir)
+  dt[] # Make print work first time
+  return(dt)
+}
+
+#' Plot GOrilla xls results
+#'
+#' Inspired by the enrichment plot from the package clusterProfiler.
+#' @param dt a data.table with results loaded using
+#' \code{DEG_gorilla_local_load_data}
+#' @param top_n maximum number of GO terms per analysis / component split. The
+#' sorting is done as -GeneRatio, -p.adjust, so it extracts the top 20
+#' highest GeneRatio terms by p.adjust values (decreasing sort).
+#' @param enrich_cutoff numeric, default 8. Minimum enrichment, set it lower
+#' to get more generic groups, higher to get more specific groups.
+#' @return a ggplot, it uses facet_wrap to split analysis / components.
+#' @export
+DEG_gorilla_plot <- function(dt, top_n = 20L, enrich_cutoff = 8) {
+  stopifnot(is.numeric(top_n) & is.numeric(enrich_cutoff))
+  stopifnot(is(dt, "data.table"))
+  cols <- c(
+    "go_category", "GO Term", "Description", "P-value", "FDR q-value", "Enrichment",
+    "N", "B", "n", "b", "Genes", "analysis", "p.adjust", "GeneRatio"
+  )
+  stopifnot(all(cols %in% colnames(dt)))
+  species <- attr(dt, "species")
+  if (!is.null(species)) species <- paste0("(", species, ")")
+
+  plot_dt <- dt[is.finite(p.adjust) & is.finite(GeneRatio) & Enrichment > enrich_cutoff]
+  plot_dt <- plot_dt[order(-GeneRatio, -p.adjust), head(.SD, min(top_n, .N)), by = .(analysis, go_category)]
+  # order y-axis (GO terms) by GeneRatio (or by negLog10Padj if you prefer)
+  # Highest on top:
+  setorder(plot_dt, -GeneRatio)  # ascending
+  plot_dt[, Description := factor(Description, levels = unique(Description))]
+  plot_dt[, Description := factor(Description, levels = rev(levels(Description)))]
+
+  # ggplot dot plot
+  g <- ggplot(plot_dt,
+              aes(x = GeneRatio, y = Description, size = b, color = p.adjust)) +
+    geom_point(alpha = 0.85) +
+    scale_size_area(max_size = 12, guide = guide_legend(title = "Gene set size")) +
+    scale_color_gradientn(
+      colors = rev(c("#4575B4", "#7E3ABF", "#D73027")),  # blue–purple–red
+      guide = guide_colorbar(title = "p.adjust"),
+      limits = c(min(plot_dt$p.adjust, na.rm = TRUE),
+                 max(plot_dt$p.adjust, na.rm = TRUE))
+    ) +
+    labs(
+      x = "Gene ratio", y = NULL,
+      title = paste0("GO enrichment"),
+      subtitle = paste0(species,
+                        "\nTop ", top_n, " terms by adjusted p-value (Enrichment ratio >", enrich_cutoff, ")")
+    ) +
+    theme_minimal(base_size = 12) +
+    theme(
+      axis.text.y = element_text(size = 10),
+      plot.title  = element_text(face = "bold"),
+      legend.title = element_text(size = 10)
+    ) + facet_wrap(analysis ~ go_category, ncol = 3, scales = "free_y")
+  return(g)
+}
+
+DEG_gorilla_local_species <- function(gorilla_local_dir) {
+  species <- NA_character_
+  pattern <- "(PROCESS|FUNCTION|COMPONENT)\\.html"
+  file <- list.files(gorilla_local_dir, pattern = pattern, recursive = TRUE,
+                     full.names = TRUE)[1]
+  if (length(file) == 1) {
+    txt <- readLines(file)
+    species <- sub(".*Species used:\\s*([^<]+)<.*", "\\1",
+                   grep("Species", txt, value = TRUE))
+  }
+  return(species)
 }

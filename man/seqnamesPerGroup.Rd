@@ -2,7 +2,7 @@
 % Please edit documentation in R/grl_helpers.R
 \name{seqnamesPerGroup}
 \alias{seqnamesPerGroup}
-\title{Get list of seqnames per granges group}
+\title{Get first seqname per GRangesList group}
 \usage{
 seqnamesPerGroup(grl, keep.names = TRUE)
 }
@@ -15,7 +15,7 @@ seqnamesPerGroup(grl, keep.names = TRUE)
 a character vector or Rle of seqnames(if seqnames == T)
 }
 \description{
-Get list of seqnames per granges group
+Get first seqname per GRangesList group
 }
 \examples{
 gr_plus <- GRanges(seqnames = c("chr1", "chr1"),

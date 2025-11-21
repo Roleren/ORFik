@@ -15,11 +15,16 @@ gene symbols column called "external_gene_name"}
 \item{organism}{organism(df), example "Homo sapiens"}
 }
 \value{
-a data.table with urls per contrast, this is also saved in
-output_dir
+a data.table with 2 columns (id: name of contrast), urls: url to html online,
+this table is also saved in output_dir.
 }
 \description{
 Per contrast, split list into regulation groups and run GOrilla go analysis.
 If you want to change LFC threshold or p-value cutoff, you reassign
 Regulation column by LFC and/or p-value.
 }
+\seealso{
+Other GOrilla: 
+\code{\link{DEG_gorilla_copy_to_local}()}
+}
+\concept{GOrilla}

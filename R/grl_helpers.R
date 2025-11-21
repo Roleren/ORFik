@@ -9,7 +9,7 @@ downstreamN <- function(grl, firstN = 150L) {
   return(heads(tile1(grl, matchNaming = FALSE, mergeEqualNamed = FALSE), firstN))
 }
 
-#' Get list of widths per granges group
+#' Get total widths per GRangesList group
 #' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return an integer vector (named/unnamed) of widths
@@ -24,16 +24,27 @@ downstreamN <- function(grl, firstN = 150L) {
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' widthPerGroup(grl)
 widthPerGroup <- function(grl, keep.names = TRUE) {
-  validGRL(class(grl))
-  if (keep.names) {
-    return(sum(width(grl)))
-  } else {
-    return(as.integer(sum(width(grl))))
+  if (length(grl) == 0) return(integer(0))
+  validRL(class(grl))
+
+  widths_raw <- if (is.grl(grl)) {grl@unlistData@ranges@width
+  } else grl@unlistData@width
+
+  res <- data.table(widths = widths_raw,
+                    grouping = rep.int(seq_along(grl),
+                      times = width(grl@partitioning)))[, .(widths = sum(widths)), by = grouping]$widths
+  empty_groups <- length(grl) != max(nrow(res), 0)
+  if (empty_groups) {
+    res_temp <- res
+    res <- rep(0L, length(grl))
+    res[width(grl@partitioning) > 0] <- res_temp
   }
+  if (keep.names) {
+    names(res) <- names(grl)
+  }
+  return(res)
 }
-
-
-#' Get list of seqnames per granges group
+#' Get first seqname per GRangesList group
 #' @param grl a \code{\link{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @importFrom IRanges heads
@@ -55,6 +66,29 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   } else {
     return(as.character(heads(seqnames(grl), 1L)))
   }
+}
+
+#' Get first strand per GRangesList group
+#' @param grl a \code{\link{GRangesList}}
+#' @param keep.names a boolean, keep names or not, default: (TRUE)
+#' @return a vector named/unnamed of characters
+#' @importFrom IRanges heads
+#' @export
+#' @examples
+#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
+#'                    ranges = IRanges(c(7, 14), width = 3),
+#'                    strand = c("+", "+"))
+#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
+#'                     ranges = IRanges(c(4, 1), c(9, 3)),
+#'                     strand = c("-", "-"))
+#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
+#' strandPerGroup(grl)
+strandPerGroup <- function(grl, keep.names = TRUE) {
+  validGRL(class(grl))
+  if (!keep.names) {
+    return(as.character(grl@unlistData@strand)[grl@partitioning@end])
+  }
+  return(grl@unlistData@strand[grl@partitioning@end])
 }
 
 
@@ -172,32 +206,6 @@ reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
   oldGrl[rev(minus)]@unlistData@ranges <- rev(grl[minus]@unlistData@ranges)
   return(rev(oldGrl))
 }
-
-#' Get list of strands per granges group
-#' @param grl a \code{\link{GRangesList}}
-#' @param keep.names a boolean, keep names or not, default: (TRUE)
-#' @return a vector named/unnamed of characters
-#' @importFrom IRanges heads
-#' @export
-#' @examples
-#' gr_plus <- GRanges(seqnames = c("chr1", "chr1"),
-#'                    ranges = IRanges(c(7, 14), width = 3),
-#'                    strand = c("+", "+"))
-#' gr_minus <- GRanges(seqnames = c("chr2", "chr2"),
-#'                     ranges = IRanges(c(4, 1), c(9, 3)),
-#'                     strand = c("-", "-"))
-#' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
-#' strandPerGroup(grl)
-strandPerGroup <- function(grl, keep.names = TRUE) {
-  validGRL(class(grl))
-  starts <- start(IRanges::PartitioningByEnd(grl))
-  res <- strand(grl@unlistData)[starts]
-  if (!keep.names) {
-    return(as.character(res))
-  }
-  return(res)
-}
-
 
 #' Get first exon per GRangesList group
 #'
@@ -379,15 +387,53 @@ numExonsPerGroup <- function(grl, keep.names = TRUE) {
 #'                ranges = IRanges(start = c(1, 10, 20),
 #'                                 end = c(5, 15, 25)),
 #'                strand = "+")
+#' # GRL named, GR not named
 #' grl <- GRangesList(tx1_1 = ORF)
-#' unlistGrl(grl)
+#' res <- unlistGrl(grl)
+#' res_original <- unlist(grl)
+#' identical(res, res_original) # TRUE
+#'
+#' # GRL not named, GR not named
+#' grl_no_names <- grl
+#' names(grl_no_names) <- NULL
+#' unlistGrl(grl_no_names)
+#' res <- unlistGrl(grl_no_names)
+#' res_original <- unlist(grl_no_names)
+#' identical(res, res_original) # TRUE
+#'
+#' # GRL named, GR named
+#' grl_names_gr_names <- unlistGrl(grl)
+#' grl_names_gr_names <-
+#'  split(grl_names_gr_names, names(grl_names_gr_names))
+#' res <- unlistGrl(grl_names_gr_names)
+#' res_original <- unlist(grl_names_gr_names)
+#' identical(res, res_original) # FALSE
+#'
+#' # GRL not named, GR named
+#' grl_not_names_gr_names <- grl_names_gr_names
+#' names(grl_not_names_gr_names) <- NULL
+#' res <- unlistGrl(grl_not_names_gr_names)
+#' res_original <- unlist(grl_not_names_gr_names)
+#' identical(res, res_original) # TRUE
+#'
 #'
 unlistGrl <- function(grl) {
   validGRL(class(grl))
-  if (length(grl) == 0) return(unlist(grl))
-  unl <- unlist(grl[1], use.names = FALSE)
-  return(unlist(grl, use.names = is.null(names(unl))))
+  if (length(grl) == 0) return(.unlistGrl(grl))
+
+  grl_is_named <- !is.null(names(grl))
+  res <- .unlistGrl(grl)
+  if (grl_is_named) {
+    gr_is_not_named <- is.null(names(res[1]))
+    if (gr_is_not_named) {
+      names(res) <- rep(names(grl), width(grl@partitioning))
+      return(res)
+    }
+  }
+  return(res)
 }
+
+.unlistGrl <- function(grl) grl@unlistData
 
 
 #' Removes meta columns
@@ -566,9 +612,23 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
       stop(wmsg("'transcripts' has exons on the * strand. ",
                 "This is not supported at the moment."))
     uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
-    uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
-    uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
-    names(uex_cvg) <- as.character(seqnames(uex))
+    if (length(transcripts) > 5e3) {
+      names(uex) <- seq_along(uex)
+      # + strand
+      v <- Views(cvg1, uex[is_plus_ex])
+      names(v) <- NULL
+      r <- do.call(c, lapply(v[lengths(v) > 0], RleList))
+      uex_cvg[as.integer(names(r))] <- r
+      # - strand
+      v <- Views(cvg2, uex[is_minus_ex])
+      names(v) <- NULL
+      r <- do.call(c, lapply(v[lengths(v) > 0], RleList))
+      uex_cvg[as.integer(names(r))] <- r
+    } else {
+      uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
+      uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
+      names(uex_cvg) <- as.character(seqnames(uex))
+    }
   }
   uex_cvg[strand(uex) == "-"] <- revElementsF(uex_cvg)[strand(uex) == "-"]
   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
@@ -576,6 +636,71 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
   mcols(ans) <- mcols(transcripts)
   return(ans)
+}
+
+coverageByTranscriptSum <- function(x, transcripts, ignore.strand = !strandMode(x),
+                                    return_per_exon = FALSE) {
+  if (!is(transcripts, "GRangesList")) {
+    transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE), silent = TRUE)
+    if (is(transcripts, "try-error"))
+      stop("Failed to extract exons with exonsBy(transcripts, by='tx', use.names=TRUE)")
+  }
+  if (length(transcripts) == 0) return(integer())
+  stopifnot(is(x, "covRle"))
+  stopifnot(all(!anyNA(seqlengths(f(x)))))
+
+  if (!isTRUEorFALSE(ignore.strand))
+    stop("'ignore.strand' must be TRUE or FALSE")
+
+  # Unique exons to avoid recomputing same ranges
+  ex <- unlist(transcripts, use.names = FALSE)
+  sm <- selfmatch(ex)
+  is_unique <- sm == seq_along(sm)
+  uex2ex <- which(is_unique)      # indices of unique exons in 'ex'
+  uex <- ex[uex2ex]
+
+  cvg1 <- f(x)                    # + strand coverage (RleList)
+  cvg2 <- if (strandMode(x)) r(x) else NULL  # - strand coverage if available
+
+  # Pre-allocate sums for unique exons
+  uex_sum <- integer(length(uex))
+  names(uex) <- seq_along(uex)
+
+  if (ignore.strand) {
+    stop("Not implemented yet")
+    strand(uex) <- "*"
+    v <- Views(cvg1, uex)
+    names(v) <- NULL
+    r <- unlist(lapply(v[lengths(v) > 0], sum))
+    uex_sum[as.integer(names(r))] <- r
+  }
+  else {
+    strands <- as.character(strand(uex))
+    v <- Views(cvg1, uex[strands == "+"])
+    names(v) <- NULL
+    r <- unlist(lapply(v[lengths(v) > 0], sum))
+    uex_sum[as.integer(names(r))] <- r
+    if (!is.null(cvg2)) {
+      v <- Views(cvg2, uex[strands == "-"])
+      names(v) <- NULL
+      r <- unlist(lapply(v[lengths(v) > 0], sum))
+      uex_sum[as.integer(names(r))] <- r
+    }
+  }
+
+  # Map sums back from unique exons to all exons, then relist by transcript
+  ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
+  ex_sum <- uex_sum[ex2uex]                       # one value per exon in 'ex'
+  exon_sums_by_tx <- relist(ex_sum, transcripts)  # IntegerList parallel to 'transcripts'
+  mcols(exon_sums_by_tx) <- mcols(transcripts)
+
+  if (return_per_exon)
+    return(exon_sums_by_tx)
+
+  # Per-transcript totals (sum across each element of the IntegerList)
+  tx_totals <- sum(exon_sums_by_tx)
+  names(tx_totals) <- names(transcripts)
+  return(tx_totals)
 }
 
 #' Get coverage from fst large coverage format
@@ -655,78 +780,37 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
   return(results)
 }
 
-# Testing new version
-# coverageByTranscriptW2 <- function (x, transcripts, ignore.strand = FALSE,
-#                                    weight = 1L) {
-#   if (!is(transcripts, "GRangesList")) {
-#     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),
-#                        silent = TRUE)
-#     if (is(transcripts, "try-error"))
-#       stop(wmsg("failed to extract the exon ranges ",
-#                 "from 'transcripts' with ", "exonsBy(transcripts, by=\"tx\", use.names=TRUE)"))
-#   }
-#   if (!isTRUEorFALSE(ignore.strand))
-#     stop(wmsg("'ignore.strand' must be TRUE or FALSE"))
-#   seqinfo(x) <- GenomicFeatures:::.merge_seqinfo_and_infer_missing_seqlengths(x,
-#                                                                               transcripts)
-#   ex <- unlist(transcripts, use.names = FALSE)
-#   sm <- selfmatch(ex)
-#   is_unique <- sm == seq_along(sm)
-#   uex2ex <- which(is_unique)
-#   uex <- ex[uex2ex]
-#   # Fix GAlignments not allowing mcol weight, remove when they fix it
-#   # in GAlignments definition of coverage.
-#   if ((is(x, "GAlignments") | is(x, "GAlignmentPairs"))
-#       & is.character(weight)) {
-#     if (!(weight %in% colnames(mcols(x))))
-#       stop("weight is character and not mcol of x,",
-#            " check spelling of weight.")
-#     weight <- mcols(x)[, weight]
-#     x <- grglist(x) # convert to grl
-#     weight = weight[groupings(x)] # repeat weight per group
-#   }
-#
-#   if (ignore.strand) {
-#     cvg <- coverage(x, weight = weight)
-#     uex_cvg <- cvg[uex]
-#   }
-#   else {
-#     pluss <- BiocGenerics::`%in%`(strand(x), c("+", "*"))
-#     minus <- BiocGenerics::`%in%`(strand(x), c("-", "*"))
-#     x1 <- x[pluss]
-#     x2 <- x[minus]
-#     if (length(weight) > 1) {
-#       # Add unlist in case of GAlignments
-#       cvg1 <- coverage(x1, weight = weight[as.logical(unlist(pluss))])
-#       cvg2 <- coverage(x2, weight = weight[as.logical(unlist(minus))])
-#     } else {
-#       cvg1 <- coverage(x1, weight = weight)
-#       cvg2 <- coverage(x2, weight = weight)
-#     }
-#
-#     is_plus_ex <- strand(uex) == "+"
-#     is_minus_ex <- strand(uex) == "-"
-#     if (!identical(is_plus_ex, !is_minus_ex))
-#       stop(wmsg("'transcripts' has exons on the * strand. ",
-#                 "This is not supported at the moment."))
-#     # uex_cvg <- cvg1[uex]
-#     # uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
-#     uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
-#     uex_cvg[is_plus_ex] <- cvg1[uex[is_plus_ex]]
-#     uex_cvg[is_minus_ex] <- cvg2[uex[is_minus_ex]]
-#     names(uex_cvg) <- as.character(seqnames(uex))
-#
-#     # uex_irl_pos <- split(ranges(uex[is_plus_ex]), as.character(seqnames(uex[is_plus_ex])))
-#     # uex_irl_neg <- split(ranges(uex[is_minus_ex]), as.character(seqnames(uex[is_minus_ex])))
-#     # uex_irl_pos <- uex_irl_pos[names(cvg1)[names(cvg1) %in% unique(names(uex_irl_pos))]]
-#     # uex_irl_neg <- uex_irl_neg[names(cvg2)[names(cvg2) %in% unique(names(uex_irl_neg))]]
-#     # uex_cvg3_pos <- RleViewsList(rleList = cvg1[names(uex_irl_pos)], rangesList = uex_irl_pos)
-#     # uex_cvg3_neg <- RleViewsList(rleList = cvg1[names(uex_irl_neg)], rangesList = uex_irl_neg)
-#   }
-#   uex_cvg[strand(uex) == "-"] <- ORFik:::revElementsF(uex_cvg)[strand(uex) == "-"]
-#   ex2uex <- (seq_along(sm) - cumsum(!is_unique))[sm]
-#   ex_cvg <- uex_cvg[ex2uex]
-#   ans <- IRanges:::regroupBySupergroup(ex_cvg, transcripts)
-#   mcols(ans) <- mcols(transcripts)
-#   return(ans)
-# }
+#' @export
+setMethod(
+  "names",
+  signature(x = "GRangesList"),
+  function(x) {
+    return(x@partitioning@NAMES)
+  }
+)
+
+#' @export
+setReplaceMethod(
+  "names",
+  signature(x = "GRangesList"),
+  function(x, value) {
+    ## basic sanity check
+    if (!is.null(value) && length(value) != length(x)) {
+      stop("length(names) must equal length of GRangesList")
+    }
+    x@partitioning@NAMES <- if (!is.null(value)) {
+       as.character(value)
+    } else value
+
+    return(x)
+  }
+)
+
+#' @export
+setMethod(
+  "length",
+  signature(x = "GRangesList"),
+  function(x) {
+    return(length(x@partitioning@end))
+  }
+)

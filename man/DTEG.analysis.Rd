@@ -84,7 +84,8 @@ cluster together more than the design factor, to verify if you need to set it to
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
+Multiple values allowed, if so will save file in each format specified.}
 
 \item{width}{numeric, default 6 (in inches)}
 
@@ -94,7 +95,8 @@ cluster together more than the design factor, to verify if you need to set it to
 
 \item{relative.name}{character, Default: \code{paste0("DTEG_plot", plot.ext)}
 Relative name of file to be saved in folder specified in output.dir.
-Change to .pdf if you want pdf file instead of png.}
+Change to .pdf if you want pdf file instead of png.
+Multiple values allowed, if so will save file in each format specified.}
 
 \item{complex.categories}{logical, default FALSE. Separate into more groups,
 see above for details.}

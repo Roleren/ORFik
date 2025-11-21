@@ -12,6 +12,7 @@ DTEG.plot(
   plot.ext = ".pdf",
   width = 6,
   height = 6,
+  dpi = 300,
   dot.size = 0.4,
   xlim = "bidir.max",
   ylim = "bidir.max",
@@ -32,11 +33,14 @@ What p-value used for the analysis? Will be shown as a caption.}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
+Multiple values allowed, if so will save file in each format specified.}
 
 \item{width}{numeric, default 6 (in inches)}
 
 \item{height}{numeric, default 6 (in inches)}
+
+\item{dpi}{numeric, default 300.}
 
 \item{dot.size}{numeric, default 0.4, size of point dots in plot.}
 
@@ -52,7 +56,8 @@ For numeric vector, specify min and max y limit: like c(-10, 10)}
 
 \item{relative.name}{character, Default: \code{paste0("DTEG_plot", plot.ext)}
 Relative name of file to be saved in folder specified in output.dir.
-Change to .pdf if you want pdf file instead of png.}
+Change to .pdf if you want pdf file instead of png.
+Multiple values allowed, if so will save file in each format specified.}
 
 \item{plot_to_console}{logical, default TRUE. Plot to console before returning,
 set to FALSE to save some run time.}

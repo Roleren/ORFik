@@ -18,7 +18,12 @@ filterExtremePeakGenes(
 \arguments{
 \item{tx}{a GRangesList}
 
-\item{reads}{a GAlignments or GRanges}
+\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+precomputed coverage as \code{\link{covRle}} (one for each strand) of
+RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
+column in 'reads'. Can also be random access paths to bigWig or fstwig file.
+Do not use random access for more than a few genes, then loading the entire files
+is usually better. File streaming is still in beta, so use with care!}
 
 \item{upstream}{numeric or NULL, default NULL.
 if you want window of tx, instead of whole, specify how

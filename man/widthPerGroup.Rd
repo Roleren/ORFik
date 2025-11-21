@@ -2,7 +2,7 @@
 % Please edit documentation in R/grl_helpers.R
 \name{widthPerGroup}
 \alias{widthPerGroup}
-\title{Get list of widths per granges group}
+\title{Get total widths per GRangesList group}
 \usage{
 widthPerGroup(grl, keep.names = TRUE)
 }
@@ -15,7 +15,7 @@ widthPerGroup(grl, keep.names = TRUE)
 an integer vector (named/unnamed) of widths
 }
 \description{
-Get list of widths per granges group
+Get total widths per GRangesList group
 }
 \examples{
 gr_plus <- GRanges(seqnames = c("chr1", "chr1"),

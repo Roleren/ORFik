@@ -986,17 +986,17 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
 #'
 #' Much faster to load
 #' @inheritParams filterTranscripts
-#' @param base_path Directy and file prefix for files, will append "_region.rds", where region is
+#' @param base_path Directy and file prefix for files, will append "_region.qs", where region is
 #' specific region.
 #' @param regions character, default: c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA").
 #' Valid options specified by loadRegion.
 #' @return invisible(NULL)
 optimizeTranscriptRegions <- function(txdb, base_path = optimized_txdb_path(txdb, create.dir = TRUE),
                                        regions = c("tx", "mrna", "leaders", "cds", "trailers", "ncRNA")) {
-  message("Creating rds speedup files for transcript regions")
+  message("Creating '.qs' speedup files for transcript regions")
   for (region in regions) {
-    saveRDS(loadRegion(txdb, region, by = "tx"),
-            file = paste0(base_path, "_", region, ".rds"))
+    save_RDSQS(loadRegion(txdb, region, by = "tx"),
+               file = paste0(base_path, "_", region, ".qs"))
   }
   return(invisible(NULL))
 }

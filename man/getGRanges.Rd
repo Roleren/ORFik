@@ -4,7 +4,7 @@
 \alias{getGRanges}
 \title{Internal GRanges loader from fst data.frame}
 \usage{
-getGRanges(df, seqinfo = NULL)
+getGRanges(df, keep.extra.columns = TRUE, seqinfo = NULL)
 }
 \arguments{
 \item{df}{a data.frame/data.table with columns minimum 4 columns:
@@ -12,6 +12,8 @@ seqnames, start, strand\cr
 Additional specific columns are:\cr
 - width (if not set, width is set to 1 for all reads)\cr
 Additional columns will be assigned as meta columns}
+
+\item{keep.extra.columns}{logical, default TRUE, keep meta cols.}
 
 \item{seqinfo}{Seqinfo object, defaul NULL (created from ranges).
 Add to avoid warnings later on differences in seqinfo.}

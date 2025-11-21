@@ -2,8 +2,8 @@
 #'
 #' For removing very extreme peaks in coverage plots, use high quantiles, like
 #' 99. Used to make your plots look better, by removing extreme peaks.
+#' @inheritParams coveragePerTiling
 #' @param tx a GRangesList
-#' @param reads a GAlignments or GRanges
 #' @param upstream numeric or NULL, default NULL.
 #' if you want window of tx, instead of whole, specify how
 #' much upstream from start of tx, 10 is include 10 bases before start
@@ -76,12 +76,13 @@ filterExtremePeakGenes <-
 #' A peak is basically a position of very high coverage compared to
 #' its surrounding area, as measured using zscore.
 #'
-#' For more details see reference, which uses a slightly different method by zscore
-#' of a sliding window instead of over the whole tx.
-#' @param tx a GRangesList
-#' @param reads a GAlignments or GRanges, must be 1 width reads like p-shifts,
+#' The 'reads' argument should be 1 width reads like p-shifts,
 #' or other reads that is single positioned. It will work with non 1 width bases,
 #' but you then get larger areas for peaks.
+#'
+#' For more details see reference, which uses a slightly different method by zscore
+#' of a sliding window instead of over the whole tx.
+#' @inheritParams filterExtremePeakGenes
 #' @param top_tx numeric, default 0.50 (only use 50\% top transcripts by
 #' read counts).
 #' @param min_reads_per_tx numeric, default 20. Gene must have at least

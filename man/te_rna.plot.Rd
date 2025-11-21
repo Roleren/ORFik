@@ -13,6 +13,7 @@ te_rna.plot(
   plot.ext = ".pdf",
   width = 6,
   height = "auto",
+  dpi = 300,
   dot.size = 0.4,
   xlim = c(filter.rna, filter.rna + 2.5)
 )
@@ -29,11 +30,14 @@ to save to a file will be called "TE_within.pdf"}
 
 \item{plot.title}{title for plots, usually name of experiment etc}
 
-\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".}
+\item{plot.ext}{character, default: ".pdf". Alternatives: ".png" or ".jpg".
+Multiple values allowed, if so will save file in each format specified.}
 
 \item{width}{numeric, default 6 (in inches)}
 
 \item{height}{a numeric, width of plot in inches. Default "auto".}
+
+\item{dpi}{numeric, default 300.}
 
 \item{dot.size}{numeric, default 0.4, size of point dots in plot.}
 
