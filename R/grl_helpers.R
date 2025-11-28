@@ -831,16 +831,44 @@ setMethod(
   }
 )
 
-#' Get width of GRanges
+#' Get widths of GRanges
 #'
 #' Faster version than S4Vector generic caller
 #' @param x a GRanges
-#' @return an integer (length 1)
+#' @return an integer (length equal to x)
 #' @export
 setMethod(
   "width",
   "GRanges",
   function(x) {
     return(x@ranges@width)
+  }
+)
+
+#' Get starts of GRanges
+#'
+#' Faster version than S4Vector generic caller
+#' @param x a GRanges
+#' @return an integer (length equal to x)
+#' @export
+setMethod(
+  "start",
+  "GRanges",
+  function(x) {
+    return(x@ranges@start)
+  }
+)
+
+#' Get ends of GRanges
+#'
+#' Faster version than S4Vector generic caller
+#' @param x a GRanges
+#' @return an integer (length equal to x)
+#' @export
+setMethod(
+  "end",
+  "GRanges",
+  function(x) {
+    return(x@ranges@width - x@ranges@start + 1)
   }
 )
