@@ -869,6 +869,6 @@ setMethod(
   "end",
   "GRanges",
   function(x) {
-    return(x@ranges@start + x@ranges@width - 1)
+    return(x@ranges@start + x@ranges@width - 1L)
   }
 )
