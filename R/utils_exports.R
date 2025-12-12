@@ -420,15 +420,65 @@ export.bedoc <- function(object, out) {
 #' @importFrom fst write_fst
 #' @export
 #' @examples
+#' tempfile <- tempfile(fileext = ".ofst")
+#'
 #' ## GRanges
 #' gr <- GRanges("1:1-3:-")
-#' # export.ofst(gr, file = "path.ofst")
-#' ## GAlignment
-#' # Make input data.frame
+#' export.ofst(gr, file = tempfile)
+#' identical(gr, fimport(tempfile))
+#' # Save from data.frame of GAlignment columns
 #' df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
+#' export.ofst(df, tempfile)
+#' res <- fimport(tempfile) # Imports as GAlignments because you have cigar
+#' res
+#' # Save from GAlignments
 #' ga <- ORFik:::getGAlignments(df)
-#' # export.ofst(ga, file = "path.ofst")
+#' export.ofst(ga, tempfile)
+#' res2 <- fimport(tempfile)
+#' identical(res, res2)
+#' # Save from GAlignmentsPair
+#' ga_rev <- ga
+#' strand(ga_rev) <- "-"
+#' ga2 <- GAlignmentPairs(ga, ga_rev)
+#' export.ofst(ga2, tempfile)
+#' res3 <- fimport(tempfile)
+#' identical(ga2, res3)
+#'
 setGeneric("export.ofst", function(x, file, ...) standardGeneric("export.ofst"))
+
+#' @inherit export.ofst
+setMethod("export.ofst", "data.frame",
+          function(x, file, NAMES = NULL, elementMetadata = DataFrame(), ...) {
+            # Validate minimum required columns
+            columns <- colnames(x)
+            start_cols <- c("start", "start1", "start2")
+            present <- intersect(start_cols, columns)
+            if (!(all(c("seqnames", "strand") %in% columns)) | length(present) == 0) {
+              stop("A genomic ranged object 'x' must have at least defined 3 columns:\n",
+                   "  seqnames, strand and at least one of ", paste(start_cols, collapse = ", "))
+            }
+
+            # Validate seqnames and strand factor
+            strand_levels <- c("+", "-", "*")
+            if (!is.factor(x$strand)) x$strand <- factor(x$strand, levels = strand_levels)
+            if (!identical(levels(x$strand), strand_levels)) levels(x$strand) <- strand_levels
+            if (!is.factor(x$seqnames)) x$seqnames <- factor(x$seqnames, levels = unique(x$seqnames))
+
+            # Validate integer columns
+            size_cols <- c("width", "end")
+            present <- intersect(c(start_cols, size_cols), columns)
+            for (col in present) {
+              if (!is(x[[col]], "integer")) x[[col]] <- as.integer(x[[col]])
+            }
+
+            # Set names and metadata
+            if (!is.null(NAMES)) x$NAMES <- NAMES
+            if (ncol(elementMetadata) > 0)
+              x <- as.data.frame(cbind(x, elementMetadata))
+            # Write
+            write_fst(x, file, ...)
+          })
+
 
 #' @inherit export.ofst
 setMethod("export.ofst", "GRanges",
@@ -437,10 +487,8 @@ setMethod("export.ofst", "GRanges",
                              start = x@ranges@start,
                              width = x@ranges@width,
                              strand = x@strand)
-            if (!is.null(x@ranges@NAMES)) df$NAMES <- x@ranges@NAMES
-            if (ncol(x@elementMetadata) > 0)
-              df <- as.data.frame(cbind(df, x@elementMetadata))
-            write_fst(df, file,...)
+
+            export.ofst(df, file, x@ranges@NAMES, x@elementMetadata, ...)
           })
 
 #' @inherit export.ofst
@@ -450,17 +498,15 @@ setMethod("export.ofst", "GAlignments",
                              start = x@start,
                              cigar = factor(x@cigar, levels = unique(x@cigar)),
                              strand = x@strand)
-            if (!is.null(x@NAMES)) df$NAMES <- x@ranges@NAMES
-            if (ncol(x@elementMetadata) > 0)
-              df <- as.data.frame(cbind(df, x@elementMetadata))
-            write_fst(df, file,...)
+            export.ofst(df, file, x@NAMES, x@elementMetadata, ...)
           })
 
 #' @inherit export.ofst
 setMethod("export.ofst", "GAlignmentPairs",
           function(x, file, ...) {
             # There is always equal seqname in a pair,
-            # strand is always reverse of the other
+            # Strand is only given for read 1.
+            # strand of read 2 is always reverse of the other
             df <- data.frame(seqnames = x@first@seqnames,
                              start1 = x@first@start,
                              start2 = x@last@start,
@@ -469,8 +515,6 @@ setMethod("export.ofst", "GAlignmentPairs",
                              cigar2 = factor(x@last@cigar,
                                              levels = unique(x@last@cigar)),
                              strand = x@first@strand)
-            if (!is.null(x@NAMES)) df$NAMES <- x@NAMES # Check that this is correct
-            if (ncol(x@elementMetadata) > 0)
-              df <- as.data.frame(cbind(df, x@elementMetadata))
-            write_fst(df, file,...)
+
+            export.ofst(df, file, x@NAMES, x@elementMetadata, ...)
           })

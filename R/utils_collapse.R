@@ -409,7 +409,7 @@ setMethod("collapseDuplicatedReads", "GAlignments",
   dt <- data.table(seqnames = factor(seqnames(x)),
                    start = start(ranges(x)),
                    cigar = cigar(x),
-                   strand = factor(strand(x)))
+                   strand = factor(strand(x)), levels = c("+", "-", "*"))
   if (reuse.score.column & ("score" %in% colnames(mcols(x)))) { # reuse
     dt[, score := mcols(x)$score]
     dt <- dt[, .(score = sum(score)), .(seqnames, start, cigar, strand)]
@@ -431,7 +431,7 @@ setMethod("collapseDuplicatedReads", "GAlignmentPairs",
                    start2 = x@last@start,
                    cigar1 = factor(x@first@cigar),
                    cigar2 = factor(x@last@cigar),
-                   strand = factor(x@first@strand))
+                   strand = factor(x@first@strand, levels = c("+", "-", "*")))
   dt <- dt[, .(score = .N), .(seqnames, start1, start2,
                               cigar1, cigar2, strand)]
   if (!addScoreColumn) dt$score <- NULL

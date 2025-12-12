@@ -394,7 +394,7 @@ import.bedoc <- function(path) {
 #' random index access possibility of the file. \cr
 #' .ofst is represented as a data.frane format with minimum 4 columns:\cr
 #' 1. chromosome\cr  2. start (left most position) \cr 3. strand (+, -, *)\cr
-#' 4. width (not added if cigar exists)\cr
+#' 4. width (not added if cigar exists, see below for more details)\cr
 #' 5. cigar (not needed if width exists):
 #'  (cigar # M's, match/mismatch total) \cr
 #' 5. score: duplicates of that read\cr
@@ -403,6 +403,9 @@ import.bedoc <- function(path) {
 #' it will contain a cigar1, cigar2 instead
 #' of cigar and start1 and start2 instead of start
 #'
+#' If 'width' is not defined, it checks for column called 'end'. If
+#' If neither width or end is defined, then all widths are presumed to be 1.
+#' I.e. single nucleotide points. \cr
 #' Other columns can be named whatever you want and added to meta columns.
 #' Positions are 1-based, not 0-based as .bed.
 #' Import with import.ofst

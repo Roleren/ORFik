@@ -40,7 +40,7 @@ getGRanges <- function(df, keep.extra.columns = TRUE, seqinfo = NULL) {
   if (!isTRUEorFALSE(keep.extra.columns))
     stop("'keep.extra.columns' must be TRUE or FALSE")
   if (!all(c("seqnames", "start", "strand") %in% colnames(df)))
-    stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
+    stop("df must at minimum have 3 columns named: seqnames, start, strand")
   if (!is(df, "data.table")) setDT(df)
 
   widths <- if ("width" %in% colnames(df)) {
@@ -140,7 +140,7 @@ getGAlignments <- function(df, seqinfo = NULL) {
       names(mcols) <- names(df)[5]
     }
   }
-  if (!is(df$strand, "factor") && identical(levels(df$strand), c("+", "-", "*"))){
+  if (!is(df$strand, "factor") | identical(levels(df$strand), c("+", "-", "*"))){
     df[, strand := factor(strand, levels = c("+", "-", "*"))]
   }
 
@@ -161,8 +161,8 @@ getGAlignments <- function(df, seqinfo = NULL) {
 #' @keywords internal
 getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
   if (nrow(df) == 0) {
-    return(GenomicAlignments::GAlignmentPairs(first = GAlignments(),
-                                              last = GAlignments(),
+    return(GenomicAlignments::GAlignmentPairs(first = GAlignments(seqinfo = seqinfo),
+                                              last = GAlignments(seqinfo = seqinfo),
                                               strandMode = strandMode))
   }
   if (is.null(levels(df$seqnames))) {
@@ -173,6 +173,12 @@ getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
   } else seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
+
+  isProperPair <- df$isProperPair
+  if (!is.null(df$isProperPair)) {
+    df$isProperPair <- NULL
+  } else isProperPair <- rep(TRUE, nrow(df))
+
   if (ncol(df) == 6){
     mcols <- NULL
   } else {
@@ -199,7 +205,7 @@ getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
              cigar = as.character(df$cigar2), strand = Rle(factor(strand2, levels)),
              seqinfo = seqinfo, check = FALSE,
              elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
-       isProperPair = rep(TRUE, nrow(df)), strandMode = as.integer(strandMode),
+       isProperPair = isProperPair, strandMode = as.integer(strandMode),
        elementMetadata = mcols, check = FALSE)
 }
 
