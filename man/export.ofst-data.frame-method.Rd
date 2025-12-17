@@ -11,6 +11,10 @@
 
 \item{file}{a character, location on disc (full path)}
 
+\item{NAMES}{character, default NULL. Names of ranges.}
+
+\item{elementMetadata}{DataFrame, default DataFrame(). Metadata of ranges.}
+
 \item{...}{additional arguments for write_fst}
 }
 \value{

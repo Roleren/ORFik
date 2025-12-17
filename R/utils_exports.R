@@ -447,6 +447,8 @@ export.bedoc <- function(object, out) {
 setGeneric("export.ofst", function(x, file, ...) standardGeneric("export.ofst"))
 
 #' @inherit export.ofst
+#' @param NAMES character, default NULL. Names of ranges.
+#' @param elementMetadata DataFrame, default DataFrame(). Metadata of ranges.
 setMethod("export.ofst", "data.frame",
           function(x, file, NAMES = NULL, elementMetadata = DataFrame(), ...) {
             # Validate minimum required columns
