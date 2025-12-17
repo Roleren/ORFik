@@ -29,7 +29,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Haakon Tjeldnes \email{hauken_heyken@hotmail.com} [data contributor]
+\strong{Maintainer}: Haakon Tjeldnes \email{hauken_heyken@hotmail.com} (\href{https://orcid.org/0000-0002-2077-747X}{ORCID}) [data contributor]
 
 Authors:
 \itemize{

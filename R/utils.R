@@ -40,7 +40,7 @@ getGRanges <- function(df, keep.extra.columns = TRUE, seqinfo = NULL) {
   if (!isTRUEorFALSE(keep.extra.columns))
     stop("'keep.extra.columns' must be TRUE or FALSE")
   if (!all(c("seqnames", "start", "strand") %in% colnames(df)))
-    stop("df must at minimum have 4 columns named: seqnames, start, width and strand")
+    stop("df must at minimum have 3 columns named: seqnames, start, strand")
   if (!is(df, "data.table")) setDT(df)
 
   widths <- if ("width" %in% colnames(df)) {
@@ -140,7 +140,7 @@ getGAlignments <- function(df, seqinfo = NULL) {
       names(mcols) <- names(df)[5]
     }
   }
-  if (!is(df$strand, "factor") && identical(levels(df$strand), c("+", "-", "*"))){
+  if (!is(df$strand, "factor") | identical(levels(df$strand), c("+", "-", "*"))){
     df[, strand := factor(strand, levels = c("+", "-", "*"))]
   }
 
@@ -161,8 +161,8 @@ getGAlignments <- function(df, seqinfo = NULL) {
 #' @keywords internal
 getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
   if (nrow(df) == 0) {
-    return(GenomicAlignments::GAlignmentPairs(first = GAlignments(),
-                                              last = GAlignments(),
+    return(GenomicAlignments::GAlignmentPairs(first = GAlignments(seqinfo = seqinfo),
+                                              last = GAlignments(seqinfo = seqinfo),
                                               strandMode = strandMode))
   }
   if (is.null(levels(df$seqnames))) {
@@ -173,6 +173,12 @@ getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
   } else seqinfo <- Seqinfo(levels(df$seqnames))
   names <- df$NAMES
   if (!is.null(df$NAMES)) df$NAMES <- NULL
+
+  isProperPair <- df$isProperPair
+  if (!is.null(df$isProperPair)) {
+    df$isProperPair <- NULL
+  } else isProperPair <- rep(TRUE, nrow(df))
+
   if (ncol(df) == 6){
     mcols <- NULL
   } else {
@@ -199,7 +205,7 @@ getGAlignmentsPairs <- function(df, strandMode = 0, seqinfo = NULL) {
              cigar = as.character(df$cigar2), strand = Rle(factor(strand2, levels)),
              seqinfo = seqinfo, check = FALSE,
              elementMetadata = DataFrame(data.frame(matrix(nrow = nrow(df), ncol = 0)))),
-       isProperPair = rep(TRUE, nrow(df)), strandMode = as.integer(strandMode),
+       isProperPair = isProperPair, strandMode = as.integer(strandMode),
        elementMetadata = mcols, check = FALSE)
 }
 
@@ -409,9 +415,9 @@ combn.pairs <- function(x) {
 #' Read RDS or QS format file
 #'
 #' @param file path to file with "rds" or "qs" file extension
-#' @param nthread numeric, number of threads for qs::qread
+#' @param nthread numeric, number of threads for qs2::qs_read
 #' @return R object loaded from file
-#' @importFrom qs qread
+#' @importFrom qs2 qs_read
 #' @export
 #' @examples
 #' df <- ORFik::ORFik.template.experiment()
@@ -422,16 +428,16 @@ read_RDSQS <- function(file, nthread = 5) {
   stopifnot(format %in% c("qs", "rds", "covqs", "covrds"))
   if (format %in% c("rds", "covrds")) {
     readRDS(file)
-  } else qs::qread(file, nthread = nthread)
+  } else qs2::qs_read(file, nthread = nthread)
 }
 
 #' Read RDS or QS format file
 #'
 #' @param object the object to save
 #' @param file path to file with "rds" or "qs" file extension
-#' @param nthread numeric, number of threads for qs::qread
+#' @param nthread numeric, number of threads for qs2::qs_save
 #' @return R object loaded from file
-#' @importFrom qs qread
+#' @importFrom qs2 qs_save
 #' @export
 #' @examples
 #' path <- tempfile(fileext = ".qs")
@@ -449,7 +455,7 @@ save_RDSQS <- function(object, file, nthread = 5) {
   stopifnot(format %in% c("qs", "rds", "covqs", "covrds"))
   if (format %in% c("rds", "covrds")) {
     saveRDS(object, file)
-  } else qs::qsave(object, file, nthread = nthread)
+  } else qs2::qs_save(object, file, nthread = nthread)
 }
 
 #' A fast ftp directory check

@@ -41,12 +41,28 @@ Positions are 1-based, not 0-based as .bed.
 Import with import.ofst
 }
 \examples{
+tempfile <- tempfile(fileext = ".ofst")
+
 ## GRanges
 gr <- GRanges("1:1-3:-")
-# export.ofst(gr, file = "path.ofst")
-## GAlignment
-# Make input data.frame
+export.ofst(gr, file = tempfile)
+identical(gr, fimport(tempfile))
+# Save from data.frame of GAlignment columns
 df <- data.frame(seqnames = "1", cigar = "3M", start = 1L, strand = "+")
+export.ofst(df, tempfile)
+res <- fimport(tempfile) # Imports as GAlignments because you have cigar
+res
+# Save from GAlignments
 ga <- ORFik:::getGAlignments(df)
-# export.ofst(ga, file = "path.ofst")
+export.ofst(ga, tempfile)
+res2 <- fimport(tempfile)
+identical(res, res2)
+# Save from GAlignmentsPair
+ga_rev <- ga
+strand(ga_rev) <- "-"
+ga2 <- GAlignmentPairs(ga, ga_rev)
+export.ofst(ga2, tempfile)
+res3 <- fimport(tempfile)
+identical(ga2, res3)
+
 }
