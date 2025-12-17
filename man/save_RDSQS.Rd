@@ -11,7 +11,7 @@ save_RDSQS(object, file, nthread = 5)
 
 \item{file}{path to file with "rds" or "qs" file extension}
 
-\item{nthread}{numeric, number of threads for qs::qread}
+\item{nthread}{numeric, number of threads for qs2::qs_save}
 }
 \value{
 R object loaded from file

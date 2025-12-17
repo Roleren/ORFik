@@ -9,7 +9,7 @@ read_RDSQS(file, nthread = 5)
 \arguments{
 \item{file}{path to file with "rds" or "qs" file extension}
 
-\item{nthread}{numeric, number of threads for qs::qread}
+\item{nthread}{numeric, number of threads for qs2::qs_read}
 }
 \value{
 R object loaded from file
