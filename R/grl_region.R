@@ -441,7 +441,7 @@ exonsWithPseudoIntronsPerGroup <- function(grl, width = 100) {
   if (length(grl) == 0 || max(lengths(grl)) == 1) return(grl)
   original_names <- names(grl)
   names(grl) <- seq_along(grl)
-  pseudo_introns <- ORFik:::pseudoIntronsPerGroup(grl, width)
+  pseudo_introns <- pseudoIntronsPerGroup(grl, width)
   exons_introns_gr <- c(unlistGrl(grl), unlistGrl(pseudo_introns))
   mcols(exons_introns_gr) <- NULL
   grl <- reduceKeepAttr(groupGRangesBy(exons_introns_gr), keep.names = TRUE)
