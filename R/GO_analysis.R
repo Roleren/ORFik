@@ -153,8 +153,8 @@ DEG_gorilla <- function(dt, output_dir, organism) {
                                  paste0("DTEG_", contrast_sel, "_",
                                         ifelse(reg == "No change", "Background", as.character(reg)),".txt"))
         name <- gsub("_", " ", paste(sub("\\.txt$", "", basename(target_file)), "vs Background"))
-        url <- ORFik:::go_analaysis_gorilla(target_file, background_file, organism,
-                                            analysis_name = name, open_browser = FALSE)
+        url <- go_analaysis_gorilla(target_file, background_file, organism,
+                                    analysis_name = name, open_browser = FALSE)
         Sys.sleep(3)
         names(url) <- name
         return(url)

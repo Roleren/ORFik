@@ -4,15 +4,12 @@
 \alias{mergeFastq}
 \title{Merge groups of Fastq /Fasta files}
 \usage{
-mergeFastq(in_files, out_files, BPPARAM = bpparam())
+mergeFastq(in_files_by_out_file_list, BPPARAM = bpparam())
 }
 \arguments{
-\item{in_files}{\code{character} specify the full path to the individual fastq.gz files.
-Seperated by space per file in group: For 2 output files from 4 input files:
-in_files <- c("file1.fastq file2.fastq". "file3.fastq file4.fastq")}
-
-\item{out_files}{\code{character} specify the path to the FASTQ directory
-For 2 output files: out_files <- c("/merged/file1&2.fastq", "/merged/file3&4.fastq")}
+\item{in_files_by_out_file_list}{\code{list of character vectors},
+Per element of list are  full path to the individual fastq.gz files to that
+output file.}
 
 \item{BPPARAM}{how many cores/threads to use? default: bpparam().
 To see number of threads used, do \code{bpparam()$workers}}
@@ -25,23 +22,26 @@ Will use multithreading to speed up process.
 Only works for Unix OS (Linux and Mac)
 }
 \examples{
+
+# Make small example fastq files
 fastq.folder <- tempdir() # <- Your fastq files
-infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
-\dontrun{
 # Seperate files into groups (here it is 4 output files from 12 input files)
-in_files <- c(paste0(grep(infiles, pattern = paste0("ribopool-",
-               seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
-              paste0(grep(infiles, pattern = paste0("ribopool-",
-               seq(18, 19), collapse = "|"), value = TRUE), collapse = " "),
-              paste0(grep(infiles, pattern = paste0("C11-",
-               seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
-              paste0(grep(infiles, pattern = paste0("C11-",
-               seq(18, 19), collapse = "|"), value = TRUE), collapse = " "))
+in_files <- paste0(LETTERS[1:16], ".fastq.gz")
+in_files <- file.path(fastq.folder, in_files)
+samples_dna_letters <- vapply(seq_along(in_files), function(x)
+  paste(sample(DNA_ALPHABET[1:4], 12, replace = TRUE), collapse = ""), character(1))
+# Write example input files to temp
+lapply(seq_along(in_files), function(i) {
+ seq <- DNAStringSet(samples_dna_letters[i])
+ names(seq) <- basename(in_files[i])
+ writeXStringSet(seq, in_files[i])
+})
 
 out_files <- paste0(c("SSU_ribopool", "LSU_ribopool", "SSU_WT", "LSU_WT"), ".fastq.gz")
 merged.fastq.folder <- file.path(fastq.folder, "merged/")
 out_files <- file.path(merged.fastq.folder, out_files)
 
-mergeFastq(in_files, out_files)
-}
+in_files_by_out_file_list <- split(in_files, rep(out_files, each = 4))
+mergeFastq(in_files_by_out_file_list, BiocParallel::SerialParam())
+lapply(out_files, readDNAStringSet)
 }
