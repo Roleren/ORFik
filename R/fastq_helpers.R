@@ -3,43 +3,56 @@
 #' Will use multithreading to speed up process.
 #' Only works for Unix OS (Linux and Mac)
 #' @export
-#' @param in_files \code{character} specify the full path to the individual fastq.gz files.
-#' Seperated by space per file in group: For 2 output files from 4 input files:
-#' in_files <- c("file1.fastq file2.fastq". "file3.fastq file4.fastq")
-#' @param out_files \code{character} specify the path to the FASTQ directory
-#' For 2 output files: out_files <- c("/merged/file1&2.fastq", "/merged/file3&4.fastq")
+#' @param in_files_by_out_file_list \code{list of character vectors},
+#' Per element of list are  full path to the individual fastq.gz files to that
+#' output file.
 #' @inheritParams download.SRA
+#' @importFrom BiocParallel bpmapply
 #' @return invisible(NULL).
 #' @export
 #' @examples
+#'
+#' # Make small example fastq files
 #' fastq.folder <- tempdir() # <- Your fastq files
-#' infiles <- dir(fastq.folder, "*.fastq", full.names = TRUE)
-#' \dontrun{
 #' # Seperate files into groups (here it is 4 output files from 12 input files)
-#' in_files <- c(paste0(grep(infiles, pattern = paste0("ribopool-",
-#'                seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
-#'               paste0(grep(infiles, pattern = paste0("ribopool-",
-#'                seq(18, 19), collapse = "|"), value = TRUE), collapse = " "),
-#'               paste0(grep(infiles, pattern = paste0("C11-",
-#'                seq(11, 14), collapse = "|"), value = TRUE), collapse = " "),
-#'               paste0(grep(infiles, pattern = paste0("C11-",
-#'                seq(18, 19), collapse = "|"), value = TRUE), collapse = " "))
+#' in_files <- paste0(LETTERS[1:16], ".fastq.gz")
+#' in_files <- file.path(fastq.folder, in_files)
+#' samples_dna_letters <- vapply(seq_along(in_files), function(x)
+#'   paste(sample(DNA_ALPHABET[1:4], 12, replace = TRUE), collapse = ""), character(1))
+#' # Write example input files to temp
+#' lapply(seq_along(in_files), function(i) {
+#'  seq <- DNAStringSet(samples_dna_letters[i])
+#'  names(seq) <- basename(in_files[i])
+#'  writeXStringSet(seq, in_files[i])
+#' })
 #'
 #' out_files <- paste0(c("SSU_ribopool", "LSU_ribopool", "SSU_WT", "LSU_WT"), ".fastq.gz")
 #' merged.fastq.folder <- file.path(fastq.folder, "merged/")
 #' out_files <- file.path(merged.fastq.folder, out_files)
 #'
-#' mergeFastq(in_files, out_files)
-#' }
-mergeFastq <- function(in_files, out_files, BPPARAM = bpparam()) {
+#' in_files_by_out_file_list <- split(in_files, rep(out_files, each = 4))
+#' mergeFastq(in_files_by_out_file_list, BiocParallel::SerialParam())
+#' lapply(out_files, readDNAStringSet)
+mergeFastq <- function(in_files_by_out_file_list, BPPARAM = bpparam()) {
   # TODO: Make it work on windows
   if (.Platform$OS.type != "unix") stop("Merge does not work on windows OS")
-  if (length(in_files) != length(out_files)) stop("Not equal length of in_files and out_files!")
+  all_input_files_exist <- all(file.exists(unlist(in_files_by_out_file_list)))
+  stopifnot(is(in_files_by_out_file_list, "list"))
+  stopifnot(length(in_files_by_out_file_list) > 0)
+  stopifnot(all_input_files_exist)
+  if (any(lengths(in_files_by_out_file_list) == 0))
+    stop("An output file group had 0 input files!")
 
-  bplapply(seq_along(in_files), function(x, in_files, out_files) {
-    dir.create(dirname(out_files[x]), showWarnings = FALSE, recursive = TRUE)
-    system(paste("cat", in_files[x], ">", out_files[x]))
-  }, in_files = in_files, out_files = out_files, BPPARAM = BPPARAM)
+  equal_compression_per_group <- max(sapply(in_files_by_out_file_list, function(files) length(unique(tools::file_ext(files)))))
+  if (any(equal_compression_per_group != 1))
+    stop("You cant mix compressed and uncompressed input files per output file!")
+
+
+  BiocParallel::bpmapply(function(in_files, out_file) {
+    dir.create(dirname(out_file), showWarnings = FALSE, recursive = TRUE)
+    system(paste("cat", paste(in_files, collapse = " "), ">", out_file))
+  }, in_files = in_files_by_out_file_list,
+     out_file = names(in_files_by_out_file_list), BPPARAM = BPPARAM)
 
   message("Merge Done")
   return(invisible(NULL))
