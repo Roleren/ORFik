@@ -50,7 +50,10 @@ mergeFastq <- function(in_files_by_out_file_list, BPPARAM = bpparam()) {
 
   BiocParallel::bpmapply(function(in_files, out_file) {
     dir.create(dirname(out_file), showWarnings = FALSE, recursive = TRUE)
-    system(paste("cat", paste(in_files, collapse = " "), ">", out_file))
+    status <- system(paste("cat", paste(shQuote(in_files), collapse = " "),
+                           ">", shQuote(out_file)))
+    if (status != 0)
+      stop("Failed to merge fastq files into: ", out_file)
   }, in_files = in_files_by_out_file_list,
      out_file = names(in_files_by_out_file_list), BPPARAM = BPPARAM)
 
