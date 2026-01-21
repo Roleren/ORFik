@@ -74,6 +74,13 @@ example usage: RNA_Align_pipeline.sh -f <in.fastq.gz> -o <out_dir>
 EOF
 }
 
+# First pass: detect -v (check verbose flag) only
+log() {
+  (( verbose == 1 )) && echo "$@"
+}
+
+
+
 # Default arguments:
 min_length=20
 mismatches=3
@@ -93,97 +100,102 @@ keep="n"
 keepContam="no"
 keepContamType="bam"
 keep_unmapped_genome="None"
+verbose=1
 STAR="~/bin/STAR-2.7.0c/source/STAR"
 fastp="~/bin/fastp"
-while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
+while getopts ":vf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
     case $opt in
+    v)
+      verbose=0
+      echo "verbose loop: $OPTARG"
+      ;;
     f)
         in_file=$OPTARG
-        echo "-f input file: $OPTARG"
+        log "-f input file: $OPTARG"
 	      ;;
     F)
       	in_file_two=$OPTARG
-      	echo "-F input file 2: $OPTARG"
+      	log "-F input file 2: $OPTARG"
 	      ;;
     o)
         out_dir=$OPTARG
-        echo "-o output folder: $OPTARG"
+        log "-o output folder: $OPTARG"
         ;;
     l)
         min_length=$OPTARG
-        echo "-l minimum length of reads: $OPTARG"
+        log "-l minimum length of reads: $OPTARG"
         ;;
     T)
         mismatches=$OPTARG
-        echo "-T max mismatches of reads: $OPTARG"
+        log "-T max mismatches of reads: $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
-        echo "-g genome dir for all indices: $OPTARG"
+        log "-g genome dir for all indices: $OPTARG"
         ;;
     s)
         steps=$OPTARG
-        echo "-s steps to do: $OPTARG"
+        log "-s steps to do: $OPTARG"
         ;;
     a)
         adapter=$OPTARG
-        echo "-a adapter sequence: $OPTARG"
+        log "-a adapter sequence: $OPTARG"
         ;;
     q)
 	      quality_filtering=$OPTARG
-	      echo "-q quality filtering: $quality_filtering"
+	      log "-q quality filtering: $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
-        echo "-t trim front (nt): $OPTARG"
+        log "-t trim front (nt): $OPTARG"
         ;;
     z)
         trim_tail=$OPTARG
-        echo "-z trim tail (nt): $OPTARG"
+        log "-z trim tail (nt): $OPTARG"
         ;;
     A)
         alignment=$OPTARG
-        echo "-A alignment type: $OPTARG"
+        log "-A alignment type: $OPTARG"
         ;;
     B)
         allow_introns=$OPTARG
-        echo "-B allow_introns: $OPTARG"
+        log "-B allow_introns: $OPTARG"
         ;;
     r)
 	      resume=$OPTARG
-	      echo "-r resume (r or new n): $OPTARG"
+	      log "-r resume (r or new n): $OPTARG"
         ;;
     m)
       	maxCPU=$OPTARG
-      	echo "-m maxCPU: $OPTARG"
+      	log "-m maxCPU: $OPTARG"
         ;;
     M)
       	multimap=$OPTARG
-      	echo "-M max multimap: $OPTARG"
+      	log "-M max multimap: $OPTARG"
         ;;
     S)
       	STAR=$OPTARG
-      	echo "-S STAR location: $OPTARG"
+      	log "-S STAR location: $OPTARG"
         ;;
     P)
       	fastp=$OPTARG
-      	echo "-P fastp location: $OPTARG"
+      	log "-P fastp location: $OPTARG"
         ;;
     k)
       	keep=$OPTARG
-      	echo "-k Keep Star Index loaded: $OPTARG"
+      	log "-k Keep Star Index loaded: $OPTARG"
         ;;
     K)
       	keepContam=$OPTARG
-      	echo "-K Keep contamination reads: $OPTARG"
+      	log "-K Keep contamination reads: $OPTARG"
         ;;
     X)
       	keepContamType=$OPTARG
-      	echo "-X Contamination reads type: $OPTARG"
+      	log "-X Contamination reads type: $OPTARG"
         ;;
     u)
       	keep_unmapped_genome=$OPTARG
-      	echo "-u Keep unmapped genome reads: $OPTARG"
+      	log "-u Keep unmapped genome reads: $OPTARG"
         ;;
     h)
         usage
@@ -197,7 +209,8 @@ while getopts ":f:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
     esac
 done
 echo ""
-#exit 1
+echo "SAFE STOP" >&2
+exit 1
 
 if [ "$steps" == "all" ]; then
 	steps="tr-ph-rR-nc-tR-ge"
@@ -256,7 +269,7 @@ if [ $keepContam == "yes" ]; then
   contamSAMtype="BAM Unsorted"
 fi
 
-# 3-7 filtering
+# STAR INDEX
 contaminants=$gen_dir/contaminants_genomeDir
 phix=$gen_dir/PhiX_genomeDir
 rRNA=$gen_dir/rRNA_genomeDir

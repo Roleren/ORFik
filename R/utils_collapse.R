@@ -298,6 +298,8 @@ ofst_merge <- function(file_paths,
 ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
                                 keepCigar = TRUE, sort = TRUE,
                                 chunkified = FALSE) {
+  stopifnot(is(dt_list, "list"))
+  stopifnot(all(vapply(dt_list, function(x) is(x, "data.table"), logical(1))))
   if (!chunkified) stopifnot(length(dt_list) == length(lib_names))
   colnames <- names(dt_list[[1L]])
   non_key_columns <- "score"
@@ -331,11 +333,24 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
       }
     }
-    dt <- collapseDuplicatedReads(
-      data.table::rbindlist(dt_list, use.names = TRUE, fill = TRUE),
-      addSizeColumn = TRUE,
-      keepCigar = keepCigar
-    )
+    while (length(dt_list) > 1) {
+      nrows <- vapply(dt_list, nrow, numeric(1))
+      sums <- cumsum(nrows)
+
+      indices <- which(sums < .int32_max)
+      message("- Merging chunks: ", paste(indices, collapse = ", ")," (of total: ", length(dt_list), ")")
+      if (length(indices) < 2) stop("No pair of chunks has total rows smaller than '.int32_max' : ",
+                                    .int32_max, ", can not merge")
+      dt_list[indices][[1]] <- collapseDuplicatedReads(
+        data.table::rbindlist(dt_list[indices], use.names = TRUE, fill = TRUE),
+        addSizeColumn = TRUE,
+        keepCigar = keepCigar
+      )
+      dt_list[indices[-1]] <- NULL
+      gc()
+    }
+
+    dt <- dt_list[[1]]
   }
   # Downcast total score if safe
   dt <- .downcast_score_if_safe(dt)

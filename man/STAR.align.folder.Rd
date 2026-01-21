@@ -227,25 +227,30 @@ i.e. it auto-trims." So trimming can be skipped for longer reads.
 \examples{
 # First specify directories wanted (temp directory here)
 config_file <- tempfile()
-#config.save(config_file, base.dir = tempdir())
-#config <- ORFik::config(config_file)
+config.save(config_file, base.dir = tempdir())
+config <- ORFik::config(config_file)
 
 ## Yeast RNA-seq samples (small genome)
-#project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
-#annotation.dir <- project["ref"]
-#fastq.input.dir <- project["fastq RNA-seq"]
-#bam.output.dir <- project["bam RNA-seq"]
+project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
+annotation.dir <- project["ref"]
+fastq.input.dir <- project["fastq RNA-seq"]
+bam.output.dir <- project["bam RNA-seq"]
 
 ## Download some SRA data and metadata (subset to 50k reads)
-# info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
+# info <- download.SRA.metadata("SRP012047", outdir = fastq.input.dir)
 # info <- info[1:2,] # Subset to 2 first libraries
 # download.SRA(info, fastq.input.dir, rename = FALSE, subset = 50000)
 
-## No contaminant depletion:
+## Get annotation
 # annotation <- getGenomeAndAnnotation("Saccharomyces cerevisiae", annotation.dir)
 # index <- STAR.index(annotation)
+# R1_R2 <- list.files(fastq.input.dir, info$Run[1], full.names = TRUE)
+# STAR.align.single(R1_R2[1], R1_R2[2], bam.output.dir, index.dir = index)
+# list.files(bam.output.dir)
+# list.files(file.path(bam.output.dir, "aligned"))
+## Identical to first pair of full folder call:
 # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#                   index, paired.end = FALSE) # Trim, then align to genome
+#                   index, paired.end = TRUE) # Trim, then align to genome
 
 ## Human Ribo-seq sample (NB! very large genome and libraries!)
 ## Requires >= 32 GB memory

@@ -271,25 +271,31 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @examples
 #' # First specify directories wanted (temp directory here)
 #' config_file <- tempfile()
-#' #config.save(config_file, base.dir = tempdir())
-#' #config <- ORFik::config(config_file)
+#' config.save(config_file, base.dir = tempdir())
+#' config <- ORFik::config(config_file)
 #'
 #' ## Yeast RNA-seq samples (small genome)
-#' #project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
-#' #annotation.dir <- project["ref"]
-#' #fastq.input.dir <- project["fastq RNA-seq"]
-#' #bam.output.dir <- project["bam RNA-seq"]
+#' project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
+#' annotation.dir <- project["ref"]
+#' fastq.input.dir <- project["fastq RNA-seq"]
+#' bam.output.dir <- project["bam RNA-seq"]
 #'
 #' ## Download some SRA data and metadata (subset to 50k reads)
-#' # info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
+#' # info <- download.SRA.metadata("SRP012047", outdir = fastq.input.dir)
 #' # info <- info[1:2,] # Subset to 2 first libraries
 #' # download.SRA(info, fastq.input.dir, rename = FALSE, subset = 50000)
 #'
-#' ## No contaminant depletion:
+#' ## Get annotation & STAR index
 #' # annotation <- getGenomeAndAnnotation("Saccharomyces cerevisiae", annotation.dir)
 #' # index <- STAR.index(annotation)
+#' ## First let's align only first Run (paired-end)
+#' # R1_R2 <- list.files(fastq.input.dir, info$Run[1], full.names = TRUE)
+#' # STAR.align.single(R1_R2[1], R1_R2[2], bam.output.dir, index.dir = index)
+#' # list.files(bam.output.dir)
+#' # list.files(file.path(bam.output.dir, "aligned"))
+#' ## Identical to first pair of full folder call:
 #' # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#' #                   index, paired.end = FALSE) # Trim, then align to genome
+#' #                   index, paired.end = TRUE) # Trim, then align to genome
 #'
 #' ## Human Ribo-seq sample (NB! very large genome and libraries!)
 #' ## Requires >= 32 GB memory
@@ -431,6 +437,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               resume = NULL, multiQC = FALSE, keep.contaminants = FALSE,
                               keep.unaligned.genome = FALSE,
                               keep.index.in.memory = FALSE,
+                              verbose = TRUE,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
                                                    package = "ORFik")
@@ -449,6 +456,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                                  keep.index.in.memory)
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
+  silence <- ifelse(verbose,  "", "-v")
   call <- paste(script.single, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
@@ -457,15 +465,15 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                 "-M", max.multimap,
                 "-k", keep.index.in.memory, quality.filtering,
                 keep.contaminants, keep.unaligned.genome,
-                star.path, fastp)
+                star.path, fastp, silence)
 
   return(STAR.align.internal(call, output.dir, multiQC))
 }
 
 STAR.align.internal <- function(call, output.dir, multiQC = FALSE, steps = "auto") {
   print(paste("Starting time:", Sys.time()))
-  print("Full system call:")
-  print(call)
+  cat("Full system call:\n")
+  cat(call, "\n")
   ret <- system(command = call)
   if (ret != 0) stop("STAR alignment step failed, see error above for more info.")
   message("Alignment done")

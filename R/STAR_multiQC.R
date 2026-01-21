@@ -135,7 +135,8 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf",
                          simplified_table = TRUE) {
   if (!(type %in% c("aligned", "contaminants_depletion")))
       stop("type must be either aligned or contaminants_depletion")
-  if (!dir.exists(folder)) stop("folder does not specify existing directory!")
+  if (!dir.exists(folder))
+    stop("STAR multiQC folder does not specify existing directory!")
   stopifnot(is(log_files, "character"))
 
 
