@@ -301,12 +301,13 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
   stopifnot(is(dt_list, "list"))
   stopifnot(all(vapply(dt_list, function(x) is(x, "data.table"), logical(1))))
   if (!chunkified) stopifnot(length(dt_list) == length(lib_names))
+
   colnames <- names(dt_list[[1L]])
   non_key_columns <- "score"
   if (chunkified) non_key_columns <- c(non_key_columns, lib_names)
+  merge_keys <- setdiff(colnames, non_key_columns)
 
   if (keep_all_scores) {
-
     if (!chunkified) {
       # Normalize & collapse per-library BEFORE merging
       dt_list <- lapply(dt_list, function(d) {
@@ -320,11 +321,9 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         data.table::setnames(dt_list[[i]], "score", lib_names[i])
     } else dt_list <- lapply(dt_list, function(d) {d[, score := NULL]})
 
-    merge_keys <- setdiff(colnames, non_key_columns)
-
-    # 4) Outer-merge libraries on keys, then recompute total
+    # Outer-merge libraries on keys, then recompute total
     dt <- .merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE)
-    # Optional: downcast per-lib cols if safe, then total
+    # Downcast per-lib cols if safe, then total
     dt <- .downcast_cols_if_safe(dt, lib_names)
     dt <- .recompute_total_score(dt, lib_names)
   } else {
@@ -333,24 +332,38 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
       }
     }
+
     while (length(dt_list) > 1) {
       nrows <- vapply(dt_list, nrow, numeric(1))
       sums <- cumsum(nrows)
 
       indices <- which(sums < .int32_max)
-      message("- Merging chunks: ", paste(indices, collapse = ", ")," (of total: ", length(dt_list), ")")
-      if (length(indices) < 2) stop("No pair of chunks has total rows smaller than '.int32_max' : ",
-                                    .int32_max, ", can not merge")
-      dt_list[indices][[1]] <- collapseDuplicatedReads(
-        data.table::rbindlist(dt_list[indices], use.names = TRUE, fill = TRUE),
-        addSizeColumn = TRUE,
-        keepCigar = keepCigar
-      )
-      dt_list[indices[-1]] <- NULL
+      message("-- Merging sub-chunks: ", paste(indices, collapse = ", ")," (of total: ", length(dt_list), ")")
+      if (length(indices) < 2) {
+        message("No pair of chunks has total rows smaller than '.int32_max' : ",
+             .int32_max, ", can not merge using BOOST multithreading, using slow join.")
+
+        for (i in seq_along(dt_list))
+          data.table::setnames(dt_list[[i]], "score", lib_names[i])
+        # Outer-merge libraries on keys, then recompute total
+        dt <- .merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE)
+        # Downcast per-lib cols if safe, then total
+        dt <- .downcast_cols_if_safe(dt, lib_names)
+        dt <- .recompute_total_score(dt, lib_names)
+        dt[, (lib_names) := NULL]
+        dt_list <- 1
+
+      } else {
+        dt_list[indices][[1]] <- collapseDuplicatedReads(
+          data.table::rbindlist(dt_list[indices], use.names = TRUE, fill = TRUE),
+          addSizeColumn = TRUE,
+          keepCigar = keepCigar
+        )
+        dt_list[indices[-1]] <- NULL
+        dt <- dt_list[[1]]
+      }
       gc()
     }
-
-    dt <- dt_list[[1]]
   }
   # Downcast total score if safe
   dt <- .downcast_score_if_safe(dt)
