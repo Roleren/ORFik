@@ -297,7 +297,8 @@ ofst_merge <- function(file_paths,
 
 ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
                                 keepCigar = TRUE, sort = TRUE,
-                                chunkified = FALSE) {
+                                chunkified = FALSE, allow_filtering = TRUE,
+                                max_filter_value = 3) {
   stopifnot(is(dt_list, "list"))
   stopifnot(all(vapply(dt_list, function(x) is(x, "data.table"), logical(1))))
   if (!chunkified) stopifnot(length(dt_list) == length(lib_names))
@@ -332,7 +333,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
       }
     }
-
+    filter_value <- 1
     while (length(dt_list) > 1) {
       nrows <- vapply(dt_list, nrow, numeric(1))
       sums <- cumsum(nrows)
@@ -346,13 +347,30 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         for (i in seq_along(dt_list))
           data.table::setnames(dt_list[[i]], "score", lib_names[i])
         # Outer-merge libraries on keys, then recompute total
-        dt <- .merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE)
-        # Downcast per-lib cols if safe, then total
-        dt <- .downcast_cols_if_safe(dt, lib_names)
-        dt <- .recompute_total_score(dt, lib_names)
-        dt[, (lib_names) := NULL]
-        dt_list <- 1
+        dt <- try(.merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE), silent = TRUE)
+        if (is(dt, "try-error")) {
+          dt_size <- as.numeric(sub(" .*", "", sub(".*Total rows in the list is ", "", dt)))
+          if (is.na(dt_size) || !allow_filtering || filter_value > max_filter_value) stop(dt)
+          message("Total rows in the list is ", dt_size, " which is larger than the maximum number of rows, currently ", .int32_max,
+                  "i.e. (", (1 - round(dt_size /  .int32_max, 4))*100, "%). Filtering all scores of values <= ", filter_value)
+          for (i in seq_along(dt_list))
+            data.table::setnames(dt_list[[i]], lib_names[i], "score")
+          # Find which rows to remove from index 1
+          how_many_to_remove <- dt_size - .int32_max + 2
+          hits <- dt_list[[1]][, .(score = sum(score)), by = .(seqnames, start)][order(score)]
+          hits <- hits[seq(how_many_to_remove),]
+          dt_list <- lapply(dt_list, function(d) d[!hits, on = .(seqnames, start)])
 
+          nrows_new <- vapply(dt_list, nrow, numeric(1))
+          message("- New chunk sizes: ", nrows_new)
+          filter_value <- filter_value + 1
+        } else {
+          # Downcast per-lib cols if safe, then total
+          dt <- .downcast_cols_if_safe(dt, lib_names)
+          dt <- .recompute_total_score(dt, lib_names)
+          dt[, (lib_names) := NULL]
+          dt_list <- 1
+        }
       } else {
         dt_list[indices][[1]] <- collapseDuplicatedReads(
           data.table::rbindlist(dt_list[indices], use.names = TRUE, fill = TRUE),
