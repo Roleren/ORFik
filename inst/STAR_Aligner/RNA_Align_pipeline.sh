@@ -208,9 +208,9 @@ while getopts ":vf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
         ;;
     esac
 done
-echo ""
-echo "SAFE STOP" >&2
-exit 1
+# echo ""
+# echo "SAFE STOP" >&2
+# exit 1
 
 if [ "$steps" == "all" ]; then
 	steps="tr-ph-rR-nc-tR-ge"
