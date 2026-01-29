@@ -149,7 +149,7 @@ filter_CDS_by_counts <- function(cds, filter_table,
     cds_with_flank <- startRegion(cds_filtered, mrna,
                                    upstream = minimum_5p_flank)
     flank_size <- widthPerGroup(cds_with_flank, FALSE)
-    has_valid_flank <- flank_size == max(flank_size)
+    has_valid_flank <- flank_size == widthPerGroup(cds) + minimum_5p_flank
     cds_filtered <- cds_filtered[has_valid_flank]
     message("- ", length(cds_filtered), " after filtering 5' flank of size ", minimum_5p_flank)
   }

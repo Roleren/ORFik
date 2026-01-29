@@ -395,20 +395,33 @@ pseudo.transform <- function(x, scale = log2, by.reference = FALSE) {
 #'
 #' Given a character vector, get all unique combinations of 2.
 #' @param x a character vector, will unique elements for you.
+#' @param background a character vector or NULL, if set it will only
+#'  return pairs where background is the 2nd value in the pair. I.e.
+#'  If you have mutant1, mutant2 and control, only get
+#' mutant 1 vs control and mutant 2 vs control.
 #' @return a list of character vector pairs
 #' @importFrom utils combn
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()
 #' ORFik:::combn.pairs(df[, "libtype"])
-combn.pairs <- function(x) {
+combn.pairs <- function(x, background = NULL) {
   pairs <- list() # creating compairisons :list of pairs
   comparisons.design <- unique(x)
-  my_comparison <- combn(unique(comparisons.design), 2)
+  if (!is.null(background)) {
+    if (!all(background %in% comparisons.design)) stop("Background are not valid levels, valid options are:\n",
+                                                       paste(comparisons.design, collapse = ", "))
+    comparisons.design <- c(comparisons.design[!(comparisons.design %in% background)],
+                            background)
+  }
+
+  my_comparison <- combn(comparisons.design, 2)
   pairs <- list()
   for (i in seq(ncol(my_comparison))) {
     pairs[[i]] <- c(my_comparison[1, i], my_comparison[2, i])
   }
+  if (!is.null(background))
+    pairs <- pairs[vapply(pairs, function(p) p[2], character(1)) %in% background]
   return(pairs)
 }
 

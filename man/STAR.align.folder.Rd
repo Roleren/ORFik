@@ -29,6 +29,7 @@ STAR.align.folder(
   keep.contaminants.type = c("bam", "fastq")[1],
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
+  verbose = TRUE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
@@ -189,6 +190,9 @@ Only applies to last library, will always keep for all libraries before last.
 Alternative useful for MAC machines especially is "noShared", for machines
 that do not support shared memory index, usually gives error: "abort trap 6".}
 
+\item{verbose}{logical, default TRUE. Print starting time, full system call
+and line separated bash script parameters.}
+
 \item{script.folder}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you
 need special alignments.}
@@ -241,9 +245,10 @@ bam.output.dir <- project["bam RNA-seq"]
 # info <- info[1:2,] # Subset to 2 first libraries
 # download.SRA(info, fastq.input.dir, rename = FALSE, subset = 50000)
 
-## Get annotation
+## Get annotation & STAR index
 # annotation <- getGenomeAndAnnotation("Saccharomyces cerevisiae", annotation.dir)
 # index <- STAR.index(annotation)
+## First let's align only first Run (paired-end)
 # R1_R2 <- list.files(fastq.input.dir, info$Run[1], full.names = TRUE)
 # STAR.align.single(R1_R2[1], R1_R2[2], bam.output.dir, index.dir = index)
 # list.files(bam.output.dir)
