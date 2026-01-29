@@ -264,6 +264,8 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' Only applies to last library, will always keep for all libraries before last.
 #' Alternative useful for MAC machines especially is "noShared", for machines
 #' that do not support shared memory index, usually gives error: "abort trap 6".
+#' @param verbose logical, default TRUE. Print starting time, full system call
+#' and line separated bash script parameters.
 #' @inheritParams STAR.index
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
@@ -338,6 +340,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               keep.contaminants.type = c("bam", "fastq")[1],
                               keep.unaligned.genome = FALSE,
                               keep.index.in.memory = FALSE,
+                              verbose = TRUE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
                                                           package = "ORFik"),
@@ -368,8 +371,9 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
   keep.contaminants.type <- paste("-X", keep.contaminants.type)
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
+  silence <- ifelse(verbose,  "", "-v")
 
-  call <- paste(script.folder, "-f", input.dir, "-o", output.dir,
+  call <- paste(script.folder, silence, "-f", input.dir, "-o", output.dir,
                 "-p", paired.end,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
@@ -381,7 +385,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                 keep.unaligned.genome, star.path, fastp, "-I",script.single,
                 "-C", cleaning)
 
-  return(STAR.align.internal(call, output.dir, multiQC))
+  return(STAR.align.internal(call, output.dir, multiQC, verbose = verbose))
 }
 
 #' Align single or paired end pair with STAR
@@ -457,7 +461,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
   keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
   keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
   silence <- ifelse(verbose,  "", "-v")
-  call <- paste(script.single, "-f", file1, file2, "-o", output.dir,
+  call <- paste(script.single, silence, "-f", file1, file2, "-o", output.dir,
                 "-l", min.length, "-T", mismatches, "-g", index.dir,
                 "-s", steps, resume, "-a", adapter.sequence,
                 "-t", trim.front, "-z", trim.tail,
@@ -465,15 +469,18 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                 "-M", max.multimap,
                 "-k", keep.index.in.memory, quality.filtering,
                 keep.contaminants, keep.unaligned.genome,
-                star.path, fastp, silence)
+                star.path, fastp)
 
-  return(STAR.align.internal(call, output.dir, multiQC))
+  return(STAR.align.internal(call, output.dir, multiQC, verbose = verbose))
 }
 
-STAR.align.internal <- function(call, output.dir, multiQC = FALSE, steps = "auto") {
-  print(paste("Starting time:", Sys.time()))
-  cat("Full system call:\n")
-  cat(call, "\n")
+STAR.align.internal <- function(call, output.dir, multiQC = FALSE, steps = "auto",
+                                verbose = TRUE) {
+  if (verbose) {
+    print(paste("Starting time:", Sys.time()))
+    cat("Full system call:\n")
+    cat(call, "\n")
+  }
   ret <- system(command = call)
   if (ret != 0) stop("STAR alignment step failed, see error above for more info.")
   message("Alignment done")

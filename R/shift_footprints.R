@@ -387,18 +387,23 @@ shiftFootprintsByExperiment <- function(df,
   if (!any(c("bed", "bedo", "wig", "ofst", "bigWig") %in% output_format))
     stop("output_format allowed: ofst, covRleList, wig, bigWig, bed, bedo")
   rfpFiles <- filepath(df, "ofst") # If ofst file not present, uses bam file
-  if (!is.null(shift.list)) {
-    if (!all(names(shift.list) %in% rfpFiles))
-      stop("shift.list does not contain all files to be shifted!")
-  }
+
   message(paste("Shifting reads in experiment:", name(df)))
   for (out.form in output_format)
     message(paste("Saving", out.form, "files to:", out.dir))
 
+  if (!is.null(shift.list)) {
+    if (!all(names(shift.list) %in% rfpFiles))
+      stop("shift.list does not contain all files to be shifted!")
+    # Variable fillers
+    txdb <- tx <- txNames <- NULL
+  } else {
+    # Else we need annotation to for detection
+    txdb <- loadTxdb(df)
+    tx <- loadRegion(txdb, part = "mrna")
+    txNames <- filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)
+  }
 
-  txdb <- loadTxdb(df)
-  tx <- loadRegion(txdb, part = "mrna")
-  txNames <- filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)
 
   shifts <- bplapply(rfpFiles,
            FUN = function(file, path, df, start, stop,
@@ -532,6 +537,7 @@ shiftPlots <- function(df, output = NULL, title = "Ribo-seq",
   txNames <- filterTranscripts(txdb, upstream, downstream + 1, 0)
   cds <-  loadRegion(txdb, part = "cds", names.keep = txNames)
   mrna <- loadRegion(txdb, part = "mrna", names.keep = txNames)
+  stopifnot(length(cds) > 0)
   style <- seqinfo(df)
   lib_names <- bamVarName(df, skip.experiment = TRUE)
   plots <- lapply(seq(nrow(df)),

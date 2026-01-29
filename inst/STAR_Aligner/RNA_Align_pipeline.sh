@@ -107,7 +107,6 @@ while getopts ":vf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
     case $opt in
     v)
       verbose=0
-      echo "verbose loop: $OPTARG"
       ;;
     f)
         in_file=$OPTARG
@@ -208,7 +207,7 @@ while getopts ":vf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
         ;;
     esac
 done
-# echo ""
+echo ""
 # echo "SAFE STOP" >&2
 # exit 1
 
