@@ -385,8 +385,35 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
 }
 
 #' Differential codon dwell time analysis
-#' @param dt
 #'
+#' Will create a fold change (ratio score) over your defined 'codon_score'.\cr
+#' It then runs a wilcox p-value test on the differential dwell times of your scores.
+#' It is set to signifcant = TRUE, if p-value < 0.05 & codon > min_total_N_codons &
+#' (score > min_ratio_change | score < 1/min_ratio_change)
+#'
+#' If a more rigerous model with estimated interaction terms between P and A sites is needed,
+#' we advice RiboDT (see references).
+#' @param dt a data.table created from ORFik codon dwell time analysis
+#' @param min_ratio_change Fold change minimum, default: 1.7 (bi-directional)
+#' @param min_total_N_codons = 100
+#' @param exclude_start_stop logical, default FALSE. If TRUE, remove start codons (i.e. # and *)
+#' @param codon_score character, default columns to use in dt,
+#'  default "percentage" (i.e. relative_to_max_score)
+#' @param background character or NULL, default NULL. If character, must be subset
+#' of levels in dt$variable, and differential usage will only be done with these
+#' levels as denominator factor level (i.e. only compared too.)
+#' @return a data.table with additional attributes
+#' @family codon
+#' @references https://doi.org/10.1016/j.ymeth.2021.10.004
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
+#' ## For multiple libs
+#' dt <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
+#'                  min_counts_cds_filter = 10)
+#' dt_diff_exp <- diff_exp_codon(dt, min_total_N_codons = 10)
+#' dt_diff_exp[significant == TRUE,]
+#' diff_exp_codon_plot(dt_diff_exp)
 diff_exp_codon <- function(dt, min_ratio_change = 1.7, min_total_N_codons = 100,
                            exclude_start_stop = FALSE, codon_score = "percentage",
                            background = NULL) {
@@ -470,6 +497,13 @@ codon_wilcox_test <- function(dt, min_ratio_change = 1.7, min_total_N_codons = 1
 }
 
 #' Differential codon dwell time plot
+#'
+#' Uses the wilcox p-values and thresholds to create a ggplot dotplot,
+#' with significance bars and color coded dots. Also mono font, to make sure
+#' all letters are equal size.
+#'
+#' If you want interactive plots, wrap output in
+#' plotly::ggplotly(diff_exp_ggplot, tooltip = "text)
 #' @param dt a data.table created from ORFik codon dwell time analysis
 #' @param min_total_N_codons integer, default
 #' ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L).
@@ -480,7 +514,10 @@ codon_wilcox_test <- function(dt, min_ratio_change = 1.7, min_total_N_codons = 1
 #' If you code \code{plotly::ggplotly(plot, tooltip = "text")}, you will get a nice
 #' tooltip by default.
 #' @return a ggplot object
+#' @family codon
 #' @export
+#' @examples
+#' # See ?diff_exp_codon
 diff_exp_codon_plot <- function(dt, min_total_N_codons = ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L),
                                 only_significant_difexp = FALSE, add_plotly_tooltip = TRUE) {
   if (only_significant_difexp) {
@@ -511,8 +548,15 @@ diff_exp_codon_plot <- function(dt, min_total_N_codons = ifelse(!is.null(attr(dt
 }
 
 #' Codon dwell time plot
+#' @inherit diff_exp_codon
 #' @inherit diff_exp_codon_plot
 #' @export
+#' @examples
+#' df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
+#' ## For multiple libs
+#' dt <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
+#'                  min_counts_cds_filter = 10)
+#' codon_dotplot(dt) # Sort on A-sites of RFP_r1.
 codon_dotplot <- function(dt, codon_score = "percentage",
                           min_total_N_codons = ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L),
                           add_plotly_tooltip = TRUE) {

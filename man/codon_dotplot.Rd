@@ -15,17 +15,42 @@ codon_dotplot(
 \arguments{
 \item{dt}{a data.table created from ORFik codon dwell time analysis}
 
-\item{min_total_N_codons}{integer, default
-ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L).
-How many codons are minimum to not color it red (i.e. "the not enough codons" group).}
+\item{codon_score}{character, default columns to use in dt,
+default "percentage" (i.e. relative_to_max_score)}
+
+\item{min_total_N_codons}{= 100}
 
 \item{add_plotly_tooltip}{logical, default TRUE.
 If you code \code{plotly::ggplotly(plot, tooltip = "text")}, you will get a nice
 tooltip by default.}
 }
 \value{
-a ggplot object
+a data.table with additional attributes
 }
 \description{
-Codon dwell time plot
+Will create a fold change (ratio score) over your defined 'codon_score'.\cr
+It then runs a wilcox p-value test on the differential dwell times of your scores.
+It is set to signifcant = TRUE, if p-value < 0.05 & codon > min_total_N_codons &
+(score > min_ratio_change | score < 1/min_ratio_change)
+}
+\details{
+If a more rigerous model with estimated interaction terms between P and A sites is needed,
+we advice RiboDT (see references).
+}
+\examples{
+df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
+## For multiple libs
+dt <- codon_usage_exp(df, outputLibs(df, type = "pshifted", output.mode = "list"),
+                 min_counts_cds_filter = 10)
+codon_dotplot(dt) # Sort on A-sites of RFP_r1.
+}
+\references{
+https://doi.org/10.1016/j.ymeth.2021.10.004
+}
+\seealso{
+Other codon: 
+\code{\link{codon_usage}()},
+\code{\link{codon_usage_exp}()},
+\code{\link{codon_usage_plot}()},
+\code{\link{diff_exp_codon_plot}()}
 }

@@ -30,5 +30,22 @@ tooltip by default.}
 a ggplot object
 }
 \description{
-Differential codon dwell time plot
+Uses the wilcox p-values and thresholds to create a ggplot dotplot,
+with significance bars and color coded dots. Also mono font, to make sure
+all letters are equal size.
 }
+\details{
+If you want interactive plots, wrap output in
+plotly::ggplotly(diff_exp_ggplot, tooltip = "text)
+}
+\examples{
+# See ?diff_exp_codon
+}
+\seealso{
+Other codon: 
+\code{\link{codon_usage}()},
+\code{\link{codon_usage_exp}()},
+\code{\link{codon_usage_plot}()},
+\code{\link{diff_exp_codon}()}
+}
+\concept{codon}
