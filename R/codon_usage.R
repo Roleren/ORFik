@@ -26,7 +26,7 @@ seq_usage <- function(dt, seqs, genes, input.dt.length = 1, output.seq.length = 
     # Keep only second (aligned == "center") or first (aligned == "left") per seq group
     keep <- rep(FALSE, output.seq.length)
 
-    keep[ifelse(aligned_position == "left",1, ceiling(output.seq.length/2))] <- TRUE
+    keep[ifelse(aligned_position == "left", 1, ceiling(output.seq.length/2))] <- TRUE
     codon_sums <- codon_sums[rep(keep,
                                  length.out = .N),]
   }
@@ -384,10 +384,166 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
   return(plot)
 }
 
+#' Differential codon dwell time analysis
+#' @param dt
+#'
+diff_exp_codon <- function(dt, min_ratio_change = 1.7, min_total_N_codons = 100,
+                           exclude_start_stop = FALSE, codon_score = "percentage",
+                           background = NULL) {
+  stopifnot(is(dt, "data.frame"))
+  stopifnot(length(codon_score) == 1)
 
+  if (exclude_start_stop) {
+    dt <- dt[grep("(\\*)|(\\#)", seqs, invert = TRUE)]
+    dt[, relative_to_max_score := relative_to_max_score / max(relative_to_max_score), by = .(variable, type)]
+    dt[, seqs := factor(seqs, levels = levels(seqs)[levels(seqs) %in% unique(seqs)], ordered = TRUE)]
+  }
 
-# library(ORFik); library(data.table); library(ggplot2)
-# df <- read.experiment("human_all_merged_l50")
-# reads <- fimport(filepath(df, "cov"))
-# res <- codon_usage_exp(df, reads)
-#
+  score_column_name <- get_codon_score_column(codon_score, dt)
+  dt <- codon_order_levels_by_score(dt, score_column_name)
+  # score_column <- dt[, ..score_column_name][[1]]
+
+  if (!is.factor(dt$variable)) dt[, variable := as.factor(variable)]
+  pairs <- ORFik::combn.pairs(levels(droplevels(dt$variable)), background)
+  dt_final <- data.table()
+  type <- NULL # avoid BiocCheck error
+  for (pair in pairs) {
+    sample1 <- dt[variable == pair[1],]
+    sample2 <- dt[variable == pair[2],]
+    score_column <-
+      sample1[, score_column_name, with = FALSE] /
+      sample2[, score_column_name, with = FALSE]
+    dt_final <- rbindlist(list(dt_final,
+                               data.table(variable = paste(sample1$variable,
+                                                           sample2$variable, sep = " vs "),
+                                          seqs = sample1$seqs,
+                                          type = sample1$type,
+                                          score_column = score_column[[1]],
+                                          N_sites = paste("S1:", sample1$N.total, "S2:", sample2$N.total),
+                                          N_min = pmin(sample1$N.total, sample2$N.total))))
+    dt_final[!is.finite(score_column), score_column := 0]
+  }
+
+  return(codon_wilcox_test(dt_final, min_ratio_change, min_total_N_codons))
+}
+
+get_codon_score_column <- function(codon_score = "percentage", dt) {
+  score_column_name <-
+    if (codon_score == "percentage") {
+      "relative_to_max_score"
+    } else if (codon_score == "dispersion(NB)") {
+      "dispersion_txNorm"
+    } else if (codon_score == "alpha(DMN)") {
+      "alpha"
+    } else if (codon_score == "sum") {
+      "sum"
+    } else codon_score[1]
+
+  if (!(score_column_name %in% colnames(dt)))
+    stop("You tried to use a non existing codon score: ", score_column_name)
+  return(score_column_name)
+}
+
+codon_order_levels_by_score <- function(dt, score_column_name) {
+  levels <- which(dt$type == "A" & dt$variable == dt$variable[1])
+  levels <- as.character(dt$seqs[levels][order(dt[, ..score_column_name][[1]][levels], decreasing = TRUE)])
+  levels <- c(levels, levels(dt$seqs)[!(levels(dt$seqs) %in% levels)])
+  dt[, seqs := factor(seqs, levels = levels, ordered = TRUE)]
+  dt[, type := factor(type, levels = c("A", "P"), ordered = TRUE)]
+  dt <- dt[order(seqs, decreasing = TRUE),][order(type, decreasing = TRUE),]
+  return(dt)
+}
+
+codon_wilcox_test <- function(dt, min_ratio_change = 1.7, min_total_N_codons = 100, p.value = 0.05) {
+  dt[, simulated_error := sample(c(1,-1))*runif(N_min, 0.1, 0.2)]
+  dt[, p_value := ifelse(N_min == 0, NA, wilcox.test(x = rep(score_column + simulated_error, N_min), y = rep(1, N_min), var.equal = FALSE)$p.value),
+     by = .(variable, type, seqs)]
+  diff_size <- min_ratio_change
+  diff_size <- c(diff_size, 1 / diff_size)
+  setattr(dt, "diff_size", diff_size)
+  dt[, significant := seq(nrow(dt)) %in% which(N_min >= min_total_N_codons &
+                                                 p_value < p.value & (score_column > max(diff_size) | score_column < min(diff_size)))]
+  setattr(dt, "min_total_N_codons", min_total_N_codons)
+  setattr(dt, "p.value", p.value)
+  dt[]
+  return(dt)
+}
+
+#' Differential codon dwell time plot
+#' @param dt a data.table created from ORFik codon dwell time analysis
+#' @param min_total_N_codons integer, default
+#' ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L).
+#' How many codons are minimum to not color it red (i.e. "the not enough codons" group).
+#' @param only_significant_difexp logical, default FALSE. If TRUE, don't show non
+#' significant codons.
+#' @param add_plotly_tooltip logical, default TRUE.
+#' If you code \code{plotly::ggplotly(plot, tooltip = "text")}, you will get a nice
+#' tooltip by default.
+#' @return a ggplot object
+#' @export
+diff_exp_codon_plot <- function(dt, min_total_N_codons = ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L),
+                                only_significant_difexp = FALSE, add_plotly_tooltip = TRUE) {
+  if (only_significant_difexp) {
+    dt <- dt[significant == TRUE,]
+    dt[, seqs := droplevels(seqs)]
+  }
+  if (add_plotly_tooltip) {
+    dt[, tooltip_text := paste0(
+      "Score: ", round(score_column, 2), "<br>",
+      "Sequence: ", seqs, "<br>",
+      "Total Sites: ", N_sites, "<br>",
+      "P-value:", sprintf("%.2e", p_value)
+    )]
+  }
+
+  diff_size <- attr(dt, "diff_size")
+  vline_data <- data.frame(x = 1, y = c(min(as.numeric(dt$seqs)), max(as.numeric(dt$seqs))), tooltip_text = "")
+  vline_data_p <- data.frame(x = diff_size[1], y = c(min(as.numeric(dt$seqs)), max(as.numeric(dt$seqs))), tooltip_text = "")
+  vline_data_m <- data.frame(x = diff_size[2], y = c(min(as.numeric(dt$seqs)), max(as.numeric(dt$seqs))), tooltip_text = "")
+
+  plot <- ggplot(dt, aes(score_column, seqs, text = tooltip_text)) +
+    geom_point(color = ifelse(dt$N_min < min_total_N_codons, "red", ifelse(dt$significant == TRUE, "green", "blue"))) +
+    geom_line(data = vline_data, aes(x = x, y = y), color = "gray", linetype = "dashed", size = 0.8, alpha = 0.4) +
+    geom_line(data = vline_data_p, aes(x = x, y = y), color = "red", linetype = "dashed", size = 0.8, alpha = 0.4) +
+    geom_line(data = vline_data_m, aes(x = x, y = y), color = "red", linetype = "dashed", size = 0.8, alpha = 0.4) +
+    facet_grid(~ variable + type)
+  return(theme_codon_plot(plot))
+}
+
+#' Codon dwell time plot
+#' @inherit diff_exp_codon_plot
+#' @export
+codon_dotplot <- function(dt, codon_score = "percentage",
+                          min_total_N_codons = ifelse(!is.null(attr(dt, "min_total_N_codons")), attr(dt, "min_total_N_codons"), 100L),
+                          add_plotly_tooltip = TRUE) {
+
+  score_column_name <- get_codon_score_column(codon_score, dt)
+  dt <- codon_order_levels_by_score(dt, score_column_name)
+  score_column <- dt[, ..score_column_name][[1]]
+
+  dt[, N_sites := paste(dt$N.total)]
+  dt[, N_min := dt$N.total]
+  if (add_plotly_tooltip) {
+    dt[, tooltip_text := paste0(
+      "Score: ", round(score_column, 2), "<br>",
+      "Sequence: ", seqs, "<br>",
+      "Total Sites: ", N_sites
+    )]
+  }
+
+  plot <- ggplot(dt, aes(score_column, seqs, text = tooltip_text)) +
+    geom_point(color = ifelse(dt$N_min < min_total_N_codons, "red","blue")) +
+    facet_wrap(variable ~ type, nrow = 1)
+  return(theme_codon_plot(plot))
+}
+
+theme_codon_plot <- function(plot) {
+  plot + theme_bw() +
+    theme(axis.title = element_text(family = "monospace", size = 14, face = "bold"),
+          axis.text = element_text(family = "monospace", size = 10),
+          strip.background = element_blank(),
+          strip.text = element_text(size = 9, face = "bold"),
+          strip.placement = "inside",
+          plot.margin = margin(t = 20, b = 20, l = 10, r = 10)) +
+    ylab("AA:Codon") + xlab("Score (by Ribosome site & library)")
+}

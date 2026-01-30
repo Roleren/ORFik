@@ -16,6 +16,7 @@
 #'
 #' @useDynLib ORFik
 #' @import GenomicRanges GenomicAlignments GenomeInfoDb
+#' @importFrom data.table setattr
 #' @importFrom Rcpp sourceCpp
 #'
 "_PACKAGE"

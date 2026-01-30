@@ -4,10 +4,15 @@
 \alias{combn.pairs}
 \title{Create all unique combinations pairs possible}
 \usage{
-combn.pairs(x)
+combn.pairs(x, background = NULL)
 }
 \arguments{
 \item{x}{a character vector, will unique elements for you.}
+
+\item{background}{a character vector or NULL, if set it will only
+ return pairs where background is the 2nd value in the pair. I.e.
+ If you have mutant1, mutant2 and control, only get
+mutant 1 vs control and mutant 2 vs control.}
 }
 \value{
 a list of character vector pairs
