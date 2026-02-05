@@ -347,6 +347,25 @@ setMethod("countOverlaps",
           }
 )
 
+setMethod("countOverlaps",
+          c("GRangesList", "character"),
+          function(query, subject) {
+            sum(coveragePerTiling(query, subject, is.sorted = TRUE))
+          }
+)
+
+setMethod("countOverlaps",
+          c("GRanges", "character"),
+          function(query, subject) {
+            old_query_names <- names(query)
+            query <- split(query, seq(length(query)))
+            names(query) <- old_query_names
+            countOverlaps(query, subject) # Forward as GRangesList
+          }
+)
+
+
+
 #' Check for integer overflow in covRle
 #' If any sum is > 2^31-1, it will give NA, convert those Rles to numeric
 #' @noRd
