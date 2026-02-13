@@ -30,7 +30,7 @@
 #' countOverlaps(gr1, gr2)
 #' countOverlapsW(gr1, gr2, weight = "score")
 countOverlapsW <- function(query, subject, weight = NULL, ...) {
-  if (is(subject, "covRle")) weight <- NULL
+  if (is(subject, "covRle") | is(subject, "character")) weight <- NULL
   if (is.null(weight)) return(countOverlaps(query, subject, ...))
 
   weight <- getWeights(subject, weight)
