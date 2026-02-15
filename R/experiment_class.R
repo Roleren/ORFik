@@ -400,7 +400,7 @@ setMethod("runIDs",
 setMethod("seqlevels",
           "experiment",
           function(x) {
-            seqlevels(findFa(df@fafile))
+            seqlevels(findFa(x@fafile))
           }
 )
 
