@@ -551,7 +551,7 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
     rl <- ranges(grl)
     names(rl) <- seqnamesPerGroup(grl, FALSE)
     strands <- strandPerGroup(grl, FALSE)
-    coverage <- NULL
+    coverage <- numeric() # Placeholder
     for (strand in unique(strands)) {
       strand_now <- ifelse(strand == "+", 1,2)
       if (length(reads) == 1) strand_now <- 1
@@ -564,9 +564,10 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
         temp_cov2 <- import.bw(reads[strand_now], as = "NumericList",
                               which = rl[strands == strand])
       }
-      coverage <- c(coverage, temp_cov2)
+      if (is.numeric(coverage)) {
+        coverage <- temp_cov2
+      } else coverage <- c(coverage, temp_cov2)
     }
-    if (is.null(coverage)) coverage <- numeric()
 
     # To data.table
     coverage <- data.table(count = unlist(coverage, use.names = FALSE))
