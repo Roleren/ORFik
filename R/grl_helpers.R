@@ -59,13 +59,13 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 #'                     strand = c("-", "-"))
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' seqnamesPerGroup(grl)
+#' seqnamesPerGroup(grl, FALSE)
 seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
-  if (keep.names) {
-    return(heads(seqnames(grl), 1L))
-  } else {
-    return(as.character(heads(seqnames(grl), 1L)))
+  if (!keep.names) {
+    return(as.character(grl@unlistData@seqnames)[grl@partitioning@end])
   }
+  return(grl@unlistData@seqnames[grl@partitioning@end])
 }
 
 #' Get first strand per GRangesList group
@@ -83,6 +83,7 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
 #'                     strand = c("-", "-"))
 #' grl <- GRangesList(tx1 = gr_plus, tx2 = gr_minus)
 #' strandPerGroup(grl)
+#' strandPerGroup(grl, FALSE)
 strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (!keep.names) {
