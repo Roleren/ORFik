@@ -510,6 +510,13 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' cov <- covRleFromGR(RFP)
 #' dt <- coveragePerTiling(grl, cov, is.sorted = TRUE)
 #'
+#' ## Random access by bigwig
+#' grl2 <- GRangesList(tx_1 = GRanges("chr1", IRanges(300, 500), "+"))
+#' df <- ORFik.template.experiment()
+#' # list of paired bigwigs, 1 file for + strand, 1 for - strand.
+#' bigwigs <- filepath(df[9,], "bigwig")
+#' # Auto detects which bigwig strand to use, unlist by [[1]]
+#' coveragePerTiling(grl2, bigwigs[[1]], is.sorted = TRUE, as.data.table = TRUE)
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE, as.data.table = FALSE,
                               withFrames = FALSE, weight = "score",
