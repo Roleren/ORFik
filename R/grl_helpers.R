@@ -424,7 +424,7 @@ unlistGrl <- function(grl) {
 
   grl_is_named <- !is.null(names(grl))
   res <- .unlistGrl(grl)
-  if (grl_is_named) {
+  if (grl_is_named & length(res) > 0) {
     gr_is_not_named <- is.null(names(res[1]))
     if (gr_is_not_named) {
       names(res) <- rep(names(grl), width(grl@partitioning))
