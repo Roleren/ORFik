@@ -974,7 +974,7 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
                                 gtf_path = getGtfPathFromTxdb(txdb, stop.error = stop.error)) {
   if (is(txdb, "experiment")) txdb <- txdb@txdb
-  if (tools::file_ext(txdb) != "db") return(NULL)
+  if (is.character(txdb) && tools::file_ext(txdb) != "db") return(NULL)
 
   create_time <-
   if (is.character(txdb)) {
