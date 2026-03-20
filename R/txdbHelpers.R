@@ -413,6 +413,7 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
   # Check for optimized paths
   optimized_path <- optimized_txdb_path(txdb, stop.error = FALSE)
   check_optimized <- !is.null(optimized_path) & !skip.optimized
+  optimized.rds.exists <- FALSE
 
   if (check_optimized) {
     formats <- c(".qs", ".rds")
@@ -973,6 +974,7 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
                                 gtf_path = getGtfPathFromTxdb(txdb, stop.error = stop.error)) {
   if (is(txdb, "experiment")) txdb <- txdb@txdb
+  if (tools::file_ext(txdb) != "db") return(NULL)
 
   create_time <-
   if (is.character(txdb)) {
