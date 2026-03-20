@@ -567,6 +567,10 @@ coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
                                transcripts = transcripts))
 }
 
+
+Views_fast <- function(cvg, uex, uex_subset = seq_along(uex)) {
+  Views(cvg, split(uex@ranges[uex_subset], uex@seqnames[uex_subset]))
+}
 #' coverageByTranscript with coverage input
 #'
 #' Extends the function with direct genome coverage input,
@@ -614,14 +618,18 @@ coverageByTranscriptC <- function (x, transcripts, ignore.strand = !strandMode(x
                 "This is not supported at the moment."))
     uex_cvg <- RleList(rep(IntegerList(1), length(uex)))
     if (length(transcripts) > 5e3) {
+      if (!all(cvg1@metadata$seqinfo@seqnames %in% uex@seqinfo@seqnames)) {
+        uex@seqinfo <- merge(uex@seqinfo, cvg1@metadata$seqinfo)
+        levels(uex@seqnames) <- uex@seqinfo@seqnames
+      }
       names(uex) <- seq_along(uex)
       # + strand
-      v <- Views(cvg1, uex[is_plus_ex])
+      v <- Views_fast(cvg1, uex, is_plus_ex)
       names(v) <- NULL
       r <- do.call(c, lapply(v[lengths(v) > 0], RleList))
       uex_cvg[as.integer(names(r))] <- r
       # - strand
-      v <- Views(cvg2, uex[is_minus_ex])
+      v <- Views_fast(cvg2, uex, is_minus_ex)
       names(v) <- NULL
       r <- do.call(c, lapply(v[lengths(v) > 0], RleList))
       uex_cvg[as.integer(names(r))] <- r
@@ -667,22 +675,27 @@ coverageByTranscriptSum <- function(x, transcripts, ignore.strand = !strandMode(
   uex_sum <- integer(length(uex))
   names(uex) <- seq_along(uex)
 
+  if (!all(cvg1@metadata$seqinfo@seqnames %in% uex@seqinfo@seqnames)) {
+    uex@seqinfo <- merge(uex@seqinfo, cvg1@metadata$seqinfo)
+    levels(uex@seqnames) <- uex@seqinfo@seqnames
+  }
+
   if (ignore.strand) {
-    stop("Not implemented yet")
-    strand(uex) <- "*"
-    v <- Views(cvg1, uex)
+    v <- Views_fast(cvg1, uex)
     names(v) <- NULL
     r <- unlist(lapply(v[lengths(v) > 0], sum))
     uex_sum[as.integer(names(r))] <- r
   }
   else {
-    strands <- as.character(strand(uex))
-    v <- Views(cvg1, uex[strands == "+"])
+    is_plus_ex <- strand(uex) == "+"
+
+    v <- Views_fast(cvg1, uex, is_plus_ex)
     names(v) <- NULL
     r <- unlist(lapply(v[lengths(v) > 0], sum))
     uex_sum[as.integer(names(r))] <- r
     if (!is.null(cvg2)) {
-      v <- Views(cvg2, uex[strands == "-"])
+      is_minus_ex <- strand(uex) == "-"
+      v <- Views_fast(cvg2, uex, is_minus_ex)
       names(v) <- NULL
       r <- unlist(lapply(v[lengths(v) > 0], sum))
       uex_sum[as.integer(names(r))] <- r
