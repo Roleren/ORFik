@@ -7,6 +7,7 @@ grl <- GRangesList("tx1_1" = ORF1, "tx1_2" = ORF2)
 tx <- resize(resize(grl[1], width = 50), width = 70, fix = "end")
 names(tx) <- "tx1"
 footprintsGood <- GRanges("1", IRanges(seq.int(21, 49, 3), width = 1), "+")
+seqlengths(footprintsGood) <- 100
 footprintsGood$size <- 29
 footprintsBad <- GRanges()
 footprintsMiss <- GRanges("1", IRanges(500, width = 1), "+")
@@ -135,3 +136,44 @@ test_that("regionPerReadLength works as intended", {
   expect_equal(nrow(grltest), 0)
   expect_equal(ncol(grltest), 3)
 })
+
+test_that("coverageByTranscriptC works as intended", {
+  cov <- covRleFromGR(footprintsGood)
+  coverage <- ORFik:::coverageByTranscriptC(cov, grl)
+  expect_is(coverage, "RleList")
+  expect_equal(length(coverage), length(grl))
+
+  # Speedup works
+  grl_5k <- rep(grl, 2501)
+  coverage <- ORFik:::coverageByTranscriptC(cov, grl_5k)
+  expect_is(coverage, "RleList")
+  expect_equal(length(coverage), length(grl_5k))
+  # Missing chromosome grl is added correctly
+  fp <- suppressWarnings(c(footprintsGood,
+                           GRanges("2", 1, "+", seqlengths = c("2" = 10), size = 29)))
+  cov <- covRleFromGR(fp)
+  coverage <- ORFik:::coverageByTranscriptC(cov, grl_5k)
+  expect_is(coverage, "RleList")
+  expect_equal(length(coverage), length(grl_5k))
+  # Unstranded (single)
+  cov <- covRle(f(cov), reverse = RleList())
+  coverage <- ORFik:::coverageByTranscriptC(cov, grl_5k)
+  expect_is(coverage, "RleList")
+  expect_equal(length(coverage), length(grl_5k))
+
+})
+
+test_that("coverageByTranscriptSum works as intended", {
+  cov <- covRleFromGR(footprintsGood)
+  coverage <- ORFik:::coverageByTranscriptSum(cov, grl)
+  expect_is(coverage, "integer")
+  expect_equal(length(coverage), length(grl))
+  expect_equal(coverage, c(tx1_1 = 10, tx1_2 = 7))
+
+  # Unstranded (single)
+  cov <- covRle(f(cov), reverse = RleList())
+  coverage <- ORFik:::coverageByTranscriptSum(cov, grl)
+  expect_is(coverage, "integer")
+  expect_equal(coverage, c(tx1_1 = 10, tx1_2 = 7))
+})
+

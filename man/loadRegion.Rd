@@ -13,7 +13,7 @@ loadRegion(
 )
 }
 \arguments{
-\item{txdb}{a TxDb object, ORFik experiment object or a path to one of:
+\item{txdb}{either a TxDb object, ORFik experiment object or a path to one of:
 (.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
 Only in the loadRegion function: if it is a GRangesList, it will return it self.}
 

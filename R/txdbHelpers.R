@@ -370,7 +370,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
 #' Adds another safety in that seqlevels will be set
 #'
 #' Load as GRangesList if input is not already GRangesList.
-#' @param txdb a TxDb object, ORFik experiment object or a path to one of:
+#' @param txdb either a TxDb object, ORFik experiment object or a path to one of:
 #'  (.gtf ,.gff, .gff2, .gff2, .db or .sqlite),
 #'  Only in the loadRegion function: if it is a GRangesList, it will return it self.
 #' @param part a character, one of: tx, ncRNA, mrna, leader, cds, trailer, intron,
@@ -408,79 +408,142 @@ loadRegion <- function(txdb, part = "tx", names.keep = NULL, by = "tx",
   if (is.grl(txdb)) return(txdb)
   if (length(part) != 1) stop("argument: (part) must be length 1,
                               use loadRegions for multi region loading!")
-  txdb <- loadTxdb(txdb)
+  part <- regionAliasMapSubset(part)
+
   # Check for optimized paths
   optimized_path <- optimized_txdb_path(txdb, stop.error = FALSE)
-  formats <- c(".qs", ".rds")
-  optimized <- !is.null(optimized_path) & !skip.optimized
+  check_optimized <- !is.null(optimized_path) & !skip.optimized
+  optimized.rds.exists <- FALSE
+
+  if (check_optimized) {
+    formats <- c(".qs", ".rds")
+    optimized.rds <- paste0(optimized_path, "_", part, formats)
+    optimized.rds.exists <- file.exists(optimized.rds)
+  }
+
+
   region <-
-    if (part %in% c("tx", "transcript", "transcripts")) {
-      optimized.rds <- paste0(optimized_path, "_", "tx", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else exonsBy(txdb, by = "tx", use.names = TRUE)
-    } else if (part %in% c("leader", "leaders", "5'", "5", "5utr",
-                           "fiveUTRs", "5pUTR")) {
-      optimized.rds <- paste0(optimized_path, "_", "leaders", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else fiveUTRsByTranscript(txdb, use.names = TRUE)
-    } else if (part %in% c("cds", "CDS", "mORF")) {
-      optimized.rds <- paste0(optimized_path, "_", "cds", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else cdsBy(txdb, by = "tx", use.names = TRUE)
-    } else if (part %in% c("trailer", "trailers", "3'", "3", "3utr",
-                           "threeUTRs", "3pUTR")) {
-      optimized.rds <- paste0(optimized_path, "_", "trailers", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else threeUTRsByTranscript(txdb, use.names = TRUE)
-    } else if (part %in% c("intron", "introns")) {
-      intronsByTranscript(txdb, use.names = TRUE)
-    }  else if (part %in% c("ncRNA", "ncrna")) {
-      optimized.rds <- paste0(optimized_path, "_", "ncRNA", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else {
-        tx <- exonsBy(txdb, by = "tx", use.names = TRUE)
-        tx[!(names(tx) %in% names(cdsBy(txdb, use.names = TRUE)))]
-      }
-    } else if (part %in% c("mrna", "mrnas", "mRNA", "mRNAs")) {
-      optimized.rds <- paste0(optimized_path, "_", "mrna", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else exonsBy(txdb, by = "tx", use.names = TRUE)[names(cdsBy(txdb, use.names = TRUE))]
-    } else if (part %in% c("uorf", "uorfs")) {
-      optimized.rds <- paste0(optimized_path, "_", "uorfs", formats)
-      optimized.rds.exists <- file.exists(optimized.rds)
-      if (optimized & any(optimized.rds.exists)) {
-        read_RDSQS(optimized.rds[optimized.rds.exists][1])
-      } else stop("uORFs must always exist before calling this function, see ?findUORFs_exp")
-    } else stop("invalid: must be tx, leader, cds, trailer, introns, ncRNA, uorf or mrna")
+  if (any(optimized.rds.exists)) {
+    read_RDSQS(optimized.rds[optimized.rds.exists][1])
+  } else {
+    txdb <- loadTxdb(txdb)
+    loadRegionGenomicFeatures(txdb, part, by)
+  }
+
 
   if (by == "gene") {
     names(region) <- txNamesToGeneNames(names(region), txdb)
   }
+  region <- subsetRegion(region, names.keep, part)
+
+  if (!is.character(txdb)) {
+    seqlev_region <- seqlevels(region)
+    seqlevels_txdb <- seqlevels(txdb)
+    if (all(seqlev_region %in% seqlevels_txdb)) { # Avoid warnings
+      if (!identical(seqlev_region, seqlevels_txdb)) {
+        seqlevels(region) <- seqlevels_txdb
+      }
+    }
+  }
+
+  return(region)
+}
+
+regionAliasMap <- function() {
+  rbindlist(list(
+    data.table(main = "tx",
+               alias = c("tx", "transcript", "transcripts")),
+    data.table(main = "leaders",
+               alias = c("leader", "leaders", "5'", "5",
+                         "5utr", "fiveUTRs", "5pUTR")),
+    data.table(main = "cds",
+               alias = c("cds", "CDS", "mORF")),
+    data.table(main = "trailers",
+               alias = c("trailer", "trailers", "3'", "3",
+                         "3utr", "threeUTRs", "3pUTR")),
+    data.table(main = "introns",
+               alias = c("intron", "introns")),
+    data.table(main = "ncrna",
+               alias = c("ncRNA", "ncrna")),
+    data.table(main = "mrna",
+               alias = c("mRNA", "mRNAs", "mrna", "mrnas")),
+    data.table(main = "uorfs",
+               alias = c("uorf", "uorfs"))
+  ))
+}
+
+regionAliasMapSubset <- function(part, map_dt = regionAliasMap()) {
+  if (length(part) != 1L)
+    stop("argument 'part' must be length 1")
+
+  hit <- map_dt[alias == part, main]
+
+  if (!length(hit)) {
+    stop("Invalid part: ", part,
+         "\nValid options:\n",
+         paste(map_dt$alias, collapse = ", "))
+  }
+
+  hit[[1]]
+}
+
+loadRegionGenomicFeatures <- function(txdb, part = "tx", by = "tx") {
+  message("Loading region '", part, "' through GenomicFeatures..")
+  loaders <- list(
+    tx = list(
+      cache = "tx",
+      fun   = function() GenomicFeatures::exonsBy(txdb, by = by, use.names = TRUE)
+    ),
+    leaders = list(
+      cache = "leaders",
+      fun   = function() GenomicFeatures::fiveUTRsByTranscript(txdb, use.names = TRUE)
+    ),
+    cds = list(
+      cache = "cds",
+      fun   = function() GenomicFeatures::cdsBy(txdb, by = by, use.names = TRUE)
+    ),
+    trailers = list(
+      cache = "trailers",
+      fun   = function() GenomicFeatures::threeUTRsByTranscript(txdb, use.names = TRUE)
+    ),
+    introns = list(
+      cache = NULL,
+      fun   = function() GenomicFeatures::intronsByTranscript(txdb, use.names = TRUE)
+    ),
+    ncrna = list(
+      cache = "ncRNA",
+      fun   = function() {
+        tx <- GenomicFeatures::exonsBy(txdb, by = by, use.names = TRUE)
+        cds_names <- names(GenomicFeatures::cdsBy(txdb, by = by, use.names = TRUE))
+        tx[!(names(tx) %in% cds_names)]
+      }
+    ),
+    mrna = list(
+      cache = "mrna",
+      fun   = function() {
+        tx <- GenomicFeatures::exonsBy(txdb, by = by, use.names = TRUE)
+        cds_names <- names(GenomicFeatures::cdsBy(txdb, by = by, use.names = TRUE))
+        tx[cds_names]
+      }
+    ),
+    uorfs = list(
+      cache = "uorfs",
+      fun   = function() stop("uORFs must always exist before calling this function, see ?findUORFs_exp")
+    )
+  )
+  spec <- loaders[[part]]
+  return(spec$fun())
+}
+
+subsetRegion <- function(region, names.keep, part) {
   if (!is.null(names.keep)) { # If subset
     subset <-
-    if (part %in% c("uorf", "uorfs")) {
-      txNames(region) %in% names.keep
-    } else names(region) %in% names.keep
+      if (part %in% c("uorf", "uorfs")) {
+        txNames(region) %in% names.keep
+      } else names(region) %in% names.keep
     if (length(subset) == 0)
       stop("Found no kept transcript with given subset of part:", part)
     region <- region[subset]
-  }
-  if (all(seqlevels(region) %in% seqlevels(txdb))) { # Avoid warnings
-    if (!identical(seqlevels(region), seqlevels(txdb))) {
-      seqlevels(region) <- seqlevels(txdb)
-    }
   }
   return(region)
 }
@@ -910,17 +973,38 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 #' @keywords internal
 optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
                                 gtf_path = getGtfPathFromTxdb(txdb, stop.error = stop.error)) {
-  if (is.null(gtf_path)) {
-    return(NULL)
+  if (is(txdb, "experiment")) txdb <- txdb@txdb
+  if (is.character(txdb) && tools::file_ext(txdb) != "db") return(NULL)
+
+  create_time <-
+  if (is.character(txdb)) {
+    gtf_path <- sub("\\.db$", "", txdb)
+    create_time_txdb(txdb)
+  } else {
+    if (is.null(gtf_path)) {
+      return(NULL)
+    }
+    gsub(" \\(.*| |:", "", metadata(txdb)[metadata(txdb)[, 1] == "Creation time", 2])
   }
+
   base_dir <- file.path(dirname(gtf_path), "ORFik_optimized")
-  base_path <- file.path(base_dir, basename(remove.file_ext(gtf_path)))
-  creation.time <- gsub(" \\(.*| |:", "",
-                        metadata(txdb)[metadata(txdb)[,1] == "Creation time",2])
+  base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))
+
   if (create.dir) {
     dir.create(base_dir, showWarnings = FALSE, recursive = TRUE)
   }
-  return(paste0(base_path, "_", creation.time))
+  return(paste0(base_path, "_", create_time))
+}
+
+#' Load creation time of txdb safely
+#' @return a character string of time
+#' @importFrom AnnotationDbi dbFileConnect dbmeta dbFileDisconnect
+#' @keywords internal
+create_time_txdb <- function(txdb_path) {
+  con <- AnnotationDbi::dbFileConnect(txdb_path)
+  create_time <- AnnotationDbi::dbmeta(con, 'Creation time')
+  AnnotationDbi::dbFileDisconnect(con)
+  return(gsub(" \\(.*| |:", "", create_time))
 }
 
 #' Load length and names of all transcripts
@@ -940,8 +1024,7 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
 #' @return a data.table of loaded lengths 8 columns,
 #' 1 row per transcript isoform.
 #' @importFrom data.table setDT
-#' @importFrom fst read_fst
-#' @importFrom fst write_fst
+#' @importFrom fst read_fst write_fst
 #' @export
 #' @examples
 #' dt <- optimizedTranscriptLengths(ORFik.template.experiment())
@@ -951,16 +1034,15 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
                                        with.utr3_len = TRUE,
                                        create.fst.version = FALSE,
                                        optimized_path = optimized_txdb_path(txdb, stop.error = FALSE)) {
-  txdb <- loadTxdb(txdb)
 
   found_gtf <- !is.null(optimized_path)
   possible_fst <- paste0(optimized_path, "_txLengths.fst")
   if (found_gtf && file.exists(possible_fst)) { # If fst exists
-    return(setDT(fst::read_fst(possible_fst)))
+    return(fst::read_fst(possible_fst, as.data.table = TRUE))
   } else if (found_gtf && create.fst.version) { # If make fst
     tx <- data.table::setDT(
       GenomicFeatures::transcriptLengths(
-        txdb, with.cds_len = TRUE,
+        loadTxdb(txdb), with.cds_len = TRUE,
         with.utr5_len = with.utr5_len,
         with.utr3_len = with.utr3_len))
     # Validation save location
@@ -977,7 +1059,7 @@ optimizedTranscriptLengths <- function(txdb, with.utr5_len = TRUE,
   # Else load normally
   return(data.table::setDT(
     GenomicFeatures::transcriptLengths(
-      txdb, with.cds_len = TRUE,
+      loadTxdb(txdb), with.cds_len = TRUE,
       with.utr5_len = with.utr5_len,
       with.utr3_len = with.utr3_len)))
 }

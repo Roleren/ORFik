@@ -510,6 +510,13 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' cov <- covRleFromGR(RFP)
 #' dt <- coveragePerTiling(grl, cov, is.sorted = TRUE)
 #'
+#' ## Random access by bigwig
+#' grl2 <- GRangesList(tx_1 = GRanges("chr1", IRanges(300, 500), "+"))
+#' df <- ORFik.template.experiment()
+#' # list of paired bigwigs, 1 file for + strand, 1 for - strand.
+#' bigwigs <- filepath(df[9,], "bigwig")
+#' # Auto detects which bigwig strand to use, unlist by [[1]]
+#' coveragePerTiling(grl2, bigwigs[[1]], is.sorted = TRUE, as.data.table = TRUE)
 coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               keep.names = TRUE, as.data.table = FALSE,
                               withFrames = FALSE, weight = "score",
@@ -551,11 +558,11 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
     rl <- ranges(grl)
     names(rl) <- seqnamesPerGroup(grl, FALSE)
     strands <- strandPerGroup(grl, FALSE)
-    coverage <- NumericList()
+    coverage <- numeric() # Placeholder
     for (strand in unique(strands)) {
       strand_now <- ifelse(strand == "+", 1,2)
+      if (length(reads) == 1) strand_now <- 1
       if (strand_now == 2) {
-        if (length(reads) == 1) strand_now <- 1
         temp_cov <- import.bw(reads[strand_now], as = "NumericList",
                               which = rl[strands == strand])
         temp_cov2 <- rev(temp_cov)
@@ -564,7 +571,9 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
         temp_cov2 <- import.bw(reads[strand_now], as = "NumericList",
                               which = rl[strands == strand])
       }
-      coverage <- c(coverage, temp_cov2)
+      if (is.numeric(coverage)) {
+        coverage <- temp_cov2
+      } else coverage <- c(coverage, temp_cov2)
     }
 
     # To data.table

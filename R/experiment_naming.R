@@ -22,7 +22,8 @@ libNames <- function() {
            "Footprint", "ribo_profile", "footprint", "^Ribo_", "^ribo_", "^Ribo ","^ribo_", "_ribo_", "_Ribo_",
            "_ribo$", "_Ribo$", "\\.ribo", "^Rib\\.prof", "RiboProf", "Ribo-Prof", "-Ribo-", "-Ribo_", "_Ribo[0-9]$",
            "^RP ", " RP ", "_RP_", "^FP_", "^FP\\.","^fp_", "_fp_", "_FP_", "_FP$", "_FP[0-9]$",
-           "RP$", "rp$", "rpfs ", "_rpf_", "_rpf$", " ribo-", "_rp_", "\\.rp\\.", "_RF", "RIBOSEQ"),
+           "RP$", "rp$", "rpfs ", "_rpf_", "_rpf$", " ribo-", "_rp_", "\\.rp\\.", "_RF", "RIBOSEQ",
+           "RiboLace"),
          c("QTI"),
          c("CAGE", "cage", "TSS", "tss"),
          c("80S", "80s","LSU"),
@@ -40,7 +41,7 @@ libNames <- function() {
          c("GRO-seq", "GROseq", "PRO-seq", "PROseq"),
          c("RiboTag", "TRAP"),
          c("RiboMeth"),
-         c("slam"),
+         c("slam", "SLAM"),
          c("polysome"),
          c("disome"),
          c("trisome")
@@ -78,11 +79,11 @@ stageNames <- function(zebrafish.stages = FALSE) {
                   "5h","6h", "7h","8h","9h","10h",
                   "12h", "24h", "25h", "27h", "28h",  "33h",
                   "2d", "3d", "4d", "5d", "6d", "10d", "21d",
-                  "24d")
+                  "24d", "30d")
   }
 
   allNames <-
-    list(c("unfertilized", "Unfertilized", "_0h", "_00h", "0hpf", "^0h_", " 0 h ", " 0h ", "0hrs"),
+    list(c("unfertilized", "Unfertilized", "_0h", "_00h", "0hpf", "^0h_", " 0 h ", " 0h ", "0hrs", "day0"),
          c("_fertilized", "_Fertilized"),
          c("2to4Cell", "2to4cell", "2to4_cell", "2-4cell", "2-4Cell", "2-4_cell"),
          c("4cell", "4Cell", "4_cell", "_1h", "_01h", "1hpf", "^1h_", " 1 h ", " 1h "),
@@ -109,7 +110,8 @@ stageNames <- function(zebrafish.stages = FALSE) {
          c("prim20", "prim_20", "33hpf", "_33h", "^33h_"),
          c("2dpf", "_48h", "_48hpf", "^48h_", " 48 h ", " 48h "),
          c("3dpf", " 72h ", "48 hour"),
-         "4dpf", "5dpf", "6dpf", "10dpf", "21dpf", "24dpf"
+         "4dpf", "5dpf", "6dpf", "10dpf", "21dpf", "24dpf",
+         c("30d", "30days", "day30")
          )
   dt <- data.table(mainName, allNames)
   return(dt)
@@ -126,7 +128,7 @@ stageNames <- function(zebrafish.stages = FALSE) {
 #' @keywords internal
 tissueNames <- function() {
   mainName <- c("adipose", "amygdala","brain", "bladder", "blood", "bone","breast",
-    "colon", "cortex", "eye", "frontal_lobe", "heart", "intestin",
+    "cervix","colon", "cortex", "eye", "frontal_lobe", "heart", "intestin",
     "kidney", "liver", "lung", "melanocyte", "mesenchymal", "muscle",
     "myeloid","ovary", "pancrease","prostate",
     "rectum", "retina","testis","urunary", "vagina", "skin", "tongue", "throat",
@@ -141,6 +143,7 @@ tissueNames <- function() {
          c("blood", "Blood"),
          c("bone", "Bone", "osteosarcoma", "osteogenic"),
          c("breast", "Breast"),
+         c("cervix", "Cervix"),
          c("colon", "Colon"),
          c("cortex", "Cortex"),
          c("eye", "Eye"),
@@ -200,7 +203,7 @@ tissueNames <- function() {
 #' @keywords internal
 cellLineNames <- function(convertToTissue = FALSE) {
   if (convertToTissue) {
-    mainName <- c("ovary", "lung", "lung","breast", "kidney", "ovary",
+    mainName <- c("ovary", "lung", "lung","breast", "kidney", "cervix",
                   "liver", "NONE", "colon", "breast", "blood", "liver",
                   "NONE", "bone", "breast", "breast", "breast", "blood",
                   "throat", "pancreas", "blood", "skin", "breast",
@@ -420,10 +423,10 @@ fractionNames <- function() {
   mainName <- c("cyto", "ER", "mito", "nuc","dmso", "Tg",
                 "auxin", "silvestrol", "fasting", "DTT")
   allNames <-
-    list(c("cyto", "Cyto"),
+    list(c("cyto", "Cyto", "Cytosol"),
          c("ER"),
          c("mito"),
-         c("_nuc_", "nuclear"),
+         c("_nuc_", "nuclear", "Nuclear"),
          c("DMSO", "dmso"),
          c("Thapsigargin", "thapsigargin", " Tg "),
          c("auxin"),

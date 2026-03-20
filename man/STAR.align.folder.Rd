@@ -29,6 +29,7 @@ STAR.align.folder(
   keep.contaminants.type = c("bam", "fastq")[1],
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
+  verbose = TRUE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
@@ -189,6 +190,9 @@ Only applies to last library, will always keep for all libraries before last.
 Alternative useful for MAC machines especially is "noShared", for machines
 that do not support shared memory index, usually gives error: "abort trap 6".}
 
+\item{verbose}{logical, default TRUE. Print starting time, full system call
+and line separated bash script parameters.}
+
 \item{script.folder}{location of STAR index script,
 default internal ORFik file. You can change it and give your own if you
 need special alignments.}
@@ -227,25 +231,31 @@ i.e. it auto-trims." So trimming can be skipped for longer reads.
 \examples{
 # First specify directories wanted (temp directory here)
 config_file <- tempfile()
-#config.save(config_file, base.dir = tempdir())
-#config <- ORFik::config(config_file)
+config.save(config_file, base.dir = tempdir())
+config <- ORFik::config(config_file)
 
 ## Yeast RNA-seq samples (small genome)
-#project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
-#annotation.dir <- project["ref"]
-#fastq.input.dir <- project["fastq RNA-seq"]
-#bam.output.dir <- project["bam RNA-seq"]
+project <- ORFik::config.exper("chalmers_2012", "Saccharomyces_cerevisiae", "RNA-seq", config)
+annotation.dir <- project["ref"]
+fastq.input.dir <- project["fastq RNA-seq"]
+bam.output.dir <- project["bam RNA-seq"]
 
 ## Download some SRA data and metadata (subset to 50k reads)
-# info <- download.SRA.metadata("SRP012047", outdir = conf["fastq RNA-seq"])
+# info <- download.SRA.metadata("SRP012047", outdir = fastq.input.dir)
 # info <- info[1:2,] # Subset to 2 first libraries
 # download.SRA(info, fastq.input.dir, rename = FALSE, subset = 50000)
 
-## No contaminant depletion:
+## Get annotation & STAR index
 # annotation <- getGenomeAndAnnotation("Saccharomyces cerevisiae", annotation.dir)
 # index <- STAR.index(annotation)
+## First let's align only first Run (paired-end)
+# R1_R2 <- list.files(fastq.input.dir, info$Run[1], full.names = TRUE)
+# STAR.align.single(R1_R2[1], R1_R2[2], bam.output.dir, index.dir = index)
+# list.files(bam.output.dir)
+# list.files(file.path(bam.output.dir, "aligned"))
+## Identical to first pair of full folder call:
 # STAR.align.folder(fastq.input.dir, bam.output.dir,
-#                   index, paired.end = FALSE) # Trim, then align to genome
+#                   index, paired.end = TRUE) # Trim, then align to genome
 
 ## Human Ribo-seq sample (NB! very large genome and libraries!)
 ## Requires >= 32 GB memory

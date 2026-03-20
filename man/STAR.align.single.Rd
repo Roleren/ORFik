@@ -27,6 +27,7 @@ STAR.align.single(
   keep.contaminants = FALSE,
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
+  verbose = TRUE,
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik")
 )
 }
@@ -172,6 +173,9 @@ For STAR.align.folder:\cr
 Only applies to last library, will always keep for all libraries before last.
 Alternative useful for MAC machines especially is "noShared", for machines
 that do not support shared memory index, usually gives error: "abort trap 6".}
+
+\item{verbose}{logical, default TRUE. Print starting time, full system call
+and line separated bash script parameters.}
 
 \item{script.single}{location of STAR single file alignment script,
 default internal ORFik file. You can change it and give your own if you
