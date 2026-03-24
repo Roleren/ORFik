@@ -140,7 +140,7 @@ getGAlignments <- function(df, seqinfo = NULL) {
       names(mcols) <- names(df)[5]
     }
   }
-  if (!is(df$strand, "factor") | identical(levels(df$strand), c("+", "-", "*"))){
+  if (!is(df$strand, "factor") | !identical(levels(df$strand), c("+", "-", "*"))){
     df[, strand := factor(strand, levels = c("+", "-", "*"))]
   }
 
