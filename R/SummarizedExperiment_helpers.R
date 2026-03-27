@@ -167,14 +167,17 @@ loadRegionCustom <- function(df, region, geneOrTxNames = "tx", longestPerGene= T
 #' alternative is "fpkm", "log2fpkm" or "log10fpkm"
 #' @param collapse a logical/character (default FALSE), if TRUE all samples
 #' within the group SAMPLE will be collapsed to one. If "all", all
-#' groups will be merged into 1 column called merged_all. Collapse is defined
-#' as rowSum(elements_per_group) / ncol(elements_per_group)
+#' groups will be merged into 1 column called merged_all.
+#' Collapse is is by default mean normalized,
+#' defined as ceiling(rowSum(elements_per_group) / ncol(elements_per_group))
+#' @param mean_collapse logical, default TRUE. Then return mean normalized
+#' counts over the group, if FALSE give pure sum of the collapse group.
 #' @import SummarizedExperiment DESeq2
 #' @export
 #' @return a DEseq summerizedExperiment object (transcriptNormalized)
 #'  or matrix (if fpkm input)
 scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
-                                      collapse = FALSE) {
+                                      collapse = FALSE, mean_collapse = TRUE) {
   if (is.factor(final$SAMPLE)) {
     lvls <- levels(final$SAMPLE) %in% unique(colData(final)$SAMPLE)
     final$SAMPLE <- factor(final$SAMPLE, levels = levels(final$SAMPLE)[lvls])
@@ -191,9 +194,11 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
       nlibs <- ncol(final)
     }
     # Number of samples per group as matrix
-
-    assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
-  } else collapsedAll <- final
+    if (mean_collapse) {
+      assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
+    }
+    final <- collapsedAll
+  }
 
   only.one.group <- (length(unique(collapsedAll$SAMPLE)) == 1) |
     (ncol(collapsedAll) == 1)
@@ -277,22 +282,27 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' # ORFikQC(df)
 #'
 #' # Get count Table of mrnas
-#' # countTable(df, "mrna")
+#' countTable(df, "mrna")
 #' # Get count Table of cds
-#' # countTable(df, "cds")
+#' countTable(df, "cds")
 #' # Get count Table of mrnas as fpkm values
-#' # countTable(df, "mrna", type = "count")
-#' # Get count Table of mrnas with collapsed replicates
-#' # countTable(df, "mrna", collapse = TRUE)
+#' countTable(df, "mrna", type = "count")
+#' # Get count Table of mrnas with collapsed replicates, mean values
+#' countTable(df, "mrna", collapse = TRUE)
+#' # Get count Table of mrnas with collapsed replicates, raw sum
+#' countTable(df, "mrna", collapse = TRUE, mean_collapse = FALSE)
 #' # Get count Table of mrnas as summarizedExperiment
-#' # countTable(df, "mrna", type = "summarized")
+#' countTable(df, "mrna", type = "summarized")
 #' # Get count Table of mrnas as DESeq2 object,
 #' # for differential expression analysis
-#' # countTable(df, "mrna", type = "deseq")
+#' dds <- countTable(df, "mrna", type = "deseq")
+#' design(dds) # DESeq design
+#' design(df) # It is retrieved from ORFik exp design internally
 countTable <- function(df, region = "mrna", type = "count",
                        collapse = FALSE,
                        count.folder = "default",
-                       full_path = countTablePath(df, region, count.folder)) {
+                       full_path = countTablePath(df, region, count.folder),
+                       mean_collapse = TRUE) {
   df.temp <- attr(full_path, "experiment")
   if (length(full_path) == 1) {
     res <- read_RDSQS(full_path)
@@ -307,7 +317,7 @@ countTable <- function(df, region = "mrna", type = "count",
     is_ribo <- any(c("RFP", "RPF", "LSU","80S") %in% colData(res)$libtype, na.rm = TRUE)
     if(count.folder != "pshifted" & is_ribo)
       message("Loading default 80S counts, update count.folder to pshifted if wanted?")
-    if (type == "count") return(as.data.table(assay(res)))
+    if (type == "count" && identical(collapse, FALSE)) return(as.data.table(assay(res)))
 
     res <- metadata_count_table(res, df.temp, type)
     # Give important sanity check info:
@@ -315,15 +325,10 @@ countTable <- function(df, region = "mrna", type = "count",
     # Decide output format
     if (type == "summarized") return(res)
     if (type == "deseq") {
-      # remove replicate from formula
-      formula <- colnames(colData(res))
-      if ("replicate" %in% formula)
-        formula <- formula[-grep("replicate", formula)]
-      formula <- as.formula(paste(c("~", paste(formula,
-                                  collapse = " + ")), collapse = " "))
-      return(DESeqDataSet(res, design = formula))
+      design <- ORFik::design(df, batch.correction.design = FALSE, as.formula = TRUE)
+      return(DESeqDataSet(res, design = design))
     }
-    ress <- scoreSummarizedExperiment(res, type, collapse)
+    ress <- scoreSummarizedExperiment(res, type, collapse, mean_collapse)
     if (is(ress, "matrix")) {
       ress <- as.data.table(ress)
     } else { # is deseq
