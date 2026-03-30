@@ -86,6 +86,7 @@ makeTxdbFromGenome <- function(gtf, genome = NULL, organism,
 
   if (gene_symbols) {
     makeSymbols(txdb, symbols_file_out_path, uniprot_id = FALSE)
+    makeBiotype(gtf)
   }
 
   if (return) return(txdb)
@@ -108,6 +109,21 @@ makeSymbols <- function(txdb, symbols_file_out_path = file.path(dirname(getGtfPa
 
   if (nrow(symbols) > 0) fst::write_fst(symbols, symbols_file_out_path)
   return(symbols)
+}
+
+#' Make Gene biotype from gtf.
+#' @inheritParams loadTxdb
+#' @inheritParams makeTxdbFromGenome
+#' @param biotype_file_out_path path to save, default \code{file.path(dirname(getGtfPathFromTxdb(txdb, stop.error = TRUE)), "gene_symbol_tx_table.fst")}
+#' @return the data.table of gene_id and biotype
+makeBiotype <- function(gtf, biotype_file_out_path =  file.path(dirname(gtf), "biotype_per_gene.fst")) {
+  tx_full <- rtracklayer::import(gtf)
+  tx_full <- as.data.table(tx_full)
+  tx_full <- tx_full[type == "gene", .(gene_id, biotype = gene_biotype)]
+  tx_full <- unique(tx_full)
+
+  if (nrow(tx_full) > 0) fst::write_fst(tx_full, biotype_file_out_path)
+  return(tx_full)
 }
 
 makeTxdbTemplate <- function(gtf, genome = NULL, organism) {
