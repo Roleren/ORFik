@@ -118,7 +118,15 @@ makeSymbols <- function(txdb, symbols_file_out_path = file.path(dirname(getGtfPa
 #' @return the data.table of gene_id and biotype
 makeBiotype <- function(gtf, biotype_file_out_path =  file.path(dirname(gtf), "biotype_per_gene.fst")) {
   tx_full <- rtracklayer::import(gtf)
-  tx_full <- as.data.table(tx_full)
+  tx_full <- as.data.table(mcols(tx_full))
+  stopifnot("gene_biotype" %in% colnames(tx_full))
+  if (!("gene_id" %in% colnames(tx_full))) {
+    ID_exists <- "ID" %in% colnames(tx_full)
+    if (ID_exists) {
+      tx_full[, gene_id := ID]
+    } else stop("Annotation file (GTF/GFF) had neither 'gene_id' or 'ID' column,
+                no way to assign gene ids.")
+  }
   tx_full <- tx_full[type == "gene", .(gene_id, biotype = gene_biotype)]
   tx_full <- unique(tx_full)
 
