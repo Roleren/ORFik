@@ -450,7 +450,36 @@ setMethod("symbols",
               return(read_fst(cand_path, as.data.table = TRUE))
             } else {
               message("Gene symbols not created, run ",
-              "ORFik:::makeTxdbFromGenome(gene_symbols = TRUE)")
+                      "ORFik:::makeTxdbFromGenome(gtf, genome, organism , gene_symbols = TRUE)
+                      or ORFik:::makeSymbols directly")
+              return(data.table())
+            }
+          }
+)
+
+#' Get ORFik experiment gene biotype
+#'
+#' Loads premade fst table at path:
+#' file.path(refFolder(x), "biotype_per_gene.fst")
+#' @param x an ORFik \code{\link{experiment}}
+#' @return a data.table with gene id, gene symbols and tx ids (3 columns)
+#' @export
+#' @examples
+#' df <- ORFik.template.experiment()
+#' symbols(df)
+setGeneric("biotype", function(x) standardGeneric("biotype"))
+
+#' @inherit QCfolder
+setMethod("biotype",
+          "experiment",
+          function(x) {
+            cand_path <- file.path(refFolder(x), "biotype_per_gene.fst")
+            if (file.exists(cand_path)) {
+              return(read_fst(cand_path, as.data.table = TRUE))
+            } else {
+              message("Gene biotype speedup not created, run ",
+                      "ORFik:::makeTxdbFromGenome(gtf, genome, organism , gene_symbols = TRUE)
+                      or ORFik:::makeBiotype directly")
               return(data.table())
             }
           }

@@ -7,7 +7,8 @@
 scoreSummarizedExperiment(
   final,
   score = "transcriptNormalized",
-  collapse = FALSE
+  collapse = FALSE,
+  mean_collapse = TRUE
 )
 }
 \arguments{
@@ -19,8 +20,12 @@ alternative is "fpkm", "log2fpkm" or "log10fpkm"}
 
 \item{collapse}{a logical/character (default FALSE), if TRUE all samples
 within the group SAMPLE will be collapsed to one. If "all", all
-groups will be merged into 1 column called merged_all. Collapse is defined
-as rowSum(elements_per_group) / ncol(elements_per_group)}
+groups will be merged into 1 column called merged_all.
+Collapse is is by default mean normalized,
+defined as ceiling(rowSum(elements_per_group) / ncol(elements_per_group))}
+
+\item{mean_collapse}{logical, default TRUE. Then return mean normalized
+counts over the group, if FALSE give pure sum of the collapse group.}
 }
 \value{
 a DEseq summerizedExperiment object (transcriptNormalized)

@@ -10,7 +10,8 @@ countTable(
   type = "count",
   collapse = FALSE,
   count.folder = "default",
-  full_path = countTablePath(df, region, count.folder)
+  full_path = countTablePath(df, region, count.folder),
+  mean_collapse = TRUE
 )
 }
 \arguments{
@@ -72,18 +73,22 @@ df <- ORFik.template.experiment()
 # ORFikQC(df)
 
 # Get count Table of mrnas
-# countTable(df, "mrna")
+countTable(df, "mrna")
 # Get count Table of cds
-# countTable(df, "cds")
+countTable(df, "cds")
 # Get count Table of mrnas as fpkm values
-# countTable(df, "mrna", type = "count")
-# Get count Table of mrnas with collapsed replicates
-# countTable(df, "mrna", collapse = TRUE)
+countTable(df, "mrna", type = "count")
+# Get count Table of mrnas with collapsed replicates, mean values
+countTable(df, "mrna", collapse = TRUE)
+# Get count Table of mrnas with collapsed replicates, raw sum
+countTable(df, "mrna", collapse = TRUE, mean_collapse = FALSE)
 # Get count Table of mrnas as summarizedExperiment
-# countTable(df, "mrna", type = "summarized")
+countTable(df, "mrna", type = "summarized")
 # Get count Table of mrnas as DESeq2 object,
 # for differential expression analysis
-# countTable(df, "mrna", type = "deseq")
+dds <- countTable(df, "mrna", type = "deseq")
+design(dds) # DESeq design
+design(df) # It is retrieved from ORFik exp design internally
 }
 \seealso{
 Other countTable: 
