@@ -124,7 +124,7 @@ makeBiotype <- function(gtf, biotype_file_out_path =  file.path(dirname(gtf), "b
   if (!("gene_biotype" %in% colnames(tx_full))) {
     biotype_exists <- "biotype" %in% colnames(tx_full)
     if (biotype_exists) {
-      tx_full[, gene_id := biotype]
+      tx_full[, gene_biotype := biotype]
     } else stop("Annotation file (GTF/GFF) had neither 'gene_biotype' or 'biotype' column,
                 no way to assign gene biotypes.")
   }
