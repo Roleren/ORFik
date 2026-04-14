@@ -466,7 +466,7 @@ setMethod("symbols",
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()
-#' symbols(df)
+#' biotype(df)
 setGeneric("biotype", function(x) standardGeneric("biotype"))
 
 #' @inherit QCfolder

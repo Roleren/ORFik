@@ -198,7 +198,9 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
       assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
     }
     final <- collapsedAll
-  }
+  } else collapsedAll <- final
+
+  if (score == "count") return(collapsedAll)
 
   only.one.group <- (length(unique(collapsedAll$SAMPLE)) == 1) |
     (ncol(collapsedAll) == 1)
@@ -268,7 +270,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' Always make the location of the folder directly
 #' inside the bam file directory!
 #' @param full_path Full path to countTable, default: countTablePath(df, region, count.folder)
-#' @return a data.table/SummarizedExperiment/DESeq object
+#' @return a data.table/SummarizedExperiment/DESeqDataset object
 #' of columns as counts / normalized counts per library, column name
 #' is name of library. Rownames must be unique for now. Might change.
 #' @importFrom DESeq2 DESeqDataSet
