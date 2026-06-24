@@ -1020,12 +1020,24 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
   }
 
   base_dir <- file.path(dirname(gtf_path), "ORFik_optimized")
-  base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))
+  # New way of naming
+  base_path <- file.path(base_dir, basename(gtf_path))
+
+  full_prefix <- paste0(base_path, "_", create_time)
+  if (dir.exists(base_dir)) {
+    files <- list.files(base_dir)
+    hits <- grep(basename(full_prefix), files, fixed = T)
+    if (length(hits) == 0) {
+      # Old way of naming
+      base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))
+      full_prefix <- paste0(base_path, "_", create_time)
+    }
+  }
 
   if (create.dir) {
     dir.create(base_dir, showWarnings = FALSE, recursive = TRUE)
   }
-  return(paste0(base_path, "_", create_time))
+  return(full_prefix)
 }
 
 #' Load creation time of txdb safely
