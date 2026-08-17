@@ -432,11 +432,17 @@ find_url_ebi <- function(SRR, stop.on.error = FALSE, study = NULL,
 find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE,
                               ebi_file_format = c("fastq_ftp", "sra_ftp")[1],
                               convert_to_ascp = FALSE) {
-  stopifnot(ebi_file_format %in% c("fastq_ftp", "sra_ftp"))
+  stopifnot(ebi_file_format %in% c("fastq_ftp", "sra_ftp", "fastq_aspera", "sra_aspera"))
+  requested_format <- ebi_file_format
+  fallback_format <- ebi_file_format
+  if (convert_to_ascp && grepl("_ftp$", ebi_file_format)) {
+    requested_format <- sub("_ftp$", "_aspera", ebi_file_format)
+  }
+  fields <- unique(c("run_accession", requested_format, fallback_format))
   a <- data.table()
   for (i in accession) {
     search_url <- paste0("https://www.ebi.ac.uk/ena/portal/api/filereport?accession=",
-                         i, "&result=read_run&fields=run_accession,", ebi_file_format)
+                         i, "&result=read_run&fields=", paste(fields, collapse = ","))
     temp <- suppressWarnings(temp <- fread(search_url, header = TRUE))
     a <- rbindlist(list(a, temp))
   }
@@ -447,11 +453,26 @@ find_url_ebi_safe <- function(accession, SRR = NULL, stop.on.error = FALSE,
     }
     a <- a[run_accession %in% SRR,]
   }
-  paths <- a[, colnames(a) == ebi_file_format, with = FALSE][[1]]
-  paths <- unlist(strsplit(paths, ";"))
-  if (convert_to_ascp) {
-    paths <- sub("ftp.sra.ebi.ac.uk/", "era-fasp@fasp.sra.ebi.ac.uk:", paths)
+  paths <- a[, colnames(a) == requested_format, with = FALSE][[1]]
+  paths <- as.character(paths)
+  paths <- paths[!is.na(paths) & paths != ""]
+  if (length(paths) == 0 && requested_format != fallback_format) {
+    paths <- a[, colnames(a) == fallback_format, with = FALSE][[1]]
+    paths <- as.character(paths)
+    paths <- paths[!is.na(paths) & paths != ""]
   }
+  if (length(paths) == 0) return(character())
+  paths <- unlist(strsplit(paths, ";"))
+  paths <- paths[!is.na(paths) & paths != ""]
+  if (convert_to_ascp) {
+    paths <- ebi_paths_to_ascp(paths)
+  }
+  return(paths)
+}
+
+ebi_paths_to_ascp <- function(paths) {
+  paths <- sub("ftp.sra.ebi.ac.uk/", "era-fasp@fasp.sra.ebi.ac.uk:", paths)
+  paths <- sub("^fasp.sra.ebi.ac.uk:", "era-fasp@fasp.sra.ebi.ac.uk:", paths)
   return(paths)
 }
 

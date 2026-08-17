@@ -83,13 +83,25 @@ sample_info_single <- function(EXP_SAMPLE) {
   for (j in seq_along(EXP_SAMPLE$RUN_SET)) {
     RUN <- EXP_SAMPLE$RUN_SET[j]$RUN
     xml.RUN <- unlist(RUN$IDENTIFIERS$PRIMARY_ID)
+    if (length(xml.RUN) == 0) xml.RUN <- attr(RUN, "accession")
+    if (length(xml.RUN) == 0) xml.RUN <- as.character(NA)
 
     spots <- as.integer(attr(RUN, "total_spots"))
     bases <- as.numeric(attr(RUN, "total_bases"))
     # spots_with_mates <- 0
     avgLength <- as.integer(attr(RUN$Statistics$Read, "average"))
+    if ((length(avgLength) == 0 || is.na(avgLength)) &&
+        length(spots) > 0 && length(bases) > 0 && !is.na(spots) && spots > 0 && !is.na(bases)) {
+      avgLength <- as.integer(round(bases / spots))
+    }
+    if (length(avgLength) == 0) avgLength <- as.integer(NA)
     size_MB <- floor(as.numeric(attr(RUN, "size"))/1024^2)
+    if (length(spots) == 0) spots <- as.integer(NA)
+    if (length(bases) == 0) bases <- as.numeric(NA)
+    if (length(size_MB) == 0) size_MB <- as.numeric(NA)
     Experiment <- EXP_SAMPLE$EXPERIMENT$IDENTIFIERS$PRIMARY_ID[[1]]
+    if (length(Experiment) == 0) Experiment <- attr(RUN$EXPERIMENT_REF, "accession")
+    if (length(Experiment) == 0) Experiment <- as.character(NA)
     # if (length(xml.RUN) == 0) xml.RUN <- ""
     dt_run <- data.table(Run = xml.RUN, spots, bases,
                          avgLength, size_MB, Experiment)

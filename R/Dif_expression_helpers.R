@@ -133,6 +133,54 @@ DEG_model_results_contrast <- function(ddsMat, contrast_vec,
   return(res)
 }
 
+DTEG_model_results_interaction <- function(ddsMat_te, contrast_vec,
+                                           libtype_col = "libtype",
+                                           numerator = "RFP",
+                                           denominator = "RNA",
+                                           verbose = TRUE,
+                                           name = paste("Comparison:", contrast_vec[2], "vs", contrast_vec[3])) {
+  stopifnot(length(contrast_vec) == 3 && is.character(contrast_vec))
+
+  if (verbose) {
+    message(name)
+  }
+
+  target <- contrast_vec[1]
+  contrast_numerator <- contrast_vec[2]
+  contrast_denominator <- contrast_vec[3]
+  coldata <- as.data.frame(SummarizedExperiment::colData(ddsMat_te))
+
+  if (!(libtype_col %in% colnames(coldata))) {
+    stop("Could not find '", libtype_col, "' in TE model colData")
+  }
+  if (!(target %in% colnames(coldata))) {
+    stop("Could not find '", target, "' in TE model colData")
+  }
+
+  get_model_row <- function(libtype, condition) {
+    rows <- coldata[[libtype_col]] == libtype & coldata[[target]] == condition
+    if (!any(rows)) {
+      stop("Could not find samples with ", libtype_col, " = ", libtype,
+           " and ", target, " = ", condition)
+    }
+    colMeans(stats::model.matrix(DESeq2::design(ddsMat_te), coldata[rows, , drop = FALSE]))
+  }
+
+  contrast <- (get_model_row(numerator, contrast_numerator) -
+                 get_model_row(numerator, contrast_denominator)) -
+    (get_model_row(denominator, contrast_numerator) -
+       get_model_row(denominator, contrast_denominator))
+
+  if (length(contrast) != length(DESeq2::resultsNames(ddsMat_te))) {
+    stop("Could not align TE interaction contrast to DESeq2 result names")
+  }
+  names(contrast) <- DESeq2::resultsNames(ddsMat_te)
+
+  res <- results(ddsMat_te, contrast = contrast)
+  attr(res, "name") <- name
+  return(res)
+}
+
 DEG_model_results_regulation_status <- function(res, p.value) {
   Regulation <- length(which(res$padj < p.value))
   Regulation <- c(Regulation, nrow(res) - Regulation)
@@ -242,9 +290,18 @@ DTEG_model_results <- function(ddsMat_rna, ddsMat_ribo, ddsMat_te,
 
 DTEG_pair_results <- function(ddsMat_te, ddsMat_ribo, ddsMat_rna, contrast_vec,
                               lfcShrinkType, p.value, return_type = "data.table") {
+  get_libtype <- function(ddsMat, fallback) {
+    coldata <- as.data.frame(SummarizedExperiment::colData(ddsMat))
+    if (!("libtype" %in% colnames(coldata))) return(fallback)
+    libtypes <- unique(as.character(coldata$libtype))
+    if (length(libtypes) != 1) return(fallback)
+    libtypes
+  }
 
-  res_te <- DEG_model_results_contrast(ddsMat_te, contrast_vec,
-                                        lfcShrinkType = NULL, verbose = TRUE)
+  res_te <- DTEG_model_results_interaction(ddsMat_te, contrast_vec,
+                                           numerator = get_libtype(ddsMat_ribo, "RFP"),
+                                           denominator = get_libtype(ddsMat_rna, "RNA"),
+                                           verbose = TRUE)
 
   res_ribo <- DEG_model_results_contrast(ddsMat_ribo, contrast_vec,
                                         lfcShrinkType, verbose = FALSE)
@@ -376,4 +433,3 @@ DTEG_add_regulation_categories <- function(dt, complex.categories) {
 
   return(dt)
 }
-
