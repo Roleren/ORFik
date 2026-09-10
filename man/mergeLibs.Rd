@@ -12,7 +12,13 @@ mergeLibs(
   keep_all_scores = TRUE,
   paths = filepath(df, type),
   lib_names_full = bamVarName(df, skip.libtype = FALSE),
-  max_splits = 20
+  max_splits = 20,
+  allow_filtering = TRUE,
+  filter_target_rows = 2^31 - 2,
+  filter_seed = 1L,
+  max_filter_score = Inf,
+  filter_chunk_rows = 5e+06,
+  filter_tmpdir = tempdir()
 )
 }
 \arguments{
@@ -57,14 +63,48 @@ Name to assign to single libraries inside merged file, only kept if mode != "all
 \item{max_splits}{integer, default 20. If number of rows to merge > 2^31,
 how many times can you allow split merging to try to "rescue" the merging
 process?}
+
+\item{allow_filtering}{logical, default TRUE. If the distinct merged rows
+exceed \code{filter_target_rows}, discard whole chromosome/start positions,
+lowest pooled score first. FALSE aborts without returning a filtered result.}
+
+\item{filter_target_rows}{numeric whole number, default \code{2^31 - 2}.
+Maximum final alignment rows, strictly below data.table's 32-bit ceiling.
+Zero is allowed. Dropping whole positions can retain fewer rows than this.}
+
+\item{filter_seed}{integer, default 1. Seed for deterministic pseudo-random
+priorities among equally scored positions across all chromosomes. Does not
+change R's RNG state; independent of input order and scratch partitioning.}
+
+\item{max_filter_score}{numeric, default Inf. Only positions whose pooled
+score is at most this ceiling may be removed. Abort if too few are eligible.}
+
+\item{filter_chunk_rows}{numeric whole number, default 5e6. Scratch read-block
+and compacted-partition row budget, not a byte or total RAM limit. Reduce to
+lower working memory. A single position's distinct per-input alignment rows
+must fit this budget. Temporary combines can contain up to three blocks.}
+
+\item{filter_tmpdir}{character, default \code{tempdir()}. Existing writable
+directory on a disk with space for scratch partitions and summaries. Only
+a newly created private subdirectory is removed on completion or error.}
 }
 \value{
-NULL, files saved to disc. A data.table with a score column that now contains the sum
-of scores per merge setting.
+Invisible NULL. Merged files contain the summed score and, if
+requested, individual library scores. Each output also has a companion
+\code{<output>.ofst.removal_summary.rds}, readable with \code{readRDS()}:
+the removal summary described in \code{ofst_merge}, or NULL if no filtering
+occurred. The sidecar is replaced even for an unfiltered overwrite, so an
+earlier filtering report is not silently left behind.
 }
 \description{
 Aggregate count of reads (from the "score" column) by making a merged library.
 Only allowed for .ofst files!
+}
+\details{
+Filtering controls are passed unchanged to \code{ofst_merge} for
+each merge group. The default permits lossy positional rescue only when
+distinct merged rows exceed \code{filter_target_rows}. Set
+\code{allow_filtering = FALSE} for strict lossless operation.
 }
 \examples{
 df2 <- ORFik.template.experiment()

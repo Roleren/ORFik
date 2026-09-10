@@ -11,7 +11,13 @@ ofst_merge(
   keepCigar = TRUE,
   sort = TRUE,
   max_splits = 20L,
-  dt_max_index_size = 2^31
+  dt_max_index_size = 2^31,
+  allow_filtering = TRUE,
+  filter_target_rows = 2^31 - 2,
+  filter_seed = 1L,
+  max_filter_score = Inf,
+  filter_chunk_rows = 5e+06,
+  filter_tmpdir = tempdir()
 )
 }
 \arguments{
@@ -34,14 +40,71 @@ how many times can you allow split merging to try to "rescue" the merging
 process?}
 
 \item{dt_max_index_size}{2^31, the number of rows data.table support, set lower
-to merge split on lower counts}
+to merge split on lower counts in the ordinary lossless path. This groups
+whole input files and is independent of the final output target.}
+
+\item{allow_filtering}{logical, default TRUE. If the distinct merged rows
+exceed \code{filter_target_rows}, discard whole chromosome/start positions,
+lowest pooled score first. FALSE aborts without returning a filtered result.}
+
+\item{filter_target_rows}{numeric whole number, default \code{2^31 - 2}.
+Maximum final alignment rows, strictly below data.table's 32-bit ceiling.
+Zero is allowed. Dropping whole positions can retain fewer rows than this.}
+
+\item{filter_seed}{integer, default 1. Seed for deterministic pseudo-random
+priorities among equally scored positions across all chromosomes. Does not
+change R's RNG state; independent of input order and scratch partitioning.}
+
+\item{max_filter_score}{numeric, default Inf. Only positions whose pooled
+score is at most this ceiling may be removed. Abort if too few are eligible.}
+
+\item{filter_chunk_rows}{numeric whole number, default 5e6. Scratch read-block
+and compacted-partition row budget, not a byte or total RAM limit. Reduce to
+lower working memory. A single position's distinct per-input alignment rows
+must fit this budget. Temporary combines can contain up to three blocks.}
+
+\item{filter_tmpdir}{character, default \code{tempdir()}. Existing writable
+directory on a disk with space for scratch partitions and summaries. Only
+a newly created private subdirectory is removed on completion or error.}
 }
 \value{
 a data.table of merged result, it is merged on all columns except "score".
 The returned file will contain the scores of each file + the aggregate sum score.
+Only when positions were actually removed, \code{attr(result, "removal_summary")}
+is an \code{ofst_removal_summary} list with parameters, score/priority cutoffs,
+before/after/removed alignment rows, positions and total score, and
+\code{by_chromosome} / \code{by_input} data.tables. Per-input rows count
+distinct original alignment keys within each file, so their sum can exceed
+global merged rows. Raw input row counts are recorded separately. The
+summary is absent for unfiltered results. FST does not preserve attributes;
+\code{mergeLibs} saves this object in a companion RDS file.
 }
 \description{
 Collapses and sums the score column of each ofst file
 It is required that each file is of same ofst type.
 That is if one file has cigar information, all must have it.
+}
+\details{
+Chromosome and strand columns may be character or factor, including
+different factor levels in different files. Factors are retained internally
+to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
+integer. Missing scores contribute zero, as in the per-library score mode.
+All alignment columns except an explicitly discarded CIGAR remain merge keys.
+If raw input rows exceed the final target, files (including a single large
+file) are read in blocks and partitioned on disk before counting distinct
+merged alignment keys. No filtering occurs if duplicate collapse is enough.
+Positional filtering requires single-end-style \code{seqnames} and
+\code{start}; missing positions and negative/infinite scores are rejected
+in this rescue path. It sums scores over all original files, both strands
+and all CIGARs at each position. Retained alignment keys are not collapsed
+to positions. This is a lossy size rescue, not a biological QC filter.
+Equal pooled scores are ordered by seeded 53-bit hash priorities, with
+chromosome/start used only for actual priority collisions. Whole groups
+are removed until the target is met; unequal group sizes mean this is not
+an equal-probability sample of individual alignment rows. Integer count
+sums are exact up to double precision's integer limit; fractional sums may
+exhibit ordinary floating-point rounding effects across partitionings.
+Scratch processing bounds intermediate partitions, but the final table
+and its assembly still need to fit in RAM. Both score modes use the same
+removal decision. Filtering is not performed separately on merge chunks.
 }

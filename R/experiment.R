@@ -700,8 +700,16 @@ simpleLibs <- convertLibs
 #' Name to assign to single libraries inside merged file, only kept if mode != "all"
 #' @param mode character, default "all". Merge all or "rep" for collapsing replicates only, or
 #' "lib" for collapsing all per library type.
-#' @return NULL, files saved to disc. A data.table with a score column that now contains the sum
-#' of scores per merge setting.
+#' @return Invisible NULL. Merged files contain the summed score and, if
+#' requested, individual library scores. Each output also has a companion
+#' \code{<output>.ofst.removal_summary.rds}, readable with \code{readRDS()}:
+#' the removal summary described in \code{ofst_merge}, or NULL if no filtering
+#' occurred. The sidecar is replaced even for an unfiltered overwrite, so an
+#' earlier filtering report is not silently left behind.
+#' @details Filtering controls are passed unchanged to \code{ofst_merge} for
+#' each merge group. The default permits lossy positional rescue only when
+#' distinct merged rows exceed \code{filter_target_rows}. Set
+#' \code{allow_filtering = FALSE} for strict lossless operation.
 #' @export
 #' @examples
 #' df2 <- ORFik.template.experiment()
@@ -722,20 +730,35 @@ simpleLibs <- convertLibs
 mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mode = "all",
                       type = "ofst", keep_all_scores = TRUE, paths = filepath(df, type),
                       lib_names_full = bamVarName(df, skip.libtype = FALSE),
-                      max_splits = 20) {
-  stopifnot(mode %in% c("all", "rep", "lib"))
-  stopifnot(nrow(df) == length(paths))
-  stopifnot(is(lib_names_full, "character") & (length(unique(lib_names_full)) == nrow(df)))
+                      max_splits = 20, allow_filtering = TRUE,
+                      filter_target_rows = 2^31 - 2, filter_seed = 1L,
+                      max_filter_score = Inf, filter_chunk_rows = 5e6,
+                      filter_tmpdir = tempdir()) {
+  restore_rng <- .ofst_rng_restore()
+  on.exit(restore_rng(), add = TRUE)
+  if (!is.character(mode) || length(mode) != 1L || is.na(mode) || !mode %in% c("all", "rep", "lib"))
+    .ofst_abort("mergeLibs mode must be 'all', 'rep', or 'lib'.")
+  if (!nrow(df) || nrow(df) != length(paths))
+    .ofst_abort("mergeLibs requires a non-empty experiment and one input path per experiment row.")
+  if (!is.character(lib_names_full) || length(lib_names_full) != nrow(df) ||
+      anyNA(lib_names_full) || any(!nzchar(lib_names_full)) || anyDuplicated(lib_names_full))
+    .ofst_abort("lib_names_full must contain one unique, non-empty character name per experiment row.")
+  .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
+                        max_filter_score, filter_chunk_rows, filter_tmpdir)
+  if (!is.character(out_dir) || length(out_dir) != 1L || is.na(out_dir) || !nzchar(out_dir))
+    .ofst_abort("out_dir must be one non-empty directory path.")
   filepaths <- paths
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  if (!dir.exists(out_dir) || file.access(out_dir, 2L) != 0L)
+    .ofst_abort("mergeLibs output directory '", out_dir, "' could not be created or is not writable.")
 
   if (mode == "rep") {
     lib_names <- bamVarName(df, skip.libtype = FALSE, skip.replicate = TRUE)
-    libs <- lapply(unique(lib_names), function(x) grep(x, lib_names))
+    libs <- lapply(unique(lib_names), function(x) which(x == lib_names))
     names(libs) <- unique(lib_names)
   } else if (mode == "lib") {
     lib_names <- bamVarName(df, TRUE, TRUE, TRUE, TRUE, TRUE)
-    libs <- lapply(unique(lib_names), function(x) grep(x, lib_names))
+    libs <- lapply(unique(lib_names), function(x) which(x == lib_names))
     names(libs) <- unique(lib_names)
   } else {
     libs <- list(all = seq(nrow(df)))
@@ -745,8 +768,13 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
     specific_paths <- filepaths[libs[[name]]]
     specific_names <- lib_names_full[libs[[name]]]
     save_path <- file.path(out_dir, paste0(name, ".ofst"))
-    fst::write_fst(ofst_merge(specific_paths, specific_names, keep_all_scores,
-                              max_splits = max_splits), save_path)
+    dt <- ofst_merge(specific_paths, specific_names, keep_all_scores,
+                     max_splits = max_splits, allow_filtering = allow_filtering,
+                     filter_target_rows = filter_target_rows, filter_seed = filter_seed,
+                     max_filter_score = max_filter_score, filter_chunk_rows = filter_chunk_rows,
+                     filter_tmpdir = filter_tmpdir)
+    .ofst_save_merge(dt, save_path)
+    dt <- NULL
   }
   return(invisible(NULL))
 }

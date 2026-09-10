@@ -141,23 +141,105 @@ collapse.by.scores <- function(x) {
 #' how many times can you allow split merging to try to "rescue" the merging
 #' process?
 #' @param dt_max_index_size 2^31, the number of rows data.table support, set lower
-#' to merge split on lower counts
+#' to merge split on lower counts in the ordinary lossless path. This groups
+#' whole input files and is independent of the final output target.
+#' @param allow_filtering logical, default TRUE. If the distinct merged rows
+#' exceed \code{filter_target_rows}, discard whole chromosome/start positions,
+#' lowest pooled score first. FALSE aborts without returning a filtered result.
+#' @param filter_target_rows numeric whole number, default \code{2^31 - 2}.
+#' Maximum final alignment rows, strictly below data.table's 32-bit ceiling.
+#' Zero is allowed. Dropping whole positions can retain fewer rows than this.
+#' @param filter_seed integer, default 1. Seed for deterministic pseudo-random
+#' priorities among equally scored positions across all chromosomes. Does not
+#' change R's RNG state; independent of input order and scratch partitioning.
+#' @param max_filter_score numeric, default Inf. Only positions whose pooled
+#' score is at most this ceiling may be removed. Abort if too few are eligible.
+#' @param filter_chunk_rows numeric whole number, default 5e6. Scratch read-block
+#' and compacted-partition row budget, not a byte or total RAM limit. Reduce to
+#' lower working memory. A single position's distinct per-input alignment rows
+#' must fit this budget. Temporary combines can contain up to three blocks.
+#' @param filter_tmpdir character, default \code{tempdir()}. Existing writable
+#' directory on a disk with space for scratch partitions and summaries. Only
+#' a newly created private subdirectory is removed on completion or error.
+#' @details Chromosome and strand columns may be character or factor, including
+#' different factor levels in different files. Factors are retained internally
+#' to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
+#' integer. Missing scores contribute zero, as in the per-library score mode.
+#' All alignment columns except an explicitly discarded CIGAR remain merge keys.
+#' If raw input rows exceed the final target, files (including a single large
+#' file) are read in blocks and partitioned on disk before counting distinct
+#' merged alignment keys. No filtering occurs if duplicate collapse is enough.
+#' Positional filtering requires single-end-style \code{seqnames} and
+#' \code{start}; missing positions and negative/infinite scores are rejected
+#' in this rescue path. It sums scores over all original files, both strands
+#' and all CIGARs at each position. Retained alignment keys are not collapsed
+#' to positions. This is a lossy size rescue, not a biological QC filter.
+#' Equal pooled scores are ordered by seeded 53-bit hash priorities, with
+#' chromosome/start used only for actual priority collisions. Whole groups
+#' are removed until the target is met; unequal group sizes mean this is not
+#' an equal-probability sample of individual alignment rows. Integer count
+#' sums are exact up to double precision's integer limit; fractional sums may
+#' exhibit ordinary floating-point rounding effects across partitionings.
+#' Scratch processing bounds intermediate partitions, but the final table
+#' and its assembly still need to fit in RAM. Both score modes use the same
+#' removal decision. Filtering is not performed separately on merge chunks.
 #' @return a data.table of merged result, it is merged on all columns except "score".
 #' The returned file will contain the scores of each file + the aggregate sum score.
+#' Only when positions were actually removed, \code{attr(result, "removal_summary")}
+#' is an \code{ofst_removal_summary} list with parameters, score/priority cutoffs,
+#' before/after/removed alignment rows, positions and total score, and
+#' \code{by_chromosome} / \code{by_input} data.tables. Per-input rows count
+#' distinct original alignment keys within each file, so their sum can exceed
+#' global merged rows. Raw input row counts are recorded separately. The
+#' summary is absent for unfiltered results. FST does not preserve attributes;
+#' \code{mergeLibs} saves this object in a companion RDS file.
 #' @importFrom data.table setnames
 ofst_merge <- function(file_paths,
                        lib_names = sub("\\.ofst$", "", basename(file_paths)),
                        keep_all_scores = TRUE, keepCigar = TRUE, sort = TRUE,
-                       max_splits = 20L, dt_max_index_size = 2^31) {
-  stopifnot(length(file_paths) > 0 && is.character(file_paths))
-  stopifnot(all(file.exists(file_paths)))
-  stopifnot(length(file_paths) == length(lib_names))
-  if (keep_all_scores) stopifnot(length(lib_names) == length(unique(lib_names)))
-  .validate_schema(file_paths)
+                       max_splits = 20L, dt_max_index_size = 2^31,
+                       allow_filtering = TRUE, filter_target_rows = 2^31 - 2,
+                       filter_seed = 1L, max_filter_score = Inf,
+                       filter_chunk_rows = 5e6, filter_tmpdir = tempdir()) {
+  restore_rng <- .ofst_rng_restore()
+  on.exit(restore_rng(), add = TRUE)
+  if (!is.character(file_paths) || !is.null(dim(file_paths)) || !length(file_paths) ||
+      anyNA(file_paths) || any(!nzchar(file_paths)))
+    stop("file_paths must be a non-empty character vector without missing or empty paths.")
+  missing_paths <- file_paths[!file.exists(file_paths) | dir.exists(file_paths)]
+  if (length(missing_paths)) .ofst_abort("input files do not exist or are directories: ", paste(missing_paths, collapse = ", "))
+  if (length(file_paths) != length(lib_names))
+    .ofst_abort("lib_names must have one name per input file (", length(file_paths), ").")
+  if (!is.character(lib_names) || !is.null(dim(lib_names)) ||
+      anyNA(lib_names) || any(!nzchar(lib_names)))
+    stop("lib_names must contain non-missing, non-empty character names.")
+  for (arg in c("keep_all_scores", "keepCigar", "sort")) {
+    value <- get(arg)
+    if (!is.logical(value) || !is.null(dim(value)) || length(value) != 1L || is.na(value))
+      stop(arg, " must be TRUE or FALSE.")
+  }
+  .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
+                        max_filter_score, filter_chunk_rows, filter_tmpdir)
+  .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
+  columns <- .validate_schema(file_paths)
+  if (keep_all_scores && (anyDuplicated(lib_names) || any(lib_names %in% columns)))
+    stop("lib_names must be unique and must not collide with OFST column names.")
 
   # Plan splits vs data.table's index limit
-  row_numbers <- unlist(lapply(file_paths, function(x)
-    data.table::data.table(fst::metadata_fst(x)$nrOfRows)))
+  row_numbers <- vapply(file_paths, function(x) as.double(fst::metadata_fst(x)$nrOfRows), 0)
+  if (sum(row_numbers) > filter_target_rows) {
+    controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
+                     filter_seed = filter_seed, max_filter_score = max_filter_score,
+                     filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir)
+    # Every original input participates in one global decision. Never filter
+    # first-round chunks independently, even when their raw row sum is large.
+    keys <- setdiff(fst::metadata_fst(file_paths[1L])$columnNames,
+                    c("score", if (!keepCigar) "cigar"))
+    dt <- .ofst_merge_filtered(file_paths, lib_names, row_numbers, keys,
+                               keep_all_scores, controls)
+    if (sort) .ofst_sort(dt, setdiff(names(dt), "score"))
+    return(.ofst_finalize(dt))
+  }
   plan <- .plan_splits(row_numbers, limit = dt_max_index_size,
                        max_splits = max_splits)
 
@@ -169,81 +251,168 @@ ofst_merge <- function(file_paths,
   if (!is_single_chunked) message(plan$note_message)
   message(plan$message)
   sort_on_chunking <- is_single_chunked & sort
-  chunk_list <- lapply(seq_along(file_paths_split), function(g) {
+  merge_chunk <- function(g) {
     message("- Merging chunk ", g, "/", length(file_paths_split))
-    ofst_merge_internal(
+    .ofst_merge_lossless(
       .read_fst_list(file_paths_split[[g]]),
       lib_names = lib_names_split[[g]],
       keep_all_scores = keep_all_scores,
       keepCigar = keepCigar,
       sort = sort_on_chunking
     )
-  })
+  }
 
   # Second-round: combine chunks
   dt <- if (is_single_chunked) {
-    chunk_list[[1L]]
+    merge_chunk(1L)
   } else {
-    message("Split round 2")
-    ofst_merge_internal(
-      chunk_list,
+    # Return the list directly to the reducer: retaining chunk_list in this
+    # frame would keep consumed inputs alive throughout the second round.
+    merge_chunks <- function() {
+      chunks <- lapply(seq_along(file_paths_split), merge_chunk)
+      message("Split round 2")
+      chunks
+    }
+    .ofst_merge_lossless(
+      merge_chunks(),
       lib_names = lib_names,
       keep_all_scores = keep_all_scores,
       keepCigar = keepCigar,
       sort = sort, chunkified = TRUE
     )
   }
+  .ofst_finalize(dt)
+}
+
+.ofst_finalize <- function(dt) {
   # Make seqnames and strand factor
-  dt[, seqnames := as.factor(seqnames)]
-  dt[, strand := factor(strand, levels = c("+", "-", "*"))]
+  # Match the public output's factor levels without expanding N character
+  # pointers. tabulate only allocates a level-sized count vector.
+  seq_levels <- levels(dt$seqnames)
+  used <- tabulate(dt$seqnames, nbins = length(seq_levels)) > 0L
+  data.table::set(dt, j = "seqnames",
+                  value = .ofst_relevel(dt$seqnames, sort(seq_levels[used])))
+  data.table::set(dt, j = "strand",
+                  value = .ofst_relevel(dt$strand, c("+", "-", "*")))
   message("Done merging")
-  return(dt[])
+  dt[]
+}
+
+.ofst_factor <- function(x, column) {
+  if (is.character(x)) return(factor(x))
+  if (!is.factor(x)) stop("OFST column '", column, "' must be character or factor.")
+  lv <- levels(x)
+  # A range check avoids allocating several N-row logical masks on every
+  # ordinary factor. Only malformed inputs need the slower repair path.
+  bounds <- suppressWarnings(range(as.integer(x), na.rm = TRUE))
+  if (bounds[1L] < 1L || bounds[2L] > length(lv) || anyNA(lv) || anyDuplicated(lv)) {
+    codes <- as.integer(x)
+    codes[is.na(codes) | codes < 1L | codes > length(lv)] <- NA_integer_
+    return(factor(lv[codes]))
+  }
+  if (is.ordered(x)) return(structure(as.integer(x), levels = lv, class = "factor"))
+  x
+}
+
+.ofst_relevel <- function(x, new_levels) {
+  if (identical(levels(x), new_levels)) return(x)
+  structure(match(levels(x), new_levels)[as.integer(x)],
+            levels = new_levels, class = "factor")
+}
+
+.ofst_sort <- function(dt, columns) {
+  # data.table sorts factors by codes, but OFST historically sorted their
+  # character labels. Recode only the factor keys, using a small level table
+  # to preserve data.table's character ordering independently of input levels.
+  for (col in columns) {
+    if (!is.factor(dt[[col]])) next
+    labels <- data.table::data.table(label = levels(dt[[col]]))
+    data.table::setorderv(labels, "label")
+    data.table::set(dt, j = col, value = .ofst_relevel(dt[[col]], labels$label))
+  }
+  data.table::setorderv(dt, columns)
+  dt
+}
+
+.validate_ofst_table <- function(d) {
+  if (!data.table::is.data.table(d)) stop("OFST input must be a data.table.")
+  if (anyDuplicated(names(d))) stop("OFST column names must be unique.")
+  coordinates <- if (any(c("cigar1", "cigar2", "start1", "start2") %in% names(d)))
+    c("start1", "start2", "cigar1", "cigar2") else "start"
+  missing <- setdiff(c("seqnames", coordinates, "strand", "score"), names(d))
+  if (length(missing)) stop("Missing required OFST columns: ", paste(missing, collapse = ", "))
+  for (col in intersect(c("seqnames", "strand", "cigar", "cigar1", "cigar2"), names(d))) {
+    if ((!is.factor(d[[col]]) && !is.character(d[[col]])) || !is.null(dim(d[[col]])))
+      stop("OFST column '", col, "' must be character or factor.")
+  }
+  for (col in intersect(c("start", "start1", "start2", "end", "size", "width", "score"), names(d))) {
+    if (!is.numeric(d[[col]]) || is.object(d[[col]]) || !is.null(dim(d[[col]])))
+      stop("OFST column '", col, "' must be integer or numeric.")
+  }
+  invisible(d)
 }
 
 .normalize_dt <- function(d) {
-  # Robustly coerce possible factors (even malformed) to character
-  for (col in intersect(c("seqnames","strand","cigar"), names(d))) {
-    v <- d[[col]]
-    if (is.factor(v)) {
-      # Decode factor codes via levels[] indexing to survive malformed factors
-      lv <- levels(v)
-      codes <- as.integer(v)
-      d[[col]] <- as.character(lv[pmax.int(pmin.int(codes, length(lv)), 1L)])
-      # Any out-of-range codes turn into NA via indexing outside [1, nlevels]
-      d[[col]][is.na(codes) | codes < 1L | codes > length(lv)] <- NA_character_
-    }
-    if (!is.character(d[[col]])) d[[col]] <- as.character(d[[col]])
+  .validate_ofst_table(d)
+  for (col in c("seqnames", "strand"))
+    data.table::set(d, j = col, value = .ofst_factor(d[[col]], col))
+  strand_levels <- levels(d$strand)
+  used <- tabulate(d$strand, nbins = length(strand_levels)) > 0L
+  if (any(!strand_levels[used] %in% c("+", "-", "*")))
+    stop("OFST strand values must be '+', '-', '*' or missing.")
+  for (col in intersect(c("cigar", "cigar1", "cigar2"), names(d))) {
+    if (is.factor(d[[col]]))
+      data.table::set(d, j = col, value = as.character(.ofst_factor(d[[col]], col)))
   }
-  # Ensure integer-like coords are integer (optional, keeps joins precise)
-  for (col in intersect(c("start","end","size","width"), names(d))) {
-    if (is.double(d[[col]])) d[[col]] <- as.integer(round(d[[col]]))
+  for (col in intersect(c("start", "start1", "start2", "end", "size", "width"), names(d))) {
+    x <- d[[col]]
+    if (!is.double(x)) next
+    bounds <- suppressWarnings(range(x, na.rm = TRUE))
+    if (bounds[1L] < -.int32_max || bounds[2L] > .int32_max ||
+        any(x != trunc(x), na.rm = TRUE))
+      stop("OFST coordinate column '", col, "' must contain 32-bit integer-valued coordinates.")
+    data.table::set(d, j = col, value = as.integer(x))
   }
-  return(d)
+  d
 }
 
 .read_fst_list <- function(paths) {
-  lapply(paths, function(x) .normalize_dt(fst::read_fst(x, as.data.table = TRUE)))
+  lapply(paths, function(x) tryCatch(
+    .normalize_dt(fst::read_fst(x, as.data.table = TRUE)),
+    error = function(e) stop("Invalid OFST file '", x, "': ", conditionMessage(e), call. = FALSE)))
 }
 
 .validate_schema <- function(paths) {
-  meta <- table(unlist(lapply(paths, function(x)
-    data.table::data.table(fst::metadata_fst(x)$columnNames))))
-  if (!all(meta == length(paths))) {
-    print(meta)
-    stop("Some libraries had columns not in others! ",
-         "Only ofst files with identical columns can be merged.")
+  schemas <- lapply(paths, function(x) tryCatch(fst::metadata_fst(x)$columnNames,
+    error = function(e) .ofst_abort("cannot inspect OFST file '", x, "': ", conditionMessage(e))))
+  for (i in seq_along(schemas)) {
+    if (anyDuplicated(schemas[[i]])) .ofst_abort("duplicate column names in '", paths[i], "'.")
+    if (!setequal(schemas[[1L]], schemas[[i]]))
+      .ofst_abort("only ofst files with identical columns can be merged. File '", paths[i],
+                  "' differs from '", paths[1L], "'; missing: ",
+                  paste(setdiff(schemas[[1L]], schemas[[i]]), collapse = ", "),
+                  "; extra: ", paste(setdiff(schemas[[i]], schemas[[1L]]), collapse = ", "), ".")
   }
-  invisible(TRUE)
+  invisible(schemas[[1L]])
 }
 
 .plan_splits <- function(row_counts, limit = 2^31, max_splits = 20L) {
+  if (!is.numeric(limit) || length(limit) != 1L || is.na(limit) ||
+      !is.finite(limit) || limit <= 0 || limit > 2^31)
+    stop("dt_max_index_size must be positive and at most 2^31.")
+  if (!is.numeric(max_splits) || length(max_splits) != 1L || is.na(max_splits) ||
+      !is.finite(max_splits) || max_splits < 1 || max_splits != trunc(max_splits) ||
+      max_splits > .Machine$integer.max)
+    stop("max_splits must be a positive integer.")
   total <- sum(row_counts)
   if (total < limit) {
     return(list(must_split = FALSE, is_single_chunked = TRUE, splits = 1L,
                 split_vector = rep(1L, length(row_counts)),
                 message = "Merging all libraries without splitting required.."))
   }
-  for (s in seq_len(max_splits)[-1L]) {
+  # More groups than files cannot improve a file-based split, and a huge
+  # max_splits must not itself allocate a huge planning vector.
+  for (s in seq_len(min(max_splits, length(row_counts)))[-1L]) {
     tmp_vec <- ceiling(seq_len(length(row_counts)) / (length(row_counts) / s))
     group_sums <- vapply(split(row_counts, tmp_vec), sum, numeric(1))
     if (all(group_sums < limit)) {
@@ -253,7 +422,9 @@ ofst_merge <- function(file_paths,
                                         ") - splitting into ", s, " chunk(s).")))
     }
   }
-  stop("max_splits = ", max_splits, " is not enough for safe chunking.")
+  .ofst_abort("max_splits = ", max_splits, " is not enough for safe chunking at dt_max_index_size=", limit,
+              ". Largest input has ", .ofst_number(max(row_counts)),
+              " rows; this splitter groups whole files. Increase the split limit/count or use the scratch-backed rescue by lowering filter_target_rows.")
 }
 
 .merge_by_keys_reduce <- function(dt_list, by, sort = FALSE) {
@@ -267,7 +438,14 @@ ofst_merge <- function(file_paths,
 .recompute_total_score <- function(dt, lib_names) {
   present_libs <- intersect(lib_names, names(dt))
   if (!length(present_libs)) stop("No per-library columns present; cannot recompute total score.")
-  dt[, score := rowSums(.SD, na.rm = TRUE), .SDcols = present_libs]
+  # Avoid rowSums(.SD)'s N-row by library-count dense matrix.
+  total <- numeric(nrow(dt))
+  for (column in present_libs) {
+    x <- as.double(dt[[column]])
+    if (anyNA(x)) x[is.na(x)] <- 0
+    total <- total + x
+  }
+  data.table::set(dt, j = "score", value = total)
   dt
 }
 
@@ -276,6 +454,7 @@ ofst_merge <- function(file_paths,
 
 .is_safe_int32 <- function(x) {
   if (!is.double(x)) return(FALSE)                 # only handle double -> int
+  if (!length(x)) return(TRUE)
   if (anyNA(x) || any(!is.finite(x))) return(FALSE)
   # exact integers within int32 bounds
   if (any(x != round(x))) return(FALSE)
@@ -295,18 +474,20 @@ ofst_merge <- function(file_paths,
 
 .downcast_score_if_safe <- function(dt) .downcast_cols_if_safe(dt, "score")
 
-ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
+.ofst_merge_lossless <- function(dt_list, lib_names, keep_all_scores = TRUE,
                                 keepCigar = TRUE, sort = TRUE,
-                                chunkified = FALSE, allow_filtering = TRUE,
-                                max_filter_value = 3) {
-  stopifnot(is(dt_list, "list"))
-  stopifnot(all(vapply(dt_list, function(x) is(x, "data.table"), logical(1))))
-  if (!chunkified) stopifnot(length(dt_list) == length(lib_names))
+                                chunkified = FALSE) {
+  if (!is.list(dt_list) || !length(dt_list) ||
+      !all(vapply(dt_list, data.table::is.data.table, logical(1))))
+    .ofst_abort("dt_list must contain at least one data.table, with no non-table elements.")
+  if (!chunkified && length(dt_list) != length(lib_names))
+    .ofst_abort("lib_names must have one name per input table.")
 
   colnames <- names(dt_list[[1L]])
   non_key_columns <- "score"
-  if (chunkified) non_key_columns <- c(non_key_columns, lib_names)
+  if (chunkified && keep_all_scores) non_key_columns <- c(non_key_columns, lib_names)
   merge_keys <- setdiff(colnames, non_key_columns)
+  if (!keepCigar) merge_keys <- setdiff(merge_keys, "cigar")
 
   if (keep_all_scores) {
     if (!chunkified) {
@@ -314,7 +495,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
       dt_list <- lapply(dt_list, function(d) {
         keys <- setdiff(names(d), "score")
         if (!keepCigar && "cigar" %in% keys) keys <- setdiff(keys, "cigar")
-        d[, .(score = sum(score, na.rm = TRUE)), by = keys]
+        d[, .(score = sum(score, na.rm = TRUE)), by = c(keys)]
       })
 
       # Rename each library's 'score' to its lib name
@@ -333,7 +514,12 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         dt_list <- lapply(dt_list, function(d) { d[, cigar := NULL]; d })
       }
     }
-    filter_value <- 1
+    # A singleton still needs collapsing (it may contain duplicate keys), but
+    # must not enter the reduction loop or return an uninitialized result.
+    if (length(dt_list) == 1L) {
+      dt <- dt_list[[1L]][, .(score = sum(score, na.rm = TRUE)), by = c(merge_keys)]
+      dt_list <- NULL
+    }
     while (length(dt_list) > 1) {
       nrows <- vapply(dt_list, nrow, numeric(1))
       sums <- cumsum(nrows)
@@ -344,48 +530,39 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
         message("No pair of chunks has total rows smaller than '.int32_max' : ",
              .int32_max, ", can not merge using BOOST multithreading, using slow join.")
 
-        for (i in seq_along(dt_list))
-          data.table::setnames(dt_list[[i]], "score", lib_names[i])
-        # Outer-merge libraries on keys, then recompute total
-        dt <- try(.merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE), silent = TRUE)
-        if (is(dt, "try-error")) {
-          dt_size <- as.numeric(sub(" .*", "", sub(".*Total rows in the list is ", "", dt)))
-          if (is.na(dt_size) || !allow_filtering || filter_value > max_filter_value) stop(dt)
-          message("Total rows in the list is ", dt_size, " which is larger than the maximum number of rows, currently ", .int32_max,
-                  "i.e. (", (1 - round(dt_size /  .int32_max, 4))*100, "%). Filtering all scores of values <= ", filter_value)
-          for (i in seq_along(dt_list))
-            data.table::setnames(dt_list[[i]], lib_names[i], "score")
-          # Find which rows to remove from index 1
-          how_many_to_remove <- dt_size - .int32_max + 2
-          hits <- dt_list[[1]][, .(score = sum(score)), by = .(seqnames, start)][order(score)]
-          hits <- hits[seq(how_many_to_remove),]
-          dt_list <- lapply(dt_list, function(d) d[!hits, on = .(seqnames, start)])
-
-          nrows_new <- vapply(dt_list, nrow, numeric(1))
-          message("- New chunk sizes: ", nrows_new)
-          filter_value <- filter_value + 1
-        } else {
-          # Downcast per-lib cols if safe, then total
-          dt <- .downcast_cols_if_safe(dt, lib_names)
-          dt <- .recompute_total_score(dt, lib_names)
-          dt[, (lib_names) := NULL]
-          dt_list <- 1
+        score_names <- paste0(".ofst_score_", seq_along(dt_list))
+        while (any(score_names %in% merge_keys)) score_names <- paste0("_", score_names)
+        for (i in seq_along(dt_list)) {
+          # Raw files may contain duplicate keys. Joining them directly can
+          # multiply counts; second-round chunks are already aggregated.
+          if (!chunkified)
+            dt_list[[i]] <- dt_list[[i]][, .(score = sum(score, na.rm = TRUE)), by = c(merge_keys)]
+          data.table::setnames(dt_list[[i]], "score", score_names[i])
         }
+        # Outer-merge libraries on keys, then recompute total
+        dt <- tryCatch(.merge_by_keys_reduce(dt_list, by = merge_keys, sort = FALSE),
+          error = function(e) .ofst_abort("lossless chunk join failed. Retry ofst_merge on the original files with a smaller filter_target_rows to use global scratch-backed rescue. Cause: ", conditionMessage(e)))
+        dt <- .downcast_cols_if_safe(dt, score_names)
+        dt <- .recompute_total_score(dt, score_names)
+        dt[, (score_names) := NULL]
+        dt_list <- list()
       } else {
-        dt_list[indices][[1]] <- collapseDuplicatedReads(
-          data.table::rbindlist(dt_list[indices], use.names = TRUE, fill = TRUE),
-          addSizeColumn = TRUE,
-          keepCigar = keepCigar
-        )
-        dt_list[indices[-1]] <- NULL
-        dt <- dt_list[[1]]
+        # Drop both the previous accumulator alias and the consumed input
+        # tables before grouping allocates its workspace and result.
+        dt <- NULL
+        combined <- data.table::rbindlist(dt_list[indices], use.names = TRUE, fill = TRUE)
+        dt_list[indices] <- NULL
+        gc()
+        dt <- combined[, .(score = sum(score, na.rm = TRUE)), by = c(merge_keys)]
+        combined <- NULL
+        dt_list <- c(list(dt), dt_list)
       }
       gc()
     }
   }
   # Downcast total score if safe
   dt <- .downcast_score_if_safe(dt)
-  if (sort) data.table::setorderv(dt, setdiff(names(dt), "score"))
+  if (sort) dt <- .ofst_sort(dt, setdiff(names(dt), "score"))
   dt
 }
 
