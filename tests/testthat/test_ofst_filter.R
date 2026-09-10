@@ -15,11 +15,12 @@ filter_plain <- function(x) {
   as.data.frame(x)
 }
 
-filter_files <- function(tables, ...) {
+filter_files <- function(tables, ..., filter_input_summary = TRUE) {
   paths <- vapply(seq_along(tables), function(i) tempfile("filter-input-", fileext = ".ofst"), "")
   on.exit(unlink(paths))
   for (i in seq_along(tables)) fst::write_fst(tables[[i]], paths[i])
-  suppressMessages(ORFik:::ofst_merge(paths, lib_names = paste0("lib", seq_along(paths)), ...))
+  suppressMessages(ORFik:::ofst_merge(paths, lib_names = paste0("lib", seq_along(paths)),
+                                    filter_input_summary = filter_input_summary, ...))
 }
 
 test_that("ranking pools all libraries, strands and CIGARs before removal", {
@@ -303,13 +304,12 @@ test_that("block reader uses double row offsets beyond the 32-bit boundary", {
   on.exit(unlink(scratch, recursive = TRUE))
   seen <- list()
   sandbox <- new.env(parent = asNamespace("ORFik"))
-  sandbox$.ofst_read_part <- function(path, ...) {
-    if (path != "mock-huge-input") return(ORFik:::.ofst_read_part(path, ...))
-    args <- list(...)
+  sandbox$.ofst_input_block <- function(path, from, to, keys) {
+    args <- list(from = from, to = to)
     seen[[length(seen) + 1L]] <<- args
     filter_fixture(1)[, start := length(seen)]
   }
-  stage <- ORFik:::.ofst_stage_inputs
+  stage <- ORFik:::.ofst_batch_runs
   environment(stage) <- sandbox
   suppressMessages(stage("mock-huge-input", 2^31 + 3, c("seqnames", "start", "strand", "cigar"),
                           ".source", 2^30, scratch))

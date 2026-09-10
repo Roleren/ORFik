@@ -154,14 +154,17 @@ collapse.by.scores <- function(x) {
 #' change R's RNG state; independent of input order and scratch partitioning.
 #' @param max_filter_score numeric, default Inf. Only positions whose pooled
 #' score is at most this ceiling may be removed. Abort if too few are eligible.
-#' @param filter_chunk_rows numeric whole number, default 5e6. Scratch read-block
-#' and compacted-partition row budget, not a byte or total RAM limit. Reduce to
-#' lower working memory. A single position's distinct per-input alignment rows
-#' must fit this budget. Temporary combines can contain up to three blocks.
-#' This does not limit total scratch storage: all inputs are staged before
-#' cross-file compaction, so increasing the block size does not avoid storing
-#' their alignment contributions on disk.
-#' @param filter_tmpdir character, default \code{tempdir()}. Existing writable
+#' @param filter_chunk_rows numeric whole number, default 5e6. Maximum raw rows
+#' per input batch and rows per compacted partition. Batches are collapsed
+#' before writing, then compacted in balanced rounds while inputs are read.
+#' Pooled-score output collapses across studies immediately. Linux available
+#' RAM and sampled uncompressed sizes may reduce this budget with an eightfold
+#' workspace allowance; this estimate is not a hard byte limit. Temporary
+#' combines contain up to two partitions. A single position's distinct rows
+#' (per input when keeping library scores) must fit the effective budget.
+#' Disk usage depends on distinct merged data, not just the batch size.
+#' @param filter_tmpdir character, default \code{tempdir()} for \code{ofst_merge}
+#' and \code{out_dir} for \code{mergeLibs}. Existing writable
 #' directory on a disk with space for scratch partitions and summaries. Only
 #' a newly created private subdirectory is removed on completion or error.
 #' @param filter_fallback_dir character or NULL. An existing alternate directory
@@ -170,13 +173,19 @@ collapse.by.scores <- function(x) {
 #' input files are read again with unchanged filtering settings. NULL disables
 #' fallback. Invalid inputs, memory errors and user interrupts are not retried.
 #' A small ownership cache here also records primary scratch for crash cleanup.
+#' @param filter_input_summary logical, default FALSE. For pooled-score output,
+#' reread inputs after selection to reconstruct exact per-input removal counts.
+#' This adds disk I/O and bounded per-input compaction. When FALSE these counts
+#' are NA, not zero; raw input counts and exact global/chromosome totals remain
+#' available. When keeping all library scores, per-input counts are available
+#' without another pass regardless of this flag. Only used if filtering occurs.
 #' @details Chromosome and strand columns may be character or factor, including
 #' different factor levels in different files. Factors are retained internally
 #' to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
 #' integer. Missing scores contribute zero, as in the per-library score mode.
 #' All alignment columns except an explicitly discarded CIGAR remain merge keys.
 #' If raw input rows exceed the final target, files (including a single large
-#' file) are read in blocks and partitioned on disk before counting distinct
+#' file) are merged in bounded batches before counting distinct
 #' merged alignment keys. No filtering occurs if duplicate collapse is enough.
 #' Positional filtering requires single-end-style \code{seqnames} and
 #' \code{start}; missing positions and negative/infinite scores are rejected
@@ -208,7 +217,10 @@ collapse.by.scores <- function(x) {
 #' before/after/removed alignment rows, positions and total score, and
 #' \code{by_chromosome} / \code{by_input} data.tables. Per-input rows count
 #' distinct original alignment keys within each file, so their sum can exceed
-#' global merged rows. Raw input row counts are recorded separately. The
+#' global merged rows. In pooled mode these counts require
+#' \code{filter_input_summary = TRUE}; otherwise they are NA and
+#' \code{input_summary_computed} is FALSE. Raw input row counts are always
+#' recorded separately. Schema version 2 also records the batch strategy. The
 #' summary is absent for unfiltered results. FST does not preserve attributes;
 #' \code{mergeLibs} saves this object in a companion RDS file.
 #' @importFrom data.table setnames
@@ -219,7 +231,7 @@ ofst_merge <- function(file_paths,
                        allow_filtering = TRUE, filter_target_rows = 2^31 - 2,
                        filter_seed = 1L, max_filter_score = Inf,
                        filter_chunk_rows = 5e6, filter_tmpdir = tempdir(),
-                       filter_fallback_dir = NULL) {
+                       filter_fallback_dir = NULL, filter_input_summary = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.character(file_paths) || !is.null(dim(file_paths)) || !length(file_paths) ||
@@ -238,7 +250,7 @@ ofst_merge <- function(file_paths,
       stop(arg, " must be TRUE or FALSE.")
   }
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary)
   .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
   columns <- .validate_schema(file_paths)
   if (keep_all_scores && (anyDuplicated(lib_names) || any(lib_names %in% columns)))
@@ -250,7 +262,7 @@ ofst_merge <- function(file_paths,
     controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
                      filter_seed = filter_seed, max_filter_score = max_filter_score,
                      filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
-                     filter_fallback_dir = filter_fallback_dir)
+                     filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary)
     # Every original input participates in one global decision. Never filter
     # first-round chunks independently, even when their raw row sum is large.
     keys <- setdiff(fst::metadata_fst(file_paths[1L])$columnNames,

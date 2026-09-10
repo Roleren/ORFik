@@ -57,7 +57,10 @@
 
 .ofst_filter_controls <- function(allow_filtering, filter_target_rows, filter_seed,
                                   max_filter_score, filter_chunk_rows, filter_tmpdir,
-                                  filter_fallback_dir = NULL) {
+                                  filter_fallback_dir = NULL, filter_input_summary = FALSE) {
+  if (!is.logical(filter_input_summary) || !is.null(dim(filter_input_summary)) ||
+      length(filter_input_summary) != 1L || is.na(filter_input_summary))
+    .ofst_abort("filter_input_summary must be TRUE or FALSE.")
   if (!is.logical(allow_filtering) || !is.null(dim(allow_filtering)) || length(allow_filtering) != 1L || is.na(allow_filtering))
     .ofst_abort("allow_filtering must be TRUE or FALSE.")
   whole <- function(x) is.numeric(x) && !is.object(x) && is.null(dim(x)) && length(x) == 1L &&
@@ -151,6 +154,7 @@
 }
 
 .ofst_reduce_scores <- function(dt, keys) {
+  if (!is.double(dt$score)) data.table::set(dt, j = "score", value = as.double(dt$score))
   dt[, .(score = sum(score, na.rm = TRUE)), by = c(keys)]
 }
 
@@ -158,12 +162,13 @@
   positions[, .(weight = sum(as.double(alignment_rows))), by = .(value = get(column))]
 }
 
-.ofst_finish_partition <- function(dt, keys, source_col, scratch) {
-  pooled <- .ofst_reduce_scores(dt, keys)
+.ofst_finish_partition <- function(dt, keys, source_col, scratch, data_path = NULL) {
+  pooled <- if (length(source_col)) .ofst_reduce_scores(dt, keys) else dt
+  if (!is.double(pooled$score)) data.table::set(pooled, j = "score", value = as.double(pooled$score))
   positions <- pooled[, .(position_score = sum(score), alignment_rows = .N), by = .(seqnames, start)]
   if (any(!is.finite(positions$position_score)))
     .ofst_abort("pooled position scores overflowed; finite non-negative scores are required for filtering.")
-  list(data = .ofst_spill(dt, scratch, "data-"),
+  list(data = if (is.null(data_path)) .ofst_spill(dt, scratch, "data-") else data_path,
        positions = .ofst_spill(positions, scratch, "positions-"),
        histogram = .ofst_spill(.ofst_histogram(positions, "position_score"), scratch, "scores-"),
        rows = as.double(nrow(pooled)), positions_n = as.double(nrow(positions)),
@@ -209,53 +214,15 @@
 }
 
 .ofst_stage_inputs <- function(paths, row_counts, keys, source_col, chunk_rows, scratch) {
-  bins <- 2^ceiling(log2(min(64, max(1, sum(row_counts) / chunk_rows))))
-  buckets <- rep(list(character()), bins)
-  template <- NULL
-  for (i in seq_along(paths)) {
-    message("OFST rescue: reading input ", i, "/", length(paths), " (",
-            .ofst_number(row_counts[i]), " rows): ", paths[i])
-    if (!row_counts[i]) next
-    first <- 1
-    while (first <= row_counts[i]) {
-      last <- min(row_counts[i], first + chunk_rows - 1)
-      dt <- tryCatch(.normalize_dt(.ofst_read_part(paths[i], from = first, to = last)),
-                     error = function(e) {
-                       if (inherits(e, "ofst_scratch_error")) stop(e)
-                       .ofst_abort("invalid input '", paths[i], "', rows ", first, "-", last, ": ", conditionMessage(e))
-                     })
-      if (!"start" %in% names(dt))
-        .ofst_abort("chromosome/start filtering requires a 'start' column. Paired start1/start2 inputs need an explicit positional convention first.")
-      if (anyNA(dt$seqnames) || anyNA(dt$start))
-        .ofst_abort("input '", paths[i], "' contains missing chromosome/start keys. Correct these before positional filtering.")
-      if (any(!is.finite(dt$score) & !is.na(dt$score)) || any(dt$score < 0, na.rm = TRUE))
-        .ofst_abort("input '", paths[i], "' has negative or infinite scores. Filtering requires non-negative finite scores; missing scores contribute zero.")
-      data.table::set(dt, j = "score", value = as.double(dt$score))
-      dt[is.na(score), score := 0]
-      # Drop only keys explicitly excluded by keepCigar, retaining all others.
-      dt <- dt[, c(keys, "score"), with = FALSE]
-      if (is.null(template)) template <- dt[0]
-      data.table::set(dt, j = source_col, value = rep.int(i, nrow(dt)))
-      dt <- .ofst_reduce_scores(dt, c(keys, source_col))
-      bucket <- .ofst_partition_id(dt, 0L, bins)
-      for (j in sort(unique(bucket))) {
-        index <- which(bucket == j)
-        buckets[[j + 1L]] <- c(buckets[[j + 1L]], .ofst_spill(dt[index], scratch))
-      }
-      dt <- NULL
-      first <- last + 1
-    }
-    if (chunk_rows >= 1e5) gc()
-  }
-  leaves <- list()
-  for (i in seq_along(buckets)) if (length(buckets[[i]])) {
-    message("OFST rescue: compacting positional partition ", i, "/", bins, ".")
-    leaves <- c(leaves, .ofst_compact_partition(buckets[[i]], keys, source_col,
-                                              chunk_rows, scratch, as.integer(log2(bins))))
-    buckets[[i]] <- character()
-    if (chunk_rows >= 1e5) gc()
-  }
-  list(leaves = leaves, template = template)
+  staged <- .ofst_batch_runs(paths, row_counts, keys, source_col, chunk_rows, scratch)
+  leaves <- lapply(.ofst_run_leaves(staged$tree), function(leaf) {
+    dt <- .ofst_read_part(leaf$path)
+    result <- .ofst_finish_partition(dt, keys, source_col, scratch, data_path = leaf$path)
+    result$depth <- leaf$depth
+    result$prefix <- leaf$prefix
+    result
+  })
+  list(leaves = leaves, template = staged$template, batches = staged$batches)
 }
 
 .ofst_scan_histograms <- function(paths, bound, ceiling = Inf) {
@@ -428,6 +395,8 @@
   message("OFST rescue: scratch directory ", scratch, "; block budget ", .ofst_number(controls$filter_chunk_rows), " rows.")
   source_col <- ".ofst_source"
   while (source_col %in% c(keys, lib_names, "score")) source_col <- paste0("_", source_col)
+  if (!keep_all_scores) source_col <- NULL
+  controls$filter_chunk_rows <- .ofst_batch_budget(file_paths, row_counts, controls$filter_chunk_rows)
   staged <- .ofst_stage_inputs(file_paths, row_counts, keys, source_col, controls$filter_chunk_rows, scratch)
   leaves <- staged$leaves
   before <- sum(vapply(leaves, `[[`, 0, "rows"))
@@ -445,6 +414,10 @@
                                        controls$filter_seed, controls$max_filter_score,
                                        scratch, controls$filter_chunk_rows)
   } else message("OFST rescue: duplicates collapsed below the target; no filtering is needed.")
+  detailed_input_stats <- NULL
+  if (!is.null(selection) && !keep_all_scores && isTRUE(controls$filter_input_summary))
+    detailed_input_stats <- .ofst_batch_input_stats(file_paths, row_counts, keys,
+      controls$filter_chunk_rows, scratch, leaves, selection)
   outputs <- chromosome_stats <- input_stats <- list()
   for (i in seq_along(leaves)) {
     p <- .ofst_read_part(leaves[[i]]$positions)
@@ -452,16 +425,20 @@
     if (!is.null(selection)) chromosome_stats[[i]] <- .ofst_chromosome_removal_stats(p, removed)
     dt <- .ofst_read_part(leaves[[i]]$data)
     if (!is.null(selection)) {
-      by_input <- dt[, .(rows_before = as.double(.N), score_before = sum(score)), by = c(source_col)]
+      if (keep_all_scores)
+        by_input <- dt[, .(rows_before = as.double(.N), score_before = sum(score)), by = c(source_col)]
       drop <- p[removed, .(seqnames, start)]
       dt <- dt[!drop, on = c("seqnames", "start")]
-      after_input <- dt[, .(rows_after = as.double(.N), score_after = sum(score)), by = c(source_col)]
-      stats <- merge(by_input, after_input, by = source_col, all.x = TRUE, sort = FALSE)
-      for (col in c("rows_after", "score_after")) data.table::set(stats, which(is.na(stats[[col]])), col, 0)
-      input_stats[[i]] <- stats
+      if (keep_all_scores) {
+        after_input <- dt[, .(rows_after = as.double(.N), score_after = sum(score)), by = c(source_col)]
+        stats <- merge(by_input, after_input, by = source_col, all.x = TRUE, sort = FALSE)
+        for (col in c("rows_after", "score_after")) data.table::set(stats, which(is.na(stats[[col]])), col, 0)
+        input_stats[[i]] <- stats
+      }
     }
-    outputs[[i]] <- .ofst_leaf_output(dt, source_col, keys, lib_names, keep_all_scores)
+    outputs[[i]] <- if (keep_all_scores) .ofst_leaf_output(dt, source_col, keys, lib_names, TRUE) else dt
     dt <- p <- NULL
+    unlink(c(leaves[[i]]$data, leaves[[i]]$positions, leaves[[i]]$histogram))
   }
   message("OFST rescue: assembling retained alignment rows; the final returned table must still fit in RAM.")
   result <- if (length(outputs)) data.table::rbindlist(outputs, use.names = TRUE, fill = TRUE) else staged$template
@@ -482,16 +459,24 @@
                          positions_after = positions_before - positions_removed,
                          score_after = score_before - score_removed)]
     data.table::setorderv(by_chromosome, "seqnames")
-    by_input <- data.table::rbindlist(input_stats)
-    by_input <- by_input[, lapply(.SD, sum), by = c(source_col)]
-    data.table::setnames(by_input, source_col, "input_index")
-    by_input <- merge(data.table::data.table(input_index = seq_along(file_paths)), by_input,
-                      by = "input_index", all.x = TRUE, sort = TRUE)
-    for (col in setdiff(names(by_input), "input_index")) data.table::set(by_input, which(is.na(by_input[[col]])), col, 0)
+    if (keep_all_scores) {
+      by_input <- data.table::rbindlist(input_stats)
+      by_input <- by_input[, lapply(.SD, sum), by = c(source_col)]
+      data.table::setnames(by_input, source_col, "input_index")
+      by_input <- merge(data.table::data.table(input_index = seq_along(file_paths)), by_input,
+                        by = "input_index", all.x = TRUE, sort = TRUE)
+      for (col in setdiff(names(by_input), "input_index")) data.table::set(by_input, which(is.na(by_input[[col]])), col, 0)
+    } else if (!is.null(detailed_input_stats)) by_input <- detailed_input_stats else {
+      by_input <- data.table::data.table(input_index = seq_along(file_paths),
+        rows_before = NA_real_, score_before = NA_real_, rows_after = NA_real_, score_after = NA_real_)
+      message("OFST removal summary: per-input removal counts not computed (filter_input_summary=FALSE); global/chromosome totals are exact.")
+    }
     by_input[, `:=`(file = file_paths[input_index], library = lib_names[input_index],
                     raw_input_rows = row_counts[input_index], rows_removed = rows_before - rows_after,
                     score_removed = score_before - score_after)]
-    summary <- structure(list(schema_version = 1L, applied = TRUE, method = "lowest_pooled_position_score",
+    summary <- structure(list(schema_version = 2L, applied = TRUE, method = "lowest_pooled_position_score",
+                              merge_strategy = "bounded_batch_first", batches = staged$batches,
+                              input_summary_computed = keep_all_scores || isTRUE(controls$filter_input_summary),
                               input_kind = "files", alignment_keys = keys,
                               grouping = c("seqnames", "start"), ignores_strand_and_cigar = TRUE,
                               seed = controls$filter_seed, tie_method = "seeded_digest_53bit_priority",
@@ -527,7 +512,8 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
                                 allow_filtering = TRUE, max_filter_value = NULL,
                                 filter_target_rows = 2^31 - 2, filter_seed = 1L,
                                 max_filter_score = Inf, filter_chunk_rows = 5e6,
-                                filter_tmpdir = tempdir(), filter_fallback_dir = NULL) {
+                                filter_tmpdir = tempdir(), filter_fallback_dir = NULL,
+                                filter_input_summary = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.null(max_filter_value)) {
@@ -536,7 +522,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
     max_filter_score <- max_filter_value
   }
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary)
   for (arg in c("keep_all_scores", "keepCigar", "sort", "chunkified")) {
     x <- get(arg)
     if (!is.logical(x) || !is.null(dim(x)) || length(x) != 1L || is.na(x)) .ofst_abort(arg, " must be TRUE or FALSE.")
@@ -596,7 +582,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
     controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
                      filter_seed = filter_seed, max_filter_score = max_filter_score,
                      filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
-                     filter_fallback_dir = filter_fallback_dir)
+                     filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary)
     result <- .ofst_merge_filtered_at(paths, labels,
       vapply(paths, function(p) as.double(fst::metadata_fst(p)$nrOfRows), 0), keys, keep_all_scores, controls, scratch)
     summary <- attr(result, "removal_summary", exact = TRUE)

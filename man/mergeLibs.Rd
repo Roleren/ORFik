@@ -18,8 +18,9 @@ mergeLibs(
   filter_seed = 1L,
   max_filter_score = Inf,
   filter_chunk_rows = 5e+06,
-  filter_tmpdir = tempdir(),
-  filter_fallback_dir = out_dir
+  filter_tmpdir = out_dir,
+  filter_fallback_dir = out_dir,
+  filter_input_summary = FALSE
 )
 }
 \arguments{
@@ -80,15 +81,18 @@ change R's RNG state; independent of input order and scratch partitioning.}
 \item{max_filter_score}{numeric, default Inf. Only positions whose pooled
 score is at most this ceiling may be removed. Abort if too few are eligible.}
 
-\item{filter_chunk_rows}{numeric whole number, default 5e6. Scratch read-block
-and compacted-partition row budget, not a byte or total RAM limit. Reduce to
-lower working memory. A single position's distinct per-input alignment rows
-must fit this budget. Temporary combines can contain up to three blocks.
-This does not limit total scratch storage: all inputs are staged before
-cross-file compaction, so increasing the block size does not avoid storing
-their alignment contributions on disk.}
+\item{filter_chunk_rows}{numeric whole number, default 5e6. Maximum raw rows
+per input batch and rows per compacted partition. Batches are collapsed
+before writing, then compacted in balanced rounds while inputs are read.
+Pooled-score output collapses across studies immediately. Linux available
+RAM and sampled uncompressed sizes may reduce this budget with an eightfold
+workspace allowance; this estimate is not a hard byte limit. Temporary
+combines contain up to two partitions. A single position's distinct rows
+(per input when keeping library scores) must fit the effective budget.
+Disk usage depends on distinct merged data, not just the batch size.}
 
-\item{filter_tmpdir}{character, default \code{tempdir()}. Existing writable
+\item{filter_tmpdir}{character, default \code{tempdir()} for \code{ofst_merge}
+and \code{out_dir} for \code{mergeLibs}. Existing writable
 directory on a disk with space for scratch partitions and summaries. Only
 a newly created private subdirectory is removed on completion or error.}
 
@@ -98,6 +102,13 @@ for \code{ofst_merge}; \code{mergeLibs} defaults to its \code{out_dir}. The
 input files are read again with unchanged filtering settings. NULL disables
 fallback. Invalid inputs, memory errors and user interrupts are not retried.
 A small ownership cache here also records primary scratch for crash cleanup.}
+
+\item{filter_input_summary}{logical, default FALSE. For pooled-score output,
+reread inputs after selection to reconstruct exact per-input removal counts.
+This adds disk I/O and bounded per-input compaction. When FALSE these counts
+are NA, not zero; raw input counts and exact global/chromosome totals remain
+available. When keeping all library scores, per-input counts are available
+without another pass regardless of this flag. Only used if filtering occurs.}
 }
 \value{
 Invisible NULL. Merged files contain the summed score and, if
@@ -116,9 +127,12 @@ Filtering controls are passed unchanged to \code{ofst_merge} for
 each merge group. The default permits lossy positional rescue only when
 distinct merged rows exceed \code{filter_target_rows}. Set
 \code{allow_filtering = FALSE} for strict lossless operation.
-The default \code{filter_fallback_dir = out_dir} enables a single retry in
-a private output-folder cache if primary scratch storage fails. Completed
-outputs are not removed. Set \code{filter_fallback_dir = NULL} to disable
+By default \code{filter_tmpdir = out_dir}: compacted batches are written
+directly to a private output-folder cache, without first filling system tmp.
+If an alternate primary directory is explicitly supplied, the default
+\code{filter_fallback_dir = out_dir} enables one restart on the output disk
+if that primary fails. Completed outputs are not removed.
+Set \code{filter_fallback_dir = NULL} to disable
 this retry. Owned, verifiably abandoned output-side caches are checked on
 startup; their ownership records can also identify abandoned primary scratch.
 See \code{ofst_merge} for interrupt/crash cleanup limitations.

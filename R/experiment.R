@@ -710,9 +710,12 @@ simpleLibs <- convertLibs
 #' each merge group. The default permits lossy positional rescue only when
 #' distinct merged rows exceed \code{filter_target_rows}. Set
 #' \code{allow_filtering = FALSE} for strict lossless operation.
-#' The default \code{filter_fallback_dir = out_dir} enables a single retry in
-#' a private output-folder cache if primary scratch storage fails. Completed
-#' outputs are not removed. Set \code{filter_fallback_dir = NULL} to disable
+#' By default \code{filter_tmpdir = out_dir}: compacted batches are written
+#' directly to a private output-folder cache, without first filling system tmp.
+#' If an alternate primary directory is explicitly supplied, the default
+#' \code{filter_fallback_dir = out_dir} enables one restart on the output disk
+#' if that primary fails. Completed outputs are not removed.
+#' Set \code{filter_fallback_dir = NULL} to disable
 #' this retry. Owned, verifiably abandoned output-side caches are checked on
 #' startup; their ownership records can also identify abandoned primary scratch.
 #' See \code{ofst_merge} for interrupt/crash cleanup limitations.
@@ -739,7 +742,8 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
                       max_splits = 20, allow_filtering = TRUE,
                       filter_target_rows = 2^31 - 2, filter_seed = 1L,
                       max_filter_score = Inf, filter_chunk_rows = 5e6,
-                      filter_tmpdir = tempdir(), filter_fallback_dir = out_dir) {
+                      filter_tmpdir = out_dir, filter_fallback_dir = out_dir,
+                      filter_input_summary = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.character(mode) || length(mode) != 1L || is.na(mode) || !mode %in% c("all", "rep", "lib"))
@@ -750,7 +754,7 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
       anyNA(lib_names_full) || any(!nzchar(lib_names_full)) || anyDuplicated(lib_names_full))
     .ofst_abort("lib_names_full must contain one unique, non-empty character name per experiment row.")
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary)
   if (!is.character(out_dir) || length(out_dir) != 1L || is.na(out_dir) || !nzchar(out_dir))
     .ofst_abort("out_dir must be one non-empty directory path.")
   filepaths <- paths
@@ -779,7 +783,8 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
                      max_splits = max_splits, allow_filtering = allow_filtering,
                      filter_target_rows = filter_target_rows, filter_seed = filter_seed,
                      max_filter_score = max_filter_score, filter_chunk_rows = filter_chunk_rows,
-                     filter_tmpdir = filter_tmpdir, filter_fallback_dir = filter_fallback_dir)
+                     filter_tmpdir = filter_tmpdir, filter_fallback_dir = filter_fallback_dir,
+                     filter_input_summary = filter_input_summary)
     .ofst_save_merge(dt, save_path)
     dt <- NULL
   }
