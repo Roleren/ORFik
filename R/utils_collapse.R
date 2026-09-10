@@ -158,9 +158,18 @@ collapse.by.scores <- function(x) {
 #' and compacted-partition row budget, not a byte or total RAM limit. Reduce to
 #' lower working memory. A single position's distinct per-input alignment rows
 #' must fit this budget. Temporary combines can contain up to three blocks.
+#' This does not limit total scratch storage: all inputs are staged before
+#' cross-file compaction, so increasing the block size does not avoid storing
+#' their alignment contributions on disk.
 #' @param filter_tmpdir character, default \code{tempdir()}. Existing writable
 #' directory on a disk with space for scratch partitions and summaries. Only
 #' a newly created private subdirectory is removed on completion or error.
+#' @param filter_fallback_dir character or NULL. An existing alternate directory
+#' used for one automatic restart after a scratch-storage failure. Default NULL
+#' for \code{ofst_merge}; \code{mergeLibs} defaults to its \code{out_dir}. The
+#' input files are read again with unchanged filtering settings. NULL disables
+#' fallback. Invalid inputs, memory errors and user interrupts are not retried.
+#' A small ownership cache here also records primary scratch for crash cleanup.
 #' @details Chromosome and strand columns may be character or factor, including
 #' different factor levels in different files. Factors are retained internally
 #' to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
@@ -183,6 +192,15 @@ collapse.by.scores <- function(x) {
 #' Scratch processing bounds intermediate partitions, but the final table
 #' and its assembly still need to fit in RAM. Both score modes use the same
 #' removal decision. Filtering is not performed separately on merge chunks.
+#' Ordinary R errors and interrupts clean this run's private caches. SIGKILL,
+#' OOM kills and machine crashes cannot execute R cleanup handlers. On a later
+#' run, positively identified abandoned caches in the configured directories
+#' can be removed, including primary scratch registered by the output-side
+#' cache. Linux process identity checks include host, user, boot, PID namespace
+#' and process start time; active, foreign or unverifiable owners are left alone.
+#' Unmarked folders and symlinks are never claimed for automatic cleanup.
+#' Final outputs and input files are never deleted by cache cleanup. Recovery
+#' files from interrupted output publication are retained with a message.
 #' @return a data.table of merged result, it is merged on all columns except "score".
 #' The returned file will contain the scores of each file + the aggregate sum score.
 #' Only when positions were actually removed, \code{attr(result, "removal_summary")}
@@ -200,7 +218,8 @@ ofst_merge <- function(file_paths,
                        max_splits = 20L, dt_max_index_size = 2^31,
                        allow_filtering = TRUE, filter_target_rows = 2^31 - 2,
                        filter_seed = 1L, max_filter_score = Inf,
-                       filter_chunk_rows = 5e6, filter_tmpdir = tempdir()) {
+                       filter_chunk_rows = 5e6, filter_tmpdir = tempdir(),
+                       filter_fallback_dir = NULL) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.character(file_paths) || !is.null(dim(file_paths)) || !length(file_paths) ||
@@ -219,7 +238,7 @@ ofst_merge <- function(file_paths,
       stop(arg, " must be TRUE or FALSE.")
   }
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir)
   .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
   columns <- .validate_schema(file_paths)
   if (keep_all_scores && (anyDuplicated(lib_names) || any(lib_names %in% columns)))
@@ -230,7 +249,8 @@ ofst_merge <- function(file_paths,
   if (sum(row_numbers) > filter_target_rows) {
     controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
                      filter_seed = filter_seed, max_filter_score = max_filter_score,
-                     filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir)
+                     filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
+                     filter_fallback_dir = filter_fallback_dir)
     # Every original input participates in one global decision. Never filter
     # first-round chunks independently, even when their raw row sum is large.
     keys <- setdiff(fst::metadata_fst(file_paths[1L])$columnNames,

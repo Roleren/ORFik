@@ -19,32 +19,45 @@
 .ofst_save_merge <- function(dt, path) {
   # Prepare both artifacts before replacing either. A NULL sidecar explicitly
   # records an unfiltered merge, including when overwriting a filtered output.
-  output_tmp <- tempfile(".ofst-output-", tmpdir = dirname(path))
-  summary_tmp <- tempfile(".ofst-summary-", tmpdir = dirname(path))
+  cache <- tryCatch(.ofst_new_cache(dirname(path), "output"),
+    ofst_scratch_error = function(e) .ofst_abort("cannot prepare merged output for '", path,
+      "'; existing output was not replaced. ", conditionMessage(e)))
+  output_tmp <- file.path(cache, "output.ofst")
+  summary_tmp <- file.path(cache, "removal_summary.rds")
   preserve_summary <- FALSE
   on.exit({
-    unlink(output_tmp)
-    if (!preserve_summary) unlink(summary_tmp)
+    if (preserve_summary)
+      message("OFST merge: output publication was interrupted; recovery cache retained at '", cache, "'.") else
+        .ofst_cleanup_cache(cache, current_run = TRUE, discard_recovery = TRUE)
   }, add = TRUE)
   tryCatch({
     fst::write_fst(dt, output_tmp)
     saveRDS(attr(dt, "removal_summary", exact = TRUE), summary_tmp)
   }, error = function(e) .ofst_abort("cannot prepare merged output and summary for '", path,
                                     "'. Check disk space/permissions; existing output was not replaced. ", conditionMessage(e)))
-  if (!file.rename(output_tmp, path)) .ofst_abort("cannot replace merged output '", path, "'.")
+  owner <- .ofst_cache_owner(cache)
+  owner$state <- "publishing"
+  owner$output <- normalizePath(path, mustWork = FALSE)
+  .ofst_write_cache_owner(cache, owner)
+  preserve_summary <- TRUE
+  if (!file.rename(output_tmp, path)) {
+    preserve_summary <- FALSE
+    .ofst_abort("cannot replace merged output '", path, "'; existing output was not replaced.")
+  }
   sidecar <- paste0(path, ".removal_summary.rds")
   if (!file.rename(summary_tmp, sidecar)) {
-    preserve_summary <- TRUE
     .ofst_abort("merged output was written to '", path, "', but the summary could not replace '", sidecar,
                 "'. The correct summary is preserved at '", summary_tmp, "'; do not use any old sidecar.")
   }
+  preserve_summary <- FALSE
   message("OFST merge: saved ", path, "; removal summary: ", sidecar,
           if (is.null(attr(dt, "removal_summary", exact = TRUE))) " (NULL: no filtering)." else ".")
   invisible(NULL)
 }
 
 .ofst_filter_controls <- function(allow_filtering, filter_target_rows, filter_seed,
-                                  max_filter_score, filter_chunk_rows, filter_tmpdir) {
+                                  max_filter_score, filter_chunk_rows, filter_tmpdir,
+                                  filter_fallback_dir = NULL) {
   if (!is.logical(allow_filtering) || !is.null(dim(allow_filtering)) || length(allow_filtering) != 1L || is.na(allow_filtering))
     .ofst_abort("allow_filtering must be TRUE or FALSE.")
   whole <- function(x) is.numeric(x) && !is.object(x) && is.null(dim(x)) && length(x) == 1L &&
@@ -62,21 +75,23 @@
                 .ofst_number(floor(.int32_max / 4)), ".")
   if (!is.character(filter_tmpdir) || !is.null(dim(filter_tmpdir)) || length(filter_tmpdir) != 1L || is.na(filter_tmpdir) || !nzchar(filter_tmpdir))
     .ofst_abort("filter_tmpdir must name an existing writable scratch directory.")
+  if (!is.null(filter_fallback_dir) && (!is.character(filter_fallback_dir) ||
+      !is.null(dim(filter_fallback_dir)) || length(filter_fallback_dir) != 1L ||
+      is.na(filter_fallback_dir) || !nzchar(filter_fallback_dir)))
+    .ofst_abort("filter_fallback_dir must be NULL or one non-empty directory path.")
   invisible(NULL)
 }
 
 .ofst_scratch_dir <- function(parent) {
-  if (!dir.exists(parent) || file.access(parent, 2L) != 0L)
-    .ofst_abort("scratch directory '", parent, "' does not exist or is not writable. Set filter_tmpdir to a disk with free space.")
-  path <- tempfile("orfik-ofst-filter-", tmpdir = normalizePath(parent, mustWork = TRUE))
-  if (!dir.create(path)) .ofst_abort("could not create scratch directory '", path, "'.")
-  path
+  .ofst_new_cache(parent, "filter")
 }
 
 .ofst_spill <- function(dt, scratch, prefix = "part-") {
   path <- tempfile(prefix, tmpdir = scratch, fileext = ".fst")
-  tryCatch(fst::write_fst(dt, path), error = function(e)
-    .ofst_abort("cannot write scratch file '", path, "'. Check disk space and permissions. ", conditionMessage(e)))
+  tryCatch(fst::write_fst(dt, path), error = function(e) {
+    if (.ofst_memory_error(e)) .ofst_abort("scratch serialization exhausted memory; lower filter_chunk_rows. ", conditionMessage(e))
+    .ofst_storage_abort("cannot write scratch file '", path, "'. Check disk space and permissions. ", conditionMessage(e))
+  })
   path
 }
 
@@ -104,8 +119,12 @@
     if (from > .Machine$integer.max || (!is.null(to) && to > .Machine$integer.max))
       .ofst_read_large_offset(path, from, to, columns) else
         fst::read_fst(path, as.data.table = TRUE, from = from, to = to, columns = columns)
-  }, error = function(e)
-    .ofst_abort("cannot read '", path, "': ", conditionMessage(e)))
+  }, error = function(e) {
+    if (.ofst_memory_error(e)) .ofst_abort("reading '", path, "' exhausted memory; lower filter_chunk_rows. ", conditionMessage(e))
+    failure <- if (grepl("^orfik-ofst-(filter|anchor|tables)-", basename(dirname(path))) &&
+                    file.exists(file.path(dirname(path), ".ofst-cache-owner.rds"))) .ofst_storage_abort else .ofst_abort
+    failure("cannot read '", path, "': ", conditionMessage(e))
+  })
 }
 
 .ofst_position_id <- function(seqnames, start) {
@@ -201,7 +220,10 @@
     while (first <= row_counts[i]) {
       last <- min(row_counts[i], first + chunk_rows - 1)
       dt <- tryCatch(.normalize_dt(.ofst_read_part(paths[i], from = first, to = last)),
-                     error = function(e) .ofst_abort("invalid input '", paths[i], "', rows ", first, "-", last, ": ", conditionMessage(e)))
+                     error = function(e) {
+                       if (inherits(e, "ofst_scratch_error")) stop(e)
+                       .ofst_abort("invalid input '", paths[i], "', rows ", first, "-", last, ": ", conditionMessage(e))
+                     })
       if (!"start" %in% names(dt))
         .ofst_abort("chromosome/start filtering requires a 'start' column. Paired start1/start2 inputs need an explicit positional convention first.")
       if (anyNA(dt$seqnames) || anyNA(dt$start))
@@ -395,8 +417,12 @@
                                   keep_all_scores, controls) {
   if (!all(c("seqnames", "start") %in% keys))
     .ofst_abort("positional rescue requires chromosome and 'start' columns; paired start1/start2 coordinates are not implicitly substituted.")
-  scratch <- .ofst_scratch_dir(controls$filter_tmpdir)
-  on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
+  .ofst_with_scratch(controls$filter_tmpdir, controls$filter_fallback_dir, function(scratch)
+    .ofst_merge_filtered_at(file_paths, lib_names, row_counts, keys, keep_all_scores, controls, scratch))
+}
+
+.ofst_merge_filtered_at <- function(file_paths, lib_names, row_counts, keys,
+                                     keep_all_scores, controls, scratch) {
   message("OFST rescue: ", .ofst_number(sum(row_counts)), " input rows may exceed the final target of ",
           .ofst_number(controls$filter_target_rows), ". Checking the distinct merged rows before removing anything.")
   message("OFST rescue: scratch directory ", scratch, "; block budget ", .ofst_number(controls$filter_chunk_rows), " rows.")
@@ -472,6 +498,8 @@
                               target_rows = controls$filter_target_rows,
                               target_undershoot_rows = controls$filter_target_rows - nrow(result),
                               filter_chunk_rows = controls$filter_chunk_rows,
+                              scratch_parent = dirname(scratch),
+                              scratch_fallback_used = !identical(dirname(scratch), normalizePath(controls$filter_tmpdir, mustWork = FALSE)),
                               max_filter_score = controls$max_filter_score,
                               input_rows = sum(row_counts), rows_before = before,
                               rows_after = as.double(nrow(result)), rows_removed = before - nrow(result),
@@ -499,7 +527,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
                                 allow_filtering = TRUE, max_filter_value = NULL,
                                 filter_target_rows = 2^31 - 2, filter_seed = 1L,
                                 max_filter_score = Inf, filter_chunk_rows = 5e6,
-                                filter_tmpdir = tempdir()) {
+                                filter_tmpdir = tempdir(), filter_fallback_dir = NULL) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.null(max_filter_value)) {
@@ -508,7 +536,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
     max_filter_score <- max_filter_value
   }
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir)
   for (arg in c("keep_all_scores", "keepCigar", "sort", "chunkified")) {
     x <- get(arg)
     if (!is.logical(x) || !is.null(dim(x)) || length(x) != 1L || is.na(x)) .ofst_abort(arg, " must be TRUE or FALSE.")
@@ -542,41 +570,42 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
   if (sum(rows) <= filter_target_rows)
     return(.ofst_merge_lossless(dt_list, lib_names, keep_all_scores, keepCigar, sort, chunkified))
   if (!keepCigar) keys <- setdiff(keys, "cigar")
-  scratch <- .ofst_scratch_dir(filter_tmpdir)
-  on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
-  paths <- labels <- character()
-  for (i in seq_along(dt_list)) {
-    d <- dt_list[[i]]
-    if (chunkified && keep_all_scores) {
-      present <- intersect(lib_names, names(d))
-      if (!length(present)) .ofst_abort("chunk ", i, " has no per-library score columns.")
-      observed <- logical(nrow(d))
-      for (label in present) {
-        x <- d[[label]]
-        observed <- observed | !is.na(x)
-        index <- which(!is.na(x))
-        part <- d[index, c(keys, label), with = FALSE]
-        data.table::setnames(part, label, "score")
-        paths <- c(paths, .ofst_spill(part, scratch, "input-"))
-        labels <- c(labels, label)
+  .ofst_with_scratch(filter_tmpdir, filter_fallback_dir, function(scratch) {
+    paths <- labels <- character()
+    for (i in seq_along(dt_list)) {
+      d <- dt_list[[i]]
+      if (chunkified && keep_all_scores) {
+        present <- intersect(lib_names, names(d))
+        if (!length(present)) .ofst_abort("chunk ", i, " has no per-library score columns.")
+        observed <- logical(nrow(d))
+        for (label in present) {
+          x <- d[[label]]
+          observed <- observed | !is.na(x)
+          index <- which(!is.na(x))
+          part <- d[index, c(keys, label), with = FALSE]
+          data.table::setnames(part, label, "score")
+          paths <- c(paths, .ofst_spill(part, scratch, "input-"))
+          labels <- c(labels, label)
+        }
+        if (any(!observed)) .ofst_abort("chunk ", i, " contains rows absent from every per-library score column; cannot reconstruct their library attribution.")
+      } else {
+        paths <- c(paths, .ofst_spill(d[, c(keys, "score"), with = FALSE], scratch, "input-"))
+        labels <- c(labels, if (chunkified) paste0("chunk", i) else lib_names[i])
       }
-      if (any(!observed)) .ofst_abort("chunk ", i, " contains rows absent from every per-library score column; cannot reconstruct their library attribution.")
-    } else {
-      paths <- c(paths, .ofst_spill(d[, c(keys, "score"), with = FALSE], scratch, "input-"))
-      labels <- c(labels, if (chunkified) paste0("chunk", i) else lib_names[i])
     }
-  }
-  controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
-                   filter_seed = filter_seed, max_filter_score = max_filter_score,
-                   filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir)
-  result <- .ofst_merge_filtered(paths, labels,
-    vapply(paths, function(p) as.double(fst::metadata_fst(p)$nrOfRows), 0), keys, keep_all_scores, controls)
-  summary <- attr(result, "removal_summary", exact = TRUE)
-  if (!is.null(summary)) {
-    summary$input_kind <- if (chunkified && keep_all_scores) "chunk_library_contributions" else "in_memory_tables"
-    summary$by_input[, file := NA_character_]
-    data.table::setattr(result, "removal_summary", summary)
-  }
-  if (sort) .ofst_sort(result, setdiff(names(result), "score"))
-  .ofst_finalize(result)
+    controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
+                     filter_seed = filter_seed, max_filter_score = max_filter_score,
+                     filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
+                     filter_fallback_dir = filter_fallback_dir)
+    result <- .ofst_merge_filtered_at(paths, labels,
+      vapply(paths, function(p) as.double(fst::metadata_fst(p)$nrOfRows), 0), keys, keep_all_scores, controls, scratch)
+    summary <- attr(result, "removal_summary", exact = TRUE)
+    if (!is.null(summary)) {
+      summary$input_kind <- if (chunkified && keep_all_scores) "chunk_library_contributions" else "in_memory_tables"
+      summary$by_input[, file := NA_character_]
+      data.table::setattr(result, "removal_summary", summary)
+    }
+    if (sort) .ofst_sort(result, setdiff(names(result), "score"))
+    .ofst_finalize(result)
+  })
 }

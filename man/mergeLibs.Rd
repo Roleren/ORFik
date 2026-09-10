@@ -18,7 +18,8 @@ mergeLibs(
   filter_seed = 1L,
   max_filter_score = Inf,
   filter_chunk_rows = 5e+06,
-  filter_tmpdir = tempdir()
+  filter_tmpdir = tempdir(),
+  filter_fallback_dir = out_dir
 )
 }
 \arguments{
@@ -82,11 +83,21 @@ score is at most this ceiling may be removed. Abort if too few are eligible.}
 \item{filter_chunk_rows}{numeric whole number, default 5e6. Scratch read-block
 and compacted-partition row budget, not a byte or total RAM limit. Reduce to
 lower working memory. A single position's distinct per-input alignment rows
-must fit this budget. Temporary combines can contain up to three blocks.}
+must fit this budget. Temporary combines can contain up to three blocks.
+This does not limit total scratch storage: all inputs are staged before
+cross-file compaction, so increasing the block size does not avoid storing
+their alignment contributions on disk.}
 
 \item{filter_tmpdir}{character, default \code{tempdir()}. Existing writable
 directory on a disk with space for scratch partitions and summaries. Only
 a newly created private subdirectory is removed on completion or error.}
+
+\item{filter_fallback_dir}{character or NULL. An existing alternate directory
+used for one automatic restart after a scratch-storage failure. Default NULL
+for \code{ofst_merge}; \code{mergeLibs} defaults to its \code{out_dir}. The
+input files are read again with unchanged filtering settings. NULL disables
+fallback. Invalid inputs, memory errors and user interrupts are not retried.
+A small ownership cache here also records primary scratch for crash cleanup.}
 }
 \value{
 Invisible NULL. Merged files contain the summed score and, if
@@ -105,6 +116,12 @@ Filtering controls are passed unchanged to \code{ofst_merge} for
 each merge group. The default permits lossy positional rescue only when
 distinct merged rows exceed \code{filter_target_rows}. Set
 \code{allow_filtering = FALSE} for strict lossless operation.
+The default \code{filter_fallback_dir = out_dir} enables a single retry in
+a private output-folder cache if primary scratch storage fails. Completed
+outputs are not removed. Set \code{filter_fallback_dir = NULL} to disable
+this retry. Owned, verifiably abandoned output-side caches are checked on
+startup; their ownership records can also identify abandoned primary scratch.
+See \code{ofst_merge} for interrupt/crash cleanup limitations.
 }
 \examples{
 df2 <- ORFik.template.experiment()

@@ -65,6 +65,7 @@ Imports:
   withr
 RoxygenNote: 7.3.3
 Suggests:
+  callr,
   testthat,
   rmarkdown,
   knitr,
