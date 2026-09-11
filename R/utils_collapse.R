@@ -157,9 +157,8 @@ collapse.by.scores <- function(x) {
 #' @param filter_chunk_rows numeric whole number, default 5e6. Maximum raw rows
 #' per input batch and rows per compacted partition. Batches are collapsed
 #' before writing, then compacted in balanced rounds while inputs are read.
-#' Pooled-score output collapses across studies immediately. Linux available
-#' RAM and sampled uncompressed sizes may reduce this budget with an eightfold
-#' workspace allowance; this estimate is not a hard byte limit. Temporary
+#' Pooled-score output collapses across studies immediately. This row budget
+#' is honored unchanged unless \code{filter_auto_memory = TRUE}. Temporary
 #' combines contain up to two partitions. A single position's distinct rows
 #' (per input when keeping library scores) must fit the effective budget.
 #' Disk usage depends on distinct merged data, not just the batch size.
@@ -179,6 +178,13 @@ collapse.by.scores <- function(x) {
 #' are NA, not zero; raw input counts and exact global/chromosome totals remain
 #' available. When keeping all library scores, per-input counts are available
 #' without another pass regardless of this flag. Only used if filtering occurs.
+#' @param filter_auto_memory logical, default FALSE. Opt into reducing the row
+#' budget using \code{get_system_usage()} available RAM, sampled uncompressed
+#' row sizes and an eightfold workspace allowance. Raw cgroup headroom is a
+#' conservative additional ceiling and may underestimate usable RAM because
+#' it includes filesystem cache. Diagnostic messages show the estimates.
+#' FALSE skips memory estimation entirely and honors \code{filter_chunk_rows}.
+#' Neither mode guarantees the merge fits RAM; reduce the row budget if needed.
 #' @details Chromosome and strand columns may be character or factor, including
 #' different factor levels in different files. Factors are retained internally
 #' to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
@@ -231,7 +237,8 @@ ofst_merge <- function(file_paths,
                        allow_filtering = TRUE, filter_target_rows = 2^31 - 2,
                        filter_seed = 1L, max_filter_score = Inf,
                        filter_chunk_rows = 5e6, filter_tmpdir = tempdir(),
-                       filter_fallback_dir = NULL, filter_input_summary = FALSE) {
+                       filter_fallback_dir = NULL, filter_input_summary = FALSE,
+                       filter_auto_memory = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.character(file_paths) || !is.null(dim(file_paths)) || !length(file_paths) ||
@@ -250,7 +257,8 @@ ofst_merge <- function(file_paths,
       stop(arg, " must be TRUE or FALSE.")
   }
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary,
+                        filter_auto_memory)
   .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
   columns <- .validate_schema(file_paths)
   if (keep_all_scores && (anyDuplicated(lib_names) || any(lib_names %in% columns)))
@@ -262,7 +270,8 @@ ofst_merge <- function(file_paths,
     controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
                      filter_seed = filter_seed, max_filter_score = max_filter_score,
                      filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
-                     filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary)
+                     filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary,
+                     filter_auto_memory = filter_auto_memory)
     # Every original input participates in one global decision. Never filter
     # first-round chunks independently, even when their raw row sum is large.
     keys <- setdiff(fst::metadata_fst(file_paths[1L])$columnNames,

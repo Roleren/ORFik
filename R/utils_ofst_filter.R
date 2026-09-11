@@ -57,7 +57,11 @@
 
 .ofst_filter_controls <- function(allow_filtering, filter_target_rows, filter_seed,
                                   max_filter_score, filter_chunk_rows, filter_tmpdir,
-                                  filter_fallback_dir = NULL, filter_input_summary = FALSE) {
+                                  filter_fallback_dir = NULL, filter_input_summary = FALSE,
+                                  filter_auto_memory = FALSE) {
+  if (!is.logical(filter_auto_memory) || !is.null(dim(filter_auto_memory)) ||
+      length(filter_auto_memory) != 1L || is.na(filter_auto_memory))
+    .ofst_abort("filter_auto_memory must be TRUE or FALSE.")
   if (!is.logical(filter_input_summary) || !is.null(dim(filter_input_summary)) ||
       length(filter_input_summary) != 1L || is.na(filter_input_summary))
     .ofst_abort("filter_input_summary must be TRUE or FALSE.")
@@ -392,11 +396,15 @@
                                      keep_all_scores, controls, scratch) {
   message("OFST rescue: ", .ofst_number(sum(row_counts)), " input rows may exceed the final target of ",
           .ofst_number(controls$filter_target_rows), ". Checking the distinct merged rows before removing anything.")
-  message("OFST rescue: scratch directory ", scratch, "; block budget ", .ofst_number(controls$filter_chunk_rows), " rows.")
+  requested_chunk_rows <- controls$filter_chunk_rows
+  if (isTRUE(controls$filter_auto_memory))
+    controls$filter_chunk_rows <- .ofst_batch_budget(file_paths, row_counts, requested_chunk_rows)
+  message("OFST rescue: scratch directory ", scratch, "; block budget ", .ofst_number(controls$filter_chunk_rows),
+          " rows (requested ", .ofst_number(requested_chunk_rows), "; automatic RAM sizing ",
+          if (isTRUE(controls$filter_auto_memory)) "enabled" else "disabled", ").")
   source_col <- ".ofst_source"
   while (source_col %in% c(keys, lib_names, "score")) source_col <- paste0("_", source_col)
   if (!keep_all_scores) source_col <- NULL
-  controls$filter_chunk_rows <- .ofst_batch_budget(file_paths, row_counts, controls$filter_chunk_rows)
   staged <- .ofst_stage_inputs(file_paths, row_counts, keys, source_col, controls$filter_chunk_rows, scratch)
   leaves <- staged$leaves
   before <- sum(vapply(leaves, `[[`, 0, "rows"))
@@ -483,6 +491,8 @@
                               target_rows = controls$filter_target_rows,
                               target_undershoot_rows = controls$filter_target_rows - nrow(result),
                               filter_chunk_rows = controls$filter_chunk_rows,
+                              requested_chunk_rows = requested_chunk_rows,
+                              filter_auto_memory = isTRUE(controls$filter_auto_memory),
                               scratch_parent = dirname(scratch),
                               scratch_fallback_used = !identical(dirname(scratch), normalizePath(controls$filter_tmpdir, mustWork = FALSE)),
                               max_filter_score = controls$max_filter_score,
@@ -513,7 +523,7 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
                                 filter_target_rows = 2^31 - 2, filter_seed = 1L,
                                 max_filter_score = Inf, filter_chunk_rows = 5e6,
                                 filter_tmpdir = tempdir(), filter_fallback_dir = NULL,
-                                filter_input_summary = FALSE) {
+                                filter_input_summary = FALSE, filter_auto_memory = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.null(max_filter_value)) {
@@ -522,7 +532,8 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
     max_filter_score <- max_filter_value
   }
   .ofst_filter_controls(allow_filtering, filter_target_rows, filter_seed,
-                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary)
+                        max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary,
+                        filter_auto_memory)
   for (arg in c("keep_all_scores", "keepCigar", "sort", "chunkified")) {
     x <- get(arg)
     if (!is.logical(x) || !is.null(dim(x)) || length(x) != 1L || is.na(x)) .ofst_abort(arg, " must be TRUE or FALSE.")
@@ -582,7 +593,8 @@ ofst_merge_internal <- function(dt_list, lib_names, keep_all_scores = TRUE,
     controls <- list(allow_filtering = allow_filtering, filter_target_rows = filter_target_rows,
                      filter_seed = filter_seed, max_filter_score = max_filter_score,
                      filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
-                     filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary)
+                     filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary,
+                     filter_auto_memory = filter_auto_memory)
     result <- .ofst_merge_filtered_at(paths, labels,
       vapply(paths, function(p) as.double(fst::metadata_fst(p)$nrOfRows), 0), keys, keep_all_scores, controls, scratch)
     summary <- attr(result, "removal_summary", exact = TRUE)

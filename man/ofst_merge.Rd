@@ -19,7 +19,8 @@ ofst_merge(
   filter_chunk_rows = 5e+06,
   filter_tmpdir = tempdir(),
   filter_fallback_dir = NULL,
-  filter_input_summary = FALSE
+  filter_input_summary = FALSE,
+  filter_auto_memory = FALSE
 )
 }
 \arguments{
@@ -63,9 +64,8 @@ score is at most this ceiling may be removed. Abort if too few are eligible.}
 \item{filter_chunk_rows}{numeric whole number, default 5e6. Maximum raw rows
 per input batch and rows per compacted partition. Batches are collapsed
 before writing, then compacted in balanced rounds while inputs are read.
-Pooled-score output collapses across studies immediately. Linux available
-RAM and sampled uncompressed sizes may reduce this budget with an eightfold
-workspace allowance; this estimate is not a hard byte limit. Temporary
+Pooled-score output collapses across studies immediately. This row budget
+is honored unchanged unless \code{filter_auto_memory = TRUE}. Temporary
 combines contain up to two partitions. A single position's distinct rows
 (per input when keeping library scores) must fit the effective budget.
 Disk usage depends on distinct merged data, not just the batch size.}
@@ -88,6 +88,14 @@ This adds disk I/O and bounded per-input compaction. When FALSE these counts
 are NA, not zero; raw input counts and exact global/chromosome totals remain
 available. When keeping all library scores, per-input counts are available
 without another pass regardless of this flag. Only used if filtering occurs.}
+
+\item{filter_auto_memory}{logical, default FALSE. Opt into reducing the row
+budget using \code{get_system_usage()} available RAM, sampled uncompressed
+row sizes and an eightfold workspace allowance. Raw cgroup headroom is a
+conservative additional ceiling and may underestimate usable RAM because
+it includes filesystem cache. Diagnostic messages show the estimates.
+FALSE skips memory estimation entirely and honors \code{filter_chunk_rows}.
+Neither mode guarantees the merge fits RAM; reduce the row budget if needed.}
 }
 \value{
 a data.table of merged result, it is merged on all columns except "score".

@@ -20,25 +20,35 @@
   # Rows remain the hard ceiling. The Linux estimate only REDUCES it, reserving
   # space for input, bind/group/sort workspaces, output and serialization.
   if (requested < 1e6 || !file.exists("/proc/meminfo")) return(requested)
-  available <- tryCatch({
-    line <- readLines("/proc/meminfo", warn = FALSE)
-    as.double(sub("^MemAvailable:[[:space:]]*([0-9]+).*", "\\1", line[grepl("^MemAvailable:", line)])) * 1024
-  }, error = function(e) NA_real_)
-  if (length(available) != 1L || !is.finite(available) || available <= 0) return(requested)
+  available <- tryCatch(get_system_usage(drive = NA_character_)$Memory_Available_Bytes,
+                        error = function(e) NA_real_)
+  if (!is.numeric(available) || length(available) != 1L || !is.finite(available) || available <= 0) {
+    message("OFST automatic RAM sizing: available memory could not be determined; retaining requested row budget.")
+    return(requested)
+  }
+  host_available <- available
+  cgroup_headroom <- Inf
   # A container can have a much smaller limit than /proc/meminfo reports.
   for (pair in list(c("/sys/fs/cgroup/memory.max", "/sys/fs/cgroup/memory.current"),
                     c("/sys/fs/cgroup/memory/memory.limit_in_bytes", "/sys/fs/cgroup/memory/memory.usage_in_bytes"))) {
     if (all(file.exists(pair))) {
       value <- suppressWarnings(vapply(pair, function(p) as.double(readLines(p, n = 1L, warn = FALSE)), 0))
-      if (all(is.finite(value))) available <- min(available, max(0, value[1L] - value[2L]))
+      if (all(is.finite(value))) cgroup_headroom <- min(cgroup_headroom, max(0, value[1L] - value[2L]))
     }
   }
+  available <- min(available, cgroup_headroom)
   bytes <- 1
   for (i in which(rows > 0)) {
     sample <- .ofst_read_part(paths[i], from = 1, to = min(rows[i], 4096))
     bytes <- max(bytes, as.double(object.size(sample)) / max(1, nrow(sample)))
   }
   budget <- max(1, min(requested, floor(available / (8 * bytes))))
+  message("OFST automatic RAM sizing: host MemAvailable = ", .ofst_number(host_available),
+    " bytes; raw cgroup headroom = ", if (is.finite(cgroup_headroom)) .ofst_number(cgroup_headroom) else "unlimited/unavailable",
+    "; sampled bytes/row = ", signif(bytes, 6), "; workspace multiplier = 8.")
+  if (is.finite(cgroup_headroom) && cgroup_headroom < host_available)
+    message("OFST automatic RAM sizing: raw cgroup usage includes filesystem cache; this conservative estimate may underestimate usable RAM. ",
+      "Use filter_auto_memory=FALSE to honor filter_chunk_rows without automatic reduction.")
   if (budget < requested) message("OFST batch merge: reducing row budget from ", .ofst_number(requested),
     " to ", .ofst_number(budget), " using sampled uncompressed size and available RAM (8-fold workspace allowance).")
   budget
