@@ -21,10 +21,16 @@ mergeLibs(
   filter_tmpdir = out_dir,
   filter_fallback_dir = out_dir,
   filter_input_summary = FALSE,
-  filter_auto_memory = FALSE
+  filter_auto_memory = FALSE,
+  remove_softclips = FALSE
 )
 }
 \arguments{
+\item{remove_softclips}{Logical, default FALSE. Passed to ofst_merge: remove
+terminal S operations before duplicate collapse for master-track output.
+Raw input files and reference coordinates are unchanged. Query widths shrink;
+explicit qwidth/qwidth1/qwidth2 columns are updated. Other metadata remains
+part of the merge key. Clip-only CIGARs that would become empty are rejected.}
 \item{df}{an ORFik \code{\link{experiment}}}
 
 \item{out_dir}{Ouput directory, default \code{file.path(dirname(df$filepath[1]), "ofst_merged")},

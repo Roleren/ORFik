@@ -20,10 +20,18 @@ ofst_merge(
   filter_tmpdir = tempdir(),
   filter_fallback_dir = NULL,
   filter_input_summary = FALSE,
-  filter_auto_memory = FALSE
+  filter_auto_memory = FALSE,
+  remove_softclips = FALSE
 )
 }
 \arguments{
+\item{remove_softclips}{Logical, default FALSE. Remove terminal S operations
+from cigar or cigar1/cigar2 before duplicate collapse, including rescue batches.
+Input files and reference coordinates are unchanged. Hard clips, insertions,
+deletions and splice gaps are retained. Explicit qwidth/qwidth1/qwidth2 columns
+are updated; other metadata remains part of the merge key. Clip-only CIGARs
+that would become empty are rejected. Intended for master tracks, not outputs
+requiring original read lengths or clipping QC.}
 \item{file_paths}{Full path to .ofst files wanted to merge}
 
 \item{lib_names}{character, the name to give the resulting score columns.

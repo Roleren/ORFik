@@ -217,8 +217,10 @@
   list(.ofst_finish_partition(accumulator, keys, source_col, scratch))
 }
 
-.ofst_stage_inputs <- function(paths, row_counts, keys, source_col, chunk_rows, scratch) {
-  staged <- .ofst_batch_runs(paths, row_counts, keys, source_col, chunk_rows, scratch)
+.ofst_stage_inputs <- function(paths, row_counts, keys, source_col, chunk_rows, scratch,
+                                remove_softclips = FALSE) {
+  staged <- .ofst_batch_runs(paths, row_counts, keys, source_col, chunk_rows, scratch,
+                              remove_softclips = remove_softclips)
   leaves <- lapply(.ofst_run_leaves(staged$tree), function(leaf) {
     dt <- .ofst_read_part(leaf$path)
     result <- .ofst_finish_partition(dt, keys, source_col, scratch, data_path = leaf$path)
@@ -405,7 +407,8 @@
   source_col <- ".ofst_source"
   while (source_col %in% c(keys, lib_names, "score")) source_col <- paste0("_", source_col)
   if (!keep_all_scores) source_col <- NULL
-  staged <- .ofst_stage_inputs(file_paths, row_counts, keys, source_col, controls$filter_chunk_rows, scratch)
+  staged <- .ofst_stage_inputs(file_paths, row_counts, keys, source_col, controls$filter_chunk_rows, scratch,
+                                remove_softclips = isTRUE(controls$remove_softclips))
   leaves <- staged$leaves
   before <- sum(vapply(leaves, `[[`, 0, "rows"))
   positions_before <- sum(vapply(leaves, `[[`, 0, "positions_n"))
@@ -425,7 +428,8 @@
   detailed_input_stats <- NULL
   if (!is.null(selection) && !keep_all_scores && isTRUE(controls$filter_input_summary))
     detailed_input_stats <- .ofst_batch_input_stats(file_paths, row_counts, keys,
-      controls$filter_chunk_rows, scratch, leaves, selection)
+      controls$filter_chunk_rows, scratch, leaves, selection,
+      remove_softclips = isTRUE(controls$remove_softclips))
   outputs <- chromosome_stats <- input_stats <- list()
   for (i in seq_along(leaves)) {
     p <- .ofst_read_part(leaves[[i]]$positions)
@@ -493,6 +497,7 @@
                               filter_chunk_rows = controls$filter_chunk_rows,
                               requested_chunk_rows = requested_chunk_rows,
                               filter_auto_memory = isTRUE(controls$filter_auto_memory),
+                              remove_softclips = isTRUE(controls$remove_softclips),
                               scratch_parent = dirname(scratch),
                               scratch_fallback_used = !identical(dirname(scratch), normalizePath(controls$filter_tmpdir, mustWork = FALSE)),
                               max_filter_score = controls$max_filter_score,

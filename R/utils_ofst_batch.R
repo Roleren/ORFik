@@ -1,12 +1,13 @@
 # Bounded batch-first merging. Runs form a binary hash tree whose leaves fit
 # the row budget. A binary carry merges equally sized input batches promptly;
 # no full, source-labelled copy of the inputs is staged for pooled output.
-.ofst_input_block <- function(path, from, to, keys) {
+.ofst_input_block <- function(path, from, to, keys, remove_softclips = FALSE) {
   dt <- tryCatch(.normalize_dt(.ofst_read_part(path, from = from, to = to)),
     error = function(e) {
       if (inherits(e, "ofst_scratch_error")) stop(e)
       .ofst_abort("invalid input '", path, "', rows ", from, "-", to, ": ", conditionMessage(e))
     })
+  if (remove_softclips) dt <- .ofst_remove_softclips(dt)
   if (anyNA(dt$seqnames) || anyNA(dt$start))
     .ofst_abort("input '", path, "' contains missing chromosome/start keys. Correct these before positional filtering.")
   if (any(!is.finite(dt$score) & !is.na(dt$score)) || any(dt$score < 0, na.rm = TRUE))
@@ -119,7 +120,8 @@
   list(children = children, depth = a$depth, prefix = a$prefix)
 }
 
-.ofst_batch_runs <- function(paths, row_counts, keys, source_col, budget, scratch, verbose = TRUE) {
+.ofst_batch_runs <- function(paths, row_counts, keys, source_col, budget, scratch, verbose = TRUE,
+                              remove_softclips = FALSE) {
   levels <- pending <- list()
   pending_rows <- 0
   template <- NULL
@@ -152,7 +154,9 @@
     first <- 1
     while (first <= row_counts[i]) {
       last <- min(row_counts[i], first + budget - pending_rows - 1)
-      dt <- .ofst_input_block(paths[i], first, last, keys)
+      dt <- if (remove_softclips)
+        .ofst_input_block(paths[i], first, last, keys, remove_softclips = TRUE) else
+        .ofst_input_block(paths[i], first, last, keys)
       if (is.null(template)) template <- dt[0]
       if (length(source_col)) data.table::set(dt, j = source_col, value = rep.int(i, nrow(dt)))
       pending[[length(pending) + 1L]] <- dt
@@ -171,12 +175,14 @@
   list(tree = run, template = template, batches = batch)
 }
 
-.ofst_batch_input_stats <- function(paths, row_counts, keys, budget, scratch, leaves, selection) {
+.ofst_batch_input_stats <- function(paths, row_counts, keys, budget, scratch, leaves, selection,
+                                     remove_softclips = FALSE) {
   stats <- vector("list", length(paths))
   message("OFST removal summary: rereading inputs for requested per-study statistics; this adds disk I/O.")
   for (i in seq_along(paths)) {
     message("OFST removal summary: input ", i, "/", length(paths), ".")
-    staged <- .ofst_batch_runs(paths[i], row_counts[i], keys, NULL, budget, scratch, verbose = FALSE)
+    staged <- .ofst_batch_runs(paths[i], row_counts[i], keys, NULL, budget, scratch, verbose = FALSE,
+                               remove_softclips = remove_softclips)
     parts <- .ofst_run_leaves(staged$tree)
     total <- c(rows_before = 0, score_before = 0, rows_after = 0, score_after = 0)
     for (part in parts) {

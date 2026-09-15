@@ -13,6 +13,9 @@
   rows <- split(seq_along(x), as.character(seqnames(x)))
   s <- as.character(strand(x))
   si <- seqinfo(x)
+  # Coverage below has explicit chromosome widths. Summing Seqinfo lengths
+  # is O(number of chromosomes), independent of reads and coverage runs.
+  compress_list <- sum(as.double(seqlengths(si))) <= .Machine$integer.max
   one_strand <- function(keep) {
     ans <- lapply(seqlevels(si), function(ch) {
       i <- rows[[ch]]
@@ -24,7 +27,8 @@
                width = seqlengths(si)[[ch]], weight = w)
     })
     names(ans) <- seqlevels(si)
-    ans <- RleList(ans)
+    # Above INT_MAX, each chromosome still remains run-length encoded.
+    ans <- RleList(ans, compress = compress_list)
     seqinfo(ans) <- si
     ans
   }

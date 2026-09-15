@@ -143,6 +143,14 @@ collapse.by.scores <- function(x) {
 #' @param dt_max_index_size 2^31, the number of rows data.table support, set lower
 #' to merge split on lower counts in the ordinary lossless path. This groups
 #' whole input files and is independent of the final output target.
+#' @param remove_softclips logical, default FALSE. For master-track merges,
+#' remove terminal S operations from cigar (or cigar1/cigar2) before duplicate
+#' collapse, including bounded rescue batches. Input files are never modified.
+#' Start, end, reference width, hard clips, insertions, deletions and splice gaps
+#' are unchanged. Query width is shortened; explicit qwidth/qwidth1/qwidth2
+#' columns, if present, are updated. Other metadata remains part of the merge
+#' key. Clip-only CIGARs that would become empty are rejected. Do not enable
+#' this for outputs that must retain original read lengths or clipping QC.
 #' @param allow_filtering logical, default TRUE. If the distinct merged rows
 #' exceed \code{filter_target_rows}, discard whole chromosome/start positions,
 #' lowest pooled score first. FALSE aborts without returning a filtered result.
@@ -238,7 +246,7 @@ ofst_merge <- function(file_paths,
                        filter_seed = 1L, max_filter_score = Inf,
                        filter_chunk_rows = 5e6, filter_tmpdir = tempdir(),
                        filter_fallback_dir = NULL, filter_input_summary = FALSE,
-                       filter_auto_memory = FALSE) {
+                       filter_auto_memory = FALSE, remove_softclips = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.character(file_paths) || !is.null(dim(file_paths)) || !length(file_paths) ||
@@ -251,7 +259,7 @@ ofst_merge <- function(file_paths,
   if (!is.character(lib_names) || !is.null(dim(lib_names)) ||
       anyNA(lib_names) || any(!nzchar(lib_names)))
     stop("lib_names must contain non-missing, non-empty character names.")
-  for (arg in c("keep_all_scores", "keepCigar", "sort")) {
+  for (arg in c("keep_all_scores", "keepCigar", "sort", "remove_softclips")) {
     value <- get(arg)
     if (!is.logical(value) || !is.null(dim(value)) || length(value) != 1L || is.na(value))
       stop(arg, " must be TRUE or FALSE.")
@@ -261,6 +269,8 @@ ofst_merge <- function(file_paths,
                         filter_auto_memory)
   .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
   columns <- .validate_schema(file_paths)
+  if (remove_softclips)
+    message("OFST merge: removing soft clips before duplicate collapse; reference coordinates and input files are unchanged.")
   if (keep_all_scores && (anyDuplicated(lib_names) || any(lib_names %in% columns)))
     stop("lib_names must be unique and must not collide with OFST column names.")
 
@@ -271,7 +281,7 @@ ofst_merge <- function(file_paths,
                      filter_seed = filter_seed, max_filter_score = max_filter_score,
                      filter_chunk_rows = filter_chunk_rows, filter_tmpdir = filter_tmpdir,
                      filter_fallback_dir = filter_fallback_dir, filter_input_summary = filter_input_summary,
-                     filter_auto_memory = filter_auto_memory)
+                     filter_auto_memory = filter_auto_memory, remove_softclips = remove_softclips)
     # Every original input participates in one global decision. Never filter
     # first-round chunks independently, even when their raw row sum is large.
     keys <- setdiff(fst::metadata_fst(file_paths[1L])$columnNames,
@@ -295,7 +305,7 @@ ofst_merge <- function(file_paths,
   merge_chunk <- function(g) {
     message("- Merging chunk ", g, "/", length(file_paths_split))
     .ofst_merge_lossless(
-      .read_fst_list(file_paths_split[[g]]),
+      .read_fst_list(file_paths_split[[g]], remove_softclips = remove_softclips),
       lib_names = lib_names_split[[g]],
       keep_all_scores = keep_all_scores,
       keepCigar = keepCigar,
@@ -417,9 +427,13 @@ ofst_merge <- function(file_paths,
   d
 }
 
-.read_fst_list <- function(paths) {
+.read_fst_list <- function(paths, remove_softclips = FALSE) {
   lapply(paths, function(x) tryCatch(
-    .normalize_dt(fst::read_fst(x, as.data.table = TRUE)),
+    {
+      d <- .normalize_dt(fst::read_fst(x, as.data.table = TRUE))
+      if (remove_softclips) d <- .ofst_remove_softclips(d)
+      d
+    },
     error = function(e) stop("Invalid OFST file '", x, "': ", conditionMessage(e), call. = FALSE)))
 }
 

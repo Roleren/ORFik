@@ -743,9 +743,13 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
                       filter_target_rows = 2^31 - 2, filter_seed = 1L,
                       max_filter_score = Inf, filter_chunk_rows = 5e6,
                       filter_tmpdir = out_dir, filter_fallback_dir = out_dir,
-                      filter_input_summary = FALSE, filter_auto_memory = FALSE) {
+                      filter_input_summary = FALSE, filter_auto_memory = FALSE,
+                      remove_softclips = FALSE) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
+  if (!is.logical(remove_softclips) || length(remove_softclips) != 1L ||
+      !is.null(dim(remove_softclips)) || is.na(remove_softclips))
+    .ofst_abort("remove_softclips must be TRUE or FALSE.")
   if (!is.character(mode) || length(mode) != 1L || is.na(mode) || !mode %in% c("all", "rep", "lib"))
     .ofst_abort("mergeLibs mode must be 'all', 'rep', or 'lib'.")
   if (!nrow(df) || nrow(df) != length(paths))
@@ -785,7 +789,8 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
                      filter_target_rows = filter_target_rows, filter_seed = filter_seed,
                      max_filter_score = max_filter_score, filter_chunk_rows = filter_chunk_rows,
                      filter_tmpdir = filter_tmpdir, filter_fallback_dir = filter_fallback_dir,
-                     filter_input_summary = filter_input_summary, filter_auto_memory = filter_auto_memory)
+                     filter_input_summary = filter_input_summary, filter_auto_memory = filter_auto_memory,
+                     remove_softclips = remove_softclips)
     .ofst_save_merge(dt, save_path)
     dt <- NULL
   }
