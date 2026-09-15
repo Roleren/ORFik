@@ -144,7 +144,7 @@ getGAlignments <- function(df, seqinfo = NULL) {
     df[, strand := factor(strand, levels = c("+", "-", "*"))]
   }
 
-  mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
+  mcols <- S4Vectors:::normarg_mcols(mcols, "GAlignments", nrow(df))
   new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start,
        cigar = as.character(df$cigar), strand = Rle(df$strand), elementMetadata = mcols,
        seqinfo = seqinfo, check = FALSE)

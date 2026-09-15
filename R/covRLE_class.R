@@ -406,6 +406,16 @@ check_for_na_coverage <- function(cov, x, weight) {
 #' @param weight default "AUTO", pick 'score' column if exist, else all are 1L.
 #' Can also be a manually assigned meta column like 'score2' etc.
 #' @param ignore.strand logical, default FALSE.
+#' @param chunk.size NULL (default) tries coverage directly, then retries in
+#' smaller alignment chunks on recognized expansion/allocation limit errors.
+#' A positive integer forces chunks of at most this many alignments (or pairs).
+#' Can also be set globally with option \code{ORFik.coverage.chunk.size}.
+#' Chunked coverage uses numeric counts to avoid integer overflow when adding
+#' chunks. No reads are discarded. A single alignment that cannot be expanded,
+#' or a final coverage object that cannot fit, still causes an error.
+#' Single-end alignments use direct CIGAR-to-IRanges coverage with numeric
+#' counts; no intermediate GRangesList is constructed.
+#' Chunking may slightly change rounding for fractional weights.
 #' @return covRle object
 #' @family covRLE
 #' @export
@@ -422,11 +432,39 @@ check_for_na_coverage <- function(cov, x, weight) {
 #' strandMode(cov_both_strands)
 #' strandMode(cov_ignore_strand)
 covRleFromGR <- function(x, weight = "AUTO",
-                         ignore.strand = FALSE) {
+                         ignore.strand = FALSE,
+                         chunk.size = getOption("ORFik.coverage.chunk.size", NULL)) {
+  if (!is.null(chunk.size) && (!is.numeric(chunk.size) ||
+      length(chunk.size) != 1L || is.na(chunk.size) || !is.finite(chunk.size) ||
+      chunk.size < 1 || chunk.size > .Machine$integer.max ||
+      chunk.size != floor(chunk.size)))
+    stop("ORFik coverage: chunk.size must be NULL or a positive integer <= 2^31-1.",
+         call. = FALSE)
+  if (!(is(x, "GAlignments") || is(x, "GAlignmentPairs")))
+    return(.covRleFromGR_once(x, weight, ignore.strand))
+  # Validate before retrying: a malformed weight must not become valid merely
+  # because its length happens to equal that of a smaller chunk.
+  weight <- .coverage_alignment_weight(x, weight)
+  if (is.null(chunk.size)) {
+    result <- .coverage_try(function() .covRleFromGR_once(x, weight, ignore.strand))
+    if (!inherits(result, "error")) return(result)
+    message("ORFik coverage: CIGAR expansion/coverage exceeded a size limit; ",
+            "retrying in chunks. Original error: ", conditionMessage(result))
+    chunk.size <- min(5000000, max(1, floor(length(x) / 2)))
+    rm(result)
+    gc(FALSE)
+  }
+  .coverage_alignment_chunks(x, weight, ignore.strand, chunk.size)
+}
+
+#' @noRd
+.covRleFromGR_once <- function(x, weight, ignore.strand) {
   is_GAlignment <- is(x, "GAlignments") | is(x, "GAlignmentPairs")
   stopifnot(is(x, "GRanges") | is_GAlignment)
   seq_info <- seqinfo(x)
   if (anyNA(seqlengths(seq_info))) stop("Seqlengths of x contains NA values!")
+  if (is(x, "GAlignments"))
+    return(.coverage_alignment_irl(x, .coverage_alignment_weight(x, weight), ignore.strand))
 
   # Make sure weight argument is valid for all input types
   if (is.character(weight) & length(weight) == 1) {
@@ -435,14 +473,13 @@ covRleFromGR <- function(x, weight = "AUTO",
         weight <- "score"
       } else weight <- 1L
     }
-    if (is_GAlignment & is.character(weight)) {
-      if (!(weight %in% colnames(mcols(x))))
-        stop("weight is character and not mcol of x,",
-             " check spelling of weight.")
-      weight <- mcols(x)[, weight]
-      x <- grglist(x) # convert to grl
-      weight <- weight[groupings(x)] # repeat weight per group
-    }
+  }
+  if (is_GAlignment) {
+    weight <- .coverage_alignment_weight(x, weight)
+    x <- grglist(x)
+    # Repeat per alignment block, not per base, and avoid an extra full-sized
+    # integer grouping-index vector. Also handles manually supplied weights.
+    if (length(weight) != 1L) weight <- rep(weight, lengths(x, use.names = FALSE))
   }
 
   if (ignore.strand) {
@@ -480,5 +517,3 @@ covRleListFromGR <- function(x, weight = "AUTO",
   }
   return(covRleList(list, fraction = read_lengths))
 }
-
-
