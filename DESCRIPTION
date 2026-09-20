@@ -71,6 +71,7 @@ Suggests:
   knitr,
   BiocStyle,
   BSgenome.Hsapiens.UCSC.hg19,
-  GenomeInfoDbData
+  GenomeInfoDbData,
+  txdbmaker
 LinkingTo: Rcpp
 VignetteBuilder: knitr
