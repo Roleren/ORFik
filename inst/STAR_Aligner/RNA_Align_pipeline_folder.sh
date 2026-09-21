@@ -1,4 +1,6 @@
 #!/bin/bash
+# Stop immediately on failed processing commands, including pipeline failures.
+set -eo pipefail
 
 #HT 12/02/19
 # script to process and align genomic fastq datasets
@@ -31,19 +33,20 @@ OPTIONS:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge",
 		   or tr-co-ge, depending on if you merged contaminants or not.)
 			 tr: trim, co: contaminants, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
-		Write your wanted steps, seperated by "-". Order does not matter.
+		Write your wanted steps, seperated by "-". Use processing order, with trimming first and genome alignment last.
 		To just do trim and alignment to genome write -s "tr-ge"
 	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
 		to disable it
-	-t	trim front (default 3) How many bases to pre trim reads 5' end,
+	-t	trim front (default 0) How many bases to pre trim reads 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-z	trim tail (default 0) How many bases to pre trim reads on 3' end.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
-  -B Allow introns (default yes (1), else no (0))
+  -B Discover novel junctions (1, default; 0 keeps only indexed junctions)
+  -b Enable fastp base correction for overlapping paired reads
   -M  Max multimapping (default 10) Set to 1 to get only unique reads. Only applies for genome
       step, not the depletion step.
 	Path arguments:
-	-S   path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
+	-S   path to STAR (default: ~/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR)
 	-P   path to fastp (trimmer) (default: ~/bin/fastp)
 	-C	 path to cleaning script, internal
 
@@ -65,7 +68,7 @@ OPTIONS:
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
-STAR location must be: ~/bin/STAR-2.7.0c/source/STAR
+STAR location must be: ~/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR
 
 NOTE: if STAR is stuck on load, run this line:
 STAR --genomeDir /export/valenfs/data/references/Zv10_zebrafish_allsteps --genomeLoad Remove
@@ -76,8 +79,6 @@ EOF
 }
 
 # Default arguments:
-echo "##############################################"
-echo $'\nArguments for folder run are the following:'
 min_length=20
 mismatches=3
 gen_dir=""
@@ -85,286 +86,178 @@ allSteps="tr-ge"
 steps=$allSteps
 resume="n"
 alignment="Local"
-allow_introns=0
+allow_introns=1
 adapter="auto"
 quality_filtering="disable"
 maxCPU=90
 multimap=10
 subfolders="n"
-trim_front=3
+trim_front=0
 trim_tail=0
 paired="no"
 align_single=""
 cleaning=""
+keepLast="n"
 keepContam="no"
 keepContamType="bam"
 keep_unmapped_genome="None"
-verbose=""
-STAR="~/bin/STAR-2.7.0c/source/STAR"
-fastp="~/bin/fastp"
-while getopts ":vf:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:z:h:" opt; do
+verbose=1
+STAR="$HOME/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR"
+fastp="$HOME/bin/fastp"
+base_correction=0
+in_file_two=""
+while getopts ":bvf:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:z:h" opt; do
     case $opt in
+    b) base_correction=1 ;;
     v)
-      verbose=" -v "
+      verbose=0
       ;;
     f)
         in_dir=$OPTARG
-        echo "-f input folder: $OPTARG"
 	      ;;
     o)
         out_dir=$OPTARG
-        echo "-o output folder: $OPTARG"
         ;;
     p)
 	      paired=$OPTARG
-        echo "-p paired end: $OPTARG"
         ;;
     l)
         min_length=$OPTARG
-        echo "-l minimum length of reads: $OPTARG"
         ;;
     T)
         mismatches=$OPTARG
-        echo "-T max mismatches of reads: $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
-        echo "-g genome dir for all STAR indices: $OPTARG"
         ;;
     s)
         steps=$OPTARG
-        echo "-s steps to do: $OPTARG"
         ;;
     a)
         adapter=$OPTARG
-        echo "-a adapter sequence: $OPTARG"
         ;;
     q)
 	      quality_filtering=$OPTARG
-	      echo "-q quality filtering: $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
-        echo "-t trim front number: $OPTARG"
         ;;
     z)
         trim_tail=$OPTARG
-        echo "-z trim tail (nt): $OPTARG"
         ;;
     A)
         alignment=$OPTARG
-        echo "-A alignment type: $OPTARG"
         ;;
     B)
         allow_introns=$OPTARG
-        echo "-B allow_introns: $OPTARG"
         ;;
     r)
       	resume=$OPTARG
-      	echo "-r resume (new: n, or step as ge): $OPTARG"
         ;;
     m)
       	maxCPU=$OPTARG
-      	echo "-m maxCPU: $OPTARG"
         ;;
     M)
       	multimap=$OPTARG
-      	echo "-m max multimap: $OPTARG"
         ;;
     i)
       	subfolders=$OPTARG
-      	echo "-i subfolders: $OPTARG"
         ;;
     S)
       	STAR=$OPTARG
-      	echo "-S STAR location: $OPTARG"
         ;;
     P)
       	fastp=$OPTARG
-      	echo "-P fastp location: $OPTARG"
         ;;
     C)
       	cleaning=$OPTARG
-      	echo "-C cleaning location: $OPTARG"
         ;;
     I)
       	align_single=$OPTARG
-      	echo "-I align_single location: $OPTARG"
         ;;
     K)
       	keepContam=$OPTARG
-      	echo "-K Keep contamination reads: $OPTARG"
         ;;
     k)
       	keepLast=$OPTARG
-      	echo "-k Keep Star Index loaded: $OPTARG"
         ;;
     X)
       	keepContamType=$OPTARG
-      	echo "-X Contamination reads type: $OPTARG"
         ;;
     u)
       	keep_unmapped_genome=$OPTARG
-      	echo "-u Keep unmapped genome reads: $OPTARG"
         ;;
     h)
         usage
         exit
         ;;
-    ?)
-        echo "Invalid option: -$OPTARG"
+    :|?)
+        echo "Invalid option or missing value: -$OPTARG"
         usage
         exit 1
         ;;
     esac
 done
 
-echo $'\n'
-# steps == "all" is never called from R
-if [ "$steps" == "all" ]; then
-	steps="tr-ph-rR-nc-tR-ge"
+fail() { echo "ERROR: $*" >&2; exit 1; }
+log() { if (( verbose )); then echo "$@"; fi; }
+[[ -d "$in_dir" ]] || fail "Input directory does not exist: $in_dir"
+[[ -n "$out_dir" ]] || fail "Output directory (-o) is required."
+[[ -f "$align_single" ]] || fail "Single-library script not found: $align_single"
+case "$paired" in yes|no) ;; *) fail "Paired end mode must be yes or no." ;; esac
+if [[ "$steps" == all ]]; then
+  if [[ -d "$gen_dir/contaminants_genomeDir" ]]; then steps=tr-co-ge
+  else steps=tr-ph-rR-nc-tR-ge; fi
 fi
-if [ -z "$out_dir" ]; then
-	echo "Error, out directory (-o) must be speficied!"
-	exit 1
+IFS='-' read -r -a steps_array <<< "$steps"
+[[ "$resume" == n || "-$steps-" == *"-$resume-"* ]] || fail "Resume step is not in steps: $resume"
+# Find regular files and symlinks, keeping paths intact. Sorted adjacent files form pairs.
+find_args=("$in_dir")
+[[ "$subfolders" != n ]] || find_args+=(-maxdepth 1)
+files=()
+while IFS= read -r -d '' file; do
+  [[ "$file" =~ \.(fasta|fa|fastq|fq)(\.gz)?$ ]] && files+=("$file")
+done < <(find -L "${find_args[@]}" -type f -print0 | sort -z)
+count=${#files[@]}
+(( count > 0 )) || fail "No FASTA/FASTQ files found in $in_dir"
+stride=1
+if [[ "$paired" == yes ]]; then
+  (( count % 2 == 0 )) || fail "Paired end input must contain an even number of files."
+  stride=2
 fi
-
-# Normal paired end read run
-# 1 check if there exists a grouping, and the are equal number in each grouping
-# 2 make a list for each end
-# send each end into the paired end function
-#TODO: Fix checks, incase files are not in order
-function findPairs()
-{
-	f=($1) && shift
-	myArray=($@)
-
-	if [ $(( ${#myArray[@]} % 2 )) == 1 ]; then
-		echo "folder must have even number of fasta/q files, for paired end run!"
-		exit 1
-	fi
-
-  #i=0
-	#suffix="_001.fastq.gz"
-        # remove suffix to get matched pairs
-	#for i in "${!myArray[@]}"; do
-
-		#bn=${myArray[i]} | sed  -e "s/$suffix$//"
-		#echo ${myArray[i]} | sed  -e "s/$suffix$//"
-        	#echo $(basename ${bn})
-
-    	#done
-  echo "#############################################"
-  keep="y" # Start with keeping genome loaded
-	for ((x=0; x<${#myArray[@]}; x = x + 2));
-	do
-    echo "Paired end mode for files:"
-    echo "Forward: $f/${myArray[x]}"
-    echo "Reverse: $f/${myArray[x+1]}"
-    echo "Files  $((x + 1)) and $((x + 2)) / $numOfFiles"
-		a="$f/${myArray[x]}"
-		b="$f/${myArray[x+1]}"
-		i=$((x + 2))
-		if [[ $i == $numOfFiles ]];then
-		  echo "Starting last run:"
-			keep=${keepLast} # i.e. last file
-		fi
-
-		eval $align_single $verbose -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -A "$alignment" -B "$allow_introns" -t "$trim_front" -z "$trim_tail" -k $keep -K $keepContam -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
-    echo "-------------------------------------------"
-	done
-}
-
-# Find pairs with subfolders allowed
-function findPairsSub()
-{
-	myArray=($@)
-
-	if [ $(( ${#myArray[@]} % 2 )) == 1 ]; then
-		echo "Folder must have even number of fasta/q files, for paired end run!"
-		exit 1
-	fi
-  echo "#############################################"
-	for ((x=0; x<${#myArray[@]}; x = x + 2));
-	do
-    echo "Paired end subfolder mode for files:"
-    echo "Forward: ${myArray[x]}"
-    echo "Reverse: ${myArray[x+1]}"
-    echo "Files  $((x + 1)) and $((x + 2)) / $numOfFiles"
-		a="${myArray[x]}"
-		b="${myArray[x+1]}"
-		i=$((x + 2))
-		if [[ $i == $numOfFiles ]];then
-		  echo "Starting last run:"
-			keep=${keepLast} # i.e. last file
-		fi
-
-		eval $align_single $verbose -o "$out_dir" -f "$a" -F "$b"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -z "$trim_tail" -k $keep -K $keepContam -X $keepContamType -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
-		echo "-------------------------------------------"
-
-	done
-}
-# Run per file / pair
-# Relative path for non subfolder, full for subfolder
-formats='(fasta|fa|fastq|fq)(\.gz)?$'
-if [ $subfolders == "n" ]; then
-  	 listOfFiles=$(ls "${in_dir}" | grep -E "${formats}")
-  	else
-  	 listOfFiles=$(find "${in_dir}" | grep -E "${formats}" | sort)
-fi
-numOfFiles=$(echo "$listOfFiles" | wc -l)
-
-echo "Total number of files are:"
-echo $numOfFiles
-
-# Check if resume, if true, jump to given step
-declare -i X
-X=0
-if [ "$resume" != "n" ]; then
-   echo "Resume mode"
-   X=$(echo "$steps" | grep -b -o $resume | cut -d: -f1)
-fi
-length=${#steps}
-# For each type in tr-co-ge (do one step at a time)
-# This is to keep genome loaded through all samples
-# Also easier to continue on crash if done this way
-while [ $X -lt $length ]
-do
-  current=${steps:$X:2}
-  echo "Current step:"
-  echo $current
-  X=$((X + 3))
-  i=0
-  keep="y"
-  if [ $paired == "yes" ]; then
-  	if [ $subfolders == "n" ]; then
-  		findPairs $in_dir $listOfFiles
-  	else
-  		findPairsSub $listOfFiles
-  	fi
-  else
-  	for x in $listOfFiles
-  	do
-  		echo "Single end mode for file: $x"
-  		i=$((i + 1))
-  		echo "File  $i / $numOfFiles"
-
-  		if [[ $i == $numOfFiles ]];then
-  		  echo "Starting last run:"
-  			keep=${keepLast}
-  		fi
-  		if [ $subfolders == "n" ]; then
-        x=$in_dir/$x
-      fi
-
-  		eval $align_single $verbose -o "$out_dir" -f "$x"  -a "$adapter" -q "$quality_filtering" -s "$steps" -r "$current" -l "$min_length" -T $mismatches -g "$gen_dir" -m "$maxCPU" -M "$multimap" -A "$alignment" -B "$allow_introns" -t "$trim_front" -z "$trim_tail" -k $keep -K $keepContam -X $keepContamType -u $keep_unmapped_genome -P "$fastp" -S "$STAR"
-  		echo "----------------------------------------------"
-  	done
-  fi
+# The output names use basenames: reject collisions before processing any library.
+basenames=()
+for ((i=0; i<count; i+=stride)); do
+  name=$(basename "${files[i]}"); name=${name%.gz}; name=${name%.*}
+  for seen in "${basenames[@]}"; do
+    [[ "$name" != "$seen" ]] || fail "Duplicate library basename: $name"
+  done
+  basenames+=("$name")
 done
-echo "done"
-### Cleanup
-# Folder cleanup
-eval $cleaning $out_dir
-# Log command run
-echo "./RNA_Align_pipeline_folder.sh $@" > $out_dir/runCommand.log
+mkdir -p "$out_dir"
+log "Processing $((count / stride)) libraries; steps: $steps"
+common=(-o "$out_dir" -a "$adapter" -q "$quality_filtering" -s "$steps"
+        -l "$min_length" -T "$mismatches" -g "$gen_dir" -m "$maxCPU" -M "$multimap"
+        -A "$alignment" -B "$allow_introns" -t "$trim_front" -z "$trim_tail"
+        -K "$keepContam" -X "$keepContamType" -u "$keep_unmapped_genome" -P "$fastp" -S "$STAR")
+(( ! base_correction )) || common+=(-b)
+(( verbose )) || common+=(-v)
+started=0
+[[ "$resume" != n ]] || started=1
+for current in "${steps_array[@]}"; do
+  [[ "$current" != "$resume" ]] || started=1
+  (( started )) || continue
+  for ((i=0; i<count; i+=stride)); do
+    keep=y
+    # noShared must apply to every library, not just the last library.
+    if [[ "$keepLast" == noShared ]] || (( i + stride == count )); then keep=$keepLast; fi
+    log "Step $current; library $((i / stride + 1))/$((count / stride))"
+    cmd=(bash "$align_single" "${common[@]}" -f "${files[i]}" -r "$current" -k "$keep")
+    [[ "$paired" != yes ]] || cmd+=(-F "${files[i+1]}")
+    "${cmd[@]}"
+  done
+done
+if [[ -n "$cleaning" ]]; then bash "$cleaning" "$out_dir"; fi
+printf '%q ' "$0" "$@" > "$out_dir/runCommand.log"
+printf '\n' >> "$out_dir/runCommand.log"
+log "All requested steps completed."

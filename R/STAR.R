@@ -143,8 +143,9 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' @param input.dir path to fast files to align, the valid input files will be search for from formats:
 #' (".fasta", ".fastq", ".fq", or ".fa") with or without compression of .gz.
 #' Also either paired end or single end reads. Pairs will automatically be detected from
-#' similarity of naming, separated by something as .1 and .2 in the end. If files are renamed, where pairs
-#' are not similarily named, this process will fail to find correct pairs!
+#' adjacent files in sorted filename order. Ensure each pair sorts together
+#' (for example sample_1.fastq and sample_2.fastq). Mate identity is not inferred
+#' from FASTQ records.
 #' @param index.dir path to STAR index folder. Path returned from ORFik function
 #' STAR.index, when you created the index folders.
 #' @param fastp path to fastp trimmer, default: install.fastp(), if you
@@ -172,7 +173,8 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  \item{all: run steps: "tr-co-ge" or "tr-ph-rR-nc-tR-ge", depending on if you
 #'  have merged contaminants or not}
 #' }
-#'  If not "all", a subset of these ("tr-co-ph-rR-nc-tR-ge")\cr
+#'  If not "all", a subset of these in the listed processing order
+#'  ("tr-co-ph-rR-nc-tR-ge"). Steps must not be repeated.\cr
 #'  If co (merged contaminants) is used, non of the specific contaminants can be specified,
 #'  since they should be a subset of co.\cr
 #'  The step where you align to the genome is usually always included, unless you
@@ -206,12 +208,17 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #'  \item{Number of N bases in read : > 5}
 #'  \item{Read quality : > 40\% of bases in the read are <Q15}
 #' }
-#' @param min.length 20, minimum length of aligned read without mismatches
-#' to pass filter. Anything under 20 is dangerous, as chance of random hits will
-#' become high!
-#' @param mismatches 3, max non matched bases. Excludes soft-clipping, this only
-#' filters reads that have defined mismatches in STAR.
-#' Only applies for genome alignment step.
+#' @param min.length numeric, default 20. Passed to fastp --length_required
+#' during trimming and STAR --outFilterMatchNmin during alignment. The former
+#' filters read length; the latter requires this many matching bases, not merely
+#' this many aligned bases. STAR also applies its default relative match and
+#' score filters. For paired reads, STAR evaluates the pair together. See the
+#' Ribo-seq notes below before changing this threshold for short footprints.
+#' @param mismatches numeric, default 3. Maximum number of mismatched bases
+#' for genome alignment (STAR --outFilterMismatchNmax), summed across mates
+#' for paired reads. Soft-clipped bases are not counted as mismatches. STAR's
+#' other match, score and mismatch-fraction filters still apply. This argument
+#' does not control the contaminant depletion steps.
 #' @param trim.front 0, default trim 0 bases on 5' ends.
 #' Ignored if tr (trim) is not one of the arguments in "steps".
 #' For Ribo-seq use default 0, unless you have 5' end custom barcodes to remove.
@@ -222,19 +229,26 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' Alignment to STAR might fail if you have large barcodes, which are not removed!
 #' @param alignment.type default: "Local": standard local alignment with soft-clipping allowed,
 #' "EndToEnd" (global): force end-to-end read alignment, does not soft-clip.
-#' @param allow.introns logical, default TRUE. Allow large gaps of N in reads
-#' during genome alignment, if FALSE:
-#' sets --alignIntronMax to 1 (no introns). NOTE: You will still get some spliced reads
-#' if you assigned a gtf at the index step.
+#' @param allow.introns logical, default TRUE. Allow discovery of unannotated
+#' splice junctions during genome alignment (STAR --alignIntronMax 0, automatic
+#' maximum intron length). FALSE sets --alignIntronMax 1, suppressing novel
+#' junctions. Junctions supplied in the STAR index can still align in either mode;
+#' FALSE does not disable all spliced alignments.
+#' @param base.correction logical, default FALSE. Enable fastp --correction to
+#' correct mismatched bases in overlapping paired reads using their base qualities.
+#' Requires paired end input and a trimming step (tr); ignored when resuming
+#' after trimming. Does not merge the read pairs.
 #' @param include.subfolders "n" (no), do recursive search downwards for fast files if "y".
 #' @param resume default: NULL, continue from step, lets say steps are "tr-ph-ge":
 #'  (trim, phix depletion, genome alignment) and resume is "ge", you will then use
 #'  the assumed already trimmed and phix depleted data and start at genome alignment,
 #'  useful if something crashed. Like if you specified wrong STAR version, but the trimming
-#'  step was completed. Resume mode can only run 1 step at the time.
+#'  step was completed. STAR.align.single runs only the requested resume step;
+#'  STAR.align.folder runs that step and all subsequent steps.
 #' @param max.multimap numeric, default 10. If a read maps to more locations than specified,
 #' will skip the read. Set to 1 to only get unique mapping reads. Only applies for
-#' genome alignment step. The depletions are allowing for multimapping.
+#' genome alignment step. Depletion uses separate limits (currently 10 loci,
+#' or 20 for tRNA); reads exceeding these limits can escape depletion.
 #' @param script.folder location of STAR index script,
 #' default internal ORFik file. You can change it and give your own if you
 #' need special alignments.
@@ -261,11 +275,109 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' If TRUE, will keep index in memory, useful if you need to loop over single calls,
 #' instead of using STAR.align.folder (remember last run should use FALSE, to remove index).
 #' For STAR.align.folder:\cr
-#' Only applies to last library, will always keep for all libraries before last.
-#' Alternative useful for MAC machines especially is "noShared", for machines
+#' Logical values apply to the last library in each stage; earlier libraries
+#' keep the index loaded. The alternative "noShared" applies to every library.
+#' This is useful for Mac machines especially, or other machines
 #' that do not support shared memory index, usually gives error: "abort trap 6".
-#' @param verbose logical, default TRUE. Print starting time, full system call
-#' and line separated bash script parameters.
+#' @param verbose logical, default TRUE. Print the starting time and each
+#' processing step's actual inputs, outputs and tool command. STAR and fastp
+#' diagnostics remain visible when FALSE.
+#' @section Ribo-seq alignment choices:
+#' These notes describe the bundled scripts with STAR 2.7.4a. Options not
+#' explicitly set by ORFik retain the defaults of the STAR binary being used;
+#' check each run's Log.out. The manual's ENCODE example is for long RNA-seq,
+#' not a Ribo-seq preset. Select settings using footprint length distributions,
+#' mapping specificity and triplet periodicity, rather than mapping rate alone.
+#'
+#' \strong{Read ends and length filtering.} Trim adapters and protocol-specific
+#' barcodes before alignment. The default \code{alignment.type = "Local"}
+#' permits soft-clipping at either end. A clipped 5' end changes the genomic
+#' anchor used for P-site assignment, and clipping changes the footprint length
+#' used by \code{\link{shiftFootprints}} (which excludes soft-clipped bases).
+#' For fully trimmed footprints, consider \code{alignment.type = "EndToEnd"}
+#' when preserving both ends is important, and check the resulting loss of
+#' reads with end errors. Local alignment is not a substitute for adapter
+#' trimming. STAR's Extend5pOfRead1 mode is not exposed by these wrappers.
+#'
+#' \code{min.length = 20} is not a 20-base aligned-length cutoff: it requires
+#' at least 20 matching bases. Thus a 20-nt read with one mismatch fails this
+#' filter even with \code{mismatches = 3}. The default relative filters
+#' \code{--outFilterMatchNminOverLread 0.66} and
+#' \code{--outFilterScoreMinOverLread 0.66} also remain active; reducing
+#' min.length alone does not disable them. They are relative to the input
+#' length seen by STAR, after any fastp trimming (summed across paired mates).
+#' Conversely, three mismatches in a 28-nt read are about 11 percent, so the
+#' absolute mismatch limit is fairly permissive for short footprints. Choose
+#' length and mismatch thresholds together; min.length also excludes shorter
+#' footprint classes. STAR's ``unmapped: too short'' category includes failures
+#' of the match/score thresholds, not only physically short input reads.
+#'
+#' \strong{Splicing.} With \code{allow.introns = TRUE}, STAR searches for novel
+#' junctions. The automatic intron-length limit is an alignment-window setting,
+#' not a species-specific estimate (approximately 589 kb with the usual window
+#' defaults). This may be much too broad for compact genomes. For analyses
+#' confined to known junctions, consider \code{allow.introns = FALSE} with an
+#' annotated index; this sacrifices novel-junction sensitivity. Discovery
+#' analyses should assess short anchors and validate junctions independently,
+#' for example with matched RNA-seq. STAR defaults permit 5-base overhangs for
+#' unannotated junctions and 3-base overhangs for indexed junctions
+#' (alignSJoverhangMin and alignSJDBoverhangMin). ORFik does not expose a numeric
+#' maximum intron length; use a custom script for species-specific limits.
+#'
+#' \strong{Junction tables are filtered separately.} The default
+#' \code{--outFilterType Normal} does not require BAM junctions to appear in
+#' SJ.out.tab. For unannotated junctions, the table's default minimum overhangs
+#' are 12 bases on each side for canonical motifs and 30 for non-canonical
+#' motifs; other support filters also apply. A 20--23-nt footprint cannot alone
+#' meet the canonical table threshold, even though STAR can produce its split
+#' alignment. These table filters do not apply to indexed junctions. Changing
+#' to BySJout makes junction-table filtering affect the alignments themselves;
+#' it should not be copied from a long-RNA recipe without considering this
+#' length bias. The bundled pipeline is single-pass (twopassMode None).
+#'
+#' \strong{Multimapping and strand.} The default \code{max.multimap = 10}
+#' retains multimappers and STAR outputs all accepted alignments. Counting
+#' every BAM record as an independent molecule can therefore inflate coverage.
+#' Use \code{max.multimap = 1} for unique mappings, or an explicit downstream
+#' multimapper policy. Keeping primary alignments alone is not a uniqueness
+#' filter: one alignment of a multimapper is also primary. STAR's NH tag
+#' identifies multiplicity; unique mappings have NH=1 and default MAPQ=255.
+#' See also \code{\link{readBam}} and its only_unique_mappers argument.
+#' Stranded Ribo-seq does not require outSAMstrandField=intronMotif; that option
+#' can filter spliced alignments. Apply the library's strand convention during
+#' downstream counting, especially for paired reads.
+#'
+#' \strong{Contaminant depletion.} The default \code{steps = "tr-ge"} does not
+#' deplete contaminants, even if contaminant indices exist. Use suitable
+#' depletion steps explicitly. Genome-only arguments (mismatches, max.multimap,
+#' alignment.type and allow.introns) do not configure the depletion stages.
+#' Currently these use STAR's default mismatch filters and finite multimapping
+#' limits: reads matching more than 10 contaminant loci (20 for tRNA) are
+#' reported as unmapped and passed to the next stage. Depletion is therefore
+#' not an exhaustive ``matches any contaminant'' filter. Check the depletion
+#' Log.final.out for reads mapped to too many loci. The merged-contaminant and
+#' ncRNA stages also retain STAR's default splicing, whereas PhiX, rRNA and
+#' tRNA stages set alignIntronMax=1. These differences should be considered
+#' when choosing a contaminant reference and custom depletion settings.
+#'
+#' @section Index considerations:
+#' The bundled \code{\link{STAR.index}} script uses sjdbOverhang=72 when a GTF
+#' is supplied. This is the length of indexed sequence on either side of a
+#' junction, not a minimum footprint length or minimum alignment overhang.
+#' The STAR manual recommends max(read length)-1 as the ideal value and notes
+#' that its default of 100 usually also works well; a value above footprint
+#' length is not by itself a reason to reject an index.
+#' For small genomes, STAR requires genomeSAindexNbases to be scaled down
+#' (typically floor(min(14, log2(genome length)/2 - 1))). The bundled main-genome
+#' indexing command currently leaves it at STAR's default 14. Check indexing
+#' warnings and use a suitably configured index for yeast or other small
+#' genomes; the alignment wrappers cannot correct an existing index.
+#'
+#' @references
+#' \href{https://github.com/alexdobin/STAR/blob/2.7.4a/doc/STARmanual.pdf}{STAR 2.7.4a manual}
+#' (index generation, mapping options, output files and parameter reference).
+#' \href{https://github.com/alexdobin/STAR/blob/2.7.4a/source/parametersDefault}{STAR 2.7.4a default parameters}.
+#' The Ribo-seq tradeoffs above are ORFik guidance, not a STAR-provided preset.
 #' @inheritParams STAR.index
 #' @return output.dir, can be used as as input in ORFik::create.experiment
 #' @family STAR
@@ -346,14 +458,17 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                                                           package = "ORFik"),
                               script.single = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline.sh",
-                                                          package = "ORFik")) {
-
+                                                          package = "ORFik"),
+                              base.correction = FALSE) {
 
   if (is.logical(paired.end)) {
-    paired.end <- ifelse(paired.end, "yes", "no")
-  } else if(is.character(paired.end)) {
-    if (!(paired.end %in% c("yes", "no"))) stop("Argument 'paired.end' must be yes/no")
-  } else stop("Argument 'paired.end' must be logical or character yes/no")
+    if (!length(paired.end) || anyNA(paired.end) || length(unique(paired.end)) != 1L)
+      stop("paired.end must specify one layout for all libraries")
+    paired.end <- if (paired.end[1]) "yes" else "no"
+  } else if (!is.character(paired.end) || length(paired.end) != 1L ||
+             is.na(paired.end) || !paired.end %in% c("yes", "no")) {
+    stop("paired.end must be logical or character yes/no")
+  }
 
   validate_star_input(script.single, index.dir, keep.contaminants.type, alignment.type,
                       allow.introns, keep.index.in.memory, trim.front, trim.tail,
@@ -361,29 +476,18 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
 
   cleaning <- system.file("STAR_Aligner", "cleanup_folders.sh",
                          package = "ORFik", mustWork = TRUE)
-  resume <- ifelse(is.null(resume), "", paste("-r", resume))
-  star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
-  fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
-  quality.filtering <- ifelse(quality.filtering, "-q default", "")
-  keep.index.in.memory <- ifelse(is.logical(keep.index.in.memory),
-                                 ifelse(keep.index.in.memory, "y", "n"),
-                                 keep.index.in.memory)
-  keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
-  keep.contaminants.type <- paste("-X", keep.contaminants.type)
-  keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
-  silence <- ifelse(verbose,  "", "-v")
-
-  call <- paste(script.folder, silence, "-f", input.dir, "-o", output.dir,
-                "-p", paired.end,
-                "-l", min.length, "-T", mismatches, "-g", index.dir,
-                "-s", steps, resume, "-a", adapter.sequence,
-                "-t", trim.front, "-z", trim.tail,
-                "-M", max.multimap, quality.filtering,
-                "-A", alignment.type, "-B", allow.introns,"-m", max.cpus,
-                "-i", include.subfolders, "-k", keep.index.in.memory,
-                keep.contaminants, keep.contaminants.type,
-                keep.unaligned.genome, star.path, fastp, "-I",script.single,
-                "-C", cleaning)
+  validate_star_correction(base.correction, paired.end == "yes", steps)
+  args <- star_alignment_args(output.dir, index.dir, steps, resume,
+                              adapter.sequence, quality.filtering, min.length,
+                              mismatches, trim.front, trim.tail, max.multimap,
+                              alignment.type, allow.introns, max.cpus,
+                              keep.index.in.memory, keep.contaminants,
+                              keep.unaligned.genome, star.path, fastp,
+                              base.correction, verbose)
+  call <- star_shell_command(script.folder,
+                            c("-f", path.expand(input.dir), "-p", paired.end,
+                              "-i", include.subfolders, "-X", keep.contaminants.type,
+                              "-I", path.expand(script.single), "-C", cleaning, args))
 
   return(STAR.align.internal(call, output.dir, multiQC, verbose = verbose))
 }
@@ -444,34 +548,64 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               verbose = TRUE,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
-                                                   package = "ORFik")
+                                                   package = "ORFik"),
+                              base.correction = FALSE
 ) {
   validate_star_input(script.single, index.dir, keep.contaminants.type = "bam",
                       alignment.type, allow.introns, keep.index.in.memory,
                       trim.front, trim.tail, steps)
 
-  file2 <- ifelse(is.null(file2), "", paste("-F", file2))
-  resume <- ifelse(is.null(resume), "", paste("-r", resume))
-  star.path <- ifelse(is.null(star.path), "", paste("-S", star.path))
-  fastp <- ifelse(is.null(fastp), "", paste("-P", fastp))
-  quality.filtering <- ifelse(quality.filtering, "-q default", "")
-  keep.index.in.memory <- ifelse(is.logical(keep.index.in.memory),
-                                 ifelse(keep.index.in.memory, "y", "n"),
-                                 keep.index.in.memory)
-  keep.contaminants <- ifelse(keep.contaminants, "-K yes", "-K no")
-  keep.unaligned.genome <- ifelse(keep.unaligned.genome, "-u Fastx", "-u None")
-  silence <- ifelse(verbose,  "", "-v")
-  call <- paste(script.single, silence, "-f", file1, file2, "-o", output.dir,
-                "-l", min.length, "-T", mismatches, "-g", index.dir,
-                "-s", steps, resume, "-a", adapter.sequence,
-                "-t", trim.front, "-z", trim.tail,
-                "-A", alignment.type, "-m", max.cpus,
-                "-M", max.multimap,
-                "-k", keep.index.in.memory, quality.filtering,
-                keep.contaminants, keep.unaligned.genome,
-                star.path, fastp)
+  validate_star_correction(base.correction, !is.null(file2) && nzchar(file2), steps)
+  args <- star_alignment_args(output.dir, index.dir, steps, resume,
+                              adapter.sequence, quality.filtering, min.length,
+                              mismatches, trim.front, trim.tail, max.multimap,
+                              alignment.type, allow.introns, max.cpus,
+                              keep.index.in.memory, keep.contaminants,
+                              keep.unaligned.genome, star.path, fastp,
+                              base.correction, verbose)
+  call <- star_shell_command(script.single,
+                            c("-f", path.expand(file1),
+                              if (!is.null(file2)) c("-F", path.expand(file2)), args))
 
   return(STAR.align.internal(call, output.dir, multiQC, verbose = verbose))
+}
+
+# Quote each argument once; shell scripts forward arguments using Bash arrays.
+star_shell_command <- function(script, args) {
+  paste(c("bash", shQuote(path.expand(script)), shQuote(as.character(args))),
+        collapse = " ")
+}
+
+# Shared by both entry points so that their STAR/fastp options stay identical.
+star_alignment_args <- function(output.dir, index.dir, steps, resume,
+                                adapter.sequence, quality.filtering, min.length,
+                                mismatches, trim.front, trim.tail, max.multimap,
+                                alignment.type, allow.introns, max.cpus,
+                                keep.index.in.memory, keep.contaminants,
+                                keep.unaligned.genome, star.path, fastp,
+                                base.correction, verbose) {
+  keep <- if (is.logical(keep.index.in.memory)) {
+    if (keep.index.in.memory) "y" else "n"
+  } else keep.index.in.memory
+  c("-o", path.expand(output.dir), "-g", path.expand(index.dir), "-s", steps,
+    if (!is.null(resume)) c("-r", resume),
+    "-a", adapter.sequence, "-q", if (quality.filtering) "default" else "disable",
+    "-l", min.length, "-T", mismatches, "-t", trim.front, "-z", trim.tail,
+    "-M", max.multimap, "-A", alignment.type, "-B", as.integer(allow.introns),
+    "-m", max.cpus, "-k", keep, "-K", if (keep.contaminants) "yes" else "no",
+    "-u", if (keep.unaligned.genome) "Fastx" else "None",
+    if (!is.null(star.path)) c("-S", path.expand(star.path)),
+    if (!is.null(fastp)) c("-P", path.expand(fastp)),
+    if (base.correction) "-b", if (!verbose) "-v")
+}
+
+validate_star_correction <- function(base.correction, paired.end, steps) {
+  if (!is.logical(base.correction) || length(base.correction) != 1L ||
+      is.na(base.correction)) stop("base.correction must be TRUE or FALSE")
+  if (base.correction && !paired.end)
+    stop("base.correction requires paired end reads")
+  if (base.correction && steps != "all" && !"tr" %in% strsplit(steps, "-", fixed = TRUE)[[1]])
+    stop("base.correction requires the trimming step (tr)")
 }
 
 STAR.align.internal <- function(call, output.dir, multiQC = FALSE, steps = "auto",
@@ -645,9 +779,12 @@ validate_star_input <- function(script.single, index.dir, keep.contaminants.type
   if (!dir.exists(index.dir) & steps != "tr")
     stop("STAR index path must be a valid directory called /STAR_index")
   stopifnot(alignment.type %in% c("Local", "EndToEnd"))
-  stopifnot(is.logical(allow.introns) & length(allow.introns) == 1)
+  stopifnot(is.logical(allow.introns), length(allow.introns) == 1L, !is.na(allow.introns))
 
-  stopifnot(is.logical(keep.index.in.memory) | is.character(keep.index.in.memory))
+  stopifnot(length(keep.index.in.memory) == 1L, !is.na(keep.index.in.memory))
+  if (!(is.logical(keep.index.in.memory) ||
+        keep.index.in.memory %in% c("y", "n", "noShared")))
+    stop("keep.index.in.memory must be TRUE, FALSE, y, n or noShared")
   stopifnot(length(trim.front) > 0 & length(trim.tail) > 0)
   stopifnot(all(is.numeric(trim.front) & is.numeric(trim.tail)))
   stopifnot(all(!is.na(trim.front) &&  !is.na(trim.tail)))
