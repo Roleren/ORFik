@@ -21,7 +21,7 @@
     query_col <- switch(col, cigar = "qwidth", cigar1 = "qwidth1", cigar2 = "qwidth2")
     if (query_col %in% names(dt))
       data.table::set(dt, j = query_col,
-        value = GenomicAlignments::cigarWidthAlongQuerySpace(cleaned)[index])
+        value = cigarWidthAlongQuerySpace_compat(cleaned)[index])
   }
   dt
 }

@@ -37,13 +37,13 @@ test_that("reference coordinates and coverage stay fixed on both strands", {
   cg <- c("1S25M","2H3S10M2I5M3D4N2=1X4S1H","5H3S10M2S4H","24M2S")
   for(st in c("+","-")) {
     dt <- data.table::data.table(seqnames="1",strand=st,start=100L,cigar=factor(cg),score=1L,
-                                qwidth=GenomicAlignments::cigarWidthAlongQuerySpace(cg))
+                                qwidth=ORFik:::cigarWidthAlongQuerySpace_compat(cg))
     old <- ORFik:::getGAlignments(data.table::copy(dt))
     clean <- ORFik:::.ofst_remove_softclips(data.table::copy(dt))
     new <- ORFik:::getGAlignments(clean)
     expect_identical(start(old),start(new));expect_identical(end(old),end(new))
     expect_identical(width(old),width(new));expect_identical(njunc(old),njunc(new))
-    expect_equal(qwidth(new),GenomicAlignments::cigarWidthAlongQuerySpace(cg,after.soft.clipping=TRUE))
+    expect_equal(qwidth(new),ORFik:::cigarWidthAlongQuerySpace_compat(cg,after.soft.clipping=TRUE))
     expect_equal(clean$qwidth,qwidth(new))
     expect_equal(clean$cigar,c("25M","2H10M2I5M3D4N2=1X1H","5H10M4H","24M"))
     seqlengths(old) <- seqlengths(new) <- 500L
