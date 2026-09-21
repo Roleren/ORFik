@@ -1,3 +1,27 @@
+#' cigarWidthAlongQuerySpace, compatible with old and new Bioconductor
+#'
+#' `GenomicAlignments::cigarWidthAlongQuerySpace()` is defunct in
+#' GenomicAlignments >= 1.49.1 and replaced by
+#' `cigarillo::cigar_extent_along_query()`. Use cigarillo if it is installed
+#' (current Bioconductor), otherwise fall back to GenomicAlignments (older
+#' Bioconductor releases that predate the cigarillo split). Same arguments
+#' and return value as the original (cigarillo just renamed `cigar`/`flag`
+#' to `cigars`/`flags`).
+#' @keywords internal
+#' @noRd
+cigarWidthAlongQuerySpace_compat <- function(cigar, flag = NULL,
+                                             before.hard.clipping = FALSE,
+                                             after.soft.clipping = FALSE) {
+  if (requireNamespace("cigarillo", quietly = TRUE)) {
+    cigarillo::cigar_extent_along_query(cigar, before.hard.clipping = before.hard.clipping,
+                                        after.soft.clipping = after.soft.clipping, flags = flag)
+  } else {
+    GenomicAlignments::cigarWidthAlongQuerySpace(cigar, flag = flag,
+                                                 before.hard.clipping = before.hard.clipping,
+                                                 after.soft.clipping = after.soft.clipping)
+  }
+}
+
 #' Group GRanges
 #'
 #' It will group / split the GRanges object by the argument `other`.
@@ -140,9 +164,9 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
     readWidth <- if (along.reference) {
       cigarWidthAlongReferenceSpace(cigar, N.regions.removed = TRUE)
     } else {
-      cigarWidthAlongQuerySpace(cigar,
-                                after.soft.clipping =
-                                  after.softclips)
+      cigarWidthAlongQuerySpace_compat(cigar,
+                                       after.soft.clipping =
+                                         after.softclips)
     }
   }
   return(readWidth)
