@@ -315,3 +315,9 @@ cov <- readTable("startCodonCoverage")
 grl[pred == 1 & rowSums(cov) > 5]
 
 ```
+
+# Session information
+
+```{r session-info}
+sessionInfo()
+```

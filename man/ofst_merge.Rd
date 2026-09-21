@@ -25,13 +25,6 @@ ofst_merge(
 )
 }
 \arguments{
-\item{remove_softclips}{Logical, default FALSE. Remove terminal S operations
-from cigar or cigar1/cigar2 before duplicate collapse, including rescue batches.
-Input files and reference coordinates are unchanged. Hard clips, insertions,
-deletions and splice gaps are retained. Explicit qwidth/qwidth1/qwidth2 columns
-are updated; other metadata remains part of the merge key. Clip-only CIGARs
-that would become empty are rejected. Intended for master tracks, not outputs
-requiring original read lengths or clipping QC.}
 \item{file_paths}{Full path to .ofst files wanted to merge}
 
 \item{lib_names}{character, the name to give the resulting score columns.
@@ -104,6 +97,15 @@ conservative additional ceiling and may underestimate usable RAM because
 it includes filesystem cache. Diagnostic messages show the estimates.
 FALSE skips memory estimation entirely and honors \code{filter_chunk_rows}.
 Neither mode guarantees the merge fits RAM; reduce the row budget if needed.}
+
+\item{remove_softclips}{logical, default FALSE. For master-track merges,
+remove terminal S operations from cigar (or cigar1/cigar2) before duplicate
+collapse, including bounded rescue batches. Input files are never modified.
+Start, end, reference width, hard clips, insertions, deletions and splice gaps
+are unchanged. Query width is shortened; explicit qwidth/qwidth1/qwidth2
+columns, if present, are updated. Other metadata remains part of the merge
+key. Clip-only CIGARs that would become empty are rejected. Do not enable
+this for outputs that must retain original read lengths or clipping QC.}
 }
 \value{
 a data.table of merged result, it is merged on all columns except "score".

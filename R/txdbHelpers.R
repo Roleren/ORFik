@@ -1053,7 +1053,7 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
   full_prefix <- paste0(base_path, "_", create_time)
   if (dir.exists(base_dir)) {
     files <- list.files(base_dir)
-    hits <- grep(basename(full_prefix), files, fixed = T)
+    hits <- grep(basename(full_prefix), files, fixed = TRUE)
     if (length(hits) == 0) {
       # Old way of naming
       base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))

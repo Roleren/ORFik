@@ -321,3 +321,8 @@ table[ensembl_tx_name == HSP90_tx_id & predicted == TRUE,]
 # I will link to my optimized github fork of RiboCode which supports input of ORFik covRle objects later 
 # (100x speedup compared to bam input, by using directly an internal hdf5 file!)
 
+# Session information
+
+```{r session-info}
+sessionInfo()
+```

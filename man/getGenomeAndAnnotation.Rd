@@ -41,22 +41,16 @@ choice is `"ensembl"`. When using Ensembl, remember to set
 included, which can make the files much larger. Alternatives are `"refseq"`
 for reference assemblies and `"genbank"` for all available assemblies.}
 
-\item{GTF}{logical, default: TRUE. Download the annotation file for the
-organism given in `organism`. If `FALSE`, ORFik checks whether the file is
-already available locally. To use a custom annotation from disk, set
-`GTF = FALSE` and then assign:\cr
-annotation <- getGenomeAndAnnotation(gtf = FALSE)\cr
-annotation["gtf"] = "path/to/gtf.gtf".\cr
-If `db` is not `"ensembl"`, the downloaded annotation will be GFF instead
-of GTF.}
+\item{GTF}{logical or character, default TRUE. TRUE downloads the annotation
+for \code{organism}; FALSE searches \code{output.dir} for an existing file.
+A character path uses that local GTF/GFF file and creates its TxDb.
+The argument name is case-sensitive: use \code{GTF}, not \code{gtf}.
+For RefSeq and GenBank, see \code{refseq_genbank_format}.}
 
-\item{genome}{logical, default: TRUE. Download the genome for the organism
-given in `organism`. If `FALSE`, ORFik checks whether the file is already
-available locally. To use a custom genome from disk, set
-\code{genome = FALSE} and then assign:\cr
-\code{annotation <- getGenomeAndAnnotation(genome = FALSE)}\cr
-\code{annotation["genome"] = "path/to/genome.fasta"}.\cr
-For Ensembl, the primary assembly is downloaded.}
+\item{genome}{logical or character, default TRUE. TRUE downloads the genome;
+FALSE searches \code{output.dir} for an existing file. A character path uses
+that local FASTA and creates its index. For Ensembl, \code{assembly_type}
+selects the sequence set. FASTA and annotation chromosome names must match.}
 
 \item{merge_contaminants}{logical, default TRUE. Merge the requested
 contaminant references into one fasta file. This usually saves space and is
@@ -188,10 +182,10 @@ Files created during the download process include:\cr
 Optional files that can also be created:\cr
 - Gene symbols (hgnc, etc)\cr
 - Uniprot ids (For name of protein structures)\cr
-If you want to use a custom genome or GTF from disk, assign the existing
-paths like this: \cr
-annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
-genome = "path/to/genome.fasta")\cr
+To use references already on disk, pass their paths as \code{genome} and
+\code{GTF}. Supply \code{organism} and \code{output.dir} as well.
+A completed run reuses the paths in \code{outputs.rds}; choose a separate
+output directory or set \code{remake = TRUE} when changing references.
 }
 \examples{
 

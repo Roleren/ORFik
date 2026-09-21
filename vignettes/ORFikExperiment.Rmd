@@ -459,3 +459,9 @@ res.by.columns # now melted row-wise
 
 ORFik contains a whole API for using the ORFik.experiment S4 class to simplify coding over experiments. More examples of use shown 
 in documentation and in the Annotation_Alignment and Ribo-seq pipeline vignettes.
+
+# Session information
+
+```{r session-info}
+sessionInfo()
+```

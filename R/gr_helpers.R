@@ -22,6 +22,21 @@ cigarWidthAlongQuerySpace_compat <- function(cigar, flag = NULL,
   }
 }
 
+#' Reference-space CIGAR widths across Bioconductor versions
+#' @keywords internal
+#' @noRd
+cigarWidthAlongReferenceSpace_compat <- function(cigar, flag = NULL,
+                                                 N.regions.removed = FALSE) {
+  if (requireNamespace("cigarillo", quietly = TRUE)) {
+    cigarillo::cigar_extent_along_ref(cigar,
+                                     N.regions.removed = N.regions.removed,
+                                     flags = flag)
+  } else {
+    GenomicAlignments::cigarWidthAlongReferenceSpace(
+      cigar, flag = flag, N.regions.removed = N.regions.removed)
+  }
+}
+
 #' Group GRanges
 #'
 #' It will group / split the GRanges object by the argument `other`.
@@ -162,7 +177,7 @@ readWidths <- function(reads, after.softclips = TRUE, along.reference = FALSE) {
     } else stop("reads must be either GRanges, GAlignments, GAlignmentPairs or covRleList")
 
     readWidth <- if (along.reference) {
-      cigarWidthAlongReferenceSpace(cigar, N.regions.removed = TRUE)
+      cigarWidthAlongReferenceSpace_compat(cigar, N.regions.removed = TRUE)
     } else {
       cigarWidthAlongQuerySpace_compat(cigar,
                                        after.soft.clipping =
