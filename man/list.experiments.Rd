@@ -26,8 +26,8 @@ default ("*", all experiments)}
 \item{libtypeExclusive}{search for experiments with exclusivly this
 libtype, default (NULL, all)}
 
-\item{validate}{logical, default TRUE. Abort if any library files does not exist.
-Do not set this to FALSE, unless you know what you are doing!}
+\item{validate}{Logical, default `TRUE`. Validate that referenced library
+files exist and that the experiment layout is consistent.}
 
 \item{BPPARAM}{how many cores/threads to use? Default single thread
 if validate is FALSE, else use bpparam.

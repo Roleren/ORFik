@@ -10,7 +10,7 @@ orfID(grl, with.tx = FALSE)
 \item{grl}{a \code{\link{GRangesList}}}
 
 \item{with.tx}{a boolean, include transcript names,
-if you want unique orfs, so that they dont have duplicates
+if you want unique ORFs, so that they don't have duplicates
 from different isoforms, set it to FALSE.}
 }
 \value{

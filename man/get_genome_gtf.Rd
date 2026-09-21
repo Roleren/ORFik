@@ -21,13 +21,11 @@ get_genome_gtf(
 )
 }
 \arguments{
-\item{GTF}{logical, default: TRUE, download gtf of organism specified
-in "organism" argument. If FALSE, check if the downloaded
-file already exist. If you want to use a custom gtf from you hard drive,
-set GTF = FALSE,
-and assign: \cr annotation <- getGenomeAndAnnotation(gtf = FALSE)\cr
-annotation["gtf"] = "path/to/gtf.gtf".\cr
-If db is not "ensembl", you will instead get a gff file.}
+\item{GTF}{logical or character, default TRUE. TRUE downloads the annotation
+for \code{organism}; FALSE searches \code{output.dir} for an existing file.
+A character path uses that local GTF/GFF file and creates its TxDb.
+The argument name is case-sensitive: use \code{GTF}, not \code{gtf}.
+For RefSeq and GenBank, see \code{refseq_genbank_format}.}
 
 \item{output.dir}{directory to save downloaded data}
 
@@ -35,15 +33,17 @@ If db is not "ensembl", you will instead get a gff file.}
 Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
 for full list of supported organisms.}
 
-\item{assembly}{character, default is assembly = organism, which means getting
-the first assembly in list, otherwise the name of the assembly wanted, like
-"GCA_000005845" will get ecoli substrain k12, which is the most used ones for
-references. Usually ignore this for non bacterial species.}
+\item{assembly}{character, default `assembly = organism`, which selects the
+first assembly returned for that organism. You can also supply a specific
+assembly name, for example `"GCA_000005845"` for the commonly used
+E. coli K-12 reference. This argument is usually only needed for bacterial
+genomes.}
 
-\item{db}{database to use for genome and GTF,
-default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
-else it will contain haplotypes, very large file!).
-Alternatives: "refseq" (reference assemblies) and "genbank" (all assemblies)}
+\item{db}{database to use for the genome and annotation. The recommended
+choice is `"ensembl"`. When using Ensembl, remember to set
+\code{assembly_type = "primary_assembly"} unless you want haplotypes
+included, which can make the files much larger. Alternatives are `"refseq"`
+for reference assemblies and `"genbank"` for all available assemblies.}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}
@@ -76,49 +76,48 @@ hgcn for human, mouse symbols for mouse and rat, more to be added.}
 will add pseudo 5' UTRs of maximum this length if 'minimum_5UTR_percentage" (default 30%) of
 mRNAs (coding transcripts) do not have a leader. (NULL and 0 are both the ignore command)}
 
-\item{remove_annotation_outliers}{logical, default TRUE. Only for refseq.
-shall outlier lines be removed from the input annotation_file?
-If yes, then the initial annotation_file will be overwritten and
-the removed outlier lines will be stored at tempdir for further
-exploration. Among others Aridopsis refseq contains malformed lines,
-where this is needed}
+\item{remove_annotation_outliers}{logical, default TRUE. Only used for
+RefSeq annotations. If `TRUE`, malformed outlier lines are removed from the
+input annotation file. The cleaned annotation overwrites the original file,
+and the removed lines are stored in `tempdir()` for inspection. This is
+needed for some RefSeq annotations, including Arabidopsis.}
 
-\item{refseq_genbank_format}{= c("gtf", "gff3")[1] Gtf format files are usually
-more secure from bugs downstream, so we highly advice to use them. GFF3 files
-can sometimes include information you might not find in the gtf, so sometimes
-it makes sense to use it.}
+\item{refseq_genbank_format}{= c("gtf", "gff3")[1] Annotation format to
+request from RefSeq or GenBank. GTF is usually the safer choice for
+downstream compatibility. GFF3 may contain information that is not present
+in the GTF, so use it when you specifically need that extra annotation.}
 }
 \value{
-a named character vector of path to genomes and gtf downloaded,
- and additional contaminants if used. If merge_contaminants is TRUE, will not
- give individual fasta files to contaminants, but only the merged one.
+A named character vector with the paths to the downloaded genome,
+annotation, and any contaminant references. If `merge_contaminants = TRUE`,
+only the merged contaminant fasta is returned, not the individual files.
 }
 \description{
-This function automatically downloads (if files not already exists)
-genomes and contaminants specified for genome alignment.
-By default, it will use ensembl reference,
-upon completion, the function will store
-a file called \code{file.path(output.dir, "outputs.rds")} with
-the output paths of your completed genome/annotation downloads.
-For most non-model nonvertebrate organisms, you need
-my fork of biomartr for it to work:
-remotes::install_github("Roleren/biomartr)
-If you misspelled something or crashed, delete wrong files and
-run again.\cr
-Do remake = TRUE, to do it all over again.\cr
+This function downloads the genome, annotation, and contaminant references
+used for alignment if they are not already present. By default it uses the
+Ensembl reference. When the run completes, it stores a file called
+\code{file.path(output.dir, "outputs.rds")} with the output paths for the
+downloaded files.
 }
 \details{
-Some files that are made after download:\cr
+For most non-model non-vertebrate organisms, you need
+my fork of biomartr for it to work:
+remotes::install_github("Roleren/biomartr")
+If a download fails or you used the wrong organism or assembly, delete the
+incorrect files and run again.\cr
+Set \code{remake = TRUE} to rebuild everything from scratch.\cr
+
+Files created during the download process include:\cr
 - A fasta index for the genome\cr
 - A TxDb to speed up GTF/GFF reading\cr
-- Seperat of merged contaminant files\cr
-Files that can be made:\cr
+- Separate or merged contaminant files\cr
+Optional files that can also be created:\cr
 - Gene symbols (hgnc, etc)\cr
 - Uniprot ids (For name of protein structures)\cr
-If you want custom genome or gtf from you hard drive, assign existing
-paths like this: \cr
-annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
-genome = "path/to/genome.fasta")\cr
+To use references already on disk, pass their paths as \code{genome} and
+\code{GTF}. Supply \code{organism} and \code{output.dir} as well.
+A completed run reuses the paths in \code{outputs.rds}; choose a separate
+output directory or set \code{remake = TRUE} when changing references.
 }
 \examples{
 

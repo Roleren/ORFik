@@ -2,30 +2,30 @@
 % Please edit documentation in R/utils_exports.R
 \name{export.bed12}
 \alias{export.bed12}
-\title{Export as bed12 format}
+\title{Export grouped exon structures in BED12 format.}
 \usage{
 export.bed12(grl, file, rgb = 0)
 }
 \arguments{
-\item{grl}{A GRangesList}
+\item{grl}{A `GRangesList`.}
 
-\item{file}{a character path to valid output file name}
+\item{file}{Output file path.}
 
-\item{rgb}{integer vector, default (0), maximum (255),
-either single integer or vector of same size as grl to specify groups.
-It is adviced to not use more than 8 different groups. (In IGV / UCSC
-0 is black and 255 is blue)}
+\item{rgb}{Integer vector, default `0`, maximum `255`. Either a single value
+or a vector of length `length(grl)` specifying the display color per group.
+In IGV/UCSC, `0` is black and `255` is blue.}
 }
 \value{
-invisible(NULL) (File is saved only)
+`invisible(NULL)`. The function writes the file and returns
+  invisibly.
 }
 \description{
-bed format for multiple exons per group, as transcripts.
-Can be use as alternative as a sparse .gff format for ORFs.
-Can be direct input for ucsc browser or IGV
+This is useful as a compact representation of grouped ORFs or other
+transcript-like features, and the output can be loaded directly in UCSC
+Genome Browser or IGV.
 }
 \details{
-If grl has no names, groups will be named 1,2,3,4..
+If `grl` has no names, groups will be named `1, 2, 3, ...`.
 }
 \examples{
 grl <- GRangesList(GRanges("1", c(1,3,5), "+"))

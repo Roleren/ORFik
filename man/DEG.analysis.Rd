@@ -87,7 +87,7 @@ with factor levels: WT, mut1 and mut2 with 3 replicates each. You get comparison
 of WT vs mut1, WT vs mut2 and mut1 vs mut2. \cr
 The respective result categories are defined as:
 (given a user defined p value, shown here as 0.05):\cr
-Significant -  p-value adjusted < 0.05 (p-value cutoff decided by 'p.value argument)\cr
+Significant - p-value adjusted < 0.05 (p-value cutoff decided by the 'p.value' argument)\cr
 \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
 Remember that DESeq by default can not
 do global change analysis, it can only find subsets with changes in LFC!

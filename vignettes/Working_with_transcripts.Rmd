@@ -23,22 +23,22 @@ We will here learn how to use ORFik
 effectively getting the transcript regions we want and compute coverage over those regions etc.
 
 # Getting data
-Let us use the same data we used in the importing data vignette.
+Use the bundled synthetic reference from the importing data vignette. This
+keeps the examples reproducible without downloading a genome. For a real
+analysis, use a matching genome and annotation for your organism; see
+`getGenomeAndAnnotation()` in the importing data vignette.
 
 ```{r eval = TRUE, echo = TRUE, message = FALSE}
 library(ORFik)
-organism <- "Saccharomyces cerevisiae" # Baker's yeast
-output_dir <- tempdir(TRUE) # Let's just store it to temp
-# If you already downloaded, it will not redownload, but reuse those files.
-annotation <- getGenomeAndAnnotation(
-                    organism = organism,
-                    output.dir = output_dir,
-                    assembly_type = "toplevel"
-                    )
-genome <- annotation["genome"]
-gtf <- annotation["gtf"]
-txdb_path <- paste0(gtf, ".db")
-txdb <- loadTxdb(txdb_path)
+reference_dir <- system.file("extdata/references/homo_sapiens", package = "ORFik")
+output_dir <- tempfile("orfik-transcripts-")
+dir.create(output_dir)
+reference_files <- c("Homo_sapiens_dummy.fasta", "Homo_sapiens_dummy.gtf")
+file.copy(file.path(reference_dir, reference_files), output_dir)
+genome <- file.path(output_dir, reference_files[1])
+gtf <- file.path(output_dir, reference_files[2])
+indexFa(genome)
+txdb <- makeTxdbFromGenome(gtf, genome, "Homo sapiens", return = TRUE)
 ```
 
 # Loading Transcript region (single point locations)
@@ -205,3 +205,9 @@ function, to understand how it all works and how to speed it up, look up the two
 
 The remaining logic is usually pure R loops, as very little computation is done in R code anyway.
 The output relies on data.table package for efficient computation on results and easy plotting.
+
+# Session information
+
+```{r session-info}
+sessionInfo()
+```

@@ -19,59 +19,61 @@ download.SRA(
 )
 }
 \arguments{
-\item{info}{character vector of only SRR numbers or
-a data.frame with SRA metadata information including the SRR numbers in a column called
-"Run" or "SRR". Can be SRR, ERR or DRR numbers.
-If only SRR numbers can not rename, since no additional information is given.}
+\item{info}{character vector of run accessions, or a `data.frame` with SRA
+metadata containing the run accessions in a column named `"Run"` or
+`"SRR"`. Accessions can be SRR, ERR, or DRR. If you provide only the run
+IDs, ORFik cannot rename the downloaded files because no metadata is
+available.}
 
-\item{outdir}{directory to store runs,
-files are named by default (rename = TRUE) by information from SRA metadata table,
-if (rename = FALSE) named according to SRR numbers.}
+\item{outdir}{directory where the downloaded runs are written. By default,
+files are renamed using the metadata table when `rename = TRUE`; otherwise
+they keep their run accession names.}
 
-\item{rename}{logical or character, default TRUE (Auto guess new names). False: Skip
-renaming. A character vector of equal size as files wanted can also be given.
-Priority of renaming from
-the metadata is to check for unique names in the LibraryName column,
-then the sample_title column if no valid names in LibraryName.
-If new names found and still duplicates, will
-add "_rep1", "_rep2" to make them unique. If no valid names, will not
-rename, that is keep the SRR numbers, you then can manually rename files
-to something more meaningful.}
+\item{rename}{logical or character, default TRUE. If `TRUE`, ORFik tries to
+derive informative file names from the metadata. If `FALSE`, files keep
+their original run accessions. You can also supply a character vector of
+replacement names with one entry per file. ORFik first looks for unique
+names in the `LibraryName` column, then in `sample_title` if needed. If the
+chosen names are still duplicated, suffixes such as `"_rep1"` and
+`"_rep2"` are added. If no valid names are available, the original run
+accessions are kept.}
 
-\item{fastq.dump.path}{path to fastq-dump binary, default: path returned
-from install.sratoolkit()}
+\item{fastq.dump.path}{path to the `fastq-dump` binary. Defaults to the path
+returned by `install.sratoolkit()`.}
 
-\item{settings}{a string of arguments for fastq-dump,
-default: paste("--gzip", "--skip-technical", "--split-files")}
+\item{settings}{character string of additional arguments for `fastq-dump`.
+The default is `paste("--skip-technical", "--split-files")`.}
 
-\item{subset}{an integer or NULL, default NULL (no subset). If defined as
-a integer will download only the first n reads specified by subset. If subset is
-defined, will force to use fastq-dump which is slower than ebi download.}
+\item{subset}{integer or `NULL`, default `NULL`. If set, only the first
+`n` reads are downloaded. Supplying `subset` forces ORFik to use
+`fastq-dump`, which is slower than the EBI downloader.}
 
-\item{compress}{logical, default TRUE. Download compressed files ".gz".}
+\item{compress}{logical, default TRUE. If `TRUE`, download compressed
+`.gz` fastq files.}
 
-\item{use.ebi.ftp}{logical, default: is.null(subset). Use ORFiks much faster download
-function that only works when subset is null,
-if subset is defined, it uses fastqdump, it is slower but supports subsetting.
-Force it to use fastqdump by setting this to FALSE.}
+\item{use.ebi.ftp}{logical, default `is.null(subset)`. If `TRUE`, ORFik
+uses its faster EBI download path, which is only available when
+`subset = NULL`. If `subset` is provided, ORFik falls back to `fastq-dump`.
+Set this to `FALSE` to force `fastq-dump` even when EBI download is
+available.}
 
-\item{ebiDLMethod}{character, default "auto". Which download protocol
-to use in download.file when using ebi ftp download. Sometimes "curl"
-is might not work (the default auto usually), in those cases use wget.
-See "method" argument of ?download.file, for more info.}
+\item{ebiDLMethod}{character, default `"auto"`. Download method passed to
+`download.file()` when using the EBI downloader. If the default does not
+work on your system, try `"wget"` or another supported method.}
 
-\item{timeout}{5000, how many seconds before killing download if
-still active? Will overwrite global option until R session is closed.
-Increase value if you are on a very slow connection or downloading a large dataset.}
+\item{timeout}{number of seconds before aborting a still-running download,
+default `5000`. This updates the global timeout option for the current R
+session. Increase it on slow connections or for large downloads.}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}}
+\item{BPPARAM}{parallel backend, default `bpparam()`. To see how many
+workers it uses, run \code{bpparam()$workers}.}
 }
 \value{
-a character vector of download files filepaths
+Character vector with the file paths of the downloaded files
 }
 \description{
-Multicore version download, see documentation for SRA toolkit for more information.
+Parallel downloader for SRA runs. See the SRA toolkit documentation for the
+underlying `fastq-dump` options.
 }
 \examples{
 SRR <- c("SRR453566") # Can be more than one

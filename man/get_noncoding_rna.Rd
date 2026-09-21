@@ -7,21 +7,18 @@
 get_noncoding_rna(ncRNA, output.dir, organism, gunzip)
 }
 \arguments{
-\item{ncRNA}{logical or character, default FALSE (not used, no download),
-if TRUE or defned path, ncRNA is used as a contaminant reference.
-If TRUE, will try to find ncRNA sequences from the gtf file, usually represented as
-lncRNA (long noncoding RNA's). Will let you know if no ncRNA sequences were found in
-gtf.\cr If not found try character input:\cr
-Alternatives; "auto":
-Will try to find ncRNA file on NONCODE from organism,
-Homo sapiens -> human etc. "auto" will not work for all,
-then you must specify the name used by
-NONCODE, go to the link below and find it.
-If not "auto" / "" it must be a character vector
-of species common name (not scientific name) Homo sapiens is human,
-Rattus norwegicus is rat etc, download ncRNA sequence to filter out with.
-From NONCODE online server, if you cant find
-common name see: http://www.noncode.org/download.php/}
+\item{ncRNA}{logical or character, default FALSE. If `TRUE` or a path is
+supplied, ncRNA is used as a contaminant reference. If `TRUE`, ORFik tries
+to find ncRNA sequences from the GTF file, usually represented as lncRNA
+entries, and reports if none are found.\cr If that does not work, try a
+character input.\cr A value of `"auto"` tells ORFik to look for an ncRNA
+file for the organism on NONCODE, using the organism's common name
+(for example, Homo sapiens -> human). `"auto"` does not work for every
+species, so you may need to provide the common name used by NONCODE
+directly. If the value is not `"auto"` or `""`, it must be a character
+vector of common species names, not scientific names. See
+http://www.noncode.org/download.php/ if you need to look up the correct
+NONCODE name.}
 
 \item{output.dir}{directory to save downloaded data}
 
@@ -33,36 +30,36 @@ for full list of supported organisms.}
 that are zipped when downloaded, should be TRUE!}
 }
 \value{
-a named character vector of path to genomes and gtf downloaded,
- and additional contaminants if used. If merge_contaminants is TRUE, will not
- give individual fasta files to contaminants, but only the merged one.
+A named character vector with the paths to the downloaded genome,
+annotation, and any contaminant references. If `merge_contaminants = TRUE`,
+only the merged contaminant fasta is returned, not the individual files.
 }
 \description{
-This function automatically downloads (if files not already exists)
-genomes and contaminants specified for genome alignment.
-By default, it will use ensembl reference,
-upon completion, the function will store
-a file called \code{file.path(output.dir, "outputs.rds")} with
-the output paths of your completed genome/annotation downloads.
-For most non-model nonvertebrate organisms, you need
-my fork of biomartr for it to work:
-remotes::install_github("Roleren/biomartr)
-If you misspelled something or crashed, delete wrong files and
-run again.\cr
-Do remake = TRUE, to do it all over again.\cr
+This function downloads the genome, annotation, and contaminant references
+used for alignment if they are not already present. By default it uses the
+Ensembl reference. When the run completes, it stores a file called
+\code{file.path(output.dir, "outputs.rds")} with the output paths for the
+downloaded files.
 }
 \details{
-Some files that are made after download:\cr
+For most non-model non-vertebrate organisms, you need
+my fork of biomartr for it to work:
+remotes::install_github("Roleren/biomartr")
+If a download fails or you used the wrong organism or assembly, delete the
+incorrect files and run again.\cr
+Set \code{remake = TRUE} to rebuild everything from scratch.\cr
+
+Files created during the download process include:\cr
 - A fasta index for the genome\cr
 - A TxDb to speed up GTF/GFF reading\cr
-- Seperat of merged contaminant files\cr
-Files that can be made:\cr
+- Separate or merged contaminant files\cr
+Optional files that can also be created:\cr
 - Gene symbols (hgnc, etc)\cr
 - Uniprot ids (For name of protein structures)\cr
-If you want custom genome or gtf from you hard drive, assign existing
-paths like this: \cr
-annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
-genome = "path/to/genome.fasta")\cr
+To use references already on disk, pass their paths as \code{genome} and
+\code{GTF}. Supply \code{organism} and \code{output.dir} as well.
+A completed run reuses the paths in \code{outputs.rds}; choose a separate
+output directory or set \code{remake = TRUE} when changing references.
 }
 \examples{
 

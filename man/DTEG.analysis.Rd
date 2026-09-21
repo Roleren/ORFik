@@ -164,7 +164,7 @@ na_safe is a function where NA values are FALSE for '<=' test
 and TRUE for '>' test),
 we also use a helper function:
 te.sign & rfp.sign & rna.sign, all_models_sign := TRUE.\cr\cr
-** \strong{Signicant DTEG Classifications} **
+** \strong{Significant DTEG Classifications} **
 \itemize{
  \item{No change : None of the below categories}
  \item{Translation (only RFP) : te.sign & rfp.sign & !rna.sign}

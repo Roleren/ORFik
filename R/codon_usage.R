@@ -304,7 +304,7 @@ orf_coding_table <- function(grl, faFile, code = GENETIC_CODE, as.factors = TRUE
 #' ## For single library
 #' res <- codon_usage_exp(df, fimport(filepath(df[1,], "pshifted")),
 #'                  min_counts_cds_filter = 10)
-#' # mean_txNorm is adviced scoring column
+#' # mean_txNorm is an advised scoring column
 #' # codon_usage_plot(res, res$mean_txNorm)
 #' # Default for plot function is the percentage scaled version of mean_txNorm
 #' # codon_usage_plot(res) # This gives check error
@@ -388,7 +388,7 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
 #'
 #' Will create a fold change (ratio score) over your defined 'codon_score'.\cr
 #' It then runs a wilcox p-value test on the differential dwell times of your scores.
-#' It is set to signifcant = TRUE, if p-value < 0.05 & codon > min_total_N_codons &
+#' It is set to significant = TRUE, if p-value < 0.05 & codon > min_total_N_codons &
 #' (score > min_ratio_change | score < 1/min_ratio_change)
 #'
 #' If a more rigerous model with estimated interaction terms between P and A sites is needed,

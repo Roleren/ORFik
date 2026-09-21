@@ -7,5 +7,6 @@ src/*.so
 src/*.dll
 ORFik.Rproj
 tests/testthat/Rplots.pdf
+AGENTS.md
 /doc/
 /Meta/

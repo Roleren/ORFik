@@ -718,3 +718,9 @@ you focus on ORFs / transcript features and especially in combination with
 sequence libraries like RNA-seq and Ribo-seq.  
 
 If needed, you can move to the more advanced features of ORFik in the next vignettes, Happy coding!
+
+# Session information
+
+```{r session-info}
+sessionInfo()
+```

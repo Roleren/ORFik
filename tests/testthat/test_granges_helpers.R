@@ -107,6 +107,18 @@ test_that("widthPerGroup works as intended", {
   expect_equal(widths, c(tx1_1 = 17, tx1_2 = 18))
 })
 
+test_that("widthPerGroup keeps empty groups in place", {
+  grl_empty_middle <- GRangesList(
+    tx1 = GRanges("1", IRanges(c(1, 5), c(2, 6)), "+"),
+    tx2 = GRanges(),
+    tx3 = GRanges("1", IRanges(10, 12), "+")
+  )
+
+  expect_equal(widthPerGroup(grl_empty_middle, FALSE), c(4L, 0L, 3L))
+  expect_equal(widthPerGroup(grl_empty_middle, TRUE),
+               c(tx1 = 4L, tx2 = 0L, tx3 = 3L))
+})
+
 test_that("firstExonPerGroup works as intended", {
 
   firstExons <- firstExonPerGroup(grl)
@@ -394,6 +406,85 @@ test_that("pmapToTranscriptF works as intended", {
   expect_equal(end(res), c(17,18))
   res <- pmapToTranscriptF(ranges(stopSites(grl, asGR = TRUE)), grl)
   expect_equal(end(res), c(17,18))
+})
+
+test_that("pmapToTranscriptF supports one transcript to one range inputs", {
+  x <- GRanges("1", IRanges(10, 15), "+")
+  tx <- GRanges("1", IRanges(10, 20), "+")
+
+  res <- pmapToTranscriptF(x, tx)
+  expect_s4_class(res, "GRanges")
+  expect_equal(start(res), 1L)
+  expect_equal(end(res), 6L)
+
+  res <- pmapToTranscriptF(ranges(x), tx)
+  expect_s4_class(res, "IRanges")
+  expect_equal(start(res), 1L)
+  expect_equal(end(res), 6L)
+})
+
+test_that("pmapToTranscriptF fast-path arguments skip optional post-processing", {
+  x <- GRangesList(
+    tx1 = GRanges("1", IRanges(c(1, 10), c(5, 15)), "+")
+  )
+  tx <- GRangesList(
+    tx1 = GRanges("1", IRanges(c(1, 10), c(5, 15)), "+")
+  )
+
+  reduced <- pmapToTranscriptF(x, tx)
+  raw <- pmapToTranscriptF(x, tx, reduce.ranges = FALSE, set.seqlengths = FALSE)
+
+  expect_equal(start(reduced[[1]]), 1L)
+  expect_equal(end(reduced[[1]]), 11L)
+  expect_equal(start(raw[[1]]), c(1L, 6L))
+  expect_equal(end(raw[[1]]), c(5L, 11L))
+  expect_true(all(is.na(seqlengths(unlist(raw, use.names = FALSE)))))
+})
+
+test_that("pmapToTranscriptF supports many-to-many and recycling modes", {
+  many_to_many <- pmapToTranscriptF(grl, grl)
+  expect_equal(startSites(many_to_many), c(1, 1))
+  expect_equal(stopSites(many_to_many), c(17, 18))
+
+  one_to_many_x <- GRanges("1", IRanges(10, 15), "+")
+  one_to_many_tx <- GRangesList(
+    txA = GRanges("1", IRanges(c(1, 10, 20), c(5, 15, 25)), "+"),
+    txB = GRanges("1", IRanges(c(1, 10, 20), c(5, 15, 25)), "+")
+  )
+  one_to_many <- pmapToTranscriptF(one_to_many_x, one_to_many_tx)
+  expect_s4_class(one_to_many, "GRanges")
+  expect_equal(as.character(seqnames(one_to_many)), c("txA", "txB"))
+  expect_equal(start(one_to_many), c(6L, 6L))
+  expect_equal(end(one_to_many), c(11L, 11L))
+
+  many_to_one_x <- GRanges(
+    "1",
+    IRanges(c(1, 10, 20), c(5, 15, 25)),
+    "+"
+  )
+  many_to_one <- pmapToTranscriptF(many_to_one_x, txl[1])
+  expect_s4_class(many_to_one, "GRanges")
+  expect_equal(as.character(seqnames(many_to_one)), rep("tx1", 3))
+  expect_equal(start(many_to_one), c(1L, 6L, 12L))
+  expect_equal(end(many_to_one), c(5L, 11L, 17L))
+})
+
+test_that("pmapToTranscriptF keeps strict exon boundary behavior across isoforms", {
+  tx <- GRangesList(
+    tx1 = GRanges("chr1", IRanges(c(100, 200), c(120, 220)), strand = "+"),
+    tx2 = GRanges("chr1", IRanges(c(100, 210), c(120, 230)), strand = "+")
+  )
+  x <- GRangesList(
+    read = GRanges("chr1", IRanges(c(100, 205), c(120, 215)), strand = "+")
+  )
+
+  res <- pmapToTranscriptF(x, tx)
+
+  expect_equal(start(res[[1]]), c(1L, 27L))
+  expect_equal(end(res[[1]]), c(21L, 37L))
+  expect_equal(start(res[[2]]), c(1L, 0L))
+  expect_equal(end(res[[2]]), c(21L, -1L))
+  expect_equal(as.character(strand(res[[2]])), c("+", "*"))
 })
 
 test_that("pmapFromTranscriptF works as intended", {

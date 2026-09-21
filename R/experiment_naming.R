@@ -296,7 +296,7 @@ cellLineNames <- function(convertToTissue = FALSE) {
 #' of the main name in second column as a list.
 #' @keywords internal
 cellTypeNames <- function() {
-  mainName <- c("ESC", )
+  mainName <- c("ESC")
   allNames <-
     list(c("ESC", "esc", "embryonic stem cell")
     )

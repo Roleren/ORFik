@@ -18,5 +18,5 @@ file.path(refFolder(x), "biotype_per_gene.fst")
 }
 \examples{
 df <- ORFik.template.experiment()
-symbols(df)
+biotype(df)
 }

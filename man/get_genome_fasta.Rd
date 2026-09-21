@@ -15,13 +15,10 @@ get_genome_fasta(
 )
 }
 \arguments{
-\item{genome}{logical, default: TRUE, download genome of organism
-specified in "organism" argument. If FALSE, check if the downloaded
-file already exist. If you want to use a custom gtf from you hard drive,
-set \code{GTF = FALSE},
-and assign: \cr \code{annotation <- getGenomeAndAnnotation(genome = FALSE)}\cr
-\code{annotation["genome"] = "path/to/genome.fasta"}.\cr
-Will download the primary assembly from Ensembl.}
+\item{genome}{logical or character, default TRUE. TRUE downloads the genome;
+FALSE searches \code{output.dir} for an existing file. A character path uses
+that local FASTA and creates its index. For Ensembl, \code{assembly_type}
+selects the sequence set. FASTA and annotation chromosome names must match.}
 
 \item{output.dir}{directory to save downloaded data}
 
@@ -29,10 +26,11 @@ Will download the primary assembly from Ensembl.}
 Danio rerio, Mus musculus, etc. See \code{biomartr:::get.ensembl.info()}
 for full list of supported organisms.}
 
-\item{assembly}{character, default is assembly = organism, which means getting
-the first assembly in list, otherwise the name of the assembly wanted, like
-"GCA_000005845" will get ecoli substrain k12, which is the most used ones for
-references. Usually ignore this for non bacterial species.}
+\item{assembly}{character, default `assembly = organism`, which selects the
+first assembly returned for that organism. You can also supply a specific
+assembly name, for example `"GCA_000005845"` for the commonly used
+E. coli K-12 reference. This argument is usually only needed for bacterial
+genomes.}
 
 \item{assembly_type}{character, default c("primary_assembly", "toplevel"). Used for ensembl only,
 specifies the genome assembly type. Searches for both primary and toplevel, and if both are found, uses the
@@ -47,45 +45,46 @@ and in such cases, the 'toplevel file is used.
 For more details see:
 \href{https://grch37.ensembl.org/info/genome/genebuild/assembly.html}{ensembl tutorial}}
 
-\item{db}{database to use for genome and GTF,
-default adviced: "ensembl" (remember to set assembly_type to "primary_assembly",
-else it will contain haplotypes, very large file!).
-Alternatives: "refseq" (reference assemblies) and "genbank" (all assemblies)}
+\item{db}{database to use for the genome and annotation. The recommended
+choice is `"ensembl"`. When using Ensembl, remember to set
+\code{assembly_type = "primary_assembly"} unless you want haplotypes
+included, which can make the files much larger. Alternatives are `"refseq"`
+for reference assemblies and `"genbank"` for all available assemblies.}
 
 \item{gunzip}{logical, default TRUE, uncompress downloaded files
 that are zipped when downloaded, should be TRUE!}
 }
 \value{
-a named character vector of path to genomes and gtf downloaded,
- and additional contaminants if used. If merge_contaminants is TRUE, will not
- give individual fasta files to contaminants, but only the merged one.
+A named character vector with the paths to the downloaded genome,
+annotation, and any contaminant references. If `merge_contaminants = TRUE`,
+only the merged contaminant fasta is returned, not the individual files.
 }
 \description{
-This function automatically downloads (if files not already exists)
-genomes and contaminants specified for genome alignment.
-By default, it will use ensembl reference,
-upon completion, the function will store
-a file called \code{file.path(output.dir, "outputs.rds")} with
-the output paths of your completed genome/annotation downloads.
-For most non-model nonvertebrate organisms, you need
-my fork of biomartr for it to work:
-remotes::install_github("Roleren/biomartr)
-If you misspelled something or crashed, delete wrong files and
-run again.\cr
-Do remake = TRUE, to do it all over again.\cr
+This function downloads the genome, annotation, and contaminant references
+used for alignment if they are not already present. By default it uses the
+Ensembl reference. When the run completes, it stores a file called
+\code{file.path(output.dir, "outputs.rds")} with the output paths for the
+downloaded files.
 }
 \details{
-Some files that are made after download:\cr
+For most non-model non-vertebrate organisms, you need
+my fork of biomartr for it to work:
+remotes::install_github("Roleren/biomartr")
+If a download fails or you used the wrong organism or assembly, delete the
+incorrect files and run again.\cr
+Set \code{remake = TRUE} to rebuild everything from scratch.\cr
+
+Files created during the download process include:\cr
 - A fasta index for the genome\cr
 - A TxDb to speed up GTF/GFF reading\cr
-- Seperat of merged contaminant files\cr
-Files that can be made:\cr
+- Separate or merged contaminant files\cr
+Optional files that can also be created:\cr
 - Gene symbols (hgnc, etc)\cr
 - Uniprot ids (For name of protein structures)\cr
-If you want custom genome or gtf from you hard drive, assign existing
-paths like this: \cr
-annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
-genome = "path/to/genome.fasta")\cr
+To use references already on disk, pass their paths as \code{genome} and
+\code{GTF}. Supply \code{organism} and \code{output.dir} as well.
+A completed run reuses the paths in \code{outputs.rds}; choose a separate
+output directory or set \code{remake = TRUE} when changing references.
 }
 \examples{
 

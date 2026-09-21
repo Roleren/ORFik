@@ -5,6 +5,19 @@ ORFik 1.0.0
     footprint shifts, reassignment of Transcription Start Sites with the use of
     CageSeq, plethora of gene identity functions from scientific publications
 
+Bioconductor build fixes
+-----------------------
+
+    o Genome download failures now report the underlying service error instead
+      of failing while coercing an error object to a logical value.
+    o The importing-data and transcript tutorials use bundled synthetic
+      references for runnable examples; network download examples remain
+      available as explicit, optional steps. All vignettes include session info.
+    o Reference-space CIGAR widths now use cigarillo on current Bioconductor,
+      with a compatibility fallback for older releases, as query-space widths do.
+    o Clarified local-reference arguments, cache reuse and pseudo-leader
+      interpretation, and corrected the fastp UMI example.
+
 
 CHANGES IN VERSION 1.1.12
 -----------------------
@@ -67,3 +80,21 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
     o Implemented a Ribo-seq ORF detector now included
     o Added new export functions for bigwig, covRLE
+
+STAR / fastp updates
+-------------------
+
+    o Fixed allow.introns forwarding in STAR.align.single and STAR.align.folder.
+      The default TRUE now enables novel junction discovery (--alignIntronMax 0).
+      Earlier affected runs silently used 1 even with TRUE. Set FALSE explicitly
+      to retain that indexed-junction-only behavior; indexed splicing remains
+      possible in either mode. This correction can change alignment results.
+    o Added base.correction = FALSE to both entry points. TRUE enables fastp
+      correction of overlapping paired reads during trimming (issue #172).
+    o Pipeline logs now show each step's actual inputs, outputs and command,
+      instead of repeatedly presenting the original reads as input (issue #174).
+    o Fixed paired-folder multimapping option forwarding, tRNA input compression,
+      and noShared memory mode across multiple libraries. Commands preserve paths
+      containing spaces or shell metacharacters and stop on tool failure.
+    o Empty folders, duplicate output basenames, and invalid step order now fail
+      explicitly. Pairing still uses adjacent files in sorted filename order.

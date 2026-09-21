@@ -250,7 +250,7 @@ findMapORFs <- function(grl, seqs, startCodon = startDefinition(1),
 #' Should be used for procaryote genomes or transcript sequences as fasta.
 #' Makes no sence for eukaryote whole genomes, since those contains splicing
 #' (use findMapORFs for spliced ranges).
-#' Searches through each fasta header and reports all ORFs found for BOTH
+#' Searches through each fasta header and reports all ORFs found on both
 #' sense (+) and antisense strand (-) in all frames. Name of the header will
 #' be used as seqnames of reported ORFs.
 #' Each fasta header is treated separately, and name of the sequence will

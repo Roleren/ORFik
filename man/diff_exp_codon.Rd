@@ -35,7 +35,7 @@ a data.table with additional attributes
 \description{
 Will create a fold change (ratio score) over your defined 'codon_score'.\cr
 It then runs a wilcox p-value test on the differential dwell times of your scores.
-It is set to signifcant = TRUE, if p-value < 0.05 & codon > min_total_N_codons &
+It is set to significant = TRUE, if p-value < 0.05 & codon > min_total_N_codons &
 (score > min_ratio_change | score < 1/min_ratio_change)
 }
 \details{

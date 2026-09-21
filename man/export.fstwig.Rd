@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_exports.R
 \name{export.fstwig}
 \alias{export.fstwig}
-\title{Export as fstwig (fastwig) format}
+\title{Export coverage in ORFik's `fst`-backed track format.}
 \usage{
 export.fstwig(
   x,
@@ -13,27 +13,31 @@ export.fstwig(
 )
 }
 \arguments{
-\item{x}{A GRangesList, GAlignment GAlignmentPairs with score column
- or coverage RLElist
-Will be converted to 5' end position of original range. If score column
-does not exist, will group ranges and give replicates as score column.}
+\item{x}{A `GRanges`, `GAlignments`, `GAlignmentPairs`, `RleList`, or
+`covRle` object. Range-based input is converted to 5' end positions. If a
+`score` column is missing, identical positions are grouped and counted.}
 
-\item{file}{a character path to valid output file name}
+\item{file}{Output file path.}
 
-\item{by.readlength}{logical, default TRUE}
+\item{by.readlength}{Logical, default `TRUE`. Export separate coverage tables
+for each read length.}
 
-\item{by.chromosome}{logical, default TRUE}
+\item{by.chromosome}{Logical, default `TRUE`. Export one table per chromosome.}
 
 \item{compress}{value in the range 0 to 100, indicating the amount of compression to use.
 Lower values mean larger file sizes. The default compression is set to 50.}
 }
 \value{
-invisible(NULL) (File is saved as 2 .fstwig files)
+`invisible(NULL)`. The function writes one or two `.fstwig` files.
 }
 \description{
-Will create 2 files, 1 for + strand (*_forward.fstwig)
-and 1 for - strand (*_reverse.fstwig). If all
-ranges are * stranded, will output 1 file.
+By default this creates two files, one for the `+` strand
+(`*_forward.fstwig`) and one for the `-` strand (`*_reverse.fstwig`). If all
+ranges are `*` stranded, a single file is written instead.
+}
+\details{
+This is ORFik's `fst`-backed coverage export format for fast loading of
+stranded coverage tracks and read-length-resolved coverage tracks.
 }
 \examples{
 x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))
@@ -43,7 +47,7 @@ seqlengths(x) <- 5
 # export.fstwig(x, "~/Desktop/ribo")
 }
 \references{
-"TODO"
+\url{https://www.fstpackage.org/}
 }
 \seealso{
 Other utils: 

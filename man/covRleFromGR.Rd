@@ -4,7 +4,12 @@
 \alias{covRleFromGR}
 \title{Convert GRanges to covRle}
 \usage{
-covRleFromGR(x, weight = "AUTO", ignore.strand = FALSE)
+covRleFromGR(
+  x,
+  weight = "AUTO",
+  ignore.strand = FALSE,
+  chunk.size = getOption("ORFik.coverage.chunk.size", NULL)
+)
 }
 \arguments{
 \item{x}{a GRanges, GAlignment or GAlignmentPairs object.
@@ -15,6 +20,17 @@ to call convertToOneBasedRanges on GAlignment object to speed it up.}
 Can also be a manually assigned meta column like 'score2' etc.}
 
 \item{ignore.strand}{logical, default FALSE.}
+
+\item{chunk.size}{NULL (default) tries coverage directly, then retries in
+smaller alignment chunks on recognized expansion/allocation limit errors.
+A positive integer forces chunks of at most this many alignments (or pairs).
+Can also be set globally with option \code{ORFik.coverage.chunk.size}.
+Chunked coverage uses numeric counts to avoid integer overflow when adding
+chunks. No reads are discarded. A single alignment that cannot be expanded,
+or a final coverage object that cannot fit, still causes an error.
+Single-end alignments use direct CIGAR-to-IRanges coverage with numeric
+counts; no intermediate GRangesList is constructed.
+Chunking may slightly change rounding for fractional weights.}
 }
 \value{
 covRle object

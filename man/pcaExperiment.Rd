@@ -35,7 +35,7 @@ a data.table of counts per column (default normalized fpkm values).}
 \item{return.data}{logical, default FALSE. Return data instead of plot}
 
 \item{color.by.group}{logical, default TRUE. Colors in PCA plot represent
-unique library groups, if FALSE. Color each sample in seperate color
+unique library groups, if FALSE. Color each sample in a separate color
 (harder to distinguish for > 10 samples)}
 
 \item{PCA_X}{name of priniciple component to use for x axis: valid options: PC1-PC6}

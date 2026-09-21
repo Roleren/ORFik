@@ -346,6 +346,34 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
   return(txList)
 }
 
+#' makeTxDbFromGFF, compatible with old and new Bioconductor
+#'
+#' `makeTxDbFromGFF` moved from GenomicFeatures to the txdbmaker package and
+#' is defunct in GenomicFeatures >= 1.61.1. Use txdbmaker if it is installed
+#' (current Bioconductor), otherwise fall back to GenomicFeatures (older
+#' Bioconductor releases that predate the txdbmaker split).
+#' @keywords internal
+#' @noRd
+makeTxDbFromGFF_compat <- function(...) {
+  if (requireNamespace("txdbmaker", quietly = TRUE)) {
+    txdbmaker::makeTxDbFromGFF(...)
+  } else {
+    GenomicFeatures::makeTxDbFromGFF(...)
+  }
+}
+
+#' makeTxDb, compatible with old and new Bioconductor
+#' @inherit makeTxDbFromGFF_compat
+#' @keywords internal
+#' @noRd
+makeTxDb_compat <- function(...) {
+  if (requireNamespace("txdbmaker", quietly = TRUE)) {
+    txdbmaker::makeTxDb(...)
+  } else {
+    GenomicFeatures::makeTxDb(...)
+  }
+}
+
 #' General loader for txdb
 #'
 #' Useful to allow fast TxDb loader like .db
@@ -359,7 +387,6 @@ updateTxdbStartSites <- function(txList, fiveUTRs, removeUnused) {
 #'  Only used if input is path to gff.
 #' @return a TxDb object
 #' @importFrom AnnotationDbi loadDb
-#' @importFrom txdbmaker makeTxDbFromGFF makeTxDb
 #' @export
 #' @examples
 #' library(GenomicFeatures)
@@ -377,7 +404,7 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f %in% c("gff", "gff2", "gff3", "gtf")) {
-      txdb <- makeTxDbFromGFF(txdb, organism = organism, chrominfo = chrominfo)
+      txdb <- makeTxDbFromGFF_compat(txdb, organism = organism, chrominfo = chrominfo)
     } else if(f %in% c("db", "sqlite")) {
       txdb <- loadDb(txdb)
     } else {
@@ -391,14 +418,14 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
       stop("When txdb is list input, must have names:",
            paste(must_have_cols, collapse = ", "))
     }
-    return(do.call(makeTxDb, txdb))
+    return(do.call(makeTxDb_compat, txdb))
   } else if(!is(txdb, "TxDb")) stop("txdb must be path, list or TxDb")
   return(matchSeqStyle(txdb, chrStyle))
 }
 
 #' Load transcript region
 #'
-#' Usefull to simplify loading of standard regions, like cds' and leaders.
+#' Useful to simplify loading of standard regions, like CDSs and leaders.
 #' Adds another safety in that seqlevels will be set
 #'
 #' Load as GRangesList if input is not already GRangesList.
@@ -1020,12 +1047,24 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
   }
 
   base_dir <- file.path(dirname(gtf_path), "ORFik_optimized")
-  base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))
+  # New way of naming
+  base_path <- file.path(base_dir, basename(gtf_path))
+
+  full_prefix <- paste0(base_path, "_", create_time)
+  if (dir.exists(base_dir)) {
+    files <- list.files(base_dir)
+    hits <- grep(basename(full_prefix), files, fixed = TRUE)
+    if (length(hits) == 0) {
+      # Old way of naming
+      base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))
+      full_prefix <- paste0(base_path, "_", create_time)
+    }
+  }
 
   if (create.dir) {
     dir.create(base_dir, showWarnings = FALSE, recursive = TRUE)
   }
-  return(paste0(base_path, "_", create_time))
+  return(full_prefix)
 }
 
 #' Load creation time of txdb safely

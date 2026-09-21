@@ -13,12 +13,15 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
                                           id.type = assembly_type,
                                           path = output.dir)[1],
                            error = function(e) {
-                             return(e)
+                             stop("Genome download failed for ", assembly,
+                                  ": ", conditionMessage(e), call. = FALSE)
                            }
         )
-        if (is.logical(genome) || genome == FALSE) {
-            stop("Genome could not be download, do you have internet.
-                 If so, debug to find the reason.")
+        if (!is.character(genome) || length(genome) != 1L ||
+            is.na(genome) || !nzchar(genome) || genome == "Not available") {
+            stop("No genome file was returned for ", assembly,
+                 ". Check the organism, assembly and download service.",
+                 call. = FALSE)
         } else {
           if (gunzip) genome <- R.utils::gunzip(genome, overwrite = TRUE)
         }

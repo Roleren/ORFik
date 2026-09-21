@@ -38,7 +38,7 @@ optimized files are ~ 100x faster to load for human genome.}
 a GRangesList of region
 }
 \description{
-Usefull to simplify loading of standard regions, like cds' and leaders.
+Useful to simplify loading of standard regions, like CDSs and leaders.
 Adds another safety in that seqlevels will be set
 }
 \details{

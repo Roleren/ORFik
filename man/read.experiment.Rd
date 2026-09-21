@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiment_IO.R
 \name{read.experiment}
 \alias{read.experiment}
-\title{Read ORFik \code{\link{experiment}}}
+\title{Read an ORFik experiment definition into an `experiment` object.}
 \usage{
 read.experiment(
   file,
@@ -12,32 +12,27 @@ read.experiment(
 )
 }
 \arguments{
-\item{file}{relative path to a ORFik experiment. That is a .csv file following
-ORFik experiment style ("," as seperator).
-, or a template data.frame from \code{\link{create.experiment}}. Can
-also be full path to file, then in.dir argument is ignored.}
+\item{file}{Relative path to an ORFik experiment, or a template data frame
+from \code{\link{create.experiment}}. If a full path is supplied,
+`in.dir` is ignored.}
 
-\item{in.dir}{Directory to load experiment csv file from, default:
-\code{ORFik::config()["exp"]}, which has default "~/Bio_data/ORFik_experiments/"\cr
-Set to NULL if you don't want to save it to disc.
-Does not apply if file argument is not a path (can also be a data.frame).
-Also does not apply if file argument was given as full path.}
+\item{in.dir}{Directory containing experiment `.csv` files. Defaults to
+\code{ORFik::config()["exp"]}, which by default is
+`"~/Bio_data/ORFik_experiments/"`. Ignored when `file` is not a path or is
+already a full path.}
 
-\item{validate}{logical, default TRUE. Abort if any library files does not exist.
-Do not set this to FALSE, unless you know what you are doing!}
+\item{validate}{Logical, default `TRUE`. Validate that referenced library
+files exist and that the experiment layout is consistent.}
 
-\item{output.env}{an environment, default .GlobalEnv. Which environment
-should ORFik output libraries to (if this is done),
-can be updated later with \code{envExp(df) <- new.env()}.}
+\item{output.env}{Environment to associate with the experiment, default
+`.GlobalEnv`. This can be changed later with `envExp(df) <- new.env()`.}
 }
 \value{
-an ORFik \code{\link{experiment}}
+An ORFik \code{\link{experiment}} object.
 }
 \description{
-Read in runs / samples from an experiment as a single R object.
-To read an ORFik experiment, you must of course make one first.
-See \code{\link{create.experiment}}
-The file must be csv and be a valid ORFik experiment
+The input must either be a valid ORFik experiment `.csv` file or a template
+data frame produced by \code{\link{create.experiment}}.
 }
 \examples{
 # From file

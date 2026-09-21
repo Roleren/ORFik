@@ -11,8 +11,8 @@ mergeFastq(in_files_by_out_file_list, BPPARAM = bpparam())
 Per element of list are  full path to the individual fastq.gz files to that
 output file.}
 
-\item{BPPARAM}{how many cores/threads to use? default: bpparam().
-To see number of threads used, do \code{bpparam()$workers}}
+\item{BPPARAM}{parallel backend, default `bpparam()`. To see how many
+workers it uses, run \code{bpparam()$workers}.}
 }
 \value{
 invisible(NULL).
@@ -25,7 +25,7 @@ Only works for Unix OS (Linux and Mac)
 
 # Make small example fastq files
 fastq.folder <- tempdir() # <- Your fastq files
-# Seperate files into groups (here it is 4 output files from 12 input files)
+# Separate files into groups (here it is 4 output files from 12 input files)
 in_files <- paste0(LETTERS[1:16], ".fastq.gz")
 in_files <- file.path(fastq.folder, in_files)
 samples_dna_letters <- vapply(seq_along(in_files), function(x)

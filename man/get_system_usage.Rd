@@ -16,6 +16,10 @@ with all the info.}
 }
 \value{
 A list with system info, if one_liner is TRUE, then a length 1 character string.
+On Linux, \code{Memory_Available_Bytes} and \code{Memory_Available_GB}
+(GiB) report \code{MemAvailable}, including the kernel's estimate of
+reclaimable memory. These are host-level values, not container allowances;
+they are NA on other platforms or when unavailable.
 }
 \description{
 System usage for Linux (Auto-detects correct drive if not provided)

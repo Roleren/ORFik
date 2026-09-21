@@ -1,17 +1,17 @@
-#' Export as bed12 format
+#' Export grouped exon structures in BED12 format.
 #'
-#' bed format for multiple exons per group, as transcripts.
-#' Can be use as alternative as a sparse .gff format for ORFs.
-#' Can be direct input for ucsc browser or IGV
+#' This is useful as a compact representation of grouped ORFs or other
+#' transcript-like features, and the output can be loaded directly in UCSC
+#' Genome Browser or IGV.
 #'
-#' If grl has no names, groups will be named 1,2,3,4..
-#' @param grl A GRangesList
-#' @param file a character path to valid output file name
-#' @param rgb integer vector, default (0), maximum (255),
-#' either single integer or vector of same size as grl to specify groups.
-#' It is adviced to not use more than 8 different groups. (In IGV / UCSC
-#' 0 is black and 255 is blue)
-#' @return invisible(NULL) (File is saved only)
+#' If `grl` has no names, groups will be named `1, 2, 3, ...`.
+#' @param grl A `GRangesList`.
+#' @param file Output file path.
+#' @param rgb Integer vector, default `0`, maximum `255`. Either a single value
+#'   or a vector of length `length(grl)` specifying the display color per group.
+#'   In IGV/UCSC, `0` is black and `255` is blue.
+#' @return `invisible(NULL)`. The function writes the file and returns
+#'   invisibly.
 #' @importFrom data.table fwrite
 #' @export
 #' @family utils
@@ -54,19 +54,19 @@ export.bed12 <- function(grl, file, rgb = 0) {
   return(invisible(NULL))
 }
 
-#' Export as wiggle format
+#' Export coverage-style signal as wiggle files.
 #'
-#' Will create 2 files, 1 for + strand (*_forward.wig)
-#' and 1 for - strand (*_reverse.wig). If all
-#' ranges are * stranded, will output 1 file.
-#' Can be direct input for ucsc browser or IGV
+#' By default this creates two files, one for the `+` strand
+#' (`*_forward.wig`) and one for the `-` strand (`*_reverse.wig`). If all
+#' ranges are `*` stranded, a single `.wig` file is written instead.
+#' The output can be loaded directly in UCSC Genome Browser or IGV.
 #'
 #' @references https://genome.ucsc.edu/goldenPath/help/wiggle.html
-#' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
-#' Will be converted to 5' end position of original range. If score column
-#' does not exist, will group ranges and give replicates as score column.
-#' @param file a character path to valid output file name
-#' @return invisible(NULL) (File is saved as 2 .wig files)
+#' @param x A `GRanges`, `GAlignments`, or `GAlignmentPairs` object. Input
+#'   ranges are converted to 5' end positions. If a `score` column is missing,
+#'   identical positions are grouped and counted.
+#' @param file Output file path.
+#' @return `invisible(NULL)`. The function writes one or two `.wig` files.
 #' @importFrom rtracklayer export.wig
 #' @export
 #' @family utils
@@ -102,29 +102,27 @@ export.wiggle <- function(x, file) {
   return(invisible(NULL))
 }
 
-#' Export as bigWig format
+#' Export coverage-style signal as bigWig files.
 #'
-#' Will create 2 files, 1 for + strand (*_forward.bigWig)
-#' and 1 for - strand (*_reverse.bigWig). If all
-#' ranges are * stranded, will output 1 file.
-#' Can be direct input for ucsc browser or IGV
+#' By default this creates two files, one for the `+` strand
+#' (`*_forward.bigWig`) and one for the `-` strand (`*_reverse.bigWig`). If all
+#' ranges are `*` stranded, a single `.bigWig` file is written instead.
+#' The output can be loaded directly in UCSC Genome Browser or IGV.
 #'
 #' @references https://genome.ucsc.edu/goldenPath/help/bigWig.html
-#' @param x A GRangesList, GAlignment GAlignmentPairs with score column.
-#'  Will be converted to 5' end position of original range. If score column
-#'  does not exist, will group ranges and give replicates as score column.
-#'  Since bigWig needs a score column to represent counts!
-#' @param file a character path to valid output file name
-#' @param is_pre_collapsed logical, default FALSE. Have you already
-#'  collapsed reads with collapse.by.scores,
-#'  so each positions is only in 1 GRanges object with
-#'  a score column per readlength?
-#'  Set to TRUE, only if you are sure, will give a speedup.
-#' @param split.by.strand logical, default TRUE. Split bigWig into 2 files,
-#'  one for each strand.
-#' @param seq_info a Seqinfo object, default seqinfo(x).
-#'  Must have non NA seqlengths defined!
-#' @return invisible(NULL) (File is saved as 2 .bigWig files)
+#' @param x A `GRanges`, `GAlignments`, `GAlignmentPairs`, or `covRle` object.
+#'   Input ranges are converted to 5' end positions if needed. If a `score`
+#'   column is missing, identical positions are grouped and counted, since
+#'   bigWig stores numeric signal.
+#' @param file Output file path.
+#' @param is_pre_collapsed Logical, default `FALSE`. Set to `TRUE` only if
+#'   reads were already collapsed with `collapse.by.scores()` and each position
+#'   is represented once per read length.
+#' @param split.by.strand Logical, default `TRUE`. If `TRUE`, write separate
+#'   files per strand when strand information is available.
+#' @param seq_info A `Seqinfo` object, default `seqinfo(x)`. Sequence lengths
+#'   must be defined.
+#' @return `invisible(NULL)`. The function writes one or two `.bigWig` files.
 #' @importFrom rtracklayer export.bw
 #' @export
 #' @family utils
@@ -177,22 +175,24 @@ export.bigWig <- function(x, file, split.by.strand = TRUE,
 }
 
 
-#' Export as fstwig (fastwig) format
+#' Export coverage in ORFik's `fst`-backed track format.
 #'
-#' Will create 2 files, 1 for + strand (*_forward.fstwig)
-#' and 1 for - strand (*_reverse.fstwig). If all
-#' ranges are * stranded, will output 1 file.
+#' By default this creates two files, one for the `+` strand
+#' (`*_forward.fstwig`) and one for the `-` strand (`*_reverse.fstwig`). If all
+#' ranges are `*` stranded, a single file is written instead.
 #'
-#' @references "TODO"
-#' @param x A GRangesList, GAlignment GAlignmentPairs with score column
-#'  or coverage RLElist
-#' Will be converted to 5' end position of original range. If score column
-#' does not exist, will group ranges and give replicates as score column.
+#' This is ORFik's `fst`-backed coverage export format for fast loading of
+#' stranded coverage tracks and read-length-resolved coverage tracks.
+#' @references \url{https://www.fstpackage.org/}
+#' @param x A `GRanges`, `GAlignments`, `GAlignmentPairs`, `RleList`, or
+#'   `covRle` object. Range-based input is converted to 5' end positions. If a
+#'   `score` column is missing, identical positions are grouped and counted.
 #' @inheritParams fst::write_fst
-#' @param file a character path to valid output file name
-#' @param by.readlength logical, default TRUE
-#' @param by.chromosome logical, default TRUE
-#' @return invisible(NULL) (File is saved as 2 .fstwig files)
+#' @param file Output file path.
+#' @param by.readlength Logical, default `TRUE`. Export separate coverage tables
+#'   for each read length.
+#' @param by.chromosome Logical, default `TRUE`. Export one table per chromosome.
+#' @return `invisible(NULL)`. The function writes one or two `.fstwig` files.
 #' @export
 #' @family utils
 #' @examples

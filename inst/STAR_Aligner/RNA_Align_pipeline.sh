@@ -1,4 +1,6 @@
 #!/bin/bash
+# Stop immediately on failed processing commands, including pipeline failures.
+set -eo pipefail
 
 #HT 12/02/19
 # script to process and align genomic fastq datasets
@@ -29,17 +31,18 @@ OPTIONS:
 		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge",
 		   or tr-co-ge, depending on if you merged contaminants or not.)
 			 tr: trim, co: contaminants, ph: phix, rR: rrna, nc: ncrna, tR: trna, ge: genome)
-		Write your wanted steps, seperated by "-". Order does not matter.
+		Write your wanted steps, seperated by "-". Use processing order, with trimming first and genome alignment last.
 		To just do trim and alignment to genome write -s "tr-ge"
 	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable",
 		to disable it or "standard" to get "AAAAAAAAAA", the illumina standard sequence.
-	-t	trim front (default 3) How many bases to pre trim reads on 5' end,
+	-t	trim front (default 0) How many bases to pre trim reads on 5' end,
 	        as it frequently represents an untemplated addition during reverse transcription.
 	-z	trim tail (default 0) How many bases to pre trim reads on 3' end.
 	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
-  -B Allow introns (default yes (1), else no (0))
+  -B Discover novel junctions (1, default; 0 keeps only indexed junctions)
+  -b Enable fastp base correction for overlapping paired reads
 	Path arguments:
-	-S      path to STAR (default: ~/bin/STAR-2.7.0c/source/STAR)
+	-S      path to STAR (default: ~/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR)
 	-P      path to fastp (trimmer) (default: ~/bin/fastp)
 
 	Less important options:
@@ -74,9 +77,9 @@ example usage: RNA_Align_pipeline.sh -f <in.fastq.gz> -o <out_dir>
 EOF
 }
 
-# First pass: detect -v (check verbose flag) only
+# Pipeline progress is optional; tool diagnostics remain visible.
 log() {
-  (( verbose == 1 )) && echo "$@"
+  if (( verbose == 1 )); then echo "$@"; fi
 }
 
 
@@ -89,591 +92,261 @@ allSteps="tr-ge"
 steps=$allSteps
 resume="n"
 alignment="Local"
-allow_introns=0
+allow_introns=1
 adapter="auto"
 quality_filtering="disable"
 maxCPU=90
 multimap=10
-trim_front=3
+trim_front=0
 trim_tail=0
 keep="n"
 keepContam="no"
 keepContamType="bam"
 keep_unmapped_genome="None"
 verbose=1
-STAR="~/bin/STAR-2.7.0c/source/STAR"
-fastp="~/bin/fastp"
-while getopts ":vf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
+STAR="$HOME/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR"
+fastp="$HOME/bin/fastp"
+base_correction=0
+in_file_two=""
+while getopts ":bvf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
     case $opt in
+    b) base_correction=1 ;;
     v)
       verbose=0
       ;;
     f)
         in_file=$OPTARG
-        log "-f input file: $OPTARG"
 	      ;;
     F)
       	in_file_two=$OPTARG
-      	log "-F input file 2: $OPTARG"
 	      ;;
     o)
         out_dir=$OPTARG
-        log "-o output folder: $OPTARG"
         ;;
     l)
         min_length=$OPTARG
-        log "-l minimum length of reads: $OPTARG"
         ;;
     T)
         mismatches=$OPTARG
-        log "-T max mismatches of reads: $OPTARG"
         ;;
     g)
         gen_dir=$OPTARG
-        log "-g genome dir for all indices: $OPTARG"
         ;;
     s)
         steps=$OPTARG
-        log "-s steps to do: $OPTARG"
         ;;
     a)
         adapter=$OPTARG
-        log "-a adapter sequence: $OPTARG"
         ;;
     q)
 	      quality_filtering=$OPTARG
-	      log "-q quality filtering: $quality_filtering"
         ;;
     t)
         trim_front=$OPTARG
-        log "-t trim front (nt): $OPTARG"
         ;;
     z)
         trim_tail=$OPTARG
-        log "-z trim tail (nt): $OPTARG"
         ;;
     A)
         alignment=$OPTARG
-        log "-A alignment type: $OPTARG"
         ;;
     B)
         allow_introns=$OPTARG
-        log "-B allow_introns: $OPTARG"
         ;;
     r)
 	      resume=$OPTARG
-	      log "-r resume (r or new n): $OPTARG"
         ;;
     m)
       	maxCPU=$OPTARG
-      	log "-m maxCPU: $OPTARG"
         ;;
     M)
       	multimap=$OPTARG
-      	log "-M max multimap: $OPTARG"
         ;;
     S)
       	STAR=$OPTARG
-      	log "-S STAR location: $OPTARG"
         ;;
     P)
       	fastp=$OPTARG
-      	log "-P fastp location: $OPTARG"
         ;;
     k)
       	keep=$OPTARG
-      	log "-k Keep Star Index loaded: $OPTARG"
         ;;
     K)
       	keepContam=$OPTARG
-      	log "-K Keep contamination reads: $OPTARG"
         ;;
     X)
       	keepContamType=$OPTARG
-      	log "-X Contamination reads type: $OPTARG"
         ;;
     u)
       	keep_unmapped_genome=$OPTARG
-      	log "-u Keep unmapped genome reads: $OPTARG"
         ;;
     h)
         usage
         exit
         ;;
-    ?)
-        echo "Invalid option: -$OPTARG"
+    :|?)
+        echo "Invalid option or missing value: -$OPTARG"
         usage
         exit 1
         ;;
     esac
 done
-echo ""
-# echo "SAFE STOP" >&2
-# exit 1
 
-if [ "$steps" == "all" ]; then
-	steps="tr-ph-rR-nc-tR-ge"
+fail() { echo "ERROR: $*" >&2; exit 1; }
+[[ -n "$out_dir" ]] || fail "Output directory (-o) is required."
+[[ -f "$in_file" ]] || fail "Input file does not exist: $in_file"
+[[ -z "$in_file_two" || -f "$in_file_two" ]] || fail "Read 2 does not exist: $in_file_two"
+case "$allow_introns" in
+  1|TRUE|true) intron_max=0 ;;
+  0|FALSE|false) intron_max=1 ;;
+  *) fail "Allow introns (-B) must be 1/TRUE or 0/FALSE." ;;
+esac
+case "$keep" in
+  y) genome_load=LoadAndKeep ;;
+  n) genome_load=LoadAndRemove ;;
+  noShared) genome_load=NoSharedMemory ;;
+  *) fail "Index memory mode (-k) must be y, n or noShared." ;;
+esac
+[[ "$keepContamType" == bam ]] || fail "Only BAM contaminant output is supported."
+if [[ "$steps" == all ]]; then
+  if [[ -d "$gen_dir/contaminants_genomeDir" ]]; then steps=tr-co-ge
+  else steps=tr-ph-rR-nc-tR-ge; fi
 fi
-
-IFS="-" read -a stepsArray <<< "$steps"
-export stepsArray
-
-
-if [ -z "$out_dir" ]; then
-	echo "Error, out directory (-o) must be speficied!"
-	exit 1
+IFS='-' read -r -a steps_array <<< "$steps"
+[[ -n "$steps" && "$steps" != *- ]] || fail "Empty processing step."
+previous_rank=0
+for step in "${steps_array[@]}"; do
+  case "$step" in
+    tr) rank=1 ;; co) rank=2 ;; ph) rank=3 ;; rR) rank=4 ;;
+    nc) rank=5 ;; tR) rank=6 ;; ge) rank=7 ;;
+    *) fail "Unknown processing step: $step" ;;
+  esac
+  (( rank > previous_rank )) || fail "Steps must be unique and in processing order: tr-co-ph-rR-nc-tR-ge."
+  previous_rank=$rank
+  if [[ "-$steps-" == *-co-* && "$step" =~ ^(ph|rR|nc|tR)$ ]]; then
+    fail "Use merged contaminants (co) or individual depletion steps, not both."
+  fi
+done
+[[ "$resume" == n || "-$steps-" == *"-$resume-"* ]] || fail "Resume step is not in steps: $resume"
+if (( base_correction )); then
+  [[ -n "$in_file_two" ]] || fail "Base correction requires paired end reads."
+  [[ "-$steps-" == *-tr-* ]] || fail "Base correction requires trimming (tr)."
 fi
+mkdir -p "$out_dir"
+ibn=$(basename "$in_file")
+ibn=${ibn%.gz}; ibn=${ibn%.*}
 
-if [ ! -z "$in_file" ]; then
-	if [ ! -f "$in_file" ]; then
-	    echo "input file f does not name existing file!"
-	    exit 1
-	fi
-
-	if [[ ! "$in_file" =~ .*\.(fasta|fa|fastq|gz|fq) ]]; then
-	    echo "Invalid input file type: $in_file"
-	    echo "Must be either fasta, fa, fastq, fq or gz"
-	    exit 1
-	fi
-else
-	echo "Error input file :f was not assigned!"
-	exit 1
-fi
-
-if [ ! -z "$in_file_two" ]; then
-
-	if [ ! -f "$in_file_two" ]; then
-	    echo "Error input file 2 :F does not name existing file!"
-	    exit 1
-	fi
-
-	if [[ ! $in_file_two =~ .*\.(fasta|fa|fastq|gz|fq) ]]; then
-	    echo "Invalid input file type: $in_file_two"
-	    echo "Must be either fasta, fa, fastq, fq or gz"
-	    exit 1
-	fi
-fi
-
-
-# 1. mkdir
-
-if [ ! -d "$out_dir" ]; then
-    mkdir -p $out_dir
-fi
-
-contamSAMmode="None"
-contamSAMtype="None"
-if [ $keepContam == "yes" ]; then
-  contamSAMmode="Full"
-  contamSAMtype="BAM Unsorted"
-fi
-
-# STAR INDEX
-contaminants=$gen_dir/contaminants_genomeDir
-phix=$gen_dir/PhiX_genomeDir
-rRNA=$gen_dir/rRNA_genomeDir
-ncRNA=$gen_dir/ncRNA_genomeDir
-tRNA=$gen_dir/tRNA_genomeDir
-usedGenome=$gen_dir/genomeDir
-if [ ! -d "$usedGenome" ]; then
-      if [ $steps == "tr" ]; then
-        echo "Running trim only mode"
-      else
-		    echo "Error: the given STAR index dir does not exist!"
-	      exit 1
-	    fi
-fi
-
-ibn=$(basename ${in_file}) # <- name to use
-ibn=${ibn%.gz}
-ibn=${ibn%.fastq}
-ibn=${ibn%.fq}
-ibn=${ibn%.fasta}
-ibn=${ibn%.fa}
-echo "basename of file is: ${ibn}"
-
-# Index of current step (tr-ge, means tr = 0)
-function indexOf()
-{
-	string=($1) && shift
-	myArray=($@)
-
-	for i in "${!myArray[@]}"; do
-
-		if [ ${myArray[i]} == $string ]; then
-        		echo $i
-		fi
-    	done
+# Populate an array, preserving spaces and shell metacharacters in file paths.
+step_outputs() {
+  case "$1" in
+    tr) outputs=("$out_dir/trim/trimmed_${ibn}.fastq")
+        [[ -z "$in_file_two" ]] || outputs+=("$out_dir/trim/trimmed2_${ibn}.fastq") ;;
+    co) prefix="$out_dir/contaminants_depletion/contaminants_${ibn}_" ;;
+    ph) prefix="$out_dir/phix_depletion/PhiX_${ibn}_" ;;
+    rR) prefix="$out_dir/rRNA_depletion/rRNA_${ibn}_" ;;
+    nc) prefix="$out_dir/ncRNA_depletion/ncRNA_${ibn}_" ;;
+    tR) prefix="$out_dir/tRNA_depletion/tRNA_${ibn}_" ;;
+    ge) prefix="$out_dir/aligned/${ibn}_" ;;
+  esac
+  if [[ "$1" != tr ]]; then
+    outputs=("${prefix}Unmapped.out.mate1")
+    [[ -z "$in_file_two" ]] || outputs+=("${prefix}Unmapped.out.mate2")
+  fi
+  return 0
 }
-
-# Get all relative paths to outputs of pipeline
-# 1 ${stepsArray[ind]} 2 ${out_dir} 3 ${ibn} 4 ${in_file_two}
-# Return: string Full path to designated file (2 for paired end)
-function pathList()
-{
-	if [ -z ${4} ]; then # if single end
-		case $1 in
-		  "co")
-		    echo "${2}/contaminants_depletion/contaminants_${3}_Unmapped.out.mate1"
-		    ;;
-			"tR")
-				echo "${2}/tRNA_depletion/tRNA_${3}_Unmapped.out.mate1"
-				;;
-			"nc")
-				echo "${2}/ncRNA_depletion/ncRNA_${3}_Unmapped.out.mate1"
-				;;
-			"rR")
-				echo "${2}/rRNA_depletion/rRNA_${3}_Unmapped.out.mate1"
-				;;
-			"ph")
-				echo "${2}/phix_depletion/PhiX_${3}_Unmapped.out.mate1"
-				;;
-			"tr")
-				echo "${2}/trim/trimmed_${3}.fastq"
-				;;
-		esac
-	else # if paired end
-		case $1 in
-		  "co")
-				echo "${2}/contaminants_depletion/contaminants_${3}_Unmapped.out.mate1 ${2}/contaminants_depletion/contaminants_${3}_Unmapped.out.mate2"
-				;;
-			"tR")
-				echo "${2}/tRNA_depletion/tRNA_${3}_Unmapped.out.mate1 ${2}/tRNA_depletion/tRNA_${3}_Unmapped.out.mate2"
-				;;
-			"nc")
-				echo "${2}/ncRNA_depletion/ncRNA_${3}_Unmapped.out.mate1 ${2}/ncRNA_depletion/ncRNA_${3}_Unmapped.out.mate2"
-				;;
-			"rR")
-				echo "${2}/rRNA_depletion/rRNA_${3}_Unmapped.out.mate1 ${2}/rRNA_depletion/rRNA_${3}_Unmapped.out.mate2"
-				;;
-			"ph")
-				echo "${2}/phix_depletion/PhiX_${3}_Unmapped.out.mate1  ${2}/phix_depletion/PhiX_${3}_Unmapped.out.mate2"
-				;;
-			"tr")
-				echo "${2}/trim/trimmed_${3}.fastq ${2}/trim/trimmed2_${3}.fastq"
-				;;
-		esac
-	fi
-}
-
-# Get fasta/bam file to use in this step
-# Parameters 1. $resume 2. $in_file 3.current:'ge'
-# 4. ${out_dir} 5. ${ibn} 6. ${in_file_two}
-# Return: string: 1 path for single end, 2 for paired.
-function inputFile()
-{
-	var=$(indexOf "$3" ${stepsArray[@]})
-	if [[ "$var" == "0" ]]; then
-		echo "${2} ${6}"
-	else
-		ind=$(expr $var - 1)
-		echo $(pathList ${stepsArray[ind]} $4 $5 ${6})
-	fi
-}
-
-# Decide to do this step or not, given input
-# Parameters $1 resume (y, n), $2 current:'ge', $3 $steps tr-gr
-# TODO: fix for $1 == "c", the 1st order else statement
-function doThisStep()
-{
-  if [ $1 == "n" ]; then
-  	if grep -q $2 <<< $3; then
-  		echo "yes"
-  	else
-  		echo "no"
-  	fi
-  else
-  	if [ $2 == $1 ]; then
-  		echo "yes"
-  	else
-  		echo "no"
-  	fi
+run_command() {
+  if (( verbose )); then
+    printf '  Command:'; printf ' %q' "$@"; printf '\n'
+  fi
+  local status=0
+  "$@" || status=$?
+  if (( status != 0 )); then
+    echo "ERROR: $label failed for $ibn (exit $status). See the tool output above." >&2
+    exit "$status"
   fi
 }
-
-# Should STAR use zcat or no decompression ?
-# Return: string zcat or "-"
-function comp()
-{
-	if [[ $1 =~ .*\.(gz) ]]; then
-		echo "zcat"
-	else
-		echo "-"
-	fi
-}
-
-# 1: max cores, 2: currently used cores
-function nCores()
-{
-	if (( $1 > $2 )); then
-		echo $2
-	else
-		echo $1
-	fi
-}
-
-# Keep loaded STAR index of genomes (y) or not (n), default (n)
-function keepOrNot()
-{
-	if [[ "$1" == "y" ]]; then
-		echo LoadAndKeep
-	elif [[ "$1" == "n" ]]; then
-		echo LoadAndRemove
-	elif [[ "$1" == "noShared" ]]; then
-	  echo NoSharedMemory
-	else
-	  echo "Error: STAR keep.index.in.memory must be y, n or noShared"
-		exit 1
-	fi
-}
-
-# Add paired read 2, if exists
-#  ${out_dir} ${ibn} ${in_file_two}
-function trimPaired()
-{
-	if [ ! -z "$3" ]; then
-		echo "${1}/trim/trimmed2_${2}.fastq"
-	else
-		echo ""
-	fi
-}
-
-# Adapter definitions for fastp
-if [ -z  "$adapter" ]; then
-	adapter="" # "" is auto detection
-elif [ $adapter == "auto" ]; then
-	adapter="" # "auto" is auto detection
-elif [ $adapter == "autoPE" ]; then
-	adapter="--detect_adapter_for_pe" # auto detection for PE
-elif [ $adapter == "disable" ]; then
-	adapter="--disable_adapter_trimming"
-else
-	# Check if it is one of the templates
-	if [ $adapter == "standard" ]; then
-		adapter="AAAAAAAAAA"
-	elif [ $adapter == "illumina" ]; then
-	  echo "Using Illumina preset adapter"
-		adapter="AGATCGGAAGAGC"
-	elif [ $adapter == "small_RNA" ]; then
-	  echo "Using Small RNA preset adapter"
-		adapter="TGGAATTCTCGG"
-	elif [ $adapter == "nextera" ]; then
-	  echo "Using Nextera preset adapter"
-		adapter="CTGTCTCTTATA"
-	elif [ $adapter == "ingolia12" ]; then
-	  echo "Using Ingolia(2012 Ribo-seq) preset adapter"
-		adapter="CTGTAGGCACCATCAAT"
-	fi
-	adapter="--adapter_sequence=${adapter}"
-fi
-
-# Quality filtering for fastp
-if [ $quality_filtering == "default" ]; then
-	quality_filtering="" # Default QF
-elif [ $quality_filtering == "disable" ]; then
-	quality_filtering="--disable_quality_filtering"
-fi
-
-#------------------------------------------------------------------------------------------
-    #3 FASTP (Trim adaptors, Cut, Quality, fastq report)
-    #------------------------------------------------------------------------------------------
-    #--in1 input file
-    #--out1 output name
-    #--trim_front1 trim 3 bases
-    #--length_required minimum length
-    #--disable_quality_filtering no fastq filtering
-    #--adapter_sequence adapter sequence, normally set manually (normally needed)
-if [ $(doThisStep $resume 'tr' $steps) == "yes" ]; then
-	echo trimming
-	if [ ! -d ${out_dir}/trim ]; then
-        mkdir ${out_dir}/trim
-        if [ ! -d ${out_dir}/trim ]; then
-          echo "Error: could not create trim dir, do you have access to disc?"
-          exit 1
+inputs=("$in_file")
+[[ -z "$in_file_two" ]] || inputs+=("$in_file_two")
+for step in "${steps_array[@]}"; do
+  step_outputs "$step"
+  if [[ "$resume" == n || "$resume" == "$step" ]]; then
+    for input in "${inputs[@]}"; do
+      [[ -f "$input" ]] || fail "Missing input for $step: $input"
+    done
+    case "$step" in
+      tr) label="Trimming (fastp)" ;;
+      co) label="Contaminant depletion"; index=contaminants_genomeDir ;;
+      ph) label="PhiX depletion"; index=PhiX_genomeDir ;;
+      rR) label="rRNA depletion"; index=rRNA_genomeDir ;;
+      nc) label="ncRNA depletion"; index=ncRNA_genomeDir ;;
+      tR) label="tRNA depletion"; index=tRNA_genomeDir ;;
+      ge) label="Genome alignment"; index=genomeDir ;;
+    esac
+    log "[$step] $label: $ibn"
+    if (( verbose )); then printf '  Input: %s\n' "${inputs[@]}"; fi
+    if [[ "$step" == tr ]]; then
+      mkdir -p "$out_dir/trim"
+      if (( verbose )); then printf '  Output: %s\n' "${outputs[@]}"; fi
+      cmd=("$fastp" --in1 "${inputs[0]}" --out1 "${outputs[0]}"
+           --json "$out_dir/trim/report_${ibn}.json" --html "$out_dir/trim/report_${ibn}.html"
+           --trim_front1 "$trim_front" --trim_tail1 "$trim_tail"
+           --length_required "$min_length" --thread "$((maxCPU < 16 ? maxCPU : 16))")
+      if [[ -n "$in_file_two" ]]; then
+        cmd+=(--in2 "${inputs[1]}" --out2 "${outputs[1]}"
+              --trim_front2 "$trim_front" --trim_tail2 "$trim_tail")
+      fi
+      (( ! base_correction )) || cmd+=(--correction)
+      [[ "$quality_filtering" != disable ]] || cmd+=(--disable_quality_filtering)
+      case "$adapter" in
+        auto|"") ;;
+        autoPE) cmd+=(--detect_adapter_for_pe) ;;
+        disable) cmd+=(--disable_adapter_trimming) ;;
+        *) case "$adapter" in
+             standard) adapter=AAAAAAAAAA ;; illumina) adapter=AGATCGGAAGAGC ;;
+             small_RNA) adapter=TGGAATTCTCGG ;; nextera) adapter=CTGTCTCTTATA ;;
+             ingolia12) adapter=CTGTAGGCACCATCAAT ;;
+           esac
+           cmd+=(--adapter_sequence "$adapter") ;;
+      esac
+    else
+      [[ -d "$gen_dir/$index" ]] || fail "Missing STAR index for $step: $gen_dir/$index"
+      mkdir -p "$(dirname "$prefix")"
+      reader=-
+      [[ "${inputs[0]}" != *.gz ]] || reader=zcat
+      if [[ ${#inputs[@]} == 2 ]]; then
+        if [[ "$reader" == zcat && "${inputs[1]}" != *.gz || "$reader" == - && "${inputs[1]}" == *.gz ]]; then
+          fail "Both mates must use the same compression for STAR."
         fi
+      fi
+      cmd=("$STAR" --readFilesIn "${inputs[@]}" --genomeDir "$gen_dir/$index"
+           --genomeLoad "$genome_load" --outFileNamePrefix "$prefix"
+           --outFilterMatchNmin "$min_length" --readFilesCommand "$reader"
+           --limitIObufferSize 50000000)
+      if [[ "$step" == ge ]]; then
+        log "  Output: ${prefix}Aligned.sortedByCoord.out.bam"
+        if [[ "$intron_max" == 0 ]]; then
+          log "  Splicing: indexed and novel junctions (automatic maximum intron length)"
+        else
+          log "  Splicing: indexed junctions only (novel junction discovery disabled)"
+        fi
+        cmd+=(--outSAMtype BAM SortedByCoordinate --outReadsUnmapped "$keep_unmapped_genome"
+              --runThreadN "$((maxCPU < 80 ? maxCPU : 80))" --limitBAMsortRAM 30000000000
+              --alignEndsType "$alignment" --alignIntronMax "$intron_max"
+              --outFilterMultimapNmax "$multimap" --outFilterMismatchNmax "$mismatches")
+      else
+        if (( verbose )); then printf '  Unmapped output: %s\n' "${outputs[@]}"; fi
+        case "$step" in co|rR) thread_cap=90 ;; nc) thread_cap=80 ;; *) thread_cap=70 ;; esac
+        cmd+=(--outReadsUnmapped Fastx --runThreadN "$((maxCPU < thread_cap ? maxCPU : thread_cap))")
+        if [[ "$keepContam" == yes ]]; then
+          cmd+=(--outSAMtype BAM Unsorted --outSAMmode Full)
+          log "  Contaminant BAM: ${prefix}Aligned.out.bam"
+        else cmd+=(--outSAMtype None --outSAMmode None); fi
+        # Preserve the existing depletion settings; these do not use allow.introns.
+        case "$step" in ph|rR|tR) cmd+=(--alignIntronMax 1) ;; esac
+        [[ "$step" != tR ]] || cmd+=(--seedPerWindowNmax 20 --outFilterMultimapNmax 20)
+      fi
+    fi
+    run_command "${cmd[@]}"
   fi
-
-	eval $fastp \
-		--in1=${in_file} \
-		--in2="${in_file_two}" \
-		--out1=${out_dir}/trim/trimmed_${ibn}.fastq \
-		--out2=$(trimPaired ${out_dir} ${ibn} ${in_file_two}) \
-		--json=${out_dir}/trim/report_${ibn}.json \
-		--html=${out_dir}/trim/report_${ibn}.html \
-		--trim_front1=${trim_front} \
-		--trim_front2=${trim_front} \
-		--trim_tail1=${trim_tail} \
-		--trim_tail2=${trim_tail} \
-		--length_required=$min_length \
-		$quality_filtering \
-		$adapter \
-		--thread $(nCores 16 $maxCPU)
-fi
-
-#------------------------------------------------------------------------------------------
-    #4 (alternative): Remove merged contaminants
-    #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastq
-if [ $(doThisStep $resume 'co' $steps) == "yes" ]; then
-	echo "Contaminant depletion:"
-	if [ ! -d ${out_dir}/contaminants_depletion ]; then
-        mkdir ${out_dir}/contaminants_depletion
-  fi
-
-	eval $STAR \
-	--readFilesIn $(inputFile $resume $in_file "co" ${out_dir} ${ibn} ${in_file_two}) \
-	--genomeDir ${contaminants} \
-	--genomeLoad $(keepOrNot $keep)  \
-	--outFileNamePrefix ${out_dir}/contaminants_depletion/contaminants_${ibn}_ \
-	--outSAMtype $contamSAMtype \
-	--outSAMmode $contamSAMmode \
-	--outReadsUnmapped Fastx \
-	--outFilterMatchNmin $min_length \
-	--runThreadN $(nCores 90 $maxCPU) \
-	--readFilesCommand $(comp $(inputFile $resume $in_file 'co' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000
-fi
-
- #------------------------------------------------------------------------------------------
-    #4 Remove PhiX
-    #------------------------------------------------------------------------------------------
-    #--readFilesIn input file
-    #--genomeDir STAR index genome dir
-    #--outFileNamePrefix output prefix name (will add input name also)
-    #--outSAMtype type of SAM output (bam, sam or None)
-    #--outReadsUnmapped output type for unmapped reads
-    #--outFilterMatchNmin minimum length of reads accepted
-    #--runThreadN number of threads to use
-    #--limitIObufferSize hard drive buffer size (smaller is better when IO is bottle neck)
-# get output of everything that did not hit, as fastq
-if [ $(doThisStep $resume 'ph' $steps) == "yes" ]; then
-	echo "PhiX depletion:"
-	if [ ! -d ${out_dir}/phix_depletion ]; then
-        mkdir ${out_dir}/phix_depletion
-  fi
-
-	eval $STAR \
-	--readFilesIn $(inputFile $resume $in_file "ph" ${out_dir} ${ibn} ${in_file_two}) \
-	--genomeDir ${phix} \
-	--genomeLoad $(keepOrNot $keep) \
-	--outFileNamePrefix ${out_dir}/phix_depletion/PhiX_${ibn}_ \
-	--outSAMtype $contamSAMtype \
-	--outSAMmode $contamSAMmode \
-	--outReadsUnmapped Fastx \
-	--outFilterMatchNmin $min_length \
-	--runThreadN $(nCores 70 $maxCPU) \
-	--readFilesCommand $(comp $(inputFile $resume $in_file 'ph' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000 \
-	--alignIntronMax 1
-fi
-
-
-#------------------------------------------------------------------------------------------
-    #5 Remove rRNA
-    #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastq
-if [ $(doThisStep $resume 'rR' $steps) == "yes" ]; then
-	echo "rRNA depletion:"
-	if [ ! -d ${out_dir}/rRNA_depletion ]; then
-        mkdir ${out_dir}/rRNA_depletion
-  fi
-
-	eval $STAR \
-	--readFilesIn $(inputFile $resume $in_file "rR" ${out_dir} ${ibn} ${in_file_two}) \
-	--genomeDir ${rRNA} \
-	--genomeLoad $(keepOrNot $keep)  \
-	--outFileNamePrefix ${out_dir}/rRNA_depletion/rRNA_${ibn}_ \
-	--outSAMtype $contamSAMtype \
-	--outSAMmode $contamSAMmode \
-	--outReadsUnmapped Fastx \
-	--outFilterMatchNmin $min_length \
-	--runThreadN $(nCores 90 $maxCPU) \
-	--readFilesCommand $(comp $(inputFile $resume $in_file 'rR' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000 \
-	--alignIntronMax 1
-fi
-
- #------------------------------------------------------------------------------------------
-    #6 Remove organism specific ncRNA
-    #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastq
-if [ $(doThisStep $resume 'nc' $steps) == "yes" ]; then
-	echo "ncRNA depletion:"
-	if [ ! -d ${out_dir}/ncRNA_depletion ]; then
-    	mkdir ${out_dir}/ncRNA_depletion
-  fi
-
-	eval $STAR \
-	--readFilesIn $(inputFile $resume $in_file "nc" ${out_dir} ${ibn} ${in_file_two})\
-	--genomeDir ${ncRNA} \
-	--genomeLoad $(keepOrNot $keep)  \
-	--outFileNamePrefix ${out_dir}/ncRNA_depletion/ncRNA_${ibn}_ \
-	--outSAMtype $contamSAMtype \
-	--outSAMmode $contamSAMmode \
-	--outReadsUnmapped Fastx \
-	--outFilterMatchNmin $min_length \
-	--runThreadN $(nCores 80 $maxCPU) \
-	--readFilesCommand $(comp $(inputFile $resume $in_file 'nc' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000
-fi
-
-#------------------------------------------------------------------------------------------
-    #7 Remove organism specific tRNA
-    #------------------------------------------------------------------------------------------
-# get output of everything that did not hit, as fastq
-# ENCODE tRNA mapping defaults
-if [ $(doThisStep $resume 'tR' $steps) == "yes" ]; then
-	echo "tRNA depletion"
-	if [ ! -d ${out_dir}/tRNA_depletion ]; then
-        mkdir ${out_dir}/tRNA_depletion
-  fi
-
-	eval $STAR \
-	--readFilesIn $(inputFile $resume $in_file "tR" ${out_dir} ${ibn} ${in_file_two}) \
-	--genomeDir ${tRNA} \
-	--genomeLoad $(keepOrNot $keep)  \
-	--outFileNamePrefix ${out_dir}/tRNA_depletion/tRNA_${ibn}_ \
-	--outSAMtype $contamSAMtype \
-	--outSAMmode $contamSAMmode \
-	--outReadsUnmapped Fastx \
-	--outFilterMatchNmin $min_length \
-	--runThreadN $(nCores 70 $maxCPU) \
-  --readFilesCommand $(comp $(inputFile $resume $in_file 'tr' ${out_dir} ${ibn})) \
-	--limitIObufferSize 50000000 \
-	--alignIntronMax 1 \
-	--seedPerWindowNmax 20 \
-	--outFilterMultimapNmax 20
-fi
-#------------------------------------------------------------------------------------------
-    # 8. aligner (STAR)
-    #------------------------------------------------------------------------------------------
-    #--limitBAMsortRAM RAM used by sorting function (higher is better)
-    #--alignEndsType how to align (local alignment or whole read(harder if adapter or weak 3' end))
-    # <(gunzip -c ${in_file})
-if [ $(doThisStep $resume 'ge' $steps) == "yes" ]; then
-	echo "Final mapping to genome:"
-	if [ ! -d ${out_dir}/aligned ]; then
-        mkdir ${out_dir}/aligned
-  fi
-  ((allow_introns ^= 1)) # XOR to flip, since STAR 0 is allow introns
-
-	eval $STAR \
-	--readFilesIn $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn} ${in_file_two}) \
-	--genomeDir ${usedGenome} \
-	--outFileNamePrefix ${out_dir}/aligned/${ibn}_ \
-	--outSAMtype BAM SortedByCoordinate \
-	--outReadsUnmapped $keep_unmapped_genome \
-	--runThreadN $(nCores 80 $maxCPU) \
-	--genomeLoad $(keepOrNot $keep)  \
-	--limitIObufferSize 50000000 \
-	--outFilterMatchNmin $min_length \
-	--limitBAMsortRAM 30000000000 \
-	--readFilesCommand $(comp $(inputFile $resume $in_file 'ge' ${out_dir} ${ibn})) \
-	--alignEndsType $alignment \
-	--alignIntronMax $allow_introns \
-	--outFilterMultimapNmax $multimap \
-	--outFilterMismatchNmax $mismatches
-fi
-
-#TODO
-# Remove empty folders, and possibly logs in seperate folder ?
+  inputs=("${outputs[@]}")
+done

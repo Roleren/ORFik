@@ -97,8 +97,8 @@ temp <- create.experiment(exp_dir, exper_name, saveDir = NULL,
 
 temp[5:6, 1] <- "RNA" # [row 5 and 6, col 1] are library types
 
-# You can also do this in your spread sheet program (excel, libre office)
-# Now save new version, if you did not use spread sheet.
+# You can also do this in your spreadsheet program (Excel, LibreOffice)
+# Now save new version, if you did not use a spreadsheet.
 saveName <- paste0("/data/processed_data/experiment_tables_for_R/",
  exper_name,".csv")
 save.experiment(temp, saveName)

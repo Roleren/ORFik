@@ -22,7 +22,7 @@ minimum 30GB memory on genomes like human, rat, zebrafish etc.
 }
 \details{
 ORFik for now only uses precompiled STAR binaries, so if you already have
-a STAR version it is adviced to redownload the same version, since
+a STAR version it is advised to redownload the same version, since
 STAR genome indices usually does not work between STAR versions.
 }
 \examples{

@@ -108,7 +108,7 @@ df <- ORFik.template.experiment()[9:10,] # Subset to 2 Ribo-seq libs
 ## For single library
 res <- codon_usage_exp(df, fimport(filepath(df[1,], "pshifted")),
                  min_counts_cds_filter = 10)
-# mean_txNorm is adviced scoring column
+# mean_txNorm is an advised scoring column
 # codon_usage_plot(res, res$mean_txNorm)
 # Default for plot function is the percentage scaled version of mean_txNorm
 # codon_usage_plot(res) # This gives check error

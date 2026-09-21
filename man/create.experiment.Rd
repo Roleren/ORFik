@@ -39,7 +39,7 @@ experiment, and name shown when running \code{\link{list.experiments}}}
 \code{ORFik::config()["exp"]}, which has default: "~/Bio_data/ORFik_experiments/".
 Set to NULL if you don't want to save it to disc.}
 
-\item{txdb}{A path to TxDb (prefered) or gff/gtf (not adviced, slower)
+\item{txdb}{A path to TxDb (preferred) or gff/gtf (supported, but slower)
 file with transcriptome annotation for the organism.}
 
 \item{fa}{A path to fasta genome/sequences used for libraries, remember the
@@ -91,7 +91,7 @@ Example: WT (wild type), mutant, etc.}
 
 \item{fraction}{character, default "auto". Fractionation of library,
 must be length 1 or equal length of number of libraries.
-"auto" means ORFik will try to guess from file names. This columns
+"auto" means ORFik will try to guess from file names. This column
 is used to make experiment unique, if the other columns are not sufficient.
 Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.}
 
@@ -124,22 +124,19 @@ Create a single R object that stores and controls all results relevant to
 a specific Next generation sequencing experiment.
 Click the experiment link above in the title if you are not sure what an
 ORFik experiment is.\cr\cr
-By using files in a folder / folders. It will make an experiment table
-with information per sample, this object allows you to use the extensive API in
-ORFik that works on experiments. \cr\cr
+Using files in one or more folders, this function creates an experiment
+template with metadata per sample. That template can then be read into an
+ORFik `experiment` object and used throughout the package API. \cr\cr
 Information Auto-detection:\cr
-There will be several columns you can fill in, when creating the object,
-if the files have logical names like (RNA-seq_WT_rep1.bam) it will try to auto-detect
-the most likely values for the columns. Like if it is RNA-seq or Ribo-seq,
-Wild type or mutant, is this replicate 1 or 2 etc.\cr
+When file names are informative, such as `RNA-seq_WT_rep1.bam`, ORFik will
+try to auto-detect metadata such as library type, condition, and replicate.\cr
 You will have to fill in the details that were not auto detected.
-Easiest way to fill in the blanks are in a csv editor like libre Office
-or excel. You can also remake the experiment and specify the
-specific column manually.
-Remember that each row (sample) must have a unique combination
-of values.
-An extra column called "reverse" is made if there are paired data,
-like +/- strand wig files.
+The easiest way to complete the table is usually in a spreadsheet editor
+such as LibreOffice or Excel, although you can also rebuild the template and
+specify columns directly in R.
+Each row (sample) must have a unique combination of metadata values.
+An extra column called `reverse` is created for paired data, such as paired
+`+/-` strand wig files.
 }
 \examples{
 # 1. Pick directory
@@ -155,12 +152,12 @@ fa <- system.file("extdata/references/homo_sapiens",
 # 5. Set organism (optional)
 org <- "Homo sapiens"
 
-# Create temple not saved on disc yet:
+# Create template not saved on disc yet:
 template <- create.experiment(dir = dir, exper, txdb = txdb,
                               saveDir = NULL,
                               fa = fa, organism = org,
                               viewTemplate = FALSE)
-## Now fix non-unique rows: either is libre office, microsoft excel, or in R
+## Now fix non-unique rows: either in LibreOffice, Microsoft Excel, or in R
 template$X5[6] <- "heart" # here a dummy example, even though data is correct
 # read experiment (if you set correctly)
 df <- read.experiment(template)

@@ -12,7 +12,17 @@ mergeLibs(
   keep_all_scores = TRUE,
   paths = filepath(df, type),
   lib_names_full = bamVarName(df, skip.libtype = FALSE),
-  max_splits = 20
+  max_splits = 20,
+  allow_filtering = TRUE,
+  filter_target_rows = 2^31 - 2,
+  filter_seed = 1L,
+  max_filter_score = Inf,
+  filter_chunk_rows = 5e+06,
+  filter_tmpdir = out_dir,
+  filter_fallback_dir = out_dir,
+  filter_input_summary = FALSE,
+  filter_auto_memory = FALSE,
+  remove_softclips = FALSE
 )
 }
 \arguments{
@@ -57,14 +67,93 @@ Name to assign to single libraries inside merged file, only kept if mode != "all
 \item{max_splits}{integer, default 20. If number of rows to merge > 2^31,
 how many times can you allow split merging to try to "rescue" the merging
 process?}
+
+\item{allow_filtering}{logical, default TRUE. If the distinct merged rows
+exceed \code{filter_target_rows}, discard whole chromosome/start positions,
+lowest pooled score first. FALSE aborts without returning a filtered result.}
+
+\item{filter_target_rows}{numeric whole number, default \code{2^31 - 2}.
+Maximum final alignment rows, strictly below data.table's 32-bit ceiling.
+Zero is allowed. Dropping whole positions can retain fewer rows than this.}
+
+\item{filter_seed}{integer, default 1. Seed for deterministic pseudo-random
+priorities among equally scored positions across all chromosomes. Does not
+change R's RNG state; independent of input order and scratch partitioning.}
+
+\item{max_filter_score}{numeric, default Inf. Only positions whose pooled
+score is at most this ceiling may be removed. Abort if too few are eligible.}
+
+\item{filter_chunk_rows}{numeric whole number, default 5e6. Maximum raw rows
+per input batch and rows per compacted partition. Batches are collapsed
+before writing, then compacted in balanced rounds while inputs are read.
+Pooled-score output collapses across studies immediately. This row budget
+is honored unchanged unless \code{filter_auto_memory = TRUE}. Temporary
+combines contain up to two partitions. A single position's distinct rows
+(per input when keeping library scores) must fit the effective budget.
+Disk usage depends on distinct merged data, not just the batch size.}
+
+\item{filter_tmpdir}{character, default \code{tempdir()} for \code{ofst_merge}
+and \code{out_dir} for \code{mergeLibs}. Existing writable
+directory on a disk with space for scratch partitions and summaries. Only
+a newly created private subdirectory is removed on completion or error.}
+
+\item{filter_fallback_dir}{character or NULL. An existing alternate directory
+used for one automatic restart after a scratch-storage failure. Default NULL
+for \code{ofst_merge}; \code{mergeLibs} defaults to its \code{out_dir}. The
+input files are read again with unchanged filtering settings. NULL disables
+fallback. Invalid inputs, memory errors and user interrupts are not retried.
+A small ownership cache here also records primary scratch for crash cleanup.}
+
+\item{filter_input_summary}{logical, default FALSE. For pooled-score output,
+reread inputs after selection to reconstruct exact per-input removal counts.
+This adds disk I/O and bounded per-input compaction. When FALSE these counts
+are NA, not zero; raw input counts and exact global/chromosome totals remain
+available. When keeping all library scores, per-input counts are available
+without another pass regardless of this flag. Only used if filtering occurs.}
+
+\item{filter_auto_memory}{logical, default FALSE. Opt into reducing the row
+budget using \code{get_system_usage()} available RAM, sampled uncompressed
+row sizes and an eightfold workspace allowance. Raw cgroup headroom is a
+conservative additional ceiling and may underestimate usable RAM because
+it includes filesystem cache. Diagnostic messages show the estimates.
+FALSE skips memory estimation entirely and honors \code{filter_chunk_rows}.
+Neither mode guarantees the merge fits RAM; reduce the row budget if needed.}
+
+\item{remove_softclips}{logical, default FALSE. For master-track merges,
+remove terminal S operations from cigar (or cigar1/cigar2) before duplicate
+collapse, including bounded rescue batches. Input files are never modified.
+Start, end, reference width, hard clips, insertions, deletions and splice gaps
+are unchanged. Query width is shortened; explicit qwidth/qwidth1/qwidth2
+columns, if present, are updated. Other metadata remains part of the merge
+key. Clip-only CIGARs that would become empty are rejected. Do not enable
+this for outputs that must retain original read lengths or clipping QC.}
 }
 \value{
-NULL, files saved to disc. A data.table with a score column that now contains the sum
-of scores per merge setting.
+Invisible NULL. Merged files contain the summed score and, if
+requested, individual library scores. Each output also has a companion
+\code{<output>.ofst.removal_summary.rds}, readable with \code{readRDS()}:
+the removal summary described in \code{ofst_merge}, or NULL if no filtering
+occurred. The sidecar is replaced even for an unfiltered overwrite, so an
+earlier filtering report is not silently left behind.
 }
 \description{
 Aggregate count of reads (from the "score" column) by making a merged library.
 Only allowed for .ofst files!
+}
+\details{
+Filtering controls are passed unchanged to \code{ofst_merge} for
+each merge group. The default permits lossy positional rescue only when
+distinct merged rows exceed \code{filter_target_rows}. Set
+\code{allow_filtering = FALSE} for strict lossless operation.
+By default \code{filter_tmpdir = out_dir}: compacted batches are written
+directly to a private output-folder cache, without first filling system tmp.
+If an alternate primary directory is explicitly supplied, the default
+\code{filter_fallback_dir = out_dir} enables one restart on the output disk
+if that primary fails. Completed outputs are not removed.
+Set \code{filter_fallback_dir = NULL} to disable
+this retry. Owned, verifiably abandoned output-side caches are checked on
+startup; their ownership records can also identify abandoned primary scratch.
+See \code{ofst_merge} for interrupt/crash cleanup limitations.
 }
 \examples{
 df2 <- ORFik.template.experiment()

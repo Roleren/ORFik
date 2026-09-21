@@ -12,7 +12,7 @@
 #' of WT vs mut1, WT vs mut2 and mut1 vs mut2. \cr
 #' The respective result categories are defined as:
 #' (given a user defined p value, shown here as 0.05):\cr
-#' Significant -  p-value adjusted < 0.05 (p-value cutoff decided by 'p.value argument)\cr
+#' Significant - p-value adjusted < 0.05 (p-value cutoff decided by the 'p.value' argument)\cr
 #' \cr The LFC values are shrunken by lfcShrink(type = "normal").\cr \cr
 #' Remember that DESeq by default can not
 #' do global change analysis, it can only find subsets with changes in LFC!
@@ -94,7 +94,7 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #' and TRUE for '>' test),
 #' we also use a helper function:
 #' te.sign & rfp.sign & rna.sign, all_models_sign := TRUE.\cr\cr
-#' ** \strong{Signicant DTEG Classifications} **
+#' ** \strong{Significant DTEG Classifications} **
 #' \itemize{
 #'  \item{No change : None of the below categories}
 #'  \item{Translation (only RFP) : te.sign & rfp.sign & !rna.sign}
@@ -330,4 +330,3 @@ te.table <- function(df.rfp, df.rna,
   message(paste("Filter kept", round((nrow(dt) / length(txNames)) *100, 1), "% of transcripts"))
   return(dt.final)
 }
-

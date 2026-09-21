@@ -1,6 +1,6 @@
 #' Plot area around TIS as histogram
 #'
-#' Usefull to validate p-shifting is correct
+#' Useful to validate p-shifting is correct
 #' Can be used for any coverage of region around a point, like TIS, TSS,
 #' stop site etc.
 #'
@@ -112,7 +112,7 @@ pSitePlot <- function(hitMap, length = unique(hitMap$fraction),
 #' The fraction column divide sequence libraries. Like ribo-seq and rna-seq.
 #' These are the rows of the plot.
 #' If you return this function without assigning it and output is NULL,
-#' it will automaticly plot the figure in your session. If output is assigned,
+#' it will automatically plot the figure in your session. If output is assigned,
 #' no plot will be shown in session. NULL is returned and object is saved to
 #' output.
 #'
@@ -125,7 +125,7 @@ pSitePlot <- function(hitMap, length = unique(hitMap$fraction),
 #' @param scoring character vector, default "zscore", either of zscore,
 #' transcriptNormalized, sum, mean, median, .. or  NULL. Set NULL if already scored.
 #' see ?coverageScorings for info and more alternatives.
-#' @param colors character vector colors to use in plot, will fix automaticly,
+#' @param colors character vector colors to use in plot, will fix automatically,
 #' using binary splits with colors c('skyblue4', 'orange').
 #' @param title a character (metaplot) (what is the title of plot?)
 #' @param type a character (transcripts), what should legends say is

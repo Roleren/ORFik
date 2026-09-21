@@ -144,7 +144,7 @@ getGAlignments <- function(df, seqinfo = NULL) {
     df[, strand := factor(strand, levels = c("+", "-", "*"))]
   }
 
-  mcols <- S4Vectors:::normarg_mcols(mcols, "GRanges", nrow(df))
+  mcols <- S4Vectors:::normarg_mcols(mcols, "GAlignments", nrow(df))
   new2("GAlignments", NAMES = names, seqnames = Rle(df$seqnames), start = df$start,
        cigar = as.character(df$cigar), strand = Rle(df$strand), elementMetadata = mcols,
        seqinfo = seqinfo, check = FALSE)
@@ -601,6 +601,10 @@ detect_drive <- function(ref_path = path.expand(config()["ref"])) {
 #' @param one_liner Logical, default FALSE. Instead return a length 1 character string
 #' with all the info.
 #' @return A list with system info, if one_liner is TRUE, then a length 1 character string.
+#' On Linux, \code{Memory_Available_Bytes} and \code{Memory_Available_GB}
+#' (GiB) report \code{MemAvailable}, including the kernel's estimate of
+#' reclaimable memory. These are host-level values, not container allowances;
+#' they are NA on other platforms or when unavailable.
 #' @export
 #' @examples
 #' get_system_usage()
@@ -650,6 +654,7 @@ get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
   }
 
   mem_percent <- round((mem_usage / mem_total) * 100, 2)
+  mem_available <- if (is_linux) .system_available_memory_bytes() else NA_real_
 
   # ---- Drive usage ----
   if (!is.na(drive)) {
@@ -679,7 +684,9 @@ get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
     Drive_Total = drive_total,
     Drive_Used = drive_used,
     Drive_Free = drive_free,
-    Drive_Usage_Percent = drive_percent
+    Drive_Usage_Percent = drive_percent,
+    Memory_Available_Bytes = mem_available,
+    Memory_Available_GB = mem_available / 1024^3
   )
 
   if (one_liner) {
@@ -687,6 +694,17 @@ get_system_usage <- function(drive = detect_drive(), one_liner = FALSE) {
   }
 
   return(usage)
+}
+
+
+.system_available_memory_bytes <- function() {
+  value <- tryCatch({
+    line <- readLines("/proc/meminfo", warn = FALSE)
+    line <- line[grepl("^MemAvailable:[[:space:]]*[0-9]+[[:space:]]+kB[[:space:]]*$", line)]
+    if (length(line) != 1L) return(NA_real_)
+    as.double(sub("^MemAvailable:[[:space:]]*([0-9]+).*", "\\1", line)) * 1024
+  }, error = function(e) NA_real_)
+  if (length(value) != 1L || !is.finite(value) || value < 0) NA_real_ else value
 }
 
 
@@ -707,4 +725,3 @@ sufficient_memory_to_run_this_check <- function(to_run_GB, step = "indexing", wi
             "GB max ram, and you only have ", memory_on_computer, "GB ram available.")
   }
 }
-

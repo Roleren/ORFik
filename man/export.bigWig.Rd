@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils_exports.R
 \name{export.bigWig}
 \alias{export.bigWig}
-\title{Export as bigWig format}
+\title{Export coverage-style signal as bigWig files.}
 \usage{
 export.bigWig(
   x,
@@ -13,33 +13,31 @@ export.bigWig(
 )
 }
 \arguments{
-\item{x}{A GRangesList, GAlignment GAlignmentPairs with score column.
-Will be converted to 5' end position of original range. If score column
-does not exist, will group ranges and give replicates as score column.
-Since bigWig needs a score column to represent counts!}
+\item{x}{A `GRanges`, `GAlignments`, `GAlignmentPairs`, or `covRle` object.
+Input ranges are converted to 5' end positions if needed. If a `score`
+column is missing, identical positions are grouped and counted, since
+bigWig stores numeric signal.}
 
-\item{file}{a character path to valid output file name}
+\item{file}{Output file path.}
 
-\item{split.by.strand}{logical, default TRUE. Split bigWig into 2 files,
-one for each strand.}
+\item{split.by.strand}{Logical, default `TRUE`. If `TRUE`, write separate
+files per strand when strand information is available.}
 
-\item{is_pre_collapsed}{logical, default FALSE. Have you already
-collapsed reads with collapse.by.scores,
-so each positions is only in 1 GRanges object with
-a score column per readlength?
-Set to TRUE, only if you are sure, will give a speedup.}
+\item{is_pre_collapsed}{Logical, default `FALSE`. Set to `TRUE` only if
+reads were already collapsed with `collapse.by.scores()` and each position
+is represented once per read length.}
 
-\item{seq_info}{a Seqinfo object, default seqinfo(x).
-Must have non NA seqlengths defined!}
+\item{seq_info}{A `Seqinfo` object, default `seqinfo(x)`. Sequence lengths
+must be defined.}
 }
 \value{
-invisible(NULL) (File is saved as 2 .bigWig files)
+`invisible(NULL)`. The function writes one or two `.bigWig` files.
 }
 \description{
-Will create 2 files, 1 for + strand (*_forward.bigWig)
-and 1 for - strand (*_reverse.bigWig). If all
-ranges are * stranded, will output 1 file.
-Can be direct input for ucsc browser or IGV
+By default this creates two files, one for the `+` strand
+(`*_forward.bigWig`) and one for the `-` strand (`*_reverse.bigWig`). If all
+ranges are `*` stranded, a single `.bigWig` file is written instead.
+The output can be loaded directly in UCSC Genome Browser or IGV.
 }
 \examples{
 x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))

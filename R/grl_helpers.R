@@ -29,16 +29,10 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 
   widths_raw <- if (is.grl(grl)) {grl@unlistData@ranges@width
   } else grl@unlistData@width
-
-  res <- data.table(widths = widths_raw,
-                    grouping = rep.int(seq_along(grl),
-                      times = width(grl@partitioning)))[, .(widths = sum(widths)), by = grouping]$widths
-  empty_groups <- length(grl) != max(nrow(res), 0)
-  if (empty_groups) {
-    res_temp <- res
-    res <- rep(0L, length(grl))
-    res[width(grl@partitioning) > 0] <- res_temp
-  }
+  partition_ends <- end(grl@partitioning)
+  previous_ends <- c(0L, head(partition_ends, -1L))
+  cumsum_widths <- c(0L, cumsum(widths_raw))
+  res <- cumsum_widths[partition_ends + 1L] - cumsum_widths[previous_ends + 1L]
   if (keep.names) {
     names(res) <- names(grl)
   }
@@ -422,12 +416,13 @@ unlistGrl <- function(grl) {
   validGRL(class(grl))
   if (length(grl) == 0) return(.unlistGrl(grl))
 
-  grl_is_named <- !is.null(names(grl))
+  grl_names <- names(grl)
+  grl_is_named <- !is.null(grl_names)
   res <- .unlistGrl(grl)
   if (grl_is_named & length(res) > 0) {
     gr_is_not_named <- is.null(names(res[1]))
     if (gr_is_not_named) {
-      names(res) <- rep(names(grl), width(grl@partitioning))
+      names(res) <- rep(grl_names, width(grl@partitioning))
       return(res)
     }
   }

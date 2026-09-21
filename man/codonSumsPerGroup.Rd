@@ -32,7 +32,7 @@ a data.table with codon sums
 }
 \description{
 Helper for entropy function, normally not used directly
-Seperate each group into tuples (abstract codons)
+Separate each group into tuples (abstract codons)
 Gives sum for each tuple within each group
 }
 \details{

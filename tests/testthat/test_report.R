@@ -11,8 +11,7 @@ test_that("count tables created as intended", {
   expect_gt(assay(SE)[1,3], 0)
   collapsed <- scoreSummarizedExperiment(SE, score = "count", collapse = TRUE)
   expect_gt(assay(collapsed)[1,2], 0)
-  expect_warning(collapsed <- scoreSummarizedExperiment(SE, score = "count",
-                                                        collapse = "all"))
+  collapsed <- scoreSummarizedExperiment(SE, score = "count", collapse = "all")
   expect_gt(assay(collapsed)[3,1], 0)
 })
 

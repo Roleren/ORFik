@@ -2,25 +2,25 @@
 % Please edit documentation in R/utils_exports.R
 \name{export.wiggle}
 \alias{export.wiggle}
-\title{Export as wiggle format}
+\title{Export coverage-style signal as wiggle files.}
 \usage{
 export.wiggle(x, file)
 }
 \arguments{
-\item{x}{A GRangesList, GAlignment GAlignmentPairs with score column.
-Will be converted to 5' end position of original range. If score column
-does not exist, will group ranges and give replicates as score column.}
+\item{x}{A `GRanges`, `GAlignments`, or `GAlignmentPairs` object. Input
+ranges are converted to 5' end positions. If a `score` column is missing,
+identical positions are grouped and counted.}
 
-\item{file}{a character path to valid output file name}
+\item{file}{Output file path.}
 }
 \value{
-invisible(NULL) (File is saved as 2 .wig files)
+`invisible(NULL)`. The function writes one or two `.wig` files.
 }
 \description{
-Will create 2 files, 1 for + strand (*_forward.wig)
-and 1 for - strand (*_reverse.wig). If all
-ranges are * stranded, will output 1 file.
-Can be direct input for ucsc browser or IGV
+By default this creates two files, one for the `+` strand
+(`*_forward.wig`) and one for the `-` strand (`*_reverse.wig`). If all
+ranges are `*` stranded, a single `.wig` file is written instead.
+The output can be loaded directly in UCSC Genome Browser or IGV.
 }
 \examples{
 x <- c(GRanges("1", c(1,3,5), "-"), GRanges("1", c(1,3,5), "+"))

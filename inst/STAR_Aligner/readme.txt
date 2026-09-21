@@ -1,51 +1,75 @@
-Welcome to STAR aligner and indexing script
+ORFik STAR / fastp pipeline
+==========================
 
-There are 3 main scripts you can use:
+Use STAR.index(), STAR.align.single(), or STAR.align.folder() from R. The
+bundled Bash scripts implement these functions; run a script with -h to see
+its command-line options. Linux, macOS and WSL are supported.
 
-1. Make star Index, file: STAR_MAKE_INDEX.sh
-2. Align data from specified file: RNA_Align_pipeline.sh
-3. Align all data from specified folder: RNA_Align_pipeline_folder.sh
+Examples (paths are placeholders):
 
-Arguments for Star Index creation:
-OPTIONS:
-	-o	   output folder for all indices
-	-s   	   species to use (zebrafish, soon human and yeast)
-	-phix 	   path to phix fasta/fasta.gz file
-	-rRNA	   path to rrna fasta/fasta.gz file
-	-ncRNA	   path to ncRNA fasta/fasta.gz file
-	-tRNA	   path to trna fasta/fasta.gz file
-	-genome    path to species whole genome fasta/fasta.gz file
-	-genomeGTF path to species gtf file
-	-outGenome path to use as output for species genome, if other than rest
-	-h	   this help message
+  STAR.align.folder("reads", "processed", "references/STAR_index",
+                    steps = "tr-co-ge", paired.end = TRUE,
+                    base.correction = TRUE)
 
-Arguments for aligning data:
-OPTIONS:
-	-f	path to input fasta file. Also define -F if paired end! Must be file type of: fasta, fa, fastq, fq or gz
-	-F 	path to input fastq file 2 (paired end reads 2) Must be file type of: fasta, fa, fastq, fq or gz
-	-o	path to output dir
-	-l	minimum length of reads (default: 15)
-	-g	genome dir for all indices (Standard is zebrafish: danrerio10, change to human index if needed etc)
-	-s	steps of depletion and alignment wanted:
-		(a string: which steps to do? (default: "tr-ge", write "all" to get all: "tr-ph-rR-nc-tR-ge")
-			 tr: trimming, ph: phix depletion, rR: rrna depletion, 
-			 nc: ncrna depletion, tR: trna depletion, ge: genome alignment) 
-		Write your wanted steps, seperated by "-". Order does not matter.
-		To just do trim and alignment to genome write -s "tr-ge"
-	-a	adapter sequence for trim (found automaticly if not given), also you can write -a "disable", 
-		to disable it or "standard" to get "AAAAAAAAAA", the illumina standard sequence for 5' end.
-	-t	trim front (default 3) How many bases to pre trim 5′ end of each read, 
-	        as it frequently represents an untemplated addition during reverse transcription.
-	-A	Alignment type: (default Local, EndToEnd (Local is Local, EndToEnd is force Global))
+  STAR.align.single("reads/sample.fastq.gz", output.dir = "processed",
+                    index.dir = "references/STAR_index", steps = "tr-ge",
+                    allow.introns = FALSE)
 
-	Less important options:
-	-r	resume?: a character (defualt n) (n for new start fresh with file f from point s, 
-			             (if you want a continue from crash specify the step you want to start 
-				      from, as defined in -s, start on genome, do -r "ge")
-	-m	max cpus allowed (defualt 90)
-	-h	this help message
+Splice junctions
+---------------
 
-NOTE: When running on folder, f is folder directory not a file! F does not exist for folder, as it auto detects pairs of data.
-Also, remember you need to run the alignment script from the folder with the fasta files!
-Only works on unix systems, not windows.
+allow.introns = TRUE (default) passes --alignIntronMax 0 to STAR: discover
+novel junctions, using STAR's automatic maximum intron length.
+allow.introns = FALSE passes --alignIntronMax 1: suppress novel junctions.
+Junctions supplied in the STAR index can still align in either mode.
 
+Earlier affected ORFik versions passed 1 even when TRUE was requested.
+The corrected default can change alignment results. Set FALSE explicitly
+when you want to preserve the previous indexed-junction-only behavior.
+
+SJ.out.tab contains both annotated and unannotated junction coordinates.
+Column 6 is 1 for junctions annotated in STAR's database and 0 otherwise;
+the existence of this file alone does not indicate novel junction discovery.
+
+Paired reads and base correction
+-------------------------------
+
+Folder mode pairs adjacent files in sorted filename order. Ensure the
+mates sort together, for example sample_1.fastq.gz and sample_2.fastq.gz.
+Mate identity is not inferred from FASTQ records. Mixed single/paired
+libraries must be processed separately. Duplicate output basenames in
+recursive folder input are rejected.
+
+base.correction = TRUE enables fastp --correction during trimming. It
+corrects mismatches in overlapping paired reads using base quality; it
+does not merge pairs. The default is FALSE. It requires paired input and
+tr in steps. It has no effect when resuming after trimming.
+
+Steps and logs
+--------------
+
+Specify steps in processing order, separated by hyphens:
+tr (fastp), co (merged contaminants), ph (PhiX), rR (rRNA), nc (ncRNA),
+tR (tRNA), ge (genome). Choose co or individual depletion steps, not both.
+"all" selects tr-co-ge if a merged contaminant index exists, otherwise
+tr-ph-rR-nc-tR-ge. Indices must exist for the selected alignment steps.
+
+Each step reports the files it actually reads, the output paths, and the
+exact tool command. verbose = FALSE hides ORFik's progress messages;
+STAR and fastp diagnostics remain visible. Tool failures stop processing
+and produce an R error. Folder mode collects STAR logs and junction tables
+under each stage's LOGS directory after successful completion.
+
+For resume, keep the original steps and specify the step to resume from.
+STAR.align.single runs only that step; STAR.align.folder runs it and all
+subsequent steps. Existing intermediate files must be present.
+
+keep.index.in.memory = "noShared" disables shared-memory indices for every
+library. TRUE keeps indices loaded; FALSE removes them after the final
+library in each folder stage.
+
+References
+----------
+STAR manual: https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
+Annotated junction exception: https://github.com/alexdobin/STAR/issues/180
+fastp correction: https://github.com/OpenGene/fastp#base-correction-for-pe-data

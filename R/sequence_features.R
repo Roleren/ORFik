@@ -91,7 +91,7 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' Rows are in order: c("A", "C", "G", "T")
 #' @param include.N logical (F), if TRUE, allow N bases to be counted as hits,
 #' score will be average of the other bases. If True, N bases will be
-#' added to pfm, automaticly, so dont include them if you make your own pfm.
+#' added to pfm automatically, so don't include them if you make your own pfm.
 #' @return a numeric vector with values between 0 and 1
 #' @return an integer vector, one score per orf
 #' @family features

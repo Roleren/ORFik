@@ -209,11 +209,14 @@ asTX <- function(grl, reference,
 #'
 #' Map range coordinates between features in the transcriptome and
 #' genome (reference) space.
-#' The length of x must be the same as length of transcripts. Only exception is
-#' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
-#' to transcript 3 etc.
+#' The length of \code{x} must normally match the length of \code{transcripts}.
+#' Recycling is supported when either \code{length(x) == 1} or
+#' \code{length(transcripts) == 1}. For list-like inputs, integer names on
+#' \code{x} can also be used as transcript indices, so that e.g.
+#' \code{x[2]} maps to transcript \code{3} when the second element is named
+#' \code{"3"}.
 #'
-#' This version tries to fix the shortcommings of GenomicFeature's version.
+#' This version tries to fix the shortcomings of GenomicFeature's version.
 #' Much faster and uses less memory.
 #' Implemented as dynamic program optimized c++ code.
 #' @param x GRangesList/GRanges/IRangesList/IRanges to map
@@ -235,7 +238,28 @@ asTX <- function(grl, reference,
 #' @param tx.is.sorted if transcripts is a GRangesList object,
 #' are "-" strand groups pre-sorted in decreasing order within group,
 #' default: TRUE
-#' @return object of same class as input x, names from ranges are kept.
+#' @param reduce.ranges logical, default TRUE. Reduce mapped ranges per group
+#' after mapping. Set to FALSE if you want to preserve exon-level pieces in the
+#' mapped output and skip that post-processing step.
+#' @param set.seqlengths logical, default TRUE. Add transcript widths as
+#' seqlengths on GRanges output. Set to FALSE to skip that metadata work when
+#' it is not needed downstream.
+#' @return object of same class as input \code{x}, names from ranges are kept.
+#' If \code{x} is list-like, the result preserves the outer grouping of
+#' \code{x}. Unmapped blocks are represented as \code{0--1} ranges, matching
+#' the current ORFik behavior.
+#' @details
+#' Mapping is done block-wise and assumes each block in \code{x} starts inside
+#' the corresponding transcript block. Partial left overhang into a later exon
+#' is therefore treated as unmapped rather than trimmed.
+#'
+#' For \code{GRangesList}/\code{IRangesList} input, \code{reduce.ranges = TRUE}
+#' merges adjacent or overlapping mapped pieces within each group after mapping.
+#' Turning this off is often faster and preserves the exon-level mapping.
+#'
+#' \code{set.seqlengths = TRUE} attaches transcript widths as sequence lengths on
+#' \code{GRanges} output. This is useful for downstream range operations, but it
+#' is also one of the more expensive wrapper steps on large inputs.
 #' @export
 #' @examples
 #' library(GenomicFeatures)
@@ -266,9 +290,20 @@ asTX <- function(grl, reference,
 #' # A note here, a & b only have 1 seqlength, even though the 2 "tx1"
 #' # are different in size. This is an artifact of using duplicated names.
 #'
+#' # Recycling is supported when one side has length 1
+#' x_single <- GRanges("chr1", IRanges(26, 27), "+")
+#' pmapToTranscriptF(x_single, tx)
+#'
+#' # Fast path when you do not need reduced list output or seqlength metadata
+#' fast <- pmapToTranscriptF(x, tx[txNames(x)],
+#'                           reduce.ranges = FALSE,
+#'                           set.seqlengths = FALSE)
+#' fast
+#'
 #' ## Also look at the asTx for a similar useful function.
 pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
-                              x.is.sorted = TRUE, tx.is.sorted = TRUE) {
+                              x.is.sorted = TRUE, tx.is.sorted = TRUE,
+                              reduce.ranges = TRUE, set.seqlengths = TRUE) {
   if ((length(x) == 0)) return(x)
 
   if (length(x) != length(transcripts)) { # Recycling
@@ -287,8 +322,13 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   txWidths <- if (is.rl(transcripts)) {
     widthPerGroup(transcripts, FALSE)
   } else if (is(transcripts, "IRanges") | is(transcripts, "GRanges")) {
-    if(is(txWidths, "IRanges")) {txWidths@width} else {txWidths@ranges@width}
+    if (is(transcripts, "IRanges")) {
+      transcripts@width
+    } else {
+      transcripts@ranges@width
+    }
   } else stop("transcripts must either be IRanges, IRangesList, GRanges or GRangesList")
+  xPartitionWidths <- if (is.rl(xOriginal)) width(xOriginal@partitioning) else NULL
 
   # subset to ranges and get indices for x
   if (is.rl(x)) {
@@ -315,7 +355,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   notEqualSeqnames <- is.gr_or_grl(xOriginal) & is.gr_or_grl(transcripts) &
                          !all(seqlevels(xOriginal) %in% seqlevels(transcripts))
   if (notEqualSeqnames) stop("subscript contains out-of-bounds indices")
-  # TODO: add propper test for per row seqnames, not just seqlevels
+  # TODO: add proper test for per-row seqnames, not just seqlevels
   if (is.grl(transcripts) & !tx.is.sorted)
     transcripts <- sortPerGroup(transcripts, ignore.strand)
   if (!all(xWidths <= txWidths)) {
@@ -326,11 +366,11 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   # Unlist tx, if list structure
   if (is.grl(transcripts) | is(transcripts, "IRangesList")) {
     tx <- .unlistGrl(transcripts)
-    groupings <- groupings(transcripts)
-    exonN <- lengths(transcripts)
+    txGroupings <- groupings(transcripts)
+    exonN <- width(transcripts@partitioning)
   } else { # not list
     tx <- transcripts
-    groupings <- seq.int(1, length(transcripts))
+    txGroupings <- seq.int(1, length(transcripts))
     exonN <- seq.int(1, length(transcripts))
   }
   # Unlist tx, if list structure
@@ -346,8 +386,10 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
 
   # Split indices for x into pos / neg-strand
   if (is.grl(xOriginal) | is(xOriginal, "IRangesList")) {
-    indicesPos <- groupings(xOriginal[txStrand])
-    indicesNeg <- groupings(xOriginal[!txStrand])
+    posWidths <- xPartitionWidths[txStrand]
+    negWidths <- xPartitionWidths[!txStrand]
+    indicesPos <- rep.int(seq_along(posWidths), posWidths)
+    indicesNeg <- rep.int(seq_along(negWidths), negWidths)
   } else {
     indicesPos <- seq_along(xOriginal[txStrand])
     indicesNeg <- seq_along(xOriginal[!txStrand])
@@ -355,14 +397,14 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   # Make algorithm dynamic, by skipping if you know you can go to next transcript
   exonCumSumPos <- c(0, cumsum(exonN[txStrand]))[indicesPos]
   exonCumSumNeg <- c(0, cumsum(exonN[!txStrand]))[indicesNeg]
-  txStrand <- txStrand[groupings]
+  txStrand <- txStrand[txGroupings]
 
   # Here is pos and neg direction of the algorithm ->
   # forward strand (c++ code)
   if (any(txStrand)) {
     pos <- pmapToTranscriptsCPP(start(x)[xStrand], end(x)[xStrand],
                                 start(tx)[txStrand], end(tx)[txStrand],
-                                groupings[txStrand], '+', exonCumSumPos)
+                                txGroupings[txStrand], '+', exonCumSumPos)
   } else {
     pos <- list(ranges = list(vector("integer"), vector("integer")),
                 index = vector("integer"))
@@ -372,7 +414,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
   if (any(!txStrand)) {
     neg <- pmapToTranscriptsCPP(start(x)[!xStrand], end(x)[!xStrand],
                                 start(tx)[!txStrand], end(tx)[!txStrand],
-                                groupings[!txStrand], '-',
+                                txGroupings[!txStrand], '-',
                                 exonCumSumNeg)
   } else {
     neg <- list(ranges = list(vector("integer"), vector("integer")),
@@ -410,19 +452,25 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
       strand(result)[unmapped] <- "*"
     }
 
-    seqlevels.used <- seqlevels(result)
-    if(is.null(names(transcripts))) {
-      seqlevels.used <- as.integer(seqlevels.used)
+    if (set.seqlengths) {
+      seqlevels.used <- seqlevels(result)
+      if(is.null(names(transcripts))) {
+        seqlevels.used <- as.integer(seqlevels.used)
+      }
+      suppressWarnings({
+        seqlengths(result) <- if (is.grl(transcripts)) {
+          txWidths[seqlevels.used]
+        } else txWidths[seqlevels.used]
+      })
     }
-    seqlengths(result) <- if (is.grl(transcripts)) {
-      widthPerGroup(transcripts[seqlevels.used])
-    } else as.integer(width(transcripts[seqlevels.used]))
   }
 
   if (is.grl(xClass) | is(xOriginal, "IRangesList")) {
-    result <- split(result, indices)
+    result <- relist(result, xOriginal)
     names(result) <- oldNames
-    result <- reduce(result, drop.empty.ranges = FALSE)
+    if (reduce.ranges && any(xPartitionWidths > 1L)) {
+      result <- reduce(result, drop.empty.ranges = FALSE)
+    }
   } else names(result) <- oldNames
   return(result)
 }
@@ -435,7 +483,7 @@ pmapToTranscriptF <- function(x, transcripts, ignore.strand = FALSE,
 #' if x have integer names like (1, 3, 3, 5), so that x[1] maps to 1, x[2] maps
 #' to transcript 3 etc.
 #'
-#' This version tries to fix the short commings of GenomicFeature's version.
+#' This version tries to fix the shortcomings of GenomicFeature's version.
 #' Much faster and uses less memory.
 #' Implemented as dynamic program optimized c++ code.
 #' @param x IRangesList/IRanges/GRanges to map to genomic coordinates

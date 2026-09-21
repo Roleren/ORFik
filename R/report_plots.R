@@ -249,7 +249,7 @@ cor_plot <- function(dt_cor, col = c(low = "blue", high = "red", mid = "white", 
 #' @param table data.table, e.g. countTable(df, "cds", type = "fpkm"),
 #' a data.table of counts per column (default normalized fpkm values).
 #' @param color.by.group logical, default TRUE. Colors in PCA plot represent
-#' unique library groups, if FALSE. Color each sample in seperate color
+#' unique library groups, if FALSE. Color each sample in a separate color
 #' (harder to distinguish for > 10 samples)
 #' @return ggplot if return.data is false, data.table of PCAs if return.data is TRUE,
 #' if data has < 3 samples, returns (invisible(NULL))
@@ -566,4 +566,3 @@ RiboQC.plot <- function(df, output.dir = QCfolder(df),
   if (as_gg_list) return(plot_list)
   return(final)
 }
-

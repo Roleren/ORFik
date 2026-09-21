@@ -55,7 +55,7 @@ a ggplot object of the coverage plot, NULL if output is set,
 then the plot will only be saved to location.
 }
 \description{
-Usefull to validate p-shifting is correct
+Useful to validate p-shifting is correct
 Can be used for any coverage of region around a point, like TIS, TSS,
 stop site etc.
 }

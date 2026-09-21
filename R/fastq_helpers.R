@@ -14,7 +14,7 @@
 #'
 #' # Make small example fastq files
 #' fastq.folder <- tempdir() # <- Your fastq files
-#' # Seperate files into groups (here it is 4 output files from 12 input files)
+#' # Separate files into groups (here it is 4 output files from 12 input files)
 #' in_files <- paste0(LETTERS[1:16], ".fastq.gz")
 #' in_files <- file.path(fastq.folder, in_files)
 #' samples_dna_letters <- vapply(seq_along(in_files), function(x)
@@ -45,7 +45,7 @@ mergeFastq <- function(in_files_by_out_file_list, BPPARAM = bpparam()) {
 
   equal_compression_per_group <- max(sapply(in_files_by_out_file_list, function(files) length(unique(tools::file_ext(files)))))
   if (any(equal_compression_per_group != 1))
-    stop("You cant mix compressed and uncompressed input files per output file!")
+    stop("You can't mix compressed and uncompressed input files per output file!")
 
 
   BiocParallel::bpmapply(function(in_files, out_file) {

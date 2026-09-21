@@ -37,11 +37,9 @@ for each readlength, defined by readWidths(x) for each file.}
 \item{weight}{integer, numeric or single length character. Default "score".
 Use score column in loaded in_files.}
 
-\item{is_pre_collapsed}{logical, default FALSE. Have you already
-collapsed reads with collapse.by.scores,
-so each positions is only in 1 GRanges object with
-a score column per readlength?
-Set to TRUE, only if you are sure, will give a speedup.}
+\item{is_pre_collapsed}{Logical, default `FALSE`. Set to `TRUE` only if
+reads were already collapsed with `collapse.by.scores()` and each position
+is represented once per read length.}
 
 \item{verbose}{logical, default TRUE, message about library output status.}
 }

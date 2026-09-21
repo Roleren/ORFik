@@ -7,20 +7,21 @@
 install.sratoolkit(folder = "~/bin", version = "2.11.3")
 }
 \arguments{
-\item{folder}{default folder, "~/bin"}
+\item{folder}{installation folder, default `"~/bin"`}
 
-\item{version}{a string, default "2.11.3"}
+\item{version}{toolkit version, default `"2.11.3"`}
 }
 \value{
-path to fastq-dump in sratoolkit
+Path to `fastq-dump` inside the installed sratoolkit
 }
 \description{
-Currently supported for Linux (64 bit centos and ubunutu is tested to work)
-and Mac-OS(64 bit). If other linux distro, centos binaries will be used.
+ORFik supports Linux and macOS. The Linux installer has been tested on
+64-bit CentOS and Ubuntu. On other Linux distributions, the CentOS binaries
+are used as a fallback.
 }
 \examples{
 # install.sratoolkit()
-## Custom folder and version (not adviced)
+## Custom folder and version (not advised)
 folder <- "/I/WANT/IT/HERE/"
 # install.sratoolkit(folder, version = "2.10.9")
 

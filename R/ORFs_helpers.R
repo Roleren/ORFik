@@ -180,7 +180,7 @@ txNames <- function(grl, ref = NULL, unique = FALSE) {
 #' this is not supported by GenomicRanges.
 #' @param grl a \code{\link{GRangesList}}
 #' @param with.tx a boolean, include transcript names,
-#'  if you want unique orfs, so that they dont have duplicates
+#'  if you want unique ORFs, so that they don't have duplicates
 #'  from different isoforms, set it to FALSE.
 #' @return a character vector of ids, 1 per orf
 #' @family ORFHelpers

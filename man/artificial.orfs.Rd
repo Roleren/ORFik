@@ -38,7 +38,7 @@ GRangesList of new ORFs (sorted: + strand increasing start,
  - strand decreasing start)
 }
 \description{
-Usefull to see if short ORFs prediction is dependent on length.\cr
+Useful to see if short ORFs prediction is dependent on length.\cr
 Split cds first in two, a start part and stop part.
 Then say how large the two parts can be and merge them together.
 It will sample a value in range give.\cr

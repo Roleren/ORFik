@@ -289,13 +289,13 @@ A direct wrapper for this in STAR.align.folder is currently not implemented yet,
 For now you can call fastp directly through a system call:
 ```{r eval = FALSE, echo = TRUE, message = FALSE}
 dir.create("~/UMIandTrimmed")
-system(paste(install.fastp(),
-             "-i", "~/sample1.fastq.gz",
-             "-o", "~/UMIandTrimmed/sample1.UMIandTrimmed.fastq.gz"
+system2(install.fastp(),
+        args = c("-i", shQuote(path.expand("~/sample1.fastq.gz")),
+             "-o", shQuote(path.expand("~/UMIandTrimmed/sample1.UMIandTrimmed.fastq.gz")),
              "--adapter_sequence=AGATCGGAAGAGC",
              "--umi",
              "--umi_loc", "read1",
-             "--umi_len", 12))
+             "--umi_len", "12"))
 # Read fastp documentation for info about umi arguments
 ```
 
@@ -437,3 +437,9 @@ Let's do an example to find the ratio between fpkm of between the CDS and mRNAs 
 We now have a ratio of fpkm values between CDS and mrna.
 
 You can now continue to the Ribo-seq pipeline to see a more advanced example.
+
+# Session information
+
+```{r session-info}
+sessionInfo()
+```

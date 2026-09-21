@@ -48,7 +48,7 @@ inside the bam file directory!}
 \item{full_path}{Full path to countTable, default: countTablePath(df, region, count.folder)}
 }
 \value{
-a data.table/SummarizedExperiment/DESeq object
+a data.table/SummarizedExperiment/DESeqDataset object
 of columns as counts / normalized counts per library, column name
 is name of library. Rownames must be unique for now. Might change.
 }

@@ -1,24 +1,19 @@
-#' Read ORFik \code{\link{experiment}}
+#' Read an ORFik experiment definition into an `experiment` object.
 #'
-#' Read in runs / samples from an experiment as a single R object.
-#' To read an ORFik experiment, you must of course make one first.
-#' See \code{\link{create.experiment}}
-#' The file must be csv and be a valid ORFik experiment
-#' @param file relative path to a ORFik experiment. That is a .csv file following
-#' ORFik experiment style ("," as seperator).
-#' , or a template data.frame from \code{\link{create.experiment}}. Can
-#' also be full path to file, then in.dir argument is ignored.
-#' @param in.dir Directory to load experiment csv file from, default:
-#' \code{ORFik::config()["exp"]}, which has default "~/Bio_data/ORFik_experiments/"\cr
-#' Set to NULL if you don't want to save it to disc.
-#' Does not apply if file argument is not a path (can also be a data.frame).
-#' Also does not apply if file argument was given as full path.
-#' @param validate logical, default TRUE. Abort if any library files does not exist.
-#' Do not set this to FALSE, unless you know what you are doing!
-#' @param output.env an environment, default .GlobalEnv. Which environment
-#' should ORFik output libraries to (if this is done),
-#' can be updated later with \code{envExp(df) <- new.env()}.
-#' @return an ORFik \code{\link{experiment}}
+#' The input must either be a valid ORFik experiment `.csv` file or a template
+#' data frame produced by \code{\link{create.experiment}}.
+#' @param file Relative path to an ORFik experiment, or a template data frame
+#'   from \code{\link{create.experiment}}. If a full path is supplied,
+#'   `in.dir` is ignored.
+#' @param in.dir Directory containing experiment `.csv` files. Defaults to
+#'   \code{ORFik::config()["exp"]}, which by default is
+#'   `"~/Bio_data/ORFik_experiments/"`. Ignored when `file` is not a path or is
+#'   already a full path.
+#' @param validate Logical, default `TRUE`. Validate that referenced library
+#'   files exist and that the experiment layout is consistent.
+#' @param output.env Environment to associate with the experiment, default
+#'   `.GlobalEnv`. This can be changed later with `envExp(df) <- new.env()`.
+#' @return An ORFik \code{\link{experiment}} object.
 #' @importFrom utils read.table read.csv2
 #' @export
 #' @examples
@@ -84,22 +79,19 @@ read.experiment.as.list <- function(file, in.dir = ORFik::config()["exp"]) {
 #' a specific Next generation sequencing experiment.
 #' Click the experiment link above in the title if you are not sure what an
 #' ORFik experiment is.\cr\cr
-#' By using files in a folder / folders. It will make an experiment table
-#' with information per sample, this object allows you to use the extensive API in
-#' ORFik that works on experiments. \cr\cr
+#' Using files in one or more folders, this function creates an experiment
+#' template with metadata per sample. That template can then be read into an
+#' ORFik `experiment` object and used throughout the package API. \cr\cr
 #' Information Auto-detection:\cr
-#' There will be several columns you can fill in, when creating the object,
-#' if the files have logical names like (RNA-seq_WT_rep1.bam) it will try to auto-detect
-#' the most likely values for the columns. Like if it is RNA-seq or Ribo-seq,
-#' Wild type or mutant, is this replicate 1 or 2 etc.\cr
+#' When file names are informative, such as `RNA-seq_WT_rep1.bam`, ORFik will
+#' try to auto-detect metadata such as library type, condition, and replicate.\cr
 #' You will have to fill in the details that were not auto detected.
-#' Easiest way to fill in the blanks are in a csv editor like libre Office
-#' or excel. You can also remake the experiment and specify the
-#' specific column manually.
-#' Remember that each row (sample) must have a unique combination
-#' of values.
-#' An extra column called "reverse" is made if there are paired data,
-#' like +/- strand wig files.
+#' The easiest way to complete the table is usually in a spreadsheet editor
+#' such as LibreOffice or Excel, although you can also rebuild the template and
+#' specify columns directly in R.
+#' Each row (sample) must have a unique combination of metadata values.
+#' An extra column called `reverse` is created for paired data, such as paired
+#' `+/-` strand wig files.
 #' @param dir Which directory / directories to create experiment from,
 #' must be a directory with NGS data from your experiment. Will include
 #' all files of file type specified by "types" argument. So do not mix
@@ -111,7 +103,7 @@ read.experiment.as.list <- function(file, in.dir = ORFik::config()["exp"]) {
 #' Set to NULL if you don't want to save it to disc.
 #' @param types Default \code{c("bam", "bed", "wig", "bigWig","ofst")},
 #' which types of libraries to allow as NGS data.
-#' @param txdb A path to TxDb (prefered) or gff/gtf (not adviced, slower)
+#' @param txdb A path to TxDb (preferred) or gff/gtf (supported, but slower)
 #' file with transcriptome annotation for the organism.
 #' @param fa A path to fasta genome/sequences used for libraries, remember the
 #' file must have a fasta index too.
@@ -150,7 +142,7 @@ read.experiment.as.list <- function(file, in.dir = ORFik::config()["exp"]) {
 #' Example: WT (wild type), mutant, etc.
 #' @param fraction character, default "auto". Fractionation of library,
 #' must be length 1 or equal length of number of libraries.
-#' "auto" means ORFik will try to guess from file names. This columns
+#' "auto" means ORFik will try to guess from file names. This column
 #' is used to make experiment unique, if the other columns are not sufficient.
 #' Example: cyto (cytosolic fraction), dmso (dmso treated fraction), etc.
 #' @param author character, default "". Main author of experiment,
@@ -187,12 +179,12 @@ read.experiment.as.list <- function(file, in.dir = ORFik::config()["exp"]) {
 #' # 5. Set organism (optional)
 #' org <- "Homo sapiens"
 #'
-#' # Create temple not saved on disc yet:
+#' # Create template not saved on disc yet:
 #' template <- create.experiment(dir = dir, exper, txdb = txdb,
 #'                               saveDir = NULL,
 #'                               fa = fa, organism = org,
 #'                               viewTemplate = FALSE)
-#' ## Now fix non-unique rows: either is libre office, microsoft excel, or in R
+#' ## Now fix non-unique rows: either in LibreOffice, Microsoft Excel, or in R
 #' template$X5[6] <- "heart" # here a dummy example, even though data is correct
 #' # read experiment (if you set correctly)
 #' df <- read.experiment(template)

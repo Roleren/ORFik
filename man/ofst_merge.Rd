@@ -11,7 +11,17 @@ ofst_merge(
   keepCigar = TRUE,
   sort = TRUE,
   max_splits = 20L,
-  dt_max_index_size = 2^31
+  dt_max_index_size = 2^31,
+  allow_filtering = TRUE,
+  filter_target_rows = 2^31 - 2,
+  filter_seed = 1L,
+  max_filter_score = Inf,
+  filter_chunk_rows = 5e+06,
+  filter_tmpdir = tempdir(),
+  filter_fallback_dir = NULL,
+  filter_input_summary = FALSE,
+  filter_auto_memory = FALSE,
+  remove_softclips = FALSE
 )
 }
 \arguments{
@@ -34,14 +44,119 @@ how many times can you allow split merging to try to "rescue" the merging
 process?}
 
 \item{dt_max_index_size}{2^31, the number of rows data.table support, set lower
-to merge split on lower counts}
+to merge split on lower counts in the ordinary lossless path. This groups
+whole input files and is independent of the final output target.}
+
+\item{allow_filtering}{logical, default TRUE. If the distinct merged rows
+exceed \code{filter_target_rows}, discard whole chromosome/start positions,
+lowest pooled score first. FALSE aborts without returning a filtered result.}
+
+\item{filter_target_rows}{numeric whole number, default \code{2^31 - 2}.
+Maximum final alignment rows, strictly below data.table's 32-bit ceiling.
+Zero is allowed. Dropping whole positions can retain fewer rows than this.}
+
+\item{filter_seed}{integer, default 1. Seed for deterministic pseudo-random
+priorities among equally scored positions across all chromosomes. Does not
+change R's RNG state; independent of input order and scratch partitioning.}
+
+\item{max_filter_score}{numeric, default Inf. Only positions whose pooled
+score is at most this ceiling may be removed. Abort if too few are eligible.}
+
+\item{filter_chunk_rows}{numeric whole number, default 5e6. Maximum raw rows
+per input batch and rows per compacted partition. Batches are collapsed
+before writing, then compacted in balanced rounds while inputs are read.
+Pooled-score output collapses across studies immediately. This row budget
+is honored unchanged unless \code{filter_auto_memory = TRUE}. Temporary
+combines contain up to two partitions. A single position's distinct rows
+(per input when keeping library scores) must fit the effective budget.
+Disk usage depends on distinct merged data, not just the batch size.}
+
+\item{filter_tmpdir}{character, default \code{tempdir()} for \code{ofst_merge}
+and \code{out_dir} for \code{mergeLibs}. Existing writable
+directory on a disk with space for scratch partitions and summaries. Only
+a newly created private subdirectory is removed on completion or error.}
+
+\item{filter_fallback_dir}{character or NULL. An existing alternate directory
+used for one automatic restart after a scratch-storage failure. Default NULL
+for \code{ofst_merge}; \code{mergeLibs} defaults to its \code{out_dir}. The
+input files are read again with unchanged filtering settings. NULL disables
+fallback. Invalid inputs, memory errors and user interrupts are not retried.
+A small ownership cache here also records primary scratch for crash cleanup.}
+
+\item{filter_input_summary}{logical, default FALSE. For pooled-score output,
+reread inputs after selection to reconstruct exact per-input removal counts.
+This adds disk I/O and bounded per-input compaction. When FALSE these counts
+are NA, not zero; raw input counts and exact global/chromosome totals remain
+available. When keeping all library scores, per-input counts are available
+without another pass regardless of this flag. Only used if filtering occurs.}
+
+\item{filter_auto_memory}{logical, default FALSE. Opt into reducing the row
+budget using \code{get_system_usage()} available RAM, sampled uncompressed
+row sizes and an eightfold workspace allowance. Raw cgroup headroom is a
+conservative additional ceiling and may underestimate usable RAM because
+it includes filesystem cache. Diagnostic messages show the estimates.
+FALSE skips memory estimation entirely and honors \code{filter_chunk_rows}.
+Neither mode guarantees the merge fits RAM; reduce the row budget if needed.}
+
+\item{remove_softclips}{logical, default FALSE. For master-track merges,
+remove terminal S operations from cigar (or cigar1/cigar2) before duplicate
+collapse, including bounded rescue batches. Input files are never modified.
+Start, end, reference width, hard clips, insertions, deletions and splice gaps
+are unchanged. Query width is shortened; explicit qwidth/qwidth1/qwidth2
+columns, if present, are updated. Other metadata remains part of the merge
+key. Clip-only CIGARs that would become empty are rejected. Do not enable
+this for outputs that must retain original read lengths or clipping QC.}
 }
 \value{
 a data.table of merged result, it is merged on all columns except "score".
 The returned file will contain the scores of each file + the aggregate sum score.
+Only when positions were actually removed, \code{attr(result, "removal_summary")}
+is an \code{ofst_removal_summary} list with parameters, score/priority cutoffs,
+before/after/removed alignment rows, positions and total score, and
+\code{by_chromosome} / \code{by_input} data.tables. Per-input rows count
+distinct original alignment keys within each file, so their sum can exceed
+global merged rows. In pooled mode these counts require
+\code{filter_input_summary = TRUE}; otherwise they are NA and
+\code{input_summary_computed} is FALSE. Raw input row counts are always
+recorded separately. Schema version 2 also records the batch strategy. The
+summary is absent for unfiltered results. FST does not preserve attributes;
+\code{mergeLibs} saves this object in a companion RDS file.
 }
 \description{
 Collapses and sums the score column of each ofst file
 It is required that each file is of same ofst type.
 That is if one file has cigar information, all must have it.
+}
+\details{
+Chromosome and strand columns may be character or factor, including
+different factor levels in different files. Factors are retained internally
+to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
+integer. Missing scores contribute zero, as in the per-library score mode.
+All alignment columns except an explicitly discarded CIGAR remain merge keys.
+If raw input rows exceed the final target, files (including a single large
+file) are merged in bounded batches before counting distinct
+merged alignment keys. No filtering occurs if duplicate collapse is enough.
+Positional filtering requires single-end-style \code{seqnames} and
+\code{start}; missing positions and negative/infinite scores are rejected
+in this rescue path. It sums scores over all original files, both strands
+and all CIGARs at each position. Retained alignment keys are not collapsed
+to positions. This is a lossy size rescue, not a biological QC filter.
+Equal pooled scores are ordered by seeded 53-bit hash priorities, with
+chromosome/start used only for actual priority collisions. Whole groups
+are removed until the target is met; unequal group sizes mean this is not
+an equal-probability sample of individual alignment rows. Integer count
+sums are exact up to double precision's integer limit; fractional sums may
+exhibit ordinary floating-point rounding effects across partitionings.
+Scratch processing bounds intermediate partitions, but the final table
+and its assembly still need to fit in RAM. Both score modes use the same
+removal decision. Filtering is not performed separately on merge chunks.
+Ordinary R errors and interrupts clean this run's private caches. SIGKILL,
+OOM kills and machine crashes cannot execute R cleanup handlers. On a later
+run, positively identified abandoned caches in the configured directories
+can be removed, including primary scratch registered by the output-side
+cache. Linux process identity checks include host, user, boot, PID namespace
+and process start time; active, foreign or unverifiable owners are left alone.
+Unmarked folders and symlinks are never claimed for automatic cleanup.
+Final outputs and input files are never deleted by cache cleanup. Recovery
+files from interrupted output publication are retained with a message.
 }

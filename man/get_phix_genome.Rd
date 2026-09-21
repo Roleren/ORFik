@@ -12,7 +12,7 @@ get_phix_genome(phix, output.dir, gunzip)
 Phix is used in Illumina sequencers for sequencing quality control.
 Genome is: refseq, Escherichia phage phiX174.
 If sequencing facility created fastq files with the command \code{bcl2fastq},
-then there should be very few phix reads left in the fastq files recieved.}
+then there should be very few phix reads left in the fastq files received.}
 
 \item{output.dir}{directory to save downloaded data}
 
@@ -20,36 +20,36 @@ then there should be very few phix reads left in the fastq files recieved.}
 that are zipped when downloaded, should be TRUE!}
 }
 \value{
-a named character vector of path to genomes and gtf downloaded,
- and additional contaminants if used. If merge_contaminants is TRUE, will not
- give individual fasta files to contaminants, but only the merged one.
+A named character vector with the paths to the downloaded genome,
+annotation, and any contaminant references. If `merge_contaminants = TRUE`,
+only the merged contaminant fasta is returned, not the individual files.
 }
 \description{
-This function automatically downloads (if files not already exists)
-genomes and contaminants specified for genome alignment.
-By default, it will use ensembl reference,
-upon completion, the function will store
-a file called \code{file.path(output.dir, "outputs.rds")} with
-the output paths of your completed genome/annotation downloads.
-For most non-model nonvertebrate organisms, you need
-my fork of biomartr for it to work:
-remotes::install_github("Roleren/biomartr)
-If you misspelled something or crashed, delete wrong files and
-run again.\cr
-Do remake = TRUE, to do it all over again.\cr
+This function downloads the genome, annotation, and contaminant references
+used for alignment if they are not already present. By default it uses the
+Ensembl reference. When the run completes, it stores a file called
+\code{file.path(output.dir, "outputs.rds")} with the output paths for the
+downloaded files.
 }
 \details{
-Some files that are made after download:\cr
+For most non-model non-vertebrate organisms, you need
+my fork of biomartr for it to work:
+remotes::install_github("Roleren/biomartr")
+If a download fails or you used the wrong organism or assembly, delete the
+incorrect files and run again.\cr
+Set \code{remake = TRUE} to rebuild everything from scratch.\cr
+
+Files created during the download process include:\cr
 - A fasta index for the genome\cr
 - A TxDb to speed up GTF/GFF reading\cr
-- Seperat of merged contaminant files\cr
-Files that can be made:\cr
+- Separate or merged contaminant files\cr
+Optional files that can also be created:\cr
 - Gene symbols (hgnc, etc)\cr
 - Uniprot ids (For name of protein structures)\cr
-If you want custom genome or gtf from you hard drive, assign existing
-paths like this: \cr
-annotation <- getGenomeAndAnnotation(GTF = "path/to/gtf.gtf",
-genome = "path/to/genome.fasta")\cr
+To use references already on disk, pass their paths as \code{genome} and
+\code{GTF}. Supply \code{organism} and \code{output.dir} as well.
+A completed run reuses the paths in \code{outputs.rds}; choose a separate
+output directory or set \code{remake = TRUE} when changing references.
 }
 \examples{
 
