@@ -65,6 +65,8 @@ OPTIONS:
 	-X  Kept contaminant output file type ("bam", "fastq")
 	-u  Keep unaligned reads from genome alignment step.
 	      Default "None" (no), alternative: "Fastx""
+	-R  integer, bytes. STAR's own --limitBAMsortRAM for the genome
+	      alignment BAM-sort step (default: 30000000000, i.e. 30GB).
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -106,9 +108,11 @@ STAR="$HOME/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR"
 fastp="$HOME/bin/fastp"
 base_correction=0
 in_file_two=""
-while getopts ":bvf:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:z:h" opt; do
+bamSortRAM=30000000000
+while getopts ":bvf:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:z:R:h" opt; do
     case $opt in
     b) base_correction=1 ;;
+    R) bamSortRAM=$OPTARG ;;
     v)
       verbose=0
       ;;
@@ -239,7 +243,8 @@ log "Processing $((count / stride)) libraries; steps: $steps"
 common=(-o "$out_dir" -a "$adapter" -q "$quality_filtering" -s "$steps"
         -l "$min_length" -T "$mismatches" -g "$gen_dir" -m "$maxCPU" -M "$multimap"
         -A "$alignment" -B "$allow_introns" -t "$trim_front" -z "$trim_tail"
-        -K "$keepContam" -X "$keepContamType" -u "$keep_unmapped_genome" -P "$fastp" -S "$STAR")
+        -K "$keepContam" -X "$keepContamType" -u "$keep_unmapped_genome" -P "$fastp" -S "$STAR"
+        -R "$bamSortRAM")
 (( ! base_correction )) || common+=(-b)
 (( verbose )) || common+=(-v)
 started=0

@@ -14,7 +14,24 @@ character, name of FileSystem drive of mounted path,
 NA_character_ if not found
 }
 \description{
-Detects the mounted drive based on a mounted path
+Picks the LONGEST matching mount-point prefix among every line of
+\code{df -h} (i.e. the most specific mount), not just "any
+prefix-matching line with root excluded" -- the previous
+implementation collected every mount point that was a path prefix of
+\code{ref_path} and only special-cased root ("/") out of that set,
+which breaks as soon as \code{ref_path} sits under a NESTED, non-root
+mount (e.g. a second drive mounted as a subdirectory of an already
+separate, non-root mount: \code{/mnt/data} itself its own mount, with
+\code{/mnt/data/ssd} a SECOND mount nested inside it -- both are valid
+path prefixes of \code{/mnt/data/ssd/scratch}, so the old root-only
+exclusion left 2 candidates and gave up with
+"Could not determine the correct unique Filesystem drive", even
+though \code{df <path>} itself resolves this unambiguously). The
+longest-prefix rule matches ordinary filesystem mount resolution
+semantics directly (a more specific/deeper mount always wins over a
+shallower one it's nested inside), and root ("/") -- always the
+shortest possible prefix, one character -- is naturally never chosen
+over a more specific match without needing a special case for it.
 }
 \examples{
 detect_drive(tempdir())

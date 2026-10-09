@@ -61,6 +61,10 @@ OPTIONS:
 	    yes: "default" no: "disable". Uses default fastp QF.
 	-u  Keep unaligned reads from genome alignment step.
 	      Default "None" (no), alternative: "Fastx""
+	-R  integer, bytes. STAR's own --limitBAMsortRAM for the genome
+	      alignment BAM-sort step (default: 30000000000, i.e. 30GB).
+	      STAR's own fatal error on an undersized value reports the
+	      exact value it actually needed, directly in its message.
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -108,9 +112,11 @@ STAR="$HOME/bin/STAR-2.7.4a/bin/Linux_x86_64/STAR"
 fastp="$HOME/bin/fastp"
 base_correction=0
 in_file_two=""
-while getopts ":bvf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:h" opt; do
+bamSortRAM=30000000000
+while getopts ":bvf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:R:h" opt; do
     case $opt in
     b) base_correction=1 ;;
+    R) bamSortRAM=$OPTARG ;;
     v)
       verbose=0
       ;;
@@ -330,7 +336,7 @@ for step in "${steps_array[@]}"; do
           log "  Splicing: indexed junctions only (novel junction discovery disabled)"
         fi
         cmd+=(--outSAMtype BAM SortedByCoordinate --outReadsUnmapped "$keep_unmapped_genome"
-              --runThreadN "$((maxCPU < 80 ? maxCPU : 80))" --limitBAMsortRAM 30000000000
+              --runThreadN "$((maxCPU < 80 ? maxCPU : 80))" --limitBAMsortRAM "$bamSortRAM"
               --alignEndsType "$alignment" --alignIntronMax "$intron_max"
               --outFilterMultimapNmax "$multimap" --outFilterMismatchNmax "$mismatches")
       else

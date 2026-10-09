@@ -161,3 +161,15 @@ test_that("bad step order and duplicate output names fail before tools run", {
   expect_error(star_run(f, TRUE, steps = "ge", include.subfolders = "y"), "alignment step failed")
   expect_false(file.exists(f$record))
 })
+
+test_that("limit.bam.sort.ram reaches the real STAR call correctly, default unchanged, large values avoid scientific notation", {
+  for (folder in c(FALSE, TRUE)) {
+    f <- star_fixture()
+    star_run(f, folder, steps = "ge")
+    expect_identical(star_arg(tail(star_calls(f), 1)[[1]], "--limitBAMsortRAM"), "30000000000")
+
+    f2 <- star_fixture()
+    star_run(f2, folder, steps = "ge", limit.bam.sort.ram = 62884790985)
+    expect_identical(star_arg(tail(star_calls(f2), 1)[[1]], "--limitBAMsortRAM"), "62884790985")
+  }
+})

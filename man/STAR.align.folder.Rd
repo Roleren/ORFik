@@ -29,6 +29,7 @@ STAR.align.folder(
   keep.contaminants.type = c("bam", "fastq")[1],
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
+  limit.bam.sort.ram = 3e+10,
   verbose = TRUE,
   script.folder = system.file("STAR_Aligner", "RNA_Align_pipeline_folder.sh", package =
     "ORFik"),
@@ -201,6 +202,13 @@ Logical values apply to the last library in each stage; earlier libraries
 keep the index loaded. The alternative "noShared" applies to every library.
 This is useful for Mac machines especially, or other machines
 that do not support shared memory index, usually gives error: "abort trap 6".}
+
+\item{limit.bam.sort.ram}{numeric, default 30000000000 (30GB). STAR's own
+\code{--limitBAMsortRAM}, the memory budget for the genome alignment step's
+BAM-sort stage. Too low a value fails with a fatal "not enough memory for
+BAM sorting" error that -- usefully -- reports the exact value STAR actually
+needed directly in its own message, so a caller catching that specific error
+can retry with a corrected value instead of guessing.}
 
 \item{verbose}{logical, default TRUE. Print the starting time and each
 processing step's actual inputs, outputs and tool command. STAR and fastp

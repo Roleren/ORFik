@@ -279,6 +279,12 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' keep the index loaded. The alternative "noShared" applies to every library.
 #' This is useful for Mac machines especially, or other machines
 #' that do not support shared memory index, usually gives error: "abort trap 6".
+#' @param limit.bam.sort.ram numeric, default 30000000000 (30GB). STAR's own
+#' \code{--limitBAMsortRAM}, the memory budget for the genome alignment step's
+#' BAM-sort stage. Too low a value fails with a fatal "not enough memory for
+#' BAM sorting" error that -- usefully -- reports the exact value STAR actually
+#' needed directly in its own message, so a caller catching that specific error
+#' can retry with a corrected value instead of guessing.
 #' @param verbose logical, default TRUE. Print the starting time and each
 #' processing step's actual inputs, outputs and tool command. STAR and fastp
 #' diagnostics remain visible when FALSE.
@@ -452,6 +458,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               keep.contaminants.type = c("bam", "fastq")[1],
                               keep.unaligned.genome = FALSE,
                               keep.index.in.memory = FALSE,
+                              limit.bam.sort.ram = 30000000000,
                               verbose = TRUE,
                               script.folder = system.file("STAR_Aligner",
                                                           "RNA_Align_pipeline_folder.sh",
@@ -483,7 +490,7 @@ STAR.align.folder <- function(input.dir, output.dir, index.dir,
                               alignment.type, allow.introns, max.cpus,
                               keep.index.in.memory, keep.contaminants,
                               keep.unaligned.genome, star.path, fastp,
-                              base.correction, verbose)
+                              base.correction, verbose, limit.bam.sort.ram)
   call <- star_shell_command(script.folder,
                             c("-f", path.expand(input.dir), "-p", paired.end,
                               "-i", include.subfolders, "-X", keep.contaminants.type,
@@ -545,6 +552,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               resume = NULL, multiQC = FALSE, keep.contaminants = FALSE,
                               keep.unaligned.genome = FALSE,
                               keep.index.in.memory = FALSE,
+                              limit.bam.sort.ram = 30000000000,
                               verbose = TRUE,
                               script.single = system.file("STAR_Aligner",
                                                    "RNA_Align_pipeline.sh",
@@ -562,7 +570,7 @@ STAR.align.single <- function(file1, file2 = NULL, output.dir, index.dir,
                               alignment.type, allow.introns, max.cpus,
                               keep.index.in.memory, keep.contaminants,
                               keep.unaligned.genome, star.path, fastp,
-                              base.correction, verbose)
+                              base.correction, verbose, limit.bam.sort.ram)
   call <- star_shell_command(script.single,
                             c("-f", path.expand(file1),
                               if (!is.null(file2)) c("-F", path.expand(file2)), args))
@@ -583,7 +591,8 @@ star_alignment_args <- function(output.dir, index.dir, steps, resume,
                                 alignment.type, allow.introns, max.cpus,
                                 keep.index.in.memory, keep.contaminants,
                                 keep.unaligned.genome, star.path, fastp,
-                                base.correction, verbose) {
+                                base.correction, verbose,
+                                limit.bam.sort.ram = 30000000000) {
   keep <- if (is.logical(keep.index.in.memory)) {
     if (keep.index.in.memory) "y" else "n"
   } else keep.index.in.memory
@@ -596,6 +605,7 @@ star_alignment_args <- function(output.dir, index.dir, steps, resume,
     "-u", if (keep.unaligned.genome) "Fastx" else "None",
     if (!is.null(star.path)) c("-S", path.expand(star.path)),
     if (!is.null(fastp)) c("-P", path.expand(fastp)),
+    "-R", format(limit.bam.sort.ram, scientific = FALSE),
     if (base.correction) "-b", if (!verbose) "-v")
 }
 
