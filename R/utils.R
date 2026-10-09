@@ -556,6 +556,25 @@ local_DTthreads <- function(n = 1, env = parent.frame()) {
 }
 
 #' Detects the mounted drive based on a mounted path
+#'
+#' Picks the LONGEST matching mount-point prefix among every line of
+#' \code{df -h} (i.e. the most specific mount), not just "any
+#' prefix-matching line with root excluded" -- the previous
+#' implementation collected every mount point that was a path prefix of
+#' \code{ref_path} and only special-cased root ("/") out of that set,
+#' which breaks as soon as \code{ref_path} sits under a NESTED, non-root
+#' mount (e.g. a second drive mounted as a subdirectory of an already
+#' separate, non-root mount: \code{/mnt/data} itself its own mount, with
+#' \code{/mnt/data/ssd} a SECOND mount nested inside it -- both are valid
+#' path prefixes of \code{/mnt/data/ssd/scratch}, so the old root-only
+#' exclusion left 2 candidates and gave up with
+#' "Could not determine the correct unique Filesystem drive", even
+#' though \code{df <path>} itself resolves this unambiguously). The
+#' longest-prefix rule matches ordinary filesystem mount resolution
+#' semantics directly (a more specific/deeper mount always wins over a
+#' shallower one it's nested inside), and root ("/") -- always the
+#' shortest possible prefix, one character -- is naturally never chosen
+#' over a more specific match without needing a special case for it.
 #' @param ref_path = path.expand(config()["ref"])
 #' @return character, name of FileSystem drive of mounted path,
 #' NA_character_ if not found
@@ -568,29 +587,28 @@ detect_drive <- function(ref_path = path.expand(config()["ref"])) {
   # Get disk usage information
   drive_info <- system("df -h", intern = TRUE)[-1]
 
-  # Iterate through the lines (skip the first row, which is the header)
-  candidate_drives <- c()
+  # Iterate through the lines (skip the first row, which is the header),
+  # keeping only the LONGEST matching mount-point prefix seen so far.
+  best_drive <- NA_character_
+  best_mount_nchar <- -1L
   for (line in drive_info) {
     parts <- strsplit(line, " +")[[1]]  # Split by spaces
 
     # Ensure we have enough columns (Filesystem, Size, Used, Avail, Use%, Mounted on)
-    if (length(parts) >= 6 && grepl(paste0("^", parts[6]), ref_path)) {
-      candidate_drives <- c(candidate_drives, parts[1])  # Store filesystem path
+    if (length(parts) >= 6 && grepl(paste0("^", parts[6]), ref_path) &&
+        nchar(parts[6]) > best_mount_nchar) {
+      best_drive <- parts[1]
+      best_mount_nchar <- nchar(parts[6])
     }
   }
 
-  # Filter out root "/" if another drive is available
-  if (length(candidate_drives) > 1) {
-    candidate_drives <- setdiff(candidate_drives, system("df -h / | awk 'NR==2{print $1}'", intern = TRUE))
-  }
-
-  if (length(candidate_drives) != 1) {
+  if (is.na(best_drive)) {
     warning("Could not determine the correct unique Filesystem drive for the reference path:\n  ",
             ref_path)
     return(NA_character_)
   }
 
-  return(candidate_drives)
+  return(best_drive)
 }
 
 
