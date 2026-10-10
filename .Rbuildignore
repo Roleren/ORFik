@@ -4,3 +4,5 @@
 ^Meta$
 ^AGENTS\.md$
 ^.*\.BiocCheck$
+
+^benchmark$

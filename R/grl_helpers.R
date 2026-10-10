@@ -57,7 +57,14 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
 seqnamesPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (!keep.names) {
-    return(as.character(grl@unlistData@seqnames)[grl@partitioning@end])
+    positions <- grl@partitioning@end
+    ng <- length(positions)
+    ne <- if (ng) positions[ng] else 0L
+    # Rle extraction has fixed overhead; avoid expanding large exon vectors
+    # only when there are substantially fewer transcript groups than exons.
+    if (ne > 65536L && ne > 32 * ng)
+      return(as.character(grl@unlistData@seqnames[positions]))
+    return(as.character(grl@unlistData@seqnames)[positions])
   }
   return(grl@unlistData@seqnames[grl@partitioning@end])
 }
@@ -81,7 +88,12 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
 strandPerGroup <- function(grl, keep.names = TRUE) {
   validGRL(class(grl))
   if (!keep.names) {
-    return(as.character(grl@unlistData@strand)[grl@partitioning@end])
+    positions <- grl@partitioning@end
+    ng <- length(positions)
+    ne <- if (ng) positions[ng] else 0L
+    if (ne > 65536L && ne > 32 * ng)
+      return(as.character(grl@unlistData@strand[positions]))
+    return(as.character(grl@unlistData@strand)[positions])
   }
   return(grl@unlistData@strand[grl@partitioning@end])
 }
@@ -757,36 +769,71 @@ coverageByTranscriptFST <- function(grl, fst_index, columns = NULL) {
   input_chromosomes <- as.character(unique(unlist(seqnames(grl), use.names = FALSE)))
   stopifnot(all(input_chromosomes %in% valid_chromosomes))
 
-  # Find page files needed per grl
-  tiles_all <- lapply(grl, function(gr) {
-    dt <-  index[chr %in% unique(as.character(seqnames(gr))),]
-    setkey(dt, start, end)
-    query <- as.data.table(ranges(gr))[, c(1,2), with = FALSE]
-    setnames(query, c("start", "end"))
-    query[, query_id := .I]  # optional: track which query range matched
-    setkey(query, start, end)
-    res <- foverlaps(dt, query, nomatch = 0)
-
-    res[, start_segment := pmax(start - i.start + 1, 1)]
-    res[, end_segment := pmin(end - i.start + 1, i.end - i.start + 1)]
-    res[, strand := as.character(strand(gr)[query_id])]
-    res[, file := ifelse(strand == "+", file_forward, file_reverse)]
-    res[order(query_id),][]
-  })
-
-  # Read data from appropriate files using offset
-  results <- lapply(tiles_all, function(tiles) {
-    fst::threads_fst(5, reset_after_fork = FALSE)
-    return(rbindlist(lapply(data.table::transpose(tiles[, .(start_segment, end_segment, file, strand)]), function(x) {
-      d <- read_fst(x[3], columns,
-                    from = as.numeric(format(x[1], scientific=FALSE)),
-                    to = as.numeric(format(x[2], scientific=FALSE)),
-                    as.data.table = TRUE)
-      if (x[4] == "-") d <- d[rev(seq.int(nrow(d))),]
-      return(d)
-    })))
-  })
+  # One chromosome-aware page/exon join for the whole input, rather than one
+  # join per transcript. Preserve input exon order and page order within exons.
+  gr <- unlist(grl, use.names = FALSE)
+  query <- data.table(chr = as.character(seqnames(gr)), start = start(gr),
+    end = end(gr), query_id = seq_along(gr),
+    transcript_id = rep(seq_along(grl), lengths(grl)),
+    strand = as.character(strand(gr)))
+  if (!nrow(query)) {
+    results <- lapply(seq_along(grl), function(i) data.table())
+    names(results) <- names(grl)
+    return(results)
+  }
+  setkey(query, chr, start, end)
+  tiles <- data.table::foverlaps(index, query,
+                                by.x = c("chr", "start", "end"), nomatch = 0L)
+  tiles[, start_segment := pmax(start - i.start + 1, 1)]
+  tiles[, end_segment := pmin(end - i.start + 1, i.end - i.start + 1)]
+  tiles[, file := ifelse(strand == "+", file_forward, file_reverse)]
+  setorder(tiles, transcript_id, query_id, i.start, i.end)
+  groups <- split(seq_len(nrow(tiles)), factor(tiles$transcript_id,
+                                             levels = seq_along(grl)))
+  fst::threads_fst(5, reset_after_fork = FALSE)
+  pieces <- .coverage_fst_read_tiles(tiles, columns)
+  results <- lapply(groups, function(rows) rbindlist(pieces[rows]))
+  names(results) <- names(grl)
   return(results)
+}
+
+# Read overlapping/nearby exon slices together. Added gap rows are bounded by
+# an 8-fold amplification and 8,192-row span; longer individual exons retain
+# their original read size. Nothing is cached between calls, so index/page
+# replacements remain visible. Each output slice is an independent data.table.
+.coverage_fst_read_tiles <- function(tiles, columns) {
+  pieces <- vector("list", nrow(tiles))
+  read_block <- function(rows) {
+    first <- min(tiles$start_segment[rows])
+    last <- max(tiles$end_segment[rows])
+    d <- read_fst(tiles$file[rows[1L]], columns, from = first, to = last,
+                  as.data.table = TRUE)
+    for (i in rows) {
+      offsets <- seq.int(tiles$start_segment[i] - first + 1L,
+                         tiles$end_segment[i] - first + 1L)
+      if (tiles$strand[i] == "-") offsets <- rev(offsets)
+      pieces[[i]] <<- d[offsets]
+    }
+  }
+  for (file in unique(tiles$file)) {
+    rows <- which(tiles$file == file)
+    rows <- rows[order(tiles$start_segment[rows], tiles$end_segment[rows])]
+    block <- integer(); first <- last <- total <- 0
+    for (i in rows) {
+      s <- tiles$start_segment[i]; e <- tiles$end_segment[i]
+      span <- max(last, e) - first + 1L
+      if (length(block) && (span > 8192L || span > 8 * (total + e - s + 1L))) {
+        read_block(block)
+        block <- integer()
+      }
+      if (!length(block)) { first <- s; last <- e; total <- 0 }
+      block <- c(block, i)
+      last <- max(last, e)
+      total <- total + e - s + 1L
+    }
+    if (length(block)) read_block(block)
+  }
+  pieces
 }
 
 #' Get names of GRangesList

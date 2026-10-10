@@ -622,13 +622,16 @@ coverage_to_dt <- function(coverage, keep.names = TRUE,
     }
     runV <- runV[runV > 0]
     runV <- rep.int(runV, width(ir))
-    ir <- unlist(tile(ir, width = 1))
+    # Expand runs directly instead of constructing a one-base range per row.
+    run_widths <- width(ir)
+    positions <- rep.int(start(ir) - 1L, run_widths) + sequence(run_widths)
+    gene_names <- rep.int(names(ir), run_widths)
     count <- data.table(count = runV) #
     if (keep.names) {
-      count[, `:=`(genes = factor(names(ir)), position = start(ir))]
+      count[, `:=`(genes = factor(gene_names), position = positions)]
     } else {
-      count[, `:=`(genes = as.integer(names(ir)),
-                   position = start(ir))]
+      count[, `:=`(genes = as.integer(gene_names),
+                   position = positions)]
     }
   } else { # Keep all 0 count rows
     window_size <- unique(lengths(coverage))

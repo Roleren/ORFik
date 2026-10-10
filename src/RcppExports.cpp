@@ -54,16 +54,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // pmapFromTranscriptsCPP
-List pmapFromTranscriptsCPP(const std::vector<int>& xStart, const std::vector<int>& xEnd, const std::vector<int>& transcriptStart, const std::vector<int>& transcriptEnd, const std::vector<int>& indices, const char& direction, const bool removeEmpty);
+List pmapFromTranscriptsCPP(const IntegerVector& xStart, const IntegerVector& xEnd, const IntegerVector& transcriptStart, const IntegerVector& transcriptEnd, const IntegerVector& indices, const char& direction, const bool removeEmpty);
 RcppExport SEXP _ORFik_pmapFromTranscriptsCPP(SEXP xStartSEXP, SEXP xEndSEXP, SEXP transcriptStartSEXP, SEXP transcriptEndSEXP, SEXP indicesSEXP, SEXP directionSEXP, SEXP removeEmptySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type xStart(xStartSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type xEnd(xEndSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type transcriptStart(transcriptStartSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type transcriptEnd(transcriptEndSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type xStart(xStartSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type xEnd(xEndSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type transcriptStart(transcriptStartSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type transcriptEnd(transcriptEndSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< const char& >::type direction(directionSEXP);
     Rcpp::traits::input_parameter< const bool >::type removeEmpty(removeEmptySEXP);
     rcpp_result_gen = Rcpp::wrap(pmapFromTranscriptsCPP(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty));
@@ -71,19 +71,51 @@ BEGIN_RCPP
 END_RCPP
 }
 // pmapToTranscriptsCPP
-List pmapToTranscriptsCPP(const std::vector<int>& xStart, const std::vector<int>& xEnd, const std::vector<int>& transcriptStart, const std::vector<int>& transcriptEnd, const std::vector<int>& indices, const char& direction, const std::vector<int>& nExonCumSum);
+List pmapToTranscriptsCPP(const IntegerVector& xStart, const IntegerVector& xEnd, const IntegerVector& transcriptStart, const IntegerVector& transcriptEnd, const IntegerVector& indices, const char& direction, const IntegerVector& nExonCumSum);
 RcppExport SEXP _ORFik_pmapToTranscriptsCPP(SEXP xStartSEXP, SEXP xEndSEXP, SEXP transcriptStartSEXP, SEXP transcriptEndSEXP, SEXP indicesSEXP, SEXP directionSEXP, SEXP nExonCumSumSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type xStart(xStartSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type xEnd(xEndSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type transcriptStart(transcriptStartSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type transcriptEnd(transcriptEndSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type indices(indicesSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type xStart(xStartSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type xEnd(xEndSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type transcriptStart(transcriptStartSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type transcriptEnd(transcriptEndSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type indices(indicesSEXP);
     Rcpp::traits::input_parameter< const char& >::type direction(directionSEXP);
-    Rcpp::traits::input_parameter< const std::vector<int>& >::type nExonCumSum(nExonCumSumSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type nExonCumSum(nExonCumSumSEXP);
     rcpp_result_gen = Rcpp::wrap(pmapToTranscriptsCPP(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, nExonCumSum));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pmapToObjectsCPP
+SEXP pmapToObjectsCPP(SEXP query, SEXP reference, SEXP ignoreStrand, SEXP querySorted, SEXP referenceSorted, SEXP reduceRanges, SEXP setLengths, List templates);
+RcppExport SEXP _ORFik_pmapToObjectsCPP(SEXP querySEXP, SEXP referenceSEXP, SEXP ignoreStrandSEXP, SEXP querySortedSEXP, SEXP referenceSortedSEXP, SEXP reduceRangesSEXP, SEXP setLengthsSEXP, SEXP templatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type query(querySEXP);
+    Rcpp::traits::input_parameter< SEXP >::type reference(referenceSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type ignoreStrand(ignoreStrandSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type querySorted(querySortedSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type referenceSorted(referenceSortedSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type reduceRanges(reduceRangesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type setLengths(setLengthsSEXP);
+    Rcpp::traits::input_parameter< List >::type templates(templatesSEXP);
+    rcpp_result_gen = Rcpp::wrap(pmapToObjectsCPP(query, reference, ignoreStrand, querySorted, referenceSorted, reduceRanges, setLengths, templates));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pmapFromObjectsCPP
+SEXP pmapFromObjectsCPP(SEXP query, SEXP reference, SEXP removeEmpty, List templates);
+RcppExport SEXP _ORFik_pmapFromObjectsCPP(SEXP querySEXP, SEXP referenceSEXP, SEXP removeEmptySEXP, SEXP templatesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type query(querySEXP);
+    Rcpp::traits::input_parameter< SEXP >::type reference(referenceSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type removeEmpty(removeEmptySEXP);
+    Rcpp::traits::input_parameter< List >::type templates(templatesSEXP);
+    rcpp_result_gen = Rcpp::wrap(pmapFromObjectsCPP(query, reference, removeEmpty, templates));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -94,6 +126,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},
+    {"_ORFik_pmapToObjectsCPP", (DL_FUNC) &_ORFik_pmapToObjectsCPP, 8},
+    {"_ORFik_pmapFromObjectsCPP", (DL_FUNC) &_ORFik_pmapFromObjectsCPP, 4},
     {NULL, NULL, 0}
 };
 

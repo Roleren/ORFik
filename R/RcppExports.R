@@ -21,3 +21,11 @@ pmapToTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd, i
     .Call('_ORFik_pmapToTranscriptsCPP', PACKAGE = 'ORFik', xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, nExonCumSum)
 }
 
+pmapToObjectsCPP <- function(query, reference, ignoreStrand, querySorted, referenceSorted, reduceRanges, setLengths, templates) {
+    .Call('_ORFik_pmapToObjectsCPP', PACKAGE = 'ORFik', query, reference, ignoreStrand, querySorted, referenceSorted, reduceRanges, setLengths, templates)
+}
+
+pmapFromObjectsCPP <- function(query, reference, removeEmpty, templates) {
+    .Call('_ORFik_pmapFromObjectsCPP', PACKAGE = 'ORFik', query, reference, removeEmpty, templates)
+}
+

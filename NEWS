@@ -1,3 +1,36 @@
+ORFik 1.29.16
+=============
+
+Transcript mapping and accessors
+-------------------------------
+
+    o Mapping validation, mixed-strand preparation, interval reduction and
+      output factories now run in C++ bindings. A standalone C++11 header
+      separates coordinate logic from R/Rcpp objects; input storage is borrowed.
+      Full-call and storage-representation benchmarks, original baselines and
+      reproduction notes live in benchmark/transcript_mapping/.
+
+    o Paired transcript mapping borrows integer inputs and writes final output
+      vectors directly. Long ordered exon searches use binary lookup; short
+      and irregular groups retain bounded linear searches.
+    o Mapping checks transcript boundaries, empty inputs, coordinate overflow,
+      paired chromosomes and scalar references. Unmappable genomic queries
+      retain the existing sentinel; invalid transcript queries report errors.
+    o The to-transcript wrapper reads unlisted strand and partition offsets
+      directly. Group strand/sequence accessors index Rle values before
+      expansion only for large, exon-rich lists, retaining the small-list path.
+
+Coverage performance
+--------------------
+
+    o coverageByTranscriptFST batches chromosome-aware page/exon joins and
+      shares bounded reads of nearby page slices within a call. Input exon
+      order, requested column order, strand reversal and independent result
+      tables are preserved. Indexes/pages are reread on every call.
+    o coverage_to_dt expands positive coverage runs directly, avoiding a
+      one-base IRanges object per output row. Counts, gene factors, positions,
+      frame columns and empty-coverage warnings are preserved.
+
 ORFik 1.0.0
 -----------------------
 
