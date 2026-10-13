@@ -268,7 +268,19 @@ ofst_merge <- function(file_paths,
                         max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary,
                         filter_auto_memory)
   .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
-  columns <- .validate_schema(file_paths)
+  # Pooled, sorted output: chromosome-blocked sorted merge (identical result, bounded memory, no
+  # scratch spill). Tolerates inputs with/without an all-1 width column (P-site files since 2026-09).
+  sorted_path <- !keep_all_scores && sort && !remove_softclips
+  columns <- .validate_schema(file_paths, optional = if (sorted_path) "width" else character())
+  if (sorted_path) {
+    keys <- setdiff(columns, c("score", if (!keepCigar) c("cigar", "cigar1", "cigar2")))
+    if (length(keys) && keys[1L] == "seqnames" && "score" %in% columns) {
+      dt <- .ofst_merge_sorted(file_paths, keys, filter_target_rows = filter_target_rows)
+      if (!is.null(dt)) return(.ofst_finalize(dt))
+      message("OFST merge: inputs not chromosome sorted (or too large per chromosome); using the general merge.")
+    }
+    columns <- .validate_schema(file_paths)
+  }
   if (remove_softclips)
     message("OFST merge: removing soft clips before duplicate collapse; reference coordinates and input files are unchanged.")
   if (keep_all_scores && (anyDuplicated(lib_names) || any(lib_names %in% columns)))
@@ -355,9 +367,9 @@ ofst_merge <- function(file_paths,
   lv <- levels(x)
   # A range check avoids allocating several N-row logical masks on every
   # ordinary factor. Only malformed inputs need the slower repair path.
-  bounds <- suppressWarnings(range(as.integer(x), na.rm = TRUE))
+  codes <- as.integer(x)
+  bounds <- if (length(codes) && !all(is.na(codes))) c(min(codes, na.rm = TRUE), max(codes, na.rm = TRUE)) else c(1L, 1L)
   if (bounds[1L] < 1L || bounds[2L] > length(lv) || anyNA(lv) || anyDuplicated(lv)) {
-    codes <- as.integer(x)
     codes[is.na(codes) | codes < 1L | codes > length(lv)] <- NA_integer_
     return(factor(lv[codes]))
   }
@@ -405,8 +417,10 @@ ofst_merge <- function(file_paths,
 
 .normalize_dt <- function(d) {
   .validate_ofst_table(d)
-  for (col in c("seqnames", "strand"))
-    data.table::set(d, j = col, value = .ofst_factor(d[[col]], col))
+  for (col in c("seqnames", "strand")) {
+    x <- .ofst_factor(d[[col]], col)
+    if (!identical(x, d[[col]])) data.table::set(d, j = col, value = x)   # avoid copying unchanged columns
+  }
   strand_levels <- levels(d$strand)
   used <- tabulate(d$strand, nbins = length(strand_levels)) > 0L
   if (any(!strand_levels[used] %in% c("+", "-", "*")))
@@ -437,9 +451,15 @@ ofst_merge <- function(file_paths,
     error = function(e) stop("Invalid OFST file '", x, "': ", conditionMessage(e), call. = FALSE)))
 }
 
-.validate_schema <- function(paths) {
+.validate_schema <- function(paths, optional = character()) {
+  # optional: columns allowed to be present in only some inputs (returned columns exclude them then)
   schemas <- lapply(paths, function(x) tryCatch(fst::metadata_fst(x)$columnNames,
     error = function(e) .ofst_abort("cannot inspect OFST file '", x, "': ", conditionMessage(e))))
+  if (length(optional)) {
+    present <- vapply(optional, function(o) sum(vapply(schemas, function(s) o %in% s, logical(1))), numeric(1))
+    mixed <- optional[present > 0 & present < length(schemas)]
+    if (length(mixed)) schemas <- lapply(schemas, setdiff, mixed)
+  }
   for (i in seq_along(schemas)) {
     if (anyDuplicated(schemas[[i]])) .ofst_abort("duplicate column names in '", paths[i], "'.")
     if (!setequal(schemas[[1L]], schemas[[i]]))

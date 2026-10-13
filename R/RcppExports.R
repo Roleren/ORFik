@@ -13,6 +13,14 @@ findORFs_fasta <- function(fastaSeqs, startCodon, stopCodon, minimumLength, isCi
     .Call('_ORFik_findORFs_fasta', PACKAGE = 'ORFik', fastaSeqs, startCodon, stopCodon, minimumLength, isCircular)
 }
 
+ofst_code_runs <- function(x) {
+    .Call('_ORFik_ofst_code_runs', PACKAGE = 'ORFik', x)
+}
+
+ofst_point_sums <- function(chr, start, strand, size_index, n_size, score) {
+    .Call('_ORFik_ofst_point_sums', PACKAGE = 'ORFik', chr, start, strand, size_index, n_size, score)
+}
+
 pmapFromTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty) {
     .Call('_ORFik_pmapFromTranscriptsCPP', PACKAGE = 'ORFik', xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, removeEmpty)
 }
