@@ -9,7 +9,8 @@ readBam(
   chrStyle = NULL,
   param = NULL,
   strandMode = 0,
-  only_unique_mappers = FALSE
+  only_unique_mappers = FALSE,
+  read_strand = "auto"
 )
 }
 \arguments{
@@ -66,6 +67,10 @@ transcripts in opposite directions.}
 \item{only_unique_mappers, }{logical, default FALSE. Only load unique mappers.
 For bam files it extracts NH flag, for other formats, it presumes the presence of
 a directory './unique_mappers' relative to bam file directory.}
+
+\item{read_strand}{RNA single-end orientation: auto uses a validated sidecar,
+alignment preserves physical strand, opposite reverses it, unstranded retains
+physical strands for unstranded counting. Existing strandMode controls pairs.}
 }
 \value{
 a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file

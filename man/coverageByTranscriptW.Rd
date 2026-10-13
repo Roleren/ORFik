@@ -7,7 +7,7 @@
 coverageByTranscriptW(
   x,
   transcripts,
-  ignore.strand = FALSE,
+  ignore.strand = identical(attr(x, "rna_strand"), "unstranded"),
   weight = 1L,
   seqinfo.x.is.correct = FALSE
 )

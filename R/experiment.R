@@ -318,11 +318,18 @@ filepath_internal <- function(x, df, type, base_folders, suffix_stem, rel_folder
   if (type %in% names(ext)) {
     for (t in ext[names(ext) == type]) {
       out.dir.type <- file.path(base_folder, rel_folder[type])
-      paired_file <- if(is.null(paired_files[[t]])) {""} else paired_files[[t]]
-      for (suf_stem in suffix_stem) {
-        file_ext <- ifelse(t == "bigwig", "bigWig", t)
-        input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ".", file_ext)
-        found_valid_file <- all(file.exists(input))
+      suffix_sets <- if (t == "bigwig") list(c("_forward", "_reverse"), "") else list("")
+      if (t == "bigwig") {
+        record <- rna_strand_record(x)
+        if (!is.null(record) && identical(record$read_strand, "unstranded")) suffix_sets <- rev(suffix_sets)
+      }
+      for (paired_file in suffix_sets) {
+        for (suf_stem in suffix_stem) {
+          file_ext <- ifelse(t == "bigwig", "bigWig", t)
+          input <- paste0(out.dir.type, name_stem, suf_stem, paired_file, ".", file_ext)
+          found_valid_file <- all(file.exists(input))
+          if (found_valid_file) break
+        }
         if (found_valid_file) break
       }
       if (found_valid_file) break

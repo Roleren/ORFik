@@ -71,6 +71,9 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' See ?strandMode. Note: Sets default to 0 instead of 1, as readGAlignmentPairs uses 1.
 #' This is to guarantee hits, but will also make mismatches of overlapping
 #' transcripts in opposite directions.
+#' @param read_strand RNA single-end orientation: auto uses a validated sidecar,
+#' alignment preserves physical strand, opposite reverses it, unstranded retains
+#' physical strands for unstranded counting. Existing strandMode controls pairs.
 #' @param only_unique_mappers, logical, default FALSE. Only load unique mappers.
 #' For bam files it extracts NH flag, for other formats, it presumes the presence of
 #' a directory './unique_mappers' relative to bam file directory.
@@ -82,7 +85,22 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' bam_file <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
 #' readBam(bam_file, "UCSC")
 readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
-                    only_unique_mappers = FALSE) {
+                    only_unique_mappers = FALSE, read_strand = "auto") {
+  source_path <- if (is.character(path)) path[1] else if (is(path, "data.table")) path$forward else NULL
+  rna_record <- if (read_strand == "auto") rna_strand_record(source_path) else NULL
+  selected_first <- !is.null(rna_record) && identical(rna_record$selected_mate, 1L)
+  if (selected_first) {
+    # Match massiveNGSpipe's single-mate representation for legacy paired BAMs.
+    # Retain the physical BAM and select R1 on import, then normalize its strand.
+    path <- source_path
+    if (is.null(param)) param <- Rsamtools::ScanBamParam()
+    old_flags <- Rsamtools::bamFlag(param)
+    old_flags["isFirstMateRead"] <- TRUE
+    Rsamtools::bamFlag(param) <- do.call(Rsamtools::scanBamFlag, as.list(old_flags))
+  }
+  if (only_unique_mappers && selected_first) {
+    Rsamtools::bamTag(param) <- unique(c(Rsamtools::bamTag(param), "NH"))
+  }
   if (!(length(path) %in% c(1,2))) stop("readBam must have 1 or 2 bam files!")
   if (is(path, "factor")) path <- as.character(path)
   # If data.table path
@@ -125,12 +143,18 @@ readBam <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
     }
   }
 
-  if (only_unique_mappers) {
+  if (only_unique_mappers && selected_first) {
+    if (!"NH" %in% names(mcols(bam))) stop("Selected-mate unique import requires NH tags")
+    bam <- bam[!is.na(mcols(bam)$NH) & mcols(bam)$NH == 1L]
+  } else if (only_unique_mappers) {
     unique_mapper_status <- readBamIsUniqueMapper(path)
     if (length(bam) != length(unique_mapper_status[[1]]))
       stop("Not equal length to unique mapper status vector and bam file!")
     bam <- bam[unique_mapper_status[[1]] == TRUE]
   }
+  orientation <- rna_strand_resolve(if (is.character(path) && length(path) == 1L) path else NULL, read_strand)
+  if (is(bam, "GAlignments")) bam <- normalize_rna_strand(bam, orientation)
+  else if (orientation != "alignment") stop("Use strandMode to interpret paired RNA alignments")
   return(bam)
 }
 
@@ -472,7 +496,7 @@ import.ofst <- function(file, strandMode = 0, seqinfo = NULL) {
 #' # (will have no effect in this case, since it is not paired end)
 #'
 fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
-                    only_unique_mappers = FALSE) {
+                    only_unique_mappers = FALSE, read_strand = "auto") {
   if (is(path, "data.table")) {
     if (ncol(path) == 2 & colnames(path) == c("forward", "reverse")) {
       path <- c(path$forward, path$reverse)
@@ -504,14 +528,14 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
         if (all(fext %in% c("wig"))) {
           return(readWig(path, chrStyle))
         } else if (all(fext %in% c("bam"))) {
-          return(readBam(path, chrStyle, param, strandMode, only_unique_mappers))
+          return(readBam(path, chrStyle, param, strandMode, only_unique_mappers, read_strand))
         } else if (all(fext %in% c("bigWig", "bw"))) {
           return(readBigWig(path, chrStyle))
         } else stop("only bigWig (bw), wig and bam formats allowed for 2 files input!")
       } else if (length(path) == 1) { # Only 1 file path given
         if (fext == "bam") {
           if (pairedEndBam) path <- c(path, "paired-end")
-          return(readBam(path, chrStyle, param, strandMode, only_unique_mappers))
+          return(readBam(path, chrStyle, param, strandMode, only_unique_mappers, read_strand))
         } else if (fext == "bed" |
                    file_ext(file_path_sans_ext(path,
                                                compression = TRUE)) == "bed" |
@@ -523,7 +547,13 @@ fimport <- function(path, chrStyle = NULL, param = NULL, strandMode = 0,
         } else if (fext == "bedoc") {
           return(matchSeqStyle(import.bedoc(path), chrStyle))
         } else if (fext == "ofst") {
-          return(matchSeqStyle(import.ofst(path, strandMode), chrStyle))
+          x <- matchSeqStyle(import.ofst(path, strandMode), chrStyle)
+          record <- rna_strand_record(path)
+          if (!is.null(record)) {
+            if (!isTRUE(record$normalized)) stop("OFST RNA provenance is not normalized: ", path)
+            attr(x, "rna_strand") <- record$read_strand
+          }
+          return(x)
         } else if (fext %in% c("covrds", "covqs")) {
           return(matchSeqStyle(read_RDSQS(path), chrStyle))
         } else return(matchSeqStyle(import(path), chrStyle))

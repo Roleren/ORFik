@@ -400,3 +400,7 @@ importFrom(withr,local_options)
 importFrom(xml2,as_list)
 importFrom(xml2,read_xml)
 useDynLib(ORFik)
+
+export(normalize_rna_strand)
+
+export(convert_bam_to_ofst_modes)

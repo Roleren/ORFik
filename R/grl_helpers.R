@@ -553,7 +553,7 @@ revElementsF <- function(x) {
 #' @importFrom S4Vectors wmsg isTRUEorFALSE
 #' @importFrom GenomicFeatures exonsBy
 #' @return Integer Rle of coverage, 1 per transcript
-coverageByTranscriptW <- function (x, transcripts, ignore.strand = FALSE,
+coverageByTranscriptW <- function (x, transcripts, ignore.strand = identical(attr(x, "rna_strand"), "unstranded"),
                                     weight = 1L, seqinfo.x.is.correct = FALSE) {
   if (!is(transcripts, "GRangesList")) {
     transcripts <- try(exonsBy(transcripts, by = "tx", use.names = TRUE),

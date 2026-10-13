@@ -30,6 +30,15 @@
 #' countOverlaps(gr1, gr2)
 #' countOverlapsW(gr1, gr2, weight = "score")
 countOverlapsW <- function(query, subject, weight = NULL, ...) {
+  if (identical(attr(subject, "rna_strand"), "unstranded")) {
+    args <- list(...)
+    if (is.null(args$ignore.strand)) args$ignore.strand <- TRUE
+    if (is.null(weight)) return(do.call(countOverlaps, c(list(query, subject), args)))
+    hits <- methods::as(do.call(findOverlaps, c(list(query, subject), args)), "List")
+    result <- sum(extractList(getWeights(subject, weight), hits))
+    names(result) <- names(query)
+    return(result)
+  }
   if (is(subject, "covRle") | is(subject, "character")) weight <- NULL
   if (is.null(weight)) return(countOverlaps(query, subject, ...))
 

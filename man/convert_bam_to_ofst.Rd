@@ -10,7 +10,8 @@ convert_bam_to_ofst(
   out_dir = file.path(libFolder(df, unique_mappers = only_unique_mappers), "ofst"),
   verbose = TRUE,
   strandMode = rep(0, length(in_files)),
-  only_unique_mappers = uniqueMappers(df)
+  only_unique_mappers = uniqueMappers(df),
+  read_strand = "auto"
 )
 }
 \arguments{
@@ -34,6 +35,9 @@ transcripts in opposite directions.}
 \item{only_unique_mappers}{logical, default \code{uniqueMappers(df)}.
 Load file of only unique format type, located in './unique_mappers' relative
 to bam files / default files. See ?uniqueMappers for more information.}
+
+\item{read_strand}{Single-end RNA orientation passed to readBam. Auto uses
+the validated per-BAM decision; existing paired strandMode semantics remain.}
 }
 \value{
 invisible(NULL), files saved to disc
