@@ -111,7 +111,8 @@
     .ofst_abort("large-offset reads require an explicit bounded from/to range below the data.table row ceiling.")
   reader <- utils::getFromNamespace("fstretrieve", "fst")
   expected <- c("fileName", "columnSelection", "startRow", "endRow")
-  if (!identical(names(formals(reader)), expected))
+  # the fst fork adds optional trailing arguments (mergeGap for multi-range reads); the first four are unchanged
+  if (!identical(names(formals(reader))[seq_along(expected)], expected))
     .ofst_abort("this fst version has an unsupported native reader interface for offsets above 2^31-1. Use input files split below that size.")
   raw <- reader(normalizePath(path, mustWork = TRUE), columns, as.double(from), as.double(to))
   if (inherits(raw, "fst_error")) stop(raw)
