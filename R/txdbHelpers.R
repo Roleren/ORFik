@@ -106,9 +106,48 @@ makeSymbols <- function(txdb, symbols_file_out_path = file.path(dirname(getGtfPa
 
   symbols <- geneToSymbol(txdb, include_tx_ids = TRUE,
                           uniprot_id = uniprot_id)
+  gtf <- tryCatch(getGtfPathFromTxdb(txdb, stop.error = FALSE), error = function(e) NULL)
+  if (nrow(symbols) > 0 && !is.null(gtf) && file.exists(gtf)) symbols <- symbols_fill_from_gtf(symbols, gtf)
 
   if (nrow(symbols) > 0) fst::write_fst(symbols, symbols_file_out_path)
   return(symbols)
+}
+
+#' Fill missing gene symbols from the GTF/GFF
+#'
+#' biomaRt often lacks symbols that the annotation itself has (e.g. Ensembl mouse: 96\% of genes without a biomaRt
+#' symbol have a GTF gene_name). Missing \code{external_gene_name} values (NA, empty or equal to the gene id) are filled
+#' from the gene records' \code{gene_name}, then \code{gene_symbol} or \code{Name} attributes. A last column
+#' \code{symbol_source} records "biomart", "gtf" or "none" per row; existing column positions are unchanged
+#' (readers use positions 1-2 and the transcript column name).
+#' @param symbols data.table from \code{geneToSymbol(..., include_tx_ids = TRUE)}
+#' @param gtf path to the GTF/GFF
+#' @return symbols with filled external_gene_name and a symbol_source column
+#' @export
+symbols_fill_from_gtf <- function(symbols, gtf) {
+  symbols <- data.table::copy(data.table::as.data.table(symbols))
+  gene_col <- intersect(c("ensembl_gene_id", "gene_id"), names(symbols))[1]
+  if (is.na(gene_col) || !"external_gene_name" %in% names(symbols)) return(symbols)
+  sym <- as.character(symbols$external_gene_name)
+  missing <- is.na(sym) | sym == "" | sym == as.character(symbols[[gene_col]])
+  source <- ifelse(missing, "none", "biomart")
+  if (any(missing)) {
+    gr <- rtracklayer::import(gtf, feature.type = "gene")
+    m <- data.table::as.data.table(S4Vectors::mcols(gr))
+    id <- if ("gene_id" %in% names(m)) m$gene_id else if ("ID" %in% names(m)) sub("^gene:", "", m$ID) else NULL
+    if (!is.null(id)) {
+      pick <- function(cl) if (cl %in% names(m)) as.character(m[[cl]]) else rep(NA_character_, nrow(m))
+      name <- data.table::fcoalesce(pick("gene_name"), pick("gene_symbol"), pick("Name"))
+      name[!is.na(name) & name == id] <- NA
+      lookup <- name[match(symbols[[gene_col]], id)]
+      fill <- missing & !is.na(lookup) & lookup != ""
+      sym[fill] <- lookup[fill]
+      source[fill] <- "gtf"
+    }
+  }
+  data.table::set(symbols, j = "external_gene_name", value = sym)
+  data.table::set(symbols, j = "symbol_source", value = source)
+  symbols[]
 }
 
 #' Make Gene biotype from gtf.
