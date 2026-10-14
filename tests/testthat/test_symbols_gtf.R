@@ -17,3 +17,15 @@ test_that("symbols_fill_from_gtf fills missing/id-only symbols, keeps biomaRt on
   expect_identical(r$symbol_source, c("biomart", "gtf", "none", "none", "biomart"))
   expect_identical(s$external_gene_name[2], NA_character_)   # input not modified
 })
+
+test_that("symbols_fill_from_gtf reads NCBI GFF3 (gene- prefix, gene attribute, locus tag not a symbol)", {
+  gff <- tempfile(fileext = ".gff3")
+  writeLines(c("##gff-version 3",
+    "c1\tGenbank\tgene\t1\t300\t.\t+\t.\tID=gene-ZMO1_ZMO0001;Name=rpsL;gene=rpsL;locus_tag=ZMO1_ZMO0001",
+    "c1\tGenbank\tgene\t400\t700\t.\t+\t.\tID=gene-ZMO1_ZMO0002;Name=ZMO1_ZMO0002;locus_tag=ZMO1_ZMO0002"), gff)
+  s <- data.table::data.table(ensembl_gene_id = c("ZMO1_ZMO0001", "ZMO1_ZMO0002"), external_gene_name = NA_character_,
+                              ensembl_tx_name = c("t1", "t2"), uniprot_id = NA)
+  r <- symbols_fill_from_gtf(s, gff)
+  expect_identical(r$external_gene_name, c("rpsL", NA))
+  expect_identical(r$symbol_source, c("gtf", "none"))
+})

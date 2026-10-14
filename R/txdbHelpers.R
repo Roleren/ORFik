@@ -134,10 +134,12 @@ symbols_fill_from_gtf <- function(symbols, gtf) {
   if (any(missing)) {
     gr <- rtracklayer::import(gtf, feature.type = "gene")
     m <- data.table::as.data.table(S4Vectors::mcols(gr))
-    id <- if ("gene_id" %in% names(m)) m$gene_id else if ("ID" %in% names(m)) sub("^gene:", "", m$ID) else NULL
+    id <- if ("gene_id" %in% names(m)) m$gene_id else if ("ID" %in% names(m)) sub("^gene[:-]", "", m$ID) else NULL
     if (!is.null(id)) {
       pick <- function(cl) if (cl %in% names(m)) as.character(m[[cl]]) else rep(NA_character_, nrow(m))
-      name <- data.table::fcoalesce(pick("gene_name"), pick("gene_symbol"), pick("Name"))
+      # NCBI GFF3: symbol in 'gene', locus tag in 'Name' (and 'locus_tag'); Ensembl: gene_name / Name
+      name <- data.table::fcoalesce(pick("gene_name"), pick("gene_symbol"), pick("gene"), pick("Name"))
+      if ("locus_tag" %in% names(m)) name[!is.na(name) & name == as.character(m$locus_tag)] <- NA
       name[!is.na(name) & name == id] <- NA
       lookup <- name[match(symbols[[gene_col]], id)]
       fill <- missing & !is.na(lookup) & lookup != ""
