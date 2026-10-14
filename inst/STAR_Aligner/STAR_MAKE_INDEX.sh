@@ -203,9 +203,16 @@ if [[ ${genome} != "" ]]; then
     include_gtf_or_not=""
     sjdbOverhang_to_use=""
 	fi
+	# STAR manual: small genomes need --genomeSAindexNbases min(14, log2(GenomeLength)/2 - 1)
+	# (STAR's default 14 is too large for bacteria/yeast). Genome length = non-header characters of the fasta.
+	if [[ ${genome} == *.gz ]]; then catg="zcat"; else catg="cat"; fi
+	genome_len=$($catg ${genome} | grep -v '^>' | tr -d '\n\r' | wc -c)
+	SA_main=$(awk -v n="$genome_len" 'BEGIN { v = int(log(n)/log(2)/2 - 1); if (v > 14) v = 14; if (v < 4) v = 4; print v }')
+	echo "genome length: $genome_len -> genomeSAindexNbases $SA_main"
 	eval $STAR \
 	--runMode genomeGenerate \
 	--genomeFastaFiles ${genome} \
+	--genomeSAindexNbases $SA_main \
 	${include_gtf_or_not} \
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \

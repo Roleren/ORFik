@@ -375,9 +375,9 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
 #' length is not by itself a reason to reject an index.
 #' For small genomes, STAR requires genomeSAindexNbases to be scaled down
 #' (typically floor(min(14, log2(genome length)/2 - 1))). The bundled main-genome
-#' indexing command currently leaves it at STAR's default 14. Check indexing
-#' warnings and use a suitably configured index for yeast or other small
-#' genomes; the alignment wrappers cannot correct an existing index.
+#' indexing command computes this from the genome fasta (since 2026-10-14; earlier
+#' indices of small genomes were built with STAR's default 14 and may be rebuilt
+#' with remake = TRUE). The alignment wrappers cannot correct an existing index.
 #'
 #' @references
 #' \href{https://github.com/alexdobin/STAR/blob/2.7.4a/doc/STARmanual.pdf}{STAR 2.7.4a manual}
