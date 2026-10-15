@@ -7,7 +7,7 @@
 mapToGRanges(grl, result, groupByTx = TRUE, grl_is_sorted = FALSE)
 }
 \arguments{
-\item{grl}{A \code{\link{GRangesList}} of the original
+\item{grl}{A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of the original
 sequences that gave the orfs in Genomic coordinates. If grl_is_sorted = TRUE (default),
 negative exon ranges per grl object must be sorted in descending orders.}
 
@@ -23,7 +23,7 @@ in descending order for you. If you loaded ranges with default methods this is
 already the case, so you can set to TRUE to save some time.}
 }
 \value{
-A \code{\link{GRangesList}} of ORFs.
+A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of ORFs.
 }
 \description{
 Creates GRangesList from the results of ORFs_as_List and

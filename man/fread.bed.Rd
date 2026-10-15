@@ -10,7 +10,7 @@ fread.bed(filePath, chrStyle = NULL)
 \item{filePath}{The location of the bed file}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+, a \code{\link[GenomeInfoDb]{seqlevelsStyle}} or \code{\link[GenomeInfoDb:compat]{Seqinfo}}.
 (Default: NULL) to get seqlevelsStyle from. In addition if it
 is a Seqinfo object, seqinfo will be updated.
 Example of seqlevelsStyle update:
@@ -20,10 +20,10 @@ Will use 1st seqlevel-style if more are present.
 Like: c("NCBI", "UCSC") -> pick "NCBI"}
 }
 \value{
-a \code{\link{GRanges}} object
+a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object
 }
 \description{
-Wraps around \code{\link{import.bed}} and
+Wraps around \code{\link[rtracklayer:BEDFile-class]{import.bed}} and
 tries to speed up loading with the
 use of data.table. Supports gzip, gz, bgz and bed formats.
 Also safer chromosome naming with the argument chrStyle

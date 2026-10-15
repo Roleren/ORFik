@@ -66,7 +66,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #'
 #' There is no check on invalid matches, so be carefull if you use this
 #' function directly.
-#' @param grl A \code{\link{GRangesList}} of the original
+#' @param grl A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of the original
 #'  sequences that gave the orfs in Genomic coordinates. If grl_is_sorted = TRUE (default),
 #'  negative exon ranges per grl object must be sorted in descending orders.
 #' @param result IRangesList A list of the results of finding uorfs
@@ -77,7 +77,7 @@ defineTrailer <- function(ORFranges, transcriptRanges, lengthOftrailer = 200) {
 #' @param grl_is_sorted logical, default FALSE If FALSE will sort negative transcript
 #' in descending order for you. If you loaded ranges with default methods this is
 #' already the case, so you can set to TRUE to save some time.
-#' @return A \code{\link{GRangesList}} of ORFs.
+#' @return A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of ORFs.
 #' @family ORFHelpers
 #' @keywords internal
 mapToGRanges <- function(grl, result, groupByTx = TRUE, grl_is_sorted = FALSE) {
@@ -112,9 +112,9 @@ mapToGRanges <- function(grl, result, groupByTx = TRUE, grl_is_sorted = FALSE) {
 #' Else you will get errors. Just _ will work, but if transcripts are called
 #' ENST_123124124000 etc, it will crash, so substitute "_" with "."
 #' gsub("_", ".", names)
-#' @param grl a \code{\link{GRangesList}} grouped by ORF
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} grouped by ORF
 #' , GRanges object or IRanges object.
-#' @param ref a reference \code{\link{GRangesList}}. The object
+#' @param ref a reference \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}. The object
 #' you want grl to subset by names. Add to make sure naming is
 #' valid.
 #' @param unique a boolean, if true unique the names,
@@ -178,7 +178,7 @@ txNames <- function(grl, ref = NULL, unique = FALSE) {
 #'
 #' These id's can be uniqued by isoform etc,
 #' this is not supported by GenomicRanges.
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param with.tx a boolean, include transcript names,
 #'  if you want unique ORFs, so that they don't have duplicates
 #'  from different isoforms, set it to FALSE.
@@ -204,11 +204,11 @@ orfID <- function(grl, with.tx = FALSE) {
 
 #' Get the unique set of groups in a GRangesList
 #'
-#' Sometimes \code{\link{GRangesList}} groups might be identical,
+#' Sometimes \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} groups might be identical,
 #' for example ORFs from different isoforms can have identical ranges.
 #' Use this function to reduce these groups to unique elements
-#' in \code{\link{GRangesList}} \code{grl}, without names and metacolumns.
-#' @param grl a \code{\link{GRangesList}}
+#' in \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} \code{grl}, without names and metacolumns.
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @return a GRangesList of unique orfs
 #' @export
 #' @family ORFHelpers
@@ -234,12 +234,12 @@ uniqueGroups <- function(grl) {
 #' Get unique ordering for GRangesList groups
 #'
 #' This function can be used to calculate unique numerical identifiers
-#' for each of the \code{\link{GRangesList}} elements. Elements of
-#' \code{\link{GRangesList}} are unique when the \code{\link{GRanges}}
+#' for each of the \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} elements. Elements of
+#' \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} are unique when the \code{\link[GenomicRanges:GRanges-class]{GRanges}}
 #' inside are not duplicated, so ranges differences matter as well as
 #' sorting of the ranges.
 #' @seealso uniqueGroups
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @return an integer vector of indices of unique groups
 #' @export
 #' @family ORFHelpers
@@ -274,8 +274,8 @@ uniqueOrder <- function(grl) {
 #' If IRangesList or IRanges, seqnames are groups, if GRanges or GRangesList
 #' seqnames are the seqlevels (e.g. chromosomes/transcripts)
 #'
-#' @param grl a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges of ORFs
-#' @return a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}/IRangesList, GRanges/IRanges of ORFs
+#' @return a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}/IRangesList, GRanges/IRanges
 #' (same as input)
 #' @export
 #' @importFrom data.table .I
@@ -329,7 +329,7 @@ longestORFs <- function(grl) {
 #' Choose either only whole codons, or with stubs.
 #' ORF stubs are not relevant, since there are no correctly defined
 #' ORFs that are 17 bases long etc.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param as.integer a logical (TRUE), remove stub codons
 #' @param keep.names a logical (FALSE)
 #' @return an integer vector

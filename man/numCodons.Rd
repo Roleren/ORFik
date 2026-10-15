@@ -7,7 +7,7 @@
 numCodons(grl, as.integer = TRUE, keep.names = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
 \item{as.integer}{a logical (TRUE), remove stub codons}
 

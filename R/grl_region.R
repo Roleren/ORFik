@@ -1,7 +1,7 @@
 #' Get the start sites from a GRangesList of orfs grouped by orfs
 #'
 #' In ATGTTTTGG, get the position of the A.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param asGR a boolean, return as GRanges object
 #' @param keep.names a logical (FALSE), keep names of input.
 #' @param is.sorted a speedup, if you know the ranges are sorted
@@ -87,7 +87,7 @@ stopSites <- function(grl, asGR = FALSE, keep.names = FALSE,
 #'
 #' In ATGTTTTGA, get the positions ATG.
 #' It takes care of exons boundaries, with exons < 3 length.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of start codons, since they might be split on exons
 #' @export
@@ -131,7 +131,7 @@ startCodons <- function(grl, is.sorted = FALSE){
 #'
 #' In ATGTTTTGA, get the positions TGA.
 #' It takes care of exons boundaries, with exons < 3 length.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param is.sorted a boolean, a speedup if you know the ranges are sorted
 #' @return a GRangesList of stop codons, since they might be split on exons
 #' @export
@@ -193,7 +193,7 @@ stopCodons <- function(grl, is.sorted = FALSE) {
 #' windows, use \code{reduce()} to remove 0-width windows.
 #' @param gr a GRanges/IRanges object (startSites or others,
 #'  must be single point per in genomic coordinates)
-#' @param tx a \code{\link{GRangesList}} of transcripts or (container region),
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of transcripts or (container region),
 #' names of tx must contain all gr names. The names of gr can also be the
 #' ORFik orf names. that is "txName_id".
 #' @param upstream an integer, default (0), relative region to get
@@ -261,7 +261,7 @@ windowPerGroup <- function(gr, tx, upstream = 0L, downstream = 0L) {
 #' If tx is null, then upstream will be forced to 0 and downstream to
 #' a maximum of grl width (3' UTR end for mRNAs).
 #' Since there is no reference for splicing.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #'  with usually either leaders, cds', 3' utrs or ORFs
 #' @param tx default NULL, a GRangesList of transcripts or (container region),
 #' names of tx must contain all grl names. The names of grl can also be the
@@ -305,7 +305,7 @@ startRegion <- function(grl, tx = NULL, is.sorted = TRUE,
 #' upstream to a minimum of -grl width (to the TSS).
 #' .
 #' Since there is no reference for splicing.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #'  with usually either leaders, cds', 3' utrs or ORFs
 #' @param tx default NULL, a GRangesList of transcripts or (container region),
 #' names of tx must contain all grl names. The names of grl can also be the
@@ -341,7 +341,7 @@ stopRegion <- function(grl, tx = NULL, is.sorted = TRUE,
 #' Get flanks per group
 #'
 #' For a GRangesList, get start and end site, return back as GRangesList.
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @return a GRangesList, 1 GRanges per group with:
 #'  start as minimum start of group and end as maximum per group.
 #' @export

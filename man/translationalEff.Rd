@@ -17,16 +17,16 @@ translationalEff(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
 ORFs as a special case (uORFs, potential new cds' etc). If
-regions are not spliced you can send a \code{\link{GRanges}} object.}
+regions are not spliced you can send a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object.}
 
-\item{RNA}{RnaSeq reads as \code{\link{GAlignments}},
-\code{\link{GRanges}} or GRangesList object}
+\item{RNA}{RnaSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
+\code{\link[GenomicRanges:GRanges-class]{GRanges}} or GRangesList object}
 
-\item{RFP}{RiboSeq reads as \code{\link{GAlignments}},
-\code{\link{GRanges}} or GRangesList object}
+\item{RFP}{RiboSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
+\code{\link[GenomicRanges:GRanges-class]{GRanges}} or GRangesList object}
 
 \item{tx}{a GRangesList of the transcripts. If you used cage data, then
 the tss for the the leaders have changed, therefor the tx lengths have

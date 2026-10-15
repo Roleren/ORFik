@@ -25,7 +25,7 @@
 #' keep trancript names ("tx") or change to gene names ("gene")
 #' @param region a character vector (default: "mrna"), make raw count matrices
 #' of whole mrnas or one of (leaders, cds, trailers).
-#' Can also be a \code{\link{GRangesList}}, then it uses this region directly.
+#' Can also be a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}, then it uses this region directly.
 #' Can then be uORFs or a subset of CDS etc.
 #' @param type default: "count" (raw counts matrix), alternative is "fpkm",
 #' "log2fpkm" or "log10fpkm"
@@ -45,7 +45,7 @@
 #' @param BPPARAM how many cores/threads to use? default: BiocParallel::SerialParam()
 #' @import SummarizedExperiment
 #' @export
-#' @return a \code{\link{SummarizedExperiment}} object or data.table if
+#' @return a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}} object or data.table if
 #' "type" is not "count, with rownames as transcript / gene names.
 #' @examples
 #' ##Make experiment
@@ -214,7 +214,7 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
     fpkmCollapsed <- DESeq2::fpkm(dds, robust = FALSE)
     fpkmCollapsed[is.nan(fpkmCollapsed)] <- 0
     if (score == "transcriptNormalized") {
-      normalization <- matrix(rep(rowSums2(fpkmCollapsed),
+      normalization <- matrix(rep(rowSums(fpkmCollapsed),
                                   ncol(fpkmCollapsed)),
                               ncol = ncol(fpkmCollapsed))
       fpkmTranscriptNormalized <- fpkmCollapsed / normalization
@@ -270,6 +270,8 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
 #' Always make the location of the folder directly
 #' inside the bam file directory!
 #' @param full_path Full path to countTable, default: countTablePath(df, region, count.folder)
+#' @param mean_collapse logical, default TRUE. With collapse, return mean normalized counts over the
+#' group; if FALSE, the pure sum of the collapse group.
 #' @return a data.table/SummarizedExperiment/DESeqDataset object
 #' of columns as counts / normalized counts per library, column name
 #' is name of library. Rownames must be unique for now. Might change.

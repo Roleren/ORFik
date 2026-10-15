@@ -7,13 +7,13 @@
 distToCds(ORFs, fiveUTRs, cds = NULL)
 }
 \arguments{
-\item{ORFs}{orfs as \code{\link{GRangesList}},
+\item{ORFs}{orfs as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 names of orfs must be transcript names}
 
-\item{fiveUTRs}{fiveUTRs as \code{\link{GRangesList}},
+\item{fiveUTRs}{fiveUTRs as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 remember to use CAGE version of 5' if you did CAGE reassignment!}
 
-\item{cds}{cds' as \code{\link{GRangesList}},
+\item{cds}{cds' as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 only add if you have ORFs going into CDS.}
 }
 \value{

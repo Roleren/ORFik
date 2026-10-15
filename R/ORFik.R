@@ -18,6 +18,12 @@
 #' @import GenomicRanges GenomicAlignments GenomeInfoDb
 #' @importFrom data.table setattr
 #' @importFrom Rcpp sourceCpp
+#' @importFrom BiocGenerics organism
+#' @importFrom S4Vectors unstrsplit
+#' @importFrom Rsamtools bamTag<- bamWhat<-
+#' @importFrom data.table foverlaps
+#' @importFrom stats p.adjust runif setNames wilcox.test
+#' @importFrom utils browseURL head object.size osVersion
 #'
 "_PACKAGE"
 

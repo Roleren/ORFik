@@ -15,7 +15,7 @@ startRegionCoverage(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs}
 
 \item{RFP}{ribo seq reads as GAlignments, GRanges or GRangesList object}

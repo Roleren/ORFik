@@ -10,7 +10,7 @@ downstreamN <- function(grl, firstN = 150L) {
 }
 
 #' Get total widths per GRangesList group
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return an integer vector (named/unnamed) of widths
 #' @export
@@ -39,7 +39,7 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
   return(res)
 }
 #' Get first seqname per GRangesList group
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @importFrom IRanges heads
 #' @return a character vector or Rle of seqnames(if seqnames == T)
@@ -70,7 +70,7 @@ seqnamesPerGroup <- function(grl, keep.names = TRUE) {
 }
 
 #' Get first strand per GRangesList group
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a vector named/unnamed of characters
 #' @importFrom IRanges heads
@@ -106,7 +106,7 @@ strandPerGroup <- function(grl, keep.names = TRUE) {
 #' Normally not used directly.
 #' Groups first each group, then either decreasing or increasing
 #' (on starts if byStarts == T, on ends if byStarts == F)
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param decreasing should the first in each group have max(start(group))
 #'   ->T or min-> default(F) ?
 #' @param byStarts a logical T, should it order by starts or ends F.
@@ -153,13 +153,13 @@ gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
 #' Sort a GRangesList
 #'
 #' A faster, more versatile reimplementation of
-#' \code{\link{sort.GenomicRanges}} for GRangesList,
+#' \code{\link[GenomicRanges:GenomicRanges-comparison]{sort.GenomicRanges}} for GRangesList,
 #' needed since the original works poorly for more than 10k groups.
 #' This function sorts each group, where "+" strands are
 #' increasing by starts and "-" strands are decreasing by ends.
 #'
 #' Note: will not work if groups have equal names.
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param ignore.strand a boolean, (default FALSE): should minus strands be
 #' sorted from highest to lowest ends. If TRUE: from lowest to highest ends.
 #' @param quick.rev default: FALSE, if TRUE, given that you know all ranges are
@@ -197,9 +197,9 @@ sortPerGroup <- function(grl, ignore.strand = FALSE, quick.rev = FALSE){
 #'
 #' Reverse minus strand per group in a GRangesList
 #' Only reverse if minus strand is in increasing order
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param onlyIfIncreasing logical, default (TRUE), only reverse if decreasing
-#' @return a \code{\link{GRangesList}}
+#' @return a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @keywords internal
 reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
   minus <- !strandBool(grl)
@@ -217,7 +217,7 @@ reverseMinusStrandPerGroup <- function(grl, onlyIfIncreasing = TRUE) {
 #' Get first exon per GRangesList group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @return a GRangesList of the first exon per group
 #' @importFrom IRanges heads
 #' @export
@@ -239,7 +239,7 @@ firstExonPerGroup <- function(grl) {
 #' Get last exon per GRangesList group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @return a GRangesList of the last exon per group
 #' @importFrom IRanges tails
 #' @export
@@ -261,7 +261,7 @@ lastExonPerGroup <- function(grl) {
 #' Get first start per granges group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = TRUE), or integer vector(FALSE)
 #' @export
@@ -287,7 +287,7 @@ firstStartPerGroup <- function(grl, keep.names = TRUE) {
 #' Get first end per granges group
 #'
 #' grl must be sorted, call ORFik:::sortPerGroup if needed
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
@@ -311,7 +311,7 @@ firstEndPerGroup <- function(grl, keep.names = TRUE) {
 
 
 #' Get last end per granges group
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
@@ -335,7 +335,7 @@ lastExonEndPerGroup <- function(grl,keep.names = TRUE) {
 
 
 #' Get last start per granges group
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a boolean, keep names or not, default: (TRUE)
 #' @return a Rle(keep.names = T), or integer vector(F)
 #' @export
@@ -362,7 +362,7 @@ lastExonStartPerGroup <- function(grl, keep.names = TRUE) {
 #'
 #' Can also be used generaly to get number of GRanges object
 #'  per GRangesList group
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param keep.names a logical, keep names or not, default: (TRUE)
 #' @return an integer vector of counts
 #' @export
@@ -446,7 +446,7 @@ unlistGrl <- function(grl) {
 
 #' Removes meta columns
 #'
-#' @param grl a \code{\link{GRangesList}} or GRanges object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} or GRanges object
 #' @return same type and structure as input without meta columns
 #' @keywords internal
 removeMetaCols <- function(grl) {
@@ -476,7 +476,7 @@ removeMetaCols <- function(grl) {
 #' "1:14598834-14598914:+"\cr
 #' Multi-exon format (exon separator: ';'):\cr
 #' "1:15210514-15210562:+;1:15214895-15215025:+"
-#' @param x A \code{\link{GRangesList}}
+#' @param x A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param ... Not used for now, to preserve generic requirement
 #' @return a character vector, 1 element per element in GRangesList
 #' @export
@@ -538,9 +538,9 @@ revElementsF <- function(x) {
 #' coverageByTranscript with weights
 #'
 #' Extends the function with weights,
-#' see \code{\link{coverageByTranscript}} for original function.
-#' @param x reads (\code{\link{GRanges}}, \code{\link{GAlignments}})
-#' @param transcripts \code{\link{GRangesList}}
+#' see \code{\link[GenomicFeatures]{coverageByTranscript}} for original function.
+#' @param x reads (\code{\link[GenomicRanges:GRanges-class]{GRanges}}, \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}})
+#' @param transcripts \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param ignore.strand a logical (default: FALSE)
 #' @param weight a vector (default: 1L), if single number applies for all,
 #' else it must be the string name of a defined meta column in "x",
@@ -581,11 +581,11 @@ Views_fast <- function(cvg, uex, uex_subset = seq_along(uex)) {
 #' coverageByTranscript with coverage input
 #'
 #' Extends the function with direct genome coverage input,
-#' see \code{\link{coverageByTranscript}} for original function.
+#' see \code{\link[GenomicFeatures]{coverageByTranscript}} for original function.
 #' @param x a covRle (one RleList for each strand in object),
 #'  must have defined and correct
 #' seqlengths in its SeqInfo object.
-#' @param transcripts \code{\link{GRangesList}}
+#' @param transcripts \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param ignore.strand a logical (default: length(x) == 1)
 #' @importFrom S4Vectors wmsg isTRUEorFALSE List
 #' @importFrom GenomicFeatures exonsBy

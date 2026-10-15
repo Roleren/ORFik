@@ -7,13 +7,13 @@
 startRegionString(grl, tx, faFile, upstream = 20, downstream = 20)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} of ranges to find regions in.}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of ranges to find regions in.}
 
-\item{tx}{a \code{\link{GRangesList}} of transcripts or (container region),
+\item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of transcripts or (container region),
 names of tx must contain all gr names. The names of gr can also be the
 ORFik orf names. that is "txName_id".}
 
-\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+\item{faFile}{\code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 

@@ -50,15 +50,15 @@
 #' Also if you have only unique reads with a weight column, explaining the
 #' number of duplicated reads, set weights to make calculations correct.
 #' See \code{\link{getWeights}}
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #'  with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 #'  This is the regions you want to score.
-#' @param RFP RiboSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
-#'  or \code{\link{GRangesList}} object
-#' @param RNA RnaSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
-#'  or \code{\link{GRangesList}} object
+#' @param RFP RiboSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} , \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+#'  or \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
+#' @param RNA RnaSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} , \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+#'  or \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param Gtf a TxDb object of a gtf file or path to gtf, gff .sqlite etc.
-#' @param faFile a path to fasta indexed genome, an open \code{\link{FaFile}},
+#' @param faFile a path to fasta indexed genome, an open \code{\link[Rsamtools:FaFile-class]{FaFile}},
 #' a BSgenome, or path to ORFik \code{\link{experiment}} with valid genome.
 #' @param riboStart usually 26, the start of the floss interval, see ?floss
 #' @param riboStop usually 34, the end of the floss interval

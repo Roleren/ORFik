@@ -11,7 +11,7 @@ assignLastExonsStopSite(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
 \item{newStops}{an integer vector of same length as grl,
 with new start values (absolute coordinates, not relative)}

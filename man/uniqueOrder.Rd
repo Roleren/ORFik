@@ -7,15 +7,15 @@
 uniqueOrder(grl)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 }
 \value{
 an integer vector of indices of unique groups
 }
 \description{
 This function can be used to calculate unique numerical identifiers
-for each of the \code{\link{GRangesList}} elements. Elements of
-\code{\link{GRangesList}} are unique when the \code{\link{GRanges}}
+for each of the \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} elements. Elements of
+\code{\link[GenomicRanges:GRangesList-class]{GRangesList}} are unique when the \code{\link[GenomicRanges:GRanges-class]{GRanges}}
 inside are not duplicated, so ranges differences matter as well as
 sorting of the ranges.
 }

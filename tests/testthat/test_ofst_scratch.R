@@ -261,32 +261,37 @@ test_that("malformed process identities never constitute evidence that an owner 
   }
 })
 
-cache_wait_ready <- function(process, path) {
+cache_wait_ready <- function(process, path, err_file) {
   deadline <- Sys.time() + 45
   while (!file.exists(path) && process$is_alive() && Sys.time() < deadline) Sys.sleep(.05)
-  if (!file.exists(path)) stop("child did not reach the cache checkpoint: ", process$read_all_error())
+  if (!file.exists(path)) {
+    # stderr is redirected to a file (not a pipe), so read the file instead of process$read_all_error()
+    err <- if (file.exists(err_file)) paste(readLines(err_file, warn = FALSE), collapse = "\n") else ""
+    stop("child did not reach the cache checkpoint: ", err)
+  }
 }
 
 test_that("real SIGINT cleans caches and SIGKILL caches are recovered on the next run", {
   testthat::skip_if_not_installed("callr")
   testthat::skip_if(Sys.info()[["sysname"]] != "Linux")
-  repo <- system.file(package = "ORFik")
+  libs <- .libPaths()   # the child loads the ORFik under test (R CMD check library), not a source checkout
   x <- cache_setup()
   on.exit(unlink(x$root, recursive = TRUE))
   for (signal in c(2L, 9L)) {
     checkpoint <- file.path(x$root, paste0("ready-", signal, ".rds"))
-    child <- callr::r_bg(function(repo, primary, output, checkpoint) {
-      devtools::load_all(repo, recompile = FALSE)
+    child <- callr::r_bg(function(libs, primary, output, checkpoint) {
+      .libPaths(libs)
+      suppressPackageStartupMessages(requireNamespace("ORFik"))
       ORFik:::.ofst_with_scratch(primary, output, function(scratch) {
         saveRDS(1:10, file.path(scratch, "payload.rds"))
         saveRDS(list(scratch = scratch), checkpoint)
         repeat Sys.sleep(.1)
       })
-    }, args = list(repo, x$primary, x$output, checkpoint),
+    }, args = list(libs, x$primary, x$output, checkpoint),
     stdout = file.path(x$root, paste0("child-", signal, ".log")),
     stderr = file.path(x$root, paste0("child-", signal, ".err")))
     on.exit(if (child$is_alive()) child$kill(), add = TRUE)
-    cache_wait_ready(child, checkpoint)
+    cache_wait_ready(child, checkpoint, file.path(x$root, paste0("child-", signal, ".err")))
     primary_cache <- readRDS(checkpoint)$scratch
     output_cache <- list.dirs(x$output, recursive = FALSE, full.names = TRUE)
     expect_length(output_cache, 1L)

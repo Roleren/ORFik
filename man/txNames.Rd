@@ -7,10 +7,10 @@
 txNames(grl, ref = NULL, unique = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} grouped by ORF
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} grouped by ORF
 , GRanges object or IRanges object.}
 
-\item{ref}{a reference \code{\link{GRangesList}}. The object
+\item{ref}{a reference \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}. The object
 you want grl to subset by names. Add to make sure naming is
 valid.}
 

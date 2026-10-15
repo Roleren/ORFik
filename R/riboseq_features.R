@@ -13,12 +13,12 @@
 #' If you only want overlapping grl, do:
 #' librarySize = "overlapping"
 #' @references doi: 10.1038/nbt.1621
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #'  can be either transcripts, 5' utrs, cds', 3' utrs or
 #'  ORFs as a special case (uORFs, potential new cds' etc). If
-#'  regions are not spliced you can send a \code{\link{GRanges}} object.
-#' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}} or
-#' \code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.
+#'  regions are not spliced you can send a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object.
+#' @param reads a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}, \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+#' \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.
 #' @param pseudoCount a numeric, default 0, set it to 1 if you want to
 #' avoid NA and inf values.
 #' @param librarySize either numeric value or character vector.
@@ -160,11 +160,11 @@ entropy <- function(grl, reads, weight = 1L, is.sorted = FALSE,
 #' Please read more in the article.
 #' @references doi: 10.1016/j.celrep.2014.07.045
 #' @inheritParams fpkm
-#' @param RFP ribosomal footprints, given as \code{\link{GAlignments}}
-#' or \code{\link{GRanges}} object,
+#' @param RFP ribosomal footprints, given as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}
+#' or \code{\link[GenomicRanges:GRanges-class]{GRanges}} object,
 #' must be already shifted and resized to the p-site. Requires a $size column
 #' with original read lengths.
-#' @param cds a \code{\link{GRangesList}} of coding sequences,
+#' @param cds a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences,
 #' cds has to have names as grl so that they can be matched
 #' @param start usually 26, the start of the floss interval (inclusive)
 #' @param end usually 34, the end of the floss interval (inclusive)
@@ -252,10 +252,10 @@ floss <- function(grl, RFP, cds, start = 26, end = 34, weight = 1L){
 #' (density of RPF within ORF) / (RNA expression of ORFs transcript)
 #' }
 #' @references doi: 10.1126/science.1168978
-#' @param RNA RnaSeq reads as \code{\link{GAlignments}},
-#' \code{\link{GRanges}} or GRangesList object
-#' @param RFP RiboSeq reads as \code{\link{GAlignments}},
-#' \code{\link{GRanges}} or GRangesList object
+#' @param RNA RnaSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
+#' \code{\link[GenomicRanges:GRanges-class]{GRanges}} or GRangesList object
+#' @param RFP RiboSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
+#' \code{\link[GenomicRanges:GRanges-class]{GRanges}} or GRangesList object
 #' @param tx a GRangesList of the transcripts. If you used cage data, then
 #' the tss for the the leaders have changed, therefor the tx lengths have
 #' changed. To account for that call:
@@ -310,14 +310,14 @@ translationalEff <- function(grl, RNA, RFP, tx, with.fpkm = FALSE,
 #' \preformatted{(RPFs over ORF)/(RPFs downstream to transcript end)}
 #' A pseudo-count of one is added to both the ORF and downstream sums.
 #' @references doi: 10.1242/dev.098344
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' with usually either leaders, cds', 3' utrs or ORFs.
 #' @param RFP RiboSeq reads as GAlignments, GRanges
 #' or GRangesList object
-#' @param GtfOrTx If it is \code{\link{TxDb}} object
+#' @param GtfOrTx If it is \code{\link[GenomicFeatures:TxDb-class]{TxDb}} object
 #'  transcripts will be extracted using
 #'  \code{exonsBy(Gtf, by = "tx", use.names = TRUE)}.
-#'  Else it must be \code{\link{GRangesList}}
+#'  Else it must be \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param RFP.sorted logical (FALSE), an optimizer, have you ran this line:
 #' \code{RFP <- sort(RFP[countOverlaps(RFP, tx, type = "within") > 0])}
 #' Normally not touched, for internal optimization purposes.
@@ -602,10 +602,10 @@ startRegionCoverage <- function(grl, RFP, tx = NULL, is.sorted = TRUE,
 #' If a score column is defined, it will use it as weights,
 #' see \code{\link{getWeights}}
 #' @references doi: 10.1186/s12915-017-0416-0
-#' @param grl a \code{\link{GRangesList}} object with ORFs
-#' @param reads ribo seq reads as \code{\link{GAlignments}},
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with ORFs
+#' @param reads ribo seq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
 #' GRanges or GRangesList object
-#' @param cds a \code{\link{GRangesList}} object with coding sequences
+#' @param cds a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with coding sequences
 #' @param tx a GRangesList of transcripts covering grl.
 #' @param pShifted a logical (TRUE), are riboseq reads p-shifted?
 #' @inheritParams getWeights

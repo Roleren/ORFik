@@ -13,7 +13,7 @@ kozak_IR_ranking(cds_k, mrna, dt.ir, faFile, group.min = 10, species = "human")
 
 \item{dt.ir}{data.table with a column called IR, initiation rate}
 
-\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+\item{faFile}{\code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 

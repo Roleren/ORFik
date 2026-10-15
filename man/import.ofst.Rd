@@ -27,7 +27,7 @@ A much faster way to store, load and use bam files.\cr
 .ofst is ORFik fast serialized object,
 an optimized format for coverage reads with
 cigar and replicate number. It uses the fst format as back-end:
-\code{\link{fst-package}}.\cr A .ofst ribo seq file can compress the
+\code{\link[fst]{fst-package}}.\cr A .ofst ribo seq file can compress the
 information in a bam file from 5GB down to a few MB. This new files has
 super fast reading time, only a few seconds, instead of minutes. It also has
 random index access possibility of the file. \cr
@@ -38,7 +38,7 @@ random index access possibility of the file. \cr
  (cigar # M's, match/mismatch total) \cr
 5. score: duplicates of that read\cr
 6. size: qwidth according to reference of read\cr\cr
-If file is from \code{\link{GAlignmentPairs}},
+If file is from \code{\link[GenomicAlignments:GAlignmentPairs-class]{GAlignmentPairs}},
 it will contain a cigar1, cigar2 instead
 of cigar and start1 and start2 instead of start
 }

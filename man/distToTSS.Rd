@@ -7,10 +7,10 @@
 distToTSS(ORFs, tx)
 }
 \arguments{
-\item{ORFs}{orfs as \code{\link{GRangesList}},
+\item{ORFs}{orfs as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 names of orfs must be txname_[rank]}
 
-\item{tx}{transcripts as \code{\link{GRangesList}}.}
+\item{tx}{transcripts as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}.}
 }
 \value{
 an integer vector, 1 means on TSS, 2 means second base of Tx.

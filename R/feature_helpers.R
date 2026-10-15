@@ -93,7 +93,7 @@ fpkm_calc <- function(counts, lengthSize, librarySize) {
 #'
 #' One window per start site, if upstream and downstream are both 0, then
 #' only the startsite is returned.
-#' @param grl a \code{\link{GRangesList}} of ranges to find regions in.
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of ranges to find regions in.
 #' @inheritParams windowPerGroup
 #' @inheritParams findFa
 #' @return a character vector of start regions

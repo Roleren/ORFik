@@ -7,9 +7,9 @@
 txSeqsFromFa(grl, faFile, is.sorted = FALSE, keep.names = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
-\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+\item{faFile}{\code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 
@@ -25,7 +25,7 @@ a \code{\link{DNAStringSet}} of the transcript sequences
 For each GRanges object, find the sequence of it from faFile or BSgenome.
 }
 \details{
-A wrapper around \code{\link{extractTranscriptSeqs}} that works for
+A wrapper around \code{\link[GenomicFeatures]{extractTranscriptSeqs}} that works for
 DNAStringSet and ORFik \code{\link{experiment}} input.
 For debug of errors do:
 which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))

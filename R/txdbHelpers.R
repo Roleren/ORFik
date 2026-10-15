@@ -399,7 +399,7 @@ makeTxDbFromGFF_compat <- function(...) {
   if (requireNamespace("txdbmaker", quietly = TRUE)) {
     txdbmaker::makeTxDbFromGFF(...)
   } else {
-    GenomicFeatures::makeTxDbFromGFF(...)
+    getExportedValue("GenomicFeatures", "makeTxDbFromGFF")(...)   # pre-txdbmaker Bioconductor
   }
 }
 
@@ -411,7 +411,7 @@ makeTxDb_compat <- function(...) {
   if (requireNamespace("txdbmaker", quietly = TRUE)) {
     txdbmaker::makeTxDb(...)
   } else {
-    GenomicFeatures::makeTxDb(...)
+    getExportedValue("GenomicFeatures", "makeTxDb")(...)   # pre-txdbmaker Bioconductor
   }
 }
 
@@ -588,11 +588,14 @@ regionAliasMapSubset <- function(part, map_dt = regionAliasMap()) {
 }
 
 loadRegionGenomicFeatures <- function(txdb, part = "tx", by = "tx") {
+  # Always load per transcript: loadRegion() converts names to gene ids for by = "gene", exactly as for the
+  # optimized (cached) regions. GenomicFeatures refuses use.names = TRUE when grouping by gene.
+  by <- "tx"
   message("Loading region '", part, "' through GenomicFeatures..")
   loaders <- list(
     tx = list(
       cache = "tx",
-      fun   = function() GenomicFeatures::exonsBy(txdb, by = by, use.names = TRUE)
+      fun   = function() GenomicFeatures::exonsBy(txdb, by = "tx", use.names = TRUE)
     ),
     leaders = list(
       cache = "leaders",
@@ -600,7 +603,7 @@ loadRegionGenomicFeatures <- function(txdb, part = "tx", by = "tx") {
     ),
     cds = list(
       cache = "cds",
-      fun   = function() GenomicFeatures::cdsBy(txdb, by = by, use.names = TRUE)
+      fun   = function() GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE)
     ),
     trailers = list(
       cache = "trailers",
@@ -613,16 +616,16 @@ loadRegionGenomicFeatures <- function(txdb, part = "tx", by = "tx") {
     ncrna = list(
       cache = "ncRNA",
       fun   = function() {
-        tx <- GenomicFeatures::exonsBy(txdb, by = by, use.names = TRUE)
-        cds_names <- names(GenomicFeatures::cdsBy(txdb, by = by, use.names = TRUE))
+        tx <- GenomicFeatures::exonsBy(txdb, by = "tx", use.names = TRUE)
+        cds_names <- names(GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE))
         tx[!(names(tx) %in% cds_names)]
       }
     ),
     mrna = list(
       cache = "mrna",
       fun   = function() {
-        tx <- GenomicFeatures::exonsBy(txdb, by = by, use.names = TRUE)
-        cds_names <- names(GenomicFeatures::cdsBy(txdb, by = by, use.names = TRUE))
+        tx <- GenomicFeatures::exonsBy(txdb, by = "tx", use.names = TRUE)
+        cds_names <- names(GenomicFeatures::cdsBy(txdb, by = "tx", use.names = TRUE))
         tx[cds_names]
       }
     ),
@@ -1121,7 +1124,7 @@ create_time_txdb <- function(txdb_path) {
 
 #' Load length and names of all transcripts
 #'
-#' A speedup wrapper around \code{\link{transcriptLengths}},
+#' A speedup wrapper around \code{\link[GenomicFeatures]{transcriptLengths}},
 #' default load time of lengths is ~ 15 seconds, if ORFik fst
 #' optimized lengths object has been made, load that file instead:
 #' load time reduced to ~ 0.1 second.
@@ -1132,7 +1135,7 @@ create_time_txdb <- function(txdb_path) {
 #'  ignored if .fst exists
 #' @param optimized_path character, path to optimized txdb objects,
 #' default: optimized_txdb_path(txdb, stop.error = FALSE). If no existing file,
-#' will be slower and load lengths through \code{\link{transcriptLengths}}.
+#' will be slower and load lengths through \code{\link[GenomicFeatures]{transcriptLengths}}.
 #' @return a data.table of loaded lengths 8 columns,
 #' 1 row per transcript isoform.
 #' @importFrom data.table setDT

@@ -16,7 +16,7 @@ reduceKeepAttr(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} or GRanges object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} or GRanges object}
 
 \item{keep.names}{(FALSE) keep the names and meta columns of the GRangesList}
 
@@ -41,7 +41,7 @@ A reduced GRangesList
 Reduce away all GRanges elements with 0-width.
 }
 \details{
-Extends function \code{\link{reduce}}
+Extends function \code{\link[IRanges:inter-range-methods]{reduce}}
 by trying to keep names and meta columns, if it is a
 GRangesList. It also does not lose sorting for GRangesList,
 since original reduce sorts all by ascending position.

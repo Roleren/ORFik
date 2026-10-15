@@ -7,7 +7,7 @@
 shiftFootprints(footprints, shifts, sort = TRUE)
 }
 \arguments{
-\item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads -
+\item{footprints}{\code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} object of RiboSeq reads -
 footprints, can also be path to the .bam /.ofst file. If GAlignment object
 has a meta column called "score", this will be used as replicate numbering
 for that read. So be careful if you have custom files with score columns,
@@ -23,7 +23,7 @@ reads, and not sort output reads in increasing genomic location per
 chromosome and strand.}
 }
 \value{
-A \code{\link{GRanges}} object of shifted footprints, sorted and
+A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object of shifted footprints, sorted and
 resized to 1bp of p-site,
 with metacolumn "size" indicating footprint size before shifting and
 resizing, sorted in increasing order.

@@ -10,7 +10,7 @@ windowPerGroup(gr, tx, upstream = 0L, downstream = 0L)
 \item{gr}{a GRanges/IRanges object (startSites or others,
 must be single point per in genomic coordinates)}
 
-\item{tx}{a \code{\link{GRangesList}} of transcripts or (container region),
+\item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of transcripts or (container region),
 names of tx must contain all gr names. The names of gr can also be the
 ORFik orf names. that is "txName_id".}
 

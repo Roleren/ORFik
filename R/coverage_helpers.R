@@ -58,9 +58,9 @@ windowPerTranscript <- function(txdb, reads, splitIn3 = TRUE,
 #' Per transcript part, bin them all to windowSize (default 100),
 #' and make a data.table, rows are positions, useful for plotting with ORFik
 #' and ggplot2.
-#' @param leaders a \code{\link{GRangesList}} of leaders (5' UTRs)
-#' @param cds a \code{\link{GRangesList}} of coding sequences
-#' @param trailers a \code{\link{GRangesList}} of trailers (3' UTRs)
+#' @param leaders a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of leaders (5' UTRs)
+#' @param cds a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences
+#' @param trailers a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of trailers (3' UTRs)
 #' @param is.sorted logical (FALSE), is grl sorted. That is + strand groups in
 #' increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)
 #' @inheritParams windowPerTranscript
@@ -442,8 +442,8 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' coverage() function.
 #' So delete the score column or set weight to something else if this
 #' is not wanted.
-#' @param grl a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.
-#' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of 5' utrs, CDS, transcripts, etc.
+#' @param reads a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}, \code{\link[GenomicRanges:GRanges-class]{GRanges}}, or
 #' precomputed coverage as \code{\link{covRle}} (one for each strand) of
 #' RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
 #' column in 'reads'. Can also be random access paths to bigWig or fstwig file.
@@ -778,7 +778,7 @@ regionPerReadLength <- function(grl, reads, acceptedLengths = NULL,
 #' are of all of valid length!
 #' @inheritParams startRegion
 #' @inheritParams coveragePerTiling
-#' @param reads a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+#' @param reads a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}, \code{\link[GenomicRanges:GRanges-class]{GRanges}}, or
 #' precomputed coverage as \code{\link{covRleList}}
 #' (where names of covRle objects are readlengths) of
 #' RiboSeq, RnaSeq etc. \cr Weigths for scoring is default the 'score'

@@ -7,17 +7,17 @@
 floss(grl, RFP, cds, start = 26, end = 34, weight = 1L)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
 ORFs as a special case (uORFs, potential new cds' etc). If
-regions are not spliced you can send a \code{\link{GRanges}} object.}
+regions are not spliced you can send a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object.}
 
-\item{RFP}{ribosomal footprints, given as \code{\link{GAlignments}}
-or \code{\link{GRanges}} object,
+\item{RFP}{ribosomal footprints, given as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}
+or \code{\link[GenomicRanges:GRanges-class]{GRanges}} object,
 must be already shifted and resized to the p-site. Requires a $size column
 with original read lengths.}
 
-\item{cds}{a \code{\link{GRangesList}} of coding sequences,
+\item{cds}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences,
 cds has to have names as grl so that they can be matched}
 
 \item{start}{usually 26, the start of the floss interval (inclusive)}

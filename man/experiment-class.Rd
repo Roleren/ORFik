@@ -20,7 +20,7 @@ to a specific experiment.\cr It contains following important parts:
   \item{API: ORFik supports a rich API for using the experiment, e.g., `outputLibs(experiment, type = "wig")` to load all libraries in the wig format into R, `loadTxdb(experiment)` to load the txdb (gtf) of the experiment, `transcriptWindow()` to plot metacoverage for all libraries, and `countTable(experiment)` to load count tables, etc.}
   \item{Safety: Verifies that experiments contain no duplicate, empty, or non-accessible files.}
 }
-Act as a way of extension of \code{\link{SummarizedExperiment}} by allowing
+Act as a way of extension of \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}} by allowing
 more ease to find not only counts, but rather
 information about libraries, and annotation, so that more tasks are
 possible. Like coverage per position in some transcript etc.\cr\cr

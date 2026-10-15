@@ -22,7 +22,7 @@ already loaded, so will return the object as it is,
 updating the seqlevelsStyle if given.}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+, a \code{\link[GenomeInfoDb]{seqlevelsStyle}} or \code{\link[GenomeInfoDb:compat]{Seqinfo}}.
 (Default: NULL) to get seqlevelsStyle from. In addition if it
 is a Seqinfo object, seqinfo will be updated.
 Example of seqlevelsStyle update:
@@ -68,7 +68,7 @@ alignment preserves physical strand, opposite reverses it, unstranded retains
 physical strands for unstranded counting. Existing strandMode controls pairs.}
 }
 \value{
-a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
+a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}/\code{\link[GenomicRanges:GRanges-class]{GRanges}} object,
  depending on input.
 }
 \description{

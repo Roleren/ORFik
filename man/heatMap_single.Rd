@@ -26,7 +26,7 @@ heatMap_single(
 )
 }
 \arguments{
-\item{region}{#' a \code{\link{GRangesList}} object of region,
+\item{region}{#' a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object of region,
 usually either leaders, cds', 3' utrs or ORFs, start region, stop regions etc.
 This is the region that will be mapped in heatmap}
 
@@ -34,7 +34,7 @@ This is the region that will be mapped in heatmap}
 names of tx must contain all grl names. The names of grl can also be the
 ORFik orf names. that is "txName_id"}
 
-\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+\item{reads}{a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}, \code{\link[GenomicRanges:GRanges-class]{GRanges}}, or
 precomputed coverage as \code{\link{covRleList}}
 (where names of covRle objects are readlengths) of
 RiboSeq, RnaSeq etc. \cr Weigths for scoring is default the 'score'

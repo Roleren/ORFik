@@ -13,9 +13,9 @@ coverageByTranscriptW(
 )
 }
 \arguments{
-\item{x}{reads (\code{\link{GRanges}}, \code{\link{GAlignments}})}
+\item{x}{reads (\code{\link[GenomicRanges:GRanges-class]{GRanges}}, \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}})}
 
-\item{transcripts}{\code{\link{GRangesList}}}
+\item{transcripts}{\code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 
 \item{ignore.strand}{a logical (default: FALSE)}
 
@@ -34,5 +34,5 @@ Integer Rle of coverage, 1 per transcript
 }
 \description{
 Extends the function with weights,
-see \code{\link{coverageByTranscript}} for original function.
+see \code{\link[GenomicFeatures]{coverageByTranscript}} for original function.
 }

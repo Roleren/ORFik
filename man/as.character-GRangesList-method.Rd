@@ -7,7 +7,7 @@
 \S4method{as.character}{GRangesList}(x, ...)
 }
 \arguments{
-\item{x}{A \code{\link{GRangesList}}}
+\item{x}{A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 
 \item{...}{Not used for now, to preserve generic requirement}
 }

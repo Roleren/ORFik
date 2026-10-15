@@ -39,7 +39,7 @@ keep trancript names ("tx") or change to gene names ("gene")}
 
 \item{region}{a character vector (default: "mrna"), make raw count matrices
 of whole mrnas or one of (leaders, cds, trailers).
-Can also be a \code{\link{GRangesList}}, then it uses this region directly.
+Can also be a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}, then it uses this region directly.
 Can then be uORFs or a subset of CDS etc.}
 
 \item{type}{default: "count" (raw counts matrix), alternative is "fpkm",
@@ -75,7 +75,7 @@ libraries as to environment and names to display in plots.}
 \item{BPPARAM}{how many cores/threads to use? default: BiocParallel::SerialParam()}
 }
 \value{
-a \code{\link{SummarizedExperiment}} object or data.table if
+a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}} object or data.table if
 "type" is not "count, with rownames as transcript / gene names.
 }
 \description{

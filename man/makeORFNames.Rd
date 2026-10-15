@@ -7,7 +7,7 @@
 makeORFNames(grl, groupByTx = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 
 \item{groupByTx}{logical (T), should output GRangesList be grouped by
 transcripts (T) or by ORFs (F)?}

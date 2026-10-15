@@ -5,7 +5,7 @@
 #' @param x A \code{\link{data.frame}} from imported bed-file,
 #'  to convert to GRanges
 #' @param skip.name default (TRUE), skip name column (column 4)
-#' @return a \code{\link{GRanges}} object from bed
+#' @return a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object from bed
 #' @family utils
 #' @keywords internal
 bedToGR <- function(x, skip.name = TRUE) {
@@ -277,7 +277,7 @@ remove.file_ext <- function(path, basename = FALSE) {
 #' To make sure chromosome naming is correct (chr1 vs 1 vs I etc)
 #' @param range a ranged object, (GRanges, GAlignment etc)
 #' @param chrStyle a GRanges object, TxDb, FaFile,
-#' , a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+#' , a \code{\link[GenomeInfoDb]{seqlevelsStyle}} or \code{\link[GenomeInfoDb:compat]{Seqinfo}}.
 #' (Default: NULL) to get seqlevelsStyle from. In addition if it
 #' is a Seqinfo object, seqinfo will be updated.
 #' Example of seqlevelsStyle update:

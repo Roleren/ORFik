@@ -5,9 +5,9 @@
 #' If ORF is not within specified search space in tx, this function
 #' will crash.
 #' @references doi: 10.1074/jbc.R116.733899
-#' @param ORFs orfs as \code{\link{GRangesList}},
+#' @param ORFs orfs as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #' names of orfs must be txname_[rank]
-#' @param tx transcripts as \code{\link{GRangesList}}.
+#' @param tx transcripts as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}.
 #' @return an integer vector, 1 means on TSS, 2 means second base of Tx.
 #' @family features
 #' @export
@@ -31,11 +31,11 @@ distToTSS <- function(ORFs, tx){
 #' This is applicable practically to the upstream (fiveUTRs) ORFs only.
 #' The cds start site, will be presumed to be on + 1 of end of fiveUTRs.
 #' @references doi: 10.1074/jbc.R116.733899
-#' @param ORFs orfs as \code{\link{GRangesList}},
+#' @param ORFs orfs as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #' names of orfs must be transcript names
-#' @param fiveUTRs fiveUTRs as \code{\link{GRangesList}},
+#' @param fiveUTRs fiveUTRs as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #' remember to use CAGE version of 5' if you did CAGE reassignment!
-#' @param cds cds' as \code{\link{GRangesList}},
+#' @param cds cds' as \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #' only add if you have ORFs going into CDS.
 #' @return an integer vector, +1 means one base upstream of cds, -1 means
 #' 2nd base in cds, 0 means orf stops at cds start.
@@ -77,8 +77,8 @@ distToCds <- function(ORFs, fiveUTRs, cds = NULL){
 #' will be set to score 0. Since they should not have the posibility to make
 #' an efficient ribosome binding.
 #' @references doi: https://doi.org/10.1371/journal.pone.0108475
-#' @param grl a \code{\link{GRangesList}} grouped by ORF
-#' @param tx a \code{\link{GRangesList}}, the reference area for ORFs, each ORF
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} grouped by ORF
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}, the reference area for ORFs, each ORF
 #'  must have a coresponding tx.
 #' @inheritParams findFa
 #' @param species ("human"), which species to use,
@@ -274,7 +274,7 @@ isOverlapping <- function(dists) {
 #' upstream start codon is 1, second most upstream start codon is 2, etc.
 #' Must input a grl made from ORFik, txNames_2 -> 2.
 #' @references doi: 10.1074/jbc.R116.733899
-#' @param grl a \code{\link{GRangesList}} object with ORFs
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with ORFs
 #' @return a numeric vector of integers
 #' @family features
 #' @export
@@ -337,7 +337,7 @@ rankOrder <- function(grl) {
 #' so that each group in
 #' the grl is divided by the corresponding transcript.
 #' @references doi: 10.1242/dev.098343
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' with usually either leaders,
 #' cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len
 #' @param tx_len the transcript lengths of the transcripts,
@@ -349,7 +349,7 @@ rankOrder <- function(grl) {
 #' have changed, therefore the tx lengths have changed. To account for that
 #' call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
 #' and calculate fraction length using `fractionLength(grl, tx_len)`.
-#' @param tx default NULL, a \code{\link{GRangesList}} object of transcript to get
+#' @param tx default NULL, a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object of transcript to get
 #' lengths from. Pass in for wrapping to widths inside the function.
 #' @return a numeric vector of ratios
 #' @family features

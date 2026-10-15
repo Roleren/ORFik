@@ -7,10 +7,10 @@
 longestORFs(grl)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges of ORFs}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}/IRangesList, GRanges/IRanges of ORFs}
 }
 \value{
-a \code{\link{GRangesList}}/IRangesList, GRanges/IRanges
+a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}/IRangesList, GRanges/IRanges
 (same as input)
 }
 \description{

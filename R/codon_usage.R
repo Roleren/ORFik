@@ -360,7 +360,7 @@ codon_usage_plot <- function(res, score_column = res$relative_to_max_score,
   stopifnot(length(score_column) %in% c(nrow(res), 1))
   type <- NULL # avoid bioccheck error
   font <- element_text()
-  if (monospace_font)  font <- element_text(family = "monospace")
+  if (monospace_font)  font <- element_text(family = "mono")
   if (ignore_start_stop_codons) {
     start_stop_index <- grep("\\*|#", res$seqs, invert = TRUE)
     res <- res[start_stop_index,]
@@ -583,8 +583,8 @@ codon_dotplot <- function(dt, codon_score = "percentage",
 
 theme_codon_plot <- function(plot) {
   plot + theme_bw() +
-    theme(axis.title = element_text(family = "monospace", size = 14, face = "bold"),
-          axis.text = element_text(family = "monospace", size = 10),
+    theme(axis.title = element_text(family = "mono", size = 14, face = "bold"),
+          axis.text = element_text(family = "mono", size = 10),
           strip.background = element_blank(),
           strip.text = element_text(size = 9, face = "bold"),
           strip.placement = "inside",

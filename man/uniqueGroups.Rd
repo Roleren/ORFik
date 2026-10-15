@@ -7,16 +7,16 @@
 uniqueGroups(grl)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 }
 \value{
 a GRangesList of unique orfs
 }
 \description{
-Sometimes \code{\link{GRangesList}} groups might be identical,
+Sometimes \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} groups might be identical,
 for example ORFs from different isoforms can have identical ranges.
 Use this function to reduce these groups to unique elements
-in \code{\link{GRangesList}} \code{grl}, without names and metacolumns.
+in \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} \code{grl}, without names and metacolumns.
 }
 \examples{
 gr1 <- GRanges("1", IRanges(1,10), "+")

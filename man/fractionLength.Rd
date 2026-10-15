@@ -7,7 +7,7 @@
 fractionLength(grl, tx_len = widthPerGroup(tx, TRUE), tx = NULL)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 with usually either leaders,
 cds', 3' utrs or ORFs. ORFs are a special case, see argument tx_len}
 
@@ -21,7 +21,7 @@ have changed, therefore the tx lengths have changed. To account for that
 call: `tx_len <- widthPerGroup(extendLeaders(tx, cageFiveUTRs))`
 and calculate fraction length using `fractionLength(grl, tx_len)`.}
 
-\item{tx}{default NULL, a \code{\link{GRangesList}} object of transcript to get
+\item{tx}{default NULL, a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object of transcript to get
 lengths from. Pass in for wrapping to widths inside the function.}
 }
 \value{

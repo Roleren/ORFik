@@ -13,7 +13,7 @@ asTX(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} of ranges within
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of ranges within
  the reference, grl must either have names matching, or a meta column called
 'names' that gives grouping names. i.e. grl named uORF_1_ENST00001, must then
  have a names meta column with ENST00001.}

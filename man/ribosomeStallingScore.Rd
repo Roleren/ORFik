@@ -7,7 +7,7 @@
 ribosomeStallingScore(grl, RFP, weight = 1L, overlapGrl = NULL)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs.}
 
 \item{RFP}{RiboSeq reads as GAlignments, GRanges

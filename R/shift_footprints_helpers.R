@@ -187,9 +187,9 @@ footprints.analysis <- function(rw, heatmap, region = "start of CDS") {
 #' ribosomal read lengths. Uses 5' end of reads to detect periodicity.
 #' Works both before and after p-shifting. Plot results with ribo_fft_plot.
 #' @inheritParams detectRibosomeShifts
-#' @param footprints Ribosome footprints in either \code{\link{GAlignments}} or
-#' \code{\link{GRanges}}
-#' @param cds a \code{\link{GRangesList}} of coding sequences. Length must match
+#' @param footprints Ribosome footprints in either \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} or
+#' \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+#' @param cds a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences. Length must match
 #' length of argument mrna, and all must have length > arugment firstN.
 #' @param read_lengths integer vector, default: 26:34,
 #'  which read length to check for. Will exclude all read_lengths that

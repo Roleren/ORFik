@@ -343,7 +343,7 @@ te.plot <- function(df.rfp, df.rna,
   txNames <- dt$id; dt$id <- NULL
 
   #dt <- dt[RNA_MRNA_FPKM > filter.rfp & RFP_CDS_FPKM > filter.rna, ]
-  dt <- dt[rowMin(as.matrix(dt)) > max(filter.rna, filter.rfp), ]
+  dt <- dt[apply(as.matrix(dt), 1, min) > max(filter.rna, filter.rfp), ]
   dt.log <- pseudo.transform(dt)
   dt.log10 <- pseudo.transform(dt, log10)
   dt.melt.rna <- melt(dt.log[, colnames(dt.log) %in% colnames(RNA_MRNA_FPKM)[-1], with = FALSE])

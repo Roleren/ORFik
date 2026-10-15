@@ -18,11 +18,11 @@ splitIn3Tx(
 )
 }
 \arguments{
-\item{leaders}{a \code{\link{GRangesList}} of leaders (5' UTRs)}
+\item{leaders}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of leaders (5' UTRs)}
 
-\item{cds}{a \code{\link{GRangesList}} of coding sequences}
+\item{cds}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences}
 
-\item{trailers}{a \code{\link{GRangesList}} of trailers (3' UTRs)}
+\item{trailers}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of trailers (3' UTRs)}
 
 \item{reads}{GRanges or GAlignment of reads}
 

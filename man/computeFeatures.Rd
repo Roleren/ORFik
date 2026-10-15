@@ -20,19 +20,19 @@ computeFeatures(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 with usually ORFs, but can also be either leaders, cds', 3' utrs, etc.
 This is the regions you want to score.}
 
-\item{RFP}{RiboSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
-or \code{\link{GRangesList}} object}
+\item{RFP}{RiboSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} , \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+or \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
-\item{RNA}{RnaSeq reads as \code{\link{GAlignments}} , \code{\link{GRanges}}
-or \code{\link{GRangesList}} object}
+\item{RNA}{RnaSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} , \code{\link[GenomicRanges:GRanges-class]{GRanges}}
+or \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object}
 
 \item{Gtf}{a TxDb object of a gtf file or path to gtf, gff .sqlite etc.}
 
-\item{faFile}{a path to fasta indexed genome, an open \code{\link{FaFile}},
+\item{faFile}{a path to fasta indexed genome, an open \code{\link[Rsamtools:FaFile-class]{FaFile}},
 a BSgenome, or path to ORFik \code{\link{experiment}} with valid genome.}
 
 \item{riboStart}{usually 26, the start of the floss interval, see ?floss}

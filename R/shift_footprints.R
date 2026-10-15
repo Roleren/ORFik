@@ -27,7 +27,7 @@
 #' @param sort logical, default TRUE. If False will keep original order of
 #' reads, and not sort output reads in increasing genomic location per
 #' chromosome and strand.
-#' @return A \code{\link{GRanges}} object of shifted footprints, sorted and
+#' @return A \code{\link[GenomicRanges:GRanges-class]{GRanges}} object of shifted footprints, sorted and
 #' resized to 1bp of p-site,
 #' with metacolumn "size" indicating footprint size before shifting and
 #' resizing, sorted in increasing order.
@@ -101,7 +101,7 @@ shiftFootprints <- function(footprints, shifts, sort = TRUE) {
 #' 33, but will remove 3S so final read width is 30 in ORFik. This is standard
 #' for ribo-seq.
 #'
-#' @param footprints \code{\link{GAlignments}} object of RiboSeq reads -
+#' @param footprints \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} object of RiboSeq reads -
 #' footprints, can also be path to the .bam /.ofst file. If GAlignment object
 #' has a meta column called "score", this will be used as replicate numbering
 #' for that read. So be careful if you have custom files with score columns,

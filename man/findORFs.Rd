@@ -17,7 +17,7 @@ findORFs(
 for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
 get seqs if you want only regions from a fasta/fasta index pair is:
 seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-search regions and faFile is a \code{\link{FaFile}}. Note: Remember that if
+search regions and faFile is a \code{\link[Rsamtools:FaFile-class]{FaFile}}. Note: Remember that if
 you extracted through a GRanges object, that must have been sorted with negative
 strand exons descending.}
 
@@ -53,9 +53,9 @@ Find all Open Reading Frames (ORFs) on the simple input sequences
 in ONLY 5'- 3' direction (+), but within all three possible reading frames.
 Do not use findORFs for mapping to full chromosomes,
 then use \code{\link{findMapORFs}}!
-For each sequence of the input vector \code{\link{IRanges}} with START and
+For each sequence of the input vector \code{\link[IRanges:IRanges-constructor]{IRanges}} with START and
 STOP positions (inclusive) will be returned as
-\code{\link{IRangesList}}. Returned coordinates are relative to the
+\code{\link[IRanges:IRangesList-class]{IRangesList}}. Returned coordinates are relative to the
 input sequences.
 }
 \details{

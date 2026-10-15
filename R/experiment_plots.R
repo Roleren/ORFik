@@ -213,7 +213,7 @@ transcriptWindow1 <- function(df, outdir = NULL,
 #' @param coverage a data.table containing at least columns (count/score,
 #'  position), it is possible to have additionals: (genes, fraction, feature)
 #' @inheritParams transcriptWindow
-#' @param tx a \code{\link{GRangesList}} of mrna transcripts
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of mrna transcripts
 #' @param normalizeMode a character (default: "position"), how to normalize
 #' library against rna library. Either on "position", normalize by
 #' number of genes, sum of reads and RNA seq, on tx "region" or "feature":

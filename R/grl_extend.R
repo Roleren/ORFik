@@ -5,7 +5,7 @@
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
-#' @param grl usually a \code{\link{GRangesList}} of 5' utrs or transcripts.
+#' @param grl usually a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of 5' utrs or transcripts.
 #' Can be used for any extension of groups.
 #' @param extension an integer, how much to max extend upstream (5' end).
 #' Either single value that will apply for all, or same as length of grl
@@ -13,7 +13,7 @@
 #' Or a GRangesList where start / stops by strand are the positions
 #' to use as new starts.
 #' Will not cross the chromosome boundary for non circular chromosomes.
-#' @param cds a \code{\link{GRangesList}} of coding sequences,
+#' @param cds a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences,
 #' If you want to extend 5' leaders downstream, to catch
 #' upstream ORFs going into cds, include it. It will add first
 #' cds exon to grl matched by names.
@@ -74,7 +74,7 @@ extendLeaders <- function(grl, extension = 1000L, cds = NULL,
 #' will not be taken into account.
 #' Requires the \code{grl} to be sorted beforehand,
 #' use \code{\link{sortPerGroup}} to get sorted grl.
-#' @param grl usually a \code{\link{GRangesList}} of 3' utrs or transcripts.
+#' @param grl usually a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of 3' utrs or transcripts.
 #' Can be used for any extension of groups.
 #' @param extension an integer, how much to max extend downstream (3' end).
 #' Either single value that will apply for all, or same as length of grl
