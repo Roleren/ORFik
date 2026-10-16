@@ -71,3 +71,26 @@ test_that("ribosome shifting works as intended for all types", {
 
 
 
+
+test_that("shiftFootprintsByExperiment detects files missing from a partial shift.list", {
+  # Regression: a shift.list covering only some files set txdb/tx/txNames to NULL for all files,
+  # so the remaining files failed auto-detection ("asTX: not all references are present").
+  d <- ORFik.template.experiment.zf()
+  src_bam <- filepath(d, "default"); src_ofst <- filepath(d, "ofst")
+  tmp <- file.path(tempdir(), "partial_shiftlist"); dir.create(file.path(tmp, "ofst"), recursive = TRUE, showWarnings = FALSE)
+  for (n in c("ribo-seq_a", "ribo-seq_b")) {
+    file.copy(src_bam, file.path(tmp, paste0(n, ".bam")), overwrite = TRUE)
+    file.copy(src_ofst, file.path(tmp, "ofst", paste0(n, ".ofst")), overwrite = TRUE)
+  }
+  d2 <- d[c(1, 1), ]
+  d2@listData$filepath <- file.path(tmp, c("ribo-seq_a.bam", "ribo-seq_b.bam"))
+  d2@listData$rep <- c(1, 2)
+  files <- filepath(d2, "ofst")
+  known <- list(data.frame(fraction = c(28, 29, 30), offsets_start = c(-11, -12, -13)))
+  names(known) <- files[1]
+  out <- file.path(tmp, "pshifted/")
+  expect_silent(suppressMessages(suppressWarnings(
+    shiftFootprintsByExperiment(d2, out.dir = out, shift.list = known, output_format = "ofst",
+                                accepted.lengths = 28:30, BPPARAM = BiocParallel::SerialParam()))))
+  expect_true(all(file.exists(file.path(out, c("ribo-seq_a_pshifted.ofst", "ribo-seq_b_pshifted.ofst")))))
+})
