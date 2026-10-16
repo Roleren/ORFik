@@ -202,6 +202,15 @@ if [[ ${genome} != "" ]]; then
 	if [[ ${genomeGTF} == "" ]]; then
     include_gtf_or_not=""
     sjdbOverhang_to_use=""
+	else
+		# STAR only uses exon rows for splice junctions; STAR 2.7.4a aborts ("munmap_chunk(): invalid pointer") on some
+		# GTFs when CDS/start_codon/stop_codon rows are present (seen for NCBI RefSeq fungal annotations). Give STAR an
+		# exon-only copy: identical junctions, no crash.
+		mkdir -p ${mainGenomeOut}
+		exonGTF="${mainGenomeOut}/exons_for_star.gtf"
+		if [[ ${genomeGTF} == *.gz ]]; then catgtf="zcat"; else catgtf="cat"; fi
+		$catgtf ${genomeGTF} | awk -F'\t' '!/^#/ && $3 == "exon"' > ${exonGTF}
+		include_gtf_or_not="--sjdbGTFfile ${exonGTF}"
 	fi
 	# STAR manual: small genomes need --genomeSAindexNbases min(14, log2(GenomeLength)/2 - 1)
 	# (STAR's default 14 is too large for bacteria/yeast). Genome length = non-header characters of the fasta.
