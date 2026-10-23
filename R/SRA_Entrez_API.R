@@ -227,6 +227,20 @@ abstract_save <- function(EXP_SAMPLE, abstract, abstract_destfile) {
   }
 }
 
+#' Is a PubMed ID a real article ID (not an SRA placeholder)?
+#'
+#' SRA study links sometimes carry placeholder PubMed IDs such as 1 or 3. PMID 1 is
+#' Makar AB et al. (1975) and PMID 3 Smith RJ & Bryant RG (1975), so resolving them gave
+#' studies a wrong AUTHOR ("Makar"). IDs below 1000 are all 1975 articles and never the
+#' publication of a sequencing study, so they are treated as missing.
+#' @param id numeric/character vector of PubMed IDs
+#' @return logical vector, TRUE for usable IDs
+#' @noRd
+valid_pubmed_id <- function(id) {
+  id <- suppressWarnings(as.numeric(id))
+  !is.na(id) & id >= 1000
+}
+
 add_pubmed_id <- function(EXP_SAMPLE, file) {
   pubmed.id <- unlist(EXP_SAMPLE$STUDY$STUDY_LINKS$STUDY_LINK$XREF_LINK$DB[[1]])
   if (!is.null(pubmed.id)) {
@@ -235,6 +249,9 @@ add_pubmed_id <- function(EXP_SAMPLE, file) {
     }
   } else {
     file$Study_Pubmed_id <- pmid_from_bioproject(file$BioProject[1])
+  }
+  if (!is.null(file$Study_Pubmed_id)) {
+    file$Study_Pubmed_id[!valid_pubmed_id(file$Study_Pubmed_id)] <- NA
   }
   return(file)
 }
@@ -255,9 +272,8 @@ pmid_from_bioproject <- function(id) {
 
 add_author <- function(file) {
   if (!is.null(file$Study_Pubmed_id)) {
-    # 3 is error code
-    valid_pubmed_id <- !is.na(file$Study_Pubmed_id[1]) & (file$Study_Pubmed_id[1] != 3)
-    if (valid_pubmed_id) {
+    # Placeholder IDs (1, 3, ...) would resolve to unrelated 1975 authors, see valid_pubmed_id()
+    if (valid_pubmed_id(file$Study_Pubmed_id[1])) {
       url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id="
       url <- paste0(url, file$Study_Pubmed_id[1], "&tool=ORFik")
       a <- xml2::as_list(xml2::read_xml(url))
