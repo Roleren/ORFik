@@ -50,3 +50,18 @@ test_that("ebi_paths_to_ascp handles FTP and native ENA Aspera paths", {
     "era-fasp@fasp.sra.ebi.ac.uk:/vol1/fastq/SRR627/SRR627626/SRR627626.fastq.gz"
   ))
 })
+
+test_that("placeholder PubMed IDs are treated as missing and never resolved to an author", {
+  expect_equal(ORFik:::valid_pubmed_id(c(1, 3, 999, 1000, 19213877, NA)),
+               c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE))
+  expect_equal(ORFik:::valid_pubmed_id(c("1", "29194447", "")), c(FALSE, TRUE, FALSE))
+  sample_with_link <- function(id) list(STUDY = list(STUDY_LINKS = list(STUDY_LINK = list(
+    XREF_LINK = list(DB = list("pubmed"), ID = list(as.character(id)))))))
+  file <- data.frame(BioProject = "PRJNA1", Study_Pubmed_id = NA)
+  expect_true(is.na(ORFik:::add_pubmed_id(sample_with_link(1), file)$Study_Pubmed_id))
+  expect_true(is.na(ORFik:::add_pubmed_id(sample_with_link(3), file)$Study_Pubmed_id))
+  expect_equal(ORFik:::add_pubmed_id(sample_with_link(29194447), file)$Study_Pubmed_id, 29194447L)
+  # add_author must not query PubMed for a placeholder: AUTHOR stays unchanged (no network call needed)
+  placeholder <- data.frame(BioProject = "PRJNA1", Study_Pubmed_id = 1, AUTHOR = "")
+  expect_equal(ORFik:::add_author(placeholder)$AUTHOR, "")
+})
