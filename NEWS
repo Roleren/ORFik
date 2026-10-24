@@ -4,6 +4,11 @@ ORFik 1.29.16
 Transcript mapping and accessors
 -------------------------------
 
+    o Bug fix: empty transcript ranges (end = start - 1) map again to empty genomic
+      ranges, as before the C++ rewrite. windowPerGroup() upstream of an ORF that
+      starts at transcript position 1 or 2 failed with "Transcript query
+      coordinates are out of bounds", which made detect_ribo_orfs() fail on
+      full candidate sets.
     o Mapping validation, mixed-strand preparation, interval reduction and
       output factories now run in C++ bindings. A standalone C++11 header
       separates coordinate logic from R/Rcpp objects; input storage is borrowed.
