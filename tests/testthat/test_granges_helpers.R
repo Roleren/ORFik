@@ -350,6 +350,28 @@ test_that("windowPerGroup works as intended", {
 
 })
 
+test_that("windowPerGroup gives an empty window at the transcript start (1.29.16 regression)", {
+  # Upstream window of an ORF starting at transcript position 1 or 2 (detect_ribo_orfs: windowPerGroup(start, mrna, 20, -2))
+  tx <- GRangesList(a = GRanges("1", IRanges(c(10, 50), c(20, 60)), "+"),
+                    b = GRanges("1", IRanges(100, 130), "-"))
+  for (pos in 1:2) {
+    g <- GRanges("1", IRanges(9 + pos, width = 1), "+"); names(g) <- "a"
+    w <- unlist(windowPerGroup(g, tx, 20, -2))
+    expect_equal(width(w), 0L)
+    expect_equal(start(w), 10L)
+  }
+  g <- GRanges("1", IRanges(130, width = 1), "-"); names(g) <- "b"
+  w <- unlist(windowPerGroup(g, tx, 20, -2))
+  expect_equal(width(w), 0L)
+  expect_equal(end(w), 130L)
+  # non-empty windows are unchanged
+  g <- GRanges("1", IRanges(13, width = 1), "+"); names(g) <- "a"
+  expect_equal(unname(as.character(unlist(windowPerGroup(g, tx, 20, -2)))), "1:10-11:+")
+  # empty transcript ranges map to empty genomic ranges, out-of-bounds ones still error
+  expect_equal(width(unlist(pmapFromTranscriptF(IRanges(c(1, 12), width = 0, names = c("1", "1")), tx, TRUE))), c(0L, 0L))
+  expect_error(pmapFromTranscriptF(IRanges(30, width = 1, names = "1"), tx, TRUE), "out of bounds")
+})
+
 test_that("readWidths works as intended", {
   ga <- GAlignments(seqnames = "1", pos = as.integer(1), cigar = "1M1S",
                     strand = factor("+", levels = c("+", "-", "*")))

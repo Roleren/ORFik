@@ -64,8 +64,18 @@ public:
   }
   Interval window(int s, int e, std::size_t group) const {
     require(group < widths.size(), "Invalid transcript index");
-    require(s >= 1 && e >= s && e <= widths[group], "Transcript query coordinates are out of bounds");
+    // An empty query (e == s - 1, e.g. a window clipped to nothing at a transcript end) maps to an empty
+    // genomic range at that position, as before the 1.29.16 rewrite (windowPerGroup upstream of an ORF
+    // starting at transcript position 1 or 2).
+    const bool empty = e == s - 1;
+    require(s >= 1 && (e >= s || empty) && e <= widths[group] && s <= widths[group] + (empty ? 1 : 0),
+            "Transcript query coordinates are out of bounds");
     const int begin = boundaries[group], end = boundaries[group+1];
+    if (empty) {
+      const int k = static_cast<int>(std::lower_bound(cumulative.data()+begin,cumulative.data()+end,
+                                                      std::min(s, widths[group]))-cumulative.data());
+      return {k, k};
+    }
     return {static_cast<int>(std::lower_bound(cumulative.data()+begin,cumulative.data()+end,s)-cumulative.data()),
             static_cast<int>(std::lower_bound(cumulative.data()+begin,cumulative.data()+end,e)-cumulative.data())};
   }
