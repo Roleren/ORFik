@@ -202,17 +202,32 @@ if [[ ${genome} != "" ]]; then
 	if [[ ${genomeGTF} == "" ]]; then
     include_gtf_or_not=""
     sjdbOverhang_to_use=""
+	else
+		# STAR only uses exon rows for splice junctions; STAR 2.7.4a aborts ("munmap_chunk(): invalid pointer") on some
+		# GTFs when CDS/start_codon/stop_codon rows are present (seen for NCBI RefSeq fungal annotations). Give STAR an
+		# exon-only copy: identical junctions, no crash.
+		mkdir -p ${mainGenomeOut}
+		exonGTF="${mainGenomeOut}/exons_for_star.gtf"
+		if [[ ${genomeGTF} == *.gz ]]; then catgtf="zcat"; else catgtf="cat"; fi
+		$catgtf ${genomeGTF} | awk -F'\t' '!/^#/ && $3 == "exon"' > ${exonGTF}
+		include_gtf_or_not="--sjdbGTFfile ${exonGTF}"
 	fi
 	# STAR manual: small genomes need --genomeSAindexNbases min(14, log2(GenomeLength)/2 - 1)
 	# (STAR's default 14 is too large for bacteria/yeast). Genome length = non-header characters of the fasta.
 	if [[ ${genome} == *.gz ]]; then catg="zcat"; else catg="cat"; fi
 	genome_len=$($catg ${genome} | grep -v '^>' | tr -d '\n\r' | wc -c)
 	SA_main=$(awk -v n="$genome_len" 'BEGIN { v = int(log(n)/log(2)/2 - 1); if (v > 14) v = 14; if (v < 4) v = 4; print v }')
-	echo "genome length: $genome_len -> genomeSAindexNbases $SA_main"
+	# STAR manual: many references (fragmented assemblies) need --genomeChrBinNbits min(18, log2(max(GenomeLength /
+	# NumberOfReferences, ReadLength))); with the default 18 every contig is padded to 2^18 bp (Toxoplasma gondii,
+	# 2,265 contigs: 65.7 Mb became a 654 Mb padded genome and genome generation/mapping failed).
+	n_refs=$($catg ${genome} | grep -c '^>')
+	ChrBin_main=$(awk -v n="$genome_len" -v r="$n_refs" 'BEGIN { x = n / (r > 0 ? r : 1); if (x < 100) x = 100; v = int(log(x)/log(2)); if (v > 18) v = 18; print v }')
+	echo "genome length: $genome_len, references: $n_refs -> genomeSAindexNbases $SA_main, genomeChrBinNbits $ChrBin_main"
 	eval $STAR \
 	--runMode genomeGenerate \
 	--genomeFastaFiles ${genome} \
 	--genomeSAindexNbases $SA_main \
+	--genomeChrBinNbits $ChrBin_main \
 	${include_gtf_or_not} \
 	--genomeDir ${mainGenomeOut} \
 	--runThreadN $(nCores $maxCPU 80) \
