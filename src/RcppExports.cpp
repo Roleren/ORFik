@@ -80,6 +80,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// orfStatsCovRleCPP
+NumericMatrix orfStatsCovRleCPP(List run_values, List run_lengths, IntegerVector rle_id, IntegerVector ex_start, IntegerVector ex_end, LogicalVector ex_minus, IntegerVector group_ends);
+RcppExport SEXP _ORFik_orfStatsCovRleCPP(SEXP run_valuesSEXP, SEXP run_lengthsSEXP, SEXP rle_idSEXP, SEXP ex_startSEXP, SEXP ex_endSEXP, SEXP ex_minusSEXP, SEXP group_endsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type run_values(run_valuesSEXP);
+    Rcpp::traits::input_parameter< List >::type run_lengths(run_lengthsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rle_id(rle_idSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_start(ex_startSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_end(ex_endSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type ex_minus(ex_minusSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type group_ends(group_endsSEXP);
+    rcpp_result_gen = Rcpp::wrap(orfStatsCovRleCPP(run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pmapFromTranscriptsCPP
 List pmapFromTranscriptsCPP(const IntegerVector& xStart, const IntegerVector& xEnd, const IntegerVector& transcriptStart, const IntegerVector& transcriptEnd, const IntegerVector& indices, const char& direction, const bool removeEmpty);
 RcppExport SEXP _ORFik_pmapFromTranscriptsCPP(SEXP xStartSEXP, SEXP xEndSEXP, SEXP transcriptStartSEXP, SEXP transcriptEndSEXP, SEXP indicesSEXP, SEXP directionSEXP, SEXP removeEmptySEXP) {
@@ -153,6 +170,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
     {"_ORFik_ofst_code_runs", (DL_FUNC) &_ORFik_ofst_code_runs, 1},
     {"_ORFik_ofst_point_sums", (DL_FUNC) &_ORFik_ofst_point_sums, 6},
+    {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},
     {"_ORFik_pmapToObjectsCPP", (DL_FUNC) &_ORFik_pmapToObjectsCPP, 8},

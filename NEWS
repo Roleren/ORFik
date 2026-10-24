@@ -1,6 +1,20 @@
 ORFik 1.29.16
 =============
 
+Ribo-seq ORF detection
+----------------------
+
+    o detect_ribo_orfs(): about 3x faster per library on covRle input (HEK293 MANE
+      candidates, 100 merged libraries: 30 s -> 9.5 s; tables identical). ORF,
+      upstream and downstream statistics are computed in one C++ pass over the
+      covRle runs (orfStatsCovRleCPP) instead of a per-nucleotide data.table, gene
+      names are joined with chmatch, and with several libraries the annotation-only
+      columns (start codons, transcript positions) are computed once.
+    o detect_ribo_orfs(upstream_filter = "non_annotated"): new option that skips
+      the upstream-window rule for annotated CDSs (default "all" = old behaviour).
+    o Bug fix: rows of transcripts without a gene symbol could be misaligned in
+      the prediction table (merge(all.x, sort = FALSE) moved them to the end).
+
 Transcript mapping and accessors
 -------------------------------
 
