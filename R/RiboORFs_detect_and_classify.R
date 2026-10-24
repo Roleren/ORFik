@@ -92,7 +92,9 @@ categorize_and_filter_ORFs <- function(orfs, ORF_categories_to_keep,
   return(orfs)
 }
 
-coveragePerORFStatistics <- function(grl, RFP) {
+coveragePerORFStatistics <- function(grl, RFP, runs = NULL) {
+  if (is(RFP, "covRle") && isTRUE(as.logical(strandMode(RFP))))
+    return(coveragePerORFStatisticsCovRle(grl, RFP, runs))
   cov <- coveragePerTiling(grl, RFP, is.sorted = TRUE, as.data.table = TRUE, withFrames = TRUE)
   cov_stats <- cov[, .(sum = sum(count), median= median(count), mean = mean(count)), by = genes]
   if(any(widthPerGroup(grl, FALSE) == 0)) {
@@ -106,6 +108,28 @@ coveragePerORFStatistics <- function(grl, RFP) {
   cov_stats <- cbind(cov_stats,  orfScores)
   colnames(cov_stats)[5:7] <- c("F1", "F2", "F3")
   return(cov_stats)
+}
+
+# Run values/lengths of a stranded covRle as numeric vectors (forward chromosomes, then reverse), reused by the three
+# statistics calls of detect_ribo_orfs_single_cov()
+covRleRunLists <- function(RFP) {
+  fw <- f(RFP); rv <- r(RFP); sl <- names(fw)
+  stopifnot(identical(sl, names(rv)))
+  list(seqlevels = sl,
+       values = c(lapply(fw, function(x) as.numeric(runValue(x))), lapply(rv, function(x) as.numeric(runValue(x)))),
+       lengths = c(lapply(fw, function(x) as.numeric(runLength(x))), lapply(rv, function(x) as.numeric(runLength(x)))))
+}
+
+# Same statistics as coveragePerORFStatistics() computed in one C++ pass over the covRle runs (orfStatsCovRleCPP):
+# no per-nucleotide data.table. grl must be sorted 5'->3' per group (as detect_ribo_orfs passes it).
+coveragePerORFStatisticsCovRle <- function(grl, RFP, runs = NULL) {
+  if (is.null(runs)) runs <- covRleRunLists(RFP)
+  ex <- unlist(grl, use.names = FALSE)
+  minus <- as.logical(strand(ex) == "-")
+  chr <- match(as.character(seqnames(ex)), runs$seqlevels)
+  rle_id <- ifelse(is.na(chr), -1L, as.integer(chr - 1L + ifelse(minus, length(runs$seqlevels), 0L)))
+  m <- orfStatsCovRleCPP(runs$values, runs$lengths, rle_id, start(ex), end(ex), minus, as.integer(cumsum(lengths(grl))))
+  cbind(data.table(genes = seq_along(grl)), as.data.table(m))
 }
 
 #' Detect ORFs by Ribosome profiling data
@@ -166,6 +190,10 @@ coveragePerORFStatistics <- function(grl, RFP) {
 #' with suffix: "_prediction_table.rds"
 #' @param minimum_reads_ORF numeric, default 10, orf removed if less reads overlap whole orf
 #' @param minimum_reads_start numeric, default 3, orf removed if less reads overlap start
+#' @param upstream_filter character, default "all": apply rule 1 (ORF mean > 1.3 x mean of the upstream
+#' window) to all candidates. "non_annotated": skip rule 1 for annotated CDSs. Translated upstream ORFs or
+#' N-terminal extensions put reads upstream of many real CDSs, so rule 1 rejects them; for uORFs and other
+#' non-annotated candidates the rule is kept.
 #' @return invisible(NULL), all ORF results saved to disc
 #' @export
 #' @examples
@@ -218,7 +246,9 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
                              export_metrics_table = TRUE,
                              longestORF = FALSE, startCodon = startDefinition(1),
                              stopCodon = stopDefinition(1), minimumLength = 0,
-                             minimum_reads_ORF = 10, minimum_reads_start = 3) {
+                             minimum_reads_ORF = 10, minimum_reads_start = 3,
+                             upstream_filter = c("all", "non_annotated")) {
+  upstream_filter <- match.arg(upstream_filter)
   start_timer <- Sys.time()
   message("Finding all candidate ORFs")
   dir.create(out_folder, recursive = TRUE, showWarnings = FALSE)
@@ -237,13 +267,23 @@ detect_ribo_orfs <- function(df, out_folder, ORF_categories_to_keep,
   out_file_prefixes <- file.path(out_folder, paste0(prefix_result,
                                                     "_", name(df),
                                                     "_", libnames))
+  # Annotation-only table columns: computed once for all ORFs when several libraries share them
+  precomputed <- NULL
+  if (export_metrics_table && length(libraries) > 1) {
+    precomputed <- list(
+      start_codons = txSeqsFromFa(startCodons(orfs_gr, TRUE), df, TRUE, keep.names = FALSE),
+      tx_starts = start(pmapToTranscriptF(orf_start_gr, mrna[names(orf_start_gr)])),
+      tx_ends = end(pmapToTranscriptF(orf_stop_gr, mrna[names(orf_start_gr)])))
+  }
   for (i in seq_along(libraries)) {
     message("- ", libnames[i])
     detect_ribo_orfs_single_cov(orfs_gr, libraries[[i]], out_file_prefixes[i],
                                 mrna, txdb = txdb, faFile = df,
                                 ORF_type_keep, orf_start_gr, orf_stop_gr,
                                 export_metrics_table, symbols,
-                                minimum_reads_ORF, minimum_reads_start)
+                                minimum_reads_ORF, minimum_reads_start,
+                                upstream_filter = upstream_filter,
+                                precomputed = precomputed)
 
   }
   print(Sys.time() - start_timer)
@@ -258,7 +298,8 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
                                         orf_stop_gr = stopSites(orfs_gr, TRUE,TRUE,TRUE),
                                         export_metrics_table = TRUE, symbols,
                                         minimum_reads_ORF = 10, minimum_reads_start = 3,
-                                        min_orfscore = 2.5) {
+                                        min_orfscore = 2.5, upstream_filter = "all",
+                                        precomputed = NULL) {
   stopifnot(!is.null(ORF_type_keep))
   if (ncol(mcols(orfs_gr)) > 0) mcols(orfs_gr) <- NULL
   # Filter candidates by counts
@@ -279,15 +320,19 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
   downstream_gr <- windowPerGroup(orf_stop_cand, mrna, -2, 20)
   # Calculate coverage for ORF and up/down
   message("-- coverage calculations")
+  runs <- if (is(RFP, "covRle") && isTRUE(as.logical(strandMode(RFP)))) covRleRunLists(RFP) else NULL
   message("--- ORFs")
-  orfs_cov_stats <- coveragePerORFStatistics(orfs_cand, RFP)
+  orfs_cov_stats <- coveragePerORFStatistics(orfs_cand, RFP, runs)
   message("--- upstream")
-  upstream_cov_stats <- coveragePerORFStatistics(upstream_gr, RFP)
+  upstream_cov_stats <- coveragePerORFStatistics(upstream_gr, RFP, runs)
   message("--- downstream")
-  downstream_cov_stats <- coveragePerORFStatistics(downstream_gr, RFP)
+  downstream_cov_stats <- coveragePerORFStatistics(downstream_gr, RFP, runs)
 
   #iou <- (orfs_cov_stats$mean + 1) / (upstream_cov_stats$mean + 1)
-  predicted <- (orfs_cov_stats$mean > upstream_cov_stats$mean*1.3) &
+  upstream_rule <- orfs_cov_stats$mean > upstream_cov_stats$mean*1.3
+  if (upstream_filter == "non_annotated")
+    upstream_rule <- upstream_rule | ORF_type_keep[candidates] == "annotated"
+  predicted <- upstream_rule &
                 orfs_cov_stats$ORFScores > min_orfscore &
               ((reads_start[candidates] + 3) >  orfs_cov_stats$median)
 
@@ -296,18 +341,26 @@ detect_ribo_orfs_single_cov <- function(orfs_gr, RFP, out_file_prefix, mrna,
   saveRDS(predicted, paste0(out_file_prefix, "_prediction.rds"))
 
   if(export_metrics_table) {
-    if (!is.null(faFile)) {
+    if (!is.null(precomputed)) {
+      start_codons <- precomputed$start_codons[candidates]
+    } else if (!is.null(faFile)) {
       start_codons <- txSeqsFromFa(startCodons(orfs_cand, TRUE), faFile, TRUE, keep.names = FALSE)
     }
 
     if (is(symbols, "data.table") && nrow(symbols) > 0 && "ensembl_tx_name" %in% colnames(symbols)) {
-      naming <- data.table::merge.data.table(data.table(ensembl_tx_name = names(orfs_cand)),
-                                             symbols, by = "ensembl_tx_name", all.x = TRUE, sort = FALSE)
+      # Row-aligned lookup (merge(all.x, sort = FALSE) moved unmatched transcripts to the end, misaligning cbind below)
+      naming <- symbols[chmatch(names(orfs_cand), symbols$ensembl_tx_name)]
+      naming[, ensembl_tx_name := names(orfs_cand)]
+      setcolorder(naming, "ensembl_tx_name")
     } else if (!is.null(txdb)) {
       naming <- data.table(gene = txNamesToGeneNames(names(orfs_cand), txdb), tx = names(orfs_cand))
     } else naming <- data.table()
-    tx_starts <- start(pmapToTranscriptF(orf_start_cand, mrna[names(orf_start_cand)]))
-    tx_ends <- end(pmapToTranscriptF(orf_stop_cand, mrna[names(orf_start_cand)]))
+    if (!is.null(precomputed)) {
+      tx_starts <- precomputed$tx_starts[candidates]; tx_ends <- precomputed$tx_ends[candidates]
+    } else {
+      tx_starts <- start(pmapToTranscriptF(orf_start_cand, mrna[names(orf_start_cand)]))
+      tx_ends <- end(pmapToTranscriptF(orf_stop_cand, mrna[names(orf_start_cand)]))
+    }
     res <- cbind(naming, type = ORF_type_keep[candidates], predicted,
                  tx_start = tx_starts,
                  tx_end = tx_ends,
