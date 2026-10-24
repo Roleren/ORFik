@@ -235,7 +235,7 @@ if [[ ${genome} != "" ]]; then
 	--limitGenomeGenerateRAM $maxRAM \
 	--genomeSAsparseD $SAsparse \
 	--outFileNamePrefix ${mainGenomeOut} \
-	--outTmpDir ${tmpStarDir}
+	--outTmpDir ${tmpStarDir} || { echo "ERROR: STAR genomeGenerate failed for the genome index" >&2; exit 1; }
 fi
 # contaminants
 if [[ $contaminants != "" ]]; then
@@ -258,7 +258,7 @@ if [[ $contaminants != "" ]]; then
 	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
 	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11 \
-	--outFileNamePrefix ${out_dir}/contaminants_genomeDir/
+	--outFileNamePrefix ${out_dir}/contaminants_genomeDir/ || { echo "ERROR: STAR genomeGenerate failed for the contaminants index" >&2; exit 1; }
 fi
 
 # phix (--genomeSAindexNbases 5 for small genome)
@@ -271,7 +271,7 @@ if [[ $phix != "" ]]; then
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM $(nCores $maxRAM 80000000) \
 	--genomeSAindexNbases 2 \
-	--outFileNamePrefix ${out_dir}/PhiX_genomeDir/
+	--outFileNamePrefix ${out_dir}/PhiX_genomeDir/ || { echo "ERROR: STAR genomeGenerate failed for the phix index" >&2; exit 1; }
 fi
 
 # rrna (checked --genomeChrBinNbits log2(2462064000/1641376) for many sequences)
@@ -283,7 +283,7 @@ if [[ $rRNA != "" ]]; then
 	--genomeDir ${out_dir}/rRNA_genomeDir \
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM $(nCores $maxRAM 300000000000) \
-	--genomeChrBinNbits 11 # TODO Switch to 15? no dont think so from calculation
+	--genomeChrBinNbits 11 || { echo "ERROR: STAR genomeGenerate failed for the rRNA index" >&2; exit 1; } # TODO Switch to 15? no dont think so from calculation
 fi
 # ncRNA (small genome 5)
 if [[ $ncRNA != "" ]]; then
@@ -295,7 +295,7 @@ if [[ $ncRNA != "" ]]; then
 	--runThreadN $(nCores $maxCPU 40) \
 	--limitGenomeGenerateRAM $(nCores $maxRAM 30000000000) \
 	--genomeSAindexNbases 5 \
-	--outFileNamePrefix ${out_dir}/ncRNA_genomeDir/
+	--outFileNamePrefix ${out_dir}/ncRNA_genomeDir/ || { echo "ERROR: STAR genomeGenerate failed for the ncRNA index" >&2; exit 1; }
 fi
 # trna (mix of both, many sequences and small genome)
 # Check SA index size is valid
@@ -319,5 +319,5 @@ if [[ $tRNA != "" ]]; then
 	--limitGenomeGenerateRAM $(nCores $maxRAM 10000000000) \
 	--genomeSAindexNbases $SA \
 	--genomeChrBinNbits 11 \
-	--outFileNamePrefix ${out_dir}/tRNA_genomeDir/
+	--outFileNamePrefix ${out_dir}/tRNA_genomeDir/ || { echo "ERROR: STAR genomeGenerate failed for the tRNA index" >&2; exit 1; }
 fi

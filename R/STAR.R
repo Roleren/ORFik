@@ -110,6 +110,13 @@ STAR.index <- function(arguments, output.dir = paste0(dirname(arguments[1]), "/S
   print(Sys.time())
   ret <- system(command = call)
   if (ret != 0) stop("STAR INDEX step failed, see error above for more info.")
+  # A killed genomeGenerate used to be masked by later (contaminant) steps; never mark an incomplete index as done
+  if ("genome" %in% names(arguments)) {
+    required <- file.path(output.dir, "genomeDir", c("Genome", "SA", "SAindex", "genomeParameters.txt"))
+    if (!all(file.exists(required)))
+      stop("STAR INDEX incomplete, missing: ", paste(basename(required[!file.exists(required)]), collapse = ", "),
+           " in ", file.path(output.dir, "genomeDir"))
+  }
   message("- Index done")
   saveRDS(object = output.dir, finished.file)
 
