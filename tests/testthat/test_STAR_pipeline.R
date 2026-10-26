@@ -173,3 +173,30 @@ test_that("limit.bam.sort.ram reaches the real STAR call correctly, default unch
     expect_identical(star_arg(tail(star_calls(f2), 1)[[1]], "--limitBAMsortRAM"), "62884790985")
   }
 })
+
+test_that("bam.sort = 'Rsamtools' makes STAR write an unsorted BAM and sorts it to the usual name", {
+  skip_if_not_installed("Rsamtools")
+  bam <- system.file("extdata/Danio_rerio_sample", "ribo-seq.bam", package = "ORFik")
+  for (folder in c(FALSE, TRUE)) {
+    f <- star_fixture()
+    # name-sorted copy = coordinate-unsorted STAR output
+    unsorted <- Rsamtools::sortBam(bam, file.path(f$root, "byname"), byQname = TRUE)
+    withr::local_envvar(c(ORFIK_TEST_BAM = unsorted))
+    star_run(f, folder, steps = "ge", bam.sort = "Rsamtools", limit.bam.sort.ram = 2e9)
+    call <- tail(star_calls(f), 1)[[1]]
+    expect_identical(star_arg(call, "--outSAMtype"), "BAM")
+    expect_true("Unsorted" %in% call$args)
+    expect_false("--limitBAMsortRAM" %in% call$args)
+    aligned <- file.path(f$output, "aligned")
+    expect_false(any(grepl("Aligned\\.out\\.bam$", list.files(aligned))))
+    out <- list.files(aligned, "Aligned\\.sortedByCoord\\.out\\.bam$", full.names = TRUE)
+    expect_length(out, 1)
+    x <- Rsamtools::scanBam(out, param = Rsamtools::ScanBamParam(what = c("rname", "pos")))[[1]]
+    expect_identical(length(x$pos), length(Rsamtools::scanBam(bam, param =
+      Rsamtools::ScanBamParam(what = "pos"))[[1]]$pos))
+    ord <- order(as.integer(x$rname), x$pos, na.last = TRUE)
+    expect_identical(ord, seq_along(ord))
+  }
+  f <- star_fixture()
+  expect_error(star_run(f, FALSE, steps = "ge", bam.sort = "samtools"), "bam.sort must be")
+})
