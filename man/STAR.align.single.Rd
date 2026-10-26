@@ -28,6 +28,7 @@ STAR.align.single(
   keep.unaligned.genome = FALSE,
   keep.index.in.memory = FALSE,
   limit.bam.sort.ram = 3e+10,
+  bam.sort = "STAR",
   verbose = TRUE,
   script.single = system.file("STAR_Aligner", "RNA_Align_pipeline.sh", package = "ORFik"),
   base.correction = FALSE
@@ -191,7 +192,18 @@ that do not support shared memory index, usually gives error: "abort trap 6".}
 BAM-sort stage. Too low a value fails with a fatal "not enough memory for
 BAM sorting" error that -- usefully -- reports the exact value STAR actually
 needed directly in its own message, so a caller catching that specific error
-can retry with a corrected value instead of guessing.}
+can retry with a corrected value instead of guessing.
+With \code{bam.sort = "Rsamtools"} it is the memory budget (bytes, all
+threads together) of the external sort instead.}
+
+\item{bam.sort}{character, default "STAR". Who coordinate sorts the genome
+BAM. "STAR": STAR's own sort (\code{--outSAMtype BAM SortedByCoordinate}),
+which holds the whole BAM in memory and can need several times the BAM size
+for very deep libraries. "Rsamtools": STAR writes an unsorted BAM, which is
+then sorted with \code{Rsamtools::sortBam} (htslib's samtools sort,
+multithreaded, up to 16 threads) within \code{limit.bam.sort.ram}, spilling
+to temporary files next to the output. The result has the same name
+(\code{Aligned.sortedByCoord.out.bam}) and the unsorted BAM is removed.}
 
 \item{verbose}{logical, default TRUE. Print the starting time and each
 processing step's actual inputs, outputs and tool command. STAR and fastp
