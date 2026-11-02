@@ -14,6 +14,7 @@
     .ofst_abort("input '", path, "' has negative or infinite scores. Filtering requires non-negative finite scores; missing scores contribute zero.")
   data.table::set(dt, j = "score", value = as.double(dt$score))
   dt[is.na(score), score := 0]
+  if ("width" %in% names(dt) && !("width" %in% keys)) dt <- .ofst_drop_unit_columns(dt, "width", path)   # mixed-schema inputs
   dt[, c(keys, "score"), with = FALSE]
 }
 

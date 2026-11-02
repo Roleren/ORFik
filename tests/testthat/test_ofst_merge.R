@@ -452,3 +452,29 @@ test_that("randomized factor encodings and chunking conserve every alignment key
     }
   }
 })
+
+test_that("an all-1 width present in only some inputs merges on the general path (pooled output)", {
+  # point (P-site) tables; unsorted inputs force the general merge instead of the sorted path
+  a <- data.table::data.table(seqnames = factor(c("2", "1", "1")), start = c(5L, 9L, 3L),
+                              strand = factor(c("+", "-", "+")), size = c(29L, 30L, 28L), score = c(2L, 3L, 4L))
+  b <- data.table::copy(a)[, score := score * 10L][, width := 1L]
+  data.table::setcolorder(b, c("seqnames", "start", "width"))
+  ref <- ofst_test_reference(list(a, data.table::copy(b)[, width := NULL]))
+  got <- ofst_test_merge(list(a, b), keep_all_scores = FALSE)
+  expect_false("width" %in% names(got))
+  expect_equal(ofst_test_canonical(got), ofst_test_canonical(ref))
+  # per-library output keeps the strict schema rule
+  expect_error(ofst_test_merge(list(b, a), keep_all_scores = TRUE), "identical columns")
+  # a width that is not constant 1 cannot be dropped
+  b[1, width := 3L]
+  expect_error(ofst_test_merge(list(a, b), keep_all_scores = FALSE), "not all 1|other than 1")
+})
+
+test_that("the filtered path uses the common columns when only some inputs have width", {
+  a <- data.table::data.table(seqnames = factor(rep(c("1", "2"), each = 50)), start = c(1:50, 1:50),
+                              strand = factor("+"), size = 30L, score = 1L)
+  b <- data.table::copy(a)[, width := 1L]
+  got <- ofst_test_merge(list(b, a), keep_all_scores = FALSE, sort = FALSE, filter_target_rows = 1e9)
+  expect_false("width" %in% names(got))
+  expect_equal(sum(got$score), 200)
+})
