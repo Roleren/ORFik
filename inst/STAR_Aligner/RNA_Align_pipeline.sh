@@ -65,6 +65,14 @@ OPTIONS:
 	      alignment BAM-sort step (default: 30000000000, i.e. 30GB).
 	      STAR's own fatal error on an undersized value reports the
 	      exact value it actually needed, directly in its message.
+	      With -O, the same budget (bytes, all threads together) is used by
+	      the external sort instead.
+	-O  path to Rscript. Default: "" (STAR sorts the genome BAM).
+	      If set, STAR writes an unsorted genome BAM, which is then
+	      coordinate sorted with Rsamtools::sortBam (htslib, multithreaded,
+	      spills to temporary files next to the output) into the usual
+	      Aligned.sortedByCoord.out.bam. Needs far less memory than STAR's
+	      own sort for very deep libraries.
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -113,10 +121,12 @@ fastp="$HOME/bin/fastp"
 base_correction=0
 in_file_two=""
 bamSortRAM=30000000000
-while getopts ":bvf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:R:h" opt; do
+external_sort=""
+while getopts ":bvf:F:o:l:T:g:s:a:t:A:B:r:m:M:K:k:p:S:P:X:q:u:z:R:O:h" opt; do
     case $opt in
     b) base_correction=1 ;;
     R) bamSortRAM=$OPTARG ;;
+    O) external_sort=$OPTARG ;;
     v)
       verbose=0
       ;;
@@ -330,13 +340,16 @@ for step in "${steps_array[@]}"; do
            --limitIObufferSize 50000000)
       if [[ "$step" == ge ]]; then
         log "  Output: ${prefix}Aligned.sortedByCoord.out.bam"
+        if [[ -n "$external_sort" ]]; then
+          bam_type=(Unsorted); log "  BAM sort: Rsamtools::sortBam after alignment"
+        else bam_type=(SortedByCoordinate --limitBAMsortRAM "$bamSortRAM"); fi
         if [[ "$intron_max" == 0 ]]; then
           log "  Splicing: indexed and novel junctions (automatic maximum intron length)"
         else
           log "  Splicing: indexed junctions only (novel junction discovery disabled)"
         fi
-        cmd+=(--outSAMtype BAM SortedByCoordinate --outReadsUnmapped "$keep_unmapped_genome"
-              --runThreadN "$((maxCPU < 80 ? maxCPU : 80))" --limitBAMsortRAM "$bamSortRAM"
+        cmd+=(--outSAMtype BAM "${bam_type[@]}" --outReadsUnmapped "$keep_unmapped_genome"
+              --runThreadN "$((maxCPU < 80 ? maxCPU : 80))"
               --alignEndsType "$alignment" --alignIntronMax "$intron_max"
               --outFilterMultimapNmax "$multimap" --outFilterMismatchNmax "$mismatches")
       else
@@ -353,6 +366,18 @@ for step in "${steps_array[@]}"; do
       fi
     fi
     run_command "${cmd[@]}"
+    if [[ "$step" == ge && -n "$external_sort" ]]; then
+      # Memory budget is shared by all sort threads (sortBam's maxMemory is per thread, in MB).
+      sort_threads=$((maxCPU < 16 ? maxCPU : 16))
+      sort_mb=$((bamSortRAM / 1000000 / sort_threads))
+      (( sort_mb >= 100 )) || sort_mb=100
+      label="BAM sort"
+      run_command "$external_sort" --vanilla -e \
+        'a <- commandArgs(TRUE); invisible(Rsamtools::sortBam(a[1], a[2], maxMemory = as.integer(a[3]), nThreads = as.integer(a[4])))' \
+        "${prefix}Aligned.out.bam" "${prefix}Aligned.sortedByCoord.out" "$sort_mb" "$sort_threads"
+      [[ -s "${prefix}Aligned.sortedByCoord.out.bam" ]] || fail "BAM sort produced no output: ${prefix}Aligned.sortedByCoord.out.bam"
+      rm -f "${prefix}Aligned.out.bam"
+    fi
   fi
   inputs=("${outputs[@]}")
 done

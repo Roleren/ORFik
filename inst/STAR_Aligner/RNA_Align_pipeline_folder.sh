@@ -67,6 +67,8 @@ OPTIONS:
 	      Default "None" (no), alternative: "Fastx""
 	-R  integer, bytes. STAR's own --limitBAMsortRAM for the genome
 	      alignment BAM-sort step (default: 30000000000, i.e. 30GB).
+	-O  path to Rscript: sort the genome BAM with Rsamtools::sortBam
+	      instead of STAR (see RNA_Align_pipeline.sh). Default "" (STAR).
 	-h	this help message
 
 fastp location must be: ~/bin/fastp
@@ -109,10 +111,12 @@ fastp="$HOME/bin/fastp"
 base_correction=0
 in_file_two=""
 bamSortRAM=30000000000
-while getopts ":bvf:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:z:R:h" opt; do
+external_sort=""
+while getopts ":bvf:o:p:l:T:g:s:a:t:A:B:r:m:k:K:M:S:i:P:I:X:C:q:u:z:R:O:h" opt; do
     case $opt in
     b) base_correction=1 ;;
     R) bamSortRAM=$OPTARG ;;
+    O) external_sort=$OPTARG ;;
     v)
       verbose=0
       ;;
@@ -246,6 +250,7 @@ common=(-o "$out_dir" -a "$adapter" -q "$quality_filtering" -s "$steps"
         -K "$keepContam" -X "$keepContamType" -u "$keep_unmapped_genome" -P "$fastp" -S "$STAR"
         -R "$bamSortRAM")
 (( ! base_correction )) || common+=(-b)
+[[ -z "$external_sort" ]] || common+=(-O "$external_sort")
 (( verbose )) || common+=(-v)
 started=0
 [[ "$resume" != n ]] || started=1

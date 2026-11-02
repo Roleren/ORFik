@@ -40,6 +40,9 @@ else:
             shutil.copyfile(name, prefix + 'Unmapped.out.mate' + str(mate))
     if 'BAM' in values('--outSAMtype'):
         suffix = 'Aligned.sortedByCoord.out.bam' if 'SortedByCoordinate' in args else 'Aligned.out.bam'
-        Path(prefix + suffix).touch()
+        if suffix == 'Aligned.out.bam' and os.environ.get('ORFIK_TEST_BAM'):
+            shutil.copyfile(os.environ['ORFIK_TEST_BAM'], prefix + suffix)
+        else:
+            Path(prefix + suffix).touch()
     Path(prefix + 'Log.out').write_text('stub log\n')
     Path(prefix + 'SJ.out.tab').touch()
