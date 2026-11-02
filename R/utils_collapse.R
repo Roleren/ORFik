@@ -268,10 +268,13 @@ ofst_merge <- function(file_paths,
                         max_filter_score, filter_chunk_rows, filter_tmpdir, filter_fallback_dir, filter_input_summary,
                         filter_auto_memory)
   .plan_splits(0, limit = dt_max_index_size, max_splits = max_splits)
-  # Pooled, sorted output: chromosome-blocked sorted merge (identical result, bounded memory, no
-  # scratch spill). Tolerates inputs with/without an all-1 width column (P-site files since 2026-09).
+  # Pooled output: inputs with and without an all-1 width column (P-site files since 2026-09) merge on every path
+  # (sorted, general and filtered); a width present in only some inputs is not a key and is dropped (verified all 1).
+  # Per-library output (keep_all_scores) keeps the strict identical-columns rule.
   sorted_path <- !keep_all_scores && sort && !remove_softclips
-  columns <- .validate_schema(file_paths, optional = if (sorted_path) "width" else character())
+  optional <- if (!keep_all_scores) "width" else character()
+  columns <- .validate_schema(file_paths, optional = optional)
+  drop_cols <- .ofst_mixed_columns(file_paths, optional)
   if (sorted_path) {
     keys <- setdiff(columns, c("score", if (!keepCigar) c("cigar", "cigar1", "cigar2")))
     if (length(keys) && keys[1L] == "seqnames" && "score" %in% columns) {
@@ -279,7 +282,6 @@ ofst_merge <- function(file_paths,
       if (!is.null(dt)) return(.ofst_finalize(dt))
       message("OFST merge: inputs not chromosome sorted (or too large per chromosome); using the general merge.")
     }
-    columns <- .validate_schema(file_paths)
   }
   if (remove_softclips)
     message("OFST merge: removing soft clips before duplicate collapse; reference coordinates and input files are unchanged.")
@@ -296,8 +298,7 @@ ofst_merge <- function(file_paths,
                      filter_auto_memory = filter_auto_memory, remove_softclips = remove_softclips)
     # Every original input participates in one global decision. Never filter
     # first-round chunks independently, even when their raw row sum is large.
-    keys <- setdiff(fst::metadata_fst(file_paths[1L])$columnNames,
-                    c("score", if (!keepCigar) "cigar"))
+    keys <- setdiff(columns, c("score", if (!keepCigar) "cigar"))   # common columns (a mixed width is not a key)
     dt <- .ofst_merge_filtered(file_paths, lib_names, row_numbers, keys,
                                keep_all_scores, controls)
     if (sort) .ofst_sort(dt, setdiff(names(dt), "score"))
@@ -317,7 +318,7 @@ ofst_merge <- function(file_paths,
   merge_chunk <- function(g) {
     message("- Merging chunk ", g, "/", length(file_paths_split))
     .ofst_merge_lossless(
-      .read_fst_list(file_paths_split[[g]], remove_softclips = remove_softclips),
+      .read_fst_list(file_paths_split[[g]], remove_softclips = remove_softclips, drop_cols = drop_cols),
       lib_names = lib_names_split[[g]],
       keep_all_scores = keep_all_scores,
       keepCigar = keepCigar,
@@ -441,14 +442,34 @@ ofst_merge <- function(file_paths,
   d
 }
 
-.read_fst_list <- function(paths, remove_softclips = FALSE) {
+.read_fst_list <- function(paths, remove_softclips = FALSE, drop_cols = character()) {
   lapply(paths, function(x) tryCatch(
     {
       d <- .normalize_dt(fst::read_fst(x, as.data.table = TRUE))
+      d <- .ofst_drop_unit_columns(d, drop_cols, x)
       if (remove_softclips) d <- .ofst_remove_softclips(d)
       d
     },
     error = function(e) stop("Invalid OFST file '", x, "': ", conditionMessage(e), call. = FALSE)))
+}
+
+# Columns of `optional` present in some but not all inputs
+.ofst_mixed_columns <- function(paths, optional) {
+  if (!length(optional)) return(character())
+  schemas <- lapply(paths, function(x) fst::metadata_fst(x)$columnNames)
+  present <- vapply(optional, function(o) sum(vapply(schemas, function(s) o %in% s, logical(1))), numeric(1))
+  optional[present > 0 & present < length(schemas)]
+}
+
+# Drop columns that only some inputs have; they must be constant 1 (P-site width), else merging would collapse distinct reads
+.ofst_drop_unit_columns <- function(d, cols, path) {
+  for (col in intersect(cols, names(d))) {
+    if (any(d[[col]] != 1L, na.rm = TRUE))
+      .ofst_abort("column '", col, "' is present in only some inputs and is not all 1 in '", path,
+                  "'; it cannot be dropped for merging.")
+    data.table::set(d, j = col, value = NULL)
+  }
+  d
 }
 
 .validate_schema <- function(paths, optional = character()) {
