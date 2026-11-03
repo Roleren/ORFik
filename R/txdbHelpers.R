@@ -403,6 +403,41 @@ makeTxDbFromGFF_compat <- function(...) {
   }
 }
 
+#' Rebuild a GFF TxDb whose transcript names are missing or duplicated
+#'
+#' makeTxDbFromGFF takes transcript names from the "Name" attribute. In RefSeq GFF3 files a CDS can hang directly
+#' on its gene (bacteria), so gene names become transcript names and repeat (two "prs" genes in Listeria EGD-e),
+#' and some transcript features have no Name at all (6,590 in Bubalus bubalis). Grouped regions (loadRegion) then
+#' fail with "subscript contains invalid names" or "Number of transcripts and leaders does not match".
+#' Only those transcripts are renamed, to their feature ID; annotations with unique names are returned unchanged.
+#' @param txdb the TxDb made from \code{path}
+#' @param path the GFF file
+#' @inheritParams loadTxdb
+#' @return a TxDb with unique, non-missing transcript names
+#' @keywords internal
+#' @noRd
+txdb_unique_tx_names <- function(txdb, path, organism = NA, chrominfo = NULL) {
+  tx_names <- mcols(transcripts(txdb, columns = "tx_name"))$tx_name
+  if (!anyNA(tx_names) && !anyDuplicated(tx_names)) return(txdb)
+  message("- ", sum(is.na(tx_names)), " missing and ", sum(duplicated(tx_names[!is.na(tx_names)])),
+          " duplicated transcript names in the GFF; using feature IDs for those transcripts")
+  gr <- rtracklayer::import(path)
+  parents <- unique(unlist(gr$Parent[gr$type %in% c("exon", "CDS")], use.names = FALSE))
+  is_tx <- !is.na(gr$ID) & gr$ID %in% parents
+  bad <- is_tx & (is.na(gr$Name) | gr$Name %in% gr$Name[is_tx][duplicated(gr$Name[is_tx])])
+  gr$Name[bad] <- gr$ID[bad]
+  if (!is.null(chrominfo)) {
+    if (all(seqlevelsInUse(gr) %in% seqlevels(chrominfo))) {
+      seqlevels(gr) <- seqlevels(chrominfo)
+      seqinfo(gr) <- chrominfo
+    } else message("- Annotation has sequences missing from the genome, chrominfo not applied")
+  }
+  metadata <- data.frame(name = c("Data source", "Organism"), value = c(basename(path), organism))
+  if (requireNamespace("txdbmaker", quietly = TRUE)) {
+    txdbmaker::makeTxDbFromGRanges(gr, metadata = metadata)
+  } else GenomicFeatures::makeTxDbFromGRanges(gr, metadata = metadata)
+}
+
 #' makeTxDb, compatible with old and new Bioconductor
 #' @inherit makeTxDbFromGFF_compat
 #' @keywords internal
@@ -445,7 +480,9 @@ loadTxdb <- function(txdb, chrStyle = NULL, organism = NA,
   if (is(txdb, "character")) {
     f <- file_ext(txdb)
     if (f %in% c("gff", "gff2", "gff3", "gtf")) {
-      txdb <- makeTxDbFromGFF_compat(txdb, organism = organism, chrominfo = chrominfo)
+      path <- txdb
+      txdb <- makeTxDbFromGFF_compat(path, organism = organism, chrominfo = chrominfo)
+      if (f != "gtf") txdb <- txdb_unique_tx_names(txdb, path, organism, chrominfo)
     } else if(f %in% c("db", "sqlite")) {
       txdb <- loadDb(txdb)
     } else {
