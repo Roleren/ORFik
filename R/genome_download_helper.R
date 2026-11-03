@@ -27,9 +27,15 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
         }
 
       } else {
+        # Download compressed and unzip here: biomartr's own gunzip stops with "File already exists" when an earlier
+        # attempt (e.g. the GTF -> GFF3 annotation fallback, which fetches the genome again) left the .fna behind.
         genome  <- biomartr::getGenome(db = db, organism,
-                                       path = output.dir, gunzip = gunzip,
+                                       path = output.dir, gunzip = FALSE,
                                        mute_citation = TRUE)
+        if (gunzip && is.character(genome) && length(genome) == 1L &&
+            grepl("\\.gz$", genome) && file.exists(genome)) {
+          genome <- R.utils::gunzip(genome, overwrite = TRUE, remove = FALSE)
+        }
       }
     } else if (is.character(genome)) { # Use hard drive file
       message("- Using pre-existing genome (fasta)")
