@@ -405,7 +405,8 @@ makeTxDbFromGFF_compat <- function(...) {
 
 #' Rebuild a GFF TxDb whose transcript names are missing or duplicated
 #'
-#' makeTxDbFromGFF takes transcript names from the "Name" attribute. In RefSeq GFF3 files a CDS can hang directly
+#' makeTxDbFromGFF takes transcript names from the "transcript_id" attribute when the file has one, otherwise from
+#' "Name". In RefSeq GFF3 files a CDS can hang directly
 #' on its gene (bacteria), so gene names become transcript names and repeat (two "prs" genes in Listeria EGD-e),
 #' and some transcript features have no Name at all (6,590 in Bubalus bubalis). Grouped regions (loadRegion) then
 #' fail with "subscript contains invalid names" or "Number of transcripts and leaders does not match".
@@ -424,8 +425,12 @@ txdb_unique_tx_names <- function(txdb, path, organism = NA, chrominfo = NULL) {
   gr <- rtracklayer::import(path)
   parents <- unique(unlist(gr$Parent[gr$type %in% c("exon", "CDS")], use.names = FALSE))
   is_tx <- !is.na(gr$ID) & gr$ID %in% parents
-  bad <- is_tx & (is.na(gr$Name) | gr$Name %in% gr$Name[is_tx][duplicated(gr$Name[is_tx])])
-  gr$Name[bad] <- gr$ID[bad]
+  # txdbmaker takes names from transcript_id when that attribute exists (RefSeq mRNAs), otherwise from Name
+  name_col <- if (is.character(gr$transcript_id) && !all(is.na(gr$transcript_id))) "transcript_id" else "Name"
+  nm <- mcols(gr)[[name_col]]
+  bad <- is_tx & (is.na(nm) | nm %in% nm[is_tx][duplicated(nm[is_tx])])
+  nm[bad] <- gr$ID[bad]
+  mcols(gr)[[name_col]] <- nm
   if (!is.null(chrominfo)) {
     if (all(seqlevelsInUse(gr) %in% seqlevels(chrominfo))) {
       seqlevels(gr) <- seqlevels(chrominfo)
