@@ -27,9 +27,19 @@ get_genome_fasta <- function(genome, output.dir, organism, assembly,
         }
 
       } else {
-        genome  <- biomartr::getGenome(db = db, organism,
-                                       path = output.dir, gunzip = gunzip,
+        # Download compressed and unzip here: biomartr's own gunzip stops with "File already exists" when an earlier
+        # attempt (e.g. the GTF -> GFF3 annotation fallback, which fetches the genome again) left the .fna behind.
+        # The assembly (default: the organism name) selects the genome, as for the annotation in get_genome_gtf.
+        # An assembly accession (GCF_/GCA_) is taken as given: also non-reference assemblies and bacteria.
+        accession <- is_assembly_accession(assembly)
+        genome  <- biomartr::getGenome(db = db, assembly,
+                                       path = output.dir, gunzip = FALSE,
+                                       skip_bacteria = !accession,
                                        mute_citation = TRUE)
+        if (gunzip && is.character(genome) && length(genome) == 1L &&
+            grepl("\\.gz$", genome) && file.exists(genome)) {
+          genome <- R.utils::gunzip(genome, overwrite = TRUE, remove = FALSE)
+        }
       }
     } else if (is.character(genome)) { # Use hard drive file
       message("- Using pre-existing genome (fasta)")
@@ -102,8 +112,10 @@ get_genome_gtf <- function(GTF, output.dir, organism, assembly,
                   "For those cases use gff3 files!")
         }
 
+        accession <- is_assembly_accession(assembly)
         gtf <-biomartr::getGFF(db = db, organism = assembly,
-                               path = output.dir, reference = TRUE,
+                               path = output.dir, reference = !accession,
+                               skip_bacteria = !accession,
                                remove_annotation_outliers = remove_annotation_outliers,
                                mute_citation = TRUE,
                                format = refseq_genbank_format)
@@ -320,4 +332,10 @@ contaminants_processing <- function(conts, gtf, genome,
   }
   output <- output[!(output %in% c("", "TRUE","FALSE"))]
   return(output)
+}
+
+#' TRUE for NCBI assembly accessions (GCF_000196035.1, GCA_946863485)
+#' @noRd
+is_assembly_accession <- function(assembly) {
+  is.character(assembly) && length(assembly) == 1 && grepl("^GC[AF]_[0-9]{9}(\\.[0-9]+)?$", assembly)
 }
