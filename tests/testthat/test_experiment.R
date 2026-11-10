@@ -51,6 +51,11 @@ test_that("output organism correctly", {
   expect_equal(organism(df), "Homo sapiens")
 })
 
+test_that("organism generic is imported, so the method is exported without attaching ORFik", {
+  imports <- getNamespaceImports("ORFik")
+  expect_true("organism" %in% unlist(imports[names(imports) == "BiocGenerics"]))
+})
+
 test_that("symbols work correctly", {
 
   cds_names <- names(loadRegion(df, "cds"))
