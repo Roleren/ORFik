@@ -223,6 +223,7 @@ setMethod("envExp<-",
 #' @param object an ORFik \code{\link{experiment}}
 #' @return character, name of organism
 #' @family ORFik_experiment
+#' @importFrom BiocGenerics organism
 #' @export
 #' @examples
 #' # if you have set organism in txdb of ORFik experiment:
