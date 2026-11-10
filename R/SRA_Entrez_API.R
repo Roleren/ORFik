@@ -197,7 +197,7 @@ sample_info_download <- function(SRP, max_samples = 2000) {
   url_prefix <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=sra&term="
   url_suffix <- paste0("&retmax=", max_samples, "&retmode=xml&tool=ORFik")
   url <- paste0(url_prefix, SRP, url_suffix)
-  ids_xml <- xml2::as_list(xml2::read_xml(url))
+  ids_xml <- xml2::as_list(eutils_read_xml(url))
   ids <- sort(unlist(ids_xml$eSearchResult$IdList, use.names = FALSE))
   if (is.null(ids)) {
     stop("SRA server returned the following error: \n",
@@ -208,7 +208,7 @@ sample_info_download <- function(SRP, max_samples = 2000) {
   url <- paste0(url_prefix, paste(ids, collapse = ","), url_suffix)
   message("Downloading metadata from:")
   message(url)
-  return(xml2::read_xml(url))
+  return(eutils_read_xml(url))
 }
 
 abstract_save <- function(EXP_SAMPLE, abstract, abstract_destfile) {
@@ -261,7 +261,7 @@ pmid_from_bioproject <- function(id) {
   id_short <- gsub("[^0-9]", "", id)
   url <- paste0("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=bioproject&db=pubmed&id=", id_short,
                 "&retmode=xml&tool=ORFik")
-  xml <- xml2::as_list(xml2::read_xml(url))
+  xml <- xml2::as_list(eutils_read_xml(url))
   pmid <- xml$eLinkResult$LinkSet$LinkSetDb$Link$Id[[1]]
   if (is.null(pmid)) {
     pmid <- as.numeric(NA)
@@ -276,7 +276,7 @@ add_author <- function(file) {
     if (valid_pubmed_id(file$Study_Pubmed_id[1])) {
       url <- "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id="
       url <- paste0(url, file$Study_Pubmed_id[1], "&tool=ORFik")
-      a <- xml2::as_list(xml2::read_xml(url))
+      a <- xml2::as_list(eutils_read_xml(url))
       authors <- a$eSummaryResult$DocSum[[5]]
       if (!is.null(unlist(authors)[1])) {
         file$AUTHOR <- gsub(" .*", "", unlist(authors)[1])

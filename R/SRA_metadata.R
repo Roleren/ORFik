@@ -137,7 +137,7 @@ get_bioproject_candidates <- function(term = "Ribosome Profiling human",
   search <- paste0("&retmode=xml&RetMax=", RetMax, "&term=", fixed_term)
   url <- paste0(base_url, esearch_base_url, search)
   message("- Retrieving IDs")
-  hits <- xml2::read_xml(url)
+  hits <- eutils_read_xml(url)
   hits <- unlist(xml2::as_list(hits)$eSearchResult$IdList, use.names = FALSE)
   message("done")
 
@@ -151,7 +151,7 @@ get_bioproject_candidates <- function(term = "Ribosome Profiling human",
     for (ids_subset in ids_list) {
       ids <- paste(ids_subset, collapse = ",")
       url <- paste0(base_url, esummary_base_url, ids)
-      temp_hits <- xml2::read_xml(url)
+      temp_hits <- eutils_read_xml(url)
       xml_list <- xml2::as_list(temp_hits)
 
       if (as_accession) {
