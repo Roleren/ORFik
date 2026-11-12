@@ -356,3 +356,26 @@ test_that("computeFeatures works as intended", {
   expect_equal(setDF(dt), setDF(featureExamples))
   # should be equal to saved version
 })
+
+test_that("countOverlapsW gives the same counts when the query is chunked", {
+  set.seed(1)
+  subject <- GRanges("chr1", IRanges(sample(1:5000, 3000, TRUE), width = 1), strand = "+", score = sample(1:20, 3000, TRUE))
+  q <- GRangesList(lapply(1:300, function(i) GRanges("chr1", IRanges(c(i * 10, i * 10 + 30), width = 15), strand = "+")))
+  names(q) <- paste0("orf", 1:300)
+  full <- countOverlapsW(q, subject, weight = "score")
+  chunked <- countOverlapsW(q, subject, weight = "score", chunk_size = 7)
+  expect_identical(chunked, full)
+  expect_identical(names(chunked), names(q))
+  expect_identical(countOverlapsW(q, subject, chunk_size = 7), countOverlapsW(q, subject))
+  gr <- unlist(q, use.names = FALSE)
+  expect_identical(countOverlapsW(gr, subject, weight = "score", chunk_size = 50), countOverlapsW(gr, subject, weight = "score"))
+})
+
+test_that("widthPerGroup is exact when the total width exceeds the integer range", {
+  gr <- GRanges("chr1", IRanges(1, width = 2e9), strand = "+")
+  grl <- GRangesList(a = gr, b = gr, c = GRanges("chr1", IRanges(1, 10), "+"))
+  res <- widthPerGroup(grl)
+  expect_type(res, "integer")
+  expect_equal(unname(res), c(2e9, 2e9, 10))
+  expect_equal(names(res), c("a", "b", "c"))
+})

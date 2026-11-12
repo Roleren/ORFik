@@ -15,6 +15,8 @@
 #' @return a named vector of number of overlaps to subject weigthed
 #'  by 'weight' column.
 #' @family features
+#' @param chunk_size integer, default 2e6. Queries longer than this are counted in chunks of this size (same result),
+#' so one overlap call never exceeds the 2^31 hit limit of IRanges.
 #' @importFrom methods as
 #' @export
 #' @examples
@@ -29,7 +31,16 @@
 #'                score=c(10, 20, 15, 5))
 #' countOverlaps(gr1, gr2)
 #' countOverlapsW(gr1, gr2, weight = "score")
-countOverlapsW <- function(query, subject, weight = NULL, ...) {
+countOverlapsW <- function(query, subject, weight = NULL, ..., chunk_size = 2e6) {
+  # Very large queries (e.g. 18 M candidate ORFs of a RefSeq annotation against 20 M reads) give more than 2^31
+  # overlap hits in one findOverlaps call ("negative length vectors are not allowed"): count them in chunks.
+  if (length(query) > chunk_size) {
+    chunks <- split(seq_along(query), ceiling(seq_along(query) / chunk_size))
+    res <- unlist(lapply(chunks, function(i) countOverlapsW(query[i], subject, weight = weight, ..., chunk_size = Inf)),
+                  use.names = FALSE)
+    names(res) <- names(query)
+    return(res)
+  }
   if (identical(attr(subject, "rna_strand"), "unstranded")) {
     args <- list(...)
     if (is.null(args$ignore.strand)) args$ignore.strand <- TRUE

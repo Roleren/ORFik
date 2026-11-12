@@ -31,8 +31,9 @@ widthPerGroup <- function(grl, keep.names = TRUE) {
   } else grl@unlistData@width
   partition_ends <- end(grl@partitioning)
   previous_ends <- c(0L, head(partition_ends, -1L))
-  cumsum_widths <- c(0L, cumsum(widths_raw))
-  res <- cumsum_widths[partition_ends + 1L] - cumsum_widths[previous_ends + 1L]
+  # double cumsum: the total width of all groups can exceed .Machine$integer.max
+  cumsum_widths <- c(0, cumsum(as.numeric(widths_raw)))
+  res <- as.integer(cumsum_widths[partition_ends + 1L] - cumsum_widths[previous_ends + 1L])
   if (keep.names) {
     names(res) <- names(grl)
   }
