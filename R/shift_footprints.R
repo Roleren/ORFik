@@ -392,13 +392,14 @@ shiftFootprintsByExperiment <- function(df,
   for (out.form in output_format)
     message(paste("Saving", out.form, "files to:", out.dir))
 
-  if (!is.null(shift.list)) {
-    if (!all(names(shift.list) %in% rfpFiles))
-      stop("shift.list does not contain all files to be shifted!")
+  if (!is.null(shift.list) && !all(names(shift.list) %in% rfpFiles))
+    stop("shift.list contains files that are not in the experiment!")
+  # Annotation is needed whenever at least one file has no predefined shifts (auto-detection);
+  # a partial shift.list previously set it to NULL for all files, so the remaining files failed.
+  if (!is.null(shift.list) && all(rfpFiles %in% names(shift.list))) {
     # Variable fillers
     txdb <- tx <- txNames <- NULL
   } else {
-    # Else we need annotation to for detection
     txdb <- loadTxdb(df)
     tx <- loadRegion(txdb, part = "mrna")
     txNames <- filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR)
