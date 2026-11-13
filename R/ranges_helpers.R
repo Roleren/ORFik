@@ -6,7 +6,7 @@
 #'
 #' Either by transcript or by original groupings.
 #' Must be ordered, so that same transcripts are ordered together.
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param byTranscript logical (default: FALSE), groups orfs by transcript
 #' name or ORF name, if ORfs are by transcript, check duplicates.
 #' @return an integer vector of indices for exon ranks
@@ -40,7 +40,7 @@ makeExonRanks <- function(grl, byTranscript = FALSE) {
 #' grl must be grouped by transcript
 #' If a list of orfs are grouped by transcripts, but does not have
 #' ORF names, then create them and return the new GRangesList
-#' @param grl a \code{\link{GRangesList}}
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 #' @param groupByTx logical (T), should output GRangesList be grouped by
 #' transcripts (T) or by ORFs (F)?
 #' @return (GRangesList) with ORF names, grouped by transcripts, sorted.
@@ -74,7 +74,7 @@ makeORFNames <- function(grl, groupByTx = TRUE) {
 #' will be splited by positions of 1. Returned values are sorted as the same
 #' groups as the original GRangesList, except they are in bp resolutions.
 #' This is not supported originally by GenomicRanges for GRangesList.
-#' @param grl a \code{\link{GRangesList}} object with names.
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with names.
 #' @param sort.on.return logical (TRUE), should the groups be
 #'  sorted before return (Negative ranges should be in decreasing order).
 #'  Makes it a bit slower, but much safer for downstream analysis.
@@ -148,7 +148,7 @@ tile1 <- function(grl, sort.on.return = TRUE, matchNaming = TRUE,
 #' grl ranges are compared to reference ranges with same name, not
 #' by index. This gives a large speedup, but also requires
 #' all objects must be named.
-#' @param grl a \code{\link{GRangesList}} of ranges within
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of ranges within
 #'  the reference, grl must either have names matching, or a meta column called
 #' 'names' that gives grouping names. i.e. grl named uORF_1_ENST00001, must then
 #'  have a names meta column with ENST00001.
@@ -356,7 +356,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #'
 #' For each GRanges object, find the sequence of it from faFile or BSgenome.
 #'
-#' A wrapper around \code{\link{extractTranscriptSeqs}} that works for
+#' A wrapper around \code{\link[GenomicFeatures]{extractTranscriptSeqs}} that works for
 #' DNAStringSet and ORFik \code{\link{experiment}} input.
 #' For debug of errors do:
 #' which(!(unique(seqnamesPerGroup(grl, FALSE)) %in% seqlevels(faFile)))
@@ -364,7 +364,7 @@ pmapFromTranscriptF <- function(x, transcripts, removeEmpty = FALSE) {
 #' file does not have. A normal error is that mitocondrial chromosome is
 #' called MT vs chrM even though they have same seqlevelsStyle. The
 #' above line will give you which chromosome it is missing.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @inheritParams findFa
 #' @param is.sorted a speedup, if you know the grl ranges are sorted
 #' @param keep.names a logical, default (TRUE), if FALSE: return as
@@ -432,13 +432,13 @@ subsetToFrame <- function(x, frame) {
 #'
 #' Reduce away all GRanges elements with 0-width.
 #'
-#' Extends function \code{\link{reduce}}
+#' Extends function \code{\link[IRanges:inter-range-methods]{reduce}}
 #' by trying to keep names and meta columns, if it is a
 #' GRangesList. It also does not lose sorting for GRangesList,
 #' since original reduce sorts all by ascending position.
 #' If keep.names == FALSE, it's just the normal GenomicRanges::reduce
 #' with sorting negative strands descending for GRangesList.
-#' @param grl a \code{\link{GRangesList}} or GRanges object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} or GRanges object
 #' @param drop.empty.ranges (FALSE) if a group is empty (width 0), delete it.
 #' @param min.gapwidth (1L) how long gap can it be between two ranges,
 #' to merge them.

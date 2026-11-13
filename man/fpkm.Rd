@@ -7,13 +7,13 @@
 fpkm(grl, reads, pseudoCount = 0, librarySize = "full", weight = 1L)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 can be either transcripts, 5' utrs, cds', 3' utrs or
 ORFs as a special case (uORFs, potential new cds' etc). If
-regions are not spliced you can send a \code{\link{GRanges}} object.}
+regions are not spliced you can send a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object.}
 
-\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}} or
-\code{\link{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.}
+\item{reads}{a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}, \code{\link[GenomicRanges:GRanges-class]{GRanges}} or
+\code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object, usually of RiboSeq, RnaSeq, CageSeq, etc.}
 
 \item{pseudoCount}{a numeric, default 0, set it to 1 if you want to
 avoid NA and inf values.}

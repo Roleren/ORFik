@@ -7,7 +7,7 @@
 optimizeReads(grl, reads)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} or GRanges object}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} or GRanges object}
 
 \item{reads}{a GRanges, GAlignment or GAlignmentPairs object}
 }

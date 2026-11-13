@@ -7,12 +7,12 @@
 reverseMinusStrandPerGroup(grl, onlyIfIncreasing = TRUE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 
 \item{onlyIfIncreasing}{logical, default (TRUE), only reverse if decreasing}
 }
 \value{
-a \code{\link{GRangesList}}
+a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}
 }
 \description{
 Reverse minus strand per group in a GRangesList

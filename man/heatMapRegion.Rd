@@ -48,8 +48,8 @@ see ?coverageScorings for info and more alternatives.}
 either "default", usually bam format (the one you gave to experiment),
 "pshifted" pshifted reads, "ofst", "bed", "bedo" optimized bed, or "wig"}
 
-\item{cage}{a character path to library file or a \code{\link{GRanges}},
-\code{\link{GAlignments}} preloaded file of CAGE data. Only used if
+\item{cage}{a character path to library file or a \code{\link[GenomicRanges:GRanges-class]{GRanges}},
+\code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} preloaded file of CAGE data. Only used if
 "TSS" is defined as region, to redefine 5' leaders.}
 
 \item{plot.ext}{a character, default ".pdf", alternative ".png"}

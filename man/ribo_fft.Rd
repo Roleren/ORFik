@@ -7,10 +7,10 @@
 ribo_fft(footprints, cds, read_lengths = 26:34, firstN = 150)
 }
 \arguments{
-\item{footprints}{Ribosome footprints in either \code{\link{GAlignments}} or
-\code{\link{GRanges}}}
+\item{footprints}{Ribosome footprints in either \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} or
+\code{\link[GenomicRanges:GRanges-class]{GRanges}}}
 
-\item{cds}{a \code{\link{GRangesList}} of coding sequences. Length must match
+\item{cds}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences. Length must match
 length of argument mrna, and all must have length > arugment firstN.}
 
 \item{read_lengths}{integer vector, default: 26:34,

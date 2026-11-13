@@ -15,7 +15,7 @@ ribosomeReleaseScore(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs.}
 
 \item{RFP}{RiboSeq reads as GAlignments, GRanges
@@ -25,8 +25,8 @@ or GRangesList object}
 called from: `threeUTRsByTranscript(Gtf, use.names = TRUE)`,
 if object is GRangesList, it is presumed to be the 3' utrs}
 
-\item{RNA}{RnaSeq reads as \code{\link{GAlignments}},
-\code{\link{GRanges}} or GRangesList object}
+\item{RNA}{RnaSeq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
+\code{\link[GenomicRanges:GRanges-class]{GRanges}} or GRangesList object}
 
 \item{weight.RFP}{a vector (default: 1L). Can also be character name of
 column in RFP. As in translationalEff(weight = "score") for:

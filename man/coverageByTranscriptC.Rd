@@ -11,7 +11,7 @@ coverageByTranscriptC(x, transcripts, ignore.strand = !strandMode(x))
  must have defined and correct
 seqlengths in its SeqInfo object.}
 
-\item{transcripts}{\code{\link{GRangesList}}}
+\item{transcripts}{\code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 
 \item{ignore.strand}{a logical (default: length(x) == 1)}
 }
@@ -20,5 +20,5 @@ Integer Rle of coverage, 1 per transcript
 }
 \description{
 Extends the function with direct genome coverage input,
-see \code{\link{coverageByTranscript}} for original function.
+see \code{\link[GenomicFeatures]{coverageByTranscript}} for original function.
 }

@@ -31,7 +31,7 @@ heatMapL(
 )
 }
 \arguments{
-\item{region}{#' a \code{\link{GRangesList}} object of region,
+\item{region}{#' a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object of region,
 usually either leaders, cds', 3' utrs or ORFs, start region, stop regions etc.
 This is the region that will be mapped in heatmap}
 

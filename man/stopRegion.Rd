@@ -7,7 +7,7 @@
 stopRegion(grl, tx = NULL, is.sorted = TRUE, upstream = 2L, downstream = 2L)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 with usually either leaders, cds', 3' utrs or ORFs}
 
 \item{tx}{default NULL, a GRangesList of transcripts or (container region),

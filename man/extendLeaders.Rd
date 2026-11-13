@@ -12,7 +12,7 @@ extendLeaders(
 )
 }
 \arguments{
-\item{grl}{usually a \code{\link{GRangesList}} of 5' utrs or transcripts.
+\item{grl}{usually a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of 5' utrs or transcripts.
 Can be used for any extension of groups.}
 
 \item{extension}{an integer, how much to max extend upstream (5' end).
@@ -22,7 +22,7 @@ Or a GRangesList where start / stops by strand are the positions
 to use as new starts.
 Will not cross the chromosome boundary for non circular chromosomes.}
 
-\item{cds}{a \code{\link{GRangesList}} of coding sequences,
+\item{cds}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of coding sequences,
 If you want to extend 5' leaders downstream, to catch
 upstream ORFs going into cds, include it. It will add first
 cds exon to grl matched by names.

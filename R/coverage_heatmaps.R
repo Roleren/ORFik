@@ -128,8 +128,8 @@ coverageHeatMap <- function(coverage, output = NULL, scoring = "zscore",
 #' \code{file.path(QCfolder(df), "heatmaps/")}, a created
 #' folder within the ORFik experiment data folder for plots. Change if you
 #' want custom location.
-#' @param cage a character path to library file or a \code{\link{GRanges}},
-#' \code{\link{GAlignments}} preloaded file of CAGE data. Only used if
+#' @param cage a character path to library file or a \code{\link[GenomicRanges:GRanges-class]{GRanges}},
+#' \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} preloaded file of CAGE data. Only used if
 #' "TSS" is defined as region, to redefine 5' leaders.
 #' @param longestPerGene logical, default TRUE. Use only longest transcript
 #' isoform per gene. This will speed up your computation.
@@ -350,7 +350,7 @@ heatMapL <- function(region, tx, df, outdir, scores = "sum", upstream, downstrea
 #' Coverage heatmap of single libraries
 #' @inheritParams coverageHeatMap
 #' @inheritParams windowPerReadLength
-#' @param region #' a \code{\link{GRangesList}} object of region,
+#' @param region #' a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object of region,
 #'  usually either leaders, cds', 3' utrs or ORFs, start region, stop regions etc.
 #'  This is the region that will be mapped in heatmap
 #' @param upstream an integer, relative region to get upstream from.

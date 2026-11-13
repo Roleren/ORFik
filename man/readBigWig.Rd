@@ -11,7 +11,7 @@ readBigWig(path, chrStyle = NULL, as = "GRanges")
 with 2 columns, (forward, filepath) and reverse, only 1 row.}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+, a \code{\link[GenomeInfoDb]{seqlevelsStyle}} or \code{\link[GenomeInfoDb:compat]{Seqinfo}}.
 (Default: NULL) to get seqlevelsStyle from. In addition if it
 is a Seqinfo object, seqinfo will be updated.
 Example of seqlevelsStyle update:
@@ -30,7 +30,7 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
   }
 }
 \value{
-a \code{\link{GRanges}} object of the file/s
+a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object of the file/s
 }
 \description{
 Given 2 bigWig files (.bw, .bigWig), first is forward second is reverse.

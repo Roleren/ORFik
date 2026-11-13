@@ -38,14 +38,14 @@ be made.}
 
 \item{optimized_path}{character, path to optimized txdb objects,
 default: optimized_txdb_path(txdb, stop.error = FALSE). If no existing file,
-will be slower and load lengths through \code{\link{transcriptLengths}}.}
+will be slower and load lengths through \code{\link[GenomicFeatures]{transcriptLengths}}.}
 }
 \value{
 a data.table of loaded lengths 8 columns,
 1 row per transcript isoform.
 }
 \description{
-A speedup wrapper around \code{\link{transcriptLengths}},
+A speedup wrapper around \code{\link[GenomicFeatures]{transcriptLengths}},
 default load time of lengths is ~ 15 seconds, if ORFik fst
 optimized lengths object has been made, load that file instead:
 load time reduced to ~ 0.1 second.

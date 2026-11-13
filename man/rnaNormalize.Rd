@@ -15,7 +15,7 @@ position), it is possible to have additionals: (genes, fraction, feature)}
 \item{dfr}{an ORFik \code{\link{experiment}} of RNA-seq to
 normalize against. Will add RNA normalized to plot name if this is done.}
 
-\item{tx}{a \code{\link{GRangesList}} of mrna transcripts}
+\item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of mrna transcripts}
 
 \item{normalizeMode}{a character (default: "position"), how to normalize
 library against rna library. Either on "position", normalize by

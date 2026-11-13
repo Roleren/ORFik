@@ -74,7 +74,7 @@ so you get a good understanding of how good the quality of your NGS
 data production + aligner step were.\cr
 4. Count tables are produced, similar to HTseq count tables.
 Over mrna, leader, cds and trailer separately. This tables
-are stored as \code{\link{SummarizedExperiment}}, for easy loading into
+are stored as \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}, for easy loading into
 DEseq, conversion to normalized fpkm values,
 or collapsing replicates in an experiment.
 And can be imported with \code{\link{countTable}} function.\cr\cr

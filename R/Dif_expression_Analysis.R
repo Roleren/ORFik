@@ -144,7 +144,7 @@ DEG.analysis <- function(df, target.contrast = design[1],
 #' @param output.dir character, default \code{QCfolder(df.rfp)}.
 #' output.dir directory to save plots,
 #' plot will be named "TE_between". If NULL, will not save.
-#' @param RFP_counts a \code{\link{SummarizedExperiment}}, default:
+#' @param RFP_counts a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}, default:
 #' \code{countTable(df.rfp, "cds", type = "summarized")},
 #' unshifted libraries, all transcript CDSs.
 #' If you have pshifted reads and countTables, do:
@@ -308,7 +308,7 @@ te.table <- function(df.rfp, df.rna,
   dt <- data.table::merge.data.table(RNA_MRNA_FPKM, RFP_CDS_FPKM, by = "uid")
   txNames <- uid[dt$uid]
   dt$uid <- NULL
-  filtered <- rowMin(as.matrix(dt)) > max(filter.rna, filter.rfp)
+  filtered <- apply(as.matrix(dt), 1, min) > max(filter.rna, filter.rfp)
 
   #dt <- dt[RNA_MRNA_FPKM > filter.rfp & RFP_CDS_FPKM > filter.rna, ]
   dt <- dt[filtered, ]

@@ -11,7 +11,7 @@ extendTrailers(
 )
 }
 \arguments{
-\item{grl}{usually a \code{\link{GRangesList}} of 3' utrs or transcripts.
+\item{grl}{usually a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of 3' utrs or transcripts.
 Can be used for any extension of groups.}
 
 \item{extension}{an integer, how much to max extend downstream (3' end).

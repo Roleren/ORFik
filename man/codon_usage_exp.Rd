@@ -42,7 +42,7 @@ names of the full set of mRNA transcripts. This will be subsetted to the
 cds subset you use. Then CDSs are filtered from this table by the
 'min_counts_cds_filter' argument.}
 
-\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+\item{faFile}{\code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 

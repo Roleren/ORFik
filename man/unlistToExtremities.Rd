@@ -7,7 +7,7 @@
 unlistToExtremities(grl)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 }
 \value{
 a GRangs object with meta column "group", which gives

@@ -1,6 +1,6 @@
 #' Load bed file as GRanges
 #'
-#' Wraps around \code{\link{import.bed}} and
+#' Wraps around \code{\link[rtracklayer:BEDFile-class]{import.bed}} and
 #' tries to speed up loading with the
 #' use of data.table. Supports gzip, gz, bgz and bed formats.
 #' Also safer chromosome naming with the argument chrStyle
@@ -9,7 +9,7 @@
 #' @importFrom data.table fread setDF
 #' @importFrom tools file_ext
 #' @importFrom rtracklayer import.bed
-#' @return a \code{\link{GRanges}} object
+#' @return a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object
 #' @export
 #' @family utils
 #' @examples
@@ -42,7 +42,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' Custom bam reader
 #'
 #' Read in Bam file from either single end or paired end.
-#' Safer combined version of \code{\link{readGAlignments}} and
+#' Safer combined version of \code{\link[GenomicAlignments]{readGAlignments}} and
 #' readGAlignmentPairs that takes care of some common errors.\cr
 #' If QNAMES of the aligned reads are from collapsed fasta files
 #' (if the names are formated from collapsing in either
@@ -77,7 +77,7 @@ fread.bed <- function(filePath, chrStyle = NULL) {
 #' @param only_unique_mappers, logical, default FALSE. Only load unique mappers.
 #' For bam files it extracts NH flag, for other formats, it presumes the presence of
 #' a directory './unique_mappers' relative to bam file directory.
-#' @return a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
+#' @return a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} or \code{\link[GenomicAlignments:GAlignmentPairs-class]{GAlignmentPairs}} object of bam file
 #' @importFrom Rsamtools scanBam BamFile ScanBamParam
 #' @export
 #' @family utils
@@ -247,7 +247,7 @@ readBamIsUniqueMapper <- function(bam_paths, yieldSize = NA_integer_) {
 #' with 2 columns, (forward, filepath) and reverse, only 1 row.
 #' @inheritParams matchSeqStyle
 #' @importFrom rtracklayer import.wig
-#' @return a \code{\link{GRanges}} object of the file/s
+#' @return a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object of the file/s
 #' @family utils
 #'
 readWig <- function(path, chrStyle = NULL) {
@@ -291,7 +291,7 @@ readWig <- function(path, chrStyle = NULL) {
 #' @inheritParams matchSeqStyle
 #' @inheritParams rtracklayer::import.bw
 #' @importFrom rtracklayer import.bw
-#' @return a \code{\link{GRanges}} object of the file/s
+#' @return a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object of the file/s
 #' @family utils
 #'
 readBigWig <- function(path, chrStyle = NULL, as = "GRanges") {
@@ -412,7 +412,7 @@ import.bedoc <- function(path) {
 #' .ofst is ORFik fast serialized object,
 #' an optimized format for coverage reads with
 #' cigar and replicate number. It uses the fst format as back-end:
-#' \code{\link{fst-package}}.\cr A .ofst ribo seq file can compress the
+#' \code{\link[fst]{fst-package}}.\cr A .ofst ribo seq file can compress the
 #' information in a bam file from 5GB down to a few MB. This new files has
 #' super fast reading time, only a few seconds, instead of minutes. It also has
 #' random index access possibility of the file. \cr
@@ -423,7 +423,7 @@ import.bedoc <- function(path) {
 #'  (cigar # M's, match/mismatch total) \cr
 #' 5. score: duplicates of that read\cr
 #' 6. size: qwidth according to reference of read\cr\cr
-#' If file is from \code{\link{GAlignmentPairs}},
+#' If file is from \code{\link[GenomicAlignments:GAlignmentPairs-class]{GAlignmentPairs}},
 #' it will contain a cigar1, cigar2 instead
 #' of cigar and start1 and start2 instead of start
 #'
@@ -482,7 +482,7 @@ import.ofst <- function(file, strandMode = 0, seqinfo = NULL) {
 #' @importFrom tools file_ext
 #' @importFrom tools file_path_sans_ext
 #' @importFrom rtracklayer import
-#' @return a \code{\link{GAlignments}}/\code{\link{GRanges}} object,
+#' @return a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}/\code{\link[GenomicRanges:GRanges-class]{GRanges}} object,
 #'  depending on input.
 #' @export
 #' @family utils
@@ -589,12 +589,12 @@ file_ext_without_compression <- function(x, compressions = c("gzip", "gz", "bgz"
 #'
 #' Get fasta file object, to find sequences in file.\cr
 #' Will load and import file if necessarry.
-#' @param faFile \code{\link{FaFile}}, BSgenome, fasta/index file path or an
+#' @param faFile \code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 #' ORFik \code{\link{experiment}}. This file is usually used to find the
 #' transcript sequences from some GRangesList.
 #' @importFrom Rsamtools FaFile
 #' @importFrom methods is
-#' @return a \code{\link{FaFile}} or BSgenome
+#' @return a \code{\link[Rsamtools:FaFile-class]{FaFile}} or BSgenome
 #' @family utils
 #' @export
 #' @examples

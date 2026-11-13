@@ -27,7 +27,7 @@ are 3 input file possibilities.
 }}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+, a \code{\link[GenomeInfoDb]{seqlevelsStyle}} or \code{\link[GenomeInfoDb:compat]{Seqinfo}}.
 (Default: NULL) to get seqlevelsStyle from. In addition if it
 is a Seqinfo object, seqinfo will be updated.
 Example of seqlevelsStyle update:
@@ -73,11 +73,11 @@ alignment preserves physical strand, opposite reverses it, unstranded retains
 physical strands for unstranded counting. Existing strandMode controls pairs.}
 }
 \value{
-a \code{\link{GAlignments}} or \code{\link{GAlignmentPairs}} object of bam file
+a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} or \code{\link[GenomicAlignments:GAlignmentPairs-class]{GAlignmentPairs}} object of bam file
 }
 \description{
 Read in Bam file from either single end or paired end.
-Safer combined version of \code{\link{readGAlignments}} and
+Safer combined version of \code{\link[GenomicAlignments]{readGAlignments}} and
 readGAlignmentPairs that takes care of some common errors.\cr
 If QNAMES of the aligned reads are from collapsed fasta files
 (if the names are formated from collapsing in either

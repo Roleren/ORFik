@@ -90,7 +90,7 @@ as list. If output is list format, the list elements are named from:
 \code{bamVarName(df.rfp)} (Full or minimum naming based on 'naming' argument)}
 
 \item{chrStyle}{a GRanges object, TxDb, FaFile,
-, a \code{\link{seqlevelsStyle}} or \code{\link{Seqinfo}}.
+, a \code{\link[GenomeInfoDb]{seqlevelsStyle}} or \code{\link[GenomeInfoDb:compat]{Seqinfo}}.
 (Default: NULL) to get seqlevelsStyle from. In addition if it
 is a Seqinfo object, seqinfo will be updated.
 Example of seqlevelsStyle update:

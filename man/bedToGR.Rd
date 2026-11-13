@@ -13,7 +13,7 @@ to convert to GRanges}
 \item{skip.name}{default (TRUE), skip name column (column 4)}
 }
 \value{
-a \code{\link{GRanges}} object from bed
+a \code{\link[GenomicRanges:GRanges-class]{GRanges}} object from bed
 }
 \description{
 For info on columns, see:

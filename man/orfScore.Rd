@@ -15,10 +15,10 @@ orfScore(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of 5' utrs, CDS, transcripts, etc.}
 
-\item{RFP}{ribosomal footprints, given as \code{\link{GAlignments}}
-or \code{\link{GRanges}} object,
+\item{RFP}{ribosomal footprints, given as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}
+or \code{\link[GenomicRanges:GRanges-class]{GRanges}} object,
 must be already shifted and resized to the p-site. Requires a $size column
 with original read lengths.}
 

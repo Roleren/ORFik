@@ -13,7 +13,7 @@ tile1(
 )
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object with names.}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with names.}
 
 \item{sort.on.return}{logical (TRUE), should the groups be
 sorted before return (Negative ranges should be in decreasing order).

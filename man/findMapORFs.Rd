@@ -16,7 +16,7 @@ findMapORFs(
 )
 }
 \arguments{
-\item{grl}{A \code{\link{GRangesList}} of the original
+\item{grl}{A \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} of the original
 sequences that gave the orfs in Genomic coordinates. If grl_is_sorted = TRUE (default),
 negative exon ranges per grl object must be sorted in descending orders.}
 
@@ -24,7 +24,7 @@ negative exon ranges per grl object must be sorted in descending orders.}
 for Open Reading Frames. Can be both uppercase or lowercase. Easiest call to
 get seqs if you want only regions from a fasta/fasta index pair is:
 seqs = ORFik:::txSeqsFromFa(grl, faFile), where grl is a GRanges/List of
-search regions and faFile is a \code{\link{FaFile}}. Note: Remember that if
+search regions and faFile is a \code{\link[Rsamtools:FaFile-class]{FaFile}}. Note: Remember that if
 you extracted through a GRanges object, that must have been sorted with negative
 strand exons descending.}
 

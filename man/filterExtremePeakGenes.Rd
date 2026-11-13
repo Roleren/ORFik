@@ -18,7 +18,7 @@ filterExtremePeakGenes(
 \arguments{
 \item{tx}{a GRangesList}
 
-\item{reads}{a \code{\link{GAlignments}}, \code{\link{GRanges}}, or
+\item{reads}{a \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}}, \code{\link[GenomicRanges:GRanges-class]{GRanges}}, or
 precomputed coverage as \code{\link{covRle}} (one for each strand) of
 RiboSeq, RnaSeq etc.\cr Weigths for scoring is default the 'score'
 column in 'reads'. Can also be random access paths to bigWig or fstwig file.

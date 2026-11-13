@@ -190,7 +190,7 @@ STAR.multiQC <- function(folder, type = "aligned", plot.ext = ".pdf",
 #' @examples
 #' # Location of fastp trimmed .json files
 #' trimmed_file <- system.file("extdata/test_processing/trim",
-#'  "output_template.json", package = "ORFik")
+#'  "template.json", package = "ORFik")
 #' trimmed_folder <- dirname(trimmed_file)
 #' trimming.table(trimmed_folder)
 #' trimming.table(NULL, trimmed_file)

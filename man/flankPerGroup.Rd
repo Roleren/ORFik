@@ -7,7 +7,7 @@
 flankPerGroup(grl)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}}}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}}
 }
 \value{
 a GRangesList, 1 GRanges per group with:

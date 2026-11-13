@@ -7,13 +7,13 @@
 initiationScore(grl, cds, tx, reads, pShifted = TRUE, weight = "score")
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} object with ORFs}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with ORFs}
 
-\item{cds}{a \code{\link{GRangesList}} object with coding sequences}
+\item{cds}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object with coding sequences}
 
 \item{tx}{a GRangesList of transcripts covering grl.}
 
-\item{reads}{ribo seq reads as \code{\link{GAlignments}},
+\item{reads}{ribo seq reads as \code{\link[GenomicAlignments:GAlignments-class]{GAlignments}},
 GRanges or GRangesList object}
 
 \item{pShifted}{a logical (TRUE), are riboseq reads p-shifted?}

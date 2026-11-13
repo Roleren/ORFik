@@ -46,6 +46,9 @@ Always make the location of the folder directly
 inside the bam file directory!}
 
 \item{full_path}{Full path to countTable, default: countTablePath(df, region, count.folder)}
+
+\item{mean_collapse}{logical, default TRUE. With collapse, return mean normalized counts over the
+group; if FALSE, the pure sum of the collapse group.}
 }
 \value{
 a data.table/SummarizedExperiment/DESeqDataset object

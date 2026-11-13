@@ -22,7 +22,7 @@ findUORFs(
 \arguments{
 \item{fiveUTRs}{(GRangesList) The 5' leaders or full transcript sequences}
 
-\item{fa}{a \code{\link{FaFile}}. With fasta sequences corresponding to
+\item{fa}{a \code{\link[Rsamtools:FaFile-class]{FaFile}}. With fasta sequences corresponding to
 fiveUTR annotation. Usually loaded from the genome of an organism with
 fa = ORFik:::findFa("path/to/fasta/genome")}
 

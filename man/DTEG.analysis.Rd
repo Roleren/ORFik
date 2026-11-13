@@ -59,7 +59,7 @@ p-value to be used as significance threshold for the result groups. I.e.
 for exclusive translation group significant subset for p.value = 0.05 means:
 TE$padj < 0.05 & Ribo$padj < 0.05 & RNA$padj > 0.05.}
 
-\item{RFP_counts}{a \code{\link{SummarizedExperiment}}, default:
+\item{RFP_counts}{a \code{\link[SummarizedExperiment:SummarizedExperiment-class]{SummarizedExperiment}}, default:
 \code{countTable(df.rfp, "cds", type = "summarized")},
 unshifted libraries, all transcript CDSs.
 If you have pshifted reads and countTables, do:

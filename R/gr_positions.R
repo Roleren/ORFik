@@ -5,7 +5,7 @@
 #' make sure your grl is sorted, since start of "-" strand
 #' objects should be the
 #' max end in group, use ORFik:::sortPerGroup(grl) to get sorted grl.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param newStarts an integer vector of same length as grl, with new start
 #' values (absolute coordinates, not relative)
 #' @inheritParams extendLeaders
@@ -62,7 +62,7 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
 #' make sure your grl is sorted, since stop of "-" strand objects
 #' should be the min start in group, use ORFik:::sortPerGroup(grl) to get
 #' sorted grl.
-#' @param grl a \code{\link{GRangesList}} object
+#' @param grl a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} object
 #' @param newStops an integer vector of same length as grl,
 #'  with new start values (absolute coordinates, not relative)
 #' @inheritParams extendLeaders
@@ -124,7 +124,7 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
 #'
 #' If you want to include the points given in the region,
 #' use downstreamFromPerGroup
-#' @param tx a \code{\link{GRangesList}},
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param downstreamOf a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon. Can also be a GRangesList,
@@ -156,7 +156,7 @@ downstreamOfPerGroup <- function(tx, downstreamOf) {
 #'
 #' If you don't want to include the points given in the region,
 #' use \code{\link{downstreamOfPerGroup}}
-#' @param tx a \code{\link{GRangesList}},
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param downstreamFrom a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.
@@ -201,7 +201,7 @@ downstreamFromPerGroup <- function(tx, downstreamFrom, is.circular =
 #' will return the 5' utrs per transcript, usually used for interesting
 #' parts of the transcripts.
 #'
-#' @param tx a \code{\link{GRangesList}},
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param upstreamOf a vector of integers, for each group in tx, where
 #'  is the the base after the new stop point of last valid exon.
@@ -281,7 +281,7 @@ upstreamOfPerGroup <- function(tx, upstreamOf, allowOutside = TRUE,
 #'
 #' If you don't want to include the points given in the region,
 #' use \code{\link{upstreamOfPerGroup}}
-#' @param tx a \code{\link{GRangesList}},
+#' @param tx a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 #'  usually of Transcripts to be changed
 #' @param upstreamFrom a vector of integers, for each group in tx, where
 #' is the new start point of first valid exon.

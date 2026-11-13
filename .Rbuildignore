@@ -6,3 +6,4 @@
 ^.*\.BiocCheck$
 
 ^benchmark$
+^LICENSE\.md$

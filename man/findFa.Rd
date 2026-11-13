@@ -7,12 +7,12 @@
 findFa(faFile)
 }
 \arguments{
-\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+\item{faFile}{\code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 }
 \value{
-a \code{\link{FaFile}} or BSgenome
+a \code{\link[Rsamtools:FaFile-class]{FaFile}} or BSgenome
 }
 \description{
 Get fasta file object, to find sequences in file.\cr

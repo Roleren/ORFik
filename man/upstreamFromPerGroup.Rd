@@ -7,7 +7,7 @@
 upstreamFromPerGroup(tx, upstreamFrom)
 }
 \arguments{
-\item{tx}{a \code{\link{GRangesList}},
+\item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}},
 usually of Transcripts to be changed}
 
 \item{upstreamFrom}{a vector of integers, for each group in tx, where

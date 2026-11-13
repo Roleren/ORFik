@@ -28,7 +28,7 @@ detectRibosomeShifts(
 )
 }
 \arguments{
-\item{footprints}{\code{\link{GAlignments}} object of RiboSeq reads -
+\item{footprints}{\code{\link[GenomicAlignments:GAlignments-class]{GAlignments}} object of RiboSeq reads -
 footprints, can also be path to the .bam /.ofst file. If GAlignment object
 has a meta column called "score", this will be used as replicate numbering
 for that read. So be careful if you have custom files with score columns,

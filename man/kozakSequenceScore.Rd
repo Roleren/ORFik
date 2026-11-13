@@ -7,12 +7,12 @@
 kozakSequenceScore(grl, tx, faFile, species = "human", include.N = FALSE)
 }
 \arguments{
-\item{grl}{a \code{\link{GRangesList}} grouped by ORF}
+\item{grl}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}} grouped by ORF}
 
-\item{tx}{a \code{\link{GRangesList}}, the reference area for ORFs, each ORF
+\item{tx}{a \code{\link[GenomicRanges:GRangesList-class]{GRangesList}}, the reference area for ORFs, each ORF
 must have a coresponding tx.}
 
-\item{faFile}{\code{\link{FaFile}}, BSgenome, fasta/index file path or an
+\item{faFile}{\code{\link[Rsamtools:FaFile-class]{FaFile}}, BSgenome, fasta/index file path or an
 ORFik \code{\link{experiment}}. This file is usually used to find the
 transcript sequences from some GRangesList.}
 
