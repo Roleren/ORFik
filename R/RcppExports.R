@@ -33,6 +33,26 @@ pmapToTranscriptsCPP <- function(xStart, xEnd, transcriptStart, transcriptEnd, i
     .Call('_ORFik_pmapToTranscriptsCPP', PACKAGE = 'ORFik', xStart, xEnd, transcriptStart, transcriptEnd, indices, direction, nExonCumSum)
 }
 
+psr_segments_cpp <- function(ks, ke) {
+    .Call('_ORFik_psr_segments_cpp', PACKAGE = 'ORFik', ks, ke)
+}
+
+psr_cigar_cpp <- function(cig) {
+    .Call('_ORFik_psr_cigar_cpp', PACKAGE = 'ORFik', cig)
+}
+
+psr_new_cpp <- function(txidx, ex_tx, ex_start, ex_end, ex_off, ex_minus, cdsidx, cds_ex_tx, cds_start, sizes, cds_end, extended) {
+    .Call('_ORFik_psr_new_cpp', PACKAGE = 'ORFik', txidx, ex_tx, ex_start, ex_end, ex_off, ex_minus, cdsidx, cds_ex_tx, cds_start, sizes, cds_end, extended)
+}
+
+psr_add_cpp <- function(ptr, chr, start, strand, cig, score, cig_span, cig_size, cig_levels) {
+    invisible(.Call('_ORFik_psr_add_cpp', PACKAGE = 'ORFik', ptr, chr, start, strand, cig, score, cig_span, cig_size, cig_levels))
+}
+
+psr_result_cpp <- function(ptr) {
+    .Call('_ORFik_psr_result_cpp', PACKAGE = 'ORFik', ptr)
+}
+
 pmapToObjectsCPP <- function(query, reference, ignoreStrand, querySorted, referenceSorted, reduceRanges, setLengths, templates) {
     .Call('_ORFik_pmapToObjectsCPP', PACKAGE = 'ORFik', query, reference, ignoreStrand, querySorted, referenceSorted, reduceRanges, setLengths, templates)
 }
