@@ -208,3 +208,17 @@ detectRibosomeShifts_new <- function(footprints, txdb, start = TRUE, stop = FALS
   psr_detect_ofst(footprints, index, accepted.lengths = accepted.lengths, strict.fft = strict.fft, must.be.periodic = must.be.periodic,
                   min_reads = min_reads, min_reads_TIS = min_reads_TIS, top_tx = top_tx)
 }
+
+#' Build or load the cached transcript index used by detectRibosomeShifts_new
+#'
+#' Call once before running many libraries in parallel (each worker then only reads the cache file).
+#' @inheritParams detectRibosomeShifts_new
+#' @return invisibly, the path of the cache directory
+#' @export
+detectRibosomeShifts_index <- function(txdb, minFiveUTR = 30L, minCDS = 150L, minThreeUTR = NULL,
+  txNames = filterTranscripts(txdb, minFiveUTR, minCDS, minThreeUTR),
+  cache_dir = getOption("ORFik.pshift.cache", file.path(tempdir(), "ORFik_pshift_index"))) {
+  txdb <- loadTxdb(txdb)
+  psr_index_cached(txdb, cache_dir, minFiveUTR = minFiveUTR, minCDS = minCDS, minThreeUTR = minThreeUTR, txNames = txNames)
+  invisible(cache_dir)
+}
