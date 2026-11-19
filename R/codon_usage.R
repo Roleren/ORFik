@@ -109,7 +109,9 @@ coverage_A_and_P <- function(cds_filtered, mrna, reads,
     stop("nrow(dt_all_real) != sum(cds_lengths), did you include 5' UTRs?")
   # A sites
   gene_split_sites <- gene_split_sites_general
-  p_stop_codons <- sort(unlist(lapply(c(1,2,3), function(x) gene_split_sites - x)))
+  # drop the last 3 positions of each gene window (gene_split_sites - 2 .. gene_split_sites); before, - 1..- 3 kept the
+  # last position, so the A site of the stop codon's 3rd nt took the P-site coverage of that same nt
+  p_stop_codons <- sort(unlist(lapply(c(0,1,2), function(x) gene_split_sites - x)))
   dt_all_real_A <- dt_samp[-p_stop_codons,]
   if (nrow(dt_all_real_A) != sum(cds_lengths))
     stop("nrow(dt_all_real_A) != sum(cds_lengths), did you include 3' UTRs?")
