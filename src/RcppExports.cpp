@@ -131,6 +131,80 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// psr_segments_cpp
+List psr_segments_cpp(NumericVector ks, NumericVector ke);
+RcppExport SEXP _ORFik_psr_segments_cpp(SEXP ksSEXP, SEXP keSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type ks(ksSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type ke(keSEXP);
+    rcpp_result_gen = Rcpp::wrap(psr_segments_cpp(ks, ke));
+    return rcpp_result_gen;
+END_RCPP
+}
+// psr_cigar_cpp
+DataFrame psr_cigar_cpp(CharacterVector cig);
+RcppExport SEXP _ORFik_psr_cigar_cpp(SEXP cigSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type cig(cigSEXP);
+    rcpp_result_gen = Rcpp::wrap(psr_cigar_cpp(cig));
+    return rcpp_result_gen;
+END_RCPP
+}
+// psr_new_cpp
+SEXP psr_new_cpp(List txidx, IntegerVector ex_tx, IntegerVector ex_start, IntegerVector ex_end, IntegerVector ex_off, IntegerVector ex_minus, List cdsidx, IntegerVector cds_ex_tx, IntegerVector cds_start, IntegerVector sizes, IntegerVector cds_end, bool extended);
+RcppExport SEXP _ORFik_psr_new_cpp(SEXP txidxSEXP, SEXP ex_txSEXP, SEXP ex_startSEXP, SEXP ex_endSEXP, SEXP ex_offSEXP, SEXP ex_minusSEXP, SEXP cdsidxSEXP, SEXP cds_ex_txSEXP, SEXP cds_startSEXP, SEXP sizesSEXP, SEXP cds_endSEXP, SEXP extendedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type txidx(txidxSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_tx(ex_txSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_start(ex_startSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_end(ex_endSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_off(ex_offSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_minus(ex_minusSEXP);
+    Rcpp::traits::input_parameter< List >::type cdsidx(cdsidxSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cds_ex_tx(cds_ex_txSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cds_start(cds_startSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type sizes(sizesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cds_end(cds_endSEXP);
+    Rcpp::traits::input_parameter< bool >::type extended(extendedSEXP);
+    rcpp_result_gen = Rcpp::wrap(psr_new_cpp(txidx, ex_tx, ex_start, ex_end, ex_off, ex_minus, cdsidx, cds_ex_tx, cds_start, sizes, cds_end, extended));
+    return rcpp_result_gen;
+END_RCPP
+}
+// psr_add_cpp
+void psr_add_cpp(SEXP ptr, IntegerVector chr, IntegerVector start, IntegerVector strand, IntegerVector cig, NumericVector score, IntegerVector cig_span, IntegerVector cig_size, CharacterVector cig_levels);
+RcppExport SEXP _ORFik_psr_add_cpp(SEXP ptrSEXP, SEXP chrSEXP, SEXP startSEXP, SEXP strandSEXP, SEXP cigSEXP, SEXP scoreSEXP, SEXP cig_spanSEXP, SEXP cig_sizeSEXP, SEXP cig_levelsSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type ptr(ptrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type strand(strandSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cig(cigSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cig_span(cig_spanSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type cig_size(cig_sizeSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type cig_levels(cig_levelsSEXP);
+    psr_add_cpp(ptr, chr, start, strand, cig, score, cig_span, cig_size, cig_levels);
+    return R_NilValue;
+END_RCPP
+}
+// psr_result_cpp
+List psr_result_cpp(SEXP ptr);
+RcppExport SEXP _ORFik_psr_result_cpp(SEXP ptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type ptr(ptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(psr_result_cpp(ptr));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pmapToObjectsCPP
 SEXP pmapToObjectsCPP(SEXP query, SEXP reference, SEXP ignoreStrand, SEXP querySorted, SEXP referenceSorted, SEXP reduceRanges, SEXP setLengths, List templates);
 RcppExport SEXP _ORFik_pmapToObjectsCPP(SEXP querySEXP, SEXP referenceSEXP, SEXP ignoreStrandSEXP, SEXP querySortedSEXP, SEXP referenceSortedSEXP, SEXP reduceRangesSEXP, SEXP setLengthsSEXP, SEXP templatesSEXP) {
@@ -173,6 +247,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},
+    {"_ORFik_psr_segments_cpp", (DL_FUNC) &_ORFik_psr_segments_cpp, 2},
+    {"_ORFik_psr_cigar_cpp", (DL_FUNC) &_ORFik_psr_cigar_cpp, 1},
+    {"_ORFik_psr_new_cpp", (DL_FUNC) &_ORFik_psr_new_cpp, 12},
+    {"_ORFik_psr_add_cpp", (DL_FUNC) &_ORFik_psr_add_cpp, 9},
+    {"_ORFik_psr_result_cpp", (DL_FUNC) &_ORFik_psr_result_cpp, 1},
     {"_ORFik_pmapToObjectsCPP", (DL_FUNC) &_ORFik_pmapToObjectsCPP, 8},
     {"_ORFik_pmapFromObjectsCPP", (DL_FUNC) &_ORFik_pmapFromObjectsCPP, 4},
     {NULL, NULL, 0}
