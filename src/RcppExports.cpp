@@ -10,6 +10,39 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// codon_dwell_eval_cpp
+List codon_dwell_eval_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, IntegerVector starts, NumericVector beta, int nf, bool hessian, bool scores, int threads);
+RcppExport SEXP _ORFik_codon_dwell_eval_cpp(SEXP codesSEXP, SEXP rowsSEXP, SEXP ySEXP, SEXP startsSEXP, SEXP betaSEXP, SEXP nfSEXP, SEXP hessianSEXP, SEXP scoresSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< RawMatrix >::type codes(codesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rows(rowsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type starts(startsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type nf(nfSEXP);
+    Rcpp::traits::input_parameter< bool >::type hessian(hessianSEXP);
+    Rcpp::traits::input_parameter< bool >::type scores(scoresSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(codon_dwell_eval_cpp(codes, rows, y, starts, beta, nf, hessian, scores, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// codon_dwell_feature_counts_cpp
+List codon_dwell_feature_counts_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, int nf);
+RcppExport SEXP _ORFik_codon_dwell_feature_counts_cpp(SEXP codesSEXP, SEXP rowsSEXP, SEXP ySEXP, SEXP nfSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< RawMatrix >::type codes(codesSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type rows(rowsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type nf(nfSEXP);
+    rcpp_result_gen = Rcpp::wrap(codon_dwell_feature_counts_cpp(codes, rows, y, nf));
+    return rcpp_result_gen;
+END_RCPP
+}
 // orfs_as_IRanges
 S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, int minimumLength);
 RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP minimumLengthSEXP) {
@@ -239,6 +272,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_ORFik_codon_dwell_eval_cpp", (DL_FUNC) &_ORFik_codon_dwell_eval_cpp, 9},
+    {"_ORFik_codon_dwell_feature_counts_cpp", (DL_FUNC) &_ORFik_codon_dwell_feature_counts_cpp, 4},
     {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},

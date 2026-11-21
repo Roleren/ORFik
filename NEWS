@@ -1,6 +1,20 @@
 ORFik 1.29.16
 =============
 
+Codon dwell times
+-----------------
+
+    o New codon_dwell(): log relative ribosome dwell time per codon at offsets
+      around the A site (default -10..+5 codons), per library. Profiled-gene
+      quasi-Poisson GLM (gene effects removed exactly by conditioning on gene
+      totals, Fisher scoring on beta only, gene-clustered sandwich SEs),
+      sum-to-zero betas per offset, in-sample and held-out deviance explained.
+      C++ kernel with OpenMP threads. method = "ratio" gives the codon_usage()
+      (mean_txNorm) estimate for the P and A site.
+    o New codon_dwell_design(): the sequence-only design (built once per
+      annotation, reusable across libraries) and codon_dwell_plot() (offset x
+      codon heatmap, or bars at one offset with 95% CI).
+
 Ribo-seq ORF detection
 ----------------------
 
