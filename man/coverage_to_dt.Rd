@@ -10,7 +10,8 @@ coverage_to_dt(
   withFrames = FALSE,
   weight = "score",
   drop.zero.dt = FALSE,
-  fraction = NULL
+  fraction = NULL,
+  names_as_factor = FALSE
 )
 }
 \arguments{
@@ -20,7 +21,10 @@ coverage_to_dt(
 names (genes column) will be a factor column, if FALSE it will be an
 integer column (index of gene), so first input grl element is 1. Dropping names
 gives ~ 20 \% speedup. If drop.zero.dt is FALSE, data.table will not
-return names, will use index (to avoid memory explosion).}
+return names, will use index (to avoid memory explosion).\cr
+Set to "factor" to always return the genes column as a factor of the
+names of grl (levels in input order), also when drop.zero.dt is FALSE.
+The factor stores the same integer index, so memory usage is unchanged.}
 
 \item{withFrames}{a logical (FALSE), only available if as.data.table is
 TRUE, return the ORF frame, 1,2,3, where position 1 is 1, 2 is 2 and
@@ -44,6 +48,9 @@ Will not change any plots, unless 0 positions are used in some sense.
 multiple outputs together. If returned as Rle, this
 is added as: metadata(coverage) <- list(fraction = fraction). If as.data.table
 it will be added as an additional column.}
+
+\item{names_as_factor}{logical, default FALSE. If TRUE (and coverage has
+names), return genes as a factor of names also when drop.zero.dt is FALSE.}
 }
 \value{
 a data.table with column names c("count" [numeric or integer],
