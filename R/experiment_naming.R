@@ -212,7 +212,7 @@ cellLineNames <- function(convertToTissue = FALSE) {
                   "breast", "kidney", "embryo", "breast", "skin", "adipose",
                   "colon", "blood", "embryo", "embryo", "brain", "ovary",
                   "brain", "brain", "brain", "bone", "brain", "NONE",
-                  "retina")
+                  "retina", "brain")
   } else {
     mainName <- c("A2780", "A549", "Calu3","CN34", "HEK293", "HeLa",
                   "HepG2", "Hesc", "HCT116", "Hmel", "HSB2", "Huh7",
@@ -222,7 +222,7 @@ cellLineNames <- function(convertToTissue = FALSE) {
                   "MARC-145", "17-Cl1", "RAW264.7", "mESC", "19PP",
                   "SUM159", "Vero", "CGR8", "4T1", "BJ", "L929",
                   "LoVo", "P493", "S2", "KH2", "LN308", "CHO",
-                  "LN229", "A172", "U343", "MM1S", "Neuro2a", "L929", "RPE1")
+                  "LN229", "A172", "U343", "MM1S", "Neuro2a", "L929", "RPE1", "U251")
   }
 
 
@@ -254,7 +254,7 @@ cellLineNames <- function(convertToTissue = FALSE) {
          c("3T3"),
          c("H1299", "h1299", "CRL-5803"),
          c("E14", "E14Tg2a"),
-         c("U2-OS", "U2 OS", "U2", "U2OS", "u2os"),
+         c("U2-OS", "U2 OS", "(^|[^A-Za-z0-9])U2([^A-Za-z0-9]|$)", "U2OS", "u2os"),
          c("H1$", "H1 ES"),
          c("H9"),
          c("MARC-145", "MARC 145", "MARC_145"),
@@ -280,7 +280,8 @@ cellLineNames <- function(convertToTissue = FALSE) {
          c("MM1.S", "Mm1.S", "Mm1.s"),
          c("Neuro-2a", "Neuro2a", "neuro-2a", "neuro2a"),
          c("L929"),
-         c("RPE1")
+         c("RPE1"),
+         c("U-251", "U251")
     )
   dt <- data.table(mainName, allNames)
   return(dt)
