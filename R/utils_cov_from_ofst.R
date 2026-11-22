@@ -106,8 +106,23 @@
     sizes <- sort(unique(size))
     size_index <- match(size, sizes)
   }
+  strand_code <- match(strand_lv, c("+", "-", "*"))[strand]
+  # Rle runs per chromosome block in C++ (ofst_chr_rle), the default for sorted point files
+  groups <- .point_rlelists_by_chr(chr, start, strand_code, size_index, length(sizes), score,
+                                   seq_info, integer_weights)
+  if (!is.null(groups)) {
+    build_g <- function(k) {
+      f <- groups[[2L * k - 1L]]; r <- groups[[2L * k]]
+      seqinfo(f) <- seqinfo(r) <- seq_info
+      covRle(f, r)
+    }
+    covs <- lapply(seq_along(sizes), build_g)
+    merged <- build_g(length(sizes) + 1L)
+    groups <- NULL
+    return(.save_point_ofst_cov(covs, merged, sizes, out_file, out_file_merged, seq_info, format))
+  }
   # one C++ pass: summed positions for every (read length, strand) and all lengths merged
-  sums <- ofst_point_sums(chr, start, match(strand_lv, c("+", "-", "*"))[strand], size_index, length(sizes), score)
+  sums <- ofst_point_sums(chr, start, strand_code, size_index, length(sizes), score)
   build <- function(fwd, rev) {
     f <- .rlelist_from_points(data.table::setDT(fwd), seq_info, integer_weights)
     r <- .rlelist_from_points(data.table::setDT(rev), seq_info, integer_weights)
@@ -125,6 +140,10 @@
     merged <- .covRle_from_points(chr, start, strand, score, strand_lv, seq_info, integer_weights)
   }
   sums <- NULL
+  .save_point_ofst_cov(covs, merged, sizes, out_file, out_file_merged, seq_info, format)
+}
+
+.save_point_ofst_cov <- function(covs, merged, sizes, out_file, out_file_merged, seq_info, format) {
   save_RDSQS(covRleList(covs, fraction = sizes),
              file = paste0(gsub(paste0("\\.cov", format, "$"), "", out_file, ignore.case = TRUE), ".cov", format))
   if (!is.null(out_file_merged)) {
@@ -133,4 +152,31 @@
                                      ".cov", format))
   }
   TRUE
+}
+
+# RleLists of every (read length, strand) group and all lengths merged, in the group order of
+# ofst_point_sums(), built per chromosome block by ofst_chr_rle(). NULL if a chromosome is split
+# over several row blocks or starts are not sorted inside a block (callers then fall back).
+.point_rlelists_by_chr <- function(chr, start, strand_code, size_index, n_size, score, seq_info,
+                                   integer_weights) {
+  if (!length(chr)) return(NULL)
+  runs <- ofst_code_runs(chr)
+  if (anyNA(runs$value) || anyDuplicated(runs$value)) return(NULL)
+  chrs <- seqlevels(seq_info)
+  lens <- as.integer(seqlengths(seq_info))
+  from <- c(0, head(runs$end, -1))
+  per_chr <- vector("list", length(chrs))
+  for (b in seq_along(runs$value)) {
+    i <- runs$value[b]
+    r <- ofst_chr_rle(start, strand_code, size_index, n_size, score, lens[i], from[b], runs$end[b])
+    if (is.null(r)) return(NULL)
+    per_chr[[i]] <- lapply(r, function(x) S4Vectors::Rle(x$values, x$lengths))
+  }
+  zero <- if (integer_weights) 0L else 0
+  lapply(seq_len(2L * (n_size + 1L)), function(g) {
+    rles <- lapply(seq_along(chrs), function(i)
+      if (is.null(per_chr[[i]])) S4Vectors::Rle(zero, lens[i]) else per_chr[[i]][[g]])
+    names(rles) <- chrs
+    IRanges::RleList(rles, compress = FALSE)
+  })
 }

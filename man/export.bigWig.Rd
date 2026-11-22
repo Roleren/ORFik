@@ -9,7 +9,10 @@ export.bigWig(
   file,
   split.by.strand = TRUE,
   is_pre_collapsed = FALSE,
-  seq_info = seqinfo(x)
+  seq_info = seqinfo(x),
+  threads = .bigwig_threads(),
+  compression_level = 6L,
+  writer = getOption("ORFik.bigwig_writer", "ORFik")
 )
 }
 \arguments{
@@ -29,6 +32,21 @@ is represented once per read length.}
 
 \item{seq_info}{A `Seqinfo` object, default `seqinfo(x)`. Sequence lengths
 must be defined.}
+
+\item{threads}{Integer, number of threads used to compress the bigWig
+blocks (ORFik writer only). Default: option `ORFik.bigwig_threads`, else
+the data.table thread count, at most 8.}
+
+\item{compression_level}{Integer 0-9, default 6 (the zlib level of
+rtracklayer and the UCSC tools). Level 1 is about 40 percent faster and
+gives about 4 percent larger files (ORFik writer only).}
+
+\item{writer}{Character, `"ORFik"` (default, option `ORFik.bigwig_writer`)
+or `"rtracklayer"`. The ORFik writer writes the coverage runs directly
+with parallel block compression; `rtracklayer::import.bw()` returns the
+same `GRanges`, `RleList` and `NumericList` from both. Zoom levels
+(used by genome browsers for zoomed-out views) are fixed (256 bp times 4^k),
+so zoomed-out summaries can differ slightly from rtracklayer's files.}
 }
 \value{
 `invisible(NULL)`. The function writes one or two `.bigWig` files.

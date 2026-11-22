@@ -66,9 +66,10 @@ convert_bam_to_ofst <- function(df,
   out_dir <- dirname(out_file)
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
   temporary <- tempfile(pattern = ".rna_ofst_", tmpdir = out_dir, fileext = ".ofst")
-  on.exit(unlink(temporary))
+  on.exit(unlink(c(temporary, .ofst_index_path(temporary))))
   export.ofst(reads, temporary)
   if (!file.rename(temporary, out_file)) stop("Cannot publish complete OFST: ", out_file)
+  .ofst_index_rename(temporary, out_file)
   decision <- rna_strand_record(source_file)
   orientation <- rna_strand_resolve(source_file, read_strand)
   if (!is.null(decision) || orientation != "alignment") {

@@ -10,7 +10,10 @@
 # back to the filtering path).
 
 # Per-file chromosome blocks, or NULL if a chromosome is split over several row blocks.
+# A valid sidecar index (<path>.idx, see utils_ofst_index.R) replaces the seqnames scan.
 .ofst_chr_blocks <- function(path) {
+  idx <- .ofst_index_read(path)
+  if (!is.null(idx)) return(.ofst_index_blocks(idx))
   s <- fst::read_fst(path, "seqnames")[[1L]]
   if (is.character(s)) s <- factor(s)
   if (!is.factor(s)) return(NULL)

@@ -10,6 +10,25 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// bw_write_runs
+Rcpp::NumericVector bw_write_runs(std::string path, Rcpp::CharacterVector chrom, Rcpp::IntegerVector chrom_size, Rcpp::List values, Rcpp::List lengths, int threads, int level, bool zero_runs, int chrom_block_size);
+RcppExport SEXP _ORFik_bw_write_runs(SEXP pathSEXP, SEXP chromSEXP, SEXP chrom_sizeSEXP, SEXP valuesSEXP, SEXP lengthsSEXP, SEXP threadsSEXP, SEXP levelSEXP, SEXP zero_runsSEXP, SEXP chrom_block_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type chrom(chromSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chrom_size(chrom_sizeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type lengths(lengthsSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    Rcpp::traits::input_parameter< int >::type level(levelSEXP);
+    Rcpp::traits::input_parameter< bool >::type zero_runs(zero_runsSEXP);
+    Rcpp::traits::input_parameter< int >::type chrom_block_size(chrom_block_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(bw_write_runs(path, chrom, chrom_size, values, lengths, threads, level, zero_runs, chrom_block_size));
+    return rcpp_result_gen;
+END_RCPP
+}
 // orfs_as_IRanges
 S4 orfs_as_IRanges(std::string& main_string, const std::string s, const std::string e, int minimumLength);
 RcppExport SEXP _ORFik_orfs_as_IRanges(SEXP main_stringSEXP, SEXP sSEXP, SEXP eSEXP, SEXP minimumLengthSEXP) {
@@ -77,6 +96,37 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_size(n_sizeSEXP);
     Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
     rcpp_result_gen = Rcpp::wrap(ofst_point_sums(chr, start, strand, size_index, n_size, score));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_chr_rle
+SEXP ofst_chr_rle(Rcpp::IntegerVector start, Rcpp::IntegerVector strand, Rcpp::IntegerVector size_index, int n_size, SEXP score, int chr_len, double from, double to);
+RcppExport SEXP _ORFik_ofst_chr_rle(SEXP startSEXP, SEXP strandSEXP, SEXP size_indexSEXP, SEXP n_sizeSEXP, SEXP scoreSEXP, SEXP chr_lenSEXP, SEXP fromSEXP, SEXP toSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type strand(strandSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type size_index(size_indexSEXP);
+    Rcpp::traits::input_parameter< int >::type n_size(n_sizeSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< int >::type chr_len(chr_lenSEXP);
+    Rcpp::traits::input_parameter< double >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< double >::type to(toSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_chr_rle(start, strand, size_index, n_size, score, chr_len, from, to));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_block_index
+Rcpp::List ofst_block_index(Rcpp::IntegerVector codes, SEXP start, SEXP score);
+RcppExport SEXP _ORFik_ofst_block_index(SEXP codesSEXP, SEXP startSEXP, SEXP scoreSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type codes(codesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type start(startSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_block_index(codes, start, score));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -239,11 +289,14 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_ORFik_bw_write_runs", (DL_FUNC) &_ORFik_bw_write_runs, 9},
     {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
     {"_ORFik_ofst_code_runs", (DL_FUNC) &_ORFik_ofst_code_runs, 1},
     {"_ORFik_ofst_point_sums", (DL_FUNC) &_ORFik_ofst_point_sums, 6},
+    {"_ORFik_ofst_chr_rle", (DL_FUNC) &_ORFik_ofst_chr_rle, 8},
+    {"_ORFik_ofst_block_index", (DL_FUNC) &_ORFik_ofst_block_index, 3},
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},

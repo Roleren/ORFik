@@ -40,6 +40,7 @@
   owner$output <- normalizePath(path, mustWork = FALSE)
   .ofst_write_cache_owner(cache, owner)
   preserve_summary <- TRUE
+  unlink(.ofst_index_path(path))   # the old index must not outlive the old output
   if (!file.rename(output_tmp, path)) {
     preserve_summary <- FALSE
     .ofst_abort("cannot replace merged output '", path, "'; existing output was not replaced.")
@@ -50,6 +51,7 @@
                 "'. The correct summary is preserved at '", summary_tmp, "'; do not use any old sidecar.")
   }
   preserve_summary <- FALSE
+  .ofst_index_write(path, dt)
   message("OFST merge: saved ", path, "; removal summary: ", sidecar,
           if (is.null(attr(dt, "removal_summary", exact = TRUE))) " (NULL: no filtering)." else ".")
   invisible(NULL)
