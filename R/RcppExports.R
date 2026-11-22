@@ -5,8 +5,20 @@ codon_dwell_eval_cpp <- function(codes, rows, y, starts, beta, nf, hessian = TRU
     .Call('_ORFik_codon_dwell_eval_cpp', PACKAGE = 'ORFik', codes, rows, y, starts, beta, nf, hessian, scores, threads)
 }
 
-codon_dwell_feature_counts_cpp <- function(codes, rows, y, nf) {
-    .Call('_ORFik_codon_dwell_feature_counts_cpp', PACKAGE = 'ORFik', codes, rows, y, nf)
+codon_dwell_feature_counts_cpp <- function(codes, rows, y, nf, y2_ = NULL, threads = 1L) {
+    .Call('_ORFik_codon_dwell_feature_counts_cpp', PACKAGE = 'ORFik', codes, rows, y, nf, y2_, threads)
+}
+
+codon_dwell_tabulate_cpp <- function(bin, w, n) {
+    .Call('_ORFik_codon_dwell_tabulate_cpp', PACKAGE = 'ORFik', bin, w, n)
+}
+
+codon_dwell_map_cpp <- function(chr, strand, start, end, lvmap, key_start, key_end, layer_end, ex_start, ex_end, ex_minus, ex_gene, ex_tx0) {
+    .Call('_ORFik_codon_dwell_map_cpp', PACKAGE = 'ORFik', chr, strand, start, end, lvmap, key_start, key_end, layer_end, ex_start, ex_end, ex_minus, ex_gene, ex_tx0)
+}
+
+codon_dwell_counts_cpp <- function(gene, tx, w, wy, ncodons, row_start, trim_start, trim_end, nrow) {
+    .Call('_ORFik_codon_dwell_counts_cpp', PACKAGE = 'ORFik', gene, tx, w, wy, ncodons, row_start, trim_start, trim_end, nrow)
 }
 
 orfs_as_IRanges <- function(main_string, s, e, minimumLength) {

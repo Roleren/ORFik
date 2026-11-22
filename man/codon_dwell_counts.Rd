@@ -2,9 +2,14 @@
 % Please edit documentation in R/codon_dwell.R
 \name{codon_dwell_counts}
 \alias{codon_dwell_counts}
-\title{Map P-sites to codon positions of a codon dwell design}
+\title{Count P-sites per codon position of a codon dwell design}
 \usage{
-codon_dwell_counts(reads, design)
+codon_dwell_counts(
+  reads,
+  design,
+  map = codon_dwell_map(reads, design),
+  w = map$w
+)
 }
 \arguments{
 \item{reads}{P-site reads (GRanges, GAlignments, GAlignmentPairs or a path
@@ -13,12 +18,18 @@ Weights are taken from a "score" metadata column if present (collapsed
 reads, e.g. from ofst files).}
 
 \item{design}{a codon_dwell_design}
+
+\item{map}{output of \code{codon_dwell_map} (default: computed from reads)}
+
+\item{w}{weights per entry of map (default map$w), e.g. end bias corrected
+weights for y.}
 }
 \value{
 a list with y (counts per design position), gene_total
-(P-sites per CDS, all codons and frames) and cds_psites (sum of gene_total).
+(P-sites per CDS, all codons and frames, with the weights map$w) and
+cds_psites (sum of gene_total).
 }
 \description{
-Map P-sites to codon positions of a codon dwell design
+Count P-sites per codon position of a codon dwell design
 }
 \keyword{internal}

@@ -30,8 +30,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // codon_dwell_feature_counts_cpp
-List codon_dwell_feature_counts_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, int nf);
-RcppExport SEXP _ORFik_codon_dwell_feature_counts_cpp(SEXP codesSEXP, SEXP rowsSEXP, SEXP ySEXP, SEXP nfSEXP) {
+List codon_dwell_feature_counts_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, int nf, Nullable<NumericVector> y2_, int threads);
+RcppExport SEXP _ORFik_codon_dwell_feature_counts_cpp(SEXP codesSEXP, SEXP rowsSEXP, SEXP ySEXP, SEXP nfSEXP, SEXP y2_SEXP, SEXP threadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,64 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type rows(rowsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< int >::type nf(nfSEXP);
-    rcpp_result_gen = Rcpp::wrap(codon_dwell_feature_counts_cpp(codes, rows, y, nf));
+    Rcpp::traits::input_parameter< Nullable<NumericVector> >::type y2_(y2_SEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(codon_dwell_feature_counts_cpp(codes, rows, y, nf, y2_, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
+// codon_dwell_tabulate_cpp
+NumericVector codon_dwell_tabulate_cpp(IntegerVector bin, NumericVector w, int n);
+RcppExport SEXP _ORFik_codon_dwell_tabulate_cpp(SEXP binSEXP, SEXP wSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type bin(binSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(codon_dwell_tabulate_cpp(bin, w, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// codon_dwell_map_cpp
+List codon_dwell_map_cpp(IntegerVector chr, IntegerVector strand, IntegerVector start, IntegerVector end, IntegerVector lvmap, NumericVector key_start, NumericVector key_end, IntegerVector layer_end, IntegerVector ex_start, IntegerVector ex_end, LogicalVector ex_minus, IntegerVector ex_gene, IntegerVector ex_tx0);
+RcppExport SEXP _ORFik_codon_dwell_map_cpp(SEXP chrSEXP, SEXP strandSEXP, SEXP startSEXP, SEXP endSEXP, SEXP lvmapSEXP, SEXP key_startSEXP, SEXP key_endSEXP, SEXP layer_endSEXP, SEXP ex_startSEXP, SEXP ex_endSEXP, SEXP ex_minusSEXP, SEXP ex_geneSEXP, SEXP ex_tx0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type strand(strandSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type end(endSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type lvmap(lvmapSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type key_start(key_startSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type key_end(key_endSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type layer_end(layer_endSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_start(ex_startSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_end(ex_endSEXP);
+    Rcpp::traits::input_parameter< LogicalVector >::type ex_minus(ex_minusSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_gene(ex_geneSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ex_tx0(ex_tx0SEXP);
+    rcpp_result_gen = Rcpp::wrap(codon_dwell_map_cpp(chr, strand, start, end, lvmap, key_start, key_end, layer_end, ex_start, ex_end, ex_minus, ex_gene, ex_tx0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// codon_dwell_counts_cpp
+List codon_dwell_counts_cpp(IntegerVector gene, IntegerVector tx, NumericVector w, NumericVector wy, IntegerVector ncodons, NumericVector row_start, int trim_start, int trim_end, int nrow);
+RcppExport SEXP _ORFik_codon_dwell_counts_cpp(SEXP geneSEXP, SEXP txSEXP, SEXP wSEXP, SEXP wySEXP, SEXP ncodonsSEXP, SEXP row_startSEXP, SEXP trim_startSEXP, SEXP trim_endSEXP, SEXP nrowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type gene(geneSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type tx(txSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type wy(wySEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type ncodons(ncodonsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type row_start(row_startSEXP);
+    Rcpp::traits::input_parameter< int >::type trim_start(trim_startSEXP);
+    Rcpp::traits::input_parameter< int >::type trim_end(trim_endSEXP);
+    Rcpp::traits::input_parameter< int >::type nrow(nrowSEXP);
+    rcpp_result_gen = Rcpp::wrap(codon_dwell_counts_cpp(gene, tx, w, wy, ncodons, row_start, trim_start, trim_end, nrow));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -273,7 +330,10 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_codon_dwell_eval_cpp", (DL_FUNC) &_ORFik_codon_dwell_eval_cpp, 9},
-    {"_ORFik_codon_dwell_feature_counts_cpp", (DL_FUNC) &_ORFik_codon_dwell_feature_counts_cpp, 4},
+    {"_ORFik_codon_dwell_feature_counts_cpp", (DL_FUNC) &_ORFik_codon_dwell_feature_counts_cpp, 6},
+    {"_ORFik_codon_dwell_tabulate_cpp", (DL_FUNC) &_ORFik_codon_dwell_tabulate_cpp, 3},
+    {"_ORFik_codon_dwell_map_cpp", (DL_FUNC) &_ORFik_codon_dwell_map_cpp, 13},
+    {"_ORFik_codon_dwell_counts_cpp", (DL_FUNC) &_ORFik_codon_dwell_counts_cpp, 9},
     {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},

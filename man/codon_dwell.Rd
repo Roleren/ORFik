@@ -21,6 +21,8 @@ codon_dwell(
   heldout = FALSE,
   type = "pshifted",
   code = GENETIC_CODE,
+  end_bias = FALSE,
+  shifts = NULL,
   threads = 4L,
   verbose = TRUE
 )
@@ -80,6 +82,19 @@ per gene for the default cds.}
 \item{code}{a named character vector of size 64, the genetic code.
 Default: \code{GENETIC_CODE}. Sense codons are all codons not coding "*".}
 
+\item{end_bias}{logical or integer, default FALSE (0). Correct for
+footprint end nucleotide bias (see details): an integer 1..6 is the number
+of nucleotides modelled from each read end (plus the flanking cut-site
+nucleotide), TRUE = 3. Needs read lengths (a "size" column, as in
+pshifted ofst files) and the P-site offsets (shifts).}
+
+\item{shifts}{the P-site offsets per read length, used when end_bias is
+TRUE: a data.frame with columns fraction (read length) and offsets_start
+(negative offset of the P-site from the 5' end), used for all libraries,
+or a list of them named by library or by file (as from
+\code{\link{shifts_load}}, matched by file name without extension and
+"_pshifted"). Default NULL: \code{shifts_load(df)}.}
+
 \item{threads}{integer, default 4. OpenMP threads used by the glm fit
 (libraries are processed one at a time, so memory stays at one library plus
 the design). The dense information matrix products also use the BLAS
@@ -129,6 +144,34 @@ when codons co-occur (neighbouring codons, amino acids), which the glm
 separates. SEs are delta-method approximations over genes
 (\code{sqrt(var_txNorm / N) / mean_txNorm}).
 
+Footprint end bias (\code{end_bias}, choros-style technical terms):
+nuclease cut preferences, ligation and reverse transcription make the
+nucleotides at and next to the 5' and 3' ends of footprints change how
+often a footprint is captured. For a read length with a fixed P-site offset
+the ends sit at fixed codon offsets (with offset 12, a 28 nt read starts at
+the first nucleotide of the codon at offset -5, its 5' cut site is the last
+nucleotide of offset -6, and it ends at the first nucleotide of offset +4),
+so without correction end bias shows up as codon "dwell" at the footprint
+ends (offsets -6/-5 and +3..+5). With end_bias, P-sites are split into
+categories (read length, frame of the P-site in its codon; categories with
+at least 0.5\% of the P-sites, at most 15 read lengths) and the read ends
+are located with the P-site offsets (\code{shifts}). A first stage fits,
+within each codon position, the multinomial over categories with category
+intercepts and, per read length, terms for the nucleotide just outside
+each end (position 0, the cut site) and the first n nucleotides from each
+end (positions 1..n, 1 = terminal nucleotide; n = end_bias, 3 for TRUE).
+Dwell time and gene flux cancel in this conditional model, so the end bias
+is estimated without a codon model (on up to 100000 positions with reads,
+a stride subsample). Each read then gets the weight
+\code{exp(-sum of its end terms)}, rescaled so every category keeps its
+total, and the codon model is fitted on these corrected counts. Genes are
+selected on the uncorrected counts. Reads of other categories keep weight
+1. The SEs of the codon betas do not include the uncertainty of the end bias
+weights. On eIF5A / DOHH KO and WT HCT116 libraries (PRJNA545625) the
+spread of codon betas at offsets -6, -5, +4 and +5 roughly halves, interior
+offsets (-4..+2) are unchanged and the Pro effects at E and P are kept;
+part of the -5 signal remains, so interpret footprint-end offsets with care.
+
 Prerequisites: reads must be P-sites with correct offsets per read length
 (see \code{\link{shiftFootprintsByExperiment}}); estimates from libraries
 with cycloheximide pretreatment or with initiation inhibitors
@@ -153,11 +196,14 @@ design <- codon_dwell_design(loadRegion(df, "cds", filterTranscripts(df, 0, 1, 0
                              findFa(df))
 res <- codon_dwell(df, design = design, heldout = TRUE)
 codon_dwell_plot(res)
+# Footprint end bias correction (P-site offsets from shifts_load(df))
+res_eb <- codon_dwell(df, design = design, end_bias = TRUE)
+attr(res_eb, "end_bias")
 }
 }
 \references{
 Ribo-DT: https://doi.org/10.1093/nar/gkaa203,
-choros: https://doi.org/10.1101/2023.02.16.528794
+choros: https://doi.org/10.1101/2023.02.16.528794 (PMID 36865295)
 }
 \seealso{
 Other codon: 

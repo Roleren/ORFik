@@ -159,24 +159,129 @@ List codon_dwell_eval_cpp(RawMatrix codes, IntegerVector rows, NumericVector y,
 }
 
 // Per offset and code (0..nf): number of positions and summed counts over the selected rows (feature support for
-// codon_dwell(): codons without positions or reads at an offset are not estimated).
+// codon_dwell(): codons without positions or reads at an offset are not estimated). y2 (optional, same length as y)
+// gives a second summed count (used for the start values: expected counts under uniform density within gene).
 // [[Rcpp::export]]
-List codon_dwell_feature_counts_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, int nf) {
+List codon_dwell_feature_counts_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, int nf,
+                                    Nullable<NumericVector> y2_ = R_NilValue, int threads = 1) {
   const int N = rows.size(), K = codes.ncol();
   const size_t NR = codes.nrow();
   if (y.size() != N) stop("codon_dwell_feature_counts_cpp: incompatible inputs");
+  NumericVector y2v;
+  const bool has2 = y2_.isNotNull();
+  if (has2) { y2v = NumericVector(y2_); if (y2v.size() != N) stop("codon_dwell_feature_counts_cpp: incompatible y2"); }
   const unsigned char* cd = RAW(codes);
-  NumericMatrix n(nf + 1, K), ys(nf + 1, K);
+  const int* rw = INTEGER(rows);
+  const double* yy = REAL(y);
+  const double* y2 = has2 ? REAL(y2v) : nullptr;
+  for (int i = 0; i < N; i++) if (rw[i] < 0 || (size_t)rw[i] >= NR)
+    stop("codon_dwell_feature_counts_cpp: row index out of bounds");
+  for (size_t j = 0; j < NR * (size_t)K; j++) if (cd[j] > nf)
+    stop("codon_dwell_feature_counts_cpp: code larger than number of features");
+  NumericMatrix n(nf + 1, K), ys(nf + 1, K), ys2(has2 ? nf + 1 : 0, has2 ? K : 0);
+  double* np = REAL(n); double* yp = REAL(ys); double* y2p = has2 ? REAL(ys2) : nullptr;
+#ifdef _OPENMP
+  const int nt = std::max(1, std::min(threads, omp_get_num_procs()));
+  #pragma omp parallel for num_threads(nt) schedule(dynamic, 1)
+#endif
   for (int k = 0; k < K; k++) {
     const unsigned char* ck = cd + NR * k;
-    double* nk = &n(0, k); double* yk = &ys(0, k);
+    double* nk = np + (size_t)(nf + 1) * k; double* yk = yp + (size_t)(nf + 1) * k;
+    double* y2k = has2 ? y2p + (size_t)(nf + 1) * k : nullptr;
     for (int i = 0; i < N; i++) {
-      const size_t r = rows[i];
-      if (r >= NR) stop("codon_dwell_feature_counts_cpp: row index out of bounds");
-      const unsigned char c = ck[r];
-      if (c > nf) stop("codon_dwell_feature_counts_cpp: code larger than number of features");
-      nk[c] += 1; yk[c] += y[i];
+      const unsigned char c = ck[rw[i]];
+      nk[c] += 1; yk[c] += yy[i];
+      if (has2) y2k[c] += y2[i];
     }
   }
-  return List::create(_["n"] = n, _["y"] = ys);
+  return List::create(_["n"] = n, _["y"] = ys, _["y2"] = ys2);
+}
+
+// Weighted tabulation: out[bin[i]] += w[i] for bins 1..n (bins outside 1..n are ignored).
+// [[Rcpp::export]]
+NumericVector codon_dwell_tabulate_cpp(IntegerVector bin, NumericVector w, int n) {
+  const R_xlen_t N = bin.size();
+  if (w.size() != N) stop("codon_dwell_tabulate_cpp: incompatible inputs");
+  NumericVector out(n);
+  const int* b = INTEGER(bin); const double* ww = REAL(w); double* o = REAL(out);
+  for (R_xlen_t i = 0; i < N; i++) { const int k = b[i]; if (k >= 1 && k <= n) o[k - 1] += ww[i]; }
+  return out;
+}
+
+// P-site -> CDS lookup for codon_dwell_map(): per read (chromosome index into the read seqlevels, strand 1 "+",
+// 2 "-", 3 "*" = both, position = start, or end on "-"), find the CDS exon containing it in every layer of
+// non-overlapping exons (keys chromosome-strand id * 2^32 + position, sorted within layer; layer_end = cumulative
+// layer sizes). A per layer and strand hint makes position-sorted reads mostly O(1). Returns, per hit, the read
+// index (1-based), CDS index (gene) and the 1-based position in the CDS (tx).
+// [[Rcpp::export]]
+List codon_dwell_map_cpp(IntegerVector chr, IntegerVector strand, IntegerVector start, IntegerVector end,
+                         IntegerVector lvmap, NumericVector key_start, NumericVector key_end,
+                         IntegerVector layer_end, IntegerVector ex_start, IntegerVector ex_end,
+                         LogicalVector ex_minus, IntegerVector ex_gene, IntegerVector ex_tx0) {
+  const R_xlen_t n = chr.size();
+  const int NL = layer_end.size();
+  const double* ks = REAL(key_start); const double* ke = REAL(key_end);
+  if (strand.size() != n || start.size() != n || end.size() != n) stop("codon_dwell_map_cpp: incompatible inputs");
+  std::vector<int> qo, go, to;
+  qo.reserve(n); go.reserve(n); to.reserve(n);
+  std::vector<int> hint(2 * NL, -1);
+  for (R_xlen_t i = 0; i < n; i++) {
+    const int c = chr[i];
+    if (c == NA_INTEGER || c < 1 || c > lvmap.size()) continue;
+    const int d = lvmap[c - 1];
+    if (d == NA_INTEGER) continue;
+    const int st = strand[i];
+    const int pos = st == 2 ? end[i] : start[i];
+    for (int s = 0; s < 2; s++) {
+      if (st == 1 && s == 1) break;
+      if (st == 2 && s == 0) continue;
+      const double key = ((double)(d - 1) * 2 + s) * 4294967296.0 + pos;
+      int a = 0;
+      for (int l = 0; l < NL; l++) {
+        const int b = layer_end[l];
+        int& h = hint[2 * l + s];
+        int j;
+        if (h >= a && h < b && ks[h] <= key && (h + 1 == b || key < ks[h + 1])) {
+          j = h;
+        } else {
+          const double* it = std::upper_bound(ks + a, ks + b, key);
+          j = (int)(it - ks) - 1;
+          if (j < a) { a = b; continue; }
+          h = j;
+        }
+        if (key <= ke[j]) {
+          qo.push_back((int)i + 1);
+          go.push_back(ex_gene[j]);
+          to.push_back(ex_tx0[j] + (ex_minus[j] ? ex_end[j] - pos : pos - ex_start[j]) + 1);
+        }
+        a = b;
+      }
+    }
+  }
+  return List::create(_["idx"] = wrap(qo), _["gene"] = wrap(go), _["tx"] = wrap(to));
+}
+
+// Counts of codon_dwell_counts(): gene_total[g] += w (all codons and frames), y[row] += wy for P-site codons inside
+// the trimmed window (row = row_start[g] + codon - trim_start, 1-based).
+// [[Rcpp::export]]
+List codon_dwell_counts_cpp(IntegerVector gene, IntegerVector tx, NumericVector w, NumericVector wy,
+                            IntegerVector ncodons, NumericVector row_start, int trim_start, int trim_end,
+                            int nrow) {
+  const R_xlen_t n = gene.size();
+  const int G = ncodons.size();
+  if (tx.size() != n || w.size() != n || wy.size() != n || row_start.size() != G)
+    stop("codon_dwell_counts_cpp: incompatible inputs");
+  NumericVector gt(G), y(nrow);
+  for (R_xlen_t i = 0; i < n; i++) {
+    const int g = gene[i] - 1;
+    if (g < 0 || g >= G) stop("codon_dwell_counts_cpp: gene index out of bounds");
+    gt[g] += w[i];
+    const int cod = (tx[i] - 1) / 3 + 1;
+    if (cod > trim_start && cod <= ncodons[g] - trim_end) {
+      const R_xlen_t r = (R_xlen_t)row_start[g] + cod - trim_start - 1;
+      if (r < 0 || r >= nrow) stop("codon_dwell_counts_cpp: row out of bounds");
+      y[r] += wy[i];
+    }
+  }
+  return List::create(_["y"] = y, _["gene_total"] = gt);
 }

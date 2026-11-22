@@ -115,6 +115,39 @@ test_that("P-sites are mapped to the right codons on both strands", {
   expect_gt(cor(cnt$y, cnt2$y), 0.99)
 })
 
+test_that("fast P-site mapping (position index) equals findOverlaps + pmapToTranscriptF", {
+  slow <- ORFik:::codon_dwell_counts_overlaps(reads, design)
+  expect_identical(ORFik:::codon_dwell_counts(reads, design), slow)
+  # all frames, reads outside CDSs, unknown chromosome, unstranded reads, GAlignments-like weights absent
+  set.seed(7)
+  r3 <- GRanges("chrS", IRanges(sample(max(end(unlist(g$cds))) + 100, 20000, TRUE), width = 1),
+                sample(c("+", "-"), 20000, TRUE), score = rpois(20000, 3) + 1L)
+  expect_identical(ORFik:::codon_dwell_counts(r3, design),
+                   ORFik:::codon_dwell_counts_overlaps(r3, design))
+  # extra chromosomes in the reads (seqlevels matched by name)
+  r3b <- suppressWarnings(c(GRanges("chrOther", IRanges(1:5, width = 1), "+", score = 1L), r3))
+  expect_identical(ORFik:::codon_dwell_counts(r3b, design), ORFik:::codon_dwell_counts(r3, design))
+  # unstranded reads count on both strands (as findOverlaps)
+  ru <- GRanges("chrS", IRanges(start(reads)[1:50], width = 1), "*", score = 2L)
+  both <- c(ru, ru); strand(both) <- rep(c("+", "-"), each = 50)
+  expect_identical(ORFik:::codon_dwell_counts(ru, design), ORFik:::codon_dwell_counts(both, design))
+  r4 <- r3; mcols(r4) <- NULL
+  expect_identical(ORFik:::codon_dwell_counts(r4, design),
+                   ORFik:::codon_dwell_counts_overlaps(r4, design))
+  # overlapping CDSs of different genes (same strand): a read counts once per CDS
+  cds_ov <- c(g$cds[1:20], GRangesList(ov1 = g$cds[[1]], ov3 = shift(g$cds[[3]], 30)))
+  d_ov <- codon_dwell_design(cds_ov, g$fa, offsets = offsets, trim_start = 20, trim_end = 10)
+  expect_gt(length(d_ov$index$layer_end), 1)
+  expect_identical(ORFik:::codon_dwell_counts(r3, d_ov), ORFik:::codon_dwell_counts_overlaps(r3, d_ov))
+  # designs saved without index / nt are completed
+  d_old <- design; d_old$index <- NULL; d_old$nt <- NULL; d_old$nt_start <- NULL
+  d_new <- ORFik:::codon_dwell_prepare(d_old, need_nt = TRUE)
+  expect_identical(d_new$nt, design$nt); expect_identical(d_new$nt_start, design$nt_start)
+  expect_identical(ORFik:::codon_dwell_counts(reads, d_old), slow)
+  expect_equal(length(design$nt), 3 * sum(design$ncodons))
+  expect_equal(as.integer(design$nt[1:3]), match(strsplit(substr(g$seqs[1], 1, 3), "")[[1]], c("A", "C", "G", "T")) - 1L)
+})
+
 test_that("codon_dwell glm recovers simulated dwell betas", {
   res <- codon_dwell(reads = reads, design = design, min_reads_gene = 100, verbose = FALSE)
   expect_true(all(c("library", "offset", "site", "codon", "aa", "beta", "se") %in% colnames(res)))
@@ -218,4 +251,93 @@ test_that("codon_dwell works on the ORFik template experiment", {
   expect_is(codon_dwell_plot(res), "ggplot")
   expect_is(codon_dwell_plot(res, type = "site", library = s$library), "ggplot")
   expect_error(codon_dwell_plot(res, library = "missing"), "No rows")
+})
+
+# Footprint end bias: reads in categories (length 28-30, P-site frame 0-2, offset 12) with capture bias from the 5' and
+# 3' end nucleotides; dwell only at E, P, A. Without correction the end bias leaks into offsets -5 and +3..+5.
+sim_reads_end_bias <- function(g, offsets, beta, b5, b3, lens = 28:30, pi_f = c(0.7, 0.2, 0.1), off5 = -12,
+                               mean_per_codon = 12, seed = 12, trim = c(20, 10)) {
+  set.seed(seed)
+  acgt <- c("A", "C", "G", "T")
+  pi_c <- as.vector(outer(pi_f, c(0.3, 0.45, 0.25))) # frame fastest, then length
+  cat_f <- rep(0:2, length(lens)); cat_L <- rep(lens, each = 3)
+  out <- list()
+  for (i in seq_len(g$n_genes)) {
+    s <- g$seqs[i]; n <- nchar(s) / 3
+    nts <- match(strsplit(s, "")[[1]], acgt)
+    cod <- substring(s, seq(1, 3 * n - 2, 3), seq(3, 3 * n, 3))
+    p <- (trim[1] + 1):(n - trim[2])
+    eta <- numeric(length(p))
+    for (k in seq_along(offsets)) eta <- eta + beta[[k]][match(cod[p + 1 + offsets[k]], sense)]
+    mu_g <- mean_per_codon * exp(rnorm(1, 0, 0.5)) * exp(eta) / mean(exp(eta))
+    tx <- outer(3 * (p - 1) + 1, cat_f, "+")
+    t5 <- tx + off5; t3 <- sweep(t5, 2, cat_L - 1, "+")
+    li <- matrix(match(cat_L, lens), length(p), length(cat_L), byrow = TRUE)
+    bias <- b5[cbind(nts[t5], as.vector(li))] + b3[cbind(nts[t3], as.vector(li))]
+    lam <- mu_g * matrix(pi_c, length(p), length(pi_c), byrow = TRUE) * exp(matrix(bias, length(p)))
+    y <- matrix(rpois(length(lam), lam), length(p))
+    nz <- which(y > 0)
+    out[[i]] <- data.table(gene = i, tx = tx[nz], y = y[nz], size = cat_L[col(y)[nz]])
+  }
+  dt <- rbindlist(out)
+  gr <- unlist(pmapFromTranscriptF(IRanges(dt$tx, width = 1), g$cds[dt$gene], removeEmpty = TRUE),
+               use.names = FALSE)
+  stopifnot(length(gr) == nrow(dt))
+  mcols(gr) <- NULL
+  gr$size <- dt$size; gr$score <- dt$y
+  gr
+}
+
+test_that("end_bias recovers simulated footprint end bias and removes it from end offsets", {
+  ge <- sim_genome(n_genes = 400, n_codons = 220, seed = 21, extra = FALSE)
+  offs <- c(-5L, -2:0, 3:5)
+  set.seed(22)
+  tb <- lapply(offs, function(k) {
+    if (k %in% -2:0) { b <- rnorm(61, 0, 0.3); b - mean(b) } else rep(0, 61) })
+  b5 <- matrix(rnorm(12, 0, 0.4), 4); b5 <- sweep(b5, 2, colMeans(b5))
+  b3 <- matrix(rnorm(12, 0, 0.4), 4); b3 <- sweep(b3, 2, colMeans(b3))
+  re <- sim_reads_end_bias(ge, offs, tb, b5, b3)
+  de <- codon_dwell_design(ge$cds, ge$fa, offsets = offs, trim_start = 20, trim_end = 10)
+  sh <- data.frame(fraction = 28:30, offsets_start = -12L)
+  raw <- codon_dwell(reads = re, design = de, verbose = FALSE)
+  eb <- codon_dwell(reads = re, design = de, end_bias = 1L, shifts = sh, verbose = FALSE)
+  s <- attr(eb, "summary")
+  expect_equal(s$status, "ok")
+  expect_equal(s$end_bias_categories, 9L)
+  expect_equal(s$end_bias_fraction, 1)
+  cf <- attr(eb, "end_bias")
+  expect_equal(nrow(cf), 2 * 2 * 3 * 4) # ends x (flank, terminal) x lengths x nt
+  truth <- c(as.vector(b5), as.vector(b3))
+  expect_gt(cor(cf[position == 1]$beta, truth), 0.98)
+  expect_lt(max(abs(cf[position == 1]$beta - truth)), 0.08)
+  expect_lt(max(abs(cf[position == 0]$beta)), 0.08) # no flank bias simulated
+  expect_true(all(cf$se > 0))
+  # end offsets: spurious signal without correction, gone with it; E/P/A dwell kept
+  ends <- raw$offset %in% c(-5, 3:5)
+  expect_gt(stats::sd(raw$beta[ends]), 0.1)
+  expect_lt(stats::sd(eb$beta[ends]), 0.06)
+  epa <- eb$offset %in% -2:0
+  expect_gt(cor(eb$beta[epa], unlist(tb[2:4])), 0.97)
+  # default (TRUE): 3 nucleotides per end + flank; extra terms near 0, same codon estimates
+  eb3 <- codon_dwell(reads = re, design = de, end_bias = TRUE, shifts = sh, verbose = FALSE)
+  cf3 <- attr(eb3, "end_bias")
+  expect_equal(sort(unique(cf3$position)), 0:3)
+  expect_gt(cor(cf3[position == 1]$beta, truth), 0.98)
+  expect_lt(max(abs(cf3[position != 1]$beta)), 0.1)
+  expect_gt(cor(eb3$beta, eb$beta), 0.99)
+  expect_error(codon_dwell(reads = re, design = de, end_bias = 7, shifts = sh, verbose = FALSE), "0..6")
+  # same genes, same uncorrected totals
+  expect_equal(s$n_genes, attr(raw, "summary")$n_genes)
+  expect_equal(s$cds_psites, attr(raw, "summary")$cds_psites)
+  # no read lengths -> error status, shifts by name
+  re2 <- re; re2$size <- NULL
+  r2 <- codon_dwell(reads = re2, design = de, end_bias = TRUE, shifts = sh, verbose = FALSE)
+  expect_match(attr(r2, "summary")$status, "size")
+  expect_true(all(is.na(r2$beta)))
+  expect_identical(ORFik:::codon_dwell_shift_for(list(`/x/ofst/SRR1.ofst` = sh), "SRR1"), sh)
+  expect_identical(ORFik:::codon_dwell_shift_for(list(a = sh), "b", "/p/a_pshifted.ofst"), sh)
+  expect_error(ORFik:::codon_dwell_shift_for(list(a = sh), "b"), "No shifting table")
+  expect_error(codon_dwell(reads = re, design = de, end_bias = TRUE, verbose = FALSE), "shifts")
+  expect_error(codon_dwell(reads = re, design = de, end_bias = TRUE, shifts = sh, method = "ratio",
+                           verbose = FALSE), "glm")
 })

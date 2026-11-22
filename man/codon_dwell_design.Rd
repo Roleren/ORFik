@@ -43,8 +43,12 @@ matrix, positions x offsets, value = index of the sense codon minus one,
 so 0 is the reference codon, the first sense codon), gene (gene index per
 position), row_start (first position per gene, 0-based), ncodons (codons per
 CDS), cds (the kept CDS GRangesList), faFile (fasta path), offsets, sense (sense codons), aa
-(amino acid per sense codon), trim_start, trim_end and dropped (number of
-CDSs removed per reason).
+(amino acid per sense codon), trim_start, trim_end, dropped (number of
+CDSs removed per reason), nt (raw, the CDS nucleotides as codes 0..3 for
+A, C, G, T, concatenated over CDSs), nt_start (0-based start of each CDS in
+nt) and index (genome position -> CDS lookup used to map P-sites, see
+\code{codon_dwell_index}). Designs saved by older versions without nt or
+index still work: the missing parts are rebuilt when needed.
 }
 \description{
 Builds the sequence part of the codon dwell time model of
