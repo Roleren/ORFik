@@ -346,6 +346,16 @@ tRNA stages set alignIntronMax=1. These differences should be considered
 when choosing a contaminant reference and custom depletion settings.
 }
 
+\section{Extra STAR arguments}{
+
+Further STAR options for the genome alignment step can be given through the
+environment variable \code{ORFIK_STAR_EXTRA_ARGS}, e.g.
+\code{Sys.setenv(ORFIK_STAR_EXTRA_ARGS = "--limitOutSJcollapsed 5000000")}
+when STAR stops with "buffer size for SJ output is too small". The value is
+split on whitespace and appended last to the genome step's STAR call
+(depletion steps are unchanged). Unset or empty means no change.
+}
+
 \section{Index considerations}{
 
 The bundled \code{\link{STAR.index}} script uses sjdbOverhang=72 when a GTF

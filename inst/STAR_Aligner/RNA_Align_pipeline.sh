@@ -75,6 +75,13 @@ OPTIONS:
 	      own sort for very deep libraries.
 	-h	this help message
 
+	Environment:
+	ORFIK_STAR_EXTRA_ARGS  extra STAR arguments, split on whitespace and
+	      appended (last, so they take precedence) to the genome alignment
+	      (ge) STAR call only, e.g.
+	      ORFIK_STAR_EXTRA_ARGS="--limitOutSJcollapsed 5000000"
+	      Unset or empty (default): no change.
+
 fastp location must be: ~/bin/fastp
 (if you don't have it install to bin folder from: https://github.com/OpenGene/fastp
 
@@ -352,6 +359,11 @@ for step in "${steps_array[@]}"; do
               --runThreadN "$((maxCPU < 80 ? maxCPU : 80))"
               --alignEndsType "$alignment" --alignIntronMax "$intron_max"
               --outFilterMultimapNmax "$multimap" --outFilterMismatchNmax "$mismatches")
+        if [[ -n "${ORFIK_STAR_EXTRA_ARGS:-}" ]]; then
+          read -r -a star_extra_args <<< "$ORFIK_STAR_EXTRA_ARGS"
+          log "  Extra STAR arguments (ORFIK_STAR_EXTRA_ARGS): ${star_extra_args[*]}"
+          cmd+=("${star_extra_args[@]}")
+        fi
       else
         if (( verbose )); then printf '  Unmapped output: %s\n' "${outputs[@]}"; fi
         case "$step" in co|rR) thread_cap=90 ;; nc) thread_cap=80 ;; *) thread_cap=70 ;; esac
