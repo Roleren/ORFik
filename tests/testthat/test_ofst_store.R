@@ -152,6 +152,17 @@ test_that("totals above the int32 range are kept as doubles", {
   expect_true(is.double(got$score))
   expect_equal(max(got$score), 4e9)
   expect_identical(got[], pooled_merge(paths)[])
+  # an input whose own scores exceed int32 opens a double-score segment
+  big <- store_fixture(3)[, score := as.numeric(score)]
+  big[1, score := 3e9]
+  big_path <- store_write(list(big), "big")
+  ofst_store_add(store, big_path, verbose = FALSE)
+  segs <- ofst_store_manifest(store)$segments
+  expect_gt(nrow(segs), length(unique(segs$part)))
+  expect_identical(ofst_store_export_all(store, verbose = FALSE)[], pooled_merge(c(paths, big_path))[])
+  expect_true(ofst_store_verify(store))
+  ofst_store_remove(store, "big", verbose = FALSE)
+  expect_identical(ofst_store_export_all(store, verbose = FALSE)[], got[])
 })
 
 test_that("pre-sorted inputs (merge order) take the no-group path with the same result", {

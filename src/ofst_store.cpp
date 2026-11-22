@@ -84,54 +84,6 @@ Rcpp::List ofst_sorted_sum_merge(Rcpp::List a_keys, Rcpp::NumericVector a_score,
   return Rcpp::List::create(Rcpp::Named("keys") = out_keys, Rcpp::Named("score") = out_score);
 }
 
-// Row id (1-based row in `table`) of each query key, 0 when the key is not in the table.
-// `ord` lists the table rows in key order (1-based); query must be strictly increasing.
-// Two-pointer scan with galloping, so a sparse query costs O(m log(n / m)).
-// [[Rcpp::export]]
-Rcpp::IntegerVector ofst_store_match(Rcpp::List table, Rcpp::IntegerVector ord, Rcpp::List query) {
-  KeyCols t(table), q(query);
-  check_same_width(t, q);
-  const R_xlen_t n = ord.size(), m = q.n;
-  const int* o = ord.begin();
-  Rcpp::IntegerVector out(m);
-  R_xlen_t i = 0;   // position in ord
-  for (R_xlen_t j = 0; j < m; ++j) {
-    if (j > 0 && cmp_rows(q, j - 1, q, j) >= 0) Rcpp::stop("query keys are not sorted and unique (row %d)", (double)(j + 1));
-    // gallop to bracket the first ord position whose key >= query j
-    R_xlen_t lo = i, step = 1, hi = i;
-    while (hi < n && cmp_rows(t, o[hi] - 1, q, j) < 0) { lo = hi + 1; hi += step; step <<= 1; }
-    if (hi > n) hi = n;
-    // binary search in [lo, hi)
-    while (lo < hi) {
-      R_xlen_t mid = lo + (hi - lo) / 2;
-      if (cmp_rows(t, o[mid] - 1, q, j) < 0) lo = mid + 1; else hi = mid;
-    }
-    i = lo;
-    out[j] = (i < n && cmp_rows(t, o[i] - 1, q, j) == 0) ? o[i] : 0;
-  }
-  return out;
-}
-
-// Merge two sorted permutations of rows of `table` (1-based) into one key-sorted permutation.
-// The two row sets must not share a key.
-// [[Rcpp::export]]
-Rcpp::IntegerVector ofst_store_merge_order(Rcpp::List table, Rcpp::IntegerVector ord_a, Rcpp::IntegerVector ord_b) {
-  KeyCols t(table);
-  const R_xlen_t n = ord_a.size(), m = ord_b.size();
-  const int* a = ord_a.begin(); const int* b = ord_b.begin();
-  Rcpp::IntegerVector out(n + m);
-  int* o = out.begin();
-  R_xlen_t i = 0, j = 0, k = 0;
-  while (i < n && j < m) {
-    int c = cmp_rows(t, a[i] - 1, t, b[j] - 1);
-    if (c == 0) Rcpp::stop("the two row sets share a key (rows %d and %d)", (double)a[i], (double)b[j]);
-    o[k++] = c < 0 ? a[i++] : b[j++];
-  }
-  while (i < n) o[k++] = a[i++];
-  while (j < m) o[k++] = b[j++];
-  return out;
-}
-
 // total[row] += sign * score, in place on a copy (rows 1-based, may repeat). Returns the new
 // total; stops if any touched total turns negative when forbid_negative is TRUE.
 // [[Rcpp::export]]
@@ -159,4 +111,50 @@ bool ofst_keys_sorted_unique(Rcpp::List keys) {
   KeyCols k(keys);
   for (R_xlen_t i = 1; i < k.n; ++i) if (cmp_rows(k, i - 1, k, i) >= 0) return false;
   return true;
+}
+
+// Position (1-based) of each query key in a sorted, unique key table (contiguous columns, no
+// permutation: cache-friendly), 0 when absent. Query must be strictly increasing.
+// [[Rcpp::export]]
+Rcpp::IntegerVector ofst_sorted_match(Rcpp::List table, Rcpp::List query) {
+  KeyCols t(table), q(query);
+  check_same_width(t, q);
+  const R_xlen_t n = t.n, m = q.n;
+  Rcpp::IntegerVector out(m);
+  R_xlen_t i = 0;
+  for (R_xlen_t j = 0; j < m; ++j) {
+    if (j > 0 && cmp_rows(q, j - 1, q, j) >= 0) Rcpp::stop("query keys are not sorted and unique (row %d)", (double)(j + 1));
+    R_xlen_t lo = i, step = 1, hi = i;
+    while (hi < n && cmp_rows(t, hi, q, j) < 0) { lo = hi + 1; hi += step; step <<= 1; }
+    if (hi > n) hi = n;
+    while (lo < hi) {
+      R_xlen_t mid = lo + (hi - lo) / 2;
+      if (cmp_rows(t, mid, q, j) < 0) lo = mid + 1; else hi = mid;
+    }
+    i = lo;
+    out[j] = (i < n && cmp_rows(t, i, q, j) == 0) ? (int)(i + 1) : 0;
+  }
+  return out;
+}
+
+// Merge a sorted key table (rows ord_a, contiguous sorted keys a) with sorted new keys b
+// (rows rows_b) into the merged row order. Keys must not be shared.
+// [[Rcpp::export]]
+Rcpp::IntegerVector ofst_sorted_merge_order(Rcpp::List a, Rcpp::IntegerVector ord_a,
+                                            Rcpp::List b, Rcpp::IntegerVector rows_b) {
+  KeyCols ka(a), kb(b);
+  check_same_width(ka, kb);
+  const R_xlen_t n = ka.n, m = kb.n;
+  if (ord_a.size() != n || rows_b.size() != m) Rcpp::stop("order lengths differ from key lengths");
+  Rcpp::IntegerVector out(n + m);
+  int* o = out.begin(); const int* oa = ord_a.begin(); const int* rb = rows_b.begin();
+  R_xlen_t i = 0, j = 0, k = 0;
+  while (i < n && j < m) {
+    int c = cmp_rows(ka, i, kb, j);
+    if (c == 0) Rcpp::stop("a new key is already in the table (row %d)", (double)oa[i]);
+    o[k++] = c < 0 ? oa[i++] : rb[j++];
+  }
+  while (i < n) o[k++] = oa[i++];
+  while (j < m) o[k++] = rb[j++];
+  return out;
 }

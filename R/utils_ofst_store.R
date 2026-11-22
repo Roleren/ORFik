@@ -491,24 +491,29 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     inputs <- sort(unique(runs$input))
     lib_tabs <- lapply(inputs, function(i)
       .ofst_store_read_input(add_paths[i], runs[input == i], chr_codes, m$key_columns))
-    # match against the stored keys; unseen keys get new row ids (appended in key order)
-    rows <- lapply(lib_tabs, function(g) ofst_store_match(st$keys, st$order, .ofst_cols(g, kc)))
+    # match against the stored keys (gathered once into key order: contiguous, cache-friendly);
+    # unseen keys get new row ids (appended in key order)
+    sorted_keys <- lapply(st$keys, `[`, st$order)
+    rows <- lapply(lib_tabs, function(g) {
+      i <- ofst_sorted_match(sorted_keys, .ofst_cols(g, kc))
+      r <- integer(length(i)); hit <- i > 0L
+      r[hit] <- st$order[i[hit]]
+      r
+    })
     unseen <- data.table::rbindlist(Map(function(g, r) g[r == 0L, kc, with = FALSE], lib_tabs, rows))
     unseen <- unique(unseen)
     data.table::setorderv(unseen, kc)
     n_new <- nrow(unseen)
     if (st$n + n_new > .int32_max) .ofst_store_abort("partition '", p, "' would exceed 2^31 - 1 keys.")
-    keys <- st$keys
     if (n_new) {
       new_ord <- seq_len(n_new)
       for (j in seq_along(lib_tabs)) {
         miss <- rows[[j]] == 0L
-        if (any(miss)) rows[[j]][miss] <- as.integer(st$n) + ofst_store_match(.ofst_cols(unseen, kc), new_ord,
+        if (any(miss)) rows[[j]][miss] <- as.integer(st$n) + ofst_sorted_match(.ofst_cols(unseen, kc),
                                                                   .ofst_cols(lib_tabs[[j]][miss, kc, with = FALSE], kc))
       }
       .ofst_store_append(unseen, file.path(store, p, "keys.fst"), st$n)
-      keys <- Map(c, keys, .ofst_cols(unseen, kc))
-      ord <- ofst_store_merge_order(keys, ord, as.integer(st$n + new_ord))
+      ord <- ofst_sorted_merge_order(sorted_keys, ord, .ofst_cols(unseen, kc), as.integer(st$n + new_ord))
       total <- c(total, numeric(n_new))
     }
     n_keys <- st$n + n_new
@@ -516,7 +521,10 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     cur <- if (nrow(segs)) max(segs$seg) else 0L
     seg_rows <- if (nrow(segs)) segs$n_rows[segs$seg == cur] else Inf
     committed <- seg_rows
-    batch <- list(); out_libs <- vector("list", length(lib_tabs))
+    # score type of the open segment: integer while every score fits (about 30 % smaller files)
+    cur_int <- if (nrow(segs) && file.exists(f <- .ofst_store_seg_file(store, p, cur)))
+      fst::metadata_fst(f)$columnTypes[2L] == 5L else NA
+    batch <- list(); out_libs <- vector("list", length(lib_tabs)); all_contrib <- vector("list", length(lib_tabs))
     flush <- function() {
       if (length(batch)) .ofst_store_append(data.table::rbindlist(batch), .ofst_store_seg_file(store, p, cur), committed)
       batch <<- list()
@@ -525,23 +533,29 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
       r <- rows[[j]]; s <- lib_tabs[[j]]$score
       if (any(r == 0L)) .ofst_store_abort("internal: unmatched key in partition '", p, "'.")
       o <- order(r)
-      cd <- data.table::data.table(row = as.integer(r[o]), score = as.numeric(s[o]))
-      nn <- nrow(cd)
+      fits_int <- .is_safe_int32(s)
+      nn <- length(r)
       if (nn > m$max_contrib_rows) .ofst_store_abort("input '", add_libs[inputs[j]], "' has more rows in partition '", p,
                                                      "' than max_contrib_rows.")
-      if (seg_rows + nn > m$max_contrib_rows) {   # new segment
+      if (seg_rows + nn > m$max_contrib_rows || (isTRUE(cur_int) && !fits_int)) {   # new segment
         flush()
-        cur <- cur + 1L; seg_rows <- 0; committed <- 0
+        cur <- cur + 1L; seg_rows <- 0; committed <- 0; cur_int <- NA
         segs <- data.table::rbindlist(list(segs, data.table::data.table(part = p, seg = cur, n_rows = 0)))
       }
+      if (is.na(cur_int)) cur_int <- fits_int
+      cd <- data.table::data.table(row = as.integer(r[o]), score = if (cur_int) as.integer(s[o]) else as.numeric(s[o]))
       out_libs[[j]] <- data.table::data.table(lib = add_libs[inputs[j]], part = p, seg = cur, from = seg_rows + 1,
                                               to = seg_rows + nn, nnz = nn, score_sum = sum(s))
       batch[[length(batch) + 1L]] <- cd
+      all_contrib[[j]] <- cd
       seg_rows <- seg_rows + nn
       data.table::set(segs, i = which(segs$seg == cur), j = "n_rows", value = seg_rows)
-      total <- ofst_store_scatter_add(total, cd$row, cd$score, 1, FALSE)
     }
     flush()
+    sorted_keys <- NULL
+    all_contrib <- data.table::rbindlist(all_contrib)   # one scatter for the batch
+    total <- ofst_store_scatter_add(total, all_contrib$row, as.numeric(all_contrib$score), 1, FALSE)
+    all_contrib <- NULL
     out_libs <- data.table::rbindlist(out_libs)
   }
   fst::write_fst(data.frame(row = as.integer(ord)), .ofst_store_gen_file(store, p, "order", gen))
@@ -701,17 +715,25 @@ ofst_store_compact <- function(store, min_dead_fraction = 0.2, workers = NULL, v
   first_new <- max(c(0L, m$segments$seg)) + 1L   # new segment numbers never reuse a live file name
   res <- .ofst_store_mclapply(todo, function(p) {
     h <- m$libs[state == "live" & part == p & !is.na(seg)]
-    cur <- first_new; rows <- 0; out <- vector("list", nrow(h)); segs <- list()
+    d <- .ofst_store_read_contrib(store, h)          # one multi-range read per old segment
+    # new segments: consecutive inputs up to max_contrib_rows rows each
+    seg_id <- integer(nrow(h)); cur <- first_new; acc <- 0
     for (i in seq_len(nrow(h))) {
-      if (rows + h$nnz[i] > m$max_contrib_rows || i == 1L) {
-        if (i > 1L) cur <- cur + 1L
-        rows <- 0
-      }
-      d <- .ofst_store_read_contrib(store, h[i])
-      .ofst_store_append(d, .ofst_store_seg_file(store, p, cur), rows)
-      out[[i]] <- data.table::data.table(lib = h$lib[i], from = rows + 1, to = rows + h$nnz[i], seg = cur)
-      rows <- rows + h$nnz[i]
-      segs[[as.character(cur)]] <- data.table::data.table(part = p, seg = cur, n_rows = rows)
+      if (acc > 0 && acc + h$nnz[i] > m$max_contrib_rows) { cur <- cur + 1L; acc <- 0 }
+      seg_id[i] <- cur; acc <- acc + h$nnz[i]
+    }
+    out <- list(); segs <- list()
+    ends <- cumsum(h$nnz)
+    for (sg in unique(seg_id)) {
+      i <- which(seg_id == sg)
+      rows <- (ends[i[1L]] - h$nnz[i[1L]] + 1):ends[max(i)]
+      piece <- d[rows]
+      if (.is_safe_int32(piece$score)) data.table::set(piece, j = "score", value = as.integer(piece$score))
+      .ofst_store_write_atomic(piece, .ofst_store_seg_file(store, p, sg))
+      local_end <- cumsum(h$nnz[i])
+      out[[length(out) + 1L]] <- data.table::data.table(lib = h$lib[i], from = local_end - h$nnz[i] + 1,
+                                                        to = local_end, seg = sg)
+      segs[[length(segs) + 1L]] <- data.table::data.table(part = p, seg = sg, n_rows = sum(h$nnz[i]))
     }
     list(libs = data.table::rbindlist(out), segments = data.table::rbindlist(segs))
   }, .ofst_store_workers(workers))

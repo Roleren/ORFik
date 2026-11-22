@@ -55,13 +55,20 @@ append-only key dictionary, a key order, the total ("all") column and the sparse
 per-input contributions (row id, score). \code{manifest.rds} is the single commit point.
 }
 \examples{
-df <- ORFik.template.experiment()[9:10, ]
-paths <- filepath(df, "ofst")
-store <- file.path(tempdir(), "store_example")
-ofst_store_build(store, paths[1])
-ofst_store_add(store, paths[2])
-merged <- ofst_store_export_all(store)
-ofst_store_remove(store, ofst_store_manifest(store)$libs$lib[1])
+lib <- function(seed) {
+  set.seed(seed)
+  data.frame(seqnames = factor(sample(c("1", "2"), 50, TRUE)), start = sample(100L, 50, TRUE),
+             strand = factor(sample(c("+", "-"), 50, TRUE), levels = c("+", "-", "*")),
+             size = 28L, score = sample(5L, 50, TRUE))
+}
+paths <- file.path(tempdir(), paste0("lib", 1:3, ".ofst"))
+for (i in 1:3) fst::write_fst(lib(i), paths[i])
+store <- tempfile("store_example")
+ofst_store_build(store, paths[1:2])
+ofst_store_add(store, paths[3])
+merged <- ofst_store_export_all(store)   # = ofst_merge(paths, keep_all_scores = FALSE)
+ofst_store_remove(store, "lib1")
+ofst_store_read_matrix(store)
 }
 \seealso{
 Other ofst_store: 
