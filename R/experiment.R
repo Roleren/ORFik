@@ -27,6 +27,13 @@ findFromPath <- function(filepaths, candidates, slot = "auto") {
     if (length(hitRel) > 0) # Remove multiple hits from same group:
       hitRel <- unique(mainNames(hitRel, dt))
 
+    # A unique hit in the file name wins: anchored patterns (e.g. "^RNA_")
+    # only match the file name, and directory names (e.g. "x-Ribo-y")
+    # must not make an unambiguous file name ambiguous.
+    if (length(hitRel) == 1) {
+      types <- c(types, hitRel)
+      next
+    }
     # Assign the one (if existing) with 1 match
     type <- if(length(hit) == 1 & length(hitRel) == 0) {
       hit
