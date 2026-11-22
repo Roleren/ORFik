@@ -100,6 +100,24 @@ strandPerGroup <- function(grl, keep.names = TRUE) {
 }
 
 
+#' as.data.table for GRanges / GRangesList, without range names
+#'
+#' GenomicRanges >= 1.65.2 (Bioconductor 3.24) puts \code{names(x)} of a
+#' GRanges (also the inner names of a GRangesList) into a "names" column of
+#' \code{as.data.frame(x)}, before they were row names, which
+#' \code{as.data.table} dropped. A "names" meta column then appears twice.
+#' This helper drops the range names first, so the result is the same on old
+#' and new Bioconductor.
+#' @param x a GRanges or GRangesList
+#' @return a data.table
+#' @keywords internal
+grDT <- function(x) {
+  if (is(x, "CompressedList")) {
+    names(x@unlistData) <- NULL
+  } else if (!is.null(names(x))) names(x) <- NULL
+  as.data.table(x)
+}
+
 #' Sort a GRangesList, helper.
 #'
 #' A helper for [sortPerGroup()].
@@ -118,7 +136,7 @@ strandPerGroup <- function(grl, keep.names = TRUE) {
 gSort <- function(grl, decreasing = FALSE, byStarts = TRUE) {
   if (length(grl) == 0) return(GRangesList())
 
-  DT <- as.data.table(grl)
+  DT <- grDT(grl)
   DT$group_name <- NULL
   group <- NULL # for not getting warning
   if (decreasing) {

@@ -1,6 +1,23 @@
 ORFik 1.29.16
 =============
 
+Bioconductor devel compatibility
+--------------------------------
+
+    o Bug fix for GenomicRanges >= 1.65.2 (Bioconductor 3.24): as.data.frame() of
+      a GRanges now returns names(x) as a "names" column instead of row names, so
+      a "names" meta column appeared twice. gSort()/sortPerGroup() then kept the
+      transcript names instead of the ORF names (tx1 instead of tx1_1), and
+      assignFirst/LastExonsStopSite() failed ("Can't assign to the same column
+      twice"). Internal grDT() drops range names before conversion; used in
+      gSort, assignFirstExonsStartSite, assignLastExonsStopSite,
+      unlistToExtremities, findMaxPeaks, removeTxdbExons, import.fstwig and
+      export.bedo (which no longer writes a names column on new Bioconductor).
+    o Tests: detect_ribo_orfs tests no longer leave libraries in .GlobalEnv; the
+      real-signal OFST scratch test is skipped on CRAN/Bioconductor builders.
+    o Rd files regenerated for countOverlapsW, detect_ribo_orfs,
+      detectRibosomeShifts_new and detectRibosomeShifts_index.
+
 Ribo-seq ORF detection
 ----------------------
 

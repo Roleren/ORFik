@@ -272,6 +272,9 @@ cache_wait_ready <- function(process, path, err_file) {
 }
 
 test_that("real SIGINT cleans caches and SIGKILL caches are recovered on the next run", {
+  # Real signals to a background R process: timing and process setup depend on the build machine,
+  # so run it only in development checks (devtools::test / NOT_CRAN=true), not on CRAN/Bioconductor builders.
+  testthat::skip_on_cran()
   testthat::skip_if_not_installed("callr")
   testthat::skip_if(Sys.info()[["sysname"]] != "Linux")
   libs <- .libPaths()   # the child loads the ORFik under test (R CMD check library), not a source checkout

@@ -362,7 +362,7 @@ unlistToExtremities <- function(grl) {
   if (length(grl) == 0) return(unlist(grl))
   validGRL(class(grl))
   if (!is.null(grl@unlistData$group)) grl@unlistData$group <- NULL
-  dt <- as.data.table(grl)
+  dt <- grDT(grl)
   dt <- dt[, .(start = min(start), end = max(end), seqnames = seqnames[1],
                strand = strand[1]), by = group]
   if (!is.null(names(grl))) {

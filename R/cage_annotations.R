@@ -109,7 +109,7 @@ restrictTSSByUpstreamLeader <- function(fiveUTRs, shiftedfiveUTRs) {
 #' @keywords internal
 findMaxPeaks <- function(cageOverlaps, filteredCage) {
 
-  dt <- as.data.table(filteredCage)
+  dt <- grDT(filteredCage)
   dt <- dt[from(cageOverlaps)]
   dt$to <- to(cageOverlaps)
   if (nrow(dt) == 0) return(dt)
