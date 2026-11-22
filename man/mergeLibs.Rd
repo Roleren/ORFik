@@ -22,7 +22,9 @@ mergeLibs(
   filter_fallback_dir = out_dir,
   filter_input_summary = FALSE,
   filter_auto_memory = FALSE,
-  remove_softclips = FALSE
+  remove_softclips = FALSE,
+  base = NULL,
+  subtract = NULL
 )
 }
 \arguments{
@@ -127,6 +129,15 @@ are unchanged. Query width is shortened; explicit qwidth/qwidth1/qwidth2
 columns, if present, are updated. Other metadata remains part of the merge
 key. Clip-only CIGARs that would become empty are rejected. Do not enable
 this for outputs that must retain original read lengths or clipping QC.}
+
+\item{base}{character path or NULL (default). Only for \code{mode = "all"}
+with \code{keep_all_scores = FALSE}: an existing merged file (e.g. the current
+"all.ofst") the libraries are added to, instead of re-merging every library.
+It may be the output file itself. See \code{\link{ofst_merge}}.}
+
+\item{subtract}{character paths or NULL (default). Only with \code{base}
+semantics as in \code{\link{ofst_merge}}: files whose scores are removed from
+the merged result (removed or replaced libraries contained in \code{base}).}
 }
 \value{
 Invisible NULL. Merged files contain the summed score and, if

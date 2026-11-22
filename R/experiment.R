@@ -707,6 +707,13 @@ simpleLibs <- convertLibs
 #' Name to assign to single libraries inside merged file, only kept if mode != "all"
 #' @param mode character, default "all". Merge all or "rep" for collapsing replicates only, or
 #' "lib" for collapsing all per library type.
+#' @param base character path or NULL (default). Only for \code{mode = "all"}
+#' with \code{keep_all_scores = FALSE}: an existing merged file (e.g. the current
+#' "all.ofst") the libraries are added to, instead of re-merging every library.
+#' It may be the output file itself. See \code{\link{ofst_merge}}.
+#' @param subtract character paths or NULL (default). Only with \code{base}
+#' semantics as in \code{\link{ofst_merge}}: files whose scores are removed from
+#' the merged result (removed or replaced libraries contained in \code{base}).
 #' @return Invisible NULL. Merged files contain the summed score and, if
 #' requested, individual library scores. Each output also has a companion
 #' \code{<output>.ofst.removal_summary.rds}, readable with \code{readRDS()}:
@@ -751,9 +758,11 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
                       max_filter_score = Inf, filter_chunk_rows = 5e6,
                       filter_tmpdir = out_dir, filter_fallback_dir = out_dir,
                       filter_input_summary = FALSE, filter_auto_memory = FALSE,
-                      remove_softclips = FALSE) {
+                      remove_softclips = FALSE, base = NULL, subtract = NULL) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
+  if ((!is.null(base) || !is.null(subtract)) && (!identical(mode, "all") || !isFALSE(keep_all_scores)))
+    .ofst_abort("mergeLibs: base/subtract need mode = 'all' and keep_all_scores = FALSE.")
   if (!is.logical(remove_softclips) || length(remove_softclips) != 1L ||
       !is.null(dim(remove_softclips)) || is.na(remove_softclips))
     .ofst_abort("remove_softclips must be TRUE or FALSE.")
@@ -797,7 +806,7 @@ mergeLibs <- function(df, out_dir = file.path(libFolder(df), "ofst_merged"), mod
                      max_filter_score = max_filter_score, filter_chunk_rows = filter_chunk_rows,
                      filter_tmpdir = filter_tmpdir, filter_fallback_dir = filter_fallback_dir,
                      filter_input_summary = filter_input_summary, filter_auto_memory = filter_auto_memory,
-                     remove_softclips = remove_softclips)
+                     remove_softclips = remove_softclips, base = base, subtract = subtract)
     .ofst_save_merge(dt, save_path)
     dt <- NULL
   }

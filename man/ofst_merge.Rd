@@ -21,7 +21,9 @@ ofst_merge(
   filter_fallback_dir = NULL,
   filter_input_summary = FALSE,
   filter_auto_memory = FALSE,
-  remove_softclips = FALSE
+  remove_softclips = FALSE,
+  base = NULL,
+  subtract = NULL
 )
 }
 \arguments{
@@ -106,6 +108,22 @@ are unchanged. Query width is shortened; explicit qwidth/qwidth1/qwidth2
 columns, if present, are updated. Other metadata remains part of the merge
 key. Clip-only CIGARs that would become empty are rejected. Do not enable
 this for outputs that must retain original read lengths or clipping QC.}
+
+\item{base}{character path or NULL (default). Incremental pooled merge: an
+existing merged OFST file (e.g. the current master "all.ofst", sorted with
+unique keys, as written by this function) whose scores the inputs are added
+to. The base is not re-grouped: each chromosome unit of the inputs is merged
+into the base block with one linear pass, so adding a few inputs to a large
+master reads the master once instead of re-merging all its original inputs.
+The result equals a full merge of the base's inputs plus the new inputs.
+Requires \code{keep_all_scores = FALSE}, \code{sort = TRUE}, chromosome-sorted
+inputs and no soft-clip removal; never filters (aborts instead).}
+
+\item{subtract}{character paths or NULL (default). Inputs whose scores are
+subtracted (removal or replacement of inputs that are contained in
+\code{base}). Rows whose total becomes 0 are dropped; a negative total aborts,
+since it means a subtracted file is not part of the base. Same requirements
+as \code{base}.}
 }
 \value{
 a data.table of merged result, it is merged on all columns except "score".

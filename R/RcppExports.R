@@ -21,6 +21,26 @@ ofst_point_sums <- function(chr, start, strand, size_index, n_size, score) {
     .Call('_ORFik_ofst_point_sums', PACKAGE = 'ORFik', chr, start, strand, size_index, n_size, score)
 }
 
+ofst_sorted_sum_merge <- function(a_keys, a_score, b_keys, b_score, drop_zero, forbid_negative) {
+    .Call('_ORFik_ofst_sorted_sum_merge', PACKAGE = 'ORFik', a_keys, a_score, b_keys, b_score, drop_zero, forbid_negative)
+}
+
+ofst_store_match <- function(table, ord, query) {
+    .Call('_ORFik_ofst_store_match', PACKAGE = 'ORFik', table, ord, query)
+}
+
+ofst_store_merge_order <- function(table, ord_a, ord_b) {
+    .Call('_ORFik_ofst_store_merge_order', PACKAGE = 'ORFik', table, ord_a, ord_b)
+}
+
+ofst_store_scatter_add <- function(total, row, score, sign, forbid_negative) {
+    .Call('_ORFik_ofst_store_scatter_add', PACKAGE = 'ORFik', total, row, score, sign, forbid_negative)
+}
+
+ofst_keys_sorted_unique <- function(keys) {
+    .Call('_ORFik_ofst_keys_sorted_unique', PACKAGE = 'ORFik', keys)
+}
+
 orfStatsCovRleCPP <- function(run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends) {
     .Call('_ORFik_orfStatsCovRleCPP', PACKAGE = 'ORFik', run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends)
 }
