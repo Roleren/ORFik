@@ -475,7 +475,7 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 # Load a partition's committed state: keys (list of int columns), order, total. With
 # sorted = TRUE and a sorted key file, keys are in key order (keys[[k]][i] belongs to row id
 # order[i]) and $sorted is TRUE; otherwise keys are in row-id order.
-.ofst_store_load_part <- function(store, m, p, need_keys = TRUE, sorted = FALSE) {
+.ofst_store_load_part <- function(store, m, p, need_keys = TRUE, sorted = FALSE, skip_seq = FALSE) {
   pr <- m$parts[part == p]
   n <- if (nrow(pr)) pr$n_keys else 0
   kc <- c("seq", m$key_columns)
@@ -485,7 +485,8 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   }
   skeys_file <- .ofst_store_gen_file(store, p, "skeys", pr$gen)
   is_sorted <- need_keys && sorted && file.exists(skeys_file)
-  keys <- if (is_sorted) .ofst_cols(fst::read_fst(skeys_file, as.data.table = TRUE), kc) else
+  if (is_sorted && skip_seq) kc <- setdiff(kc, "seq")   # (a one-chromosome partition)
+  keys <- if (is_sorted) .ofst_cols(fst::read_fst(skeys_file, kc, as.data.table = TRUE), kc) else
     if (need_keys) .ofst_cols(fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = n), kc)
   if (is_sorted && length(keys[[1L]]) != n)
     .ofst_store_abort("partition '", p, "': sorted key file has ", length(keys[[1L]]), " rows, expected ", n, ".")
@@ -711,7 +712,8 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 # the block-aligned body and return the head / tail rows.
 .ofst_store_export_write <- function(store, m, p, blocks, score_file, seq_to_level, out_levels,
                                      int_score, scratch, compress) {
-  st <- .ofst_store_load_part(store, m, p, need_keys = TRUE, sorted = TRUE)
+  one_chr <- nrow(m$chr_part[part == p]) == 1L
+  st <- .ofst_store_load_part(store, m, p, need_keys = TRUE, sorted = TRUE, skip_seq = one_chr)
   score <- if (is.null(score_file)) st$total else fst::read_fst(score_file)[[1L]]
   st$total <- NULL
   # keep: the output rows in key order, as indices into st$keys (positions in the sorted key
@@ -739,7 +741,8 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     data.table::setDT(cols)
   }
   # rows are in key order (seq first), so each chromosome is one contiguous run of `keep`
-  runs <- ofst_code_runs(st$keys$seq[keep])
+  runs <- if (is.null(st$keys$seq)) list(value = blocks$seq[1L], end = length(keep)) else
+    ofst_code_runs(st$keys$seq[keep])
   from <- c(1, head(runs$end, -1) + 1)
   out <- vector("list", nrow(blocks))
   for (b in seq_len(nrow(blocks))) {
