@@ -20,9 +20,9 @@
 # exceed 2^31 in total, so they are split into segments of at most `max_contrib_rows` rows;
 # the manifest stores (segment, from, to) as doubles.
 #
-# The per-generation files (order, skeys, total) are written uncompressed: they are rewritten on
-# every update and read in full, and uncompressed fst reads and writes run at memory speed
-# (chr21, 17.4M keys: 0.2 s instead of 1.5 s for order + total).
+# The per-generation files (order, skeys, total) use fst compression 50: on this server the
+# disk, not the CPU, bounds them (chr21, 17.4M keys: writing all three took 1.9 s at compress 50
+# and 4.8 s uncompressed, 129 MB instead of 463 MB; reads 0.4 s either way).
 #
 # Crash safety: appended rows and new generation files become visible only when manifest.rds
 # is replaced (write + rename). Rows beyond the committed counts are cut off before the next
@@ -126,7 +126,7 @@ ofst_store_manifest <- function(store) {
 .ofst_store_part_dir <- function(store, part) file.path(store, part)
 .ofst_store_gen_file <- function(store, part, what, gen)
   file.path(store, part, sprintf("%s_g%06d.fst", what, gen))
-.ofst_store_gen_compress <- 0
+.ofst_store_gen_compress <- 50
 .ofst_store_write_gen <- function(x, path) fst::write_fst(x, path, compress = .ofst_store_gen_compress)
 .ofst_store_seg_file <- function(store, part, seg)
   file.path(store, part, sprintf("contrib_%04d.fst", seg))
@@ -695,7 +695,7 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   } else {
     score <- .ofst_store_part_scores(store, m, p, list(n = pr$n_keys), libs)
     score_file <- file.path(scratch, paste0("score_", p, ".fst"))
-    fst::write_fst(data.frame(score = score), score_file, compress = 0)
+    fst::write_fst(data.frame(score = score), score_file)
   }
   if (length(score) != pr$n_keys) .ofst_store_abort("partition '", p, "' is inconsistent with the manifest.")
   chrs <- m$chr_part[part == p]$chr
