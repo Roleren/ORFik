@@ -116,7 +116,7 @@ test_that("mergeLibs uses output storage immediately unless explicitly overridde
     suppressMessages(ORFik::mergeLibs(df, out_dir = out, paths = paths,
       lib_names_full = c("a", "b"), keep_all_scores = FALSE,
       filter_target_rows = 6, filter_chunk_rows = 8))
-    expect_setequal(list.files(out), c("all.ofst", "all.ofst.removal_summary.rds"))
+    expect_setequal(list.files(out), c("all.ofst", "all.ofst.idx", "all.ofst.removal_summary.rds"))
     expect_false(readRDS(file.path(out, "all.ofst.removal_summary.rds"))$scratch_fallback_used)
   })
 })

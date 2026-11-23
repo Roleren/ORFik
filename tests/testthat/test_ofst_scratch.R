@@ -167,7 +167,7 @@ test_that("mergeLibs defaults to output-folder fallback and leaves no scratch pa
   suppressMessages(ORFik::mergeLibs(df, out_dir = x$output, paths = x$paths,
     lib_names_full = c("a", "b"), filter_target_rows = 4,
     filter_tmpdir = file.path(x$root, "unavailable")))
-  expect_setequal(list.files(x$output), c("all.ofst", "all.ofst.removal_summary.rds"))
+  expect_setequal(list.files(x$output), c("all.ofst", "all.ofst.idx", "all.ofst.removal_summary.rds"))
   summary <- readRDS(file.path(x$output, "all.ofst.removal_summary.rds"))
   expect_true(summary$scratch_fallback_used)
   expect_equal(summary$rows_after, 4)
