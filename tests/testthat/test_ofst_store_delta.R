@@ -64,21 +64,22 @@ test_that("delta adds, removes and replaces equal a full merge and fold cleanly"
     expect_true(all(m$parts$n_keys >= m$parts$n_base))
     # no base file was rewritten
     expect_identical(sort(list.files(store, "^(order|total|skeys)_g", recursive = TRUE)), base_files)
-    expect_identical(ofst_store_export_all(store, verbose = FALSE)[], delta_merge(paths[1:6])[])
+    expect_identical(ofst_store_export_all(store, fold = FALSE, verbose = FALSE)[], delta_merge(paths[1:6])[])
     ofst_store_remove(store, c("lib2", "lib5"), verbose = FALSE)
     expect_identical(sort(list.files(store, "^(order|total|skeys)_g", recursive = TRUE)), base_files)
     ofst_store_add(store, paths[7], verbose = FALSE)
     ofst_store_replace(store, paths[8:9], c("lib3", "lib6"), verbose = FALSE)
     live <- paths[c(1, 4, 7, 8, 9)]
-    expect_identical(ofst_store_export_all(store, verbose = FALSE)[], delta_merge(live)[])
+    expect_identical(ofst_store_export_all(store, fold = FALSE, verbose = FALSE)[], delta_merge(live)[])
     if (ORFik:::.ofst_store_concat_available()) {
       out <- tempfile(fileext = ".ofst")
-      ofst_store_export_all(store, out, verbose = FALSE)
+      ofst_store_export_all(store, out, fold = FALSE, verbose = FALSE)
       expect_identical(fst::read_fst(out, as.data.table = TRUE)[], delta_merge(live)[])
     }
     sub <- c("lib1", "lib7")
-    expect_identical(ofst_store_export_all(store, libs = sub, verbose = FALSE)[], delta_merge(paths[c(1, 7)])[])
+    expect_identical(ofst_store_export_all(store, fold = FALSE, libs = sub, verbose = FALSE)[], delta_merge(paths[c(1, 7)])[])
     expect_true(ofst_store_verify(store))
+    expect_gt(nrow(ofst_store_manifest(store)$pending), 0)   # exports with fold = FALSE change nothing
     wide <- ofst_store_read_matrix(store, as = "wide")
     expect_identical(wide$score, delta_merge(live)$score)
     # folding (compaction) clears the deltas and keeps everything else
@@ -109,15 +110,15 @@ test_that("delta limits fold partitions and the result equals a store without de
   expect_equal(nrow(m2$pending), 0)
   expect_identical(m2$parts$n_base, m2$parts$n_keys)
   expect_true(any(m1$parts$gen > 1L))       # some partitions were folded by the limits
-  expect_identical(ofst_store_export_all(s1, verbose = FALSE)[], ofst_store_export_all(s2, verbose = FALSE)[])
-  expect_identical(ofst_store_export_all(s1, verbose = FALSE)[], delta_merge(paths[2:8])[])
+  expect_identical(ofst_store_export_all(s1, fold = FALSE, verbose = FALSE)[], ofst_store_export_all(s2, verbose = FALSE)[])
+  expect_identical(ofst_store_export_all(s1, fold = FALSE, verbose = FALSE)[], delta_merge(paths[2:8])[])
   expect_identical(ofst_store_read_matrix(s1, as = "wide")[], ofst_store_read_matrix(s2, as = "wide")[])
   expect_true(ofst_store_verify(s1))
   # a full update (deltas off) on a store with pending deltas folds them
   with_delta(1, 1, ofst_store_remove(s1, "lib2", verbose = FALSE), on = FALSE)
   m <- ofst_store_manifest(s1)
   expect_equal(nrow(m$pending), 0)
-  expect_identical(ofst_store_export_all(s1, verbose = FALSE)[], delta_merge(paths[3:8])[])
+  expect_identical(ofst_store_export_all(s1, fold = FALSE, verbose = FALSE)[], delta_merge(paths[3:8])[])
   expect_true(ofst_store_verify(s1))
 })
 
@@ -131,6 +132,12 @@ test_that("stores written before delta updates are read and updated", {
   expect_identical(ofst_store_manifest(store)$parts$n_base, ofst_store_manifest(store)$parts$n_keys)
   with_delta(100, 100, ofst_store_add(store, paths[4], verbose = FALSE))
   expect_gt(nrow(ofst_store_manifest(store)$pending), 0)
+  expect_identical(ofst_store_export_all(store, fold = FALSE, verbose = FALSE)[], delta_merge(paths)[])
+  expect_true(ofst_store_verify(store))
+  # the default export folds the deltas first
   expect_identical(ofst_store_export_all(store, verbose = FALSE)[], delta_merge(paths)[])
+  m <- ofst_store_manifest(store)
+  expect_equal(nrow(m$pending), 0)
+  expect_identical(m$parts$n_base, m$parts$n_keys)
   expect_true(ofst_store_verify(store))
 })

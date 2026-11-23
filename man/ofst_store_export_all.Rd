@@ -9,7 +9,8 @@ ofst_store_export_all(
   out_file = NULL,
   libs = NULL,
   workers = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  fold = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,10 @@ subset track (e.g. inhibitor splits or study pools) without touching the rest.}
 \code{getOption("ORFik.ofst_store_workers")} or half the data.table threads.}
 
 \item{verbose}{logical, default TRUE.}
+
+\item{fold}{logical, default TRUE: fold pending delta updates into the base files first (see
+\code{ofst_store_add}; takes the store lock). The export is the same either way; folding is
+faster when many updates are pending. FALSE leaves the store files untouched.}
 }
 \value{
 a data.table (seqnames, key columns, score).

@@ -371,7 +371,7 @@ ofst_store_build <- function(store, paths, libs = sub("\\.ofst$", "", basename(p
 #' @details Updates are incremental: the new keys and contributions are appended and recorded as
 #' pending deltas, so an update does not rewrite the per-partition order and total files. A
 #' partition's deltas are folded into its base files once they exceed the delta limits
-#' (pending contribution rows above \code{getOption("ORFik.ofst_store_delta_rows", 2)} times
+#' (pending contribution rows above \code{getOption("ORFik.ofst_store_delta_rows", 1)} times
 #' the base keys, pending keys above \code{getOption("ORFik.ofst_store_delta_keys", 0.25)}
 #' times the base keys, or more than 32 pending key blocks), and by \code{ofst_store_compact}.
 #' \code{options(ORFik.ofst_store_delta = FALSE)} folds on every update.
@@ -551,11 +551,14 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (", length(total), " totals vs ",
                       pr$n_base, " base keys).")
   if (pr$n_keys > pr$n_base) total <- c(total, numeric(pr$n_keys - pr$n_base))
-  pend <- m$pending[part == p]
+  pend <- m$pending[part == p & nnz > 0]
   if (nrow(pend)) {
-    d <- .ofst_store_read_contrib(store, pend)
-    total <- ofst_store_scatter_add(total, d$row, d$score * rep.int(pend$sign[pend$nnz > 0], pend$nnz[pend$nnz > 0]),
-                                    1, FALSE)
+    # in file order (segment, first row), so the contribution rows need no reordering
+    for (sg in unique(pend$sign)) {
+      d <- .ofst_store_read_contrib(store, pend[sign == sg][order(seg, from)])
+      total <- ofst_store_scatter_add(total, d$row, d$score, sg, FALSE)
+      d <- NULL
+    }
     if (any(total < 0)) .ofst_store_abort("partition '", p, "': a total turned negative (ledger mismatch).")
   }
   total
@@ -677,12 +680,12 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 }
 
 # Delta limits: a partition is folded (base files rewritten) when its pending contribution rows
-# exceed ORFik.ofst_store_delta_rows x base keys (default 2), its pending keys exceed
+# exceed ORFik.ofst_store_delta_rows x base keys (default 1), its pending keys exceed
 # ORFik.ofst_store_delta_keys x base keys (default 0.25), or it has more than 32 pending key
 # blocks. options(ORFik.ofst_store_delta = FALSE) folds on every update (no deltas).
 .ofst_store_delta_limits <- function()
   list(on = !isFALSE(getOption("ORFik.ofst_store_delta", TRUE)),
-       rows = getOption("ORFik.ofst_store_delta_rows", 2), keys = getOption("ORFik.ofst_store_delta_keys", 0.25),
+       rows = getOption("ORFik.ofst_store_delta_rows", 1), keys = getOption("ORFik.ofst_store_delta_keys", 0.25),
        blocks = 32L)
 
 .ofst_store_update_part <- function(store, m, p, gen, add_paths, add_libs, runs, chr_codes, rm_rows,
@@ -1094,11 +1097,15 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 #' result is the same ordinary fst file.
 #' @param libs character or NULL (default, all live inputs). A subset of live inputs gives a
 #' subset track (e.g. inhibitor splits or study pools) without touching the rest.
+#' @param fold logical, default TRUE: fold pending delta updates into the base files first (see
+#' \code{ofst_store_add}; takes the store lock). The export is the same either way; folding is
+#' faster when many updates are pending. FALSE leaves the store files untouched.
 #' @return a data.table (seqnames, key columns, score); with \code{out_file}, invisibly: the
 #' table, or only the output path when the streaming export wrote it.
 #' @family ofst_store
 #' @export
-ofst_store_export_all <- function(store, out_file = NULL, libs = NULL, workers = NULL, verbose = TRUE) {
+ofst_store_export_all <- function(store, out_file = NULL, libs = NULL, workers = NULL, verbose = TRUE,
+                                  fold = TRUE) {
   t0 <- Sys.time()
   if (inherits(store, "ofst_store_matrix")) {
     x <- store
@@ -1112,6 +1119,11 @@ ofst_store_export_all <- function(store, out_file = NULL, libs = NULL, workers =
   } else {
     store <- .ofst_store_path(store)
     m <- ofst_store_manifest(store)
+    if (fold && any(vapply(m$parts$part, function(p) .ofst_store_has_delta(m, p), logical(1)))) {
+      # folding first is cheaper than applying the deltas in both export passes
+      unlock <- .ofst_store_lock(store)
+      m <- tryCatch(.ofst_store_fold_all(store, m, .ofst_store_workers(workers), verbose), finally = unlock())
+    }
     if (!is.null(libs)) {
       bad <- setdiff(libs, m$libs[state == "live"]$lib)
       if (length(bad)) .ofst_store_abort("not live in the store: ", paste(head(bad, 10), collapse = ", "))
