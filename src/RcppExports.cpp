@@ -189,6 +189,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ofst_store_locate
+Rcpp::List ofst_store_locate(Rcpp::List streams, Rcpp::List ids, Rcpp::List inputs, double n_old, int threads);
+RcppExport SEXP _ORFik_ofst_store_locate(SEXP streamsSEXP, SEXP idsSEXP, SEXP inputsSEXP, SEXP n_oldSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type streams(streamsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type ids(idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type inputs(inputsSEXP);
+    Rcpp::traits::input_parameter< double >::type n_old(n_oldSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_locate(streams, ids, inputs, n_old, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // orfStatsCovRleCPP
 NumericMatrix orfStatsCovRleCPP(List run_values, List run_lengths, IntegerVector rle_id, IntegerVector ex_start, IntegerVector ex_end, LogicalVector ex_minus, IntegerVector group_ends);
 RcppExport SEXP _ORFik_orfStatsCovRleCPP(SEXP run_valuesSEXP, SEXP run_lengthsSEXP, SEXP rle_idSEXP, SEXP ex_startSEXP, SEXP ex_endSEXP, SEXP ex_minusSEXP, SEXP group_endsSEXP) {
@@ -361,6 +376,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_ofst_sorted_merge_order", (DL_FUNC) &_ORFik_ofst_sorted_merge_order, 4},
     {"_ORFik_ofst_store_kway", (DL_FUNC) &_ORFik_ofst_store_kway, 7},
     {"_ORFik_ofst_store_score_scan", (DL_FUNC) &_ORFik_ofst_store_score_scan, 3},
+    {"_ORFik_ofst_store_locate", (DL_FUNC) &_ORFik_ofst_store_locate, 5},
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},

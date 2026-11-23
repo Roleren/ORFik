@@ -53,6 +53,10 @@ ofst_store_score_scan <- function(score, seq, n_codes) {
     .Call('_ORFik_ofst_store_score_scan', PACKAGE = 'ORFik', score, seq, n_codes)
 }
 
+ofst_store_locate <- function(streams, ids, inputs, n_old, threads) {
+    .Call('_ORFik_ofst_store_locate', PACKAGE = 'ORFik', streams, ids, inputs, n_old, threads)
+}
+
 orfStatsCovRleCPP <- function(run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends) {
     .Call('_ORFik_orfStatsCovRleCPP', PACKAGE = 'ORFik', run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends)
 }

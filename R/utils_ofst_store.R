@@ -24,6 +24,20 @@
 # disk, not the CPU, bounds them (chr21, 17.4M keys: writing all three took 1.9 s at compress 50
 # and 4.8 s uncompressed, 129 MB instead of 463 MB; reads 0.4 s either way).
 #
+# Delta updates: an update does not rewrite order / skeys / total, whose size grows with the
+# partition (human chromosome 1: ~1e8 keys, ~1 GB per update). It searches the new inputs in
+# the base sorted keys (ofst_store_locate), appends the unseen keys to keys.fst as one sorted
+# "block" and the contributions to the open segment, and records in the manifest:
+#   parts$n_base   keys covered by the base files (order, skeys, total of generation parts$gen);
+#                  keys n_base + 1 .. n_keys are pending blocks
+#   blocks         (part, from, to): pending key blocks, each in key order
+#   pending        (part, seg, from, to, nnz, sign): contribution ranges not yet summed into the
+#                  base total (+1 added, -1 removed input)
+# A removal only adds pending rows (no partition I/O). Readers (.ofst_store_load_part,
+# .ofst_store_total) apply the deltas in memory, so exports are unchanged. A partition is folded
+# (base files rewritten, deltas cleared) when its deltas exceed the limits of
+# .ofst_store_delta_limits(), and by ofst_store_compact().
+#
 # Crash safety: appended rows and new generation files become visible only when manifest.rds
 # is replaced (write + rename). Rows beyond the committed counts are cut off before the next
 # append, and files of other generations are deleted after a commit.
@@ -99,6 +113,15 @@ ofst_store_manifest <- function(store) {
   m <- readRDS(p)
   if (!identical(m$version, .ofst_store_version))
     .ofst_store_abort("unsupported store version in '", store, "'.")
+  .ofst_store_upgrade(m)
+}
+
+# Stores written before delta updates: no pending deltas (every key is in the base files).
+.ofst_store_upgrade <- function(m) {
+  if (is.null(m$parts$n_base)) data.table::set(m$parts, j = "n_base", value = as.numeric(m$parts$n_keys))
+  if (is.null(m$pending)) m$pending <- data.table::data.table(part = character(), seg = integer(), from = numeric(),
+                                                               to = numeric(), nnz = numeric(), sign = numeric())
+  if (is.null(m$blocks)) m$blocks <- data.table::data.table(part = character(), from = numeric(), to = numeric())
   m
 }
 
@@ -250,7 +273,7 @@ ofst_store_manifest <- function(store) {
 }
 
 .ofst_store_new_manifest <- function(key_columns, max_contrib_rows) {
-  list(version = .ofst_store_version, key_columns = key_columns, seqlevels = character(),
+  .ofst_store_upgrade(list(version = .ofst_store_version, key_columns = key_columns, seqlevels = character(),
        chr_part = data.table::data.table(chr = character(), part = character()),
        parts = data.table::data.table(part = character(), n_keys = numeric(), gen = integer()),
        segments = data.table::data.table(part = character(), seg = integer(), n_rows = numeric()),
@@ -258,7 +281,7 @@ ofst_store_manifest <- function(store) {
                                      from = numeric(), to = numeric(), nnz = numeric(),
                                      score_sum = numeric(), source = character(), source_size = numeric(),
                                      source_mtime = character(), state = character(), generation = integer()),
-       generation = 0L, max_contrib_rows = max_contrib_rows)
+       generation = 0L, max_contrib_rows = max_contrib_rows))
 }
 
 #' Build an incremental OFST merge store
@@ -333,7 +356,10 @@ ofst_store_build <- function(store, paths, libs = sub("\\.ofst$", "", basename(p
     .ofst_store_msg(verbose, "build batch ", b, "/", length(batches), " (", length(i), " inputs)")
     m <- ofst_store_add(store, paths[i], libs[i], workers = workers, verbose = verbose)
   }
-  invisible(ofst_store_manifest(store))
+  # a new store starts without pending deltas (later batches may have added them)
+  unlock <- .ofst_store_lock(store)
+  on.exit(unlock(), add = TRUE)
+  invisible(.ofst_store_fold_all(store, ofst_store_manifest(store), .ofst_store_workers(workers), verbose))
 }
 
 #' Add inputs to an OFST store
@@ -342,6 +368,13 @@ ofst_store_build <- function(store, paths, libs = sub("\\.ofst$", "", basename(p
 #' @param store character, store directory (from \code{ofst_store_build}).
 #' @param paths character, OFST files to add.
 #' @param libs character, unique names of the new inputs (not live in the store).
+#' @details Updates are incremental: the new keys and contributions are appended and recorded as
+#' pending deltas, so an update does not rewrite the per-partition order and total files. A
+#' partition's deltas are folded into its base files once they exceed the delta limits
+#' (pending contribution rows above \code{getOption("ORFik.ofst_store_delta_rows", 2)} times
+#' the base keys, pending keys above \code{getOption("ORFik.ofst_store_delta_keys", 0.25)}
+#' times the base keys, or more than 32 pending key blocks), and by \code{ofst_store_compact}.
+#' \code{options(ORFik.ofst_store_delta = FALSE)} folds on every update.
 #' @return invisible manifest after the update.
 #' @family ofst_store
 #' @export
@@ -422,7 +455,7 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     m$seqlevels <- c(m$seqlevels, setdiff(new_chr, m$seqlevels))
     new_parts <- setdiff(unique(rows$part), m$parts$part)
     if (length(new_parts))
-      m$parts <- data.table::rbindlist(list(m$parts, data.table::data.table(part = new_parts, n_keys = 0, gen = 0L)))
+      m$parts <- data.table::rbindlist(list(m$parts, data.table::data.table(part = new_parts, n_keys = 0, gen = 0L, n_base = 0)))
   }
   chr_codes <- stats::setNames(seq_along(m$seqlevels), m$seqlevels)
   runs[, part := m$chr_part$part[match(chr, m$chr_part$chr)]]
@@ -438,12 +471,19 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
                             rm_rows[part == p], threads)
   }, workers)
   names(res) <- todo
+  if (isTRUE(getOption("ORFik.ofst_store_timing", FALSE)))
+    print(data.table::rbindlist(lapply(todo, function(p) as.list(c(part = p, n_keys = res[[p]]$n_keys,
+                                                                   folded = res[[p]]$folded,
+                                                                   round(res[[p]]$timing, 2)))), fill = TRUE))
 
   # commit
   for (p in todo) {
     r <- res[[p]]
-    data.table::set(m$parts, i = which(m$parts$part == p), j = c("n_keys", "gen"), value = list(r$n_keys, new_gen))
+    data.table::set(m$parts, i = which(m$parts$part == p), j = c("n_keys", "gen", "n_base"),
+                    value = list(r$n_keys, r$gen, r$n_base))
     m$segments <- data.table::rbindlist(list(m$segments[part != p], r$segments))
+    m$pending <- data.table::rbindlist(list(m$pending[part != p], if (!r$folded) r$pending))
+    m$blocks <- data.table::rbindlist(list(m$blocks[part != p], if (!r$folded) r$blocks))
   }
   m$libs[lib %in% remove_libs & state == "live", state := "removed"]
   added <- data.table::rbindlist(lapply(res, `[[`, "libs"))
@@ -472,32 +512,6 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   invisible(m)
 }
 
-# Load a partition's committed state: keys (list of int columns), order, total. With
-# sorted = TRUE and a sorted key file, keys are in key order (keys[[k]][i] belongs to row id
-# order[i]) and $sorted is TRUE; otherwise keys are in row-id order.
-.ofst_store_load_part <- function(store, m, p, need_keys = TRUE, sorted = FALSE, skip_seq = FALSE) {
-  pr <- m$parts[part == p]
-  n <- if (nrow(pr)) pr$n_keys else 0
-  kc <- c("seq", m$key_columns)
-  if (n == 0) {
-    keys <- if (need_keys) stats::setNames(rep(list(integer()), length(kc)), kc)
-    return(list(n = 0, keys = keys, order = integer(), total = numeric(), sorted = sorted))
-  }
-  skeys_file <- .ofst_store_gen_file(store, p, "skeys", pr$gen)
-  is_sorted <- need_keys && sorted && file.exists(skeys_file)
-  if (is_sorted && skip_seq) kc <- setdiff(kc, "seq")   # (a one-chromosome partition)
-  keys <- if (is_sorted) .ofst_cols(fst::read_fst(skeys_file, kc, as.data.table = TRUE), kc) else
-    if (need_keys) .ofst_cols(fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = n), kc)
-  if (is_sorted && length(keys[[1L]]) != n)
-    .ofst_store_abort("partition '", p, "': sorted key file has ", length(keys[[1L]]), " rows, expected ", n, ".")
-  ord <- fst::read_fst(.ofst_store_gen_file(store, p, "order", pr$gen))[[1L]]
-  total <- as.numeric(fst::read_fst(.ofst_store_gen_file(store, p, "total", pr$gen))[[1L]])
-  if (length(ord) != n || length(total) != n)
-    .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (", length(ord), "/",
-                      length(total), " vs ", n, " keys).")
-  list(n = n, keys = keys, order = ord, total = total, sorted = is_sorted)
-}
-
 # Contributions (row, score) of manifest rows h (one partition), concatenated in h order.
 .ofst_store_read_contrib <- function(store, h) {
   h <- h[!is.na(seg) & nnz > 0]
@@ -516,11 +530,251 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   d
 }
 
+# Delta state of a partition (see "Delta updates" at the top): keys n_base + 1 .. n_keys are
+# pending blocks of keys.fst, each in key order, and the pending contribution ranges (sign +1 for
+# added, -1 for removed inputs) are not yet summed into the base total.
+.ofst_store_n_base <- function(m, p) {
+  pr <- m$parts[part == p]
+  if (!nrow(pr)) 0 else pr$n_base
+}
+.ofst_store_has_delta <- function(m, p) {
+  pr <- m$parts[part == p]
+  nrow(pr) && (pr$n_keys > pr$n_base || any(m$pending$part == p))
+}
+
+# Base total of a partition plus its pending contributions (length n_keys).
+.ofst_store_total <- function(store, m, p) {
+  pr <- m$parts[part == p]
+  if (!nrow(pr) || pr$n_keys == 0) return(numeric())
+  total <- as.numeric(fst::read_fst(.ofst_store_gen_file(store, p, "total", pr$gen))[[1L]])
+  if (length(total) != pr$n_base)
+    .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (", length(total), " totals vs ",
+                      pr$n_base, " base keys).")
+  if (pr$n_keys > pr$n_base) total <- c(total, numeric(pr$n_keys - pr$n_base))
+  pend <- m$pending[part == p]
+  if (nrow(pend)) {
+    d <- .ofst_store_read_contrib(store, pend)
+    total <- ofst_store_scatter_add(total, d$row, d$score * rep.int(pend$sign[pend$nnz > 0], pend$nnz[pend$nnz > 0]),
+                                    1, FALSE)
+    if (any(total < 0)) .ofst_store_abort("partition '", p, "': a total turned negative (ledger mismatch).")
+  }
+  total
+}
+
+# Keys of the pending blocks (rows n_base + 1 .. n_keys of keys.fst) as a list of blocks, each a
+# list of key columns kc in key order, plus their row ids.
+.ofst_store_read_blocks <- function(store, m, p, kc) {
+  pr <- m$parts[part == p]
+  if (pr$n_keys <= pr$n_base) return(list(keys = list(), ids = list()))
+  b <- m$blocks[part == p][order(from)]
+  x <- fst::read_fst(file.path(store, p, "keys.fst"), kc, from = pr$n_base + 1, to = pr$n_keys)
+  off <- pr$n_base
+  list(keys = lapply(seq_len(nrow(b)), function(i) lapply(x, `[`, (b$from[i] - off):(b$to[i] - off))),
+       ids = lapply(seq_len(nrow(b)), function(i) seq.int(b$from[i], b$to[i])))
+}
+
+# Merge sorted, disjoint key tables (lists of columns) with their ids into one table in key
+# order. The small tables are merged first, so the large one is passed once.
+.ofst_store_merge_sorted <- function(keys, ids) {
+  o <- order(vapply(keys, function(k) length(k[[1L]]), numeric(1)))
+  keys <- keys[o]; ids <- ids[o]
+  cur_k <- keys[[1L]]; cur_i <- ids[[1L]]
+  for (i in seq_along(keys)[-1L]) {
+    nk <- keys[[i]]
+    n1 <- length(cur_i); n2 <- length(ids[[i]])
+    if (!n2) next
+    pos <- ofst_sorted_merge_order(unname(nk), seq_len(n2) + n1, unname(cur_k), seq_len(n1))
+    cur_k <- stats::setNames(lapply(names(nk), function(k) c(cur_k[[k]], nk[[k]])[pos]), names(nk))
+    cur_i <- c(cur_i, ids[[i]])[pos]
+  }
+  list(keys = cur_k, ids = cur_i)
+}
+
+# Load a partition's committed state: keys (list of int columns), order, total, with pending
+# deltas applied (base_only = TRUE: the base generation files only). With sorted = TRUE and a
+# sorted key file, keys are in key order (keys[[k]][i] belongs to row id order[i]) and $sorted is
+# TRUE; otherwise keys are in row-id order.
+.ofst_store_load_part <- function(store, m, p, need_keys = TRUE, sorted = FALSE, skip_seq = FALSE,
+                                  base_only = FALSE, need_total = TRUE) {
+  pr <- m$parts[part == p]
+  n <- if (nrow(pr)) pr$n_keys else 0
+  kc <- c("seq", m$key_columns)
+  if (n == 0) {
+    keys <- if (need_keys) stats::setNames(rep(list(integer()), length(kc)), kc)
+    return(list(n = 0, n_base = 0, keys = keys, order = integer(), total = numeric(), sorted = sorted))
+  }
+  nb <- pr$n_base
+  delta <- !base_only && n > nb
+  skeys_file <- .ofst_store_gen_file(store, p, "skeys", pr$gen)
+  if (delta && !file.exists(skeys_file)) .ofst_store_abort("partition '", p, "': pending keys without a sorted key file.")
+  is_sorted <- need_keys && sorted && file.exists(skeys_file)
+  if (skip_seq && (is_sorted || (delta && !need_keys))) kc <- setdiff(kc, "seq")   # (a one-chromosome partition)
+  read_sorted <- is_sorted || delta   # the order of pending keys comes from merging sorted keys
+  keys <- if (read_sorted) .ofst_cols(fst::read_fst(skeys_file, kc, as.data.table = TRUE), kc) else
+    if (need_keys) .ofst_cols(fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = n), kc)
+  if (read_sorted && length(keys[[1L]]) != nb)
+    .ofst_store_abort("partition '", p, "': sorted key file has ", length(keys[[1L]]), " rows, expected ", nb, ".")
+  ord <- fst::read_fst(.ofst_store_gen_file(store, p, "order", pr$gen))[[1L]]
+  if (length(ord) != nb)
+    .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (", length(ord), " vs ", nb, " keys).")
+  if (delta) {
+    b <- .ofst_store_read_blocks(store, m, p, names(keys))
+    mg <- .ofst_store_merge_sorted(c(list(keys), b$keys), c(list(ord), b$ids))
+    ord <- mg$ids
+    keys <- if (is_sorted) mg$keys else
+      if (need_keys) .ofst_cols(fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = n), c("seq", m$key_columns))
+    mg <- NULL
+  }
+  total <- if (!need_total) NULL else if (base_only)
+    as.numeric(fst::read_fst(.ofst_store_gen_file(store, p, "total", pr$gen))[[1L]]) else .ofst_store_total(store, m, p)
+  if (base_only) n <- nb
+  if (length(ord) != n || (need_total && length(total) != n))
+    .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (", length(ord), "/",
+                      length(total), " vs ", n, " keys).")
+  list(n = n, n_base = nb, keys = keys, order = ord, total = total, sorted = is_sorted)
+}
+
+# Contribution rows of the new inputs (row ids per input from the kernel), appended to the open
+# segment (sorted by row id; segments capped at max_contrib_rows). Returns the segments, the
+# manifest rows of the inputs and, with keep = TRUE, all contribution rows (for a scatter).
+.ofst_store_write_contrib <- function(store, m, p, segs, rows, lib_tabs, lib_names, keep = FALSE) {
+  cur <- if (nrow(segs)) max(segs$seg) else 0L
+  seg_rows <- if (nrow(segs)) segs$n_rows[segs$seg == cur] else Inf
+  committed <- seg_rows
+  # score type of the open segment: integer while every score fits (about 30 % smaller files)
+  cur_int <- if (nrow(segs) && file.exists(f <- .ofst_store_seg_file(store, p, cur)))
+    fst::metadata_fst(f)$columnTypes[2L] == 5L else NA
+  batch <- list(); out_libs <- vector("list", length(lib_tabs)); all_contrib <- vector("list", length(lib_tabs))
+  flush <- function() {
+    if (length(batch)) .ofst_store_append(data.table::rbindlist(batch), .ofst_store_seg_file(store, p, cur), committed)
+    batch <<- list()
+  }
+  for (j in seq_along(lib_tabs)) {
+    r <- rows[[j]]; s <- lib_tabs[[j]]$score
+    if (any(r == 0L)) .ofst_store_abort("internal: unmatched key in partition '", p, "'.")
+    o <- if (is.unsorted(r, strictly = TRUE)) order(r, method = "radix") else seq_along(r)
+    fits_int <- .is_safe_int32(s)
+    nn <- length(r)
+    if (nn > m$max_contrib_rows) .ofst_store_abort("input '", lib_names[j], "' has more rows in partition '", p,
+                                                   "' than max_contrib_rows.")
+    if (seg_rows + nn > m$max_contrib_rows || (isTRUE(cur_int) && !fits_int)) {   # new segment
+      flush()
+      cur <- cur + 1L; seg_rows <- 0; committed <- 0; cur_int <- NA
+      segs <- data.table::rbindlist(list(segs, data.table::data.table(part = p, seg = cur, n_rows = 0)))
+    }
+    if (is.na(cur_int)) cur_int <- fits_int
+    cd <- data.table::data.table(row = as.integer(r[o]), score = if (cur_int) as.integer(s[o]) else as.numeric(s[o]))
+    out_libs[[j]] <- data.table::data.table(lib = lib_names[j], part = p, seg = cur, from = seg_rows + 1,
+                                            to = seg_rows + nn, nnz = nn, score_sum = sum(as.numeric(s)))
+    batch[[length(batch) + 1L]] <- cd
+    if (keep) all_contrib[[j]] <- cd
+    seg_rows <- seg_rows + nn
+    data.table::set(segs, i = which(segs$seg == cur), j = "n_rows", value = seg_rows)
+  }
+  flush()
+  list(segments = segs, libs = data.table::rbindlist(out_libs),
+       contrib = if (keep) data.table::rbindlist(all_contrib))
+}
+
+# Delta limits: a partition is folded (base files rewritten) when its pending contribution rows
+# exceed ORFik.ofst_store_delta_rows x base keys (default 2), its pending keys exceed
+# ORFik.ofst_store_delta_keys x base keys (default 0.25), or it has more than 32 pending key
+# blocks. options(ORFik.ofst_store_delta = FALSE) folds on every update (no deltas).
+.ofst_store_delta_limits <- function()
+  list(on = !isFALSE(getOption("ORFik.ofst_store_delta", TRUE)),
+       rows = getOption("ORFik.ofst_store_delta_rows", 2), keys = getOption("ORFik.ofst_store_delta_keys", 0.25),
+       blocks = 32L)
+
 .ofst_store_update_part <- function(store, m, p, gen, add_paths, add_libs, runs, chr_codes, rm_rows,
                                     threads = 1L) {
+  t_last <- proc.time()[["elapsed"]]; timing <- numeric()
+  tick <- function(what) { now <- proc.time()[["elapsed"]]; timing[what] <<- now - t_last; t_last <<- now }
   dir.create(file.path(store, p), showWarnings = FALSE)
-  st <- .ofst_store_load_part(store, m, p, need_keys = nrow(runs) > 0, sorted = TRUE)
-  skeys <- NULL
+  pr <- m$parts[part == p]
+  lim <- .ofst_store_delta_limits()
+  pend <- m$pending[part == p]
+  rm_pend <- if (nrow(rm_rows)) rm_rows[!is.na(seg) & nnz > 0, .(part, seg, from, to, nnz, sign = -1)]
+  # delta update whenever the partition has a base with a sorted key file; a partition over the
+  # delta limits afterwards is folded (cheaper than a full update: no key union)
+  in_rows <- if (nrow(runs)) sum(runs$to - runs$from + 1) else 0
+  delta <- lim$on && nrow(pr) && pr$n_base > 0 &&
+    file.exists(.ofst_store_gen_file(store, p, "skeys", pr$gen))
+  lib_tabs <- NULL
+  read_inputs <- function() {
+    inputs <- sort(unique(runs$input))
+    read_one <- function(i) .ofst_store_read_input(add_paths[i], runs[input == i], chr_codes, m$key_columns)
+    tabs <- if (threads > 1L && length(inputs) > 1L && in_rows > 2e7) {
+      # few partitions (e.g. one big chromosome) and many rows: read the inputs in forked
+      # chunks (a fork of a large session costs ~0.1-0.5 s, so small adds read serially)
+      chunks <- .ofst_store_chunks(inputs, threads)
+      unlist(.ofst_store_mclapply(chunks, function(ch) lapply(ch, read_one), threads), recursive = FALSE)
+    } else lapply(inputs, read_one)
+    list(tabs = tabs, names = add_libs[inputs])
+  }
+  segs <- m$segments[part == p]
+  kc <- c("seq", m$key_columns)
+  if (delta) {
+    n_keys <- pr$n_keys
+    blocks <- m$blocks[part == p]
+    out_libs <- NULL
+    if (nrow(runs)) {
+      one_chr <- nrow(m$chr_part[part == p]) == 1L
+      skc <- if (one_chr) m$key_columns else kc
+      # the base keys in key order and their row ids, then the pending blocks (all sorted)
+      base_keys <- .ofst_cols(fst::read_fst(.ofst_store_gen_file(store, p, "skeys", pr$gen), skc, as.data.table = TRUE), skc)
+      base_ord <- fst::read_fst(.ofst_store_gen_file(store, p, "order", pr$gen))[[1L]]
+      if (length(base_ord) != pr$n_base || length(base_keys[[1L]]) != pr$n_base)
+        .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (base files vs ", pr$n_base, " keys).")
+      b <- .ofst_store_read_blocks(store, m, p, skc)
+      tick("load")
+      li <- read_inputs()
+      tick("read_inputs")
+      kw <- ofst_store_locate(c(list(unname(base_keys)), lapply(b$keys, unname)), c(list(base_ord), b$ids),
+                              lapply(li$tabs, function(x) unname(.ofst_cols(x, skc))), n_keys, threads)
+      base_keys <- base_ord <- b <- NULL
+      tick("kernel")
+      n_new <- length(kw$new_keys[[1L]])
+      if (n_new) {
+        unseen <- data.table::as.data.table(stats::setNames(kw$new_keys, skc))
+        if (one_chr) data.table::set(unseen, j = "seq", value = rep.int(unname(chr_codes[m$chr_part[part == p]$chr]), n_new))
+        data.table::setcolorder(unseen, kc)
+        .ofst_store_append(unseen, file.path(store, p, "keys.fst"), n_keys)
+        unseen <- NULL
+        blocks <- data.table::rbindlist(list(blocks, data.table::data.table(part = p, from = n_keys + 1, to = n_keys + n_new)))
+        n_keys <- n_keys + n_new
+      }
+      tick("append_keys")
+      wc <- .ofst_store_write_contrib(store, m, p, segs, kw$rows, li$tabs, li$names)
+      kw <- li <- NULL
+      segs <- wc$segments; out_libs <- wc$libs
+      tick("contrib")
+    }
+    add_pend <- if (!is.null(out_libs) && nrow(out_libs)) out_libs[nnz > 0, .(part, seg, from, to, nnz, sign = 1)]
+    pend <- data.table::rbindlist(list(pend, rm_pend, add_pend))
+    res <- list(n_keys = n_keys, n_base = pr$n_base, gen = pr$gen, segments = segs, libs = out_libs,
+                pending = pend, blocks = blocks, folded = FALSE)
+    # fold now when the partition is over the limits
+    if (n_keys - pr$n_base > lim$keys * pr$n_base || nrow(blocks) > lim$blocks ||
+        sum(pend$nnz) > lim$rows * pr$n_base) {
+      m2 <- m
+      m2$parts <- data.table::copy(m$parts)
+      data.table::set(m2$parts, i = which(m2$parts$part == p), j = "n_keys", value = res$n_keys)
+      m2$pending <- data.table::rbindlist(list(m2$pending[part != p], pend))
+      m2$blocks <- data.table::rbindlist(list(m2$blocks[part != p], blocks))
+      m2$segments <- data.table::rbindlist(list(m2$segments[part != p], segs))
+      .ofst_store_fold_part(store, m2, p, gen)
+      res <- c(res[c("n_keys", "segments", "libs")], list(n_base = n_keys, gen = gen, folded = TRUE))
+      tick("fold")
+    }
+    res$timing <- timing
+    return(res)
+  }
+
+  # full update: load the partition (pending deltas applied), merge, rewrite the base files
+  has_blocks <- nrow(pr) && pr$n_keys > pr$n_base
+  st <- .ofst_store_load_part(store, m, p, need_keys = nrow(runs) > 0 || has_blocks, sorted = TRUE)
+  tick("load")
+  skeys <- if (has_blocks && !nrow(runs)) st$keys
   total <- st$total
   # removals: subtract stored contributions
   if (nrow(rm_rows)) {
@@ -528,29 +782,21 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     total <- ofst_store_scatter_add(total, d$row, d$score, -1, TRUE)
     d <- NULL
   }
-  segs <- m$segments[part == p]
   out_libs <- NULL
   n_keys <- st$n
   ord <- st$order
   if (nrow(runs)) {
-    kc <- c("seq", m$key_columns)
-    inputs <- sort(unique(runs$input))
-    read_one <- function(i) .ofst_store_read_input(add_paths[i], runs[input == i], chr_codes, m$key_columns)
-    lib_tabs <- if (threads > 1L && length(inputs) > 1L && sum(runs$to - runs$from + 1) > 2e7) {
-      # few partitions (e.g. one big chromosome) and many rows: read the inputs in forked
-      # chunks (a fork of a large session costs ~0.1-0.5 s, so small adds read serially)
-      chunks <- .ofst_store_chunks(inputs, threads)
-      unlist(.ofst_store_mclapply(chunks, function(ch) lapply(ch, read_one), threads), recursive = FALSE)
-    } else lapply(inputs, read_one)
+    li <- read_inputs()
+    tick("read_inputs")
     # one k-way pass over the stored keys (gathered into key order in C++) and the new inputs,
     # on packed keys:
     # row ids for every input key, the unseen keys (appended in key order) and the new order
     kw <- ofst_store_kway(st$keys, as.integer(st$order),
-                          lapply(lib_tabs, .ofst_cols, kc), st$n, threads,
+                          lapply(li$tabs, .ofst_cols, kc), st$n, threads,
                           stored_sorted = st$sorted, want_keys = TRUE)
+    tick("kernel")
     st$keys <- NULL
     skeys <- stats::setNames(kw$keys, kc)
-    rows <- kw$rows
     n_new <- length(kw$new_keys[[1L]])
     if (n_new) {
       unseen <- data.table::as.data.table(stats::setNames(kw$new_keys, kc))
@@ -558,62 +804,67 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
       unseen <- NULL
       total <- c(total, numeric(n_new))
     }
+    tick("append_keys")
     ord <- kw$order
-    kw <- NULL
     n_keys <- st$n + n_new
-    # contributions, sorted by row id; segments capped at max_contrib_rows
-    cur <- if (nrow(segs)) max(segs$seg) else 0L
-    seg_rows <- if (nrow(segs)) segs$n_rows[segs$seg == cur] else Inf
-    committed <- seg_rows
-    # score type of the open segment: integer while every score fits (about 30 % smaller files)
-    cur_int <- if (nrow(segs) && file.exists(f <- .ofst_store_seg_file(store, p, cur)))
-      fst::metadata_fst(f)$columnTypes[2L] == 5L else NA
-    batch <- list(); out_libs <- vector("list", length(lib_tabs)); all_contrib <- vector("list", length(lib_tabs))
-    flush <- function() {
-      if (length(batch)) .ofst_store_append(data.table::rbindlist(batch), .ofst_store_seg_file(store, p, cur), committed)
-      batch <<- list()
-    }
-    for (j in seq_along(lib_tabs)) {
-      r <- rows[[j]]; s <- lib_tabs[[j]]$score
-      if (any(r == 0L)) .ofst_store_abort("internal: unmatched key in partition '", p, "'.")
-      o <- if (is.unsorted(r, strictly = TRUE)) order(r, method = "radix") else seq_along(r)
-      fits_int <- .is_safe_int32(s)
-      nn <- length(r)
-      if (nn > m$max_contrib_rows) .ofst_store_abort("input '", add_libs[inputs[j]], "' has more rows in partition '", p,
-                                                     "' than max_contrib_rows.")
-      if (seg_rows + nn > m$max_contrib_rows || (isTRUE(cur_int) && !fits_int)) {   # new segment
-        flush()
-        cur <- cur + 1L; seg_rows <- 0; committed <- 0; cur_int <- NA
-        segs <- data.table::rbindlist(list(segs, data.table::data.table(part = p, seg = cur, n_rows = 0)))
-      }
-      if (is.na(cur_int)) cur_int <- fits_int
-      cd <- data.table::data.table(row = as.integer(r[o]), score = if (cur_int) as.integer(s[o]) else as.numeric(s[o]))
-      out_libs[[j]] <- data.table::data.table(lib = add_libs[inputs[j]], part = p, seg = cur, from = seg_rows + 1,
-                                              to = seg_rows + nn, nnz = nn, score_sum = sum(as.numeric(s)))
-      batch[[length(batch) + 1L]] <- cd
-      all_contrib[[j]] <- cd
-      seg_rows <- seg_rows + nn
-      data.table::set(segs, i = which(segs$seg == cur), j = "n_rows", value = seg_rows)
-    }
-    flush()
-    all_contrib <- data.table::rbindlist(all_contrib)   # one scatter for the batch
-    total <- ofst_store_scatter_add(total, all_contrib$row, as.numeric(all_contrib$score), 1, FALSE)
-    all_contrib <- NULL
-    out_libs <- data.table::rbindlist(out_libs)
+    wc <- .ofst_store_write_contrib(store, m, p, segs, kw$rows, li$tabs, li$names, keep = TRUE)
+    kw <- li <- NULL
+    segs <- wc$segments; out_libs <- wc$libs
+    tick("contrib")
+    total <- ofst_store_scatter_add(total, wc$contrib$row, as.numeric(wc$contrib$score), 1, FALSE)
+    wc <- NULL
+    tick("scatter")
   }
-  # unchanged key order (no new keys, e.g. a removal): hard-link the previous order and sorted
-  # key files
+  .ofst_store_write_base(store, m, p, gen, st, n_keys, ord, skeys, total)
+  tick("write")
+  list(n_keys = n_keys, n_base = n_keys, gen = gen, segments = segs, libs = out_libs, folded = TRUE, timing = timing)
+}
+
+# Write the base files of generation gen. Unchanged key order (same keys as the previous base,
+# e.g. a removal): hard-link the previous order and sorted key files.
+.ofst_store_write_base <- function(store, m, p, gen, st, n_keys, ord, skeys, total) {
+  pr <- m$parts[part == p]
   link_or_write <- function(what, write) {
-    old <- if (st$n) .ofst_store_gen_file(store, p, what, m$parts[part == p]$gen)
+    old <- if (st$n) .ofst_store_gen_file(store, p, what, pr$gen)
     new <- .ofst_store_gen_file(store, p, what, gen)
-    if (!(n_keys == st$n && st$n > 0 && file.exists(old) && (file.link(old, new) || file.copy(old, new))))
+    if (!(n_keys == st$n && st$n > 0 && pr$n_base == st$n && file.exists(old) &&
+          (file.link(old, new) || file.copy(old, new))))
       write(new)
   }
   link_or_write("order", function(f) .ofst_store_write_gen(data.frame(row = as.integer(ord)), f))
   link_or_write("skeys", function(f) if (!is.null(skeys)) .ofst_store_write_gen(data.table::setDT(skeys), f))
-  skeys <- NULL
   .ofst_store_write_gen(data.frame(score = total), .ofst_store_gen_file(store, p, "total", gen))
-  list(n_keys = n_keys, segments = segs, libs = out_libs)
+  invisible(NULL)
+}
+
+# Fold the pending deltas of a partition into new base files of generation gen (m describes
+# the state to fold, e.g. including uncommitted pending rows of this update).
+.ofst_store_fold_part <- function(store, m, p, gen) {
+  pr <- m$parts[part == p]
+  if (pr$n_keys == pr$n_base) {   # no pending keys: same key order, only the totals change
+    st <- list(n = pr$n_keys)
+    return(.ofst_store_write_base(store, m, p, gen, st, pr$n_keys, NULL, NULL, .ofst_store_total(store, m, p)))
+  }
+  st <- .ofst_store_load_part(store, m, p, need_keys = TRUE, sorted = TRUE)
+  if (!st$sorted && st$n) .ofst_store_abort("internal: folding partition '", p, "' needs its sorted key file.")
+  .ofst_store_write_base(store, m, p, gen, st, st$n, st$order, st$keys, st$total)
+}
+
+# Fold every partition with pending deltas (one commit). The caller holds the store lock.
+.ofst_store_fold_all <- function(store, m, workers, verbose = TRUE) {
+  todo <- m$parts$part[vapply(m$parts$part, function(p) .ofst_store_has_delta(m, p), logical(1))]
+  if (!length(todo)) return(m)
+  gen <- m$generation + 1L
+  .ofst_store_mclapply(todo, function(p) { .ofst_store_fold_part(store, m, p, gen); TRUE }, workers)
+  i <- which(m$parts$part %in% todo)
+  data.table::set(m$parts, i = i, j = c("n_base", "gen"), value = list(m$parts$n_keys[i], gen))
+  m$pending <- m$pending[!part %in% todo]
+  m$blocks <- m$blocks[!part %in% todo]
+  m$generation <- gen
+  .ofst_store_commit(store, m)
+  .ofst_store_gc(store, m)
+  .ofst_store_msg(verbose, "folded the pending deltas of ", length(todo), " partition(s)")
+  m
 }
 
 # Scores of one partition for all inputs (stored total) or a subset of live inputs.
@@ -692,7 +943,11 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   pr <- m$parts[part == p]
   score_file <- NULL
   if (is.null(libs)) {
-    score <- as.numeric(fst::read_fst(.ofst_store_gen_file(store, p, "total", pr$gen))[[1L]])
+    score <- .ofst_store_total(store, m, p)   # base total + pending deltas
+    if (.ofst_store_has_delta(m, p)) {          # pass 2 reuses it (no second pass over the pending rows)
+      score_file <- file.path(scratch, paste0("score_", p, ".fst"))
+      fst::write_fst(data.frame(score = score), score_file, compress = 0)
+    }
   } else {
     score <- .ofst_store_part_scores(store, m, p, list(n = pr$n_keys), libs)
     score_file <- file.path(scratch, paste0("score_", p, ".fst"))
@@ -713,7 +968,8 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 .ofst_store_export_write <- function(store, m, p, blocks, score_file, seq_to_level, out_levels,
                                      int_score, scratch, compress) {
   one_chr <- nrow(m$chr_part[part == p]) == 1L
-  st <- .ofst_store_load_part(store, m, p, need_keys = TRUE, sorted = TRUE, skip_seq = one_chr)
+  st <- .ofst_store_load_part(store, m, p, need_keys = TRUE, sorted = TRUE, skip_seq = one_chr,
+                              need_total = is.null(score_file))
   score <- if (is.null(score_file)) st$total else fst::read_fst(score_file)[[1L]]
   st$total <- NULL
   # keep: the output rows in key order, as indices into st$keys (positions in the sorted key
@@ -898,14 +1154,19 @@ ofst_store_verify <- function(store, workers = NULL) {
   store <- .ofst_store_path(store)
   m <- ofst_store_manifest(store)
   ok <- .ofst_store_mclapply(m$parts$part, function(p) {
-    st <- .ofst_store_load_part(store, m, p, need_keys = FALSE)
+    st <- .ofst_store_load_part(store, m, p, need_keys = FALSE)   # pending deltas applied
     acc <- .ofst_store_part_scores(store, m, p, st, libs = m$libs[state == "live"]$lib)
     skeys_file <- .ofst_store_gen_file(store, p, "skeys", m$parts[part == p]$gen)
     if (st$n && file.exists(skeys_file)) {
+      # all keys (base + pending blocks) in the merged key order are sorted and unique, and the
+      # base sorted key file equals the base keys in base order
       keys <- fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = st$n, as.data.table = TRUE)
-      if (!isTRUE(all.equal(keys[st$order], fst::read_fst(skeys_file, as.data.table = TRUE), check.attributes = FALSE)))
+      if (!ofst_keys_sorted_unique(.ofst_cols(keys[st$order], names(keys))))
+        .ofst_store_abort("partition '", p, "': the keys are not sorted and unique in key order.")
+      base <- .ofst_store_load_part(store, m, p, need_keys = FALSE, base_only = TRUE, need_total = FALSE)
+      if (!isTRUE(all.equal(keys[base$order], fst::read_fst(skeys_file, as.data.table = TRUE), check.attributes = FALSE)))
         .ofst_store_abort("partition '", p, "': the sorted key file differs from the keys in key order.")
-      keys <- NULL
+      keys <- base <- NULL
     }
     h <- m$libs[state == "live" & part == p]
     if (!isTRUE(all.equal(acc, st$total, tolerance = 0)))
@@ -924,7 +1185,8 @@ ofst_store_verify <- function(store, workers = NULL) {
 #'
 #' Rewrites the contribution files of partitions where removed inputs hold more than
 #' \code{min_dead_fraction} of the rows, keeping only live inputs (one new segment series per
-#' partition). Keys and row ids are unchanged.
+#' partition). Keys and row ids are unchanged. Pending delta updates are folded into the base
+#' files first (see \code{ofst_store_add}).
 #' @inheritParams ofst_store_add
 #' @param min_dead_fraction numeric, default 0.2.
 #' @return invisible manifest after compaction.
@@ -935,6 +1197,8 @@ ofst_store_compact <- function(store, min_dead_fraction = 0.2, workers = NULL, v
   m <- ofst_store_manifest(store)
   unlock <- .ofst_store_lock(store)
   on.exit(unlock(), add = TRUE)
+  # pending deltas refer to contribution rows that compaction moves or drops: fold them first
+  m <- .ofst_store_fold_all(store, m, .ofst_store_workers(workers), verbose)
   stats <- m$libs[!is.na(part), .(live = sum(nnz[state == "live"]), dead = sum(nnz[state != "live"])), by = part]
   todo <- stats[dead > 0 & dead / pmax(1, live + dead) > min_dead_fraction]$part
   if (!length(todo)) { .ofst_store_msg(verbose, "nothing to compact"); return(invisible(m)) }
@@ -1137,7 +1401,7 @@ ofst_store_write_matrix <- function(x, store, max_contrib_rows = 1e9, partition_
       rows <- rows + cnt$nnz[i]; first <- first + cnt$nnz[i]
       segments[[paste(p, cur)]] <- data.table::data.table(part = p, seg = cur, n_rows = rows)
     }
-    parts[[p]] <- data.table::data.table(part = p, n_keys = n, gen = 1L)
+    parts[[p]] <- data.table::data.table(part = p, n_keys = n, gen = 1L, n_base = n)
     chr_part[[p]] <- data.table::data.table(chr = x$seqlevels[unique(pp$keys[[1L]])], part = p)
   }
   m$parts <- data.table::rbindlist(c(list(m$parts), parts))

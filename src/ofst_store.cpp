@@ -385,6 +385,141 @@ Rcpp::IntegerVector merge_order_impl(const KeyCols& ka, const int* oa, const Key
   return out;
 }
 
+// ---- delta updates: locate new tables in the stored key streams -------------------------------
+
+// Pack a large table over t threads (contiguous chunks); returns the first row (1-based) that is
+// not strictly greater than its predecessor, or 0.
+template <int W>
+R_xlen_t pack_table_par(const KeyCols& kc, const Packer& pk, Key<W>* out, int t) {
+  const R_xlen_t n = kc.n;
+  t = std::max(1, std::min<int>(t, (int)std::max<R_xlen_t>(1, n / 1000000)));
+  std::vector<R_xlen_t> bad(t, 0);
+  run_threads(t, [&](int i) {
+    const R_xlen_t a = n * i / t, b = n * (i + 1) / t;
+    for (R_xlen_t r = a; r < b; ++r) {
+      out[r] = pack_row<W>(kc, r, pk);
+      if (!bad[i] && r > a && !(out[r - 1] < out[r])) bad[i] = r + 1;
+    }
+  });
+  for (int i = 0; i < t; ++i) {
+    if (bad[i]) return bad[i];
+    const R_xlen_t a = n * i / t;
+    if (i > 0 && a > 0 && a < n && !(out[a - 1] < out[a])) return a + 1;
+  }
+  return 0;
+}
+
+// Stored streams S[s] (sorted, disjoint, ids ids[s]) and new tables Q[q] (sorted, unique).
+// Every key of a new table gets its stored id, or a new id n_old + rank in the sorted union of
+// all keys found in no stream. Work is split over the new tables (one thread each).
+template <int W>
+Rcpp::List locate_impl(const std::vector<KeyCols>& streams, const std::vector<const int*>& ids,
+                       const std::vector<KeyCols>& inputs, const Packer& pk, double n_old, int threads) {
+  auto now = [] { return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
+  std::vector<double> tm{now()};
+  const int ns = (int)streams.size(), nq = (int)inputs.size();
+  double work = 0;
+  for (auto& x : streams) work += (double)x.n;
+  for (auto& x : inputs) work += (double)x.n;
+  const int T = n_threads(threads, work);
+  std::vector<std::vector<Key<W>>> S(ns), Q(nq);
+  for (int s = 0; s < ns; ++s) {   // large streams: chunked over all threads
+    S[s].resize(streams[s].n);
+    const R_xlen_t bad = pack_table_par<W>(streams[s], pk, S[s].data(), T);
+    if (bad) Rcpp::stop("stored key stream %d is not sorted and unique (row %d)", s + 1, (double)bad);
+  }
+  std::vector<R_xlen_t> qbad(nq, 0);
+  {
+    std::atomic<int> next(0);
+    run_threads(std::min(T, std::max(1, nq)), [&](int) {
+      for (int q; (q = next++) < nq;) { Q[q].resize(inputs[q].n); qbad[q] = pack_table<W>(inputs[q], pk, Q[q].data(), true); }
+    });
+  }
+  for (int q = 0; q < nq; ++q) if (qbad[q]) Rcpp::stop("input %d: keys are not sorted and unique (row %d)", q + 1, (double)qbad[q]);
+  tm.push_back(now());
+  Rcpp::List rows_out(nq);
+  std::vector<int*> rows(nq);
+  for (int q = 0; q < nq; ++q) { Rcpp::IntegerVector v(inputs[q].n); rows[q] = v.begin(); rows_out[q] = v; }
+  // pass 1: stored ids by galloping search in every stream; misses collected per table
+  std::vector<std::vector<Key<W>>> miss(nq);
+  std::vector<std::vector<R_xlen_t>> miss_pos(nq);
+  {
+    std::atomic<int> next(0);
+    run_threads(std::min(T, std::max(1, nq)), [&](int) {
+      for (int q; (q = next++) < nq;) {
+        std::vector<size_t> cur(ns, 0);
+        const Key<W>* qq = Q[q].data();
+        int* r = rows[q];
+        for (R_xlen_t j = 0; j < inputs[q].n; ++j) {
+          const Key<W>& key = qq[j];
+          int id = 0;
+          for (int s = 0; s < ns && !id; ++s) {
+            const Key<W>* U = S[s].data();
+            const size_t nu = S[s].size();
+            size_t i = cur[s];
+            if (i < nu && U[i] < key) {
+              size_t lo = i + 1, step = 1, hi = i + 1;
+              while (hi < nu && U[hi] < key) { lo = hi + 1; hi += step; step <<= 1; }
+              if (hi > nu) hi = nu;
+              i = std::lower_bound(U + lo, U + hi, key) - U;
+              cur[s] = i;
+            }
+            if (i < nu && U[i] == key) id = ids[s][i];
+          }
+          r[j] = id;
+          if (!id) { miss[q].push_back(key); miss_pos[q].push_back(j); }
+        }
+      }
+    });
+  }
+  tm.push_back(now());
+  // union of the misses (Huffman order of pairwise set unions)
+  std::vector<std::shared_ptr<std::vector<Key<W>>>> cur;
+  for (int q = 0; q < nq; ++q) if (!miss[q].empty()) cur.push_back(std::make_shared<std::vector<Key<W>>>(miss[q]));
+  auto bigger = [](const std::shared_ptr<std::vector<Key<W>>>& a, const std::shared_ptr<std::vector<Key<W>>>& b) { return a->size() > b->size(); };
+  std::make_heap(cur.begin(), cur.end(), bigger);
+  while (cur.size() > 1) {
+    std::pop_heap(cur.begin(), cur.end(), bigger); auto a = cur.back(); cur.pop_back();
+    std::pop_heap(cur.begin(), cur.end(), bigger); auto b = cur.back(); cur.pop_back();
+    auto u = std::make_shared<std::vector<Key<W>>>(a->size() + b->size());
+    auto e = std::set_union(a->begin(), a->end(), b->begin(), b->end(), u->begin());
+    u->resize(e - u->begin());
+    cur.push_back(u);
+    std::push_heap(cur.begin(), cur.end(), bigger);
+  }
+  std::vector<Key<W>> U;
+  if (!cur.empty()) U.swap(*cur[0]);
+  cur.clear();
+  const double n_new = (double)U.size();
+  if (n_old + n_new > (double)INT_MAX) Rcpp::stop("more than 2^31 - 1 keys in one partition");
+  // pass 2: new ids
+  {
+    std::atomic<int> next(0);
+    run_threads(std::min(T, std::max(1, nq)), [&](int) {
+      std::vector<uint32_t> loc;
+      for (int q; (q = next++) < nq;) {
+        if (miss[q].empty()) continue;
+        locate_in<W>(U.data(), U.size(), miss[q].data(), (R_xlen_t)miss[q].size(), loc);
+        int* r = rows[q];
+        for (size_t j = 0; j < loc.size(); ++j) r[miss_pos[q][j]] = (int)(n_old + 1 + loc[j]);
+        std::vector<Key<W>>().swap(miss[q]);
+      }
+    });
+  }
+  const size_t k = pk.k;
+  Rcpp::List new_keys(k);
+  for (size_t c = 0; c < k; ++c) {
+    Rcpp::IntegerVector v((R_xlen_t)n_new);
+    for (size_t i = 0; i < U.size(); ++i) v[i] = (int)((int64_t)unpack_col<W>(U[i], pk, c) + pk.lo[c]);
+    new_keys[c] = v;
+  }
+  tm.push_back(now());
+  Rcpp::NumericVector secs = Rcpp::NumericVector::create(
+    Rcpp::Named("pack") = tm[1] - tm[0], Rcpp::Named("locate") = tm[2] - tm[1], Rcpp::Named("finish") = tm[3] - tm[2]);
+  return Rcpp::List::create(Rcpp::Named("rows") = rows_out, Rcpp::Named("new_keys") = new_keys,
+                            Rcpp::Named("words") = pk.W, Rcpp::Named("threads") = T, Rcpp::Named("seconds") = secs);
+}
+
 #define OFST_DISPATCH_W(pk, CALL)                                         \
   switch ((pk).W) {                                                       \
     case 1: return CALL(1);                                               \
@@ -603,4 +738,36 @@ Rcpp::List ofst_store_score_scan(Rcpp::NumericVector score, Rcpp::IntegerVector 
     if (int_ok && !(v == std::floor(v) && std::fabs(v) <= 2147483647.0)) int_ok = false;
   }
   return Rcpp::List::create(Rcpp::Named("counts") = Rcpp::wrap(counts), Rcpp::Named("int_ok") = int_ok);
+}
+
+// The store's delta-update kernel. `streams`: stored key tables, each in key order (the sorted
+// key file of the base generation, then the pending blocks of new keys), disjoint; `ids`: the
+// row id of every stored key (per stream). `inputs`: new tables, each sorted and unique.
+// Returns rows (per input, the row id of each key: a stored id, or n_old + rank among the keys
+// found in no stream) and new_keys (those keys, in key order). Unlike ofst_store_kway, the
+// stored keys are only searched (galloping per input), never merged, so the cost is a pass to
+// pack them plus O(input rows * log gap).
+// [[Rcpp::export]]
+Rcpp::List ofst_store_locate(Rcpp::List streams, Rcpp::List ids, Rcpp::List inputs, double n_old, int threads) {
+  if (streams.size() != ids.size()) Rcpp::stop("one id vector per stream is required");
+  std::vector<KeyCols> st, in;
+  std::vector<const int*> id;
+  std::vector<Rcpp::IntegerVector> keep;   // (keeps coerced id vectors alive)
+  st.reserve(streams.size()); in.reserve(inputs.size());
+  for (int s = 0; s < streams.size(); ++s) {
+    st.emplace_back(Rcpp::as<Rcpp::List>(streams[s]));
+    keep.push_back(Rcpp::as<Rcpp::IntegerVector>(ids[s]));
+    if (keep.back().size() != st.back().n) Rcpp::stop("stream %d: id length differs from key length", s + 1);
+  }
+  for (auto& v : keep) id.push_back(v.begin());
+  for (int i = 0; i < inputs.size(); ++i) in.emplace_back(Rcpp::as<Rcpp::List>(inputs[i]));
+  std::vector<const KeyCols*> sets;
+  for (auto& x : st) sets.push_back(&x);
+  for (auto& x : in) sets.push_back(&x);
+  if (sets.empty()) Rcpp::stop("no key tables");
+  for (auto* x : sets) check_same_width(*sets[0], *x);
+  Packer pk = make_packer(sets);
+#define OFST_CALL(W) locate_impl<W>(st, id, in, pk, n_old, threads)
+  OFST_DISPATCH_W(pk, OFST_CALL)
+#undef OFST_CALL
 }

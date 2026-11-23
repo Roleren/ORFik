@@ -27,7 +27,8 @@ invisible manifest after compaction.
 \description{
 Rewrites the contribution files of partitions where removed inputs hold more than
 \code{min_dead_fraction} of the rows, keeping only live inputs (one new segment series per
-partition). Keys and row ids are unchanged.
+partition). Keys and row ids are unchanged. Pending delta updates are folded into the base
+files first (see \code{ofst_store_add}).
 }
 \seealso{
 Other ofst_store: 
