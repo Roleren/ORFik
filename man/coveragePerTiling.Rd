@@ -33,7 +33,10 @@ increasing ranges (1,2,3), and - strand groups in decreasing ranges (3,2,1)}
 names (genes column) will be a factor column, if FALSE it will be an
 integer column (index of gene), so first input grl element is 1. Dropping names
 gives ~ 20 \% speedup. If drop.zero.dt is FALSE, data.table will not
-return names, will use index (to avoid memory explosion).}
+return names, will use index (to avoid memory explosion).\cr
+Set to "factor" to always return the genes column as a factor of the
+names of grl (levels in input order), also when drop.zero.dt is FALSE.
+The factor stores the same integer index, so memory usage is unchanged.}
 
 \item{as.data.table}{a logical (FALSE), return as data.table with 2 columns,
 position and count.}

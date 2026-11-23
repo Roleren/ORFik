@@ -455,7 +455,10 @@ coverageScorings <- function(coverage, scoring = "zscore",
 #' names (genes column) will be a factor column, if FALSE it will be an
 #' integer column (index of gene), so first input grl element is 1. Dropping names
 #' gives ~ 20 \% speedup. If drop.zero.dt is FALSE, data.table will not
-#' return names, will use index (to avoid memory explosion).
+#' return names, will use index (to avoid memory explosion).\cr
+#' Set to "factor" to always return the genes column as a factor of the
+#' names of grl (levels in input order), also when drop.zero.dt is FALSE.
+#' The factor stores the same integer index, so memory usage is unchanged.
 #' @param as.data.table a logical (FALSE), return as data.table with 2 columns,
 #' position and count.
 #' @param withFrames a logical (FALSE), only available if as.data.table is
@@ -522,6 +525,11 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
                               withFrames = FALSE, weight = "score",
                               drop.zero.dt = FALSE, fraction = NULL) {
   if (!is.null(fraction)) stopifnot(length(fraction) == 1)
+  names_as_factor <- identical(keep.names, "factor")
+  if (!names_as_factor && !(is.logical(keep.names) && length(keep.names) == 1 &&
+                            !is.na(keep.names)))
+    stop("keep.names must be TRUE, FALSE or 'factor'")
+  keep.names <- names_as_factor || keep.names
   if (!is.sorted) grl <- sortPerGroup(grl)
 
   if (is(reads, "character")) {
@@ -543,7 +551,8 @@ coveragePerTiling <- function(grl, reads, is.sorted = FALSE,
   if (as.data.table) {
     return(coverage_to_dt(coverage, keep.names = keep.names,
                           withFrames = withFrames, weight = weight,
-                          drop.zero.dt = drop.zero.dt, fraction = fraction))
+                          drop.zero.dt = drop.zero.dt, fraction = fraction,
+                          names_as_factor = names_as_factor))
   }
   if (!is.null(fraction)) metadata(coverage) <- list(fraction = fraction)
 
@@ -602,11 +611,14 @@ coverage_random_access_file <- function(reads, grl, withFrames, fraction = NULL)
 #' Convert coverage RleList to data.table
 #' @param coverage RleList with names
 #' @inheritParams coveragePerTiling
+#' @param names_as_factor logical, default FALSE. If TRUE (and coverage has
+#' names), return genes as a factor of names also when drop.zero.dt is FALSE.
 #' @return a data.table with column names c("count" [numeric or integer],
 #'  "genes" [integer], "position" [integer])
 coverage_to_dt <- function(coverage, keep.names = TRUE,
                            withFrames = FALSE, weight = "score",
-                           drop.zero.dt = FALSE, fraction = NULL) {
+                           drop.zero.dt = FALSE, fraction = NULL,
+                           names_as_factor = FALSE) {
   if (drop.zero.dt) { # Drop 0 count rows
     if (!keep.names) names(coverage) <- seq.int(length(coverage))
     runV <- unlist(runValue(coverage), use.names = FALSE)
@@ -647,6 +659,14 @@ coverage_to_dt <- function(coverage, keep.names = TRUE,
       count[, position := seq_len(.N), by = genes]
     } else { # all same size
       count[, position := rep.int(seq.int(window_size), length(coverage))]
+    }
+    gene_names <- names(coverage)
+    if (names_as_factor && !is.null(gene_names)) {
+      # Same integer codes as the index, so no extra memory per row
+      gene_levels <- unique(gene_names)
+      gene_codes <- match(gene_names, gene_levels)
+      count[, genes := structure(gene_codes[genes], levels = gene_levels,
+                                 class = "factor")]
     }
   }
   if (withFrames) {
