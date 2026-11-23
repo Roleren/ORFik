@@ -1111,7 +1111,7 @@ filterTranscripts <- function(txdb, minFiveUTR = 30L, minCDS = 150L,
 #' @param create.dir logical FALSE, if TRUE create the
 #' optimization directory, this should only be called first time used.
 #' @param stop.error logical TRUE
-#' @param gtf_path path to gtf where output should be stored in subfolder
+#' @param gtf_path path to gtf (or its ".db" txdb path) where output should be stored in subfolder
 #'  "./ORFik_optimized"
 #' @return a character file path, returns NULL if not valid
 #' and stop.error is FALSE.
@@ -1132,18 +1132,26 @@ optimized_txdb_path <- function(txdb, create.dir = FALSE, stop.error = TRUE,
     gsub(" \\(.*| |:", "", metadata(txdb)[metadata(txdb)[, 1] == "Creation time", 2])
   }
 
+  # A txdb path may be given instead of the gtf path: files are named after the gtf
+  gtf_path <- sub("\\.db$", "", gtf_path)
   base_dir <- file.path(dirname(gtf_path), "ORFik_optimized")
-  # New way of naming
-  base_path <- file.path(base_dir, basename(gtf_path))
-
-  full_prefix <- paste0(base_path, "_", create_time)
+  # Candidate prefixes, first is the canonical one used for writing:
+  # 1. New way of naming: <gtf basename>_<time>
+  # 2. Legacy writer bug (makeTxdbFromGenome, ORFik <= 1.29.17): <gtf basename>.db_<time>
+  # 3. Old way of naming: <gtf basename without extension>_<time>
+  candidates <- file.path(base_dir,
+                          paste0(c(basename(gtf_path),
+                                   paste0(basename(gtf_path), ".db"),
+                                   remove.file_ext(gtf_path, basename = TRUE)),
+                                 "_", create_time))
+  full_prefix <- candidates[1]
   if (dir.exists(base_dir)) {
     files <- list.files(base_dir)
-    hits <- grep(basename(full_prefix), files, fixed = TRUE)
-    if (length(hits) == 0) {
-      # Old way of naming
-      base_path <- file.path(base_dir, remove.file_ext(gtf_path, basename = TRUE))
-      full_prefix <- paste0(base_path, "_", create_time)
+    for (candidate in unique(candidates)) {
+      if (any(startsWith(files, paste0(basename(candidate), "_")))) {
+        full_prefix <- candidate
+        break
+      }
     }
   }
 

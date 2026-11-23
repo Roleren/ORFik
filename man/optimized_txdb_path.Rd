@@ -21,7 +21,7 @@ optimization directory, this should only be called first time used.}
 
 \item{stop.error}{logical TRUE}
 
-\item{gtf_path}{path to gtf where output should be stored in subfolder
+\item{gtf_path}{path to gtf (or its ".db" txdb path) where output should be stored in subfolder
 "./ORFik_optimized"}
 }
 \value{

@@ -1,6 +1,16 @@
 ORFik 1.29.17
 =============
 
+Optimized annotation files
+--------------------------
+
+    o Bug fix: makeTxdbFromGenome(optimize = TRUE) named the ORFik_optimized
+      files after the txdb path (<gtf>.db_<time>_cds.qs), while loadRegion()
+      and optimizedTranscriptLengths() looked for <gtf>_<time>_cds.qs, so the
+      optimized files were never used. The writer now uses <gtf>_<time>, and
+      the reader also accepts the legacy <gtf>.db_<time> and old
+      <gtf without extension>_<time> prefixes.
+
 Bioconductor devel compatibility
 --------------------------------
 
