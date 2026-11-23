@@ -200,3 +200,19 @@ test_that("bam.sort = 'Rsamtools' makes STAR write an unsorted BAM and sorts it 
   f <- star_fixture()
   expect_error(star_run(f, FALSE, steps = "ge", bam.sort = "samtools"), "bam.sort must be")
 })
+
+test_that("ORFIK_STAR_EXTRA_ARGS is appended to the genome step only", {
+  f <- star_fixture()
+  withr::local_envvar(ORFIK_STAR_EXTRA_ARGS = NA)
+  star_run(f, steps = "tr-co-ge")
+  default <- star_calls(f)
+  expect_false(any(vapply(default, function(x) "--limitOutSJcollapsed" %in% x$args, TRUE)))
+  withr::local_envvar(ORFIK_STAR_EXTRA_ARGS = " --limitOutSJcollapsed 5000000  --limitOutSJoneRead 2000 ")
+  star_run(f, steps = "tr-co-ge")
+  calls <- star_calls(f)[-seq_along(default)]
+  expect_identical(vapply(calls, `[[`, "", "tool"), c("fastp", "STAR", "STAR"))
+  expect_false("--limitOutSJcollapsed" %in% calls[[2]]$args)
+  ge <- calls[[3]]$args
+  expect_identical(tail(ge, 4), c("--limitOutSJcollapsed", "5000000", "--limitOutSJoneRead", "2000"))
+  expect_identical(head(ge, -4), default[[3]]$args)
+})
