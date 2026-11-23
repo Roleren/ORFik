@@ -89,6 +89,14 @@
 # Build and save covRleList (per read length) and merged covRle for one point OFST file.
 # Returns FALSE (nothing written) when the file is not point data, so callers fall back.
 .convert_point_ofst_cov <- function(in_file, out_file, out_file_merged, seq_info, format) {
+  # single pass over chromosome blocks (ofst_derive, utils_ofst_derive.R); FALSE = not sorted
+  # point data, then the paths below (option ORFik.ofst_derive = FALSE skips it)
+  if (isTRUE(getOption("ORFik.ofst_derive", TRUE))) {
+    covl <- paste0(gsub(paste0("\\.cov", format, "$"), "", out_file, ignore.case = TRUE), ".cov", format)
+    covm <- if (!is.null(out_file_merged))
+      paste0(gsub(paste0("\\.cov", format, "$"), "", out_file_merged, ignore.case = TRUE), ".cov", format)
+    if (!isFALSE(ofst_derive(in_file, seq_info, covlist_file = covl, cov_file = covm))) return(TRUE)
+  }
   dt <- .ofst_point_table(in_file, seq_info)
   if (is.null(dt)) return(FALSE)
   integer_weights <- is.integer(dt$score)
