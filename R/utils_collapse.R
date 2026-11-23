@@ -193,6 +193,20 @@ collapse.by.scores <- function(x) {
 #' it includes filesystem cache. Diagnostic messages show the estimates.
 #' FALSE skips memory estimation entirely and honors \code{filter_chunk_rows}.
 #' Neither mode guarantees the merge fits RAM; reduce the row budget if needed.
+#' @param base character path or NULL (default). Incremental pooled merge: an
+#' existing merged OFST file (e.g. the current master "all.ofst", sorted with
+#' unique keys, as written by this function) whose scores the inputs are added
+#' to. The base is not re-grouped: each chromosome unit of the inputs is merged
+#' into the base block with one linear pass, so adding a few inputs to a large
+#' master reads the master once instead of re-merging all its original inputs.
+#' The result equals a full merge of the base's inputs plus the new inputs.
+#' Requires \code{keep_all_scores = FALSE}, \code{sort = TRUE}, chromosome-sorted
+#' inputs and no soft-clip removal; never filters (aborts instead).
+#' @param subtract character paths or NULL (default). Inputs whose scores are
+#' subtracted (removal or replacement of inputs that are contained in
+#' \code{base}). Rows whose total becomes 0 are dropped; a negative total aborts,
+#' since it means a subtracted file is not part of the base. Same requirements
+#' as \code{base}.
 #' @details Chromosome and strand columns may be character or factor, including
 #' different factor levels in different files. Factors are retained internally
 #' to reduce memory use. Coordinates must be integer-valued and fit in a 32-bit
@@ -246,7 +260,8 @@ ofst_merge <- function(file_paths,
                        filter_seed = 1L, max_filter_score = Inf,
                        filter_chunk_rows = 5e6, filter_tmpdir = tempdir(),
                        filter_fallback_dir = NULL, filter_input_summary = FALSE,
-                       filter_auto_memory = FALSE, remove_softclips = FALSE) {
+                       filter_auto_memory = FALSE, remove_softclips = FALSE,
+                       base = NULL, subtract = NULL) {
   restore_rng <- .ofst_rng_restore()
   on.exit(restore_rng(), add = TRUE)
   if (!is.character(file_paths) || !is.null(dim(file_paths)) || !length(file_paths) ||
@@ -273,6 +288,9 @@ ofst_merge <- function(file_paths,
   # Per-library output (keep_all_scores) keeps the strict identical-columns rule.
   sorted_path <- !keep_all_scores && sort && !remove_softclips
   optional <- if (!keep_all_scores) "width" else character()
+  if (!is.null(base) || !is.null(subtract))
+    return(.ofst_merge_incremental(file_paths, base, subtract, keepCigar, sorted_path,
+                                   optional, filter_target_rows))
   columns <- .validate_schema(file_paths, optional = optional)
   drop_cols <- .ofst_mixed_columns(file_paths, optional)
   if (sorted_path) {
@@ -345,6 +363,32 @@ ofst_merge <- function(file_paths,
       sort = sort, chunkified = TRUE
     )
   }
+  .ofst_finalize(dt)
+}
+
+# ofst_merge(base = , subtract = ): incremental pooled merge on the sorted path only.
+.ofst_merge_incremental <- function(file_paths, base, subtract, keepCigar, sorted_path,
+                                    optional, filter_target_rows) {
+  check_paths <- function(x, what, n = NULL) {
+    if (!is.character(x) || anyNA(x) || any(!nzchar(x)) || (!is.null(n) && length(x) != n))
+      .ofst_abort(what, " must be ", if (!is.null(n)) "one " else "", "non-empty path", if (is.null(n)) "s" else "", ".")
+    bad <- x[!file.exists(x) | dir.exists(x)]
+    if (length(bad)) .ofst_abort(what, " files do not exist: ", paste(bad, collapse = ", "))
+  }
+  if (!is.null(base)) check_paths(base, "base", 1L)
+  if (!is.null(subtract)) check_paths(subtract, "subtract")
+  if (!sorted_path)
+    .ofst_abort("base/subtract (incremental merge) need keep_all_scores = FALSE, sort = TRUE and remove_softclips = FALSE.")
+  inputs <- c(file_paths, subtract)
+  columns <- .validate_schema(c(inputs, base), optional = optional)
+  keys <- setdiff(columns, c("score", if (!keepCigar) c("cigar", "cigar1", "cigar2")))
+  if (!length(keys) || keys[1L] != "seqnames" || !"score" %in% columns)
+    .ofst_abort("incremental merge needs a seqnames key column first and a score column.")
+  dt <- .ofst_merge_sorted(inputs, keys, filter_target_rows = filter_target_rows, base = base,
+                           subtract = rep(c(FALSE, TRUE), c(length(file_paths), length(subtract))))
+  if (is.null(dt))
+    .ofst_abort("incremental merge (base/subtract) needs every input and the base to hold each chromosome as one ",
+                "contiguous row block, and units below 2^31 rows; merge all original inputs instead.")
   .ofst_finalize(dt)
 }
 

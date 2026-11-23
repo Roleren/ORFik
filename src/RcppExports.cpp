@@ -308,6 +308,130 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ofst_sorted_sum_merge
+Rcpp::List ofst_sorted_sum_merge(Rcpp::List a_keys, Rcpp::NumericVector a_score, Rcpp::List b_keys, Rcpp::NumericVector b_score, bool drop_zero, bool forbid_negative);
+RcppExport SEXP _ORFik_ofst_sorted_sum_merge(SEXP a_keysSEXP, SEXP a_scoreSEXP, SEXP b_keysSEXP, SEXP b_scoreSEXP, SEXP drop_zeroSEXP, SEXP forbid_negativeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type a_keys(a_keysSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type a_score(a_scoreSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type b_keys(b_keysSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type b_score(b_scoreSEXP);
+    Rcpp::traits::input_parameter< bool >::type drop_zero(drop_zeroSEXP);
+    Rcpp::traits::input_parameter< bool >::type forbid_negative(forbid_negativeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_sorted_sum_merge(a_keys, a_score, b_keys, b_score, drop_zero, forbid_negative));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_store_scatter_add
+Rcpp::NumericVector ofst_store_scatter_add(Rcpp::NumericVector total, Rcpp::IntegerVector row, Rcpp::NumericVector score, double sign, bool forbid_negative);
+RcppExport SEXP _ORFik_ofst_store_scatter_add(SEXP totalSEXP, SEXP rowSEXP, SEXP scoreSEXP, SEXP signSEXP, SEXP forbid_negativeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type total(totalSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type row(rowSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< double >::type sign(signSEXP);
+    Rcpp::traits::input_parameter< bool >::type forbid_negative(forbid_negativeSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_scatter_add(total, row, score, sign, forbid_negative));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_keys_sorted_unique
+bool ofst_keys_sorted_unique(Rcpp::List keys);
+RcppExport SEXP _ORFik_ofst_keys_sorted_unique(SEXP keysSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type keys(keysSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_keys_sorted_unique(keys));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_packed_key_words
+int ofst_packed_key_words(Rcpp::List tables);
+RcppExport SEXP _ORFik_ofst_packed_key_words(SEXP tablesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type tables(tablesSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_packed_key_words(tables));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_sorted_match
+Rcpp::IntegerVector ofst_sorted_match(Rcpp::List table, Rcpp::List query);
+RcppExport SEXP _ORFik_ofst_sorted_match(SEXP tableSEXP, SEXP querySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type table(tableSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type query(querySEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_sorted_match(table, query));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_sorted_merge_order
+Rcpp::IntegerVector ofst_sorted_merge_order(Rcpp::List a, Rcpp::IntegerVector ord_a, Rcpp::List b, Rcpp::IntegerVector rows_b);
+RcppExport SEXP _ORFik_ofst_sorted_merge_order(SEXP aSEXP, SEXP ord_aSEXP, SEXP bSEXP, SEXP rows_bSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type a(aSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type ord_a(ord_aSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type b(bSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type rows_b(rows_bSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_sorted_merge_order(a, ord_a, b, rows_b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_store_kway
+Rcpp::List ofst_store_kway(Rcpp::List stored, Rcpp::IntegerVector order, Rcpp::List inputs, double n_old, int threads, bool stored_sorted, bool want_keys);
+RcppExport SEXP _ORFik_ofst_store_kway(SEXP storedSEXP, SEXP orderSEXP, SEXP inputsSEXP, SEXP n_oldSEXP, SEXP threadsSEXP, SEXP stored_sortedSEXP, SEXP want_keysSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type stored(storedSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type order(orderSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type inputs(inputsSEXP);
+    Rcpp::traits::input_parameter< double >::type n_old(n_oldSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    Rcpp::traits::input_parameter< bool >::type stored_sorted(stored_sortedSEXP);
+    Rcpp::traits::input_parameter< bool >::type want_keys(want_keysSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_kway(stored, order, inputs, n_old, threads, stored_sorted, want_keys));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_store_score_scan
+Rcpp::List ofst_store_score_scan(Rcpp::NumericVector score, Rcpp::IntegerVector seq, int n_codes);
+RcppExport SEXP _ORFik_ofst_store_score_scan(SEXP scoreSEXP, SEXP seqSEXP, SEXP n_codesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type seq(seqSEXP);
+    Rcpp::traits::input_parameter< int >::type n_codes(n_codesSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_score_scan(score, seq, n_codes));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_store_locate
+Rcpp::List ofst_store_locate(Rcpp::List streams, Rcpp::List ids, Rcpp::List inputs, double n_old, int threads);
+RcppExport SEXP _ORFik_ofst_store_locate(SEXP streamsSEXP, SEXP idsSEXP, SEXP inputsSEXP, SEXP n_oldSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type streams(streamsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type ids(idsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type inputs(inputsSEXP);
+    Rcpp::traits::input_parameter< double >::type n_old(n_oldSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_locate(streams, ids, inputs, n_old, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // orfStatsCovRleCPP
 NumericMatrix orfStatsCovRleCPP(List run_values, List run_lengths, IntegerVector rle_id, IntegerVector ex_start, IntegerVector ex_end, LogicalVector ex_minus, IntegerVector group_ends);
 RcppExport SEXP _ORFik_orfStatsCovRleCPP(SEXP run_valuesSEXP, SEXP run_lengthsSEXP, SEXP rle_idSEXP, SEXP ex_startSEXP, SEXP ex_endSEXP, SEXP ex_minusSEXP, SEXP group_endsSEXP) {
@@ -486,6 +610,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_ofst_point_sums", (DL_FUNC) &_ORFik_ofst_point_sums, 6},
     {"_ORFik_ofst_chr_rle", (DL_FUNC) &_ORFik_ofst_chr_rle, 8},
     {"_ORFik_ofst_block_index", (DL_FUNC) &_ORFik_ofst_block_index, 3},
+    {"_ORFik_ofst_sorted_sum_merge", (DL_FUNC) &_ORFik_ofst_sorted_sum_merge, 6},
+    {"_ORFik_ofst_store_scatter_add", (DL_FUNC) &_ORFik_ofst_store_scatter_add, 5},
+    {"_ORFik_ofst_keys_sorted_unique", (DL_FUNC) &_ORFik_ofst_keys_sorted_unique, 1},
+    {"_ORFik_ofst_packed_key_words", (DL_FUNC) &_ORFik_ofst_packed_key_words, 1},
+    {"_ORFik_ofst_sorted_match", (DL_FUNC) &_ORFik_ofst_sorted_match, 2},
+    {"_ORFik_ofst_sorted_merge_order", (DL_FUNC) &_ORFik_ofst_sorted_merge_order, 4},
+    {"_ORFik_ofst_store_kway", (DL_FUNC) &_ORFik_ofst_store_kway, 7},
+    {"_ORFik_ofst_store_score_scan", (DL_FUNC) &_ORFik_ofst_store_score_scan, 3},
+    {"_ORFik_ofst_store_locate", (DL_FUNC) &_ORFik_ofst_store_locate, 5},
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},

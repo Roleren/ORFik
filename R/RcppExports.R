@@ -77,6 +77,42 @@ ofst_block_index <- function(codes, start, score) {
     .Call('_ORFik_ofst_block_index', PACKAGE = 'ORFik', codes, start, score)
 }
 
+ofst_sorted_sum_merge <- function(a_keys, a_score, b_keys, b_score, drop_zero, forbid_negative) {
+    .Call('_ORFik_ofst_sorted_sum_merge', PACKAGE = 'ORFik', a_keys, a_score, b_keys, b_score, drop_zero, forbid_negative)
+}
+
+ofst_store_scatter_add <- function(total, row, score, sign, forbid_negative) {
+    .Call('_ORFik_ofst_store_scatter_add', PACKAGE = 'ORFik', total, row, score, sign, forbid_negative)
+}
+
+ofst_keys_sorted_unique <- function(keys) {
+    .Call('_ORFik_ofst_keys_sorted_unique', PACKAGE = 'ORFik', keys)
+}
+
+ofst_packed_key_words <- function(tables) {
+    .Call('_ORFik_ofst_packed_key_words', PACKAGE = 'ORFik', tables)
+}
+
+ofst_sorted_match <- function(table, query) {
+    .Call('_ORFik_ofst_sorted_match', PACKAGE = 'ORFik', table, query)
+}
+
+ofst_sorted_merge_order <- function(a, ord_a, b, rows_b) {
+    .Call('_ORFik_ofst_sorted_merge_order', PACKAGE = 'ORFik', a, ord_a, b, rows_b)
+}
+
+ofst_store_kway <- function(stored, order, inputs, n_old, threads, stored_sorted = FALSE, want_keys = FALSE) {
+    .Call('_ORFik_ofst_store_kway', PACKAGE = 'ORFik', stored, order, inputs, n_old, threads, stored_sorted, want_keys)
+}
+
+ofst_store_score_scan <- function(score, seq, n_codes) {
+    .Call('_ORFik_ofst_store_score_scan', PACKAGE = 'ORFik', score, seq, n_codes)
+}
+
+ofst_store_locate <- function(streams, ids, inputs, n_old, threads) {
+    .Call('_ORFik_ofst_store_locate', PACKAGE = 'ORFik', streams, ids, inputs, n_old, threads)
+}
+
 orfStatsCovRleCPP <- function(run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends) {
     .Call('_ORFik_orfStatsCovRleCPP', PACKAGE = 'ORFik', run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends)
 }
