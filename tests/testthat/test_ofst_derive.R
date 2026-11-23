@@ -181,3 +181,27 @@ test_that("rle_range_sums equals sums of views", {
   expect_equal(rle_range_sums(runValue(x), runLength(x), s, e), as.numeric(sum(Views(x, IRanges(s, e)))))
   expect_null(rle_range_sums(runValue(x), runLength(x), 1L, 5001L))
 })
+
+test_that("count fast path follows countOverlapsW types: double strands, integer overflow, fallbacks", {
+  set.seed(9)
+  si <- Seqinfo(c("chr1", "chr2"), c(5000L, 4000L))
+  mk <- function(l, big = FALSE) { x <- sample(0:4, l, TRUE); if (big) { x <- as.numeric(x); x[100] <- 3e9 }; Rle(x) }
+  fw <- IRanges::RleList(chr1 = mk(5000, big = TRUE), chr2 = mk(4000), compress = FALSE)   # chr1 forward double
+  rv <- IRanges::RleList(chr1 = mk(5000), chr2 = mk(4000), compress = FALSE)
+  seqinfo(fw) <- seqinfo(rv) <- si
+  cov <- covRle(fw, rv)
+  n <- 6000
+  tx_of <- function(chrs, strands) {
+    gr <- GRanges(sample(chrs, n, TRUE), IRanges(sample.int(3800, n, TRUE), width = sample(1:150, n, TRUE)),
+                  strand = sample(strands, n, TRUE), seqinfo = si)
+    grl <- split(gr, seq_len(n)); names(grl) <- paste0("t", seq_len(n)); grl
+  }
+  regions <- list(dbl = tx_of(c("chr1", "chr2"), c("+", "-")),      # touches the double strand
+                  int = tx_of("chr2", c("+", "-", "*")),           # integer only
+                  rev = tx_of("chr1", "-"))                         # chr1 reverse only: integer
+  got <- ORFik:::.cov_regions_counts(regions, cov)
+  ref <- lapply(regions, countOverlapsW, subject = cov, weight = NULL)
+  expect_identical(got, ref)
+  expect_type(got$dbl, "double"); expect_type(got$int, "integer"); expect_type(got$rev, "integer")
+  expect_false(any(vapply(ORFik:::.cov_regions_counts_fast(regions, cov), is.null, logical(1))))
+})

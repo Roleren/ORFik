@@ -265,13 +265,12 @@ SEXP rle_range_sums(SEXP values, Rcpp::IntegerVector lengths, Rcpp::IntegerVecto
   const int* vi = isInt ? INTEGER(values) : nullptr;
   const double* vd = isInt ? nullptr : REAL(values);
   const int* lp = lengths.begin();
-  double total = 0;
-  for (R_xlen_t j = 0; j < m; ++j) total += lp[j];
-  // borders: coverage sum over 1..x is needed at x = start - 1 and x = end
+  // borders: coverage sum over 1..x is needed at x = start - 1 and x = end (end beyond the
+  // coverage is detected in the sweep, which stops at the last border)
   std::vector<std::pair<double, R_xlen_t> > pts(2 * q);
   for (R_xlen_t i = 0; i < q; ++i) {
     const int s = starts[i], e = ends[i];
-    if (s == NA_INTEGER || e == NA_INTEGER || s < 1 || e > total || e < s - 1) return R_NilValue;
+    if (s == NA_INTEGER || e == NA_INTEGER || s < 1 || e < s - 1) return R_NilValue;
     pts[2 * i] = std::make_pair(static_cast<double>(s) - 1, 2 * i);
     pts[2 * i + 1] = std::make_pair(static_cast<double>(e), 2 * i + 1);
   }
@@ -281,10 +280,12 @@ SEXP rle_range_sums(SEXP values, Rcpp::IntegerVector lengths, Rcpp::IntegerVecto
   R_xlen_t j = 0;
   for (const auto& pt : pts) {
     const double x = pt.first;
-    while (j < m && cend + lp[j] < x) {
-      csum += (isInt ? static_cast<double>(vi[j]) : vd[j]) * lp[j];
-      cend += lp[j]; ++j;
+    if (isInt) {
+      while (j < m && cend + lp[j] < x) { csum += static_cast<double>(vi[j]) * lp[j]; cend += lp[j]; ++j; }
+    } else {
+      while (j < m && cend + lp[j] < x) { csum += vd[j] * lp[j]; cend += lp[j]; ++j; }
     }
+    if (x > cend && j == m) return R_NilValue;   // beyond the coverage
     upto[pt.second] = x <= cend ? csum : csum + (isInt ? static_cast<double>(vi[j]) : vd[j]) * (x - cend);
   }
   Rcpp::NumericVector res(q);

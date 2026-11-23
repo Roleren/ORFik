@@ -63,7 +63,8 @@ ofst_derive <- function(in_file, seq_info, covlist_file = NULL, cov_file = NULL,
                         regions = NULL, threads = .derive_threads(), bigwig_threads = threads,
                         compression_level = 6L, qs_threads = threads, wave_rows = 3e8, task_rows = 2e6) {
   secs <- list(); t0 <- proc.time()[[3]]
-  tick <- function(name) { t1 <- proc.time()[[3]]; secs[[name]] <<- t1 - t0; t0 <<- t1 }
+  tick <- function(name) {   # seconds per step, summed over the waves
+    t1 <- proc.time()[[3]]; secs[[name]] <<- (if (is.null(secs[[name]])) 0 else secs[[name]]) + t1 - t0; t0 <<- t1 }
   if (!is.null(regions) && (!is.list(regions) || is.null(names(regions)))) stop("regions must be a named list")
   if (length(in_file) != 1L || !grepl("\\.ofst$", in_file, ignore.case = TRUE) || !file.exists(in_file)) return(FALSE)
   meta <- fst::metadata_fst(in_file)
@@ -203,9 +204,11 @@ ofst_derive <- function(in_file, seq_info, covlist_file = NULL, cov_file = NULL,
 # Counts of regions (named list of GRangesList) on a covRle, each identical to
 # countOverlapsW(region, cov): per exon sums of the strand coverage ("*" exons count 0), summed
 # per transcript. Range sums over the runs (rle_range_sums, one sweep per chromosome strand for
-# the exons of all regions) for integer coverage; anything else (regions of <= 5000
-# transcripts, double coverage, sums above the integer range, exons outside the coverage) uses
-# countOverlapsW.
+# the exons of all regions); exact for whole-number coverage. The result type follows
+# coverageByTranscriptSum(): double if any exon of the region lies on a double coverage
+# strand or its sum leaves the integer range (viewSums then returns double), else integer.
+# Anything else (regions of <= 5000 transcripts, fractional coverage, integer totals above the
+# integer range, exons outside the coverage) uses countOverlapsW.
 .cov_regions_counts <- function(regions, cov) {
   slow <- function(tx) countOverlapsW(tx, cov, weight = NULL)
   fast <- vapply(regions, function(tx) length(tx) > 5000 && length(unlist(tx, use.names = FALSE)) > 0, logical(1))
@@ -228,13 +231,17 @@ ofst_derive <- function(in_file, seq_info, covlist_file = NULL, cov_file = NULL,
   keep <- st <= 2L
   if (anyNA(cm[keep])) return(none)
   sums <- numeric(length(st))
+  dbl <- logical(length(st))   # exon on a double coverage strand
   idx <- split(which(keep), cm[keep] * 2L + st[keep] - 1L)   # key = 2 * chromosome + strand - 1
   for (key in names(idx)) {
     rows <- idx[[key]]
     k <- as.integer(key)
     x <- if (k %% 2L == 0L) fw[[k %/% 2L]] else rv[[k %/% 2L]]
     v <- S4Vectors::runValue(x)
-    if (!is.integer(v)) return(none)
+    if (is.double(v)) {
+      if (anyNA(v) || any(v != trunc(v)) || any(abs(v) >= 2^53)) return(none)
+      dbl[rows] <- TRUE
+    } else if (!is.integer(v)) return(none)
     res <- rle_range_sums(v, S4Vectors::runLength(x), s[rows], e[rows])
     if (is.null(res)) return(none)
     sums[rows] <- res
@@ -242,13 +249,17 @@ ofst_derive <- function(in_file, seq_info, covlist_file = NULL, cov_file = NULL,
   region_of <- rep.int(seq_along(regions), n_ex)
   lapply(seq_along(regions), function(i) {
     tx <- regions[[i]]
-    x <- sums[region_of == i]
-    if (any(x > .Machine$integer.max)) return(NULL)
+    in_region <- region_of == i
+    x <- sums[in_region]
+    as_double <- any(dbl[in_region]) || any(x > .Machine$integer.max)
     ends <- cumsum(as.numeric(lengths(tx)))
     cs <- c(0, cumsum(x))
     tot <- cs[ends + 1] - cs[c(0, ends[-length(ends)]) + 1]
-    if (any(tot > .Machine$integer.max)) return(NULL)
-    tot <- as.integer(tot)
+    if (any(abs(cs) >= 2^53)) return(NULL)
+    if (!as_double) {
+      if (any(tot > .Machine$integer.max)) return(NULL)   # integer sums of today's path wrap around
+      tot <- as.integer(tot)
+    }
     names(tot) <- names(tx)
     tot
   })
