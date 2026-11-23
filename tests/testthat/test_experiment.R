@@ -194,3 +194,29 @@ test_that("filepath find correct paths", {
 
 
 
+
+test_that("outputLibs(force = FALSE) never reuses same-named libraries of other files", {
+  df <- ORFik.template.experiment()
+  df <- df[df$libtype == "RFP", ]
+  env <- new.env()
+  envExp(df) <- env
+  df2 <- df
+  df2@listData$filepath <- rev(df$filepath) # same library names, other files
+  expect_identical(bamVarName(df), bamVarName(df2))
+  bp <- BiocParallel::SerialParam()
+  suppressMessages(outputLibs(df, force = FALSE, BPPARAM = bp))
+  first <- get(bamVarName(df)[1], envir = env)
+  expect_identical(attr(first, "filepath"), df$filepath[1])
+  # Same files: reused, not reloaded
+  expect_message(outputLibs(df, force = FALSE, BPPARAM = bp), NA)
+  # Other files with colliding names: reloaded
+  suppressMessages(outputLibs(df2, force = FALSE, BPPARAM = bp))
+  expect_identical(attr(get(bamVarName(df)[1], envir = env), "filepath"),
+                   df2$filepath[1])
+  # countTable_regions (loads with force = FALSE) must count df2's files
+  a <- suppressMessages(countTable_regions(df, NULL, regions = "cds", BPPARAM = bp))
+  b <- suppressMessages(countTable_regions(df2, NULL, regions = "cds", BPPARAM = bp))
+  ca <- SummarizedExperiment::assay(a$cds)
+  cb <- SummarizedExperiment::assay(b$cds)
+  expect_equal(unname(cb), unname(ca[, rev(seq_len(ncol(ca)))]))
+})

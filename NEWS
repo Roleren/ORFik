@@ -1,4 +1,4 @@
-ORFik 1.29.17
+ORFik 1.29.18
 =============
 
 Optimized annotation files
@@ -10,6 +10,20 @@ Optimized annotation files
       optimized files were never used. The writer now uses <gtf>_<time>, and
       the reader also accepts the legacy <gtf>.db_<time> and old
       <gtf without extension>_<time> prefixes.
+
+Library loading
+---------------
+
+    o Bug fix: outputLibs(force = FALSE), used by countTable_regions() and
+      makeSummarizedExperimentFromBam(), reused any S4 variable in envExp(df)
+      with a matching library name. Experiments with colliding names (e.g. the
+      merged masters of one organism, or all vs unique mappers of the same
+      experiment) silently got the previously loaded libraries. A variable is
+      now only reused if its "filepath", "exp" and "unique_mappers"
+      attributes match; otherwise the library is reloaded.
+
+ORFik 1.29.17
+=============
 
 Bioconductor devel compatibility
 --------------------------------
