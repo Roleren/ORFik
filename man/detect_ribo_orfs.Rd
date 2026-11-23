@@ -24,7 +24,8 @@ detect_ribo_orfs(
   stopCodon = stopDefinition(1),
   minimumLength = 0,
   minimum_reads_ORF = 10,
-  minimum_reads_start = 3
+  minimum_reads_start = 3,
+  upstream_filter = c("all", "non_annotated")
 )
 }
 \arguments{
@@ -94,6 +95,11 @@ START + 8*3 (bp) + STOP = 30 bases. Use this param to restrict search.}
 \item{minimum_reads_ORF}{numeric, default 10, orf removed if less reads overlap whole orf}
 
 \item{minimum_reads_start}{numeric, default 3, orf removed if less reads overlap start}
+
+\item{upstream_filter}{character, default "all": apply rule 1 (ORF mean > 1.3 x mean of the upstream
+window) to all candidates. "non_annotated": skip rule 1 for annotated CDSs. Translated upstream ORFs or
+N-terminal extensions put reads upstream of many real CDSs, so rule 1 rejects them; for uORFs and other
+non-annotated candidates the rule is kept.}
 }
 \value{
 invisible(NULL), all ORF results saved to disc

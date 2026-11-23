@@ -305,7 +305,7 @@ removeTxdbExons <- function(txList, fiveUTRs) {
   # remove old "dead" exons
   # get fiveUTR exons
   gr <- unlistGrl(fiveUTRs)
-  dt <- as.data.table(gr)
+  dt <- grDT(gr)
   dt$names <- names(gr)
   # find the ones that does not start on 1
   d <-  dt[, .I[which.min(exon_rank)], by = names]

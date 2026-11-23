@@ -339,7 +339,7 @@ import.fstwig <- function(gr, dir, id = "", readlengths = "all") {
 
   if (length(unique(seqnames(gr))) > 1) stop("Ranges from multiple chromosomes given",
                                              ", fstwig only saves 1 at a time!")
-  gr <- as.data.table(gr)
+  gr <- grDT(gr)
   strand <- ifelse(gr$strand[1] == "+", "forward", "reverse")
   if (id == "") {id <- NULL}
   file <- paste(dir, "_", as.character(gr[1]$seqnames), "_", strand, ".fstwig", sep = "")

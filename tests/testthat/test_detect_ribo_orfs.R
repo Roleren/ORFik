@@ -30,6 +30,7 @@ test_that("covRle statistics path equals the data.table path", {
 test_that("detect_ribo_orfs upstream_filter", {
   df <- ORFik.template.experiment()
   df <- df[df$libtype == "RFP", ][1, ]
+  envExp(df) <- new.env()   # libraries loaded by detect_ribo_orfs() must not leak into .GlobalEnv
   d <- tempfile()
   detect_ribo_orfs(df, file.path(d, "all"), c("uORF", "annotated"))
   detect_ribo_orfs(df, file.path(d, "na"), c("uORF", "annotated"), upstream_filter = "non_annotated")
@@ -43,6 +44,7 @@ test_that("detect_ribo_orfs upstream_filter", {
 test_that("detect_ribo_orfs with several libraries equals one call per library", {
   df <- ORFik.template.experiment()
   df <- df[df$libtype == "RFP", ][1:2, ]
+  envExp(df) <- new.env()   # libraries loaded by detect_ribo_orfs() must not leak into .GlobalEnv
   d <- tempfile()
   detect_ribo_orfs(df, file.path(d, "both"), c("uORF", "annotated"))
   detect_ribo_orfs(df[1, ], file.path(d, "one"), c("uORF", "annotated"))

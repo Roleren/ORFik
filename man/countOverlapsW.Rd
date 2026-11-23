@@ -4,7 +4,7 @@
 \alias{countOverlapsW}
 \title{CountOverlaps with weights}
 \usage{
-countOverlapsW(query, subject, weight = NULL, ...)
+countOverlapsW(query, subject, weight = NULL, ..., chunk_size = 2e+06)
 }
 \arguments{
 \item{query}{IRanges, IRangesList, GRanges, GRangesList object.
@@ -19,6 +19,9 @@ GRanges("chr1", 1, "+", score = 5), would mean score column tells
 that this alignment region was found 5 times. Ignored if subject is covRle.}
 
 \item{...}{additional arguments passed to countOverlaps/findOverlaps}
+
+\item{chunk_size}{integer, default 2e6. Queries longer than this are counted in chunks of this size (same result),
+so one overlap call never exceeds the 2^31 hit limit of IRanges.}
 }
 \value{
 a named vector of number of overlaps to subject weigthed

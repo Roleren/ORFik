@@ -353,7 +353,7 @@ export.covlist <- function(x, file, seqinfo, split.by.strand = TRUE,
 #'
 export.bedo <- function(object, out) {
   if (!is(object, "GRanges")) stop("object must be GRanges")
-  dt <- setDT(as.data.frame(object))
+  dt <- grDT(object)
   uwidths <- unique(dt$width)
   if (all(uwidths == 1)) dt$end <- NULL
   dt$width <- NULL

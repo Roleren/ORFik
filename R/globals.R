@@ -216,5 +216,7 @@ utils::globalVariables(c(
   "windowSD",
   "x",
   "y",
-  "zscore"
+  "zscore",
+  # detect_ribo_orfs_single_cov, psr_index (detectRibosomeShifts_new)
+  "cds_p5", "cs", "ensembl_tx_name", "minus", "off", "tx", "w"
 ))

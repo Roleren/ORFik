@@ -29,7 +29,7 @@ assignFirstExonsStartSite <- function(grl, newStarts, is.circular =
     group <- grl@unlistData$group
     grl@unlistData$group <- NULL
   }
-  dt <- as.data.table(grl)
+  dt <- grDT(grl)
   dt[!duplicated(group) & posIndices[group], start := newStarts[posIndices]]
   if (is.circular) { # For negative strand, make failsafe on seqlength
     dt[!duplicated(group) & !posIndices[group], end := newStarts[!posIndices]]
@@ -86,7 +86,7 @@ assignLastExonsStopSite <- function(grl, newStops, is.circular =
     group <- grl@unlistData$group
     grl@unlistData$group <- NULL
   }
-  dt <- as.data.table(grl)
+  dt <- grDT(grl)
   idx = dt[, .I[.N], by = group]
 
 
