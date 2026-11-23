@@ -1,4 +1,4 @@
-ORFik 1.29.16
+ORFik 1.29.17
 =============
 
 Bioconductor devel compatibility
@@ -55,6 +55,21 @@ Codon dwell times
       optimum, |delta beta| < 1e-9). End to end, a 21.5M CDS P-site library at
       4 threads takes 7.6-8.9 s instead of 26 s (27-32 s on the same loaded
       host). Designs saved by older versions get the index built on the fly.
+
+Other changes merged in 1.29.17
+-------------------------------
+
+    o findFromPath(): a unique file-name match wins over directory-name hits
+      (template experiments with non-unique names).
+    o coveragePerTiling(): opt-in keep.names = "factor" keeps names in the data.table.
+    o STAR alignment: optional ORFIK_STAR_EXTRA_ARGS environment variable for the genome step.
+    o Fast derived formats: ofst_derive() writes covRleList, covRle, bigWig and count
+      tables in one pass (Rle kernel, parallel bigWig writer, OFST block index).
+    o OFST store: incremental merges (mergeLibs(base, subtract), ofst_store_*()),
+      delta updates and streaming export (uses fst::concat_fst when available).
+
+ORFik 1.29.16
+=============
 
 Ribo-seq ORF detection
 ----------------------

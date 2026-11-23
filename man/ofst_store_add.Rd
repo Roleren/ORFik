@@ -24,6 +24,12 @@ ofst_store_add(
 
 \item{verbose}{logical, default TRUE.}
 }
+\value{
+invisible manifest after the update.
+}
+\description{
+Add inputs to an OFST store
+}
 \details{
 Updates are incremental: the new keys and contributions are appended and recorded as
 pending deltas, so an update does not rewrite the per-partition order and total files. A
@@ -32,12 +38,6 @@ partition's deltas are folded into its base files once they exceed the delta lim
 the base keys, pending keys above \code{getOption("ORFik.ofst_store_delta_keys", 0.25)}
 times the base keys, or more than 32 pending key blocks), and by \code{ofst_store_compact}.
 \code{options(ORFik.ofst_store_delta = FALSE)} folds on every update.
-}
-\value{
-invisible manifest after the update.
-}
-\description{
-Add inputs to an OFST store
 }
 \seealso{
 Other ofst_store: 

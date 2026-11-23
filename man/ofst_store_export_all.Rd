@@ -18,7 +18,10 @@ ofst_store_export_all(
 \code{ofst_store_read_matrix(as = "matrix")}.}
 
 \item{out_file}{character or NULL (default). If given, the table is written there (via a
-temporary file and rename, as \code{mergeLibs}) and invisibly returned.}
+temporary file and rename, as \code{mergeLibs}). For a store directory and an fst version
+with \code{fst::concat_fst()}, the partitions are written in parallel as block-aligned
+pieces and joined without recompression, so the whole table is never held in memory; the
+result is the same ordinary fst file.}
 
 \item{libs}{character or NULL (default, all live inputs). A subset of live inputs gives a
 subset track (e.g. inhibitor splits or study pools) without touching the rest.}
@@ -33,7 +36,8 @@ subset track (e.g. inhibitor splits or study pools) without touching the rest.}
 faster when many updates are pending. FALSE leaves the store files untouched.}
 }
 \value{
-a data.table (seqnames, key columns, score).
+a data.table (seqnames, key columns, score); with \code{out_file}, invisibly: the
+table, or only the output path when the streaming export wrote it.
 }
 \description{
 Writes (or returns) the ordinary sorted OFST table: one row per key with a non-zero summed

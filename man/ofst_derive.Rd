@@ -74,4 +74,3 @@ The outputs are identical to the separate steps: covRleList and covRle files as 
 # ofst_derive("all.ofst", seqinfo(df), "cov_RLE_List/all.covqs", "cov_RLE/all.covqs",
 #             "bigwig/all", regions = list(cds = loadRegion(df, "cds")))
 }
-\concept{OFST}
