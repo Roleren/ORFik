@@ -35,6 +35,21 @@
   .ofst_merge_workers()
 }
 
+# Kernel threads per partition: the workers left over when fewer partitions than workers run
+# (one big chromosome uses all of them), or getOption("ORFik.ofst_store_threads").
+.ofst_store_threads <- function(workers, n_parts) {
+  t <- getOption("ORFik.ofst_store_threads", NULL)
+  if (!is.null(t)) return(max(1L, as.integer(t)))
+  max(1L, as.integer(workers) %/% max(1L, min(as.integer(workers), n_parts)))
+}
+
+# x split into at most k contiguous, nearly equal chunks (order kept).
+.ofst_store_chunks <- function(x, k) {
+  if (!length(x)) return(list())
+  k <- max(1L, min(as.integer(k), length(x)))
+  unname(split(x, ceiling(seq_along(x) * k / length(x))))
+}
+
 .ofst_store_mclapply <- function(x, f, workers) {
   res <- if (workers > 1L && length(x) > 1L && .Platform$OS.type == "unix") {
     parallel::mclapply(x, function(i) tryCatch(f(i), error = function(e) e),
@@ -159,6 +174,9 @@ ofst_store_manifest <- function(store) {
 
 # Row ranges of each chromosome in an input (several runs per chromosome are allowed).
 .ofst_store_runs <- function(path) {
+  # one block per chromosome: .ofst_chr_blocks (reads the .ofst.idx sidecar where one exists)
+  b <- .ofst_chr_blocks(path)
+  if (!is.null(b)) return(b[, c("chr", "from", "to"), with = FALSE])
   s <- fst::read_fst(path, "seqnames")[[1L]]
   if (is.character(s)) s <- factor(s)
   if (!length(s)) return(data.table::data.table(chr = character(), from = numeric(), to = numeric()))
@@ -201,19 +219,25 @@ ofst_store_manifest <- function(store) {
       data.table::set(x, j = k, value = as.integer(v))
     }
   }
-  sc <- as.numeric(x$score)
-  sc[is.na(sc)] <- 0
-  data.table::set(x, j = "score", value = sc)
+  sc <- x$score
+  if (!is.integer(sc) || anyNA(sc)) {   # integer scores stay integer (no copy); sums use doubles
+    sc <- as.numeric(sc)
+    sc[is.na(sc)] <- 0
+    data.table::set(x, j = "score", value = sc)
+  }
   kc <- c("seq", key_columns)
-  # pre-sorted inputs (per-library P-site files are): one linear check instead of a group-by
+  # pre-sorted inputs (pools and per-library P-site files are): one linear packed-key check
+  # instead of a group-by
   if (ofst_keys_sorted_unique(.ofst_cols(x, kc))) {
     data.table::setcolorder(x, c(kc, "score"))
     g <- x
   } else {
+    if (is.integer(x$score)) data.table::set(x, j = "score", value = as.numeric(x$score))
     g <- x[, .(score = sum(score)), keyby = kc]
     data.table::setattr(g, "sorted", NULL)
   }
-  g[score != 0]
+  if (any(g$score == 0)) g <- g[score != 0]
+  g
 }
 
 .ofst_store_new_manifest <- function(key_columns, max_contrib_rows) {
@@ -368,9 +392,11 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     .ofst_store_abort("'", p, "' does not have the store's key columns (", paste(m$key_columns, collapse = ", "), ").")
 
   # chromosome runs of the new inputs (one pass over each seqnames column)
-  runs <- .ofst_store_mclapply(seq_along(add_paths), function(i) {
+  # (in chunks: one fork per worker, not per input; forking a large R session is expensive)
+  run_chunks <- .ofst_store_chunks(seq_along(add_paths), workers)
+  runs <- .ofst_store_mclapply(run_chunks, function(ii) data.table::rbindlist(lapply(ii, function(i) {
     r <- .ofst_store_runs(add_paths[i]); data.table::set(r, j = "input", value = rep.int(i, nrow(r))); r
-  }, workers)
+  })), workers)
   runs <- data.table::rbindlist(runs)
   if (!nrow(runs)) runs <- data.table::data.table(chr = character(), from = numeric(), to = numeric(), input = integer())
 
@@ -397,9 +423,10 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   .ofst_store_msg(verbose, "update generation ", new_gen, ": +", length(add_paths), " / -", length(remove_libs),
                   " inputs over ", length(todo), " partitions, ", min(workers, length(todo)), " worker(s)")
   m_ro <- m
+  threads <- .ofst_store_threads(workers, length(todo))
   res <- .ofst_store_mclapply(todo, function(p) {
     .ofst_store_update_part(store, m_ro, p, new_gen, add_paths, add_libs, runs[part == p], chr_codes,
-                            rm_rows[part == p])
+                            rm_rows[part == p], threads)
   }, workers)
   names(res) <- todo
 
@@ -472,7 +499,8 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   d
 }
 
-.ofst_store_update_part <- function(store, m, p, gen, add_paths, add_libs, runs, chr_codes, rm_rows) {
+.ofst_store_update_part <- function(store, m, p, gen, add_paths, add_libs, runs, chr_codes, rm_rows,
+                                    threads = 1L) {
   dir.create(file.path(store, p), showWarnings = FALSE)
   st <- .ofst_store_load_part(store, m, p, need_keys = nrow(runs) > 0)
   total <- st$total
@@ -489,33 +517,28 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   if (nrow(runs)) {
     kc <- c("seq", m$key_columns)
     inputs <- sort(unique(runs$input))
-    lib_tabs <- lapply(inputs, function(i)
-      .ofst_store_read_input(add_paths[i], runs[input == i], chr_codes, m$key_columns))
-    # match against the stored keys (gathered once into key order: contiguous, cache-friendly);
-    # unseen keys get new row ids (appended in key order)
-    sorted_keys <- lapply(st$keys, `[`, st$order)
-    rows <- lapply(lib_tabs, function(g) {
-      i <- ofst_sorted_match(sorted_keys, .ofst_cols(g, kc))
-      r <- integer(length(i)); hit <- i > 0L
-      r[hit] <- st$order[i[hit]]
-      r
-    })
-    unseen <- data.table::rbindlist(Map(function(g, r) g[r == 0L, kc, with = FALSE], lib_tabs, rows))
-    unseen <- unique(unseen)
-    data.table::setorderv(unseen, kc)
-    n_new <- nrow(unseen)
-    if (st$n + n_new > .int32_max) .ofst_store_abort("partition '", p, "' would exceed 2^31 - 1 keys.")
+    read_one <- function(i) .ofst_store_read_input(add_paths[i], runs[input == i], chr_codes, m$key_columns)
+    lib_tabs <- if (threads > 1L && length(inputs) > 1L && sum(runs$to - runs$from + 1) > 2e7) {
+      # few partitions (e.g. one big chromosome) and many rows: read the inputs in forked
+      # chunks (a fork of a large session costs ~0.1-0.5 s, so small adds read serially)
+      chunks <- .ofst_store_chunks(inputs, threads)
+      unlist(.ofst_store_mclapply(chunks, function(ch) lapply(ch, read_one), threads), recursive = FALSE)
+    } else lapply(inputs, read_one)
+    # one k-way pass over the stored keys (gathered into key order in C++) and the new inputs,
+    # on packed keys:
+    # row ids for every input key, the unseen keys (appended in key order) and the new order
+    kw <- ofst_store_kway(st$keys, as.integer(st$order),
+                          lapply(lib_tabs, .ofst_cols, kc), st$n, threads)
+    rows <- kw$rows
+    n_new <- length(kw$new_keys[[1L]])
     if (n_new) {
-      new_ord <- seq_len(n_new)
-      for (j in seq_along(lib_tabs)) {
-        miss <- rows[[j]] == 0L
-        if (any(miss)) rows[[j]][miss] <- as.integer(st$n) + ofst_sorted_match(.ofst_cols(unseen, kc),
-                                                                  .ofst_cols(lib_tabs[[j]][miss, kc, with = FALSE], kc))
-      }
+      unseen <- data.table::as.data.table(stats::setNames(kw$new_keys, kc))
       .ofst_store_append(unseen, file.path(store, p, "keys.fst"), st$n)
-      ord <- ofst_sorted_merge_order(sorted_keys, ord, .ofst_cols(unseen, kc), as.integer(st$n + new_ord))
+      unseen <- NULL
       total <- c(total, numeric(n_new))
     }
+    ord <- kw$order
+    kw <- NULL
     n_keys <- st$n + n_new
     # contributions, sorted by row id; segments capped at max_contrib_rows
     cur <- if (nrow(segs)) max(segs$seg) else 0L
@@ -532,7 +555,7 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     for (j in seq_along(lib_tabs)) {
       r <- rows[[j]]; s <- lib_tabs[[j]]$score
       if (any(r == 0L)) .ofst_store_abort("internal: unmatched key in partition '", p, "'.")
-      o <- order(r)
+      o <- if (is.unsorted(r, strictly = TRUE)) order(r, method = "radix") else seq_along(r)
       fits_int <- .is_safe_int32(s)
       nn <- length(r)
       if (nn > m$max_contrib_rows) .ofst_store_abort("input '", add_libs[inputs[j]], "' has more rows in partition '", p,
@@ -545,20 +568,24 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
       if (is.na(cur_int)) cur_int <- fits_int
       cd <- data.table::data.table(row = as.integer(r[o]), score = if (cur_int) as.integer(s[o]) else as.numeric(s[o]))
       out_libs[[j]] <- data.table::data.table(lib = add_libs[inputs[j]], part = p, seg = cur, from = seg_rows + 1,
-                                              to = seg_rows + nn, nnz = nn, score_sum = sum(s))
+                                              to = seg_rows + nn, nnz = nn, score_sum = sum(as.numeric(s)))
       batch[[length(batch) + 1L]] <- cd
       all_contrib[[j]] <- cd
       seg_rows <- seg_rows + nn
       data.table::set(segs, i = which(segs$seg == cur), j = "n_rows", value = seg_rows)
     }
     flush()
-    sorted_keys <- NULL
     all_contrib <- data.table::rbindlist(all_contrib)   # one scatter for the batch
     total <- ofst_store_scatter_add(total, all_contrib$row, as.numeric(all_contrib$score), 1, FALSE)
     all_contrib <- NULL
     out_libs <- data.table::rbindlist(out_libs)
   }
-  fst::write_fst(data.frame(row = as.integer(ord)), .ofst_store_gen_file(store, p, "order", gen))
+  # unchanged key order (no new keys, e.g. a removal): hard-link the previous order file
+  old_order <- if (st$n) .ofst_store_gen_file(store, p, "order", m$parts[part == p]$gen)
+  new_order <- .ofst_store_gen_file(store, p, "order", gen)
+  if (!(n_keys == st$n && st$n > 0 && file.exists(old_order) &&
+        (file.link(old_order, new_order) || file.copy(old_order, new_order))))
+    fst::write_fst(data.frame(row = as.integer(ord)), new_order)
   fst::write_fst(data.frame(score = total), .ofst_store_gen_file(store, p, "total", gen))
   list(n_keys = n_keys, segments = segs, libs = out_libs)
 }

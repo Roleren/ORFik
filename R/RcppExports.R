@@ -33,12 +33,20 @@ ofst_keys_sorted_unique <- function(keys) {
     .Call('_ORFik_ofst_keys_sorted_unique', PACKAGE = 'ORFik', keys)
 }
 
+ofst_packed_key_words <- function(tables) {
+    .Call('_ORFik_ofst_packed_key_words', PACKAGE = 'ORFik', tables)
+}
+
 ofst_sorted_match <- function(table, query) {
     .Call('_ORFik_ofst_sorted_match', PACKAGE = 'ORFik', table, query)
 }
 
 ofst_sorted_merge_order <- function(a, ord_a, b, rows_b) {
     .Call('_ORFik_ofst_sorted_merge_order', PACKAGE = 'ORFik', a, ord_a, b, rows_b)
+}
+
+ofst_store_kway <- function(stored, order, inputs, n_old, threads) {
+    .Call('_ORFik_ofst_store_kway', PACKAGE = 'ORFik', stored, order, inputs, n_old, threads)
 }
 
 orfStatsCovRleCPP <- function(run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends) {

@@ -122,6 +122,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ofst_packed_key_words
+int ofst_packed_key_words(Rcpp::List tables);
+RcppExport SEXP _ORFik_ofst_packed_key_words(SEXP tablesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type tables(tablesSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_packed_key_words(tables));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ofst_sorted_match
 Rcpp::IntegerVector ofst_sorted_match(Rcpp::List table, Rcpp::List query);
 RcppExport SEXP _ORFik_ofst_sorted_match(SEXP tableSEXP, SEXP querySEXP) {
@@ -145,6 +156,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type b(bSEXP);
     Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type rows_b(rows_bSEXP);
     rcpp_result_gen = Rcpp::wrap(ofst_sorted_merge_order(a, ord_a, b, rows_b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_store_kway
+Rcpp::List ofst_store_kway(Rcpp::List stored, Rcpp::IntegerVector order, Rcpp::List inputs, double n_old, int threads);
+RcppExport SEXP _ORFik_ofst_store_kway(SEXP storedSEXP, SEXP orderSEXP, SEXP inputsSEXP, SEXP n_oldSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type stored(storedSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type order(orderSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type inputs(inputsSEXP);
+    Rcpp::traits::input_parameter< double >::type n_old(n_oldSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_kway(stored, order, inputs, n_old, threads));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -315,8 +341,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_ofst_sorted_sum_merge", (DL_FUNC) &_ORFik_ofst_sorted_sum_merge, 6},
     {"_ORFik_ofst_store_scatter_add", (DL_FUNC) &_ORFik_ofst_store_scatter_add, 5},
     {"_ORFik_ofst_keys_sorted_unique", (DL_FUNC) &_ORFik_ofst_keys_sorted_unique, 1},
+    {"_ORFik_ofst_packed_key_words", (DL_FUNC) &_ORFik_ofst_packed_key_words, 1},
     {"_ORFik_ofst_sorted_match", (DL_FUNC) &_ORFik_ofst_sorted_match, 2},
     {"_ORFik_ofst_sorted_merge_order", (DL_FUNC) &_ORFik_ofst_sorted_merge_order, 4},
+    {"_ORFik_ofst_store_kway", (DL_FUNC) &_ORFik_ofst_store_kway, 5},
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},
