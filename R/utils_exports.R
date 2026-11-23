@@ -122,6 +122,18 @@ export.wiggle <- function(x, file) {
 #'   files per strand when strand information is available.
 #' @param seq_info A `Seqinfo` object, default `seqinfo(x)`. Sequence lengths
 #'   must be defined.
+#' @param threads Integer, number of threads used to compress the bigWig
+#'   blocks (ORFik writer only). Default: option `ORFik.bigwig_threads`, else
+#'   the data.table thread count, at most 8.
+#' @param compression_level Integer 0-9, default 6 (the zlib level of
+#'   rtracklayer and the UCSC tools). Level 1 is about 40 percent faster and
+#'   gives about 4 percent larger files (ORFik writer only).
+#' @param writer Character, `"ORFik"` (default, option `ORFik.bigwig_writer`)
+#'   or `"rtracklayer"`. The ORFik writer writes the coverage runs directly
+#'   with parallel block compression; `rtracklayer::import.bw()` returns the
+#'   same `GRanges`, `RleList` and `NumericList` from both. Zoom levels
+#'   (used by genome browsers for zoomed-out views) are fixed (256 bp times 4^k),
+#'   so zoomed-out summaries can differ slightly from rtracklayer's files.
 #' @return `invisible(NULL)`. The function writes one or two `.bigWig` files.
 #' @importFrom rtracklayer export.bw
 #' @export
@@ -133,7 +145,10 @@ export.wiggle <- function(x, file) {
 #' # export.bigWig(x, file)
 #' # export.bigWig(covRleFromGR(x), file)
 export.bigWig <- function(x, file, split.by.strand = TRUE,
-                          is_pre_collapsed = FALSE, seq_info = seqinfo(x)) {
+                          is_pre_collapsed = FALSE, seq_info = seqinfo(x),
+                          threads = .bigwig_threads(), compression_level = 6L,
+                          writer = getOption("ORFik.bigwig_writer", "ORFik")) {
+  writer <- match.arg(writer, c("ORFik", "rtracklayer"))
   if(anyNA(seqlengths(seq_info))) stop("seqinfo of x must be defined and have defined seqlengths!")
   if (!(is(x, "GRanges") | is(x, "GAlignmentPairs") | is(x, "GAlignments") | is(x, "covRle")))
     stop("x must be GRanges, GAlignments, GAlignmentPairs or covRLE")
@@ -163,13 +178,13 @@ export.bigWig <- function(x, file, split.by.strand = TRUE,
     if (length(r(x)) > 0) {
       x@forward <- f(x) + r(x)
     }
-    export.bw(GRanges(f(x)), file)
+    .export_bw_track(f(x), file, writer, threads, compression_level)
   } else {
     file <- gsub("\\.bigWig", "", file, ignore.case = TRUE)
     forward_file <- paste0(file, "_forward.bigWig")
     reverse_file <- paste0(file, "_reverse.bigWig")
-    export.bw(GRanges(f(x)), forward_file)
-    export.bw(GRanges(r(x)), reverse_file)
+    .export_bw_track(f(x), forward_file, writer, threads, compression_level)
+    .export_bw_track(r(x), reverse_file, writer, threads, compression_level)
   }
   return(invisible(NULL))
 }
@@ -477,8 +492,10 @@ setMethod("export.ofst", "data.frame",
             if (!is.null(NAMES)) x$NAMES <- NAMES
             if (ncol(elementMetadata) > 0)
               x <- as.data.frame(cbind(x, elementMetadata))
-            # Write
-            write_fst(x, file, ...)
+            # Write, then the chromosome-block index (<file>.idx, see .ofst_index_write)
+            res <- write_fst(x, file, ...)
+            .ofst_index_write(file, x)
+            invisible(res)
           })
 
 

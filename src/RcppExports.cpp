@@ -10,6 +10,79 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// bw_write_runs
+Rcpp::NumericVector bw_write_runs(std::string path, Rcpp::CharacterVector chrom, Rcpp::IntegerVector chrom_size, Rcpp::List values, Rcpp::List lengths, int threads, int level, bool zero_runs, int chrom_block_size);
+RcppExport SEXP _ORFik_bw_write_runs(SEXP pathSEXP, SEXP chromSEXP, SEXP chrom_sizeSEXP, SEXP valuesSEXP, SEXP lengthsSEXP, SEXP threadsSEXP, SEXP levelSEXP, SEXP zero_runsSEXP, SEXP chrom_block_sizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type chrom(chromSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chrom_size(chrom_sizeSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type lengths(lengthsSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    Rcpp::traits::input_parameter< int >::type level(levelSEXP);
+    Rcpp::traits::input_parameter< bool >::type zero_runs(zero_runsSEXP);
+    Rcpp::traits::input_parameter< int >::type chrom_block_size(chrom_block_sizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(bw_write_runs(path, chrom, chrom_size, values, lengths, threads, level, zero_runs, chrom_block_size));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bw_stream_open
+SEXP bw_stream_open(std::string path, Rcpp::CharacterVector chrom, Rcpp::IntegerVector chrom_size, int threads, int level, bool zero_runs, int chrom_block_size, bool async);
+RcppExport SEXP _ORFik_bw_stream_open(SEXP pathSEXP, SEXP chromSEXP, SEXP chrom_sizeSEXP, SEXP threadsSEXP, SEXP levelSEXP, SEXP zero_runsSEXP, SEXP chrom_block_sizeSEXP, SEXP asyncSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type path(pathSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type chrom(chromSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chrom_size(chrom_sizeSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    Rcpp::traits::input_parameter< int >::type level(levelSEXP);
+    Rcpp::traits::input_parameter< bool >::type zero_runs(zero_runsSEXP);
+    Rcpp::traits::input_parameter< int >::type chrom_block_size(chrom_block_sizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type async(asyncSEXP);
+    rcpp_result_gen = Rcpp::wrap(bw_stream_open(path, chrom, chrom_size, threads, level, zero_runs, chrom_block_size, async));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bw_stream_add
+SEXP bw_stream_add(SEXP writer, int chrom_id, SEXP values, SEXP lengths);
+RcppExport SEXP _ORFik_bw_stream_add(SEXP writerSEXP, SEXP chrom_idSEXP, SEXP valuesSEXP, SEXP lengthsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type writer(writerSEXP);
+    Rcpp::traits::input_parameter< int >::type chrom_id(chrom_idSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type lengths(lengthsSEXP);
+    rcpp_result_gen = Rcpp::wrap(bw_stream_add(writer, chrom_id, values, lengths));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bw_stream_close
+Rcpp::NumericVector bw_stream_close(SEXP writer);
+RcppExport SEXP _ORFik_bw_stream_close(SEXP writerSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type writer(writerSEXP);
+    rcpp_result_gen = Rcpp::wrap(bw_stream_close(writer));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bw_stream_abort
+SEXP bw_stream_abort(SEXP writer);
+RcppExport SEXP _ORFik_bw_stream_abort(SEXP writerSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type writer(writerSEXP);
+    rcpp_result_gen = Rcpp::wrap(bw_stream_abort(writer));
+    return rcpp_result_gen;
+END_RCPP
+}
 // codon_dwell_eval_cpp
 List codon_dwell_eval_cpp(RawMatrix codes, IntegerVector rows, NumericVector y, IntegerVector starts, NumericVector beta, int nf, bool hessian, bool scores, int threads);
 RcppExport SEXP _ORFik_codon_dwell_eval_cpp(SEXP codesSEXP, SEXP rowsSEXP, SEXP ySEXP, SEXP startsSEXP, SEXP betaSEXP, SEXP nfSEXP, SEXP hessianSEXP, SEXP scoresSEXP, SEXP threadsSEXP) {
@@ -143,6 +216,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ofst_rle_blocks
+SEXP ofst_rle_blocks(Rcpp::IntegerVector start, Rcpp::IntegerVector strand, Rcpp::IntegerVector strand_map, SEXP size, SEXP score, Rcpp::NumericVector block_from, Rcpp::NumericVector block_to, Rcpp::IntegerVector chr_len, int threads, double task_rows);
+RcppExport SEXP _ORFik_ofst_rle_blocks(SEXP startSEXP, SEXP strandSEXP, SEXP strand_mapSEXP, SEXP sizeSEXP, SEXP scoreSEXP, SEXP block_fromSEXP, SEXP block_toSEXP, SEXP chr_lenSEXP, SEXP threadsSEXP, SEXP task_rowsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type strand(strandSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type strand_map(strand_mapSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type block_from(block_fromSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type block_to(block_toSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type chr_len(chr_lenSEXP);
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    Rcpp::traits::input_parameter< double >::type task_rows(task_rowsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_rle_blocks(start, strand, strand_map, size, score, block_from, block_to, chr_len, threads, task_rows));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rle_range_sums
+SEXP rle_range_sums(SEXP values, Rcpp::IntegerVector lengths, Rcpp::IntegerVector starts, Rcpp::IntegerVector ends);
+RcppExport SEXP _ORFik_rle_range_sums(SEXP valuesSEXP, SEXP lengthsSEXP, SEXP startsSEXP, SEXP endsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type values(valuesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type lengths(lengthsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type starts(startsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type ends(endsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rle_range_sums(values, lengths, starts, ends));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ofst_code_runs
 Rcpp::List ofst_code_runs(Rcpp::IntegerVector x);
 RcppExport SEXP _ORFik_ofst_code_runs(SEXP xSEXP) {
@@ -167,6 +274,37 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n_size(n_sizeSEXP);
     Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
     rcpp_result_gen = Rcpp::wrap(ofst_point_sums(chr, start, strand, size_index, n_size, score));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_chr_rle
+SEXP ofst_chr_rle(Rcpp::IntegerVector start, Rcpp::IntegerVector strand, Rcpp::IntegerVector size_index, int n_size, SEXP score, int chr_len, double from, double to);
+RcppExport SEXP _ORFik_ofst_chr_rle(SEXP startSEXP, SEXP strandSEXP, SEXP size_indexSEXP, SEXP n_sizeSEXP, SEXP scoreSEXP, SEXP chr_lenSEXP, SEXP fromSEXP, SEXP toSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type start(startSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type strand(strandSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type size_index(size_indexSEXP);
+    Rcpp::traits::input_parameter< int >::type n_size(n_sizeSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< int >::type chr_len(chr_lenSEXP);
+    Rcpp::traits::input_parameter< double >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< double >::type to(toSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_chr_rle(start, strand, size_index, n_size, score, chr_len, from, to));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_block_index
+Rcpp::List ofst_block_index(Rcpp::IntegerVector codes, SEXP start, SEXP score);
+RcppExport SEXP _ORFik_ofst_block_index(SEXP codesSEXP, SEXP startSEXP, SEXP scoreSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type codes(codesSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type start(startSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type score(scoreSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_block_index(codes, start, score));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -329,6 +467,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_ORFik_bw_write_runs", (DL_FUNC) &_ORFik_bw_write_runs, 9},
+    {"_ORFik_bw_stream_open", (DL_FUNC) &_ORFik_bw_stream_open, 8},
+    {"_ORFik_bw_stream_add", (DL_FUNC) &_ORFik_bw_stream_add, 4},
+    {"_ORFik_bw_stream_close", (DL_FUNC) &_ORFik_bw_stream_close, 1},
+    {"_ORFik_bw_stream_abort", (DL_FUNC) &_ORFik_bw_stream_abort, 1},
     {"_ORFik_codon_dwell_eval_cpp", (DL_FUNC) &_ORFik_codon_dwell_eval_cpp, 9},
     {"_ORFik_codon_dwell_feature_counts_cpp", (DL_FUNC) &_ORFik_codon_dwell_feature_counts_cpp, 6},
     {"_ORFik_codon_dwell_tabulate_cpp", (DL_FUNC) &_ORFik_codon_dwell_tabulate_cpp, 3},
@@ -337,8 +480,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_orfs_as_IRanges", (DL_FUNC) &_ORFik_orfs_as_IRanges, 4},
     {"_ORFik_orfs_as_List", (DL_FUNC) &_ORFik_orfs_as_List, 4},
     {"_ORFik_findORFs_fasta", (DL_FUNC) &_ORFik_findORFs_fasta, 5},
+    {"_ORFik_ofst_rle_blocks", (DL_FUNC) &_ORFik_ofst_rle_blocks, 10},
+    {"_ORFik_rle_range_sums", (DL_FUNC) &_ORFik_rle_range_sums, 4},
     {"_ORFik_ofst_code_runs", (DL_FUNC) &_ORFik_ofst_code_runs, 1},
     {"_ORFik_ofst_point_sums", (DL_FUNC) &_ORFik_ofst_point_sums, 6},
+    {"_ORFik_ofst_chr_rle", (DL_FUNC) &_ORFik_ofst_chr_rle, 8},
+    {"_ORFik_ofst_block_index", (DL_FUNC) &_ORFik_ofst_block_index, 3},
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},
