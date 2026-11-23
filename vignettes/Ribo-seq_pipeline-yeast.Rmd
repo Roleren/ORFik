@@ -261,6 +261,17 @@ codon_usage_plot(codon_table) # There is an increased dwell time on (R:CGC) of A
 codon_usage_plot(codon_table, ignore_start_stop_codons = TRUE) 
 # There is an increased dwell time on (R:CGG) of A-sites of HSP condition, why ?
 
+# Codon dwell times with a model (codon_dwell): log relative dwell per codon at offsets
+# -10..+5 codons from the A site, gene effects profiled out, robust SEs. The design
+# depends only on the sequences: build it once, reuse it for every library.
+design <- codon_dwell_design(loadRegion(df.rfp, "cds", filterTranscripts(df.rfp, 0, 1, 0)),
+                             findFa(df.rfp), offsets = -10:5)
+dwell <- codon_dwell(df.rfp[df.rfp$rep == 1,], design = design, threads = 4)
+attr(dwell, "summary") # genes, positions, CDS P-sites, deviance explained per library
+codon_dwell_plot(dwell)                           # offset x codon heatmap
+codon_dwell_plot(dwell, type = "site", offset = 0) # A site, with 95% CI
+# method = "ratio" gives the codon_usage_exp() (mean_txNorm) estimate for the P and A site
+
 
 #¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤#
 # Feature table (From HSR rep 3)

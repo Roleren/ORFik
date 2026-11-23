@@ -43,6 +43,9 @@ plotly::ggplotly(diff_exp_ggplot, tooltip = "text)
 }
 \seealso{
 Other codon: 
+\code{\link{codon_dwell}()},
+\code{\link{codon_dwell_design}()},
+\code{\link{codon_dwell_plot}()},
 \code{\link{codon_usage}()},
 \code{\link{codon_usage_exp}()},
 \code{\link{codon_usage_plot}()},

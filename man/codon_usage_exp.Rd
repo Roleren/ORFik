@@ -122,6 +122,9 @@ https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7196831/
 }
 \seealso{
 Other codon: 
+\code{\link{codon_dwell}()},
+\code{\link{codon_dwell_design}()},
+\code{\link{codon_dwell_plot}()},
 \code{\link{codon_usage}()},
 \code{\link{codon_usage_plot}()},
 \code{\link{diff_exp_codon}()},
