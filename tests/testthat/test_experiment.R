@@ -8,6 +8,24 @@ df_z <- ORFik.template.experiment.zf()
 
 dir <- system.file("extdata/Homo_sapiens_sample", "", package = "ORFik")
 exper <- "ORFik"
+
+test_that("library type guessing ignores misleading directory names", {
+  files <- c("RNA_WT_rep1.ofst", "PAS_WT_rep1.ofst", "RFP_WT_rep1.ofst",
+             "CAGE_WT_rep1.ofst")
+  for (d in c("/data", "/data/playground-Ribo-RNA-matching/sample")) {
+    expect_equal(ORFik:::findFromPath(file.path(d, files), ORFik:::libNames()),
+                 c("RNA", "PAS", "RFP", "CAGE"))
+  }
+  # Template experiment copied below such a directory keeps unique rows
+  root <- file.path(tempfile(), "hakon-playground-Ribo-RNA-matching")
+  dir.create(root, recursive = TRUE)
+  file.copy(list.files(dir, pattern = "\\.ofst$", full.names = TRUE), root)
+  tmpl <- create.experiment(root, "tmpl", txdb = "", fa = "",
+                            organism = "Homo sapiens", saveDir = NULL,
+                            types = "ofst")
+  expect_equal(sort(unique(tmpl[-(1:4), 1])), c("CAGE", "PAS", "RFP", "RNA"))
+  unlink(dirname(root), recursive = TRUE)
+})
 txdb <- system.file("extdata/references/homo_sapiens",
                     "Homo_sapiens_dummy.gtf.db", package = "ORFik")
 fa <- system.file("extdata/references/homo_sapiens",
