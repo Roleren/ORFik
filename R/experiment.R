@@ -445,7 +445,9 @@ filepath_errors <- function(format) {
 #' matching named variables are found in environment used by experiment
 #'  (see \code{\link{envExp}}) A simple way to make
 #' sure correct libraries are always loaded. FALSE is faster if data
-#' is loaded correctly already.
+#' is loaded correctly already. With FALSE, a variable is only reused if its
+#' "filepath", "exp" and "unique_mappers" attributes match the library to
+#' load, so same-named libraries of another experiment or file are reloaded.
 #' @param validate_libs logical, default TRUE. If FALSE, don't check that default
 #' files exists (i.e. bam files), useful if you are using pshifted ofst etc
 #' and don't have the bams anymore.
@@ -505,7 +507,9 @@ outputLibs <- function(df, type = "default",
   all_libs <- NULL
   for (df in dfl) {
     validateExperiments(df, library.names, validate_libs)
-    loaded <- libs_are_loaded(library.names, envir)
+    loaded <- libs_are_loaded(library.names, envir, paths = paths,
+                              exp = name(df),
+                              only_unique_mappers = only_unique_mappers)
     varNames <- library.names
     import_is_needed <- !all(loaded) | force
     if (import_is_needed) {
@@ -570,9 +574,25 @@ name_decider <- function(df, naming) {
   return(varNames)
 }
 
-libs_are_loaded <- function(lib_names, envir) {
-  vapply(lib_names, function(lib) exists(x = lib, envir = envir, inherits = FALSE,
-                                           mode = "S4"), logical(1))
+libs_are_loaded <- function(lib_names, envir, paths = NULL, exp = NULL,
+                            only_unique_mappers = NULL) {
+  # A variable with the right name is only reused if it was loaded from the
+  # same file (and experiment / mapper type), else libraries of another
+  # experiment with colliding names would silently be used.
+  vapply(seq_along(lib_names), function(i) {
+    lib <- lib_names[i]
+    if (!exists(x = lib, envir = envir, inherits = FALSE, mode = "S4"))
+      return(FALSE)
+    if (is.null(paths)) return(TRUE)
+    obj <- get(lib, envir = envir, inherits = FALSE)
+    same_file <- identical(as.character(attr(obj, "filepath", exact = TRUE)),
+                           as.character(paths[[i]]))
+    same_exp <- is.null(exp) ||
+      identical(attr(obj, "exp", exact = TRUE), exp)
+    same_mappers <- is.null(only_unique_mappers) ||
+      identical(attr(obj, "unique_mappers", exact = TRUE), only_unique_mappers)
+    same_file && same_exp && same_mappers
+  }, logical(1))
 }
 
 #' Converted format of NGS libraries

@@ -109,7 +109,9 @@ Like: c("NCBI", "UCSC") -> pick "NCBI"}
 matching named variables are found in environment used by experiment
  (see \code{\link{envExp}}) A simple way to make
 sure correct libraries are always loaded. FALSE is faster if data
-is loaded correctly already.}
+is loaded correctly already. With FALSE, a variable is only reused if its
+"filepath", "exp" and "unique_mappers" attributes match the library to
+load, so same-named libraries of another experiment or file are reloaded.}
 
 \item{validate_libs}{logical, default TRUE. If FALSE, don't check that default
 files exists (i.e. bam files), useful if you are using pshifted ofst etc

@@ -1,6 +1,17 @@
 ORFik 1.29.17
 =============
 
+Library loading
+---------------
+
+    o Bug fix: outputLibs(force = FALSE), used by countTable_regions() and
+      makeSummarizedExperimentFromBam(), reused any S4 variable in envExp(df)
+      with a matching library name. Experiments with colliding names (e.g. the
+      merged masters of one organism, or all vs unique mappers of the same
+      experiment) silently got the previously loaded libraries. A variable is
+      now only reused if its "filepath", "exp" and "unique_mappers"
+      attributes match; otherwise the library is reloaded.
+
 Bioconductor devel compatibility
 --------------------------------
 
