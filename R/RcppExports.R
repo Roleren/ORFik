@@ -45,8 +45,12 @@ ofst_sorted_merge_order <- function(a, ord_a, b, rows_b) {
     .Call('_ORFik_ofst_sorted_merge_order', PACKAGE = 'ORFik', a, ord_a, b, rows_b)
 }
 
-ofst_store_kway <- function(stored, order, inputs, n_old, threads) {
-    .Call('_ORFik_ofst_store_kway', PACKAGE = 'ORFik', stored, order, inputs, n_old, threads)
+ofst_store_kway <- function(stored, order, inputs, n_old, threads, stored_sorted = FALSE, want_keys = FALSE) {
+    .Call('_ORFik_ofst_store_kway', PACKAGE = 'ORFik', stored, order, inputs, n_old, threads, stored_sorted, want_keys)
+}
+
+ofst_store_score_scan <- function(score, seq, n_codes) {
+    .Call('_ORFik_ofst_store_score_scan', PACKAGE = 'ORFik', score, seq, n_codes)
 }
 
 orfStatsCovRleCPP <- function(run_values, run_lengths, rle_id, ex_start, ex_end, ex_minus, group_ends) {

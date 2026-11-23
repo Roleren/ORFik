@@ -9,6 +9,9 @@
 #   <store>/manifest_libs.csv                human-readable copy of the library table (not read back)
 #   <store>/<part>/keys.fst                  seq, <key columns>; append-only, row number = row id
 #   <store>/<part>/order_g<gen>.fst          row ids in key order (rewritten per update)
+#   <store>/<part>/skeys_g<gen>.fst          the keys in key order (keys.fst gathered by order),
+#                                            so an update reads them sequentially; optional
+#                                            (stores of 5d7ad26 lack it until their next add)
 #   <store>/<part>/total_g<gen>.fst          summed score per row id: the "all" column
 #   <store>/<part>/contrib_<seg>.fst         row, score; append-only, one row range per input
 #
@@ -16,6 +19,10 @@
 # far below 2^31 (human chromosome 1: ~1.1e8 keys). The contribution rows of a partition can
 # exceed 2^31 in total, so they are split into segments of at most `max_contrib_rows` rows;
 # the manifest stores (segment, from, to) as doubles.
+#
+# The per-generation files (order, skeys, total) are written uncompressed: they are rewritten on
+# every update and read in full, and uncompressed fst reads and writes run at memory speed
+# (chr21, 17.4M keys: 0.2 s instead of 1.5 s for order + total).
 #
 # Crash safety: appended rows and new generation files become visible only when manifest.rds
 # is replaced (write + rename). Rows beyond the committed counts are cut off before the next
@@ -119,6 +126,8 @@ ofst_store_manifest <- function(store) {
 .ofst_store_part_dir <- function(store, part) file.path(store, part)
 .ofst_store_gen_file <- function(store, part, what, gen)
   file.path(store, part, sprintf("%s_g%06d.fst", what, gen))
+.ofst_store_gen_compress <- 0
+.ofst_store_write_gen <- function(x, path) fst::write_fst(x, path, compress = .ofst_store_gen_compress)
 .ofst_store_seg_file <- function(store, part, seg)
   file.path(store, part, sprintf("contrib_%04d.fst", seg))
 
@@ -126,8 +135,8 @@ ofst_store_manifest <- function(store) {
 .ofst_store_gc <- function(store, m) {
   for (i in seq_len(nrow(m$parts))) {
     p <- m$parts$part[i]; g <- m$parts$gen[i]
-    files <- list.files(.ofst_store_part_dir(store, p), pattern = "^(order|total)_g[0-9]+\\.fst$", full.names = TRUE)
-    keep <- c(.ofst_store_gen_file(store, p, "order", g), .ofst_store_gen_file(store, p, "total", g))
+    files <- list.files(.ofst_store_part_dir(store, p), pattern = "^(order|total|skeys)_g[0-9]+\\.fst$", full.names = TRUE)
+    keep <- .ofst_store_gen_file(store, p, c("order", "total", "skeys"), g)
     unlink(setdiff(files, keep))
   }
   live_segs <- if (nrow(m$segments)) .ofst_store_seg_file(store, m$segments$part, m$segments$seg) else character()
@@ -463,22 +472,29 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   invisible(m)
 }
 
-# Load a partition's committed state: keys (list of int columns), order, total.
-.ofst_store_load_part <- function(store, m, p, need_keys = TRUE) {
+# Load a partition's committed state: keys (list of int columns), order, total. With
+# sorted = TRUE and a sorted key file, keys are in key order (keys[[k]][i] belongs to row id
+# order[i]) and $sorted is TRUE; otherwise keys are in row-id order.
+.ofst_store_load_part <- function(store, m, p, need_keys = TRUE, sorted = FALSE) {
   pr <- m$parts[part == p]
   n <- if (nrow(pr)) pr$n_keys else 0
   kc <- c("seq", m$key_columns)
   if (n == 0) {
     keys <- if (need_keys) stats::setNames(rep(list(integer()), length(kc)), kc)
-    return(list(n = 0, keys = keys, order = integer(), total = numeric()))
+    return(list(n = 0, keys = keys, order = integer(), total = numeric(), sorted = sorted))
   }
-  keys <- if (need_keys) .ofst_cols(fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = n), kc)
+  skeys_file <- .ofst_store_gen_file(store, p, "skeys", pr$gen)
+  is_sorted <- need_keys && sorted && file.exists(skeys_file)
+  keys <- if (is_sorted) .ofst_cols(fst::read_fst(skeys_file, as.data.table = TRUE), kc) else
+    if (need_keys) .ofst_cols(fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = n), kc)
+  if (is_sorted && length(keys[[1L]]) != n)
+    .ofst_store_abort("partition '", p, "': sorted key file has ", length(keys[[1L]]), " rows, expected ", n, ".")
   ord <- fst::read_fst(.ofst_store_gen_file(store, p, "order", pr$gen))[[1L]]
   total <- as.numeric(fst::read_fst(.ofst_store_gen_file(store, p, "total", pr$gen))[[1L]])
   if (length(ord) != n || length(total) != n)
     .ofst_store_abort("partition '", p, "' is inconsistent with the manifest (", length(ord), "/",
                       length(total), " vs ", n, " keys).")
-  list(n = n, keys = keys, order = ord, total = total)
+  list(n = n, keys = keys, order = ord, total = total, sorted = is_sorted)
 }
 
 # Contributions (row, score) of manifest rows h (one partition), concatenated in h order.
@@ -502,7 +518,8 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 .ofst_store_update_part <- function(store, m, p, gen, add_paths, add_libs, runs, chr_codes, rm_rows,
                                     threads = 1L) {
   dir.create(file.path(store, p), showWarnings = FALSE)
-  st <- .ofst_store_load_part(store, m, p, need_keys = nrow(runs) > 0)
+  st <- .ofst_store_load_part(store, m, p, need_keys = nrow(runs) > 0, sorted = TRUE)
+  skeys <- NULL
   total <- st$total
   # removals: subtract stored contributions
   if (nrow(rm_rows)) {
@@ -528,7 +545,10 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     # on packed keys:
     # row ids for every input key, the unseen keys (appended in key order) and the new order
     kw <- ofst_store_kway(st$keys, as.integer(st$order),
-                          lapply(lib_tabs, .ofst_cols, kc), st$n, threads)
+                          lapply(lib_tabs, .ofst_cols, kc), st$n, threads,
+                          stored_sorted = st$sorted, want_keys = TRUE)
+    st$keys <- NULL
+    skeys <- stats::setNames(kw$keys, kc)
     rows <- kw$rows
     n_new <- length(kw$new_keys[[1L]])
     if (n_new) {
@@ -580,13 +600,18 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
     all_contrib <- NULL
     out_libs <- data.table::rbindlist(out_libs)
   }
-  # unchanged key order (no new keys, e.g. a removal): hard-link the previous order file
-  old_order <- if (st$n) .ofst_store_gen_file(store, p, "order", m$parts[part == p]$gen)
-  new_order <- .ofst_store_gen_file(store, p, "order", gen)
-  if (!(n_keys == st$n && st$n > 0 && file.exists(old_order) &&
-        (file.link(old_order, new_order) || file.copy(old_order, new_order))))
-    fst::write_fst(data.frame(row = as.integer(ord)), new_order)
-  fst::write_fst(data.frame(score = total), .ofst_store_gen_file(store, p, "total", gen))
+  # unchanged key order (no new keys, e.g. a removal): hard-link the previous order and sorted
+  # key files
+  link_or_write <- function(what, write) {
+    old <- if (st$n) .ofst_store_gen_file(store, p, what, m$parts[part == p]$gen)
+    new <- .ofst_store_gen_file(store, p, what, gen)
+    if (!(n_keys == st$n && st$n > 0 && file.exists(old) && (file.link(old, new) || file.copy(old, new))))
+      write(new)
+  }
+  link_or_write("order", function(f) .ofst_store_write_gen(data.frame(row = as.integer(ord)), f))
+  link_or_write("skeys", function(f) if (!is.null(skeys)) .ofst_store_write_gen(data.table::setDT(skeys), f))
+  skeys <- NULL
+  .ofst_store_write_gen(data.frame(score = total), .ofst_store_gen_file(store, p, "total", gen))
   list(n_keys = n_keys, segments = segs, libs = out_libs)
 }
 
@@ -644,6 +669,158 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
   suppressMessages(.ofst_finalize(d))
 }
 
+# ---- Streaming export: per-chromosome pieces written in parallel, joined with fst::concat_fst ----
+#
+# The output must be an ordinary fst file, identical to the assembled table. fst stores each
+# column in blocks of 4096 rows (2048 for doubles), and concat_fst() joins files by copying
+# their compressed blocks, so every file but the last must hold a multiple of 4096 rows.
+# Pass 1 counts the rows per chromosome (cheap: the totals, plus the seq column of pooled
+# partitions); that fixes the global first row of every chromosome block. Pass 2 writes, per
+# chromosome block, the block-aligned body as its own file and returns the unaligned head and
+# tail rows (< 4096 each). The main process joins heads and tails between bodies into small
+# "glue" files, which are block aligned by construction, and concatenates everything in order.
+# Memory: one partition per worker; the main process holds only the glue rows.
+.ofst_store_export_block <- 4096
+
+.ofst_store_concat_available <- function()
+  "concat_fst" %in% getNamespaceExports("fst") && !isFALSE(getOption("ORFik.ofst_store_concat", TRUE))
+
+# Pass 1 for one partition: rows per chromosome code and whether all scores fit int32. For a
+# subset of inputs the scores are computed here and kept in a scratch file for pass 2.
+.ofst_store_export_scan <- function(store, m, p, libs, scratch) {
+  pr <- m$parts[part == p]
+  score_file <- NULL
+  if (is.null(libs)) {
+    score <- as.numeric(fst::read_fst(.ofst_store_gen_file(store, p, "total", pr$gen))[[1L]])
+  } else {
+    score <- .ofst_store_part_scores(store, m, p, list(n = pr$n_keys), libs)
+    score_file <- file.path(scratch, paste0("score_", p, ".fst"))
+    fst::write_fst(data.frame(score = score), score_file, compress = 0)
+  }
+  if (length(score) != pr$n_keys) .ofst_store_abort("partition '", p, "' is inconsistent with the manifest.")
+  chrs <- m$chr_part[part == p]$chr
+  s <- if (length(chrs) == 1L) integer() else   # pooled partition: rows per chromosome
+    fst::read_fst(file.path(store, p, "keys.fst"), "seq", from = 1, to = pr$n_keys)[[1L]]
+  sc <- ofst_store_score_scan(score, s, length(m$seqlevels))   # one C++ pass
+  counts <- if (length(chrs) == 1L) data.table::data.table(seq = match(chrs, m$seqlevels), n = sc$counts[1L]) else
+    data.table::data.table(seq = seq_along(sc$counts), n = sc$counts)
+  list(part = p, counts = counts[n > 0], int_ok = sc$int_ok, score_file = score_file)
+}
+
+# Pass 2 for one partition: per chromosome block (global first row `start`, 0-based), write
+# the block-aligned body and return the head / tail rows.
+.ofst_store_export_write <- function(store, m, p, blocks, score_file, seq_to_level, out_levels,
+                                     int_score, scratch, compress) {
+  st <- .ofst_store_load_part(store, m, p, need_keys = TRUE, sorted = TRUE)
+  score <- if (is.null(score_file)) st$total else fst::read_fst(score_file)[[1L]]
+  st$total <- NULL
+  # keep: the output rows in key order, as indices into st$keys (positions in the sorted key
+  # file, read sequentially, or row ids)
+  if (st$sorted) {
+    score <- score[st$order]
+    keep <- which(score != 0)
+  } else {
+    keep <- st$order[score[st$order] != 0]
+  }
+  st$order <- NULL
+  kc <- setdiff(names(st$keys), "seq")
+  B <- .ofst_store_export_block
+  as_factor <- function(v, lv) { data.table::setattr(v, "levels", lv); data.table::setattr(v, "class", "factor"); v }
+  # one chromosome block: seqnames is constant (columns built without copies)
+  table_of <- function(idx, seq_code) {
+    cols <- list(seqnames = as_factor(rep.int(seq_to_level[seq_code], length(idx)), out_levels))
+    for (k in kc) {
+      v <- st$keys[[k]][idx]
+      if (k == "strand") v <- as_factor(.ofst_sortkey_to_strand[v], .ofst_strand_levels)
+      cols[[k]] <- v
+    }
+    s <- score[idx]
+    cols$score <- if (int_score) as.integer(s) else s
+    data.table::setDT(cols)
+  }
+  # rows are in key order (seq first), so each chromosome is one contiguous run of `keep`
+  runs <- ofst_code_runs(st$keys$seq[keep])
+  from <- c(1, head(runs$end, -1) + 1)
+  out <- vector("list", nrow(blocks))
+  for (b in seq_len(nrow(blocks))) {
+    r <- match(blocks$seq[b], runs$value)
+    if (is.na(r) || runs$end[r] - from[r] + 1 != blocks$n[b])
+      .ofst_store_abort("internal: chromosome block sizes changed between export passes (partition '", p, "').")
+    idx <- keep[from[r]:runs$end[r]]
+    n <- length(idx); g0 <- blocks$start[b]
+    a <- min(n, (B - g0 %% B) %% B)                 # rows before the first block boundary
+    e <- a + ((n - a) %/% B) * B                    # end of the block-aligned body
+    body <- NULL
+    if (e > a) {
+      body <- file.path(scratch, sprintf("body_%s_%05d.fst", p, blocks$seq[b]))
+      fst::write_fst(table_of(idx[(a + 1):e], blocks$seq[b]), body, compress = compress)
+    }
+    out[[b]] <- list(seq = blocks$seq[b], head = table_of(idx[seq_len(a)], blocks$seq[b]), body = body,
+                     tail = table_of(idx[seq.int(e + 1, length.out = n - e)], blocks$seq[b]))
+  }
+  out
+}
+
+# Writes out_file and returns its row count, or NULL when the export is empty.
+.ofst_store_export_stream <- function(store, m, libs, out_file, workers, verbose, compress = 50) {
+  parts <- m$parts[n_keys > 0]$part
+  if (!length(parts)) return(NULL)
+  out_file <- normalizePath(out_file, mustWork = FALSE)
+  dir.create(dirname(out_file), recursive = TRUE, showWarnings = FALSE)
+  scratch <- tempfile(".ofst_store_export_", tmpdir = dirname(out_file))
+  dir.create(scratch)
+  on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
+  scan <- .ofst_store_mclapply(parts, function(p) .ofst_store_export_scan(store, m, p, libs, scratch), workers)
+  counts <- data.table::rbindlist(lapply(scan, function(s) data.table::set(s$counts, j = "part", value = s$part)))
+  if (!nrow(counts)) return(NULL)
+  if (anyDuplicated(counts$seq)) .ofst_store_abort("internal: a chromosome is split over partitions.")
+  # chromosome blocks in label order (as the sorted merge); factor levels as .ofst_finalize
+  counts[, chr := m$seqlevels[seq]]
+  counts <- counts[order(chr, method = "radix")]
+  counts[, start := cumsum(n) - n]
+  out_levels <- sort(counts$chr)
+  seq_to_level <- match(m$seqlevels, out_levels)
+  int_score <- all(vapply(scan, `[[`, logical(1), "int_ok"))
+  score_files <- stats::setNames(lapply(scan, `[[`, "score_file"), parts)
+  # (no fst::threads_fst() in the workers: re-enabling OpenMP in a forked child deadlocks)
+  res <- .ofst_store_mclapply(parts, function(p) {
+    .ofst_store_export_write(store, m, p, counts[part == p], score_files[[p]], seq_to_level, out_levels,
+                             int_score, scratch, compress)
+  }, workers)
+  pieces <- unlist(res, recursive = FALSE)
+  pieces <- pieces[match(counts$seq, vapply(pieces, `[[`, integer(1), "seq"))]
+  # file list: the glue (heads / tails gathered since the last body) before every body, then
+  # the final glue
+  files <- character(); glue <- list()
+  flush <- function(last = FALSE) {
+    g <- data.table::rbindlist(glue)
+    glue <<- list()
+    if (!nrow(g)) return(invisible(NULL))
+    if (!last && nrow(g) %% .ofst_store_export_block != 0)
+      .ofst_store_abort("internal: unaligned glue rows in the export.")
+    f <- file.path(scratch, sprintf("glue_%05d.fst", length(files) + 1L))
+    fst::write_fst(g, f, compress = compress)
+    files <<- c(files, f)
+  }
+  for (pc in pieces) {
+    glue[[length(glue) + 1L]] <- pc$head
+    if (!is.null(pc$body)) { flush(); files <- c(files, pc$body) }
+    glue[[length(glue) + 1L]] <- pc$tail
+  }
+  flush(last = TRUE)
+  tmp_out <- file.path(scratch, "output.ofst")
+  n <- fst::concat_fst(files, tmp_out)
+  if (n != sum(counts$n)) .ofst_store_abort("internal: the export wrote ", n, " rows, expected ", sum(counts$n), ".")
+  # publish as .ofst_save_merge does: the output, then a NULL removal summary (no filtering)
+  sidecar_tmp <- file.path(scratch, "removal_summary.rds")
+  saveRDS(NULL, sidecar_tmp)
+  if (!file.rename(tmp_out, out_file)) .ofst_store_abort("cannot replace '", out_file, "'.")
+  if (!file.rename(sidecar_tmp, paste0(out_file, ".removal_summary.rds")))
+    .ofst_store_abort("output written to '", out_file, "', but its removal summary could not be replaced.")
+  .ofst_store_msg(verbose, "wrote ", .ofst_number(n), " rows from ", length(files), " block-aligned pieces")
+  n
+}
+
 #' Export the merged track of an OFST store
 #'
 #' Writes (or returns) the ordinary sorted OFST table: one row per key with a non-zero summed
@@ -652,10 +829,14 @@ ofst_store_replace <- function(store, paths, libs = sub("\\.ofst$", "", basename
 #' @param store character, store directory, or an in-RAM matrix from
 #' \code{ofst_store_read_matrix(as = "matrix")}.
 #' @param out_file character or NULL (default). If given, the table is written there (via a
-#' temporary file and rename, as \code{mergeLibs}) and invisibly returned.
+#' temporary file and rename, as \code{mergeLibs}). For a store directory and an fst version
+#' with \code{fst::concat_fst()}, the partitions are written in parallel as block-aligned
+#' pieces and joined without recompression, so the whole table is never held in memory; the
+#' result is the same ordinary fst file.
 #' @param libs character or NULL (default, all live inputs). A subset of live inputs gives a
 #' subset track (e.g. inhibitor splits or study pools) without touching the rest.
-#' @return a data.table (seqnames, key columns, score).
+#' @return a data.table (seqnames, key columns, score); with \code{out_file}, invisibly: the
+#' table, or only the output path when the streaming export wrote it.
 #' @family ofst_store
 #' @export
 ofst_store_export_all <- function(store, out_file = NULL, libs = NULL, workers = NULL, verbose = TRUE) {
@@ -675,6 +856,14 @@ ofst_store_export_all <- function(store, out_file = NULL, libs = NULL, workers =
     if (!is.null(libs)) {
       bad <- setdiff(libs, m$libs[state == "live"]$lib)
       if (length(bad)) .ofst_store_abort("not live in the store: ", paste(head(bad, 10), collapse = ", "))
+    }
+    if (!is.null(out_file) && .ofst_store_concat_available()) {
+      n <- .ofst_store_export_stream(store, m, libs, out_file, .ofst_store_workers(workers), verbose)
+      if (!is.null(n)) {
+        .ofst_store_msg(verbose, "exported ", .ofst_number(n), " rows in ",
+                        round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), " s")
+        return(invisible(out_file))
+      }
     }
     parts <- m$parts[n_keys > 0]$part
     pieces <- .ofst_store_mclapply(parts, function(p) {
@@ -708,6 +897,13 @@ ofst_store_verify <- function(store, workers = NULL) {
   ok <- .ofst_store_mclapply(m$parts$part, function(p) {
     st <- .ofst_store_load_part(store, m, p, need_keys = FALSE)
     acc <- .ofst_store_part_scores(store, m, p, st, libs = m$libs[state == "live"]$lib)
+    skeys_file <- .ofst_store_gen_file(store, p, "skeys", m$parts[part == p]$gen)
+    if (st$n && file.exists(skeys_file)) {
+      keys <- fst::read_fst(file.path(store, p, "keys.fst"), from = 1, to = st$n, as.data.table = TRUE)
+      if (!isTRUE(all.equal(keys[st$order], fst::read_fst(skeys_file, as.data.table = TRUE), check.attributes = FALSE)))
+        .ofst_store_abort("partition '", p, "': the sorted key file differs from the keys in key order.")
+      keys <- NULL
+    }
     h <- m$libs[state == "live" & part == p]
     if (!isTRUE(all.equal(acc, st$total, tolerance = 0)))
       .ofst_store_abort("partition '", p, "': totals differ from the summed contributions.")
@@ -918,10 +1114,11 @@ ofst_store_write_matrix <- function(x, store, max_contrib_rows = 1e9, partition_
     data.table::setnames(keys, kc)
     newid <- integer(n); newid[o] <- seq_len(n)          # rows renumbered in key order
     fst::write_fst(keys, file.path(store, p, "keys.fst"))
-    fst::write_fst(data.frame(row = seq_len(n)), .ofst_store_gen_file(store, p, "order", 1L))
+    .ofst_store_write_gen(data.frame(row = seq_len(n)), .ofst_store_gen_file(store, p, "order", 1L))
+    .ofst_store_write_gen(keys, .ofst_store_gen_file(store, p, "skeys", 1L))   # keys are in key order
     row <- newid[pp$row]
-    fst::write_fst(data.frame(score = ofst_store_scatter_add(numeric(n), row, pp$score, 1, FALSE)),
-                   .ofst_store_gen_file(store, p, "total", 1L))
+    .ofst_store_write_gen(data.frame(score = ofst_store_scatter_add(numeric(n), row, pp$score, 1, FALSE)),
+                          .ofst_store_gen_file(store, p, "total", 1L))
     lo <- order(pp$lib, row)
     cd <- data.table::data.table(row = row[lo], score = pp$score[lo], lib = pp$lib[lo])
     cnt <- cd[, .(nnz = .N, score_sum = sum(score)), by = lib]

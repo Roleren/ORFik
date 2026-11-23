@@ -4,7 +4,9 @@
 #include <atomic>
 #include <chrono>
 #include <climits>
+#include <cmath>
 #include <cstdint>
+#include <memory>
 #include <thread>
 #include <vector>
 
@@ -146,6 +148,7 @@ template <int W>
 struct KwayResult {
   std::vector<int> ord;           // merged key order: row ids (provisional -(i + 1) for new key i)
   std::vector<Key<W>> newkeys;    // packed new keys, in key order
+  std::vector<Key<W>> uni;        // the key union of the range (only when the sorted keys are wanted)
 };
 
 template <int W>
@@ -174,43 +177,36 @@ void locate_in(const Key<W>* U, size_t nu, const Key<W>* q, R_xlen_t m, std::vec
 }
 
 // One key range [lo, hi) of every stream. Streams: s = 0 the stored keys (sorted; ids from
-// old_order, may be empty), s >= 1 the new tables. (1) Union U of the range: pairwise set_union
+// old_order, may be empty), s >= 1 the new tables. (1) Union U of the range: set_union
 // tree (branch-light linear merges, duplicates collapse level by level). (2) Each stream is
 // located in U by galloping. Stored keys keep their ids; the others get provisional ids in U
 // order; rows[s - 1][p] receives the id of key p of stream s.
 template <int W>
 void kway_range(const std::vector<const Key<W>*>& S, const std::vector<R_xlen_t>& lo,
                 const std::vector<R_xlen_t>& hi, const int* old_order, const std::vector<int*>& rows,
-                KwayResult<W>& res) {
+                KwayResult<W>& res, bool want_union) {
   const int ns = (int)S.size();
-  typedef std::pair<const Key<W>*, size_t> Span;
+  // Union tree: always merge the two smallest spans (Huffman order), so the large stored span
+  // is copied once at the end instead of once per tree level.
+  struct Span { const Key<W>* p; size_t n; std::shared_ptr<std::vector<Key<W>>> own; };
   std::vector<Span> cur;
-  std::vector<std::vector<Key<W>>> owned;
-  for (int s = 0; s < ns; ++s) if (hi[s] > lo[s]) cur.emplace_back(S[s] + lo[s], (size_t)(hi[s] - lo[s]));
+  for (int s = 0; s < ns; ++s) if (hi[s] > lo[s]) cur.push_back({S[s] + lo[s], (size_t)(hi[s] - lo[s]), nullptr});
+  auto bigger = [](const Span& a, const Span& b) { return a.n > b.n; };   // min-heap on size
+  std::make_heap(cur.begin(), cur.end(), bigger);
   while (cur.size() > 1) {
-    std::vector<Span> next;
-    std::vector<std::vector<Key<W>>> next_owned;
-    next_owned.reserve(cur.size() / 2 + 1);
-    for (size_t i = 0; i + 1 < cur.size(); i += 2) {
-      std::vector<Key<W>> u(cur[i].second + cur[i + 1].second);
-      auto e = std::set_union(cur[i].first, cur[i].first + cur[i].second,
-                              cur[i + 1].first, cur[i + 1].first + cur[i + 1].second, u.begin());
-      u.resize(e - u.begin());
-      u.shrink_to_fit();
-      next_owned.push_back(std::move(u));
-      next.emplace_back(next_owned.back().data(), next_owned.back().size());
-    }
-    if (cur.size() % 2) {   // odd one out: carried over (copied if it is owned by this level)
-      std::vector<Key<W>> u(cur.back().first, cur.back().first + cur.back().second);
-      next_owned.push_back(std::move(u));
-      next.emplace_back(next_owned.back().data(), next_owned.back().size());
-    }
-    owned.swap(next_owned);   // frees the previous level
-    cur.swap(next);
+    std::pop_heap(cur.begin(), cur.end(), bigger); Span a = cur.back(); cur.pop_back();
+    std::pop_heap(cur.begin(), cur.end(), bigger); Span b = cur.back(); cur.pop_back();
+    auto u = std::make_shared<std::vector<Key<W>>>(a.n + b.n);
+    auto e = std::set_union(a.p, a.p + a.n, b.p, b.p + b.n, u->begin());
+    u->resize(e - u->begin());
+    a.own.reset(); b.own.reset();   // frees merged intermediates
+    cur.push_back({u->data(), u->size(), u});
+    std::push_heap(cur.begin(), cur.end(), bigger);
   }
   if (cur.empty()) return;
-  const Key<W>* U = cur[0].first;
-  const size_t nu = cur[0].second;
+  const Key<W>* U = cur[0].p;
+  const size_t nu = cur[0].n;
+  if (want_union) res.uni.assign(U, U + nu);
   std::vector<int> id(nu, 0);
   std::vector<uint32_t> loc;
   if (hi[0] > lo[0]) {
@@ -230,7 +226,7 @@ void kway_range(const std::vector<const Key<W>*>& S, const std::vector<R_xlen_t>
 
 template <int W>
 Rcpp::List kway_impl(const KeyCols& stored, const int* old_order, const std::vector<KeyCols>& inputs,
-                     const Packer& pk, double n_old, int threads) {
+                     const Packer& pk, double n_old, int threads, bool stored_sorted, bool want_union) {
   auto now = [] { return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count(); };
   std::vector<double> tm{now()};
   const int ns = (int)inputs.size() + 1;
@@ -248,10 +244,11 @@ Rcpp::List kway_impl(const KeyCols& stored, const int* old_order, const std::vec
     run_threads(std::min(T, ns), [&](int) {
       for (int s; (s = next++) < ns;) {
         if (s > 0) { bad[s] = pack_table<W>(*src[s], pk, packed[s].data(), true); continue; }
-        // stored keys: gathered into key order through old_order while packing
+        // stored keys: gathered into key order through old_order while packing (or, when they
+        // are given in key order already, read sequentially)
         Key<W>* out = packed[0].data();
         for (R_xlen_t i = 0; i < stored.n; ++i) {
-          out[i] = pack_row<W>(stored, (R_xlen_t)old_order[i] - 1, pk);
+          out[i] = pack_row<W>(stored, stored_sorted ? i : (R_xlen_t)old_order[i] - 1, pk);
           if (!bad[0] && i > 0 && !(out[i - 1] < out[i])) bad[0] = i + 1;
         }
       }
@@ -292,7 +289,7 @@ Rcpp::List kway_impl(const KeyCols& stored, const int* old_order, const std::vec
   std::vector<KwayResult<W>> res(nt);
   run_threads(nt, [&](int t) {   // thread-local results (no false sharing), moved out at the end
     KwayResult<W> local;
-    kway_range<W>(S, bound[t], bound[t + 1], old_order, rows, local);
+    kway_range<W>(S, bound[t], bound[t + 1], old_order, rows, local, want_union);
     res[t] = std::move(local);
   });
   tm.push_back(now());
@@ -310,6 +307,11 @@ Rcpp::List kway_impl(const KeyCols& stored, const int* old_order, const std::vec
   Rcpp::List new_keys(k);
   std::vector<int*> nk(k);
   for (size_t c = 0; c < k; ++c) { Rcpp::IntegerVector v((R_xlen_t)n_new); nk[c] = v.begin(); new_keys[c] = v; }
+  // all keys in key order (the union), when wanted
+  Rcpp::List all_keys(want_union ? k : 0);
+  std::vector<int*> ak(k, nullptr);
+  if (want_union)
+    for (size_t c = 0; c < k; ++c) { Rcpp::IntegerVector v((R_xlen_t)ord_off[nt]); ak[c] = v.begin(); all_keys[c] = v; }
   // pass 2: final ids of new keys (n_old + global new index), merged order, new key columns
   run_threads(nt, [&](int t) {
     const int base = (int)(n_old + new_off[t]);
@@ -323,12 +325,22 @@ Rcpp::List kway_impl(const KeyCols& stored, const int* old_order, const std::vec
     for (size_t i = 0; i < res[t].newkeys.size(); ++i)
       for (size_t c = 0; c < k; ++c)
         nk[c][first + (R_xlen_t)i] = (int)((int64_t)unpack_col<W>(res[t].newkeys[i], pk, c) + pk.lo[c]);
+    if (want_union) {
+      const R_xlen_t off = (R_xlen_t)ord_off[t];
+      for (size_t c = 0; c < k; ++c) {
+        int* a = ak[c] + off;
+        const int64_t lo_c = pk.lo[c];
+        for (size_t i = 0; i < res[t].uni.size(); ++i) a[i] = (int)((int64_t)unpack_col<W>(res[t].uni[i], pk, c) + lo_c);
+      }
+      std::vector<Key<W>>().swap(res[t].uni);
+    }
   });
   tm.push_back(now());
   Rcpp::NumericVector secs = Rcpp::NumericVector::create(
     Rcpp::Named("pack") = tm[1] - tm[0], Rcpp::Named("match") = tm[2] - tm[1], Rcpp::Named("finish") = tm[3] - tm[2]);
   return Rcpp::List::create(Rcpp::Named("rows") = rows_out, Rcpp::Named("order") = ord,
-                            Rcpp::Named("new_keys") = new_keys, Rcpp::Named("words") = pk.W,
+                            Rcpp::Named("new_keys") = new_keys, Rcpp::Named("keys") = all_keys,
+                            Rcpp::Named("words") = pk.W,
                             Rcpp::Named("threads") = nt, Rcpp::Named("seconds") = secs);
 }
 
@@ -540,11 +552,13 @@ Rcpp::IntegerVector ofst_sorted_merge_order(Rcpp::List a, Rcpp::IntegerVector or
 //   rows:     per new table, the row id of each of its keys (stored id, or a new id);
 //   order:    row ids of the union in key order (the new order file);
 //   new_keys: the keys not stored yet, in key order; they get ids n_old + 1, n_old + 2, ...;
+//   keys:     with want_keys, all keys of the union in key order (the new sorted key file);
 //   words:    packed 64-bit words per key; threads: key ranges processed in parallel.
-// threads > 1 splits the key range over std::threads.
+// threads > 1 splits the key range over std::threads. With stored_sorted, `stored` is already
+// in key order (the sorted key file), so it is read sequentially instead of through `order`.
 // [[Rcpp::export]]
 Rcpp::List ofst_store_kway(Rcpp::List stored, Rcpp::IntegerVector order, Rcpp::List inputs,
-                           double n_old, int threads) {
+                           double n_old, int threads, bool stored_sorted = false, bool want_keys = false) {
   KeyCols st(stored);
   if (order.size() != st.n) Rcpp::stop("order length differs from stored key length");
   for (R_xlen_t i = 0; i < st.n; ++i)
@@ -559,7 +573,34 @@ Rcpp::List ofst_store_kway(Rcpp::List stored, Rcpp::IntegerVector order, Rcpp::L
   std::vector<const KeyCols*> sets{&st};
   for (auto& x : in) sets.push_back(&x);
   Packer pk = make_packer(sets);
-#define OFST_CALL(W) kway_impl<W>(st, order.begin(), in, pk, n_old, threads)
+#define OFST_CALL(W) kway_impl<W>(st, order.begin(), in, pk, n_old, threads, stored_sorted, want_keys)
   OFST_DISPATCH_W(pk, OFST_CALL)
 #undef OFST_CALL
+}
+
+// One pass over a partition's scores for the streaming export: non-zero rows per sequence
+// code (seq may be empty: all rows count for code 1) and whether every non-zero score is a
+// whole number within the int32 range (then the exported score column is integer).
+// [[Rcpp::export]]
+Rcpp::List ofst_store_score_scan(Rcpp::NumericVector score, Rcpp::IntegerVector seq, int n_codes) {
+  const R_xlen_t n = score.size();
+  const bool by_seq = seq.size() > 0;
+  if (by_seq && seq.size() != n) Rcpp::stop("seq and score differ in length");
+  std::vector<double> counts(std::max(1, n_codes), 0.0);
+  bool int_ok = true;
+  const double* s = score.begin();
+  const int* q = by_seq ? seq.begin() : nullptr;
+  for (R_xlen_t i = 0; i < n; ++i) {
+    const double v = s[i];
+    if (v == 0) continue;
+    if (by_seq) {
+      const int c = q[i];
+      if (c < 1 || c > n_codes) Rcpp::stop("sequence code out of range");
+      counts[c - 1] += 1;
+    } else {
+      counts[0] += 1;
+    }
+    if (int_ok && !(v == std::floor(v) && std::fabs(v) <= 2147483647.0)) int_ok = false;
+  }
+  return Rcpp::List::create(Rcpp::Named("counts") = Rcpp::wrap(counts), Rcpp::Named("int_ok") = int_ok);
 }

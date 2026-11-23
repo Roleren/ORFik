@@ -145,3 +145,61 @@ test_that("store build and add are exact with keys at the int32 limits", {
   ref <- suppressWarnings(suppressMessages(ofst_merge(paths[-2], keep_all_scores = FALSE)))
   expect_identical(ofst_store_export_all(store, verbose = FALSE)[], ref[])
 })
+
+test_that("k-way kernel reads sorted stored keys sequentially and returns the sorted union", {
+  for (two in c(FALSE, TRUE)) {
+    sp <- if (two) c(int_min, 1L, 20:35, int_max) else 20:35
+    stored <- rand_keys(4e4, 1:5000, size_pool = sp, seed = 11)   # in key order
+    ord <- sample(nrow(stored))                                     # their row ids
+    by_id <- stored[order(ord)]                                     # the keys in row-id order
+    inputs <- lapply(12:15, function(s) rand_keys(3e4, 1:6000, size_pool = sp, seed = s))
+    for (th in c(1L, 4L)) {
+      a <- ofst_store_kway(as.list(by_id), ord, lapply(inputs, as.list), nrow(stored), th, FALSE, TRUE)
+      b <- ofst_store_kway(as.list(stored), ord, lapply(inputs, as.list), nrow(stored), th, TRUE, TRUE)
+      expect_identical(a[c("rows", "order", "new_keys", "keys")], b[c("rows", "order", "new_keys", "keys")])
+      ref <- kway_reference(stored, ord, inputs)
+      expect_identical(b$order, ref$order)
+      union <- unique(data.table::rbindlist(c(list(stored), inputs)))
+      data.table::setorderv(union, names(union))
+      expect_identical(lapply(b$keys, identity), unname(as.list(union)))
+    }
+  }
+})
+
+test_that("the sorted key file is written, linked on removals and recreated for older stores", {
+  lib <- function(seed) {
+    set.seed(seed)
+    d <- data.table::data.table(seqnames = factor(sample(c("1", "2", "MT"), 3000, TRUE)), start = sample.int(5000L, 3000, TRUE),
+                                strand = factor(sample(c("+", "-"), 3000, TRUE), levels = c("+", "-", "*")),
+                                size = sample(26:30, 3000, TRUE), score = sample.int(5L, 3000, TRUE))
+    d[, .(score = sum(score)), by = .(seqnames, start, strand, size)]
+  }
+  dir <- tempfile("skeys_in"); dir.create(dir)
+  paths <- file.path(dir, paste0("lib", 1:5, ".ofst"))
+  for (i in 1:5) fst::write_fst(lib(i), paths[i])
+  store <- file.path(tempfile("ofst_store"), "store")
+  ofst_store_build(store, paths[1:3], workers = 2, verbose = FALSE)
+  skeys_of <- function() {
+    m <- ofst_store_manifest(store)
+    .ofst_store_gen_file(store, m$parts$part, "skeys", m$parts$gen)
+  }
+  expect_true(all(file.exists(skeys_of())))
+  expect_true(ofst_store_verify(store))
+  ofst_store_remove(store, "lib2", verbose = FALSE)        # no new keys: linked
+  expect_true(all(file.exists(skeys_of())))
+  # a store written before the sorted key file existed: the next add creates it
+  unlink(skeys_of())
+  ofst_store_add(store, paths[4], workers = 1, verbose = FALSE)
+  expect_true(all(file.exists(skeys_of())))
+  ofst_store_add(store, paths[5], workers = 2, verbose = FALSE)
+  expect_true(ofst_store_verify(store))
+  ref <- suppressMessages(ofst_merge(paths[-2], keep_all_scores = FALSE))
+  expect_identical(ofst_store_export_all(store, verbose = FALSE)[], ref[])
+  out <- tempfile(fileext = ".ofst")
+  ofst_store_export_all(store, out, workers = 2, verbose = FALSE)
+  expect_identical(fst::read_fst(out, as.data.table = TRUE)[], ref[])
+  # a corrupted sorted key file is caught by verify
+  f <- skeys_of()[1]
+  k <- fst::read_fst(f, as.data.table = TRUE); k[1, start := start + 1L]; fst::write_fst(k, f)
+  expect_error(ofst_store_verify(store), "sorted key file")
+})

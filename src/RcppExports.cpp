@@ -160,8 +160,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ofst_store_kway
-Rcpp::List ofst_store_kway(Rcpp::List stored, Rcpp::IntegerVector order, Rcpp::List inputs, double n_old, int threads);
-RcppExport SEXP _ORFik_ofst_store_kway(SEXP storedSEXP, SEXP orderSEXP, SEXP inputsSEXP, SEXP n_oldSEXP, SEXP threadsSEXP) {
+Rcpp::List ofst_store_kway(Rcpp::List stored, Rcpp::IntegerVector order, Rcpp::List inputs, double n_old, int threads, bool stored_sorted, bool want_keys);
+RcppExport SEXP _ORFik_ofst_store_kway(SEXP storedSEXP, SEXP orderSEXP, SEXP inputsSEXP, SEXP n_oldSEXP, SEXP threadsSEXP, SEXP stored_sortedSEXP, SEXP want_keysSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -170,7 +170,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type inputs(inputsSEXP);
     Rcpp::traits::input_parameter< double >::type n_old(n_oldSEXP);
     Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ofst_store_kway(stored, order, inputs, n_old, threads));
+    Rcpp::traits::input_parameter< bool >::type stored_sorted(stored_sortedSEXP);
+    Rcpp::traits::input_parameter< bool >::type want_keys(want_keysSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_kway(stored, order, inputs, n_old, threads, stored_sorted, want_keys));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ofst_store_score_scan
+Rcpp::List ofst_store_score_scan(Rcpp::NumericVector score, Rcpp::IntegerVector seq, int n_codes);
+RcppExport SEXP _ORFik_ofst_store_score_scan(SEXP scoreSEXP, SEXP seqSEXP, SEXP n_codesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type score(scoreSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type seq(seqSEXP);
+    Rcpp::traits::input_parameter< int >::type n_codes(n_codesSEXP);
+    rcpp_result_gen = Rcpp::wrap(ofst_store_score_scan(score, seq, n_codes));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -344,7 +359,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_ORFik_ofst_packed_key_words", (DL_FUNC) &_ORFik_ofst_packed_key_words, 1},
     {"_ORFik_ofst_sorted_match", (DL_FUNC) &_ORFik_ofst_sorted_match, 2},
     {"_ORFik_ofst_sorted_merge_order", (DL_FUNC) &_ORFik_ofst_sorted_merge_order, 4},
-    {"_ORFik_ofst_store_kway", (DL_FUNC) &_ORFik_ofst_store_kway, 5},
+    {"_ORFik_ofst_store_kway", (DL_FUNC) &_ORFik_ofst_store_kway, 7},
+    {"_ORFik_ofst_store_score_scan", (DL_FUNC) &_ORFik_ofst_store_score_scan, 3},
     {"_ORFik_orfStatsCovRleCPP", (DL_FUNC) &_ORFik_orfStatsCovRleCPP, 7},
     {"_ORFik_pmapFromTranscriptsCPP", (DL_FUNC) &_ORFik_pmapFromTranscriptsCPP, 7},
     {"_ORFik_pmapToTranscriptsCPP", (DL_FUNC) &_ORFik_pmapToTranscriptsCPP, 7},
