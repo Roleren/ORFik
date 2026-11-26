@@ -32,6 +32,7 @@ QCstats.plot <- function(stats, output.dir = NULL, plot.ext = ".pdf",
     stats <- fread(file.path(stats, "STATS.csv"))
   }
   if (colnames(stats)[1] == "V1") colnames(stats)[1] <- "sample_id"
+  if ("Run" %in% colnames(stats)) stats[, Run := NULL] # Key column, not a statistic
 
   temp_theme <-  theme(legend.text=element_text(size=8),
                        legend.key.size = unit(0.3, "cm"),

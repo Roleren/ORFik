@@ -1,6 +1,22 @@
 ORFik 1.29.18
 =============
 
+Run ids in per-library output tables
+------------------------------------
+
+    o When the experiment has a Run column (SRR/ERR/DRR ids), per-library
+      outputs also carry a Run column, so they can be matched to samples
+      without the labels (bamVarName), which change when experiment labels
+      change: count table colData (makeSummarizedExperimentFromBam,
+      countTable_regions, QCreport, ofst_derive), QC_STATS/readLengths.csv
+      (readLengthTable), QC_STATS/STATS.csv (alignmentFeatureStatistics) and
+      orfFrameDistributions(). Run is the last column; all existing columns
+      and names are unchanged, and experiments without run ids give the same
+      output as before. Collapsed count tables list all runs of a group
+      (";"-separated). DTEG analysis combines RFP/RNA count tables made
+      before and after this change (missing Run filled with NA).
+    o Bug fix: readLengthTable(output.dir = NULL) (the default) failed.
+
 Optimized annotation files
 --------------------------
 

@@ -140,8 +140,11 @@ alignmentFeatureStatistics <- function(df, type = "ofst", force = TRUE,
     return(res_final)
   }, sCo = sCo, tx = tx, gff.df = gff.df,
   libs = libs, env = envExp(df), BPPARAM = BPPARAM)
-
-  return(rbindlist(finals))
+  finals <- rbindlist(finals)
+  # Label-independent key (last column, existing columns unchanged)
+  runs <- runIDsForOutput(df, length(libs))
+  if (!is.null(runs)) finals[, Run := runs]
+  return(finals)
 }
 
 #' Add trimming info to QC report
@@ -241,14 +244,15 @@ QCstats <- function(df, path = file.path(QCfolder(df), "STATS.csv")) {
 #' @inheritParams QC_count_tables
 #' @return a data.table object of the the read length data with columns:
 #' \code{c("sample", "sample_id", "read length", "counts",
-#'  "counts_per_sample", "perc_of_counts_per_sample")}
+#'  "counts_per_sample", "perc_of_counts_per_sample")}, plus a last column
+#'  \code{Run} (SRR/ERR/DRR id) when the experiment has run ids.
 #' @keywords internal
 readLengthTable <- function(df, output.dir = NULL, type = "ofst",
                             force = TRUE,
                             library.names = bamVarName(df),
                             BPPARAM = bpparam()) {
-  file.name <- file.path(output.dir, "readLengths.csv")
-  if (file.exists(file.name)) {
+  file.name <- if (!is.null(output.dir)) file.path(output.dir, "readLengths.csv") else NULL
+  if (!is.null(file.name) && file.exists(file.name)) {
     message("Using previously stored readlengths in QC_STATS folder!")
     return(fread(file.name, header = TRUE))
   }
@@ -266,6 +270,9 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
   dt_read_lengths[, perc_of_counts_per_sample :=
                     (counts / counts_per_sample)*100,
                   by = sample_id]
+  # Label-independent key (last column, existing columns unchanged)
+  runs <- runIDsForOutput(df, length(library.names))
+  if (!is.null(runs)) dt_read_lengths[, Run := runs[sample_id]]
 
   if (!is.null(output.dir)) {
     fwrite(dt_read_lengths, file.name)
@@ -288,6 +295,8 @@ readLengthTable <- function(df, output.dir = NULL, type = "ofst",
 #'    percent (coverage percentage of library)
 #'    percent_length (coverage percentage of library and length)
 #'    best_frame (TRUE/FALSE, is this the best frame per length)
+#'    Run (last column, only when the experiment has run ids: SRR/ERR/DRR id
+#'    of the library, a key that does not change with the labels)
 #' @export
 #' @examples
 #' df <- ORFik.template.experiment()[9,]
@@ -300,6 +309,15 @@ orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
                                   BPPARAM = BiocParallel::bpparam()) {
   stopifnot(is(libraries, "list"))
   cds <- orfs
+  # Run id per library (matched by library name, else by position)
+  runs <- runIDsForOutput(df)
+  if (!is.null(runs)) {
+    lib_runs <- runs[match(names(libraries), bamVarName(df))]
+    if (anyNA(match(names(libraries), bamVarName(df)))) {
+      lib_runs <- if (length(libraries) == nrow(df)) runs else NULL
+    }
+    runs <- lib_runs
+  }
   # Frame distribution over all
   frame_sum_per1 <- bplapply(libraries, FUN = function(lib, cds, weight) {
     total <- regionPerReadLength(cds, lib,
@@ -309,6 +327,10 @@ orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
     name <- attr(lib, "name_short")
     total[, fraction := rep(name, nrow(total))]
   }, cds = cds, weight = weight, BPPARAM = BPPARAM)
+  if (!is.null(runs)) {
+    frame_sum_per1 <- Map(function(dt, run) {dt$Run <- rep(run, nrow(dt)); dt},
+                          frame_sum_per1, runs)
+  }
   frame_sum_per <- rbindlist(frame_sum_per1)
 
   frame_sum_per$frame <- as.factor(frame_sum_per$frame)
@@ -320,6 +342,8 @@ orfFrameDistributions <- function(df, type = "pshifted", weight = "score",
                                      labels = gsub("^RFP_", "", names(libraries)), ordered = TRUE)]
 
   frame_sum_per[, fraction := factor(fraction, levels = unique(fraction), ordered = TRUE)]
+  if ("Run" %in% colnames(frame_sum_per))
+    setcolorder(frame_sum_per, c(setdiff(colnames(frame_sum_per), "Run"), "Run"))
   frame_sum_per[]
   return(frame_sum_per)
 }
