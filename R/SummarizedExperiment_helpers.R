@@ -132,6 +132,9 @@ colDataFromExp <- function(df, library.names = bamVarName(df)) {
   if (!is.null(df$libtype)) colData$libtype <- as.factor(df$libtype)
   if (!is.null(df$condition)) colData$condition <- as.factor(df$condition)
   if (!is.null(df$fraction)) colData$fraction <- as.factor(as.character(df$fraction))
+  # Label-independent key: SRR/ERR/DRR id, only when the experiment has run ids
+  runs <- runIDsForOutput(df, length(library.names))
+  if (!is.null(runs)) colData$Run <- runs
   return(colData)
 }
 
@@ -196,6 +199,12 @@ scoreSummarizedExperiment <- function(final, score = "transcriptNormalized",
     # Number of samples per group as matrix
     if (mean_collapse) {
       assay(collapsedAll) <- ceiling(assay(collapsedAll) / nlibs)
+    }
+    if ("Run" %in% colnames(colData(final))) { # Collapsed column: all its runs
+      groups <- if (collapse == TRUE) as.character(final$SAMPLE) else rep("merged_all", ncol(final))
+      runs_per_group <- tapply(as.character(final$Run), groups,
+                               function(x) paste(x, collapse = ";"))
+      collapsedAll$Run <- unname(runs_per_group[colnames(collapsedAll)])
     }
     final <- collapsedAll
   } else collapsedAll <- final
@@ -522,4 +531,18 @@ metadata_count_table <- function(res, df.temp, type) {
     colData(res)$replicate <- as.factor(df.temp$rep)
   }
   return(res)
+}
+
+#' rbind two colData DataFrames, filling columns missing in one with NA
+#'
+#' Count tables made before and after run ids were added to colData
+#' (column \code{Run}) can then still be combined.
+#' @param a,b DataFrame
+#' @return DataFrame
+#' @keywords internal
+#' @noRd
+rbind_colData_fill <- function(a, b) {
+  for (cl in setdiff(colnames(b), colnames(a))) a[[cl]] <- rep(NA, nrow(a))
+  for (cl in setdiff(colnames(a), colnames(b))) b[[cl]] <- rep(NA, nrow(b))
+  rbind(a, b[, colnames(a), drop = FALSE])
 }

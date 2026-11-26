@@ -232,7 +232,7 @@ DTEG.analysis <- function(df.rfp, df.rna,
 
   # TE count table (cbind of both)
   se <- cbind(assay(RFP_counts), assay(RNA_counts))
-  colData <- rbind(colData(RFP_counts), colData(RNA_counts))
+  colData <- rbind_colData_fill(colData(RFP_counts), colData(RNA_counts))
   combined_se <- SummarizedExperiment(list(counts = se),
                                       rowRanges = rowRanges(RFP_counts),
                                       colData = colData)

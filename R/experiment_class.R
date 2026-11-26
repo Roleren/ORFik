@@ -393,6 +393,28 @@ setMethod("runIDs",
           }
 )
 
+#' Run ids of an experiment for output tables
+#'
+#' Per-library output tables (QC_STATS read lengths, STATS.csv, frame
+#' distributions, count table colData) are keyed by library labels
+#' (\code{bamVarName}), which change when experiment labels change. When the
+#' experiment has a \code{Run} column, these tables also get a \code{Run}
+#' column, so they can be matched to samples without the labels.
+#' @param df an ORFik \code{\link{experiment}} (or NULL)
+#' @param n integer, number of libraries the output has (one per experiment
+#'  row, in row order). If it differs from \code{nrow(df)}, NULL is returned.
+#' @return NULL if the experiment has no (non-empty) Run column, else a
+#'  character vector with one run id per row (NA where empty).
+#' @keywords internal
+#' @noRd
+runIDsForOutput <- function(df, n = if (is.null(df)) 0L else nrow(df)) {
+  if (is.null(df) || !is(df, "experiment") || !("Run" %in% colnames(df))) return(NULL)
+  runs <- as.character(df$Run)
+  runs[is.na(runs) | !nzchar(runs)] <- NA_character_
+  if (all(is.na(runs)) || length(runs) != n) return(NULL)
+  runs
+}
+
 #' Seqlevels ORFik experiment
 #' Extracted from fasta genome index
 #' @param x an ORFik \code{\link{experiment}}
